@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PASI::PasiPartTwoWayCoup::PasiPartTwoWayCoup(
+PaSI::PasiPartTwoWayCoup::PasiPartTwoWayCoup(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : PartitionedAlgo(comm, params),
       itmax_(params.get<int>("ITEMAX")),
@@ -35,23 +35,23 @@ PASI::PasiPartTwoWayCoup::PasiPartTwoWayCoup(
       convtolscaleddisp_(params.get<double>("CONVTOLSCALEDDISP")),
       convtolrelativeforce_(params.get<double>("CONVTOLRELATIVEFORCE")),
       convtolscaledforce_(params.get<double>("CONVTOLSCALEDFORCE")),
-      ignoreconvcheck_(CORE::UTILS::IntegralValue<bool>(params, "IGNORE_CONV_CHECK")),
+      ignoreconvcheck_(Core::UTILS::IntegralValue<bool>(params, "IGNORE_CONV_CHECK")),
       writerestartevery_(params.get<int>("RESTARTEVRY"))
 {
   // empty constructor
 }
 
-void PASI::PasiPartTwoWayCoup::Init()
+void PaSI::PasiPartTwoWayCoup::Init()
 {
   // call base class init
-  PASI::PartitionedAlgo::Init();
+  PaSI::PartitionedAlgo::Init();
 
   // construct interface force
-  intfforcenp_ = CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfforcenp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
 
   // construct interface increment states
-  intfdispincnp_ = CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
-  intfforceincnp_ = CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfdispincnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
+  intfforceincnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
 
   // safety check
   if (convtolrelativedisp_ < 0.0 and convtolscaleddisp_ < 0.0 and convtolrelativeforce_ < 0.0 and
@@ -59,10 +59,10 @@ void PASI::PasiPartTwoWayCoup::Init()
     FOUR_C_THROW("no convergence tolerance for partitioned iterations set!");
 }
 
-void PASI::PasiPartTwoWayCoup::Setup()
+void PaSI::PasiPartTwoWayCoup::Setup()
 {
   // call base class setup
-  PASI::PartitionedAlgo::Setup();
+  PaSI::PartitionedAlgo::Setup();
 
   // safety check
   {
@@ -85,13 +85,13 @@ void PASI::PasiPartTwoWayCoup::Setup()
   }
 }
 
-void PASI::PasiPartTwoWayCoup::read_restart(int restartstep)
+void PaSI::PasiPartTwoWayCoup::read_restart(int restartstep)
 {
   // call base class read restart
-  PASI::PartitionedAlgo::read_restart(restartstep);
+  PaSI::PartitionedAlgo::read_restart(restartstep);
 
-  CORE::IO::DiscretizationReader reader(structurefield_->discretization(),
-      GLOBAL::Problem::Instance()->InputControlFile(), restartstep);
+  Core::IO::DiscretizationReader reader(structurefield_->discretization(),
+      Global::Problem::Instance()->InputControlFile(), restartstep);
   if (restartstep != reader.ReadInt("step"))
     FOUR_C_THROW("Time step on file not equal to given step");
 
@@ -99,7 +99,7 @@ void PASI::PasiPartTwoWayCoup::read_restart(int restartstep)
   reader.ReadVector(intfforcenp_, "intfforcenp");
 }
 
-void PASI::PasiPartTwoWayCoup::Timeloop()
+void PaSI::PasiPartTwoWayCoup::Timeloop()
 {
   // safety checks
   check_is_init();
@@ -124,7 +124,7 @@ void PASI::PasiPartTwoWayCoup::Timeloop()
   }
 }
 
-void PASI::PasiPartTwoWayCoup::outerloop()
+void PaSI::PasiPartTwoWayCoup::outerloop()
 {
   int itnum = 0;
   bool stopnonliniter = false;
@@ -181,7 +181,7 @@ void PASI::PasiPartTwoWayCoup::outerloop()
   }
 }
 
-void PASI::PasiPartTwoWayCoup::output()
+void PaSI::PasiPartTwoWayCoup::output()
 {
   // output of structure field
   struct_output();
@@ -194,22 +194,22 @@ void PASI::PasiPartTwoWayCoup::output()
   particle_output();
 }
 
-void PASI::PasiPartTwoWayCoup::reset_increment_states(
+void PaSI::PasiPartTwoWayCoup::reset_increment_states(
     Teuchos::RCP<const Epetra_Vector> intfdispnp, Teuchos::RCP<const Epetra_Vector> intfforcenp)
 {
   intfdispincnp_->Update(1.0, *intfdispnp, 0.0);
   intfforceincnp_->Update(1.0, *intfforcenp, 0.0);
 }
 
-void PASI::PasiPartTwoWayCoup::build_increment_states()
+void PaSI::PasiPartTwoWayCoup::build_increment_states()
 {
   intfdispincnp_->Update(1.0, *intfdispnp_, -1.0);
   intfforceincnp_->Update(1.0, *intfforcenp_, -1.0);
 }
 
-void PASI::PasiPartTwoWayCoup::set_interface_forces(Teuchos::RCP<const Epetra_Vector> intfforcenp)
+void PaSI::PasiPartTwoWayCoup::set_interface_forces(Teuchos::RCP<const Epetra_Vector> intfforcenp)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::set_interface_forces");
+  TEUCHOS_FUNC_TIME_MONITOR("PaSI::PASI_PartTwoWayCoup::set_interface_forces");
 
   // apply interface force on structure discretization
   structurefield_->ApplyInterfaceForce(intfforcenp);
@@ -224,9 +224,9 @@ void PASI::PasiPartTwoWayCoup::set_interface_forces(Teuchos::RCP<const Epetra_Ve
   }
 }
 
-void PASI::PasiPartTwoWayCoup::reset_particle_states()
+void PaSI::PasiPartTwoWayCoup::reset_particle_states()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::reset_particle_states");
+  TEUCHOS_FUNC_TIME_MONITOR("PaSI::PASI_PartTwoWayCoup::reset_particle_states");
 
   // get interface to particle engine
   std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface =
@@ -275,9 +275,9 @@ void PASI::PasiPartTwoWayCoup::reset_particle_states()
   }
 }
 
-void PASI::PasiPartTwoWayCoup::clear_interface_forces()
+void PaSI::PasiPartTwoWayCoup::clear_interface_forces()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::clear_interface_forces");
+  TEUCHOS_FUNC_TIME_MONITOR("PaSI::PASI_PartTwoWayCoup::clear_interface_forces");
 
   // get interface to particle wall handler
   std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
@@ -295,9 +295,9 @@ void PASI::PasiPartTwoWayCoup::clear_interface_forces()
   walldatastate->GetForceCol()->PutScalar(0.0);
 }
 
-void PASI::PasiPartTwoWayCoup::get_interface_forces()
+void PaSI::PasiPartTwoWayCoup::get_interface_forces()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::get_interface_forces");
+  TEUCHOS_FUNC_TIME_MONITOR("PaSI::PASI_PartTwoWayCoup::get_interface_forces");
 
   // get interface to particle wall handler
   std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface =
@@ -320,7 +320,7 @@ void PASI::PasiPartTwoWayCoup::get_interface_forces()
   if (err) FOUR_C_THROW("export of interface forces failed with err=%d", err);
 }
 
-bool PASI::PasiPartTwoWayCoup::convergence_check(int itnum)
+bool PaSI::PasiPartTwoWayCoup::convergence_check(int itnum)
 {
   bool stopnonliniter = false;
 
@@ -422,9 +422,9 @@ bool PASI::PasiPartTwoWayCoup::convergence_check(int itnum)
   return stopnonliniter;
 }
 
-void PASI::PasiPartTwoWayCoup::save_particle_states()
+void PaSI::PasiPartTwoWayCoup::save_particle_states()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::save_particle_states");
+  TEUCHOS_FUNC_TIME_MONITOR("PaSI::PASI_PartTwoWayCoup::save_particle_states");
 
   // get interface to particle engine
   std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface =
@@ -473,25 +473,25 @@ void PASI::PasiPartTwoWayCoup::save_particle_states()
   }
 }
 
-PASI::PasiPartTwoWayCoupDispRelax::PasiPartTwoWayCoupDispRelax(
+PaSI::PasiPartTwoWayCoupDispRelax::PasiPartTwoWayCoupDispRelax(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : PasiPartTwoWayCoup(comm, params), omega_(params.get<double>("STARTOMEGA"))
 {
   // empty constructor
 }
 
-void PASI::PasiPartTwoWayCoupDispRelax::Init()
+void PaSI::PasiPartTwoWayCoupDispRelax::Init()
 {
   // call base class init
-  PASI::PasiPartTwoWayCoup::Init();
+  PaSI::PasiPartTwoWayCoup::Init();
 
   // construct relaxed interface states
-  relaxintfdispnp_ = CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
-  relaxintfvelnp_ = CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
-  relaxintfaccnp_ = CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
+  relaxintfdispnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
+  relaxintfvelnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
+  relaxintfaccnp_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
 }
 
-void PASI::PasiPartTwoWayCoupDispRelax::outerloop()
+void PaSI::PasiPartTwoWayCoupDispRelax::outerloop()
 {
   int itnum = 0;
   bool stopnonliniter = false;
@@ -560,21 +560,21 @@ void PASI::PasiPartTwoWayCoupDispRelax::outerloop()
   }
 }
 
-void PASI::PasiPartTwoWayCoupDispRelax::calc_omega(double& omega, const int itnum)
+void PaSI::PasiPartTwoWayCoupDispRelax::calc_omega(double& omega, const int itnum)
 {
   // output constant relaxation parameter
   if ((Comm().MyPID() == 0) and print_screen_evry() and (Step() % print_screen_evry() == 0))
     std::cout << "Fixed relaxation parameter: " << omega << std::endl;
 }
 
-void PASI::PasiPartTwoWayCoupDispRelax::init_relaxation_interface_states()
+void PaSI::PasiPartTwoWayCoupDispRelax::init_relaxation_interface_states()
 {
   relaxintfdispnp_->Update(1.0, *intfdispnp_, 0.0);
   relaxintfvelnp_->Update(1.0, *intfvelnp_, 0.0);
   relaxintfaccnp_->Update(1.0, *intfaccnp_, 0.0);
 }
 
-void PASI::PasiPartTwoWayCoupDispRelax::perform_relaxation_interface_states()
+void PaSI::PasiPartTwoWayCoupDispRelax::perform_relaxation_interface_states()
 {
   relaxintfdispnp_->Update(omega_, *intfdispincnp_, 1.0);
 
@@ -585,7 +585,7 @@ void PASI::PasiPartTwoWayCoupDispRelax::perform_relaxation_interface_states()
   relaxintfaccnp_->Update(1.0 / Dt(), *relaxintfvelnp_, -1.0 / Dt());
 }
 
-PASI::PasiPartTwoWayCoupDispRelaxAitken::PasiPartTwoWayCoupDispRelaxAitken(
+PaSI::PasiPartTwoWayCoupDispRelaxAitken::PasiPartTwoWayCoupDispRelaxAitken(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
     : PasiPartTwoWayCoupDispRelax(comm, params),
       maxomega_(params.get<double>("MAXOMEGA")),
@@ -594,22 +594,22 @@ PASI::PasiPartTwoWayCoupDispRelaxAitken::PasiPartTwoWayCoupDispRelaxAitken(
   // empty constructor
 }
 
-void PASI::PasiPartTwoWayCoupDispRelaxAitken::Init()
+void PaSI::PasiPartTwoWayCoupDispRelaxAitken::Init()
 {
   // call base class init
-  PASI::PasiPartTwoWayCoupDispRelax::Init();
+  PaSI::PasiPartTwoWayCoupDispRelax::Init();
 
   // construct old interface increment state
-  intfdispincnpold_ = CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfdispincnpold_ = Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
 }
 
-void PASI::PasiPartTwoWayCoupDispRelaxAitken::read_restart(int restartstep)
+void PaSI::PasiPartTwoWayCoupDispRelaxAitken::read_restart(int restartstep)
 {
   // call base class read restart
-  PASI::PasiPartTwoWayCoupDispRelax::read_restart(restartstep);
+  PaSI::PasiPartTwoWayCoupDispRelax::read_restart(restartstep);
 
-  CORE::IO::DiscretizationReader reader(structurefield_->discretization(),
-      GLOBAL::Problem::Instance()->InputControlFile(), restartstep);
+  Core::IO::DiscretizationReader reader(structurefield_->discretization(),
+      Global::Problem::Instance()->InputControlFile(), restartstep);
   if (restartstep != reader.ReadInt("step"))
     FOUR_C_THROW("Time step on file not equal to given step");
 
@@ -617,7 +617,7 @@ void PASI::PasiPartTwoWayCoupDispRelaxAitken::read_restart(int restartstep)
   omega_ = reader.ReadDouble("omega");
 }
 
-void PASI::PasiPartTwoWayCoupDispRelaxAitken::output()
+void PaSI::PasiPartTwoWayCoupDispRelaxAitken::output()
 {
   // output of structure field
   struct_output();
@@ -633,10 +633,10 @@ void PASI::PasiPartTwoWayCoupDispRelaxAitken::output()
   particle_output();
 }
 
-void PASI::PasiPartTwoWayCoupDispRelaxAitken::calc_omega(double& omega, const int itnum)
+void PaSI::PasiPartTwoWayCoupDispRelaxAitken::calc_omega(double& omega, const int itnum)
 {
   Teuchos::RCP<Epetra_Vector> intfdispincnpdiff =
-      CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
+      Core::LinAlg::CreateVector(*interface_->PASICondMap(), true);
   intfdispincnpdiff->Update(1.0, *intfdispincnp_, (-1.0), *intfdispincnpold_, 0.0);
 
   double dispincnpdiffnorm(0.0);

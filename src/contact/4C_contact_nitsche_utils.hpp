@@ -27,7 +27,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MORTAR
+namespace Mortar
 {
   class ElementNitscheContainer
   {
@@ -41,11 +41,11 @@ namespace MORTAR
 
     virtual void Clear() = 0;
 
-    virtual void AssembleRHS(MORTAR::Element* mele, CONTACT::VecBlockType row,
+    virtual void AssembleRHS(Mortar::Element* mele, CONTACT::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) const = 0;
 
-    virtual void AssembleMatrix(MORTAR::Element* mele, CONTACT::MatBlockType block,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) const = 0;
+    virtual void AssembleMatrix(Mortar::Element* mele, CONTACT::MatBlockType block,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) const = 0;
 
     virtual double* Rhs(int dof) = 0;
     virtual double* Rhs() = 0;
@@ -75,7 +75,7 @@ namespace MORTAR
     virtual double* Kde(int col) = 0;
   };
 
-  template <CORE::FE::CellType parent_distype>
+  template <Core::FE::CellType parent_distype>
   class ElementNitscheDataTsi
   {
    public:
@@ -88,16 +88,16 @@ namespace MORTAR
     }
 
     static constexpr int num_parent_disp_dof =
-        CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
-    static constexpr int num_parent_thermo_dof = CORE::FE::num_nodes<parent_distype>;
+        Core::FE::num_nodes<parent_distype> * Core::FE::dim<parent_distype>;
+    static constexpr int num_parent_thermo_dof = Core::FE::num_nodes<parent_distype>;
 
-    CORE::LINALG::Matrix<num_parent_thermo_dof, 1> rhs_t_;
-    std::unordered_map<int, CORE::LINALG::Matrix<num_parent_thermo_dof, 1>> k_tt_;
-    std::unordered_map<int, CORE::LINALG::Matrix<num_parent_thermo_dof, 1>> k_td_;
-    std::unordered_map<int, CORE::LINALG::Matrix<num_parent_disp_dof, 1>> k_dt_;
+    Core::LinAlg::Matrix<num_parent_thermo_dof, 1> rhs_t_;
+    std::unordered_map<int, Core::LinAlg::Matrix<num_parent_thermo_dof, 1>> k_tt_;
+    std::unordered_map<int, Core::LinAlg::Matrix<num_parent_thermo_dof, 1>> k_td_;
+    std::unordered_map<int, Core::LinAlg::Matrix<num_parent_disp_dof, 1>> k_dt_;
   };
 
-  template <CORE::FE::CellType parent_distype>
+  template <Core::FE::CellType parent_distype>
   class ElementNitscheDataPoro
   {
    public:
@@ -110,17 +110,17 @@ namespace MORTAR
     }
 
     static constexpr int num_parent_disp_dof =
-        CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
+        Core::FE::num_nodes<parent_distype> * Core::FE::dim<parent_distype>;
     static constexpr int num_parent_pf_dof =
-        CORE::FE::num_nodes<parent_distype> * (CORE::FE::dim<parent_distype> + 1);
+        Core::FE::num_nodes<parent_distype> * (Core::FE::dim<parent_distype> + 1);
 
-    CORE::LINALG::Matrix<num_parent_pf_dof, 1> rhs_p_;
-    std::unordered_map<int, CORE::LINALG::Matrix<num_parent_pf_dof, 1>> k_pp_;
-    std::unordered_map<int, CORE::LINALG::Matrix<num_parent_pf_dof, 1>> k_pd_;
-    std::unordered_map<int, CORE::LINALG::Matrix<num_parent_disp_dof, 1>> k_dp_;
+    Core::LinAlg::Matrix<num_parent_pf_dof, 1> rhs_p_;
+    std::unordered_map<int, Core::LinAlg::Matrix<num_parent_pf_dof, 1>> k_pp_;
+    std::unordered_map<int, Core::LinAlg::Matrix<num_parent_pf_dof, 1>> k_pd_;
+    std::unordered_map<int, Core::LinAlg::Matrix<num_parent_disp_dof, 1>> k_dp_;
   };
 
-  template <CORE::FE::CellType parent_distype>
+  template <Core::FE::CellType parent_distype>
   class ElementNitscheDataSsi
   {
    public:
@@ -133,16 +133,16 @@ namespace MORTAR
     }
 
     static constexpr int num_parent_disp_dof =
-        CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
-    static constexpr int num_parent_scatra_dof = CORE::FE::num_nodes<parent_distype>;
+        Core::FE::num_nodes<parent_distype> * Core::FE::dim<parent_distype>;
+    static constexpr int num_parent_scatra_dof = Core::FE::num_nodes<parent_distype>;
 
-    CORE::LINALG::Matrix<num_parent_scatra_dof, 1> rhs_s_;
-    std::unordered_map<int, CORE::LINALG::Matrix<num_parent_scatra_dof, 1>> k_ss_;
-    std::unordered_map<int, CORE::LINALG::Matrix<num_parent_scatra_dof, 1>> k_sd_;
-    std::unordered_map<int, CORE::LINALG::Matrix<num_parent_disp_dof, 1>> k_ds_;
+    Core::LinAlg::Matrix<num_parent_scatra_dof, 1> rhs_s_;
+    std::unordered_map<int, Core::LinAlg::Matrix<num_parent_scatra_dof, 1>> k_ss_;
+    std::unordered_map<int, Core::LinAlg::Matrix<num_parent_scatra_dof, 1>> k_sd_;
+    std::unordered_map<int, Core::LinAlg::Matrix<num_parent_disp_dof, 1>> k_ds_;
   };
 
-  template <CORE::FE::CellType parent_distype>
+  template <Core::FE::CellType parent_distype>
   class ElementNitscheDataSsiElch
   {
    public:
@@ -155,20 +155,20 @@ namespace MORTAR
     }
 
     static constexpr int num_parent_disp_dof =
-        CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>;
-    static constexpr int num_parent_elch_dof = CORE::FE::num_nodes<parent_distype> * 2;
+        Core::FE::num_nodes<parent_distype> * Core::FE::dim<parent_distype>;
+    static constexpr int num_parent_elch_dof = Core::FE::num_nodes<parent_distype> * 2;
 
-    CORE::LINALG::Matrix<num_parent_elch_dof, 1> rhs_e_;
-    std::unordered_map<int, CORE::LINALG::Matrix<num_parent_elch_dof, 1>> k_ee_;
-    std::unordered_map<int, CORE::LINALG::Matrix<num_parent_elch_dof, 1>> k_ed_;
-    std::unordered_map<int, CORE::LINALG::Matrix<num_parent_disp_dof, 1>> k_de_;
+    Core::LinAlg::Matrix<num_parent_elch_dof, 1> rhs_e_;
+    std::unordered_map<int, Core::LinAlg::Matrix<num_parent_elch_dof, 1>> k_ee_;
+    std::unordered_map<int, Core::LinAlg::Matrix<num_parent_elch_dof, 1>> k_ed_;
+    std::unordered_map<int, Core::LinAlg::Matrix<num_parent_disp_dof, 1>> k_de_;
   };
 
-  template <CORE::FE::CellType parent_distype>
+  template <Core::FE::CellType parent_distype>
   class ElementNitscheData : public ElementNitscheContainer
   {
     using VectorType =
-        CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * CORE::FE::dim<parent_distype>,
+        Core::LinAlg::Matrix<Core::FE::num_nodes<parent_distype> * Core::FE::dim<parent_distype>,
             1>;
 
    public:
@@ -200,22 +200,22 @@ namespace MORTAR
     double* Ked(int col, int dof) override { return &ssi_elch_data_.k_ed_[col](dof); }
     double* Kde(int col) override { return ssi_elch_data_.k_de_[col].A(); }
 
-    void AssembleRHS(MORTAR::Element* mele, CONTACT::VecBlockType row,
+    void AssembleRHS(Mortar::Element* mele, CONTACT::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) const override;
 
-    void AssembleMatrix(MORTAR::Element* mele, CONTACT::MatBlockType block,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) const override;
+    void AssembleMatrix(Mortar::Element* mele, CONTACT::MatBlockType block,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) const override;
 
     template <int num_dof_per_node>
-    void AssembleRHS(MORTAR::Element* mele,
-        const CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>& rhs,
+    void AssembleRHS(Mortar::Element* mele,
+        const Core::LinAlg::Matrix<Core::FE::num_nodes<parent_distype> * num_dof_per_node, 1>& rhs,
         std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc) const;
 
     template <int num_dof_per_node>
-    void AssembleMatrix(MORTAR::Element* mele,
+    void AssembleMatrix(Mortar::Element* mele,
         const std::unordered_map<int,
-            CORE::LINALG::Matrix<CORE::FE::num_nodes<parent_distype> * num_dof_per_node, 1>>& k,
-        std::vector<int>& dofs, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) const;
+            Core::LinAlg::Matrix<Core::FE::num_nodes<parent_distype> * num_dof_per_node, 1>>& k,
+        std::vector<int>& dofs, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) const;
 
 
     void Clear() override
@@ -231,13 +231,13 @@ namespace MORTAR
    private:
     VectorType rhs_;
     std::unordered_map<int, VectorType> k_;
-    MORTAR::ElementNitscheDataTsi<parent_distype> tsi_data_;
-    MORTAR::ElementNitscheDataPoro<parent_distype> poro_data_;
-    MORTAR::ElementNitscheDataSsi<parent_distype> ssi_data_;
-    MORTAR::ElementNitscheDataSsiElch<parent_distype> ssi_elch_data_;
+    Mortar::ElementNitscheDataTsi<parent_distype> tsi_data_;
+    Mortar::ElementNitscheDataPoro<parent_distype> poro_data_;
+    Mortar::ElementNitscheDataSsi<parent_distype> ssi_data_;
+    Mortar::ElementNitscheDataSsiElch<parent_distype> ssi_elch_data_;
   };
 
-}  // namespace MORTAR
+}  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE
 

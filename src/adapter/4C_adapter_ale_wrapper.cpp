@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleNOXCorrectionWrapper::prepare_time_step()
+void Adapter::AleNOXCorrectionWrapper::prepare_time_step()
 {
   AleWrapper::prepare_time_step();
 
@@ -27,7 +27,7 @@ void ADAPTER::AleNOXCorrectionWrapper::prepare_time_step()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+void Adapter::AleNOXCorrectionWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   if (stepinc != Teuchos::null)
   {

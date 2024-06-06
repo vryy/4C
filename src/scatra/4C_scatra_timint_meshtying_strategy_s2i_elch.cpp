@@ -34,20 +34,20 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
-SCATRA::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch(
-    SCATRA::ScaTraTimIntElch* elchtimint, const Teuchos::ParameterList& parameters)
+ScaTra::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch(
+    ScaTra::ScaTraTimIntElch* elchtimint, const Teuchos::ParameterList& parameters)
     : MeshtyingStrategyS2I(elchtimint, parameters),
       etagrowthmin_(0.),
       intlayergrowth_startstep_(-1),
       intlayergrowth_timestep_active_(false)
 {
-}  // SCATRA::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch
+}  // ScaTra::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch
 
 
 /*---------------------------------------------------------------------------*
  | compute time step size                                         fang 02/18 |
  *---------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
+void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
 {
   // consider adaptive time stepping for scatra-scatra interface layer growth if necessary
   if (intlayergrowth_timestep_ > 0.0)
@@ -60,15 +60,15 @@ void SCATRA::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
     Teuchos::ParameterList condparams;
 
     // action for elements
-    CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
-        "action", SCATRA::BoundaryAction::calc_elch_minmax_overpotential, condparams);
+    Core::UTILS::AddEnumClassToParameterList<ScaTra::BoundaryAction>(
+        "action", ScaTra::BoundaryAction::calc_elch_minmax_overpotential, condparams);
 
     // initialize results
     condparams.set<double>("etagrowthmin", std::numeric_limits<double>::infinity());
     condparams.set<double>("etagrowthmax", -std::numeric_limits<double>::infinity());
 
     // extract boundary conditions for scatra-scatra interface layer growth
-    std::vector<CORE::Conditions::Condition*> conditions;
+    std::vector<Core::Conditions::Condition*> conditions;
     scatratimint_->discretization()->GetCondition("S2IKineticsGrowth", conditions);
 
     // collect condition specific data and store to scatra boundary parameter class
@@ -137,25 +137,25 @@ void SCATRA::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
     if (dt > intlayergrowth_timestep_ and intlayergrowth_timestep_active_)
       dt = intlayergrowth_timestep_;
   }
-}  // SCATRA::MeshtyingStrategyS2IElch::compute_time_step_size
+}  // ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size
 
 
 /*--------------------------------------------------------------------------------------*
  | evaluate scatra-scatra interface coupling conditions (electrochemistry)   fang 10/14 |
  *--------------------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying()
+void ScaTra::MeshtyingStrategyS2IElch::EvaluateMeshtying()
 {
   // safety check
-  if (CORE::UTILS::IntegralValue<int>(*(elch_tim_int()->ElchParameterList()), "BLOCKPRECOND"))
+  if (Core::UTILS::IntegralValue<int>(*(elch_tim_int()->ElchParameterList()), "BLOCKPRECOND"))
     FOUR_C_THROW("Block preconditioning doesn't work for scatra-scatra interface coupling yet!");
 
   // call base class routine
-  SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying();
-}  // SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying
+  ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying();
+}  // ScaTra::MeshtyingStrategyS2IElch::EvaluateMeshtying
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2IElch::evaluate_point_coupling()
+void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 {
   // extract multi-scale coupling conditions
   // loop over conditions
@@ -164,7 +164,7 @@ void SCATRA::MeshtyingStrategyS2IElch::evaluate_point_coupling()
     auto* cond_slave = slave_condition.second;
 
     // only evaluate point coupling conditions
-    if (cond_slave->GType() != CORE::Conditions::geometry_type_point) continue;
+    if (cond_slave->GType() != Core::Conditions::geometry_type_point) continue;
 
     auto* cond_master = MasterConditions()[slave_condition.first];
 
@@ -210,12 +210,12 @@ void SCATRA::MeshtyingStrategyS2IElch::evaluate_point_coupling()
     const int kinetic_model = cond_slave->parameters().Get<int>("kinetic model");
     switch (kinetic_model)
     {
-      case INPAR::S2I::kinetics_butlervolmer:
-      case INPAR::S2I::kinetics_butlervolmerreduced:
+      case Inpar::S2I::kinetics_butlervolmer:
+      case Inpar::S2I::kinetics_butlervolmerreduced:
       {
         // access material of electrode
         auto matelectrode =
-            Teuchos::rcp_dynamic_cast<const MAT::Electrode>(slave_node->Elements()[0]->Material());
+            Teuchos::rcp_dynamic_cast<const Mat::Electrode>(slave_node->Elements()[0]->Material());
         if (matelectrode == Teuchos::null)
           FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 
@@ -239,11 +239,11 @@ void SCATRA::MeshtyingStrategyS2IElch::evaluate_point_coupling()
           FOUR_C_THROW("Number of stoichiometric coefficients does not match number of scalars!");
         if ((*stoichiometries)[0] != -1) FOUR_C_THROW("Invalid stoichiometric coefficient!");
         const double faraday =
-            GLOBAL::Problem::Instance(0)->ELCHControlParams().get<double>("FARADAY_CONSTANT");
+            Global::Problem::Instance(0)->ELCHControlParams().get<double>("FARADAY_CONSTANT");
         const double gasconstant =
-            GLOBAL::Problem::Instance(0)->ELCHControlParams().get<double>("GAS_CONSTANT");
+            Global::Problem::Instance(0)->ELCHControlParams().get<double>("GAS_CONSTANT");
         const double frt =
-            faraday / (gasconstant * (GLOBAL::Problem::Instance(0)->ELCHControlParams().get<double>(
+            faraday / (gasconstant * (Global::Problem::Instance(0)->ELCHControlParams().get<double>(
                                          "TEMPERATURE")));
         const double alphaa = cond_slave->parameters().Get<double>("alpha_a");
         const double alphac = cond_slave->parameters().Get<double>("alpha_c");
@@ -258,14 +258,14 @@ void SCATRA::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 
         // compute domain integration factor
         constexpr double four_pi = 4.0 * M_PI;
-        const double fac = CORE::UTILS::IntegralValue<bool>(
+        const double fac = Core::UTILS::IntegralValue<bool>(
                                *scatratimint_->ScatraParameterList(), "SPHERICALCOORDS")
                                ? *slave_node->X().data() * *slave_node->X().data() * four_pi
                                : 1.0;
         const double timefacfac =
-            DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFac() * fac;
+            Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFac() * fac;
         const double timefacrhsfac =
-            DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFacRhs() * fac;
+            Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFacRhs() * fac;
         if (timefacfac < 0.0 or timefacrhsfac < 0.0)
           FOUR_C_THROW("Integration factor is negative!");
         // no deformation available
@@ -283,7 +283,7 @@ void SCATRA::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 
         // Butler-Volmer exchange mass flux density
         const double j0 = cond_slave->parameters().Get<int>("kinetic model") ==
-                                  INPAR::S2I::kinetics_butlervolmerreduced
+                                  Inpar::S2I::kinetics_butlervolmerreduced
                               ? kr
                               : kr * std::pow(el_conc, alphaa) * std::pow(cmax - ed_conc, alphaa) *
                                     std::pow(ed_conc, alphac);
@@ -302,7 +302,7 @@ void SCATRA::MeshtyingStrategyS2IElch::evaluate_point_coupling()
         // define flux linearization terms
         double dj_ded_conc(0.0), dj_del_conc(0.0), dj_ded_pot(0.0), dj_del_pot(0.0);
         // calculate flux linearizations
-        DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, epdderiv,
+        Discret::ELEMENTS::CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, epdderiv,
             alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday, el_conc, ed_conc,
             cmax, eta, dj_ded_conc, dj_del_conc, dj_ded_pot, dj_del_pot);
 
@@ -340,7 +340,7 @@ void SCATRA::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 
         break;
       }
-      case INPAR::S2I::kinetics_nointerfaceflux:
+      case Inpar::S2I::kinetics_nointerfaceflux:
         break;
 
       default:
@@ -354,35 +354,35 @@ void SCATRA::MeshtyingStrategyS2IElch::evaluate_point_coupling()
 /*------------------------------------------------------------------------*
  | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
  *------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2IElch::init_conv_check_strategy()
+void ScaTra::MeshtyingStrategyS2IElch::init_conv_check_strategy()
 {
-  if (couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_petrov or
-      couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_bubnov)
+  if (couplingtype_ == Inpar::S2I::coupling_mortar_saddlepoint_petrov or
+      couplingtype_ == Inpar::S2I::coupling_mortar_saddlepoint_bubnov)
   {
-    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyS2ILMElch(
+    convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyS2ILMElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   }
   else if (elch_tim_int()->MacroScale())
   {
-    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMacroScaleElch(
+    convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStdMacroScaleElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   }
   else
-    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(
+    convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStdElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
-}  // SCATRA::MeshtyingStrategyS2IElch::init_conv_check_strategy
+}  // ScaTra::MeshtyingStrategyS2IElch::init_conv_check_strategy
 
 
 /*------------------------------------------------------------------------------------------*
  | update solution after convergence of the nonlinear Newton-Raphson iteration   fang 01/17 |
  *------------------------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2IElch::Update() const
+void ScaTra::MeshtyingStrategyS2IElch::Update() const
 {
   // update scatra-scatra interface layer thicknesses in case of semi-implicit solution approach
-  if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit)
+  if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_semi_implicit)
   {
     // extract boundary conditions for scatra-scatra interface layer growth
-    std::vector<CORE::Conditions::Condition*> conditions;
+    std::vector<Core::Conditions::Condition*> conditions;
     scatratimint_->discretization()->GetCondition("S2IKineticsGrowth", conditions);
 
     // loop over all conditions
@@ -392,7 +392,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
       // extract kinetic model from current condition
       switch (condition->parameters().Get<int>("kinetic model"))
       {
-        case INPAR::S2I::growth_kinetics_butlervolmer:
+        case Inpar::S2I::growth_kinetics_butlervolmer:
         {
           // extract parameters from current condition
           const auto kr = condition->parameters().Get<double>("k_r");
@@ -402,7 +402,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
           const double conductivity_inverse =
               1. / condition->parameters().Get<double>("conductivity");
           const double faraday =
-              DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+              Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
 
           // pre-compute integration factor
           const double integrationfac(condition->parameters().Get<double>("molar mass") *
@@ -420,7 +420,7 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
             if (scatratimint_->discretization()->HaveGlobalNode(nodegid))
             {
               // extract current node
-              const CORE::Nodes::Node* const node = scatratimint_->discretization()->gNode(nodegid);
+              const Core::Nodes::Node* const node = scatratimint_->discretization()->gNode(nodegid);
 
               // process only nodes owned by current processor
               if (node->Owner() == scatratimint_->discretization()->Comm().MyPID())
@@ -534,19 +534,19 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 01/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-SCATRA::MortarCellCalcElch<distypeS, distypeM>*
-SCATRA::MortarCellCalcElch<distypeS, distypeM>::Instance(
-    const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
-    const INPAR::S2I::InterfaceSides&
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+ScaTra::MortarCellCalcElch<distypeS, distypeM>*
+ScaTra::MortarCellCalcElch<distypeS, distypeM>::Instance(
+    const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
+    const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
     const int& numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
     const int& numdofpernode_master,  //!< number of master-side degrees of freedom per node
     const std::string& disname        //!< name of mortar discretization
 )
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
-      [](const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+      [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
         return std::unique_ptr<MortarCellCalcElch<distypeS, distypeM>>(
@@ -554,7 +554,7 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::Instance(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 
@@ -562,10 +562,10 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::Instance(
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 01/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-SCATRA::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
-    const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
-    const INPAR::S2I::InterfaceSides&
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+ScaTra::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
+    const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
+    const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
     const int& numdofpernode_slave,  //!< number of slave-side degrees of freedom per node
     const int& numdofpernode_master  //!< number of master-side degrees of freedom per node
@@ -576,30 +576,30 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition(
-    const DRT::Discretization& idiscret, MORTAR::IntCell& cell, MORTAR::Element& slaveelement,
-    MORTAR::Element& masterelement, CORE::Elements::Element::LocationArray& la_slave,
-    CORE::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
-    CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
-    CORE::LINALG::SerialDenseMatrix& k_ms, CORE::LINALG::SerialDenseMatrix& k_mm,
-    CORE::LINALG::SerialDenseVector& r_s, CORE::LINALG::SerialDenseVector& r_m)
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+void ScaTra::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition(
+    const Discret::Discretization& idiscret, Mortar::IntCell& cell, Mortar::Element& slaveelement,
+    Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
+    Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+    Core::LinAlg::SerialDenseMatrix& k_ss, Core::LinAlg::SerialDenseMatrix& k_sm,
+    Core::LinAlg::SerialDenseMatrix& k_ms, Core::LinAlg::SerialDenseMatrix& k_mm,
+    Core::LinAlg::SerialDenseVector& r_s, Core::LinAlg::SerialDenseVector& r_m)
 {
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() !=
-      INPAR::ELCH::equpot_divi)
+  if (Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() !=
+      Inpar::ElCh::equpot_divi)
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // extract condition from parameter list
-  CORE::Conditions::Condition* condition = params.get<CORE::Conditions::Condition*>("condition");
+  Core::Conditions::Condition* condition = params.get<Core::Conditions::Condition*>("condition");
   if (condition == nullptr)
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // access material of slave element
-  Teuchos::RCP<const MAT::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(slaveelement.Material());
+  Teuchos::RCP<const Mat::Electrode> matelectrode =
+      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(slaveelement.Material());
   if (matelectrode == Teuchos::null)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
@@ -607,11 +607,11 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition(
   this->extract_node_values(idiscret, la_slave, la_master);
 
   // determine quadrature rule
-  const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::tri_7point);
+  const Core::FE::IntPointsAndWeights<2> intpoints(Core::FE::GaussRule2D::tri_7point);
 
   // dummy matrix of nodal temperature values
-  CORE::LINALG::Matrix<nen_slave_, 1> dummy_slave_temp(true);
-  CORE::LINALG::Matrix<nen_master_, 1> dummy_master_temp(true);
+  Core::LinAlg::Matrix<nen_slave_, 1> dummy_slave_temp(true);
+  Core::LinAlg::Matrix<nen_master_, 1> dummy_master_temp(true);
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
@@ -626,12 +626,12 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition(
 
     // overall integration factors
     const double timefacfac =
-        DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * fac;
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * fac;
     const double timefacrhsfac =
-        DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * fac;
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * fac;
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
-    DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
+    Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(matelectrode,
         my::ephinp_slave_, my::ephinp_master_, dummy_slave_temp, dummy_master_temp,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
@@ -642,26 +642,26 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition_nts(
-    CORE::Conditions::Condition& condition, const MORTAR::Node& slavenode, const double& lumpedarea,
-    MORTAR::Element& slaveelement, MORTAR::Element& masterelement,
-    const std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& ephinp_slave,
-    const std::vector<CORE::LINALG::Matrix<nen_master_, 1>>& ephinp_master,
-    CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
-    CORE::LINALG::SerialDenseMatrix& k_ms, CORE::LINALG::SerialDenseMatrix& k_mm,
-    CORE::LINALG::SerialDenseVector& r_s, CORE::LINALG::SerialDenseVector& r_m)
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+void ScaTra::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition_nts(
+    Core::Conditions::Condition& condition, const Mortar::Node& slavenode, const double& lumpedarea,
+    Mortar::Element& slaveelement, Mortar::Element& masterelement,
+    const std::vector<Core::LinAlg::Matrix<nen_slave_, 1>>& ephinp_slave,
+    const std::vector<Core::LinAlg::Matrix<nen_master_, 1>>& ephinp_master,
+    Core::LinAlg::SerialDenseMatrix& k_ss, Core::LinAlg::SerialDenseMatrix& k_sm,
+    Core::LinAlg::SerialDenseMatrix& k_ms, Core::LinAlg::SerialDenseMatrix& k_mm,
+    Core::LinAlg::SerialDenseVector& r_s, Core::LinAlg::SerialDenseVector& r_m)
 {
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() !=
-      INPAR::ELCH::equpot_divi)
+  if (Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() !=
+      Inpar::ElCh::equpot_divi)
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // access material of slave element
-  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
-      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+  Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
+      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
           condition.Geometry()[slaveelement.Id()])
           ->parent_element()
           ->Material());
@@ -672,58 +672,58 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition_nts(
   my::eval_shape_func_at_slave_node(slavenode, slaveelement, masterelement);
 
   // dummy matrix of nodal temperature values
-  CORE::LINALG::Matrix<nen_slave_, 1> dummy_slave_temp(true);
-  CORE::LINALG::Matrix<nen_master_, 1> dummy_master_temp(true);
+  Core::LinAlg::Matrix<nen_slave_, 1> dummy_slave_temp(true);
+  Core::LinAlg::Matrix<nen_master_, 1> dummy_master_temp(true);
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
   // overall integration factors
   const double timefacfac =
-      DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * lumpedarea;
+      Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * lumpedarea;
   const double timefacrhsfac =
-      DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * lumpedarea;
+      Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * lumpedarea;
   if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
   // no deformation available
   const double dummy_detF(1.0);
 
-  DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
+  Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
       distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(matelectrode,
       ephinp_slave, ephinp_master, dummy_slave_temp, dummy_master_temp, pseudo_contact_fac,
       my::funct_slave_, my::funct_master_, my::funct_slave_, my::funct_master_,
       my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
-      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), my::numdofpernode_slave_,
-      k_ss, k_sm, k_ms, k_mm, r_s, r_m);
+      Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(),
+      my::numdofpernode_slave_, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
 }
 
 
 /*----------------------------------------------------------------------*
  | evaluate factor F/RT                                      fang 01/17 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-double SCATRA::MortarCellCalcElch<distypeS, distypeM>::get_frt() const
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+double ScaTra::MortarCellCalcElch<distypeS, distypeM>::get_frt() const
 {
   // fetch factor F/RT from electrochemistry parameter list
-  return DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT();
+  return Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT();
 }
 
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 01/17 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>*
-SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
-    const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
-    const INPAR::S2I::InterfaceSides&
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>*
+ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
+    const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
+    const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
     const int& numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
     const int& numdofpernode_master,  //!< number of master-side degrees of freedom per node
     const std::string& disname        //!< name of mortar discretization
 )
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
-      [](const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+      [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
         return std::unique_ptr<MortarCellCalcElchSTIThermo<distypeS, distypeM>>(
@@ -731,7 +731,7 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 
@@ -739,10 +739,10 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 01/17 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTIThermo(
-    const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
-    const INPAR::S2I::InterfaceSides&
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTIThermo(
+    const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
+    const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
     const int& numdofpernode_slave,  //!< number of slave-side degrees of freedom per node
     const int& numdofpernode_master  //!< number of master-side degrees of freedom per node
@@ -760,28 +760,28 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTITh
  | evaluate single mortar integration cell of particular slave-side and master-side discretization
  types   fang 01/17 |
  *--------------------------------------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
-    const DRT::Discretization& idiscret,                //!< interface discretization
-    MORTAR::IntCell& cell,                              //!< mortar integration cell
-    MORTAR::Element& slaveelement,                      //!< slave-side mortar element
-    MORTAR::Element& masterelement,                     //!< master-side mortar element
-    CORE::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-    CORE::Elements::Element::LocationArray& la_master,  //!< master-side location array
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
+    const Discret::Discretization& idiscret,            //!< interface discretization
+    Mortar::IntCell& cell,                              //!< mortar integration cell
+    Mortar::Element& slaveelement,                      //!< slave-side mortar element
+    Mortar::Element& masterelement,                     //!< master-side mortar element
+    Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
+    Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
     const Teuchos::ParameterList& params,               //!< parameter list
-    CORE::LINALG::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
-    CORE::LINALG::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
-    CORE::LINALG::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
-    CORE::LINALG::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
-    CORE::LINALG::SerialDenseVector& cellvector1,       //!< cell vector 1
-    CORE::LINALG::SerialDenseVector& cellvector2        //!< cell vector 2
+    Core::LinAlg::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
+    Core::LinAlg::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
+    Core::LinAlg::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
+    Core::LinAlg::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
+    Core::LinAlg::SerialDenseVector& cellvector1,       //!< cell vector 1
+    Core::LinAlg::SerialDenseVector& cellvector2        //!< cell vector 2
 )
 {
   // extract and evaluate action
-  switch (CORE::UTILS::GetAsEnum<INPAR::S2I::EvaluationActions>(params, "action"))
+  switch (Core::UTILS::GetAsEnum<Inpar::S2I::EvaluationActions>(params, "action"))
   {
     // evaluate and assemble off-diagonal interface linearizations
-    case INPAR::S2I::evaluate_condition_od:
+    case Inpar::S2I::evaluate_condition_od:
     {
       evaluate_condition_od(idiscret, cell, slaveelement, masterelement, la_slave, la_master,
           params, cellmatrix1, cellmatrix3);
@@ -804,36 +804,36 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
 /*---------------------------------------------------------------------------*
  | evaluate and assemble off-diagonal interface linearizations    fang 01/17 |
  *---------------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition_od(
-    const DRT::Discretization& idiscret,                //!< interface discretization
-    MORTAR::IntCell& cell,                              //!< mortar integration cell
-    MORTAR::Element& slaveelement,                      //!< slave-side mortar element
-    MORTAR::Element& masterelement,                     //!< master-side mortar element
-    CORE::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-    CORE::Elements::Element::LocationArray& la_master,  //!< master-side location array
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition_od(
+    const Discret::Discretization& idiscret,            //!< interface discretization
+    Mortar::IntCell& cell,                              //!< mortar integration cell
+    Mortar::Element& slaveelement,                      //!< slave-side mortar element
+    Mortar::Element& masterelement,                     //!< master-side mortar element
+    Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
+    Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
     const Teuchos::ParameterList& params,               //!< parameter list
-    CORE::LINALG::SerialDenseMatrix&
+    Core::LinAlg::SerialDenseMatrix&
         k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    CORE::LINALG::SerialDenseMatrix&
+    Core::LinAlg::SerialDenseMatrix&
         k_ms  //!< linearizations of master-side residuals w.r.t. slave-side dofs
 )
 {
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() !=
-      INPAR::ELCH::equpot_divi)
+  if (Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() !=
+      Inpar::ElCh::equpot_divi)
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // extract condition from parameter list
-  CORE::Conditions::Condition* s2icondition = params.get<CORE::Conditions::Condition*>("condition");
+  Core::Conditions::Condition* s2icondition = params.get<Core::Conditions::Condition*>("condition");
   if (s2icondition == nullptr)
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // access material of slave element
-  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
-      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+  Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
+      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
           s2icondition->Geometry()[slaveelement.Id()])
           ->parent_element()
           ->Material());
@@ -844,11 +844,11 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition
   extract_node_values(idiscret, la_slave, la_master);
 
   // determine quadrature rule
-  const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::tri_7point);
+  const Core::FE::IntPointsAndWeights<2> intpoints(Core::FE::GaussRule2D::tri_7point);
 
   // dummy matrix of nodal master temperature values and shape derivatives
-  CORE::LINALG::Matrix<nen_master_, 1> dummy_master_temp(true);
-  CORE::LINALG::Matrix<nsd_slave_ + 1, nen_slave_> dummy_shapederivatives(true);
+  Core::LinAlg::Matrix<nen_master_, 1> dummy_master_temp(true);
+  Core::LinAlg::Matrix<nsd_slave_ + 1, nen_slave_> dummy_shapederivatives(true);
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
@@ -860,7 +860,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition
         slaveelement, masterelement, cell, intpoints, gpid);
 
     // evaluate overall integration factor
-    const double timefac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac();
+    const double timefac =
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac();
     const double timefacfac = timefac * fac;
     if (timefacfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
@@ -869,12 +870,12 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition
     // no deformation available
     const double dummy_detF(1.0);
 
-    DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
+    Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
         distypeS>::template evaluate_s2_i_coupling_od_at_integration_point<distypeM>(matelectrode,
         my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
         my::test_lm_master_, dummy_shapederivatives, dummy_shapederivatives,
-        my::scatraparamsboundary_, SCATRA::DifferentiationType::temp, timefacfac, timefacwgt,
+        my::scatraparamsboundary_, ScaTra::DifferentiationType::temp, timefacfac, timefacwgt,
         dummy_detF, my::numdofpernode_slave_, k_ss, k_ms);
   }  // loop over integration points
 }
@@ -883,11 +884,11 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition
 /*------------------------------------------------------------------------------------*
  | extract nodal state variables associated with mortar integration cell   fang 01/17 |
  *------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::extract_node_values(
-    const DRT::Discretization& idiscret,               //!< interface discretization
-    CORE::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
-    CORE::Elements::Element::LocationArray& la_master  //!< master-side location array
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::extract_node_values(
+    const Discret::Discretization& idiscret,           //!< interface discretization
+    Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
+    Core::Elements::Element::LocationArray& la_master  //!< master-side location array
 )
 {
   // call base class routine
@@ -901,8 +902,8 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::extract_node_value
 /*----------------------------------------------------------------------*
  | evaluate factor F/RT                                      fang 01/17 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-double SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::get_frt() const
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+double ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::get_frt() const
 {
   // evaluate local temperature value
   const double temperature = my::funct_slave_.Dot(etempnp_slave_);
@@ -910,9 +911,9 @@ double SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::get_frt() const
   // safety check
   if (temperature <= 0.) FOUR_C_THROW("Temperature is non-positive!");
 
-  const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
   const double gasconstant =
-      DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
+      Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
 
   // evaluate factor F/RT
   return faraday / (gasconstant * temperature);
@@ -922,19 +923,19 @@ double SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::get_frt() const
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 01/17 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>*
-SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
-    const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
-    const INPAR::S2I::InterfaceSides&
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>*
+ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
+    const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
+    const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
     const int& numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
     const int& numdofpernode_master,  //!< number of master-side degrees of freedom per node
     const std::string& disname        //!< name of mortar discretization
 )
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
-      [](const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
+      [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
         return std::unique_ptr<MortarCellCalcSTIElch<distypeS, distypeM>>(
@@ -942,7 +943,7 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 
@@ -950,10 +951,10 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 01/17 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
-    const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
-    const INPAR::S2I::InterfaceSides&
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
+    const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
+    const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
     const int& numdofpernode_slave,  //!< number of slave-side degrees of freedom per node
     const int& numdofpernode_master  //!< number of master-side degrees of freedom per node
@@ -962,8 +963,8 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
       my::MortarCellCalc(couplingtype, lmside, numdofpernode_slave, numdofpernode_master),
 
       // initialize member variables
-      eelchnp_slave_(2, CORE::LINALG::Matrix<nen_slave_, 1>(true)),
-      eelchnp_master_(2, CORE::LINALG::Matrix<nen_master_, 1>(true))
+      eelchnp_slave_(2, Core::LinAlg::Matrix<nen_slave_, 1>(true)),
+      eelchnp_master_(2, Core::LinAlg::Matrix<nen_master_, 1>(true))
 {
 }
 
@@ -972,28 +973,28 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
  | evaluate single mortar integration cell of particular slave-side and master-side discretization
  types   fang 01/17 |
  *--------------------------------------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
-    const DRT::Discretization& idiscret,                //!< interface discretization
-    MORTAR::IntCell& cell,                              //!< mortar integration cell
-    MORTAR::Element& slaveelement,                      //!< slave-side mortar element
-    MORTAR::Element& masterelement,                     //!< master-side mortar element
-    CORE::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-    CORE::Elements::Element::LocationArray& la_master,  //!< master-side location array
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
+    const Discret::Discretization& idiscret,            //!< interface discretization
+    Mortar::IntCell& cell,                              //!< mortar integration cell
+    Mortar::Element& slaveelement,                      //!< slave-side mortar element
+    Mortar::Element& masterelement,                     //!< master-side mortar element
+    Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
+    Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
     const Teuchos::ParameterList& params,               //!< parameter list
-    CORE::LINALG::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
-    CORE::LINALG::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
-    CORE::LINALG::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
-    CORE::LINALG::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
-    CORE::LINALG::SerialDenseVector& cellvector1,       //!< cell vector 1
-    CORE::LINALG::SerialDenseVector& cellvector2        //!< cell vector 2
+    Core::LinAlg::SerialDenseMatrix& cellmatrix1,       //!< cell matrix 1
+    Core::LinAlg::SerialDenseMatrix& cellmatrix2,       //!< cell matrix 2
+    Core::LinAlg::SerialDenseMatrix& cellmatrix3,       //!< cell matrix 3
+    Core::LinAlg::SerialDenseMatrix& cellmatrix4,       //!< cell matrix 4
+    Core::LinAlg::SerialDenseVector& cellvector1,       //!< cell vector 1
+    Core::LinAlg::SerialDenseVector& cellvector2        //!< cell vector 2
 )
 {
   // extract and evaluate action
-  switch (CORE::UTILS::GetAsEnum<INPAR::S2I::EvaluationActions>(params, "action"))
+  switch (Core::UTILS::GetAsEnum<Inpar::S2I::EvaluationActions>(params, "action"))
   {
     // evaluate and assemble interface linearizations and residuals
-    case INPAR::S2I::evaluate_condition:
+    case Inpar::S2I::evaluate_condition:
     {
       evaluate_condition(idiscret, cell, slaveelement, masterelement, la_slave, la_master, params,
           cellmatrix1, cellvector1);
@@ -1002,7 +1003,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
     }
 
     // evaluate and assemble off-diagonal interface linearizations
-    case INPAR::S2I::evaluate_condition_od:
+    case Inpar::S2I::evaluate_condition_od:
     {
       evaluate_condition_od(idiscret, cell, slaveelement, masterelement, la_slave, la_master,
           params, cellmatrix1, cellmatrix2);
@@ -1025,18 +1026,18 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
 /*---------------------------------------------------------------------------*
  | evaluate and assemble interface linearizations and residuals   fang 01/17 |
  *---------------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
-    const DRT::Discretization& idiscret,                //!< interface discretization
-    MORTAR::IntCell& cell,                              //!< mortar integration cell
-    MORTAR::Element& slaveelement,                      //!< slave-side mortar element
-    MORTAR::Element& masterelement,                     //!< master-side mortar element
-    CORE::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-    CORE::Elements::Element::LocationArray& la_master,  //!< master-side location array
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
+    const Discret::Discretization& idiscret,            //!< interface discretization
+    Mortar::IntCell& cell,                              //!< mortar integration cell
+    Mortar::Element& slaveelement,                      //!< slave-side mortar element
+    Mortar::Element& masterelement,                     //!< master-side mortar element
+    Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
+    Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
     const Teuchos::ParameterList& params,               //!< parameter list
-    CORE::LINALG::SerialDenseMatrix&
+    Core::LinAlg::SerialDenseMatrix&
         k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    CORE::LINALG::SerialDenseVector& r_s  //!< slave-side residual vector
+    Core::LinAlg::SerialDenseVector& r_s  //!< slave-side residual vector
 )
 {
   // safety check
@@ -1044,19 +1045,19 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
 
   // extract condition from parameter list
-  CORE::Conditions::Condition* s2icondition = params.get<CORE::Conditions::Condition*>("condition");
+  Core::Conditions::Condition* s2icondition = params.get<Core::Conditions::Condition*>("condition");
   if (s2icondition == nullptr)
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // access primary and secondary materials of slave element
-  const Teuchos::RCP<const MAT::Soret> matsoret = Teuchos::rcp_dynamic_cast<const MAT::Soret>(
-      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+  const Teuchos::RCP<const Mat::Soret> matsoret = Teuchos::rcp_dynamic_cast<const Mat::Soret>(
+      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
           s2icondition->Geometry()[slaveelement.Id()])
           ->parent_element()
           ->Material());
-  const Teuchos::RCP<const MAT::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
-          Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+  const Teuchos::RCP<const Mat::Electrode> matelectrode =
+      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
+          Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
               s2icondition->Geometry()[slaveelement.Id()])
               ->parent_element()
               ->Material(1));
@@ -1067,10 +1068,10 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
   extract_node_values(idiscret, la_slave, la_master);
 
   // determine quadrature rule
-  const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::tri_7point);
+  const Core::FE::IntPointsAndWeights<2> intpoints(Core::FE::GaussRule2D::tri_7point);
 
   // dummy matrix for derivative of slave fluxes w.r.t. master side temperatures
-  CORE::LINALG::SerialDenseMatrix dummy_ksm;
+  Core::LinAlg::SerialDenseMatrix dummy_ksm;
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
@@ -1083,15 +1084,15 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
 
     // evaluate overall integration factors
     const double timefacfac =
-        DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFac() * fac;
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFac() * fac;
     const double timefacrhsfac =
-        DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFacRhs() * fac;
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFacRhs() * fac;
     if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     // no deformation available
     const double dummy_detF(1.0);
 
-    DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
+    Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_,
@@ -1103,18 +1104,18 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
 /*---------------------------------------------------------------------------*
  | evaluate and assemble off-diagonal interface linearizations    fang 01/17 |
  *---------------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
-    const DRT::Discretization& idiscret,                //!< interface discretization
-    MORTAR::IntCell& cell,                              //!< mortar integration cell
-    MORTAR::Element& slaveelement,                      //!< slave-side mortar element
-    MORTAR::Element& masterelement,                     //!< master-side mortar element
-    CORE::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
-    CORE::Elements::Element::LocationArray& la_master,  //!< master-side location array
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
+    const Discret::Discretization& idiscret,            //!< interface discretization
+    Mortar::IntCell& cell,                              //!< mortar integration cell
+    Mortar::Element& slaveelement,                      //!< slave-side mortar element
+    Mortar::Element& masterelement,                     //!< master-side mortar element
+    Core::Elements::Element::LocationArray& la_slave,   //!< slave-side location array
+    Core::Elements::Element::LocationArray& la_master,  //!< master-side location array
     const Teuchos::ParameterList& params,               //!< parameter list
-    CORE::LINALG::SerialDenseMatrix&
+    Core::LinAlg::SerialDenseMatrix&
         k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    CORE::LINALG::SerialDenseMatrix&
+    Core::LinAlg::SerialDenseMatrix&
         k_sm  //!< linearizations of slave-side residuals w.r.t. master-side dofs
 )
 {
@@ -1123,18 +1124,18 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
 
   // extract condition from parameter list
-  CORE::Conditions::Condition* s2icondition = params.get<CORE::Conditions::Condition*>("condition");
+  Core::Conditions::Condition* s2icondition = params.get<Core::Conditions::Condition*>("condition");
   if (s2icondition == nullptr)
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // access primary and secondary materials of parent element
-  Teuchos::RCP<const MAT::Soret> matsoret = Teuchos::rcp_dynamic_cast<const MAT::Soret>(
-      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+  Teuchos::RCP<const Mat::Soret> matsoret = Teuchos::rcp_dynamic_cast<const Mat::Soret>(
+      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
           s2icondition->Geometry()[slaveelement.Id()])
           ->parent_element()
           ->Material());
-  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
-      Teuchos::rcp_dynamic_cast<CORE::Elements::FaceElement>(
+  Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
+      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
           s2icondition->Geometry()[slaveelement.Id()])
           ->parent_element()
           ->Material(1));
@@ -1145,10 +1146,10 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
   extract_node_values(idiscret, la_slave, la_master);
 
   // determine quadrature rule
-  const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::tri_7point);
+  const Core::FE::IntPointsAndWeights<2> intpoints(Core::FE::GaussRule2D::tri_7point);
 
   // dummy matrix for shape derivatives
-  CORE::LINALG::Matrix<3, nen_slave_> dummy_shape_deriv;
+  Core::LinAlg::Matrix<3, nen_slave_> dummy_shape_deriv;
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
@@ -1161,17 +1162,17 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
 
     // overall integration factors
     const double timefacfac =
-        DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFac() * fac;
+        Discret::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFac() * fac;
     if (timefacfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     // no deformation available
     const double dummy_detF(1.0);
 
-    DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
+    Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
         distypeS>::template evaluate_s2_i_coupling_od_at_integration_point<distypeM>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_,
-        timefacfac, fac, dummy_detF, SCATRA::DifferentiationType::elch, dummy_shape_deriv,
+        timefacfac, fac, dummy_detF, ScaTra::DifferentiationType::elch, dummy_shape_deriv,
         dummy_shape_deriv, k_ss, k_sm);
   }  // loop over integration points
 }
@@ -1180,11 +1181,11 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
 /*------------------------------------------------------------------------------------*
  | extract nodal state variables associated with mortar integration cell   fang 01/17 |
  *------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::extract_node_values(
-    const DRT::Discretization& idiscret,               //!< interface discretization
-    CORE::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
-    CORE::Elements::Element::LocationArray& la_master  //!< master-side location array
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::extract_node_values(
+    const Discret::Discretization& idiscret,           //!< interface discretization
+    Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
+    Core::Elements::Element::LocationArray& la_master  //!< master-side location array
 )
 {
   // extract nodal temperature variables associated with slave element
@@ -1198,18 +1199,18 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::extract_node_values(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SCATRA::MeshtyingStrategyS2IElchSCL::MeshtyingStrategyS2IElchSCL(
-    SCATRA::ScaTraTimIntElch* elchtimint, const Teuchos::ParameterList& parameters)
+ScaTra::MeshtyingStrategyS2IElchSCL::MeshtyingStrategyS2IElchSCL(
+    ScaTra::ScaTraTimIntElch* elchtimint, const Teuchos::ParameterList& parameters)
     : MeshtyingStrategyS2IElch(elchtimint, parameters)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2IElchSCL::setup_meshtying()
+void ScaTra::MeshtyingStrategyS2IElchSCL::setup_meshtying()
 {
   // extract scatra-scatra coupling conditions from discretization
-  std::vector<CORE::Conditions::Condition*> s2imeshtying_conditions(0, nullptr);
+  std::vector<Core::Conditions::Condition*> s2imeshtying_conditions(0, nullptr);
   scatratimint_->discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
 
   std::set<int> islavenodegidset;
@@ -1222,15 +1223,15 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::setup_meshtying()
 
     switch (s2imeshtying_condition->parameters().Get<int>("interface side"))
     {
-      case INPAR::S2I::side_slave:
+      case Inpar::S2I::side_slave:
       {
-        CORE::COMM::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
+        Core::Communication::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
             *s2imeshtying_condition->GetNodes(), islavenodegidset);
         break;
       }
-      case INPAR::S2I::side_master:
+      case Inpar::S2I::side_master:
       {
-        CORE::COMM::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
+        Core::Communication::AddOwnedNodeGIDFromList(*scatratimint_->discretization(),
             *s2imeshtying_condition->GetNodes(), imasternodegidset);
         break;
       }
@@ -1245,18 +1246,18 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::setup_meshtying()
   std::vector<int> islavenodegidvec(islavenodegidset.begin(), islavenodegidset.end());
   std::vector<int> imasternodegidvec(imasternodegidset.begin(), imasternodegidset.end());
 
-  icoup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  icoup_ = Teuchos::rcp(new Core::Adapter::Coupling());
   icoup_->setup_coupling(*(scatratimint_->discretization()), *(scatratimint_->discretization()),
       imasternodegidvec, islavenodegidvec, 2, true, 1.0e-8);
 }
 
 /*------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2IElchSCL::Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
+void ScaTra::MeshtyingStrategyS2IElchSCL::Solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
     const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
     const Teuchos::RCP<Epetra_Vector>& phinp, const int iteration,
-    CORE::LINALG::SolverParams& solver_params) const
+    Core::LinAlg::SolverParams& solver_params) const
 {
   solver_params.refactor = true;
   solver_params.reset = iteration == 1;
@@ -1266,21 +1267,21 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::Solve(const Teuchos::RCP<CORE::LINALG:
 
 
 // forward declarations
-template class SCATRA::MortarCellCalcElch<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>;
-template class SCATRA::MortarCellCalcElch<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>;
-template class SCATRA::MortarCellCalcElch<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
-template class SCATRA::MortarCellCalcElch<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;
-template class SCATRA::MortarCellCalcElchSTIThermo<CORE::FE::CellType::tri3,
-    CORE::FE::CellType::tri3>;
-template class SCATRA::MortarCellCalcElchSTIThermo<CORE::FE::CellType::tri3,
-    CORE::FE::CellType::quad4>;
-template class SCATRA::MortarCellCalcElchSTIThermo<CORE::FE::CellType::quad4,
-    CORE::FE::CellType::tri3>;
-template class SCATRA::MortarCellCalcElchSTIThermo<CORE::FE::CellType::quad4,
-    CORE::FE::CellType::quad4>;
-template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>;
-template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>;
-template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>;
-template class SCATRA::MortarCellCalcSTIElch<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>;
+template class ScaTra::MortarCellCalcElch<Core::FE::CellType::tri3, Core::FE::CellType::tri3>;
+template class ScaTra::MortarCellCalcElch<Core::FE::CellType::tri3, Core::FE::CellType::quad4>;
+template class ScaTra::MortarCellCalcElch<Core::FE::CellType::quad4, Core::FE::CellType::tri3>;
+template class ScaTra::MortarCellCalcElch<Core::FE::CellType::quad4, Core::FE::CellType::quad4>;
+template class ScaTra::MortarCellCalcElchSTIThermo<Core::FE::CellType::tri3,
+    Core::FE::CellType::tri3>;
+template class ScaTra::MortarCellCalcElchSTIThermo<Core::FE::CellType::tri3,
+    Core::FE::CellType::quad4>;
+template class ScaTra::MortarCellCalcElchSTIThermo<Core::FE::CellType::quad4,
+    Core::FE::CellType::tri3>;
+template class ScaTra::MortarCellCalcElchSTIThermo<Core::FE::CellType::quad4,
+    Core::FE::CellType::quad4>;
+template class ScaTra::MortarCellCalcSTIElch<Core::FE::CellType::tri3, Core::FE::CellType::tri3>;
+template class ScaTra::MortarCellCalcSTIElch<Core::FE::CellType::tri3, Core::FE::CellType::quad4>;
+template class ScaTra::MortarCellCalcSTIElch<Core::FE::CellType::quad4, Core::FE::CellType::tri3>;
+template class ScaTra::MortarCellCalcSTIElch<Core::FE::CellType::quad4, Core::FE::CellType::quad4>;
 
 FOUR_C_NAMESPACE_CLOSE

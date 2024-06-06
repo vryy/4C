@@ -34,14 +34,14 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(
 {
   // cast to problem-specific fluid-wrapper
   fluid_ =
-      Teuchos::rcp_dynamic_cast<ADAPTER::FluidFluidFSI>(MonolithicStructureSplit::fluid_field());
+      Teuchos::rcp_dynamic_cast<Adapter::FluidFluidFSI>(MonolithicStructureSplit::fluid_field());
 
   // cast to problem-specific ALE-wrapper
-  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicStructureSplit::ale_field());
+  ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleXFFsiWrapper>(MonolithicStructureSplit::ale_field());
 
   // XFFSI_Full_Newton is an invalid choice together with NOX,
   // because DOF-maps can change from one iteration step to the other (XFEM cut)
-  if (fluid_field()->monolithic_xffsi_approach() == INPAR::XFEM::XFFSI_Full_Newton)
+  if (fluid_field()->monolithic_xffsi_approach() == Inpar::XFEM::XFFSI_Full_Newton)
     FOUR_C_THROW("NOX-based XFFSI Approach does not work with XFFSI_Full_Newton!");
 }
 
@@ -52,7 +52,7 @@ void FSI::FluidFluidMonolithicStructureSplit::update()
   // time to relax the ALE-mesh?
   if (fluid_field()->IsAleRelaxationStep(Step()))
   {
-    if (Comm().MyPID() == 0) CORE::IO::cout << "Relaxing Ale" << CORE::IO::endl;
+    if (Comm().MyPID() == 0) Core::IO::cout << "Relaxing Ale" << Core::IO::endl;
 
     ale_field()->Solve();
     fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->Dispnp()));
@@ -100,13 +100,13 @@ void FSI::FluidFluidMonolithicStructureSplit::setup_dbc_map_extractor()
   aleintersectionmaps.push_back(ale_field()->GetDBCMapExtractor()->CondMap());
   aleintersectionmaps.push_back(ale_field()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap =
-      CORE::LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
+      Core::LinAlg::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
   dbcmaps.push_back(aleintersectionmap);
 
-  Teuchos::RCP<const Epetra_Map> dbcmap = CORE::LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
+  Teuchos::RCP<const Epetra_Map> dbcmap = Core::LinAlg::MultiMapExtractor::MergeMaps(dbcmaps);
 
   // finally, create the global FSI Dirichlet map extractor
-  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*dof_row_map(), dbcmap, true));
+  dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(*dof_row_map(), dbcmap, true));
   if (dbcmaps_ == Teuchos::null)
   {
     FOUR_C_THROW("Creation of Dirichlet map extractor failed.");

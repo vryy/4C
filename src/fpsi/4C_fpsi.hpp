@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FPSI
 {
-  class FpsiBase : public ADAPTER::AlgorithmBase
+  class FpsiBase : public Adapter::AlgorithmBase
   {
    public:
     /// constructor of base class

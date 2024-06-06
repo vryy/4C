@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::Electrode::Electrode(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::Electrode::Electrode(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : ElchSingleMat(matdata),
       cmax_(matdata->Get<double>("C_MAX")),
       chimax_(matdata->Get<double>("CHI_MAX")),
@@ -72,14 +72,14 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
       // parse *.csv file
       if (ocpcsv[0] != '/')
       {
-        if (GLOBAL::Problem::Instance()->OutputControlFile() == Teuchos::null)
+        if (Global::Problem::Instance()->OutputControlFile() == Teuchos::null)
         {
           std::cout << "WARNING: could not check, if OCP .csv file in MAT_electrode is correct."
                     << std::endl;
 
           break;
         }
-        std::string ocpcsvpath = GLOBAL::Problem::Instance()->OutputControlFile()->InputFileName();
+        std::string ocpcsvpath = Global::Problem::Instance()->OutputControlFile()->InputFileName();
         ocpcsvpath = ocpcsvpath.substr(0, ocpcsvpath.rfind('/') + 1);
         ocpcsv.insert(ocpcsv.begin(), ocpcsvpath.begin(), ocpcsvpath.end());
       }
@@ -122,8 +122,8 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 
       // build coefficient matrix and right-hand side
       const unsigned N = X_.size() - 2;
-      CORE::LINALG::SerialDenseMatrix A(N, N);
-      CORE::LINALG::SerialDenseVector M(N), B(N);
+      Core::LinAlg::SerialDenseMatrix A(N, N);
+      Core::LinAlg::SerialDenseVector M(N), B(N);
       for (unsigned i = 0; i < N; ++i)
       {
         const double Xm = X_[i + 1] - X_[i], Xp = X_[i + 2] - X_[i + 1], ocpm = ocp[i + 1] - ocp[i],
@@ -135,8 +135,8 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
       }
 
       // solve for third-order coefficients for cubic spline interpolation
-      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+      using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+      using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
       Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
       solver.setMatrix(Teuchos::rcpFromRef(A));
       solver.setVectors(Teuchos::rcpFromRef(M), Teuchos::rcpFromRef(B));
@@ -195,14 +195,14 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Electrode::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::Electrode::create_material()
 {
-  return Teuchos::rcp(new MAT::Electrode(this));
+  return Teuchos::rcp(new Mat::Electrode(this));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::OCPModels MAT::PAR::Electrode::string_to_ocp_model(
+Mat::PAR::OCPModels Mat::PAR::Electrode::string_to_ocp_model(
     const std::string& ocpmodelstring) const
 {
   OCPModels ocpmodelenum(ocp_undefined);
@@ -237,26 +237,26 @@ MAT::PAR::OCPModels MAT::PAR::Electrode::string_to_ocp_model(
 }
 
 
-MAT::ElectrodeType MAT::ElectrodeType::instance_;
+Mat::ElectrodeType Mat::ElectrodeType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* MAT::ElectrodeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ElectrodeType::Create(const std::vector<char>& data)
 {
-  auto* electrode = new MAT::Electrode();
+  auto* electrode = new Mat::Electrode();
   electrode->Unpack(data);
   return electrode;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::Electrode::Electrode(MAT::PAR::Electrode* params) : params_(params) {}
+Mat::Electrode::Electrode(Mat::PAR::Electrode* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::Electrode::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::Electrode::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -270,25 +270,25 @@ void MAT::Electrode::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::Electrode::Unpack(const std::vector<char>& data)
+void Mat::Electrode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Electrode*>(mat);
+        params_ = static_cast<Mat::PAR::Electrode*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -301,7 +301,7 @@ void MAT::Electrode::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::compute_open_circuit_potential(
+double Mat::Electrode::compute_open_circuit_potential(
     const double concentration, const double faraday, const double frt, const double detF) const
 {
   double ocp(0.0);
@@ -328,7 +328,7 @@ double MAT::Electrode::compute_open_circuit_potential(
     {
       // half cell open circuit potential obtained from cubic spline interpolation of *.csv data
       // points
-      case MAT::PAR::ocp_csv:
+      case Mat::PAR::ocp_csv:
       {
         // safety check
         if (X < params_->X_.front() or X > params_->X_.back())
@@ -351,7 +351,7 @@ double MAT::Electrode::compute_open_circuit_potential(
       }
 
       // half cell open circuit potential according to Redlich-Kister expansion
-      case MAT::PAR::ocp_redlichkister:
+      case Mat::PAR::ocp_redlichkister:
       {
         // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
         // ocppara_[0]         = DeltaG
@@ -380,7 +380,7 @@ double MAT::Electrode::compute_open_circuit_potential(
         break;
       }
 
-      case MAT::PAR::ocp_taralov:
+      case Mat::PAR::ocp_taralov:
       {
         // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
         ocp = params_->ocppara_[0] +
@@ -395,7 +395,7 @@ double MAT::Electrode::compute_open_circuit_potential(
       }
 
       // polynomial ocp
-      case MAT::PAR::ocp_polynomial:
+      case Mat::PAR::ocp_polynomial:
       {
         // add constant
         ocp = params_->ocppara_[0];
@@ -419,11 +419,11 @@ double MAT::Electrode::compute_open_circuit_potential(
     ocp = std::numeric_limits<double>::infinity();
 
   return ocp;
-}  // MAT::Electrode::compute_open_circuit_potential
+}  // Mat::Electrode::compute_open_circuit_potential
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::compute_d_open_circuit_potential_d_concentration(
+double Mat::Electrode::compute_d_open_circuit_potential_d_concentration(
     double concentration, double faraday, double frt, double detF) const
 {
   const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), detF);
@@ -436,7 +436,7 @@ double MAT::Electrode::compute_d_open_circuit_potential_d_concentration(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction(
+double Mat::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction(
     double X, double faraday, double frt) const
 
 {
@@ -449,7 +449,7 @@ double MAT::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction
     {
       // derivative of half cell open circuit potential w.r.t. concentration, obtained from cubic
       // spline interpolation of *.csv data points
-      case MAT::PAR::ocp_csv:
+      case Mat::PAR::ocp_csv:
       {
         // safety check
         if (X < params_->X_.front() or X > params_->X_.back())
@@ -473,7 +473,7 @@ double MAT::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction
 
       // derivative of half cell open circuit potential w.r.t. concentration according to
       // Redlich-Kister expansion
-      case MAT::PAR::ocp_redlichkister:
+      case Mat::PAR::ocp_redlichkister:
       {
         // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
         // ocppara_[0]         = DeltaG
@@ -504,7 +504,7 @@ double MAT::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction
 
       // derivative of half cell open circuit potential w.r.t. concentration according to Taralov,
       // Taralova, Popov, Iliev, Latz, and Zausch (2012)
-      case MAT::PAR::ocp_taralov:
+      case Mat::PAR::ocp_taralov:
       {
         d_ocp_dX = params_->ocppara_[1] * params_->ocppara_[2] /
                        std::pow(std::cosh(params_->ocppara_[2] * X + params_->ocppara_[3]), 2) +
@@ -519,7 +519,7 @@ double MAT::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction
       }
 
       // derivative of polynomial half cell open circuit potential w.r.t. concentration
-      case MAT::PAR::ocp_polynomial:
+      case Mat::PAR::ocp_polynomial:
       {
         for (int i = 1; i < params_->ocpparanum_; ++i)
           d_ocp_dX += i * params_->ocppara_[i] * std::pow(X, i - 1);
@@ -543,7 +543,7 @@ double MAT::Electrode::compute_d_open_circuit_potential_d_intercalation_fraction
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::compute_d_open_circuit_potential_d_det_f(
+double Mat::Electrode::compute_d_open_circuit_potential_d_det_f(
     const double concentration, const double faraday, const double frt, const double detF) const
 {
   const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), detF);
@@ -557,7 +557,7 @@ double MAT::Electrode::compute_d_open_circuit_potential_d_det_f(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::compute_d2_open_circuit_potential_d_concentration_d_concentration(
+double Mat::Electrode::compute_d2_open_circuit_potential_d_concentration_d_concentration(
     double concentration, double faraday, double frt, double detF) const
 {
   double d2_ocp_dX2(0.0), d2_ocp_dc2(0.0);
@@ -573,7 +573,7 @@ double MAT::Electrode::compute_d2_open_circuit_potential_d_concentration_d_conce
     {
       // second derivative of half cell open circuit potential w.r.t. concentration, obtained from
       // cubic spline interpolation of *.csv data points
-      case MAT::PAR::ocp_csv:
+      case Mat::PAR::ocp_csv:
       {
         // safety check
         if (X < params_->X_.front() or X > params_->X_.back())
@@ -596,7 +596,7 @@ double MAT::Electrode::compute_d2_open_circuit_potential_d_concentration_d_conce
 
       // second derivative of half cell open circuit potential w.r.t. concentration according to
       // Redlich-Kister expansion
-      case MAT::PAR::ocp_redlichkister:
+      case Mat::PAR::ocp_redlichkister:
       {
         // cf. Colclasure and Kee, Electrochimica Acta 55 (2010) 8960:
         // ocppara_[0]         = DeltaG
@@ -630,7 +630,7 @@ double MAT::Electrode::compute_d2_open_circuit_potential_d_concentration_d_conce
 
       // second derivative of half cell open circuit potential w.r.t. concentration according to
       // Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
-      case MAT::PAR::ocp_taralov:
+      case Mat::PAR::ocp_taralov:
       {
         d2_ocp_dX2 = -2.0 * params_->ocppara_[1] * std::pow(params_->ocppara_[2], 2) /
                          std::pow(std::cosh(params_->ocppara_[2] * X + params_->ocppara_[3]), 2) *
@@ -647,7 +647,7 @@ double MAT::Electrode::compute_d2_open_circuit_potential_d_concentration_d_conce
       }
 
       // second derivative of polynomial half cell open circuit potential w.r.t. concentration
-      case MAT::PAR::ocp_polynomial:
+      case Mat::PAR::ocp_polynomial:
       {
         for (int i = 2; i < params_->ocpparanum_; ++i)
           d2_ocp_dX2 += i * (i - 1) * params_->ocppara_[i] * std::pow(X, i - 2);
@@ -674,20 +674,20 @@ double MAT::Electrode::compute_d2_open_circuit_potential_d_concentration_d_conce
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::compute_d_open_circuit_potential_d_temperature(
+double Mat::Electrode::compute_d_open_circuit_potential_d_temperature(
     const double concentration, const double faraday, const double gasconstant) const
 {
   double ocpderiv = 0.0;
   switch (params_->ocpmodel_)
   {
-    case MAT::PAR::ocp_csv:
-    case MAT::PAR::ocp_taralov:
-    case MAT::PAR::ocp_polynomial:
+    case Mat::PAR::ocp_csv:
+    case Mat::PAR::ocp_taralov:
+    case Mat::PAR::ocp_polynomial:
     {
       ocpderiv = 0.0;
       break;
     }
-    case MAT::PAR::ocp_redlichkister:
+    case Mat::PAR::ocp_redlichkister:
     {
       const double X = compute_intercalation_fraction(concentration, ChiMax(), CMax(), 1.0);
 

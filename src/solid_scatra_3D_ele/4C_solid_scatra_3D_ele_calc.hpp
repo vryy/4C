@@ -19,10 +19,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   class So3Material;
-}  // namespace MAT
+}  // namespace Mat
 namespace STR::ELEMENTS
 {
   class ParamsInterface;
@@ -30,80 +30,80 @@ namespace STR::ELEMENTS
 
 
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
-  template <CORE::FE::CellType celltype, typename SolidFormulation>
+  template <Core::FE::CellType celltype, typename SolidFormulation>
   class SolidScatraEleCalc
   {
    public:
     SolidScatraEleCalc();
 
-    void Pack(CORE::COMM::PackBuffer& data) const;
+    void Pack(Core::Communication::PackBuffer& data) const;
 
     void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
 
-    void Setup(MAT::So3Material& solid_material, INPUT::LineDefinition* linedef);
+    void Setup(Mat::So3Material& solid_material, Input::LineDefinition* linedef);
 
-    void material_post_setup(const CORE::Elements::Element& ele, MAT::So3Material& solid_material);
+    void material_post_setup(const Core::Elements::Element& ele, Mat::So3Material& solid_material);
 
-    void Recover(const CORE::Elements::Element& ele, const DRT::Discretization& discretization,
-        const CORE::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
+    void Recover(const Core::Elements::Element& ele, const Discret::Discretization& discretization,
+        const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
 
-    void Update(const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
-        const DRT::Discretization& discretization, const CORE::Elements::Element::LocationArray& la,
-        Teuchos::ParameterList& params);
+    void Update(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
+        const Discret::Discretization& discretization,
+        const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
 
-    void CalculateStress(const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
+    void CalculateStress(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
         const StressIO& stressIO, const StrainIO& strainIO,
-        const DRT::Discretization& discretization, const CORE::Elements::Element::LocationArray& la,
-        Teuchos::ParameterList& params);
+        const Discret::Discretization& discretization,
+        const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
 
-    double calculate_internal_energy(const CORE::Elements::Element& ele,
-        MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-        const CORE::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
+    double calculate_internal_energy(const Core::Elements::Element& ele,
+        Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+        const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params);
 
-    void initialize_gauss_point_data_output(const CORE::Elements::Element& ele,
-        const MAT::So3Material& solid_material,
+    void initialize_gauss_point_data_output(const Core::Elements::Element& ele,
+        const Mat::So3Material& solid_material,
         STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
-    void evaluate_gauss_point_data_output(const CORE::Elements::Element& ele,
-        const MAT::So3Material& solid_material,
+    void evaluate_gauss_point_data_output(const Core::Elements::Element& ele,
+        const Mat::So3Material& solid_material,
         STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
     void reset_to_last_converged(
-        const CORE::Elements::Element& ele, MAT::So3Material& solid_material);
+        const Core::Elements::Element& ele, Mat::So3Material& solid_material);
 
-    void evaluate_nonlinear_force_stiffness_mass(const CORE::Elements::Element& ele,
-        MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-        const CORE::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
-        CORE::LINALG::SerialDenseVector* force_vector,
-        CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
-        CORE::LINALG::SerialDenseMatrix* mass_matrix);
+    void evaluate_nonlinear_force_stiffness_mass(const Core::Elements::Element& ele,
+        Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+        const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
+        Core::LinAlg::SerialDenseVector* force_vector,
+        Core::LinAlg::SerialDenseMatrix* stiffness_matrix,
+        Core::LinAlg::SerialDenseMatrix* mass_matrix);
 
-    void evaluate_d_stress_d_scalar(const CORE::Elements::Element& ele,
-        MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-        const CORE::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
-        CORE::LINALG::SerialDenseMatrix& stiffness_matrix_dScalar);
+    void evaluate_d_stress_d_scalar(const Core::Elements::Element& ele,
+        Mat::So3Material& solid_material, const Discret::Discretization& discretization,
+        const Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
+        Core::LinAlg::SerialDenseMatrix& stiffness_matrix_dScalar);
 
-    double GetCauchyNDirAtXi(const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
+    double GetCauchyNDirAtXi(const Core::Elements::Element& ele, Mat::So3Material& solid_material,
         const std::vector<double>& disp, const std::optional<std::vector<double>>& scalars,
-        const CORE::LINALG::Matrix<3, 1>& xi, const CORE::LINALG::Matrix<3, 1>& n,
-        const CORE::LINALG::Matrix<3, 1>& dir,
+        const Core::LinAlg::Matrix<3, 1>& xi, const Core::LinAlg::Matrix<3, 1>& n,
+        const Core::LinAlg::Matrix<3, 1>& dir,
         SolidScatraCauchyNDirLinearizations<3>& linearizations);
 
    private:
     /// static values for matrix sizes
-    static constexpr int num_nodes_ = CORE::FE::num_nodes<celltype>;
-    static constexpr int num_dim_ = CORE::FE::dim<celltype>;
+    static constexpr int num_nodes_ = Core::FE::num_nodes<celltype>;
+    static constexpr int num_dim_ = Core::FE::dim<celltype>;
     static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
     static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 
-    CORE::FE::GaussIntegration stiffness_matrix_integration_;
-    CORE::FE::GaussIntegration mass_matrix_integration_;
+    Core::FE::GaussIntegration stiffness_matrix_integration_;
+    Core::FE::GaussIntegration mass_matrix_integration_;
 
     SolidFormulationHistory<SolidFormulation> history_data_{};
   };
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 
 FOUR_C_NAMESPACE_CLOSE

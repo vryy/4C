@@ -25,13 +25,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class DiscretizationFaces;
@@ -60,36 +60,36 @@ namespace DRT
       virtual ~ElemagIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
       virtual void assemble_internal_faces_using_neighbor_data(
-          DRT::ELEMENTS::ElemagIntFace* intface,     ///< internal face element
-          std::vector<int>& nds_master,              ///< nodal dofset w.r.t. master element
-          std::vector<int>& nds_slave,               ///< nodal dofset w.r.t. slave element
-          Teuchos::ParameterList& params,            ///< parameter list
-          DRT::DiscretizationFaces& discretization,  ///< faces discretization
-          Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+          Discret::ELEMENTS::ElemagIntFace* intface,     ///< internal face element
+          std::vector<int>& nds_master,                  ///< nodal dofset w.r.t. master element
+          std::vector<int>& nds_slave,                   ///< nodal dofset w.r.t. slave element
+          Teuchos::ParameterList& params,                ///< parameter list
+          Discret::DiscretizationFaces& discretization,  ///< faces discretization
+          Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
           Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
           ) = 0;
 
       //! Evaluate internal faces
       virtual int evaluate_internal_faces(
-          DRT::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
-          Teuchos::ParameterList& params,         ///< parameter list
-          DRT::Discretization& discretization,    ///< discretization
-          std::vector<int>& patchlm,              ///< patch local map
-          std::vector<int>& lm_masterToPatch,     ///< local map between master dofs and patchlm
-          std::vector<int>& lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-          std::vector<int>& lm_faceToPatch,       ///< local map between face dofs and patchlm
+          Discret::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
+          Teuchos::ParameterList& params,             ///< parameter list
+          Discret::Discretization& discretization,    ///< discretization
+          std::vector<int>& patchlm,                  ///< patch local map
+          std::vector<int>& lm_masterToPatch,         ///< local map between master dofs and patchlm
+          std::vector<int>& lm_slaveToPatch,          ///< local map between slave dofs and patchlm
+          std::vector<int>& lm_faceToPatch,           ///< local map between face dofs and patchlm
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-          std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
-          std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
+          std::vector<Core::LinAlg::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
+          std::vector<Core::LinAlg::SerialDenseVector>& elevec_blocks   ///< element vector blocks
           ) = 0;
 
 
       /// Internal implementation class for ElemagIntFace elements (the first object is created in
-      /// DRT::ELEMENTS::ElemagIntFace::Evaluate)
-      static ElemagIntFaceImplInterface* Impl(const CORE::Elements::Element* ele);
+      /// Discret::ELEMENTS::ElemagIntFace::Evaluate)
+      static ElemagIntFaceImplInterface* Impl(const Core::Elements::Element* ele);
     };
 
     /// Internal ElemagIntFace element implementation
@@ -112,7 +112,7 @@ namespace DRT
       (see fluid_ele_intfaces_calc.H)
 
     */
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ElemagIntFaceImpl : public ElemagIntFaceImplInterface
     {
       friend class ElemagEleParameterTimInt;
@@ -121,7 +121,7 @@ namespace DRT
      public:
       /// Singleton access method
       static ElemagIntFaceImpl<distype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// Constructor
       ElemagIntFaceImpl();
@@ -129,29 +129,30 @@ namespace DRT
 
       //! Assemble internal faces integrals using data from both parent elements
       void assemble_internal_faces_using_neighbor_data(
-          DRT::ELEMENTS::ElemagIntFace* intface,     ///< internal face element
-          std::vector<int>& nds_master,              ///< nodal dofset w.r.t. master element
-          std::vector<int>& nds_slave,               ///< nodal dofset w.r.t. slave element
-          Teuchos::ParameterList& params,            ///< parameter list
-          DRT::DiscretizationFaces& discretization,  ///< faces discretization
-          Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+          Discret::ELEMENTS::ElemagIntFace* intface,     ///< internal face element
+          std::vector<int>& nds_master,                  ///< nodal dofset w.r.t. master element
+          std::vector<int>& nds_slave,                   ///< nodal dofset w.r.t. slave element
+          Teuchos::ParameterList& params,                ///< parameter list
+          Discret::DiscretizationFaces& discretization,  ///< faces discretization
+          Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
           Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
           ) override;
 
       //! Evaluate internal faces
-      int evaluate_internal_faces(DRT::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
-          Teuchos::ParameterList& params,                                 ///< parameter list
-          DRT::Discretization& discretization,                            ///< discretization
-          std::vector<int>& patchlm,                                      ///< patch local map
-          std::vector<int>& lm_masterToPatch,  ///< local map between master dofs and patchlm
-          std::vector<int>& lm_slaveToPatch,   ///< local map between slave dofs and patchlm
-          std::vector<int>& lm_faceToPatch,    ///< local map between face dofs and patchlm
+      int evaluate_internal_faces(
+          Discret::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
+          Teuchos::ParameterList& params,             ///< parameter list
+          Discret::Discretization& discretization,    ///< discretization
+          std::vector<int>& patchlm,                  ///< patch local map
+          std::vector<int>& lm_masterToPatch,         ///< local map between master dofs and patchlm
+          std::vector<int>& lm_slaveToPatch,          ///< local map between slave dofs and patchlm
+          std::vector<int>& lm_faceToPatch,           ///< local map between face dofs and patchlm
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-          std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
-          std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
+          std::vector<Core::LinAlg::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
+          std::vector<Core::LinAlg::SerialDenseVector>& elevec_blocks   ///< element vector blocks
           ) override;
 
       //! decide which terms have to be assembled and decide the assembly pattern, return if no
@@ -160,14 +161,14 @@ namespace DRT
 
      private:
       //! pointer to parameter lists
-      DRT::ELEMENTS::ElemagEleParameter* elemagpara_;
+      Discret::ELEMENTS::ElemagEleParameter* elemagpara_;
       //! pointer to parameter list for time integration
-      DRT::ELEMENTS::ElemagEleParameterTimInt* elemagparatimint_;
+      Discret::ELEMENTS::ElemagEleParameterTimInt* elemagparatimint_;
 
     };  // end class ElemagIntFaceImpl
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

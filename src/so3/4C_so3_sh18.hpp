@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 const int num_eas = 9;
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -38,17 +38,17 @@ namespace DRT
 
       static SoSh18Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -96,7 +96,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
 
       /*!
@@ -113,7 +113,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -140,7 +140,7 @@ namespace DRT
 
 
 
-      CORE::Elements::ElementType& ElementType() const override { return SoSh18Type::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return SoSh18Type::Instance(); }
 
       //@}
 
@@ -154,7 +154,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -170,25 +170,25 @@ namespace DRT
       bool eas_{};
 
       // EAS stuff *****************************************************
-      CORE::LINALG::Matrix<num_eas, num_eas> KaaInv_;
-      CORE::LINALG::Matrix<num_eas, 1> feas_;
-      CORE::LINALG::Matrix<num_eas, NUMDOF_SOH18> Kad_;
-      CORE::LINALG::Matrix<num_eas, 1> alpha_eas_;
-      CORE::LINALG::Matrix<num_eas, 1> alpha_eas_last_timestep_;
-      CORE::LINALG::Matrix<num_eas, 1> alpha_eas_delta_over_last_timestep_;
-      CORE::LINALG::Matrix<num_eas, 1> alpha_eas_inc_;
+      Core::LinAlg::Matrix<num_eas, num_eas> KaaInv_;
+      Core::LinAlg::Matrix<num_eas, 1> feas_;
+      Core::LinAlg::Matrix<num_eas, NUMDOF_SOH18> Kad_;
+      Core::LinAlg::Matrix<num_eas, 1> alpha_eas_;
+      Core::LinAlg::Matrix<num_eas, 1> alpha_eas_last_timestep_;
+      Core::LinAlg::Matrix<num_eas, 1> alpha_eas_delta_over_last_timestep_;
+      Core::LinAlg::Matrix<num_eas, 1> alpha_eas_inc_;
       double old_step_length_{};
       // EAS stuff *****************************************************
 
       // DSG factors ***************************************************
       // every DSG-modification is equivalent to a certain
       // linear combination of nodal coordinates / displacements
-      std::vector<CORE::LINALG::Matrix<9, 9>> dsg_shear_r_;
-      std::vector<CORE::LINALG::Matrix<9, 9>> dsg_shear_s_;
-      std::vector<CORE::LINALG::Matrix<9, 9>> dsg_membrane_r_;
-      std::vector<CORE::LINALG::Matrix<9, 9>> dsg_membrane_s_;
-      std::vector<CORE::LINALG::Matrix<9, 9>> dsg_membrane_rs_;
-      std::vector<CORE::LINALG::Matrix<9, 9>> dsg_transverse_t_;
+      std::vector<Core::LinAlg::Matrix<9, 9>> dsg_shear_r_;
+      std::vector<Core::LinAlg::Matrix<9, 9>> dsg_shear_s_;
+      std::vector<Core::LinAlg::Matrix<9, 9>> dsg_membrane_r_;
+      std::vector<Core::LinAlg::Matrix<9, 9>> dsg_membrane_s_;
+      std::vector<Core::LinAlg::Matrix<9, 9>> dsg_membrane_rs_;
+      std::vector<Core::LinAlg::Matrix<9, 9>> dsg_transverse_t_;
       // DSG factors ***************************************************
 
 
@@ -206,61 +206,61 @@ namespace DRT
       void nlnstiffmass(std::vector<int>& lm,  ///< location matrix
           std::vector<double>& disp,           ///< current displacements
           std::vector<double>& residual,       ///< current residual displ
-          CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>*
+          Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>*
               stiffmatrix,  ///< element stiffness matrix
-          CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* massmatrix,  ///< element mass matrix
-          CORE::LINALG::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
-          CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* massmatrix,  ///< element mass matrix
+          Core::LinAlg::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
+          Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,  ///< stress output option
-          const INPAR::STR::StrainType iostrain   ///< strain output option
+          const Inpar::STR::StressType iostress,  ///< stress output option
+          const Inpar::STR::StrainType iostrain   ///< strain output option
           ) override;
 
       // parameter space coords of one node
-      CORE::LINALG::Matrix<3, 1> node_param_coord(const int node);
+      Core::LinAlg::Matrix<3, 1> node_param_coord(const int node);
       // parameter space coords of all nodes
-      CORE::LINALG::Matrix<18, 3> node_param_coord();
+      Core::LinAlg::Matrix<18, 3> node_param_coord();
 
       void flip_t();
 
       //! Lump mass matrix
-      void soh18_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass);
+      void soh18_lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass);
 
-      void evaluate_t(const CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>& jac,
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT);
+      void evaluate_t(const Core::LinAlg::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>& jac,
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& TinvT);
 
       void eas_setup(
-          std::vector<CORE::LINALG::Matrix<6, num_eas>>& M_gp,  // M-matrix evaluated at GPs
-          CORE::LINALG::Matrix<3, 1>& G3_contra,  // contravariant basis vector G3 at element center
-          const CORE::LINALG::Matrix<NUMNOD_SOH18, 3>& xrefe);  // material element coords
+          std::vector<Core::LinAlg::Matrix<6, num_eas>>& M_gp,  // M-matrix evaluated at GPs
+          Core::LinAlg::Matrix<3, 1>& G3_contra,  // contravariant basis vector G3 at element center
+          const Core::LinAlg::Matrix<NUMNOD_SOH18, 3>& xrefe);  // material element coords
 
       void setup_dsg();
-      void integrate_dsg_shear_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_r);
-      void integrate_dsg_shear_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_s);
-      void integrate_dsg_membrane_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_r);
-      void integrate_dsg_membrane_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_s);
-      void integrate_dsg_membrane_rs(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_rs);
-      void integrate_dsg_transverse_t(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_transverse_t);
+      void integrate_dsg_shear_r(const int gp, Core::LinAlg::Matrix<9, 9>& dsg_shear_r);
+      void integrate_dsg_shear_s(const int gp, Core::LinAlg::Matrix<9, 9>& dsg_shear_s);
+      void integrate_dsg_membrane_r(const int gp, Core::LinAlg::Matrix<9, 9>& dsg_membrane_r);
+      void integrate_dsg_membrane_s(const int gp, Core::LinAlg::Matrix<9, 9>& dsg_membrane_s);
+      void integrate_dsg_membrane_rs(const int gp, Core::LinAlg::Matrix<9, 9>& dsg_membrane_rs);
+      void integrate_dsg_transverse_t(const int gp, Core::LinAlg::Matrix<9, 9>& dsg_transverse_t);
 
-      void calc_consistent_defgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
-          CORE::LINALG::Matrix<6, 1> glstrain_mod, CORE::LINALG::Matrix<3, 3>& defgrd_mod);
+      void calc_consistent_defgrd(const Core::LinAlg::Matrix<3, 3>& defgrd_disp,
+          Core::LinAlg::Matrix<6, 1> glstrain_mod, Core::LinAlg::Matrix<3, 3>& defgrd_mod);
 
-      void calculate_bop_loc(const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
-          const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
-          const CORE::LINALG::Matrix<9, 1>& shape_q9, const CORE::LINALG::Matrix<2, 9>& deriv_q9,
-          const int gp, CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18>& bop_loc);
+      void calculate_bop_loc(const Core::LinAlg::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
+          const Core::LinAlg::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
+          const Core::LinAlg::Matrix<9, 1>& shape_q9, const Core::LinAlg::Matrix<2, 9>& deriv_q9,
+          const int gp, Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH18>& bop_loc);
 
-      void calculate_loc_strain(const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
-          const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
-          const CORE::LINALG::Matrix<9, 1>& shape_q9, const CORE::LINALG::Matrix<2, 9>& deriv_q9,
-          const int gp, CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& lstrain);
+      void calculate_loc_strain(const Core::LinAlg::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
+          const Core::LinAlg::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
+          const Core::LinAlg::Matrix<9, 1>& shape_q9, const Core::LinAlg::Matrix<2, 9>& deriv_q9,
+          const int gp, Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& lstrain);
 
-      void calculate_geo_stiff(const CORE::LINALG::Matrix<9, 1>& shape_q9,
-          const CORE::LINALG::Matrix<2, 9>& deriv_q9,
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT, const int gp,
-          const double detJ_w, const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress,
-          CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix);
+      void calculate_geo_stiff(const Core::LinAlg::Matrix<9, 1>& shape_q9,
+          const Core::LinAlg::Matrix<2, 9>& deriv_q9,
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& TinvT, const int gp,
+          const double detJ_w, const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& stress,
+          Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix);
 
       void update();
 
@@ -275,7 +275,7 @@ namespace DRT
     };  // class So_sh18
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

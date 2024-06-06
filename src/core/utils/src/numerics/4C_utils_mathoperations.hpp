@@ -21,7 +21,7 @@ type, or Sacado FAD type.
 #include <cstdlib>
 
 FOUR_C_NAMESPACE_OPEN
-namespace CORE
+namespace Core
 {
   /**
    * This struct allows to evaluate basic mathematical functions on values of @p NumberType. The
@@ -48,7 +48,7 @@ namespace CORE
   };
 
   template <typename T>
-  struct MathOperations<T, std::enable_if_t<std::is_same_v<std::decay_t<T>, CORE::CLN::ClnWrapper>>>
+  struct MathOperations<T, std::enable_if_t<std::is_same_v<std::decay_t<T>, Core::CLN::ClnWrapper>>>
   {
     static constexpr T abs(const T& t) { return cln::abs(t.Value()); }
     static constexpr T sqrt(const T& t) { return cln::sqrt(t.Value()); }
@@ -85,7 +85,7 @@ namespace CORE
       return std::pow(std::forward<T2>(base), exponent);
     }
   };
-}  // namespace CORE
+}  // namespace Core
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

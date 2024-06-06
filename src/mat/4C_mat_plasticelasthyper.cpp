@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::PlasticElastHyper::PlasticElastHyper(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
-    : MAT::PAR::ElastHyper(matdata),
+Mat::PAR::PlasticElastHyper::PlasticElastHyper(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
+    : Mat::PAR::ElastHyper(matdata),
       inityield_(matdata->Get<double>("INITYIELD")),
       isohard_(matdata->Get<double>("ISOHARD")),
       expisohard_(matdata->Get<double>("EXPISOHARD")),
@@ -54,7 +54,7 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(Teuchos::RCP<CORE::MAT::PAR::Mate
       rY_13_(matdata->Get<double>("rY_13")),
       cpl_(0.),
       stab_s_(0.),
-      dis_mode_(INPAR::TSI::pl_multiplier)
+      dis_mode_(Inpar::TSI::pl_multiplier)
 {
   // check if sizes fit
   if (nummat_ != (int)matids_.size())
@@ -83,18 +83,18 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(Teuchos::RCP<CORE::MAT::PAR::Mate
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PlasticElastHyper::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticElastHyper::create_material()
 {
-  return Teuchos::rcp(new MAT::PlasticElastHyper(this));
+  return Teuchos::rcp(new Mat::PlasticElastHyper(this));
 }
 
 
-MAT::PlasticElastHyperType MAT::PlasticElastHyperType::instance_;
+Mat::PlasticElastHyperType Mat::PlasticElastHyperType::instance_;
 
 
-CORE::COMM::ParObject* MAT::PlasticElastHyperType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::PlasticElastHyperType::Create(const std::vector<char>& data)
 {
-  MAT::PlasticElastHyper* elhy = new MAT::PlasticElastHyper();
+  Mat::PlasticElastHyper* elhy = new Mat::PlasticElastHyper();
   elhy->Unpack(data);
 
   return elhy;
@@ -104,37 +104,37 @@ CORE::COMM::ParObject* MAT::PlasticElastHyperType::Create(const std::vector<char
 /*----------------------------------------------------------------------*
  |  initialise static arrays                                 seitz 05/14|
  *----------------------------------------------------------------------*/
-CORE::LINALG::Matrix<3, 1> MAT::PlasticElastHyper::prinv_;
-CORE::LINALG::Matrix<9, 1> MAT::PlasticElastHyper::CFpiCei_;
-CORE::LINALG::Matrix<9, 1> MAT::PlasticElastHyper::CFpi_;
-CORE::LINALG::Matrix<9, 1> MAT::PlasticElastHyper::CFpiCe_;
-CORE::LINALG::Matrix<6, 1> MAT::PlasticElastHyper::Cpi_;
-CORE::LINALG::Matrix<6, 1> MAT::PlasticElastHyper::CpiCCpi_;
-CORE::LINALG::Matrix<6, 1> MAT::PlasticElastHyper::ircg_;
-CORE::LINALG::Matrix<6, 1> MAT::PlasticElastHyper::Ce_;
-CORE::LINALG::Matrix<6, 1> MAT::PlasticElastHyper::Ce2_;
-CORE::LINALG::Matrix<6, 1> MAT::PlasticElastHyper::id2V_;
-CORE::LINALG::Matrix<6, 1> MAT::PlasticElastHyper::bev_;
-CORE::LINALG::Matrix<6, 1> MAT::PlasticElastHyper::be2v_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::invpldefgrd_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::CeM_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::id2_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::CpiC_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::FpiCe_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::FpiTC_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::CeFpiTC_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::be_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::be2_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::Fe_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::beF_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::beFe_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::FCpi_;
-CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::beFCpi_;
+Core::LinAlg::Matrix<3, 1> Mat::PlasticElastHyper::prinv_;
+Core::LinAlg::Matrix<9, 1> Mat::PlasticElastHyper::CFpiCei_;
+Core::LinAlg::Matrix<9, 1> Mat::PlasticElastHyper::CFpi_;
+Core::LinAlg::Matrix<9, 1> Mat::PlasticElastHyper::CFpiCe_;
+Core::LinAlg::Matrix<6, 1> Mat::PlasticElastHyper::Cpi_;
+Core::LinAlg::Matrix<6, 1> Mat::PlasticElastHyper::CpiCCpi_;
+Core::LinAlg::Matrix<6, 1> Mat::PlasticElastHyper::ircg_;
+Core::LinAlg::Matrix<6, 1> Mat::PlasticElastHyper::Ce_;
+Core::LinAlg::Matrix<6, 1> Mat::PlasticElastHyper::Ce2_;
+Core::LinAlg::Matrix<6, 1> Mat::PlasticElastHyper::id2V_;
+Core::LinAlg::Matrix<6, 1> Mat::PlasticElastHyper::bev_;
+Core::LinAlg::Matrix<6, 1> Mat::PlasticElastHyper::be2v_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::invpldefgrd_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::CeM_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::id2_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::CpiC_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::FpiCe_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::FpiTC_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::CeFpiTC_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::be_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::be2_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::Fe_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::beF_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::beFe_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::FCpi_;
+Core::LinAlg::Matrix<3, 3> Mat::PlasticElastHyper::beFCpi_;
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PlasticElastHyper::PlasticElastHyper()
+Mat::PlasticElastHyper::PlasticElastHyper()
     : params_(nullptr),
       last_plastic_defgrd_inverse_(Teuchos::null),
       last_alpha_isotropic_(Teuchos::null),
@@ -146,7 +146,7 @@ MAT::PlasticElastHyper::PlasticElastHyper()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PlasticElastHyper::PlasticElastHyper(MAT::PAR::PlasticElastHyper* params)
+Mat::PlasticElastHyper::PlasticElastHyper(Mat::PAR::PlasticElastHyper* params)
     : params_(params),
       HepDiss_(Teuchos::null),
       dHepDissdd_(Teuchos::null),
@@ -158,7 +158,7 @@ MAT::PlasticElastHyper::PlasticElastHyper(MAT::PAR::PlasticElastHyper* params)
   for (m = MatParams()->matids_.begin(); m != MatParams()->matids_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
+    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
     potsum_.push_back(sum);
     sum->register_anisotropy_extensions(anisotropy_);
@@ -168,9 +168,9 @@ MAT::PlasticElastHyper::PlasticElastHyper(MAT::PAR::PlasticElastHyper* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::PlasticElastHyper::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -227,7 +227,7 @@ void MAT::PlasticElastHyper::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
+void Mat::PlasticElastHyper::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   params_ = nullptr;
@@ -235,20 +235,20 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
 
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover MatParams()
   int matid;
   ExtractfromPack(position, data, matid);
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const unsigned int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const unsigned int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::PlasticElastHyper*>(mat);
+        params_ = static_cast<Mat::PAR::PlasticElastHyper*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -268,7 +268,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
     for (m = MatParams()->matids_.begin(); m != MatParams()->matids_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
+      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::Factory(matid);
       if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
@@ -308,16 +308,16 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
     int ngp = last_alpha_isotropic_.size();
     HepDiss_ = Teuchos::rcp(new std::vector<double>(ngp, 0.0));
     int numdofperelement = ExtractInt(position, data);
-    dHepDissdd_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseVector>(
-        ngp, CORE::LINALG::SerialDenseVector(numdofperelement)));
+    dHepDissdd_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
+        ngp, Core::LinAlg::SerialDenseVector(numdofperelement)));
     dHepDissdT_ = Teuchos::rcp(new std::vector<double>(ngp, 0.0));
     if (tsi_eas)
-      dHepDissdTeas_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseVector>(
-          ngp, CORE::LINALG::SerialDenseVector(numdofperelement / 3)));
+      dHepDissdTeas_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
+          ngp, Core::LinAlg::SerialDenseVector(numdofperelement / 3)));
   }
 
   // dissipation mode
-  INPAR::TSI::DissipationMode mode = (INPAR::TSI::DissipationMode)ExtractInt(position, data);
+  Inpar::TSI::DissipationMode mode = (Inpar::TSI::DissipationMode)ExtractInt(position, data);
   SetDissipationMode(mode);
 
   double cpl = ExtractDouble(position, data);
@@ -336,7 +336,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::PlasticElastHyper::Setup(int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
@@ -373,7 +373,7 @@ void MAT::PlasticElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
   SetupHillPlasticity(linedef);
 
   // setup plastic history variables
-  CORE::LINALG::Matrix<3, 3> tmp(true);
+  Core::LinAlg::Matrix<3, 3> tmp(true);
   last_alpha_isotropic_.resize(numgp, 0.);
   last_alpha_kinematic_.resize(numgp, tmp);
   for (int i = 0; i < 3; i++) tmp(i, i) = 1.;
@@ -386,11 +386,11 @@ void MAT::PlasticElastHyper::Setup(int numgp, INPUT::LineDefinition* linedef)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelement, const bool eas,
-    const INPAR::TSI::DissipationMode mode)
+void Mat::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelement, const bool eas,
+    const Inpar::TSI::DissipationMode mode)
 {
   // dissipation mode
-  if (mode == INPAR::TSI::pl_multiplier)
+  if (mode == Inpar::TSI::pl_multiplier)
     if (MatParams()->rY_11_ != 0. || MatParams()->rY_22_ != 0. || MatParams()->rY_33_ != 0. ||
         MatParams()->rY_12_ != 0. || MatParams()->rY_23_ != 0. || MatParams()->rY_13_ != 0.)
       FOUR_C_THROW("TSI with Hill plasticity not available with DISSIPATION_MODE pl_multiplier");
@@ -398,12 +398,12 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelemen
 
   // allocate memory
   HepDiss_ = Teuchos::rcp(new std::vector<double>(numgp, 0.0));
-  dHepDissdd_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseVector>(
-      numgp, CORE::LINALG::SerialDenseVector(numdofperelement)));
+  dHepDissdd_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
+      numgp, Core::LinAlg::SerialDenseVector(numdofperelement)));
   dHepDissdT_ = Teuchos::rcp(new std::vector<double>(numgp, 0.0));
   if (eas)
-    dHepDissdTeas_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseVector>(
-        numgp, CORE::LINALG::SerialDenseVector(numdofperelement / 3)));
+    dHepDissdTeas_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
+        numgp, Core::LinAlg::SerialDenseVector(numdofperelement / 3)));
 
   // no TSI with kinematic hardening yet
   // be aware that in that case, another dependency of the NCP function on the
@@ -418,11 +418,11 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelemen
   if (PlSpinChi() != 0.) FOUR_C_THROW("no thermo-plasticitiy with plastic spin");
 
   /// Hill TSI only with pl_flow dissipation
-  if (MatParams()->rY_11_ != 0. && mode == INPAR::TSI::pl_multiplier)
+  if (MatParams()->rY_11_ != 0. && mode == Inpar::TSI::pl_multiplier)
     FOUR_C_THROW("hill thermo plasticity not with dissipation mode pl_multiplier");
 
   /// viscoplastic TSI only with  pl_flow dissipation
-  if (Visc() != 0. && mode == INPAR::TSI::pl_multiplier)
+  if (Visc() != 0. && mode == Inpar::TSI::pl_multiplier)
     FOUR_C_THROW("thermo-visco-plasticity not with dissipation mode pl_multiplier");
   return;
 }
@@ -430,7 +430,7 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelemen
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
+void Mat::PlasticElastHyper::SetupHillPlasticity(Input::LineDefinition* linedef)
 {
   // check if parameters are valid
   if (MatParams()->rY_11_ != 0. || MatParams()->rY_22_ != 0. || MatParams()->rY_33_ != 0. ||
@@ -458,7 +458,7 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
   else
   {
     // anisotropy directions
-    std::vector<CORE::LINALG::Matrix<3, 1>> directions(3);
+    std::vector<Core::LinAlg::Matrix<3, 1>> directions(3);
 
     // first anisotropy direction
     if (linedef->HaveNamed("FIBER1"))
@@ -504,7 +504,7 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
     }
 
     // check orthogonality
-    CORE::LINALG::Matrix<1, 1> matrix1;
+    Core::LinAlg::Matrix<1, 1> matrix1;
     matrix1.MultiplyTN(directions.at(0), directions.at(1));
     if (std::abs(matrix1(0, 0)) > 1.e-16) FOUR_C_THROW("fiber directions not orthogonal");
     matrix1.MultiplyTN(directions.at(0), directions.at(2));
@@ -513,7 +513,7 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
     if (std::abs(matrix1(0, 0)) > 1.e-16) FOUR_C_THROW("fiber directions not orthogonal");
 
     // check right-handed trihedron
-    CORE::LINALG::Matrix<3, 1> A0xA1;
+    Core::LinAlg::Matrix<3, 1> A0xA1;
     A0xA1(0) =
         (directions.at(0)(1) * directions.at(1)(2) - directions.at(0)(2) * directions.at(1)(1));
     A0xA1(1) =
@@ -525,11 +525,11 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
 
     // setup structural tensor for first and second direction
     // (as the directions are orthogonal, 2 structural tensors are sufficient)
-    CORE::LINALG::Matrix<3, 3> M0;
+    Core::LinAlg::Matrix<3, 3> M0;
     M0.MultiplyNT(directions.at(0), directions.at(0));
-    CORE::LINALG::Matrix<3, 3> M1;
+    Core::LinAlg::Matrix<3, 3> M1;
     M1.MultiplyNT(directions.at(1), directions.at(1));
-    CORE::LINALG::Matrix<3, 3> M2;
+    Core::LinAlg::Matrix<3, 3> M2;
     M2.MultiplyNT(directions.at(2), directions.at(2));
 
     double alpha1 = 2. / 3. / MatParams()->rY_11_ / MatParams()->rY_11_;
@@ -554,7 +554,7 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
     // we need this matrix to get rid of the zero eigenvalue to be able to invert
     // the anisotropy tensor. After the inversion we expand the tensor again to 6x6
     // so that we have the correct pseudo-inverse.
-    CORE::LINALG::Matrix<6, 5> red(true);
+    Core::LinAlg::Matrix<6, 5> red(true);
     red(0, 0) = 1.;
     red(1, 1) = 1.;
     red(2, 0) = -1.;
@@ -564,11 +564,11 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
     red(5, 4) = 1.;
 
     // Invert plastic anisotropy tensor
-    CORE::LINALG::Matrix<6, 5> tmp;
+    Core::LinAlg::Matrix<6, 5> tmp;
     tmp.Multiply(PlAniso_full_, red);
-    CORE::LINALG::Matrix<5, 5> tmp55;
+    Core::LinAlg::Matrix<5, 5> tmp55;
     tmp55.MultiplyTN(red, tmp);
-    CORE::LINALG::FixedSizeSerialDenseSolver<5, 5, 1> solver;
+    Core::LinAlg::FixedSizeSerialDenseSolver<5, 5, 1> solver;
     solver.SetMatrix(tmp55);
     int err2 = solver.Factor();
     int err = solver.Invert();
@@ -583,12 +583,12 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(INPUT::LineDefinition* linedef)
 /*----------------------------------------------------------------------*
  |  evaluate elastic stress and stiffness                   seitz 05/14 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::EvaluateElast(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<3, 3>* deltaLp, CORE::LINALG::Matrix<6, 1>* pk2,
-    CORE::LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void Mat::PlasticElastHyper::EvaluateElast(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<3, 3>* deltaLp, Core::LinAlg::Matrix<6, 1>* pk2,
+    Core::LinAlg::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
-  CORE::LINALG::Matrix<3, 1> dPI(true);
-  CORE::LINALG::Matrix<6, 1> ddPII(true);
+  Core::LinAlg::Matrix<3, 1> dPI(true);
+  Core::LinAlg::Matrix<6, 1> ddPII(true);
 
   evaluate_kin_quant_elast(defgrd, deltaLp, gp);
   ElastHyperEvaluateInvariantDerivatives(
@@ -613,28 +613,28 @@ void MAT::PlasticElastHyper::EvaluateElast(const CORE::LINALG::Matrix<3, 3>* def
 /*----------------------------------------------------------------------*
  |  evaluate elastic strain energy                          seitz 03/16 |
  *----------------------------------------------------------------------*/
-double MAT::PlasticElastHyper::StrainEnergyTSI(
-    const CORE::LINALG::Matrix<3, 3>& defgrd, const int gp, const int eleGID, const double temp)
+double Mat::PlasticElastHyper::StrainEnergyTSI(
+    const Core::LinAlg::Matrix<3, 3>& defgrd, const int gp, const int eleGID, const double temp)
 {
   double psi = 0.;
 
-  CORE::LINALG::Matrix<3, 3> Fe;
+  Core::LinAlg::Matrix<3, 3> Fe;
   Fe.Multiply(defgrd, last_plastic_defgrd_inverse_[gp]);
-  CORE::LINALG::Matrix<3, 3> elRCG;
+  Core::LinAlg::Matrix<3, 3> elRCG;
   elRCG.MultiplyTN(Fe, Fe);
-  CORE::LINALG::Matrix<6, 1> elRCGv;
+  Core::LinAlg::Matrix<6, 1> elRCGv;
   for (int i = 0; i < 3; ++i) elRCGv(i) = elRCG(i, i);
   elRCGv(3) = elRCG(0, 1) + elRCG(1, 0);
   elRCGv(4) = elRCG(2, 1) + elRCG(1, 2);
   elRCGv(5) = elRCG(0, 2) + elRCG(2, 0);
-  CORE::LINALG::Matrix<3, 1> prinv;
-  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, elRCGv);
-  CORE::LINALG::Matrix<3, 1> modinv;
+  Core::LinAlg::Matrix<3, 1> prinv;
+  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv, elRCGv);
+  Core::LinAlg::Matrix<3, 1> modinv;
   invariants_modified(modinv, prinv);
 
   // loop map of associated potential summands
-  CORE::LINALG::Matrix<6, 1> glstrain(true);
-  CORE::LINALG::Matrix<6, 1> idv(true);
+  Core::LinAlg::Matrix<6, 1> glstrain(true);
+  Core::LinAlg::Matrix<6, 1> idv(true);
   for (int i = 0; i < 3; ++i) idv(i) = 1.0;
   glstrain.Update(0.5, elRCGv, 0.0);
   glstrain.Update(-0.5, idv, 1.0);
@@ -654,8 +654,8 @@ double MAT::PlasticElastHyper::StrainEnergyTSI(
 /*----------------------------------------------------------------------*
  |  evaluate thermal stress and stiffness                   seitz 06/14 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::evaluate_thermal_stress(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const double temp, CORE::LINALG::Matrix<6, 1>* pk2, CORE::LINALG::Matrix<6, 6>* cmat,
+void Mat::PlasticElastHyper::evaluate_thermal_stress(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const double temp, Core::LinAlg::Matrix<6, 1>* pk2, Core::LinAlg::Matrix<6, 6>* cmat,
     const int gp, const int eleGID)
 {
   // do TSI only for decoupled isotropic materials. By doing so, the stresses
@@ -672,10 +672,10 @@ void MAT::PlasticElastHyper::evaluate_thermal_stress(const CORE::LINALG::Matrix<
   // we are only interested in the volumetric response
   // which is for decoupled strain energy functions defined by
   // modinv_3 = J only.
-  CORE::LINALG::Matrix<3, 1> modinv(true);
+  Core::LinAlg::Matrix<3, 1> modinv(true);
   modinv(2) = defgrd->Determinant();
-  CORE::LINALG::Matrix<3, 1> dPmodI;
-  CORE::LINALG::Matrix<6, 1> ddPmodII;
+  Core::LinAlg::Matrix<3, 1> dPmodI;
+  Core::LinAlg::Matrix<6, 1> ddPmodII;
   double dddPmodIII = 0.;
 
   // loop map of associated potential summands
@@ -687,10 +687,10 @@ void MAT::PlasticElastHyper::evaluate_thermal_stress(const CORE::LINALG::Matrix<
   }
 
   // inverse RCG
-  CORE::LINALG::Matrix<3, 3> invRCG;
+  Core::LinAlg::Matrix<3, 3> invRCG;
   invRCG.MultiplyTN(*defgrd, *defgrd);
   invRCG.Invert();
-  CORE::LINALG::Matrix<6, 1> icg;
+  Core::LinAlg::Matrix<6, 1> icg;
   for (int i = 0; i < 3; ++i) icg(i) = invRCG(i, i);
   icg(3) = invRCG(0, 1);
   icg(4) = invRCG(1, 2);
@@ -709,8 +709,8 @@ void MAT::PlasticElastHyper::evaluate_thermal_stress(const CORE::LINALG::Matrix<
 /*----------------------------------------------------------------------*
  |  evaluate thermal stress and stiffness                   seitz 06/14 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::EvaluateCTvol(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    CORE::LINALG::Matrix<6, 1>* cTvol, CORE::LINALG::Matrix<6, 6>* dCTvoldE, const int gp,
+void Mat::PlasticElastHyper::EvaluateCTvol(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    Core::LinAlg::Matrix<6, 1>* cTvol, Core::LinAlg::Matrix<6, 6>* dCTvoldE, const int gp,
     const int eleGID)
 {
   // do TSI only for decoupled isotropic materials. By doing so, the stresses
@@ -724,10 +724,10 @@ void MAT::PlasticElastHyper::EvaluateCTvol(const CORE::LINALG::Matrix<3, 3>* def
   // we are only interested in the volumetric response
   // which is for decoupled strain energy functions defined by
   // modinv_3 = J only.
-  CORE::LINALG::Matrix<3, 1> modinv(true);
+  Core::LinAlg::Matrix<3, 1> modinv(true);
   modinv(2) = defgrd->Determinant();
-  CORE::LINALG::Matrix<3, 1> dPmodI;
-  CORE::LINALG::Matrix<6, 1> ddPmodII;
+  Core::LinAlg::Matrix<3, 1> dPmodI;
+  Core::LinAlg::Matrix<6, 1> ddPmodII;
   double dddPmodIII = 0.;
 
   // loop map of associated potential summands
@@ -743,10 +743,10 @@ void MAT::PlasticElastHyper::EvaluateCTvol(const CORE::LINALG::Matrix<3, 3>* def
   dCTvoldE->Clear();
 
   // inverse RCG
-  CORE::LINALG::Matrix<3, 3> invRCG;
+  Core::LinAlg::Matrix<3, 3> invRCG;
   invRCG.MultiplyTN(*defgrd, *defgrd);
   invRCG.Invert();
-  CORE::LINALG::Matrix<6, 1> icg;
+  Core::LinAlg::Matrix<6, 1> icg;
   for (int i = 0; i < 3; ++i) icg(i) = invRCG(i, i);
   icg(3) = invRCG(0, 1);
   icg(4) = invRCG(1, 2);
@@ -765,16 +765,16 @@ void MAT::PlasticElastHyper::EvaluateCTvol(const CORE::LINALG::Matrix<3, 3>* def
 /*----------------------------------------------------------------------*
  |  evaluate Gough Joule Effect                             seitz 10/15 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::EvaluateGoughJoule(
+void Mat::PlasticElastHyper::EvaluateGoughJoule(
     const double j, const int gp, const int eleGID, double& he_fac, double& he_fac_deriv)
 {
   // we are only interested in the volumetric response
   // which is for decoupled strain energy functions defined by
   // modinv_3 = J only.
-  CORE::LINALG::Matrix<3, 1> modinv(true);
+  Core::LinAlg::Matrix<3, 1> modinv(true);
   modinv(2) = j;
-  CORE::LINALG::Matrix<3, 1> dPmodI;
-  CORE::LINALG::Matrix<6, 1> ddPmodII;
+  Core::LinAlg::Matrix<3, 1> dPmodI;
+  Core::LinAlg::Matrix<6, 1> ddPmodII;
   double dddPmodIII = 0.;
 
   // loop map of associated potential summands
@@ -793,24 +793,24 @@ void MAT::PlasticElastHyper::EvaluateGoughJoule(
 /*----------------------------------------------------------------------*
  |  evaluate plastic stress and stiffness                   seitz 05/14 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<3, 3>* deltaDp, const double* temp, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 6>* dPK2dDp, CORE::LINALG::Matrix<6, 1>* NCP,
-    CORE::LINALG::Matrix<6, 6>* dNCPdC, CORE::LINALG::Matrix<6, 6>* dNCPdDp, bool* active,
-    bool* elast, bool* as_converged, const int gp, CORE::LINALG::Matrix<6, 1>* dNCPdT,
-    CORE::LINALG::Matrix<6, 1>* dHdC, CORE::LINALG::Matrix<6, 1>* dHdDp, const double dt,
-    const int eleGID, CORE::LINALG::Matrix<6, 1>* cauchy, CORE::LINALG::Matrix<6, 6>* d_cauchy_ddp,
-    CORE::LINALG::Matrix<6, 6>* d_cauchy_dC, CORE::LINALG::Matrix<6, 9>* d_cauchy_dF,
-    CORE::LINALG::Matrix<6, 1>* d_cauchy_dT)
+void Mat::PlasticElastHyper::EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<3, 3>* deltaDp, const double* temp, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 6>* dPK2dDp, Core::LinAlg::Matrix<6, 1>* NCP,
+    Core::LinAlg::Matrix<6, 6>* dNCPdC, Core::LinAlg::Matrix<6, 6>* dNCPdDp, bool* active,
+    bool* elast, bool* as_converged, const int gp, Core::LinAlg::Matrix<6, 1>* dNCPdT,
+    Core::LinAlg::Matrix<6, 1>* dHdC, Core::LinAlg::Matrix<6, 1>* dHdDp, const double dt,
+    const int eleGID, Core::LinAlg::Matrix<6, 1>* cauchy, Core::LinAlg::Matrix<6, 6>* d_cauchy_ddp,
+    Core::LinAlg::Matrix<6, 6>* d_cauchy_dC, Core::LinAlg::Matrix<6, 9>* d_cauchy_dF,
+    Core::LinAlg::Matrix<6, 1>* d_cauchy_dT)
 {
   int check = +(cauchy != nullptr) + (d_cauchy_dC != nullptr) + (d_cauchy_dF != nullptr) +
               (d_cauchy_ddp != nullptr);
   if (!(check == 0 || check == 4)) FOUR_C_THROW("some inconsistency with provided variables");
 
-  CORE::LINALG::Matrix<3, 1> dPI;
-  CORE::LINALG::Matrix<6, 1> ddPII;
-  CORE::LINALG::Matrix<3, 1> gamma(true);
-  CORE::LINALG::Matrix<8, 1> delta(true);
+  Core::LinAlg::Matrix<3, 1> dPI;
+  Core::LinAlg::Matrix<6, 1> ddPII;
+  Core::LinAlg::Matrix<3, 1> gamma(true);
+  Core::LinAlg::Matrix<8, 1> delta(true);
 
   if (evaluate_kin_quant_plast(defgrd, deltaDp, gp, params)) return;
   ElastHyperEvaluateInvariantDerivatives(
@@ -827,12 +827,12 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
   if (dNCPdT != nullptr) dNCPdT->Clear();
 
   // new temporary matrices
-  CORE::LINALG::Matrix<3, 3> mStr;  // Mandel stress tensor
-  CORE::LINALG::Matrix<6, 6> dMdC;  // derivative of Mandel stress w.r.t. RCG
-  CORE::LINALG::Matrix<6, 9>
+  Core::LinAlg::Matrix<3, 3> mStr;  // Mandel stress tensor
+  Core::LinAlg::Matrix<6, 6> dMdC;  // derivative of Mandel stress w.r.t. RCG
+  Core::LinAlg::Matrix<6, 9>
       dMdFpinv;  // derivative of Mandel stress w.r.t. inverse plastic deformation gradient
-  CORE::LINALG::Matrix<6, 9> dPK2dFpinv;
-  CORE::LINALG::Matrix<6, 9> d_cauchy_dFpi;
+  Core::LinAlg::Matrix<6, 9> dPK2dFpinv;
+  Core::LinAlg::Matrix<6, 9> d_cauchy_dFpi;
 
   // isotropic elasticity in coupled strain energy format
   // isotropic elasticity in decoupled ("mod") format go here as well
@@ -857,18 +857,18 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
 /*----------------------------------------------------------------------*
  |  evaluate NCP function                                   seitz 05/14 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr,
-    const CORE::LINALG::Matrix<6, 6>* dMdC, const CORE::LINALG::Matrix<6, 9>* dMdFpinv,
-    const CORE::LINALG::Matrix<6, 9>* dPK2dFpinv, const CORE::LINALG::Matrix<3, 3>* deltaDp,
-    const int gp, const double* temp, CORE::LINALG::Matrix<6, 1>* NCP,
-    CORE::LINALG::Matrix<6, 6>* dNCPdC, CORE::LINALG::Matrix<6, 6>* dNCPdDp,
-    CORE::LINALG::Matrix<6, 1>* dNCPdT, CORE::LINALG::Matrix<6, 6>* dPK2dDp, bool* active,
-    bool* elast, bool* as_converged, CORE::LINALG::Matrix<6, 1>* dHdC,
-    CORE::LINALG::Matrix<6, 1>* dHdDp, Teuchos::ParameterList& params, const double dt,
-    const CORE::LINALG::Matrix<6, 9>* d_cauchy_dFpi, CORE::LINALG::Matrix<6, 6>* d_cauchy_ddp)
+void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr,
+    const Core::LinAlg::Matrix<6, 6>* dMdC, const Core::LinAlg::Matrix<6, 9>* dMdFpinv,
+    const Core::LinAlg::Matrix<6, 9>* dPK2dFpinv, const Core::LinAlg::Matrix<3, 3>* deltaDp,
+    const int gp, const double* temp, Core::LinAlg::Matrix<6, 1>* NCP,
+    Core::LinAlg::Matrix<6, 6>* dNCPdC, Core::LinAlg::Matrix<6, 6>* dNCPdDp,
+    Core::LinAlg::Matrix<6, 1>* dNCPdT, Core::LinAlg::Matrix<6, 6>* dPK2dDp, bool* active,
+    bool* elast, bool* as_converged, Core::LinAlg::Matrix<6, 1>* dHdC,
+    Core::LinAlg::Matrix<6, 1>* dHdDp, Teuchos::ParameterList& params, const double dt,
+    const Core::LinAlg::Matrix<6, 9>* d_cauchy_dFpi, Core::LinAlg::Matrix<6, 6>* d_cauchy_ddp)
 {
   const double sq = sqrt(2. / 3.);
-  CORE::LINALG::Matrix<6, 1> tmp61;
+  Core::LinAlg::Matrix<6, 1> tmp61;
   double dT = 0.;
   if (dNCPdT)
     dT = *temp - InitTemp();
@@ -876,7 +876,7 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
     dT = 0.;
 
   // deviatoric projection tensor
-  CORE::LINALG::Matrix<6, 6> pdev(true);
+  Core::LinAlg::Matrix<6, 6> pdev(true);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       if (i == j)
@@ -886,17 +886,17 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
   for (int i = 3; i < 6; i++) pdev(i, i) = 1.;
 
   // effective stress
-  CORE::LINALG::Matrix<3, 3> eta(*mStr);
+  Core::LinAlg::Matrix<3, 3> eta(*mStr);
   for (int i = 0; i < 3; i++)
     eta(i, i) -= 1. / 3. * ((*mStr)(0, 0) + (*mStr)(1, 1) + (*mStr)(2, 2));
   eta.Update(2. / 3. * Kinhard(), last_alpha_kinematic_[gp], 1.);
   eta.Update(-2. / 3. * Kinhard(), *deltaDp, 1.);
 
   // in stress-like voigt notation
-  CORE::LINALG::Matrix<6, 1> eta_v;      // in stress-like voigt notation
-  CORE::LINALG::Matrix<6, 1> etatr_v;    // in stress-like voigt notation
-  CORE::LINALG::Matrix<6, 1> eta_s_v;    // in stress-like voigt notation
-  CORE::LINALG::Matrix<6, 1> deltaDp_v;  // in stress-like voigt notation
+  Core::LinAlg::Matrix<6, 1> eta_v;      // in stress-like voigt notation
+  Core::LinAlg::Matrix<6, 1> etatr_v;    // in stress-like voigt notation
+  Core::LinAlg::Matrix<6, 1> eta_s_v;    // in stress-like voigt notation
+  Core::LinAlg::Matrix<6, 1> deltaDp_v;  // in stress-like voigt notation
   for (int i = 0; i < 3; i++)
   {
     eta_v(i) = eta(i, i);
@@ -914,9 +914,9 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
   etatr_v.Multiply(cpl(), InvPlAniso_full_, deltaDp_v, 1.);
 
   // in strain-like voigt notation
-  CORE::LINALG::Matrix<6, 1> eta_v_strainlike(eta_v);          // in strain-like voigt notation
-  CORE::LINALG::Matrix<6, 1> etatr_v_strainlike(etatr_v);      // in strain-like voigt notation
-  CORE::LINALG::Matrix<6, 1> deltaDp_v_strainlike(deltaDp_v);  // in strain-like voigt notation
+  Core::LinAlg::Matrix<6, 1> eta_v_strainlike(eta_v);          // in strain-like voigt notation
+  Core::LinAlg::Matrix<6, 1> etatr_v_strainlike(etatr_v);      // in strain-like voigt notation
+  Core::LinAlg::Matrix<6, 1> deltaDp_v_strainlike(deltaDp_v);  // in strain-like voigt notation
   for (int i = 3; i < 6; i++)
   {
     eta_v_strainlike(i) *= 2.;
@@ -943,11 +943,11 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
     absetatr_H = sqrt(absetatr_H);
   else
     absetatr_H = 0.;
-  CORE::LINALG::Matrix<6, 1> HdDp;
+  Core::LinAlg::Matrix<6, 1> HdDp;
   HdDp.Multiply(PlAniso_full_, deltaDp_v);
-  CORE::LINALG::Matrix<6, 1> HdDp_strainlike;
+  Core::LinAlg::Matrix<6, 1> HdDp_strainlike;
   HdDp_strainlike.Multiply(PlAniso_full_, deltaDp_v_strainlike);
-  CORE::LINALG::Matrix<6, 1> HetaH_strainlike;
+  Core::LinAlg::Matrix<6, 1> HetaH_strainlike;
   tmp61.Multiply(PlAniso_full_, eta_v_strainlike);
   HetaH_strainlike.Multiply(PlAniso_full_, tmp61);
 
@@ -1050,31 +1050,31 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
     eta_s_v.Update(apl * s(), eta_v, 1.);
 
     // matrix exponential derivative
-    CORE::LINALG::Matrix<6, 6> Dexp(false);
-    CORE::LINALG::Matrix<3, 3> tmp(*deltaDp);
+    Core::LinAlg::Matrix<6, 6> Dexp(false);
+    Core::LinAlg::Matrix<3, 3> tmp(*deltaDp);
     tmp.Scale(-1.);
     matrix_exponential_derivative_sym3x3(tmp, Dexp);
 
     // Derivative of inverse plastic deformation gradient
-    CORE::LINALG::Matrix<9, 6> dFpiDdeltaDp(true);
+    Core::LinAlg::Matrix<9, 6> dFpiDdeltaDp(true);
     for (int A = 0; A < 3; A++)
       for (int a = 0; a < 3; a++)
         for (int b = 0; b < 3; b++)
           for (int i = 0; i < 6; i++)
             if (i <= 2)
-              dFpiDdeltaDp(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(A, a), i) -=
+              dFpiDdeltaDp(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(A, a), i) -=
                   last_plastic_defgrd_inverse_[gp](A, b) *
-                  Dexp(CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(b, a), i);
+                  Dexp(Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(b, a), i);
             else
-              dFpiDdeltaDp(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(A, a), i) -=
+              dFpiDdeltaDp(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(A, a), i) -=
                   2. * last_plastic_defgrd_inverse_[gp](A, b) *
-                  Dexp(CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(b, a), i);
+                  Dexp(Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(b, a), i);
 
     // derivative of mandel stress
     // we spare the deviatoric projection of the mandel stress derivative to get the effective
     // stress derivative. It is enforced implicitly as the "detaddp" is always contracted with
     // deviatoric tensors.
-    CORE::LINALG::Matrix<6, 6> detaddp;
+    Core::LinAlg::Matrix<6, 6> detaddp;
     detaddp.Multiply(*dMdFpinv, dFpiDdeltaDp);
     detaddp.Update(-2. / 3. * Kinhard(), pdev, 1.);
     dPK2dDp->Multiply(*dPK2dFpinv, dFpiDdeltaDp);
@@ -1083,10 +1083,10 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
     // TSI
     if (dNCPdT != nullptr)
     {
-      if (DisMode() == INPAR::TSI::Taylor_Quinney)
+      if (DisMode() == Inpar::TSI::Taylor_Quinney)
       {
         double plHeating = TaylorQuinney() * eta_v_strainlike.Dot(deltaDp_v);
-        CORE::LINALG::Matrix<6, 1> dHpDeta(true);
+        Core::LinAlg::Matrix<6, 1> dHpDeta(true);
         dHpDeta.Update(TaylorQuinney(), deltaDp_v_strainlike, 1.);
         dHdC->MultiplyTN(*dMdC, dHpDeta);
         dHdDp->MultiplyTN(detaddp, dHpDeta);
@@ -1105,7 +1105,7 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
                            (*temp) * delta_alpha_i_[gp];
         switch (DisMode())
         {
-          case INPAR::TSI::pl_multiplier:
+          case Inpar::TSI::pl_multiplier:
             plHeating +=
                 delta_alpha_i_[gp] *
                 (0. + Inityield() * (1. - YieldSoft() * dT) +
@@ -1113,7 +1113,7 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
                     (Infyield() * (1. - HardSoft() * dT) - Inityield() * (1. - YieldSoft() * dT)) *
                         (1. - exp(-Expisohard() * aI)));
             break;
-          case INPAR::TSI::pl_flow:
+          case Inpar::TSI::pl_flow:
             plHeating += eta_v_strainlike.Dot(deltaDp_v);
             break;
           default:
@@ -1128,13 +1128,13 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
                               delta_alpha_i_[gp];
         switch (DisMode())
         {
-          case INPAR::TSI::pl_multiplier:
+          case Inpar::TSI::pl_multiplier:
             dPlHeatingDT += -delta_alpha_i_[gp] *
                             (0. + Inityield() * YieldSoft() + Isohard() * HardSoft() * aI +
                                 (Infyield() * HardSoft() - Inityield() * YieldSoft()) *
                                     (1. - exp(-Expisohard() * aI)));
             break;
-          case INPAR::TSI::pl_flow:
+          case Inpar::TSI::pl_flow:
             // do nothing
             break;
           default:
@@ -1153,7 +1153,7 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
                         exp(-Expisohard() * aI));
         switch (DisMode())
         {
-          case INPAR::TSI::pl_multiplier:
+          case Inpar::TSI::pl_multiplier:
             dPlHeatingDdai +=
                 +Inityield() * (1. - YieldSoft() * dT) +
                 Isohard() * (1. - HardSoft() * dT) *
@@ -1162,7 +1162,7 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
                     ((1. - exp(-Expisohard() * aI)) +
                         delta_alpha_i_[gp] * Expisohard() * exp(-Expisohard() * aI));
             break;
-          case INPAR::TSI::pl_flow:
+          case Inpar::TSI::pl_flow:
             // do nothing
             break;
           default:
@@ -1174,7 +1174,7 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
         dPlHeatingDdai *= sq;
 
         // derivative w.r.t. eta
-        CORE::LINALG::Matrix<6, 1> dHpDeta(true);
+        Core::LinAlg::Matrix<6, 1> dHpDeta(true);
         if (dDpHeta > 0.)
         {
           tmp61.Multiply(PlAniso_full_, eta_v_strainlike);
@@ -1184,7 +1184,7 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
               -2. * dPlHeatingDdai * abseta_H * dDpHeta / (pow(absHeta, 4.)), HetaH_strainlike, 1.);
         }
 
-        if (DisMode() == INPAR::TSI::pl_flow) dHpDeta.Update(1., deltaDp_v_strainlike, 1.);
+        if (DisMode() == Inpar::TSI::pl_flow) dHpDeta.Update(1., deltaDp_v_strainlike, 1.);
 
         // derivative w.r.t. C
         dHdC->MultiplyTN(*dMdC, dHpDeta);
@@ -1196,7 +1196,7 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
           tmp61.Multiply(PlAniso_full_, eta_v_strainlike);
           dHdDp->Update(dPlHeatingDdai * abseta_H / (absHeta * absHeta), tmp61, 1.);
         }
-        if (DisMode() == INPAR::TSI::pl_flow) dHdDp->Update(1., eta_v_strainlike, 1.);
+        if (DisMode() == Inpar::TSI::pl_flow) dHdDp->Update(1., eta_v_strainlike, 1.);
 
         // scaling with time step
         plHeating /= dt;
@@ -1217,7 +1217,7 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
       *elast = false;
 
       // derivative of the complementarity function w.r.t. to the mandel stress tensor
-      CORE::LINALG::Matrix<6, 6> dNCPdeta;
+      Core::LinAlg::Matrix<6, 6> dNCPdeta;
       dNCPdeta.Update(1. - ypl / absetatr_H, pdev, 1.);
       tmp61.Multiply(PlAniso_full_, etatr_v_strainlike);
       dNCPdeta.MultiplyNT(1. / (absetatr_H * absetatr_H), eta_s_v, tmp61, 1.);
@@ -1237,7 +1237,7 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
 
       // derivative w.r.t. deltaDp
       dNCPdDp->Multiply(dNCPdeta, detaddp);
-      CORE::LINALG::Matrix<6, 6> dNCPdetatr;
+      Core::LinAlg::Matrix<6, 6> dNCPdetatr;
       tmp61.Multiply(PlAniso_full_, etatr_v_strainlike);
       dNCPdetatr.MultiplyNT(cpl() / (absetatr_H * absetatr_H), eta_s_v, tmp61, 1.);
       dNCPdetatr.Update(-cpl() * ypl / absetatr_H, pdev, 1.);
@@ -1268,7 +1268,7 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
       NCP->Multiply(-cpl(), InvPlAniso_full_, deltaDp_v, 1.);
 
       // derivative of the complementarity function w.r.t. to the mandel stress tensor
-      CORE::LINALG::Matrix<6, 6> dNCPdeta;
+      Core::LinAlg::Matrix<6, 6> dNCPdeta;
 
       tmp61.Multiply(PlAniso_full_, eta_v_strainlike);
       dNCPdeta.MultiplyNT(
@@ -1317,24 +1317,24 @@ void MAT::PlasticElastHyper::evaluate_ncp(const CORE::LINALG::Matrix<3, 3>* mStr
 /*----------------------------------------------------------------------*
  |  evaluate plastic stress and stiffness (with pl. spin)   seitz 05/14 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<3, 3>* deltaLp, const double* temp, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 9>* dPK2dLp, CORE::LINALG::Matrix<9, 1>* NCP,
-    CORE::LINALG::Matrix<9, 6>* dNCPdC, CORE::LINALG::Matrix<9, 9>* dNCPdLp, bool* active,
-    bool* elast, bool* as_converged, const int gp, CORE::LINALG::Matrix<9, 1>* dNCPdT,
-    CORE::LINALG::Matrix<6, 1>* dHdC, CORE::LINALG::Matrix<9, 1>* dHdLp, const double dt,
-    const int eleGID, CORE::LINALG::Matrix<6, 1>* cauchy, CORE::LINALG::Matrix<6, 9>* d_cauchy_ddp,
-    CORE::LINALG::Matrix<6, 6>* d_cauchy_dC, CORE::LINALG::Matrix<6, 9>* d_cauchy_dF,
-    CORE::LINALG::Matrix<6, 1>* d_cauchy_dT)
+void Mat::PlasticElastHyper::EvaluatePlast(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<3, 3>* deltaLp, const double* temp, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 9>* dPK2dLp, Core::LinAlg::Matrix<9, 1>* NCP,
+    Core::LinAlg::Matrix<9, 6>* dNCPdC, Core::LinAlg::Matrix<9, 9>* dNCPdLp, bool* active,
+    bool* elast, bool* as_converged, const int gp, Core::LinAlg::Matrix<9, 1>* dNCPdT,
+    Core::LinAlg::Matrix<6, 1>* dHdC, Core::LinAlg::Matrix<9, 1>* dHdLp, const double dt,
+    const int eleGID, Core::LinAlg::Matrix<6, 1>* cauchy, Core::LinAlg::Matrix<6, 9>* d_cauchy_ddp,
+    Core::LinAlg::Matrix<6, 6>* d_cauchy_dC, Core::LinAlg::Matrix<6, 9>* d_cauchy_dF,
+    Core::LinAlg::Matrix<6, 1>* d_cauchy_dT)
 {
   int check = +(cauchy != nullptr) + (d_cauchy_dC != nullptr) + (d_cauchy_dF != nullptr) +
               (d_cauchy_ddp != nullptr) + (d_cauchy_dT != nullptr);
   if (!(check == 0 || check == 5)) FOUR_C_THROW("some inconsistency with provided variables");
 
-  CORE::LINALG::Matrix<3, 1> dPI(true);
-  CORE::LINALG::Matrix<6, 1> ddPII(true);
-  CORE::LINALG::Matrix<3, 1> gamma(true);
-  CORE::LINALG::Matrix<8, 1> delta(true);
+  Core::LinAlg::Matrix<3, 1> dPI(true);
+  Core::LinAlg::Matrix<6, 1> ddPII(true);
+  Core::LinAlg::Matrix<3, 1> gamma(true);
+  Core::LinAlg::Matrix<8, 1> delta(true);
 
   if (evaluate_kin_quant_plast(defgrd, deltaLp, gp, params)) return;
 
@@ -1351,12 +1351,12 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
   if (dNCPdT != nullptr) dNCPdT->Clear();
 
   // new temporary matrices
-  CORE::LINALG::Matrix<3, 3> mStr;  // Mandel stress tensor
-  CORE::LINALG::Matrix<6, 6> dMdC;  // derivative of Mandel stress w.r.t. RCG
-  CORE::LINALG::Matrix<6, 9>
+  Core::LinAlg::Matrix<3, 3> mStr;  // Mandel stress tensor
+  Core::LinAlg::Matrix<6, 6> dMdC;  // derivative of Mandel stress w.r.t. RCG
+  Core::LinAlg::Matrix<6, 9>
       dMdFpinv;  // derivative of Mandel stress w.r.t. inverse plastic deformation gradient
-  CORE::LINALG::Matrix<6, 9> dPK2dFpinv;
-  CORE::LINALG::Matrix<6, 9> d_cauchy_dFpi;
+  Core::LinAlg::Matrix<6, 9> dPK2dFpinv;
+  Core::LinAlg::Matrix<6, 9> d_cauchy_dFpi;
 
   // isotropic elasticity in coupled strain energy format
   // isotropic elasticity in decoupled ("mod") format go here as well
@@ -1380,19 +1380,19 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
 /*----------------------------------------------------------------------*
  |  evaluate NCP function and plastic spin equation         seitz 05/14 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3, 3>* mStr,
-    const CORE::LINALG::Matrix<6, 6>* dMdC, const CORE::LINALG::Matrix<6, 9>* dMdFpinv,
-    const CORE::LINALG::Matrix<6, 9>* dPK2dFpinv, const CORE::LINALG::Matrix<3, 3>* deltaLp,
-    const int gp, CORE::LINALG::Matrix<9, 1>* NCP, CORE::LINALG::Matrix<9, 6>* dNCPdC,
-    CORE::LINALG::Matrix<9, 9>* dNCPdLp, CORE::LINALG::Matrix<6, 9>* dPK2dLp, bool* active,
+void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3, 3>* mStr,
+    const Core::LinAlg::Matrix<6, 6>* dMdC, const Core::LinAlg::Matrix<6, 9>* dMdFpinv,
+    const Core::LinAlg::Matrix<6, 9>* dPK2dFpinv, const Core::LinAlg::Matrix<3, 3>* deltaLp,
+    const int gp, Core::LinAlg::Matrix<9, 1>* NCP, Core::LinAlg::Matrix<9, 6>* dNCPdC,
+    Core::LinAlg::Matrix<9, 9>* dNCPdLp, Core::LinAlg::Matrix<6, 9>* dPK2dLp, bool* active,
     bool* elast, bool* as_converged, const double dt,
-    const CORE::LINALG::Matrix<6, 9>* d_cauchy_dFpi, CORE::LINALG::Matrix<6, 9>* d_cauchy_ddp)
+    const Core::LinAlg::Matrix<6, 9>* d_cauchy_dFpi, Core::LinAlg::Matrix<6, 9>* d_cauchy_ddp)
 {
   const double sq = sqrt(2. / 3.);
-  CORE::LINALG::Matrix<6, 1> tmp61;
+  Core::LinAlg::Matrix<6, 1> tmp61;
 
   // deviatoric projection tensor
-  CORE::LINALG::Matrix<6, 6> pdev(true);
+  Core::LinAlg::Matrix<6, 6> pdev(true);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       if (i == j)
@@ -1402,7 +1402,7 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
   for (int i = 3; i < 6; i++) pdev(i, i) = 1.;
 
   // deviatoric symmetric projection tensor (A-->dev(sym(A))
-  CORE::LINALG::Matrix<6, 9> psymdev(true);
+  Core::LinAlg::Matrix<6, 9> psymdev(true);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       if (i == j)
@@ -1412,13 +1412,13 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
   for (int i = 3; i < 6; i++) psymdev(i, i) = psymdev(i, i + 3) = .5;
 
   // symmetric identity
-  CORE::LINALG::Matrix<6, 9> psym(true);
+  Core::LinAlg::Matrix<6, 9> psym(true);
   for (int i = 0; i < 3; i++) psym(i, i) = 1.;
   for (int i = 3; i < 6; i++) psym(i, i) = psym(i, i + 3) = .5;
 
 
   // effective stress
-  CORE::LINALG::Matrix<3, 3> eta(*mStr);
+  Core::LinAlg::Matrix<3, 3> eta(*mStr);
   for (int i = 0; i < 3; i++)
     eta(i, i) -= 1. / 3. * ((*mStr)(0, 0) + (*mStr)(1, 1) + (*mStr)(2, 2));
   eta.Update(2. / 3. * Kinhard(), last_alpha_kinematic_[gp], 1.);
@@ -1426,10 +1426,10 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
   eta.UpdateT(-1. / 3. * Kinhard(), *deltaLp, 1.);
 
   // in stress-like voigt notation
-  CORE::LINALG::Matrix<6, 1> eta_v;      // in stress-like voigt notation
-  CORE::LINALG::Matrix<6, 1> etatr_v;    // in stress-like voigt notation
-  CORE::LINALG::Matrix<6, 1> eta_s_v;    // in stress-like voigt notation
-  CORE::LINALG::Matrix<6, 1> deltaDp_v;  // in stress-like voigt notation
+  Core::LinAlg::Matrix<6, 1> eta_v;      // in stress-like voigt notation
+  Core::LinAlg::Matrix<6, 1> etatr_v;    // in stress-like voigt notation
+  Core::LinAlg::Matrix<6, 1> eta_s_v;    // in stress-like voigt notation
+  Core::LinAlg::Matrix<6, 1> deltaDp_v;  // in stress-like voigt notation
   for (int i = 0; i < 3; i++)
   {
     eta_v(i) = eta(i, i);
@@ -1447,9 +1447,9 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
   etatr_v.Multiply(cpl(), InvPlAniso_full_, deltaDp_v, 1.);
 
   // in strain-like voigt notation
-  CORE::LINALG::Matrix<6, 1> eta_v_strainlike(eta_v);          // in strain-like voigt notation
-  CORE::LINALG::Matrix<6, 1> etatr_v_strainlike(etatr_v);      // in strain-like voigt notation
-  CORE::LINALG::Matrix<6, 1> deltaDp_v_strainlike(deltaDp_v);  // in strain-like voigt notation
+  Core::LinAlg::Matrix<6, 1> eta_v_strainlike(eta_v);          // in strain-like voigt notation
+  Core::LinAlg::Matrix<6, 1> etatr_v_strainlike(etatr_v);      // in strain-like voigt notation
+  Core::LinAlg::Matrix<6, 1> deltaDp_v_strainlike(deltaDp_v);  // in strain-like voigt notation
   for (int i = 3; i < 6; i++)
   {
     eta_v_strainlike(i) *= 2.;
@@ -1475,11 +1475,11 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
     absetatr_H = sqrt(absetatr_H);
   else
     FOUR_C_THROW("this should not happen. tmp=%f", absetatr_H);
-  CORE::LINALG::Matrix<6, 1> HdDp;
+  Core::LinAlg::Matrix<6, 1> HdDp;
   HdDp.Multiply(PlAniso_full_, deltaDp_v);
-  CORE::LINALG::Matrix<6, 1> HdDp_strainlike;
+  Core::LinAlg::Matrix<6, 1> HdDp_strainlike;
   HdDp_strainlike.Multiply(PlAniso_full_, deltaDp_v_strainlike);
-  CORE::LINALG::Matrix<6, 1> HetaH_strainlike;
+  Core::LinAlg::Matrix<6, 1> HetaH_strainlike;
   tmp61.Multiply(PlAniso_full_, eta_v_strainlike);
   HetaH_strainlike.Multiply(PlAniso_full_, tmp61);
 
@@ -1539,9 +1539,9 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
   {
     // derivative of the NCP function w.r.t. RCG / Delta Lp
     // without the lines corresponding to the plastic spin
-    CORE::LINALG::Matrix<6, 6> dNCPdC_red;
-    CORE::LINALG::Matrix<6, 9> dNCPdLp_red;
-    CORE::LINALG::Matrix<6, 1> NCP_red;
+    Core::LinAlg::Matrix<6, 6> dNCPdC_red;
+    Core::LinAlg::Matrix<6, 9> dNCPdLp_red;
+    Core::LinAlg::Matrix<6, 1> NCP_red;
 
     // damping parameter apl
     double apl = 1.;
@@ -1551,28 +1551,28 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
     eta_s_v.Update(apl * s(), eta_v, 1.);
 
     // matrix exponential derivative
-    CORE::LINALG::Matrix<9, 9> Dexp(false);
-    CORE::LINALG::Matrix<3, 3> tmp(*deltaLp);
+    Core::LinAlg::Matrix<9, 9> Dexp(false);
+    Core::LinAlg::Matrix<3, 3> tmp(*deltaLp);
     tmp.Scale(-1.);
     matrix_exponential_derivative3x3(tmp, Dexp);
 
     // Derivative of inverse plastic deformation gradient
-    CORE::LINALG::Matrix<9, 9> dFpiDdeltaLp(true);
+    Core::LinAlg::Matrix<9, 9> dFpiDdeltaLp(true);
     for (int A = 0; A < 3; A++)
       for (int a = 0; a < 3; a++)
         for (int b = 0; b < 3; b++)
           for (int i = 0; i < 9; i++)
-            dFpiDdeltaLp(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(A, a), i) -=
+            dFpiDdeltaLp(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(A, a), i) -=
                 last_plastic_defgrd_inverse_[gp](A, b) *
-                Dexp(CORE::LINALG::VOIGT::IndexMappings::NonSymToVoigt9(b, a), i);
+                Dexp(Core::LinAlg::Voigt::IndexMappings::NonSymToVoigt9(b, a), i);
 
     // derivative of mandel stress
-    CORE::LINALG::Matrix<6, 9> dMdLp;
+    Core::LinAlg::Matrix<6, 9> dMdLp;
     dMdLp.Multiply(*dMdFpinv, dFpiDdeltaLp);
     // we spare the deviatoric projection of the mandel stress derivative to get the effective
     // stress derivative. It is enforced implicitly as the "detadLp" is always contracted with
     // deviatoric tensors.
-    CORE::LINALG::Matrix<6, 9> detadLp(dMdLp);
+    Core::LinAlg::Matrix<6, 9> detadLp(dMdLp);
     detadLp.Update(-2. / 3. * Kinhard(), psymdev, 1.);
     dPK2dLp->Multiply(*dPK2dFpinv, dFpiDdeltaLp);
     if (d_cauchy_ddp) d_cauchy_ddp->Multiply(*d_cauchy_dFpi, dFpiDdeltaLp);
@@ -1596,7 +1596,7 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
       *elast = false;
 
       // derivative of the complementarity function w.r.t. to the mandel stress tensor
-      CORE::LINALG::Matrix<6, 6> dNCPdeta;
+      Core::LinAlg::Matrix<6, 6> dNCPdeta;
       dNCPdeta.Update(1. - ypl / absetatr_H, pdev, 1.);
       tmp61.Multiply(PlAniso_full_, etatr_v_strainlike);
       dNCPdeta.MultiplyNT(1. / (absetatr_H * absetatr_H), eta_s_v, tmp61, 1.);
@@ -1616,11 +1616,11 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
 
       // derivative w.r.t. deltaLp
       dNCPdLp_red.Multiply(dNCPdeta, detadLp);
-      CORE::LINALG::Matrix<6, 6> dNCPdetatr;
+      Core::LinAlg::Matrix<6, 6> dNCPdetatr;
       tmp61.Multiply(PlAniso_full_, etatr_v_strainlike);
       dNCPdetatr.MultiplyNT(cpl() / (absetatr_H * absetatr_H), eta_s_v, tmp61, 1.);
       dNCPdetatr.Update(-cpl() * ypl / absetatr_H, pdev, 1.);
-      CORE::LINALG::Matrix<6, 6> dNCPdDp;
+      Core::LinAlg::Matrix<6, 6> dNCPdDp;
       dNCPdDp.Multiply(dNCPdetatr, InvPlAniso_full_);
       if (dDpHeta > 0.)
       {
@@ -1646,7 +1646,7 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
       NCP_red.Multiply(-cpl(), InvPlAniso_full_, deltaDp_v, 1.);
 
       // derivative of the complementarity function w.r.t. to the mandel stress tensor
-      CORE::LINALG::Matrix<6, 6> dNCPdeta;
+      Core::LinAlg::Matrix<6, 6> dNCPdeta;
 
       tmp61.Multiply(PlAniso_full_, eta_v_strainlike);
       dNCPdeta.MultiplyNT(
@@ -1659,7 +1659,7 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
       // derivative w.r.t. C
       dNCPdC_red.Multiply(dNCPdeta, *dMdC);
 
-      CORE::LINALG::Matrix<6, 6> dNCPdDp;
+      Core::LinAlg::Matrix<6, 6> dNCPdDp;
       dNCPdDp.Update(-cpl(), InvPlAniso_full_, 1.);
       tmp61.Multiply(PlAniso_full_, eta_v_strainlike);
       dNCPdDp.MultiplyNT(dYplDai / (ypl * absHeta), NCP_red, tmp61, 1.);
@@ -1676,7 +1676,7 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
 
     // plastic spin equation
     // the tensor product Sigma.Dp is not made for voigt notation so we do it the hard way
-    CORE::LINALG::Matrix<3, 1> spEq;
+    Core::LinAlg::Matrix<3, 1> spEq;
     spEq(0) = .5 * ((*deltaLp)(0, 1) - (*deltaLp)(1, 0)) -
               PlSpinChi() / Inityield() *
                   ((*mStr)(0, 0) * deltaDp_v(3) + (*mStr)(0, 1) * deltaDp_v(1) +
@@ -1694,7 +1694,7 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
                       (*mStr)(1, 2) * deltaDp_v(3) - (*mStr)(2, 2) * deltaDp_v(5));
 
     // Derivative of plastic spin equation w.r.t. mandel stress
-    CORE::LINALG::Matrix<3, 6> dSpdM;
+    Core::LinAlg::Matrix<3, 6> dSpdM;
     dSpdM(0, 0) = +deltaDp_v(3);
     dSpdM(0, 1) = -deltaDp_v(3);
     dSpdM(0, 2) = 0.;
@@ -1716,7 +1716,7 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
     dSpdM.Scale(-PlSpinChi() / Inityield());
 
     // derivative of plastic spin equation w.r.t. deltaDp
-    CORE::LINALG::Matrix<3, 6> dSpdDp;
+    Core::LinAlg::Matrix<3, 6> dSpdDp;
     dSpdDp(0, 0) = -(*mStr)(0, 1);
     dSpdDp(0, 1) = (*mStr)(0, 1);
     dSpdDp(0, 2) = 0.;
@@ -1738,11 +1738,11 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
     dSpdDp.Scale(-PlSpinChi() / Inityield());
 
     // derivative of plastic spin equation w.r.t. RCG
-    CORE::LINALG::Matrix<3, 6> dSpdC;
+    Core::LinAlg::Matrix<3, 6> dSpdC;
     dSpdC.Multiply(dSpdM, *dMdC);
 
     // derivative of plastic spin equation w.r.t. deltaLp
-    CORE::LINALG::Matrix<3, 9> dSpddLp;
+    Core::LinAlg::Matrix<3, 9> dSpddLp;
     dSpddLp.Multiply(dSpdDp, psym);
     dSpddLp.Multiply(1., dSpdM, dMdLp, 1.);
     dSpddLp(0, 3) += .5;
@@ -1775,11 +1775,11 @@ void MAT::PlasticElastHyper::evaluate_nc_pand_spin(const CORE::LINALG::Matrix<3,
   return;
 }
 
-void MAT::PlasticElastHyper::EvaluateCauchyPlast(const CORE::LINALG::Matrix<3, 1>& dPI,
-    const CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 3>* defgrd,
-    CORE::LINALG::Matrix<6, 1>& cauchy, CORE::LINALG::Matrix<6, 9>& d_cauchy_dFpi,
-    CORE::LINALG::Matrix<6, 6>& d_cauchy_dC, CORE::LINALG::Matrix<6, 9>& d_cauchy_dF,
-    CORE::LINALG::Matrix<6, 1>* d_cauchy_dT)
+void Mat::PlasticElastHyper::EvaluateCauchyPlast(const Core::LinAlg::Matrix<3, 1>& dPI,
+    const Core::LinAlg::Matrix<6, 1>& ddPII, const Core::LinAlg::Matrix<3, 3>* defgrd,
+    Core::LinAlg::Matrix<6, 1>& cauchy, Core::LinAlg::Matrix<6, 9>& d_cauchy_dFpi,
+    Core::LinAlg::Matrix<6, 6>& d_cauchy_dC, Core::LinAlg::Matrix<6, 9>& d_cauchy_dF,
+    Core::LinAlg::Matrix<6, 1>* d_cauchy_dT)
 {
   cauchy.Clear();
   d_cauchy_dC.Clear();
@@ -1861,9 +1861,9 @@ void MAT::PlasticElastHyper::EvaluateCauchyPlast(const CORE::LINALG::Matrix<3, 1
   }
 }
 
-void MAT::PlasticElastHyper::evaluate_cauchy_derivs(const CORE::LINALG::Matrix<3, 1>& prinv,
-    const int gp, int eleGID, CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII,
-    CORE::LINALG::Matrix<10, 1>& dddPIII, const double* temp)
+void Mat::PlasticElastHyper::evaluate_cauchy_derivs(const Core::LinAlg::Matrix<3, 1>& prinv,
+    const int gp, int eleGID, Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII,
+    Core::LinAlg::Matrix<10, 1>& dddPIII, const double* temp)
 {
   for (unsigned i = 0; i < potsum_.size(); ++i)
   {
@@ -1901,12 +1901,12 @@ void MAT::PlasticElastHyper::evaluate_cauchy_derivs(const CORE::LINALG::Matrix<3
   }
 }
 
-void MAT::PlasticElastHyper::evaluate_cauchy_temp_deriv(const CORE::LINALG::Matrix<3, 1>& prinv,
+void Mat::PlasticElastHyper::evaluate_cauchy_temp_deriv(const Core::LinAlg::Matrix<3, 1>& prinv,
     const double ndt, const double bdndt, const double ibdndt, const double* temp, double* DsntDT,
-    const CORE::LINALG::Matrix<9, 1>& iFTV, const CORE::LINALG::Matrix<9, 1>& DbdndtDFV,
-    const CORE::LINALG::Matrix<9, 1>& DibdndtDFV, const CORE::LINALG::Matrix<9, 1>& DI1DF,
-    const CORE::LINALG::Matrix<9, 1>& DI2DF, const CORE::LINALG::Matrix<9, 1>& DI3DF,
-    CORE::LINALG::Matrix<9, 1>* D2sntDFDT)
+    const Core::LinAlg::Matrix<9, 1>& iFTV, const Core::LinAlg::Matrix<9, 1>& DbdndtDFV,
+    const Core::LinAlg::Matrix<9, 1>& DibdndtDFV, const Core::LinAlg::Matrix<9, 1>& DI1DF,
+    const Core::LinAlg::Matrix<9, 1>& DI2DF, const Core::LinAlg::Matrix<9, 1>& DI3DF,
+    Core::LinAlg::Matrix<9, 1>* D2sntDFDT)
 {
   const double sqI3 = sqrt(prinv(2));
   const double prefac = 2.0 / sqI3;
@@ -1920,8 +1920,8 @@ void MAT::PlasticElastHyper::evaluate_cauchy_temp_deriv(const CORE::LINALG::Matr
   // then we plug them into the cauchy stress derivative and voila
   // we keep many zero entries here for possible future extension to more
   // than just thermal expansion
-  static CORE::LINALG::Matrix<3, 1> dPI(true);
-  static CORE::LINALG::Matrix<6, 1> ddPII(true);
+  static Core::LinAlg::Matrix<3, 1> dPI(true);
+  static Core::LinAlg::Matrix<6, 1> ddPII(true);
   dPI.Clear();
   ddPII.Clear();
 
@@ -1954,15 +1954,15 @@ void MAT::PlasticElastHyper::evaluate_cauchy_temp_deriv(const CORE::LINALG::Matr
 }
 
 
-void MAT::PlasticElastHyper::add_thermal_expansion_derivs(const CORE::LINALG::Matrix<3, 1>& prinv,
-    CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII, const int gp, int eleGID,
+void Mat::PlasticElastHyper::add_thermal_expansion_derivs(const Core::LinAlg::Matrix<3, 1>& prinv,
+    Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII, const int gp, int eleGID,
     const double& temp)
 {
   const double j = sqrt(prinv(2));
-  CORE::LINALG::Matrix<3, 1> modinv(true);
+  Core::LinAlg::Matrix<3, 1> modinv(true);
   modinv(2) = j;
-  CORE::LINALG::Matrix<3, 1> dPmodI;
-  CORE::LINALG::Matrix<6, 1> ddPmodII;
+  Core::LinAlg::Matrix<3, 1> dPmodI;
+  Core::LinAlg::Matrix<6, 1> ddPmodII;
   double dddPmodIII = 0.;
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
@@ -1977,15 +1977,15 @@ void MAT::PlasticElastHyper::add_thermal_expansion_derivs(const CORE::LINALG::Ma
   ddPII(2) += fac * (.25 / (j * j) * dddPmodIII - .25 / (j * j * j) * ddPmodII(2));
 }
 
-void MAT::PlasticElastHyper::UpdateGP(const int gp, const CORE::LINALG::Matrix<3, 3>* deltaDp)
+void Mat::PlasticElastHyper::UpdateGP(const int gp, const Core::LinAlg::Matrix<3, 3>* deltaDp)
 {
   if (activity_state_[gp] == true)
   {
     // update plastic deformation gradient
-    CORE::LINALG::Matrix<3, 3> tmp;
+    Core::LinAlg::Matrix<3, 3> tmp;
     tmp.Update(-1., *deltaDp);
     matrix_exponential3x3(tmp);
-    CORE::LINALG::Matrix<3, 3> fpi_last = last_plastic_defgrd_inverse_[gp];
+    Core::LinAlg::Matrix<3, 3> fpi_last = last_plastic_defgrd_inverse_[gp];
     last_plastic_defgrd_inverse_[gp].Multiply(fpi_last, tmp);
     // update isotropic hardening
     last_alpha_isotropic_[gp] += delta_alpha_i_[gp];
@@ -2002,18 +2002,18 @@ void MAT::PlasticElastHyper::UpdateGP(const int gp, const CORE::LINALG::Matrix<3
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::evaluate_kin_quant_elast(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<3, 3>* deltaLp, const int gp)
+void Mat::PlasticElastHyper::evaluate_kin_quant_elast(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<3, 3>* deltaLp, const int gp)
 {
-  CORE::LINALG::Matrix<3, 3> tmp;
-  CORE::LINALG::Matrix<3, 3> invpldefgrd;
-  CORE::LINALG::Matrix<3, 3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
+  Core::LinAlg::Matrix<3, 3> tmp;
+  Core::LinAlg::Matrix<3, 3> invpldefgrd;
+  Core::LinAlg::Matrix<3, 3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
   tmp.Update(-1., *deltaLp);
   matrix_exponential3x3(tmp);
   invpldefgrd.Multiply(InvPlasticDefgrdLast, tmp);
 
   // inverse plastic right Cauchy-Green
-  CORE::LINALG::Matrix<3, 3> CpiM;
+  Core::LinAlg::Matrix<3, 3> CpiM;
   CpiM.MultiplyNT(invpldefgrd, invpldefgrd);
   // stress-like Voigt notation
   for (int i = 0; i < 3; i++) Cpi_(i) = CpiM(i, i);
@@ -2022,8 +2022,8 @@ void MAT::PlasticElastHyper::evaluate_kin_quant_elast(const CORE::LINALG::Matrix
   Cpi_(5) = (CpiM(0, 2) + CpiM(2, 0)) / 2.;
 
   // inverse RCG
-  CORE::LINALG::Matrix<3, 3> iRCG;
-  CORE::LINALG::Matrix<3, 3> RCG;
+  Core::LinAlg::Matrix<3, 3> iRCG;
+  Core::LinAlg::Matrix<3, 3> RCG;
   RCG.MultiplyTN(*defgrd, *defgrd);
   iRCG.Invert(RCG);
   // stress-like Voigt notation
@@ -2033,7 +2033,7 @@ void MAT::PlasticElastHyper::evaluate_kin_quant_elast(const CORE::LINALG::Matrix
   ircg_(5) = (iRCG(0, 2) + iRCG(2, 0)) / 2.;
 
   // C_p^-1 * C * C_p^-1
-  CORE::LINALG::Matrix<3, 3> CpiCCpiM;
+  Core::LinAlg::Matrix<3, 3> CpiCCpiM;
   tmp.Multiply(CpiM, RCG);
   CpiCCpiM.Multiply(tmp, CpiM);
   // stress-like Voigt notation
@@ -2043,17 +2043,17 @@ void MAT::PlasticElastHyper::evaluate_kin_quant_elast(const CORE::LINALG::Matrix
   CpiCCpi_(5) = (CpiCCpiM(0, 2) + CpiCCpiM(2, 0)) / 2.;
 
   tmp.Multiply(*defgrd, invpldefgrd);
-  CORE::LINALG::Matrix<3, 3> CeM;
+  Core::LinAlg::Matrix<3, 3> CeM;
   CeM.MultiplyTN(tmp, tmp);
   // elastic right Cauchy-Green in strain-like Voigt notation.
-  CORE::LINALG::Matrix<6, 1> elasticRCGv;
+  Core::LinAlg::Matrix<6, 1> elasticRCGv;
   for (int i = 0; i < 3; i++) elasticRCGv(i) = CeM(i, i);
   elasticRCGv(3) = (CeM(0, 1) + CeM(1, 0));
   elasticRCGv(4) = (CeM(2, 1) + CeM(1, 2));
   elasticRCGv(5) = (CeM(0, 2) + CeM(2, 0));
 
   // principal invariants of elastic Cauchy-Green strain
-  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv_, elasticRCGv);
+  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv_, elasticRCGv);
 
   return;
 }
@@ -2061,8 +2061,8 @@ void MAT::PlasticElastHyper::evaluate_kin_quant_elast(const CORE::LINALG::Matrix
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int MAT::PlasticElastHyper::evaluate_kin_quant_plast(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<3, 3>* deltaLp, const int gp, Teuchos::ParameterList& params)
+int Mat::PlasticElastHyper::evaluate_kin_quant_plast(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<3, 3>* deltaLp, const int gp, Teuchos::ParameterList& params)
 {
   id2_.Clear();
   id2V_.Clear();
@@ -2071,9 +2071,9 @@ int MAT::PlasticElastHyper::evaluate_kin_quant_plast(const CORE::LINALG::Matrix<
     id2V_(i) = 1.;
     id2_(i, i) = 1.;
   }
-  CORE::LINALG::Matrix<3, 3> tmp;
-  CORE::LINALG::Matrix<3, 3> tmp33;
-  CORE::LINALG::Matrix<3, 3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
+  Core::LinAlg::Matrix<3, 3> tmp;
+  Core::LinAlg::Matrix<3, 3> tmp33;
+  Core::LinAlg::Matrix<3, 3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
   tmp.Update(-1., *deltaLp);
   matrix_exponential3x3(tmp);
   invpldefgrd_.Multiply(InvPlasticDefgrdLast, tmp);
@@ -2097,7 +2097,7 @@ int MAT::PlasticElastHyper::evaluate_kin_quant_plast(const CORE::LINALG::Matrix<
 
   CeM_.MultiplyTN(tmp33, tmp33);
   // elastic right Cauchy-Green in strain-like Voigt notation.
-  CORE::LINALG::Matrix<6, 1> elasticRCGv;
+  Core::LinAlg::Matrix<6, 1> elasticRCGv;
   for (int i = 0; i < 3; i++) elasticRCGv(i) = CeM_(i, i);
   elasticRCGv(3) = (CeM_(0, 1) + CeM_(1, 0));
   elasticRCGv(4) = (CeM_(2, 1) + CeM_(1, 2));
@@ -2116,10 +2116,10 @@ int MAT::PlasticElastHyper::evaluate_kin_quant_plast(const CORE::LINALG::Matrix<
   Ce2_(5) = (tmp(0, 2) + tmp(2, 0)) / 2.;
 
   // principal invariants of elastic Cauchy-Green strain
-  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv_, elasticRCGv);
+  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv_, elasticRCGv);
 
   // inverse plastic right Cauchy-Green
-  CORE::LINALG::Matrix<3, 3> CpiM;
+  Core::LinAlg::Matrix<3, 3> CpiM;
   CpiM.MultiplyNT(invpldefgrd_, invpldefgrd_);
   // stress-like Voigt notation
   for (int i = 0; i < 3; i++) Cpi_(i) = CpiM(i, i);
@@ -2130,8 +2130,8 @@ int MAT::PlasticElastHyper::evaluate_kin_quant_plast(const CORE::LINALG::Matrix<
   beFCpi_.Multiply(be_, FCpi_);
 
   // inverse RCG
-  CORE::LINALG::Matrix<3, 3> iRCG;
-  CORE::LINALG::Matrix<3, 3> RCG;
+  Core::LinAlg::Matrix<3, 3> iRCG;
+  Core::LinAlg::Matrix<3, 3> RCG;
   RCG.MultiplyTN(*defgrd, *defgrd);
   iRCG.Invert(RCG);
   // stress-like Voigt notation
@@ -2141,7 +2141,7 @@ int MAT::PlasticElastHyper::evaluate_kin_quant_plast(const CORE::LINALG::Matrix<
   ircg_(5) = (iRCG(0, 2) + iRCG(2, 0)) / 2.;
 
   // C_p^-1 * C * C_p^-1
-  CORE::LINALG::Matrix<3, 3> CpiCCpiM;
+  Core::LinAlg::Matrix<3, 3> CpiCCpiM;
   tmp33.Multiply(CpiM, RCG);
   CpiCCpiM.Multiply(tmp33, CpiM);
   // stress-like Voigt notation
@@ -2157,9 +2157,9 @@ int MAT::PlasticElastHyper::evaluate_kin_quant_plast(const CORE::LINALG::Matrix<
   CeFpiTC_.Multiply(CeM_, FpiTC_);
 
   tmp.Multiply(RCG, invpldefgrd_);
-  CORE::LINALG::VOIGT::Matrix3x3to9x1(tmp, CFpi_);
+  Core::LinAlg::Voigt::Matrix3x3to9x1(tmp, CFpi_);
   tmp33.Multiply(tmp, CeM_);
-  CORE::LINALG::VOIGT::Matrix3x3to9x1(tmp33, CFpiCe_);
+  Core::LinAlg::Voigt::Matrix3x3to9x1(tmp33, CFpiCe_);
 
   double det = CeM_.Determinant();
   if (det > -1e-30 and det < 1e-30)
@@ -2173,7 +2173,7 @@ int MAT::PlasticElastHyper::evaluate_kin_quant_plast(const CORE::LINALG::Matrix<
   tmp.Invert(CeM_);
   tmp33.Multiply(invpldefgrd_, tmp);
   tmp.Multiply(RCG, tmp33);
-  CORE::LINALG::VOIGT::Matrix3x3to9x1(tmp, CFpiCei_);
+  Core::LinAlg::Voigt::Matrix3x3to9x1(tmp, CFpiCei_);
 
   return 0;
 }
@@ -2181,7 +2181,7 @@ int MAT::PlasticElastHyper::evaluate_kin_quant_plast(const CORE::LINALG::Matrix<
 /*----------------------------------------------------------------------*
  |  tensor norm from stress-like Voigt-notation             seitz 05/14 |
  *----------------------------------------------------------------------*/
-double MAT::PlasticElastHyper::norm_stress_like(const CORE::LINALG::Matrix<6, 1>& stress)
+double Mat::PlasticElastHyper::norm_stress_like(const Core::LinAlg::Matrix<6, 1>& stress)
 {
   double norm = 0;
   for (int i = 0; i < 3; ++i) norm += stress(i) * stress(i);
@@ -2192,13 +2192,13 @@ double MAT::PlasticElastHyper::norm_stress_like(const CORE::LINALG::Matrix<6, 1>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::evaluate_isotropic_princ_elast(
-    CORE::LINALG::Matrix<6, 1>& stressisoprinc, CORE::LINALG::Matrix<6, 6>& cmatisoprinc,
-    CORE::LINALG::Matrix<3, 1> dPI, CORE::LINALG::Matrix<6, 1> ddPII)
+void Mat::PlasticElastHyper::evaluate_isotropic_princ_elast(
+    Core::LinAlg::Matrix<6, 1>& stressisoprinc, Core::LinAlg::Matrix<6, 6>& cmatisoprinc,
+    Core::LinAlg::Matrix<3, 1> dPI, Core::LinAlg::Matrix<6, 1> ddPII)
 {
   // 2nd Piola Kirchhoff stress (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
   // factors
-  CORE::LINALG::Matrix<3, 1> gamma(true);
+  Core::LinAlg::Matrix<3, 1> gamma(true);
   gamma(0) = 2. * (dPI(0) + prinv_(0) * dPI(1));
   gamma(1) = -2. * dPI(1);
   gamma(2) = 2. * prinv_(2) * dPI(2);
@@ -2210,7 +2210,7 @@ void MAT::PlasticElastHyper::evaluate_isotropic_princ_elast(
 
   // constitutive tensor according to Holzapfel-Nonlinear Solid Mechanics p. 261)
   // factors
-  CORE::LINALG::Matrix<8, 1> delta(true);
+  Core::LinAlg::Matrix<8, 1> delta(true);
   delta(0) =
       4. * (ddPII(0) + 2. * prinv_(0) * ddPII(5) + dPI(1) + prinv_(0) * prinv_(0) * ddPII(1));
   delta(1) = -4. * (ddPII(5) + prinv_(0) * ddPII(1));
@@ -2239,11 +2239,11 @@ void MAT::PlasticElastHyper::evaluate_isotropic_princ_elast(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::evaluate_isotropic_princ_plast(
-    CORE::LINALG::Matrix<6, 9>& dPK2dFpinvIsoprinc,
-    CORE::LINALG::Matrix<3, 3>& MandelStressIsoprinc, CORE::LINALG::Matrix<6, 6>& dMdCisoprinc,
-    CORE::LINALG::Matrix<6, 9>& dMdFpinvIsoprinc, const CORE::LINALG::Matrix<3, 1>& gamma,
-    const CORE::LINALG::Matrix<8, 1>& delta)
+void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
+    Core::LinAlg::Matrix<6, 9>& dPK2dFpinvIsoprinc,
+    Core::LinAlg::Matrix<3, 3>& MandelStressIsoprinc, Core::LinAlg::Matrix<6, 6>& dMdCisoprinc,
+    Core::LinAlg::Matrix<6, 9>& dMdFpinvIsoprinc, const Core::LinAlg::Matrix<3, 1>& gamma,
+    const Core::LinAlg::Matrix<8, 1>& delta)
 {
   // derivative of PK2 w.r.t. inverse plastic deformation gradient
   AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc, id2_, invpldefgrd_, gamma(0));
@@ -2260,7 +2260,7 @@ void MAT::PlasticElastHyper::evaluate_isotropic_princ_plast(
   AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc, id2_, FpiCe_, 0.5 * delta(7));
 
   // Mandel stress
-  CORE::LINALG::Matrix<6, 1> Mv;
+  Core::LinAlg::Matrix<6, 1> Mv;
   Mv.Update(gamma(0), Ce_);
   Mv.Update(gamma(1), Ce2_, 1.);
   Mv.Update(gamma(2), id2V_, 1.);
@@ -2305,7 +2305,7 @@ void MAT::PlasticElastHyper::evaluate_isotropic_princ_plast(
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::VisNames(std::map<std::string, int>& names) const
+void Mat::PlasticElastHyper::VisNames(std::map<std::string, int>& names) const
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
@@ -2322,7 +2322,7 @@ void MAT::PlasticElastHyper::VisNames(std::map<std::string, int>& names) const
 /*---------------------------------------------------------------------*
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
-bool MAT::PlasticElastHyper::VisData(
+bool Mat::PlasticElastHyper::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "accumulatedstrain")
@@ -2375,7 +2375,7 @@ bool MAT::PlasticElastHyper::VisData(
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::register_output_data_names(
+void Mat::PlasticElastHyper::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   names_and_size["accumulated_plastic_strain"] = 1;  // scalar
@@ -2386,8 +2386,8 @@ void MAT::PlasticElastHyper::register_output_data_names(
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
-bool MAT::PlasticElastHyper::EvaluateOutputData(
-    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
+bool Mat::PlasticElastHyper::EvaluateOutputData(
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (name == "accumulated_plastic_strain")
   {
@@ -2435,7 +2435,7 @@ bool MAT::PlasticElastHyper::EvaluateOutputData(
 /*----------------------------------------------------------------------*
  |  matrix exponential                                      seitz 07/13 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::matrix_exponential3x3(CORE::LINALG::Matrix<3, 3>& MatrixInOut)
+void Mat::PlasticElastHyper::matrix_exponential3x3(Core::LinAlg::Matrix<3, 3>& MatrixInOut)
 {
   double Norm = MatrixInOut.Norm2();
   // direct calculation for zero-matrix
@@ -2449,13 +2449,13 @@ void MAT::PlasticElastHyper::matrix_exponential3x3(CORE::LINALG::Matrix<3, 3>& M
   // Calculation of matrix exponential via power series. This is usually
   // faster than by polar decomposition for matrices are close to zero.
   // For small plastic increments this is the case
-  CORE::LINALG::Matrix<3, 3> In(MatrixInOut);
+  Core::LinAlg::Matrix<3, 3> In(MatrixInOut);
   int n = 0;
   int facn = 1;
   MatrixInOut.Clear();
   for (int i = 0; i < 3; i++) MatrixInOut(i, i) = 1.;
-  CORE::LINALG::Matrix<3, 3> tmp(MatrixInOut);
-  CORE::LINALG::Matrix<3, 3> tmp2(MatrixInOut);
+  Core::LinAlg::Matrix<3, 3> tmp(MatrixInOut);
+  Core::LinAlg::Matrix<3, 3> tmp2(MatrixInOut);
   while (n < 50 && tmp.Norm2() / facn > 1.e-32)
   {
     n++;
@@ -2472,12 +2472,12 @@ void MAT::PlasticElastHyper::matrix_exponential3x3(CORE::LINALG::Matrix<3, 3>& M
 /*---------------------------------------------------------------------------*
  |  matrix exponential derivative of a symmetric matrix          seitz 07/13 |
  *---------------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
-    const CORE::LINALG::Matrix<3, 3> MatrixIn, CORE::LINALG::Matrix<6, 6>& MatrixExpDeriv)
+void Mat::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
+    const Core::LinAlg::Matrix<3, 3> MatrixIn, Core::LinAlg::Matrix<6, 6>& MatrixExpDeriv)
 {
   double norm = MatrixIn.Norm2();
 
-  CORE::LINALG::Matrix<6, 6> id4sharp(true);
+  Core::LinAlg::Matrix<6, 6> id4sharp(true);
   for (int i = 0; i < 3; i++) id4sharp(i, i) = 1.0;
   for (int i = 3; i < 6; i++) id4sharp(i, i) = 0.5;
 
@@ -2494,12 +2494,12 @@ void MAT::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
     int nmax = 0;
     int nIter = 0;
     int nfac = 1;
-    CORE::LINALG::Matrix<3, 3> tmp1;
-    CORE::LINALG::Matrix<3, 3> tmp2(true);
+    Core::LinAlg::Matrix<3, 3> tmp1;
+    Core::LinAlg::Matrix<3, 3> tmp2(true);
     for (int i = 0; i < 3; i++) tmp2(i, i) = 1.;
 
     // all needed powers of X
-    std::vector<CORE::LINALG::Matrix<3, 3>> Xn;
+    std::vector<Core::LinAlg::Matrix<3, 3>> Xn;
     Xn.resize(0);
     Xn.push_back(tmp2);
 
@@ -2536,14 +2536,14 @@ void MAT::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
   {
     double EWtolerance = 1.e-12;
 
-    CORE::LINALG::Matrix<3, 3> EV(MatrixIn);
-    CORE::LINALG::Matrix<3, 3> EW;
-    CORE::LINALG::SYEV(EV, EW, EV);
+    Core::LinAlg::Matrix<3, 3> EV(MatrixIn);
+    Core::LinAlg::Matrix<3, 3> EW;
+    Core::LinAlg::SYEV(EV, EW, EV);
 
-    CORE::LINALG::Matrix<3, 1> vec1;
-    CORE::LINALG::Matrix<3, 1> vec2;
-    CORE::LINALG::Matrix<3, 3> tmp1;
-    CORE::LINALG::Matrix<3, 3> tmp2;
+    Core::LinAlg::Matrix<3, 1> vec1;
+    Core::LinAlg::Matrix<3, 1> vec2;
+    Core::LinAlg::Matrix<3, 3> tmp1;
+    Core::LinAlg::Matrix<3, 3> tmp2;
 
     MatrixExpDeriv.Clear();
     // souza eq. (A.52)
@@ -2555,7 +2555,7 @@ void MAT::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
     // y_i = log(x_i)
     // dy_i / dx_j = delta_ij 1/x_i
 
-    CORE::LINALG::Matrix<3, 3> id2(true);
+    Core::LinAlg::Matrix<3, 3> id2(true);
     for (int i = 0; i < 3; i++) id2(i, i) = 1.0;
     //  // --------------------------------- switch by number of equal eigenvalues
 
@@ -2611,12 +2611,12 @@ void MAT::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
       s6 = EW(c, c) * EW(c, c) * s3;
 
       // calculate derivative
-      MAT::AddToCmatDerivTensorSquare(MatrixExpDeriv, s1, MatrixIn, 1.);
+      Mat::AddToCmatDerivTensorSquare(MatrixExpDeriv, s1, MatrixIn, 1.);
       MatrixExpDeriv.Update(-s2, id4sharp, 1.);
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv, -1. * s3, MatrixIn, MatrixIn, 1.);
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv, s4, MatrixIn, id2, 1.);
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv, s5, id2, MatrixIn, 1.);
-      MAT::ElastSymTensorMultiply(MatrixExpDeriv, -s6, id2, id2, 1.);
+      Mat::ElastSymTensorMultiply(MatrixExpDeriv, -1. * s3, MatrixIn, MatrixIn, 1.);
+      Mat::ElastSymTensorMultiply(MatrixExpDeriv, s4, MatrixIn, id2, 1.);
+      Mat::ElastSymTensorMultiply(MatrixExpDeriv, s5, id2, MatrixIn, 1.);
+      Mat::ElastSymTensorMultiply(MatrixExpDeriv, -s6, id2, id2, 1.);
     }
 
     else if (abs(EW(0, 0) - EW(1, 1)) > EWtolerance &&
@@ -2627,43 +2627,43 @@ void MAT::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
         int b = (a + 1) % 3;
         int c = (a + 2) % 3;
 
-        CORE::LINALG::Matrix<3, 1> ea;
-        CORE::LINALG::Matrix<3, 1> eb;
-        CORE::LINALG::Matrix<3, 1> ec;
+        Core::LinAlg::Matrix<3, 1> ea;
+        Core::LinAlg::Matrix<3, 1> eb;
+        Core::LinAlg::Matrix<3, 1> ec;
         for (int i = 0; i < 3; i++)
         {
           ea(i) = EV(i, a);
           eb(i) = EV(i, b);
           ec(i) = EV(i, c);
         }
-        CORE::LINALG::Matrix<3, 3> Ea;
+        Core::LinAlg::Matrix<3, 3> Ea;
         Ea.MultiplyNT(ea, ea);
-        CORE::LINALG::Matrix<3, 3> Eb;
+        Core::LinAlg::Matrix<3, 3> Eb;
         Eb.MultiplyNT(eb, eb);
-        CORE::LINALG::Matrix<3, 3> Ec;
+        Core::LinAlg::Matrix<3, 3> Ec;
         Ec.MultiplyNT(ec, ec);
 
         double fac = exp(EW(a, a)) / ((EW(a, a) - EW(b, b)) * (EW(a, a) - EW(c, c)));
 
         // + d X^2 / d X
-        MAT::AddToCmatDerivTensorSquare(MatrixExpDeriv, fac, MatrixIn, 1.);
+        Mat::AddToCmatDerivTensorSquare(MatrixExpDeriv, fac, MatrixIn, 1.);
 
         // - (x_b + x_c) I_s
         MatrixExpDeriv.Update(-1. * (EW(b, b) + EW(c, c)) * fac, id4sharp, 1.);
 
         // - [(x_a - x_b) + (x_a - x_c)] E_a \dyad E_a
-        MAT::ElastSymTensorMultiply(MatrixExpDeriv,
+        Mat::ElastSymTensorMultiply(MatrixExpDeriv,
             -1. * fac * ((EW(a, a) - EW(b, b)) + (EW(a, a) - EW(c, c))), Ea, Ea, 1.);
 
 
         // - (x_b - x_c) (E_b \dyad E_b)
-        MAT::ElastSymTensorMultiply(MatrixExpDeriv, -1. * fac * (EW(b, b) - EW(c, c)), Eb, Eb, 1.);
+        Mat::ElastSymTensorMultiply(MatrixExpDeriv, -1. * fac * (EW(b, b) - EW(c, c)), Eb, Eb, 1.);
 
         // + (x_b - x_c) (E_c \dyad E_c)
-        MAT::ElastSymTensorMultiply(MatrixExpDeriv, fac * (EW(b, b) - EW(c, c)), Ec, Ec, 1.);
+        Mat::ElastSymTensorMultiply(MatrixExpDeriv, fac * (EW(b, b) - EW(c, c)), Ec, Ec, 1.);
 
         // dy / dx_a E_a \dyad E_a
-        MAT::ElastSymTensorMultiply(MatrixExpDeriv, exp(EW(a, a)), Ea, Ea, 1.);
+        Mat::ElastSymTensorMultiply(MatrixExpDeriv, exp(EW(a, a)), Ea, Ea, 1.);
       }  // end loop over all eigenvalues
     }
 
@@ -2676,19 +2676,19 @@ void MAT::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
 /*---------------------------------------------------------------------------*
  |  matrix exponential derivative of a symmetric matrix          seitz 09/13 |
  *---------------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::matrix_exponential_derivative3x3(
-    const CORE::LINALG::Matrix<3, 3> MatrixIn, CORE::LINALG::Matrix<9, 9>& MatrixExpDeriv)
+void Mat::PlasticElastHyper::matrix_exponential_derivative3x3(
+    const Core::LinAlg::Matrix<3, 3> MatrixIn, Core::LinAlg::Matrix<9, 9>& MatrixExpDeriv)
 {
   // see Souza-Neto: Computational Methods for plasticity, Box B.2.
   int nmax = 0;
   int nIter = 0;
   int nfac = 1;
-  CORE::LINALG::Matrix<3, 3> tmp1;
-  CORE::LINALG::Matrix<3, 3> tmp2(true);
+  Core::LinAlg::Matrix<3, 3> tmp1;
+  Core::LinAlg::Matrix<3, 3> tmp2(true);
   for (int i = 0; i < 3; i++) tmp2(i, i) = 1.;
 
   // all needed powers of X
-  std::vector<CORE::LINALG::Matrix<3, 3>> Xn;
+  std::vector<Core::LinAlg::Matrix<3, 3>> Xn;
   Xn.resize(0);
   Xn.push_back(tmp2);
 

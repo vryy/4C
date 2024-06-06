@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   /*!
    * create a right-handed orthornormal basis from a unit vector based on
@@ -25,8 +25,8 @@ namespace CORE::GEO
    * @param basisvec_1[o] : first basis vector
    * @param basisvec_2[o] : second basis vector
    */
-  void BuildOrthonormalBasisFromUnitVector(const CORE::LINALG::Matrix<3, 1>& unitvec,
-      CORE::LINALG::Matrix<3, 1>& basisvec_1, CORE::LINALG::Matrix<3, 1>& basisvec_2)
+  void BuildOrthonormalBasisFromUnitVector(const Core::LinAlg::Matrix<3, 1>& unitvec,
+      Core::LinAlg::Matrix<3, 1>& basisvec_1, Core::LinAlg::Matrix<3, 1>& basisvec_2)
   {
     if (std::abs(unitvec.Norm2() - 1.0) > 1.0e-14) FOUR_C_THROW("given vector not normalized!");
 
@@ -54,7 +54,7 @@ namespace CORE::GEO
 
     basisvec_2.CrossProduct(unitvec, basisvec_1);
   }
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -47,7 +47,7 @@ void PARTICLEALGORITHM::TimInt::Init()
 
 void PARTICLEALGORITHM::TimInt::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandlerInterface> particlerigidbodyinterface)
+    const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface> particlerigidbodyinterface)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -225,7 +225,7 @@ void PARTICLEALGORITHM::TimInt::add_initial_random_noise_to_position()
       for (int dim = 0; dim < statedim; ++dim)
       {
         // generate random value
-        const double randomvalue = GLOBAL::Problem::Instance()->Random()->Uni();
+        const double randomvalue = Global::Problem::Instance()->Random()->Uni();
 
         // update position of particle
         pos[statedim * i + dim] += randomvalue * amplitude[dim];
@@ -243,7 +243,7 @@ PARTICLEALGORITHM::TimIntSemiImplicitEuler::TimIntSemiImplicitEuler(
 
 void PARTICLEALGORITHM::TimIntSemiImplicitEuler::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandlerInterface> particlerigidbodyinterface)
+    const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface> particlerigidbodyinterface)
 {
   // call base class setup
   PARTICLEALGORITHM::TimInt::Setup(particleengineinterface, particlerigidbodyinterface);

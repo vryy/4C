@@ -17,9 +17,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace SCATRA
+  namespace ScaTra
   {
     /// time integration schemes for scalar transport problems
     enum TimeIntegrationScheme
@@ -252,10 +252,10 @@ namespace INPAR
 
     /// set additional scatra conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
-  }  // namespace SCATRA
-}  // namespace INPAR
+  }  // namespace ScaTra
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

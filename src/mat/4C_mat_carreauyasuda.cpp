@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::CarreauYasuda::CarreauYasuda(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::CarreauYasuda::CarreauYasuda(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       nu_0_(matdata->Get<double>("NU_0")),
       nu_inf_(matdata->Get<double>("NU_INF")),
@@ -32,18 +32,18 @@ MAT::PAR::CarreauYasuda::CarreauYasuda(Teuchos::RCP<CORE::MAT::PAR::Material> ma
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::CarreauYasuda::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::CarreauYasuda::create_material()
 {
-  return Teuchos::rcp(new MAT::CarreauYasuda(this));
+  return Teuchos::rcp(new Mat::CarreauYasuda(this));
 }
 
 
-MAT::CarreauYasudaType MAT::CarreauYasudaType::instance_;
+Mat::CarreauYasudaType Mat::CarreauYasudaType::instance_;
 
 
-CORE::COMM::ParObject* MAT::CarreauYasudaType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::CarreauYasudaType::Create(const std::vector<char>& data)
 {
-  MAT::CarreauYasuda* carYas = new MAT::CarreauYasuda();
+  Mat::CarreauYasuda* carYas = new Mat::CarreauYasuda();
   carYas->Unpack(data);
   return carYas;
 }
@@ -51,18 +51,18 @@ CORE::COMM::ParObject* MAT::CarreauYasudaType::Create(const std::vector<char>& d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::CarreauYasuda::CarreauYasuda() : params_(nullptr) {}
+Mat::CarreauYasuda::CarreauYasuda() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::CarreauYasuda::CarreauYasuda(MAT::PAR::CarreauYasuda* params) : params_(params) {}
+Mat::CarreauYasuda::CarreauYasuda(Mat::PAR::CarreauYasuda* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::CarreauYasuda::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::CarreauYasuda::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -77,24 +77,24 @@ void MAT::CarreauYasuda::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::CarreauYasuda::Unpack(const std::vector<char>& data)
+void Mat::CarreauYasuda::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::CarreauYasuda*>(mat);
+        params_ = static_cast<Mat::PAR::CarreauYasuda*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

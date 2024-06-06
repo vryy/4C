@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods for namespace DRT
+\brief A collection of helper methods for namespace Discret
 
 \level 0
 
@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recovery(
-    DRT::Discretization& dis, const Epetra_Vector& state, const std::string& statename,
+Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery(
+    Discret::Discretization& dis, const Epetra_Vector& state, const std::string& statename,
     const int numvec, Teuchos::ParameterList& params)
 {
   const int dimp = dim + 1;
@@ -114,14 +114,14 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  CORE::Elements::Element::LocationArray la(dis.NumDofSets());
+  Core::Elements::Element::LocationArray la(dis.NumDofSets());
 
   // define element matrices and vectors
-  CORE::LINALG::SerialDenseMatrix elematrix1;
-  CORE::LINALG::SerialDenseMatrix elematrix2;
-  CORE::LINALG::SerialDenseVector elevector1;
-  CORE::LINALG::SerialDenseVector elevector2;
-  CORE::LINALG::SerialDenseVector elevector3;
+  Core::LinAlg::SerialDenseMatrix elematrix1;
+  Core::LinAlg::SerialDenseMatrix elematrix2;
+  Core::LinAlg::SerialDenseVector elevector1;
+  Core::LinAlg::SerialDenseVector elevector2;
+  Core::LinAlg::SerialDenseVector elevector3;
 
   // get number of elements
   const int numele = dis.NumMyRowElements();
@@ -129,10 +129,10 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
   // loop only row elements
   for (int i = 0; i < numele; ++i)
   {
-    CORE::Elements::Element* actele = dis.lRowElement(i);
+    Core::Elements::Element* actele = dis.lRowElement(i);
 
     // get element location vector
-    // CORE::Elements::Element::LocationArray la(1);
+    // Core::Elements::Element::LocationArray la(1);
     actele->LocationVector(dis, la, false);
 
     // Reshape element matrices and vectors and initialize to zero
@@ -166,16 +166,16 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
 
   Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered_col =
       Teuchos::rcp(new Epetra_MultiVector(*(dis.ElementColMap()), numvec, true));
-  CORE::LINALG::Export(*elevec_toberecovered, *elevec_toberecovered_col);
+  Core::LinAlg::Export(*elevec_toberecovered, *elevec_toberecovered_col);
   Teuchos::RCP<Epetra_MultiVector> centercoords_col =
       Teuchos::rcp(new Epetra_MultiVector(*(dis.ElementColMap()), dim, true));
-  CORE::LINALG::Export(*centercoords, *centercoords_col);
+  Core::LinAlg::Export(*centercoords, *centercoords_col);
 
   // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
   // solution vector based on reduced node row map
   Teuchos::RCP<Epetra_FEVector> nodevec = Teuchos::rcp(new Epetra_FEVector(noderowmap, numvec));
 
-  std::vector<CORE::Conditions::Condition*> conds;
+  std::vector<Core::Conditions::Condition*> conds;
   dis.GetCondition("SPRboundary", conds);
 
   // SPR boundary condition must be set for all boundaries except pbc
@@ -190,7 +190,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
   for (int i = 0; i < nodecolmap.NumMyElements(); ++i)
   {
     const int nodegid = nodecolmap.GID(i);
-    const CORE::Nodes::Node* node = dis.gNode(nodegid);
+    const Core::Nodes::Node* node = dis.gNode(nodegid);
     if (!node) FOUR_C_THROW("Cannot find with gid: %d", nodegid);
 
     // distinction between inner nodes and boundary nodes
@@ -206,17 +206,17 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         // we have an inner node here
         //---------------------------------------------
 
-        const CORE::Elements::Element* const* adjacentele = node->Elements();
+        const Core::Elements::Element* const* adjacentele = node->Elements();
         const int numadjacent = node->NumElement();
 
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
         {
-          static CORE::LINALG::Matrix<dimp, 1> p;
+          static Core::LinAlg::Matrix<dimp, 1> p;
           p(0) = 1.0;
-          static CORE::LINALG::Matrix<dimp, dimp> A;
-          static CORE::LINALG::Matrix<dimp, 1> x;
-          static CORE::LINALG::Matrix<dimp, 1> b;
+          static Core::LinAlg::Matrix<dimp, dimp> A;
+          static Core::LinAlg::Matrix<dimp, 1> x;
+          static Core::LinAlg::Matrix<dimp, 1> b;
 
           A.Clear();
           b.Clear();
@@ -235,7 +235,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
           }
 
           // solve for coefficients of interpolation
-          const double det = CORE::LINALG::scaledGaussElimination<dimp>(A, b, x);
+          const double det = Core::LinAlg::scaledGaussElimination<dimp>(A, b, x);
           if (det < 1.0e-14) FOUR_C_THROW("system singular, at inner node");
 
           // patch-recovery interpolation -> only first entry necessary, remaining ones are zero
@@ -257,13 +257,13 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         std::vector<int> slavenodeids = masternode->second;
         const int numslavenodes = (int)(masternode->second.size());
         // containers for adjacent elements to slave+master nodes
-        std::vector<const CORE::Elements::Element* const*> adjacenteles(numslavenodes + 1);
+        std::vector<const Core::Elements::Element* const*> adjacenteles(numslavenodes + 1);
         std::vector<int> numadjacenteles(numslavenodes + 1);
         std::vector<double> offset(dim, 0.0);
         std::vector<std::vector<double>> eleoffsets(numslavenodes + 1, offset);
         for (int s = 0; s < numslavenodes; ++s)
         {
-          const CORE::Nodes::Node* slavenode = dis.gNode(slavenodeids[s]);
+          const Core::Nodes::Node* slavenode = dis.gNode(slavenodeids[s]);
           // compute offset for slave elements
           for (int d = 0; d < dim; ++d)
             eleoffsets[s][d] = (node->X()[d] - slavenode->X()[d]) /* + ALE DISP */;
@@ -279,11 +279,11 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
         {
-          static CORE::LINALG::Matrix<dimp, 1> p;
+          static Core::LinAlg::Matrix<dimp, 1> p;
           p(0) = 1.0;
-          static CORE::LINALG::Matrix<dimp, dimp> A;
-          static CORE::LINALG::Matrix<dimp, 1> x;
-          static CORE::LINALG::Matrix<dimp, 1> b;
+          static Core::LinAlg::Matrix<dimp, dimp> A;
+          static Core::LinAlg::Matrix<dimp, 1> x;
+          static Core::LinAlg::Matrix<dimp, 1> b;
 
           A.Clear();
           b.Clear();
@@ -306,7 +306,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
           }
 
           // solve for coefficients of interpolation
-          const double det = CORE::LINALG::scaledGaussElimination<dimp>(A, b, x);
+          const double det = Core::LinAlg::scaledGaussElimination<dimp>(A, b, x);
           if (det < 1.0e-14) FOUR_C_THROW("system singular, at pbc inner node");
 
           // patch-recovery interpolation -> only first entry necessary, remaining ones are zero
@@ -329,13 +329,13 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         //---------------------------------------------
 
         // get all neighboring nodes of boundary node and find closest one
-        const CORE::Elements::Element* const* adjacentele = node->Elements();
+        const Core::Elements::Element* const* adjacentele = node->Elements();
         const int numadjacentele = node->NumElement();
         double distance = 1.0e12;
         int closestnodeid = -1;
         for (int k = 0; k < numadjacentele; ++k)
         {
-          const CORE::Nodes::Node* const* adjacentnodes = adjacentele[k]->Nodes();
+          const Core::Nodes::Node* const* adjacentnodes = adjacentele[k]->Nodes();
           const int numnode = adjacentele[k]->num_node();
           for (int n = 0; n < numnode; ++n)
           {
@@ -343,7 +343,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
             if (conds[0]->ContainsNode(adjacentnodes[n]->Id())) continue;
 
             const auto& pos = adjacentnodes[n]->X(); /* + ALE DISP */
-            static CORE::LINALG::Matrix<dim, 1> dist;
+            static Core::LinAlg::Matrix<dim, 1> dist;
             for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->X()[d]; /* + ALE DISP */
             const double tmp = dist.Norm2();
             if (tmp < distance and tmp > 1.0e-14)
@@ -360,8 +360,8 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
               "small (at least in one direction)");
 
         // build patch for closest node and evaluate patch at boundary node
-        const CORE::Nodes::Node* closestnode = dis.gNode(closestnodeid);
-        const CORE::Elements::Element* const* closestnodeadjacentele = closestnode->Elements();
+        const Core::Nodes::Node* closestnode = dis.gNode(closestnodeid);
+        const Core::Elements::Element* const* closestnodeadjacentele = closestnode->Elements();
         const int numadjacent = closestnode->NumElement();
 
         // leave here in case the closest node is a ghost node
@@ -372,11 +372,11 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
         {
-          static CORE::LINALG::Matrix<dimp, 1> p;
+          static Core::LinAlg::Matrix<dimp, 1> p;
           p(0) = 1.0;
-          static CORE::LINALG::Matrix<dimp, dimp> A;
-          static CORE::LINALG::Matrix<dimp, 1> x;
-          static CORE::LINALG::Matrix<dimp, 1> b;
+          static Core::LinAlg::Matrix<dimp, dimp> A;
+          static Core::LinAlg::Matrix<dimp, 1> x;
+          static Core::LinAlg::Matrix<dimp, 1> b;
 
           A.Clear();
           b.Clear();
@@ -395,7 +395,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
           }
 
           // solve for coefficients of interpolation
-          const double det = CORE::LINALG::scaledGaussElimination<dimp>(A, b, x);
+          const double det = Core::LinAlg::scaledGaussElimination<dimp>(A, b, x);
           if (det < 1.0e-14) FOUR_C_THROW("system singular, at boundary node");
 
           // patch-recovery interpolation for boundary point
@@ -417,7 +417,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         //---------------------------------------------
 
         // often bounds are axis aligned -> another pbc (master) node is closest node
-        const CORE::Elements::Element* const* adjacentele = node->Elements();
+        const Core::Elements::Element* const* adjacentele = node->Elements();
         const int numadjacentele = node->NumElement();
 
         // leave here if the boundary node is a ghost node and has no adjacent elements on this proc
@@ -430,14 +430,14 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         int closestnodeid = -1;
         for (int k = 0; k < numadjacentele; ++k)
         {
-          const CORE::Nodes::Node* const* adjacentnodes = adjacentele[k]->Nodes();
+          const Core::Nodes::Node* const* adjacentnodes = adjacentele[k]->Nodes();
           for (int n = 0; n < adjacentele[k]->num_node(); ++n)
           {
             // continue with next node in case the neighbor is also on the boundary
             if (conds[0]->ContainsNode(adjacentnodes[n]->Id())) continue;
 
             const auto& pos = adjacentnodes[n]->X(); /* + ALE DISP */
-            static CORE::LINALG::Matrix<dim, 1> dist;
+            static Core::LinAlg::Matrix<dim, 1> dist;
             for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->X()[d]; /* + ALE DISP */
             const double tmp = dist.Norm2();
             if (tmp < distance and tmp > 1.0e-14)
@@ -456,7 +456,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         // build patch for closest node and evaluate patch at boundary node
 
         // get master nodes and corresponding slave nodes
-        CORE::Nodes::Node* closestnode = dis.gNode(closestnodeid);
+        Core::Nodes::Node* closestnode = dis.gNode(closestnodeid);
 
         // leave here in case the closest node is a ghost node
         // only row nodes have all neighboring elements on this proc
@@ -486,14 +486,14 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         }
 
         // containers for adjacent elements to slave+master nodes
-        std::vector<const CORE::Elements::Element* const*> closestnodeadjacenteles(
+        std::vector<const Core::Elements::Element* const*> closestnodeadjacenteles(
             numslavenodes + 1);
         std::vector<int> numadjacenteles(numslavenodes + 1);
         std::vector<double> offset(dim, 0.0);
         std::vector<std::vector<double>> eleoffsets(numslavenodes + 1, offset);
         for (int s = 0; s < numslavenodes; ++s)
         {
-          const CORE::Nodes::Node* slavenode = dis.gNode(masternode->second[s]);
+          const Core::Nodes::Node* slavenode = dis.gNode(masternode->second[s]);
           // compute offset for slave elements
           for (int d = 0; d < dim; ++d)
             eleoffsets[s][d] = (closestnode->X()[d] - slavenode->X()[d]); /* + ALE DISP */
@@ -509,11 +509,11 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
         {
-          static CORE::LINALG::Matrix<dimp, 1> p;
+          static Core::LinAlg::Matrix<dimp, 1> p;
           p(0) = 1.0;
-          static CORE::LINALG::Matrix<dimp, dimp> A;
-          static CORE::LINALG::Matrix<dimp, 1> x;
-          static CORE::LINALG::Matrix<dimp, 1> b;
+          static Core::LinAlg::Matrix<dimp, dimp> A;
+          static Core::LinAlg::Matrix<dimp, 1> x;
+          static Core::LinAlg::Matrix<dimp, 1> b;
 
           A.Clear();
           b.Clear();
@@ -537,7 +537,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
           }
 
           // solve for coefficients of interpolation
-          const double det = CORE::LINALG::scaledGaussElimination<dimp>(A, b, x);
+          const double det = Core::LinAlg::scaledGaussElimination<dimp>(A, b, x);
           if (det < 1.0e-14) FOUR_C_THROW("system singular, at pbc boundary node");
 
           // patch-recovery interpolation for boundary point
@@ -590,14 +590,14 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recover
   return fullnodevec;
 }
 
-template Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recovery<1>(
-    DRT::Discretization&, const Epetra_Vector&, const std::string&, const int,
+template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<1>(
+    Discret::Discretization&, const Epetra_Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
-template Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recovery<2>(
-    DRT::Discretization&, const Epetra_Vector&, const std::string&, const int,
+template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<2>(
+    Discret::Discretization&, const Epetra_Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
-template Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_superconvergent_patch_recovery<3>(
-    DRT::Discretization&, const Epetra_Vector&, const std::string&, const int,
+template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<3>(
+    Discret::Discretization&, const Epetra_Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
 
 FOUR_C_NAMESPACE_CLOSE

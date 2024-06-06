@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MORTAR
+namespace Mortar
 {
   /*!
   \brief An abstract interface for binary trees
@@ -91,7 +91,7 @@ namespace MORTAR
     */
     virtual void Init() = 0;
   };  // class AbstractBinaryTree
-}  // namespace MORTAR
+}  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE
 

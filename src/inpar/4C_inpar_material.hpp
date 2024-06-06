@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-namespace INPAR
+namespace Inpar
 {
-  namespace MAT
+  namespace Mat
   {
     /*----------------------------------------------------------------------*
     | Robinson's visco-plastic material                        bborn 03/07 |
@@ -53,8 +53,8 @@ namespace INPAR
                                ///< space and time
       map  ///< discrete elementwise-defined activation prescription via an input pattern file
     };
-  }  // namespace MAT
-}  // namespace INPAR
+  }  // namespace Mat
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

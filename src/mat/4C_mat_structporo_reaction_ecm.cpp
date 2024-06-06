@@ -21,33 +21,34 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::StructPoroReactionECM::StructPoroReactionECM(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::StructPoroReactionECM::StructPoroReactionECM(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : StructPoroReaction(matdata), densCollagen_(matdata->Get<double>("DENSCOLLAGEN"))
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StructPoroReactionECM::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::StructPoroReactionECM::create_material()
 {
-  return Teuchos::rcp(new MAT::StructPoroReactionECM(this));
+  return Teuchos::rcp(new Mat::StructPoroReactionECM(this));
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::StructPoroReactionECMType MAT::StructPoroReactionECMType::instance_;
+Mat::StructPoroReactionECMType Mat::StructPoroReactionECMType::instance_;
 
-CORE::COMM::ParObject* MAT::StructPoroReactionECMType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::StructPoroReactionECMType::Create(
+    const std::vector<char>& data)
 {
-  MAT::StructPoroReactionECM* struct_poro = new MAT::StructPoroReactionECM();
+  Mat::StructPoroReactionECM* struct_poro = new Mat::StructPoroReactionECM();
   struct_poro->Unpack(data);
   return struct_poro;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::StructPoroReactionECM::StructPoroReactionECM()
+Mat::StructPoroReactionECM::StructPoroReactionECM()
     : refporosity_old_(-1.0),
       refporositydot_old_(0.0),
       chempot_(0),
@@ -58,7 +59,7 @@ MAT::StructPoroReactionECM::StructPoroReactionECM()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::StructPoroReactionECM::StructPoroReactionECM(MAT::PAR::StructPoroReactionECM* params)
+Mat::StructPoroReactionECM::StructPoroReactionECM(Mat::PAR::StructPoroReactionECM* params)
     : StructPoroReaction(params),
       refporosity_old_(-1.0),
       refporositydot_old_(0.0),
@@ -70,7 +71,7 @@ MAT::StructPoroReactionECM::StructPoroReactionECM(MAT::PAR::StructPoroReactionEC
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReactionECM::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::StructPoroReactionECM::Setup(int numgp, Input::LineDefinition* linedef)
 {
   StructPoroReaction::Setup(numgp, linedef);
   refporosity_old_ = params_->init_porosity_;
@@ -92,9 +93,9 @@ void MAT::StructPoroReactionECM::Setup(int numgp, INPUT::LineDefinition* linedef
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::StructPoroReactionECM::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::StructPoroReactionECM::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -121,24 +122,24 @@ void MAT::StructPoroReactionECM::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::StructPoroReactionECM::Unpack(const std::vector<char>& data)
+void Mat::StructPoroReactionECM::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::StructPoroReactionECM*>(mat);
+        params_ = static_cast<Mat::PAR::StructPoroReactionECM*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -158,7 +159,7 @@ void MAT::StructPoroReactionECM::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReactionECM::reaction(const double porosity, const double J,
+void Mat::StructPoroReactionECM::reaction(const double porosity, const double J,
     Teuchos::RCP<std::vector<double>> scalars, Teuchos::ParameterList& params)
 {
   double dt = params.get<double>("delta time", -1.0);
@@ -175,7 +176,7 @@ void MAT::StructPoroReactionECM::reaction(const double porosity, const double J,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReactionECM::Update()
+void Mat::StructPoroReactionECM::Update()
 {
   refporosity_old_ = refporosity_;
   refporositydot_old_ = refporositydot_;
@@ -185,7 +186,7 @@ void MAT::StructPoroReactionECM::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReactionECM::VisNames(std::map<std::string, int>& names)
+void Mat::StructPoroReactionECM::VisNames(std::map<std::string, int>& names)
 {
   // call base class
   StructPoroReaction::VisNames(names);
@@ -196,7 +197,7 @@ void MAT::StructPoroReactionECM::VisNames(std::map<std::string, int>& names)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool MAT::StructPoroReactionECM::VisData(
+bool Mat::StructPoroReactionECM::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   // call base class
@@ -213,8 +214,8 @@ bool MAT::StructPoroReactionECM::VisData(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReactionECM::ChemPotential(
-    const CORE::LINALG::Matrix<6, 1>& glstrain,  ///< (i) green lagrange strain
+void Mat::StructPoroReactionECM::ChemPotential(
+    const Core::LinAlg::Matrix<6, 1>& glstrain,  ///< (i) green lagrange strain
     const double porosity,                       ///< (i) porosity
     const double press,                          ///< (i) pressure at gauss point
     const double J,                              ///< (i) determinant of jacobian at gauss point

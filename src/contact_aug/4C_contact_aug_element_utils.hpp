@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
     /*--------------------------------------------------------------------------*/
     /// @name Standard Lagrange element support routines
     /// @{
 
     /// a trait to identify Lagrange discretization types
-    template <CORE::FE::CellType type>
+    template <Core::FE::CellType type>
     struct IsLagrangeEleType
     {
       static constexpr bool value_ = false;
@@ -36,17 +36,17 @@ namespace CONTACT
 
     /// supported standard types
     template <>
-    struct IsLagrangeEleType<CORE::FE::CellType::line2>
+    struct IsLagrangeEleType<Core::FE::CellType::line2>
     {
       static constexpr bool value_ = true;
     };
     template <>
-    struct IsLagrangeEleType<CORE::FE::CellType::tri3>
+    struct IsLagrangeEleType<Core::FE::CellType::tri3>
     {
       static constexpr bool value_ = true;
     };
     template <>
-    struct IsLagrangeEleType<CORE::FE::CellType::quad4>
+    struct IsLagrangeEleType<Core::FE::CellType::quad4>
     {
       static constexpr bool value_ = true;
     };
@@ -56,11 +56,11 @@ namespace CONTACT
      *  \note This function is called for the standard Lagrange case
      *
      *  \author hiermeier \date 10/17 */
-    template <CORE::FE::CellType type, typename T, typename V>
+    template <Core::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<IsLagrangeEleType<type>::value_, bool>::type shape_function(
-        MORTAR::Element& ele, T& xi, V& val)
+        Mortar::Element& ele, T& xi, V& val)
     {
-      CORE::FE::shape_function<type>(xi, val);
+      Core::FE::shape_function<type>(xi, val);
       return true;
     }
 
@@ -70,11 +70,11 @@ namespace CONTACT
      *  \note This function is called for the standard Lagrange case
      *
      *  \author hiermeier \date 10/17 */
-    template <CORE::FE::CellType type, typename T, typename V>
+    template <Core::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<IsLagrangeEleType<type>::value_, bool>::type
-    shape_function_deriv1(MORTAR::Element& ele, T& xi, V& deriv)
+    shape_function_deriv1(Mortar::Element& ele, T& xi, V& deriv)
     {
-      CORE::FE::shape_function_deriv1<type>(xi, deriv);
+      Core::FE::shape_function_deriv1<type>(xi, deriv);
       return true;
     }
 
@@ -84,9 +84,9 @@ namespace CONTACT
      *  \note This function is called for the standard Lagrange case
      *
      *  \author hiermeier \date 10/17 */
-    template <CORE::FE::CellType type, typename T, typename U, typename V>
+    template <Core::FE::CellType type, typename T, typename U, typename V>
     inline typename std::enable_if<IsLagrangeEleType<type>::value_, bool>::type
-    shape_function_and_deriv1(MORTAR::Element& ele, T& xi, U& val, V& deriv)
+    shape_function_and_deriv1(Mortar::Element& ele, T& xi, U& val, V& deriv)
     {
       shape_function<type>(ele, xi, val);
       shape_function_deriv1<type>(ele, xi, deriv);
@@ -99,11 +99,11 @@ namespace CONTACT
      *  \note This function is called for the standard Lagrange case
      *
      *  \author hiermeier \date 10/17 */
-    template <CORE::FE::CellType type, typename T, typename V>
+    template <Core::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<IsLagrangeEleType<type>::value_, bool>::type
-    shape_function_deriv2(MORTAR::Element& ele, T& xi, V& deriv2)
+    shape_function_deriv2(Mortar::Element& ele, T& xi, V& deriv2)
     {
-      CORE::FE::shape_function_deriv2<type>(xi, deriv2);
+      Core::FE::shape_function_deriv2<type>(xi, deriv2);
       return true;
     }
 
@@ -113,13 +113,13 @@ namespace CONTACT
      *  \note This function is called for the standard Lagrange case
      *
      *  \author hiermeier \date 10/17 */
-    template <CORE::FE::CellType type, typename T, typename U, typename V, typename W>
+    template <Core::FE::CellType type, typename T, typename U, typename V, typename W>
     inline typename std::enable_if<IsLagrangeEleType<type>::value_, bool>::type
-    shape_function_and_deriv1_and_deriv2(MORTAR::Element& ele, T& xi, U& val, V& deriv1, W& deriv2)
+    shape_function_and_deriv1_and_deriv2(Mortar::Element& ele, T& xi, U& val, V& deriv1, W& deriv2)
     {
-      CORE::FE::shape_function<type>(xi, val);
-      CORE::FE::shape_function_deriv1<type>(xi, deriv1);
-      CORE::FE::shape_function_deriv2<type>(xi, deriv2);
+      Core::FE::shape_function<type>(xi, val);
+      Core::FE::shape_function_deriv1<type>(xi, deriv1);
+      Core::FE::shape_function_deriv2<type>(xi, deriv2);
       return true;
     }
 
@@ -130,7 +130,7 @@ namespace CONTACT
     /// @{
 
     /// a trait to identify NURBS discretization types
-    template <CORE::FE::CellType type>
+    template <Core::FE::CellType type>
     struct IsNurbsEleType
     {
       static constexpr bool value_ = false;
@@ -138,22 +138,22 @@ namespace CONTACT
 
     /// supported nurbs types
     template <>
-    struct IsNurbsEleType<CORE::FE::CellType::nurbs2>
+    struct IsNurbsEleType<Core::FE::CellType::nurbs2>
     {
       static constexpr bool value_ = true;
     };
     template <>
-    struct IsNurbsEleType<CORE::FE::CellType::nurbs3>
+    struct IsNurbsEleType<Core::FE::CellType::nurbs3>
     {
       static constexpr bool value_ = true;
     };
     template <>
-    struct IsNurbsEleType<CORE::FE::CellType::nurbs4>
+    struct IsNurbsEleType<Core::FE::CellType::nurbs4>
     {
       static constexpr bool value_ = true;
     };
     template <>
-    struct IsNurbsEleType<CORE::FE::CellType::nurbs9>
+    struct IsNurbsEleType<Core::FE::CellType::nurbs9>
     {
       static constexpr bool value_ = true;
     };
@@ -162,13 +162,13 @@ namespace CONTACT
      *
      *  \author hiermeier \date 10/17 */
     template <typename T>
-    void GetNurbsWeights(const MORTAR::Element& ele, T& weights)
+    void GetNurbsWeights(const Mortar::Element& ele, T& weights)
     {
-      const CORE::Nodes::Node* const* nodes = ele.Nodes();
+      const Core::Nodes::Node* const* nodes = ele.Nodes();
       FOUR_C_ASSERT(static_cast<int>(weights.M()) == ele.num_node(), "Size mismatch!");
 
       for (unsigned nlid = 0; nlid < static_cast<unsigned>(weights.M()); ++nlid)
-        weights(nlid, 0) = static_cast<const MORTAR::Node*>(nodes[nlid])->NurbsW();
+        weights(nlid, 0) = static_cast<const Mortar::Node*>(nodes[nlid])->NurbsW();
     }
 
     /** \brief Evaluate the shape function values at a local position xi
@@ -176,16 +176,16 @@ namespace CONTACT
      *  \note This function is called for the NURBS case
      *
      *  \author hiermeier \date 10/17 */
-    template <CORE::FE::CellType type, typename T, typename V>
+    template <Core::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<IsNurbsEleType<type>::value_, bool>::type shape_function(
-        MORTAR::Element& ele, T& xi, V& val)
+        Mortar::Element& ele, T& xi, V& val)
     {
-      static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
+      static constexpr unsigned NUMNODE = Core::FE::num_nodes<type>;
 
-      CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
+      Core::LinAlg::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      return CORE::FE::NURBS::nurbs_shape_function_dim(val, xi, ele.Knots(), weights, type);
+      return Core::FE::Nurbs::nurbs_shape_function_dim(val, xi, ele.Knots(), weights, type);
     }
 
     /** \brief Evaluate the first derivative w.r.t. xi of the shape function
@@ -194,17 +194,17 @@ namespace CONTACT
      *  \note This function is called for the NURBS case
      *
      *  \author hiermeier \date 10/17 */
-    template <CORE::FE::CellType type, typename T, typename V>
+    template <Core::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<IsNurbsEleType<type>::value_, bool>::type shape_function_deriv1(
-        MORTAR::Element& ele, T& xi, V& deriv)
+        Mortar::Element& ele, T& xi, V& deriv)
     {
-      static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
+      static constexpr unsigned NUMNODE = Core::FE::num_nodes<type>;
 
-      CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
+      Core::LinAlg::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      CORE::LINALG::Matrix<NUMNODE, 1> val(false);
-      return CORE::FE::NURBS::nurbs_get_funct_deriv(val, deriv, xi, ele.Knots(), weights, type);
+      Core::LinAlg::Matrix<NUMNODE, 1> val(false);
+      return Core::FE::Nurbs::nurbs_get_funct_deriv(val, deriv, xi, ele.Knots(), weights, type);
     }
 
     /** \brief Evaluate the value as well as the first derivative w.r.t. xi of
@@ -213,16 +213,16 @@ namespace CONTACT
      *  \note This function is called for the NURBS case
      *
      *  \author hiermeier \date 10/17 */
-    template <CORE::FE::CellType type, typename T, typename U, typename V>
+    template <Core::FE::CellType type, typename T, typename U, typename V>
     inline typename std::enable_if<IsNurbsEleType<type>::value_, bool>::type
-    shape_function_and_deriv1(MORTAR::Element& ele, T& xi, U& val, V& deriv)
+    shape_function_and_deriv1(Mortar::Element& ele, T& xi, U& val, V& deriv)
     {
-      static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
+      static constexpr unsigned NUMNODE = Core::FE::num_nodes<type>;
 
-      CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
+      Core::LinAlg::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      return CORE::FE::NURBS::nurbs_get_funct_deriv(val, deriv, xi, ele.Knots(), weights, type);
+      return Core::FE::Nurbs::nurbs_get_funct_deriv(val, deriv, xi, ele.Knots(), weights, type);
     }
 
     /** \brief Evaluate the second order derivative w.r.t. xi and eta of the shape
@@ -231,19 +231,19 @@ namespace CONTACT
      *  \note This function is called for the NURBS case
      *
      *  \author hiermeier \date 10/17 */
-    template <CORE::FE::CellType type, typename T, typename V>
+    template <Core::FE::CellType type, typename T, typename V>
     inline typename std::enable_if<IsNurbsEleType<type>::value_, bool>::type shape_function_deriv2(
-        MORTAR::Element& ele, T& xi, V& deriv2)
+        Mortar::Element& ele, T& xi, V& deriv2)
     {
-      static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
-      static constexpr unsigned DIM = CORE::FE::dim<type>;
+      static constexpr unsigned NUMNODE = Core::FE::num_nodes<type>;
+      static constexpr unsigned DIM = Core::FE::dim<type>;
 
-      CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
+      Core::LinAlg::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      CORE::LINALG::Matrix<NUMNODE, 1> val(false);
-      CORE::LINALG::Matrix<DIM, NUMNODE> deriv1(false);
-      return CORE::FE::NURBS::nurbs_get_funct_deriv_deriv2(
+      Core::LinAlg::Matrix<NUMNODE, 1> val(false);
+      Core::LinAlg::Matrix<DIM, NUMNODE> deriv1(false);
+      return Core::FE::Nurbs::nurbs_get_funct_deriv_deriv2(
           val, deriv1, deriv2, xi, ele.Knots(), weights, type);
     }
 
@@ -253,16 +253,16 @@ namespace CONTACT
      *  \note This function is called for the NURBS case
      *
      *  \author hiermeier \date 10/17 */
-    template <CORE::FE::CellType type, typename T, typename U, typename V, typename W>
+    template <Core::FE::CellType type, typename T, typename U, typename V, typename W>
     inline typename std::enable_if<IsNurbsEleType<type>::value_, bool>::type
-    shape_function_and_deriv1_and_deriv2(MORTAR::Element& ele, T& xi, U& val, V& deriv1, W& deriv2)
+    shape_function_and_deriv1_and_deriv2(Mortar::Element& ele, T& xi, U& val, V& deriv1, W& deriv2)
     {
-      static constexpr unsigned NUMNODE = CORE::FE::num_nodes<type>;
+      static constexpr unsigned NUMNODE = Core::FE::num_nodes<type>;
 
-      CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
+      Core::LinAlg::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      return CORE::FE::NURBS::nurbs_get_funct_deriv_deriv2(
+      return Core::FE::Nurbs::nurbs_get_funct_deriv_deriv2(
           val, deriv1, deriv2, xi, ele.Knots(), weights, type);
     }
 
@@ -273,7 +273,7 @@ namespace CONTACT
     /// @{
 
     /// @}
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 FOUR_C_NAMESPACE_CLOSE

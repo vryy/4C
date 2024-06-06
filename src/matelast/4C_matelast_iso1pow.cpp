@@ -14,15 +14,15 @@ terms of the first Cauchy-Green invariant
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::Iso1Pow::Iso1Pow(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::Iso1Pow::Iso1Pow(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), c_(matdata->Get<double>("C")), d_(matdata->Get<int>("D"))
 {
 }
 
-MAT::ELASTIC::Iso1Pow::Iso1Pow(MAT::ELASTIC::PAR::Iso1Pow* params) : params_(params) {}
+Mat::Elastic::Iso1Pow::Iso1Pow(Mat::Elastic::PAR::Iso1Pow* params) : params_(params) {}
 
-void MAT::ELASTIC::Iso1Pow::AddStrainEnergy(double& psi, const CORE::LINALG::Matrix<3, 1>& prinv,
-    const CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<6, 1>& glstrain,
+void Mat::Elastic::Iso1Pow::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+    const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {
   // material Constants c and d
@@ -34,8 +34,8 @@ void MAT::ELASTIC::Iso1Pow::AddStrainEnergy(double& psi, const CORE::LINALG::Mat
   psi += c * pow((modinv(0) - 3.), d);
 }
 
-void MAT::ELASTIC::Iso1Pow::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
-    CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
+void Mat::Elastic::Iso1Pow::add_derivatives_modified(Core::LinAlg::Matrix<3, 1>& dPmodI,
+    Core::LinAlg::Matrix<6, 1>& ddPmodII, const Core::LinAlg::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {
   const double c = params_->c_;

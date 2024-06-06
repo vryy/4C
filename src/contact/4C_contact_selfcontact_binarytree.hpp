@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -46,7 +46,7 @@ namespace CONTACT
   Refer also to the Semesterarbeit of Anh-Tu Vuong, 2009
 
   */
-  class SelfBinaryTreeNode : public MORTAR::BaseBinaryTreeNode
+  class SelfBinaryTreeNode : public Mortar::BaseBinaryTreeNode
   {
    public:
     /*!
@@ -65,10 +65,10 @@ namespace CONTACT
     \param treenodes      references to tree nodes storage scheme
 
     */
-    SelfBinaryTreeNode(SelfBinaryTreeNodeType type, DRT::Discretization& discret,
+    SelfBinaryTreeNode(SelfBinaryTreeNodeType type, Discret::Discretization& discret,
         Teuchos::RCP<SelfBinaryTreeNode> parent, std::vector<int> elelist,
-        const CORE::LINALG::SerialDenseMatrix& dopnormals,
-        const CORE::LINALG::SerialDenseMatrix& samplevectors, const int& kdop, const int& dim,
+        const Core::LinAlg::SerialDenseMatrix& dopnormals,
+        const Core::LinAlg::SerialDenseMatrix& samplevectors, const int& kdop, const int& dim,
         const int& nvectors, const int layer, const bool nonsmoothsurf,
         std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes);
 
@@ -242,7 +242,7 @@ namespace CONTACT
     std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjacent_treenodes_;
 
     //! reference to sample vectors
-    const CORE::LINALG::SerialDenseMatrix& samplevectors_;
+    const Core::LinAlg::SerialDenseMatrix& samplevectors_;
 
     //! reference to number of sample vectors
     const int& nvectors_;
@@ -497,7 +497,7 @@ namespace CONTACT
 
   */
 
-  class SelfBinaryTree : public MORTAR::BaseBinaryTree
+  class SelfBinaryTree : public Mortar::BaseBinaryTree
   {
    public:
     /*!
@@ -512,7 +512,7 @@ namespace CONTACT
     \param dim (in):        The problem dimension
 
     */
-    SelfBinaryTree(DRT::Discretization& discret, const Teuchos::ParameterList& iparams,
+    SelfBinaryTree(Discret::Discretization& discret, const Teuchos::ParameterList& iparams,
         Teuchos::RCP<Epetra_Map> elements, int dim, double eps);
 
 
@@ -603,7 +603,7 @@ namespace CONTACT
     \brief Get matrix of sample vectors
 
     */
-    const CORE::LINALG::SerialDenseMatrix& sample_vectors() const { return samplevectors_; }
+    const Core::LinAlg::SerialDenseMatrix& sample_vectors() const { return samplevectors_; }
 
     /*!
     \brief Return reference to storage scheme of all tree nodes
@@ -650,7 +650,7 @@ namespace CONTACT
 
      */
     void calculate_adjacent_tree_nodes_and_dual_edges(std::vector<int>& possadjids, const int gid,
-        CORE::Elements::Element* adjElementk, Teuchos::RCP<SelfBinaryTreeNode>& node1,
+        Core::Elements::Element* adjElementk, Teuchos::RCP<SelfBinaryTreeNode>& node1,
         std::vector<Teuchos::RCP<SelfBinaryTreeNode>>& adjtreenodes,
         std::vector<Teuchos::RCP<SelfDualEdge>>& adjdualedges);
 
@@ -660,7 +660,7 @@ namespace CONTACT
     \param [in] element:  element of which number of first order nodes shall be determined
 
     */
-    int get_ele_specific_num_nodes(CORE::Elements::Element* element);
+    int get_ele_specific_num_nodes(Core::Elements::Element* element);
 
     /*!
     \brief Get the (contracted) node that combines the nodes of the contracted edge
@@ -831,7 +831,7 @@ namespace CONTACT
 
     \todo What are sample vectors?
     */
-    CORE::LINALG::SerialDenseMatrix samplevectors_;
+    Core::LinAlg::SerialDenseMatrix samplevectors_;
 
     //! root treenodes
     std::vector<Teuchos::RCP<SelfBinaryTreeNode>> roots_;

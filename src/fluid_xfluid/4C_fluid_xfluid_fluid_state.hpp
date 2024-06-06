@@ -19,7 +19,7 @@ fluid meshes
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
 }
@@ -45,33 +45,33 @@ namespace FLD
    public:
     /// ctor
     explicit XFluidFluidState(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,
+        const Teuchos::RCP<Core::Geo::CutWizard>& wizard,
         const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
         const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
         const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap,
         const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap);
 
     /// setup map extractors for dirichlet maps & velocity/pressure maps
-    void SetupMapExtractors(const Teuchos::RCP<DRT::Discretization>& xfluiddiscret,
-        const Teuchos::RCP<DRT::Discretization>& embfluiddiscret, const double& time);
+    void SetupMapExtractors(const Teuchos::RCP<Discret::Discretization>& xfluiddiscret,
+        const Teuchos::RCP<Discret::Discretization>& embfluiddiscret, const double& time);
 
     /// build merged fluid dirichlet map extractor
     void create_merged_dbc_map_extractor(
-        Teuchos::RCP<const CORE::LINALG::MapExtractor> embfluiddbcmaps);
+        Teuchos::RCP<const Core::LinAlg::MapExtractor> embfluiddbcmaps);
 
     //! @name Accessors
     //@{
 
-    Teuchos::RCP<CORE::LINALG::MapExtractor> DBCMapExtractor() override { return xffluiddbcmaps_; }
+    Teuchos::RCP<Core::LinAlg::MapExtractor> DBCMapExtractor() override { return xffluiddbcmaps_; }
 
-    Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter() override
+    Teuchos::RCP<Core::LinAlg::MapExtractor> VelPresSplitter() override
     {
       return xffluidvelpressplitter_;
     }
 
     bool Destroy() override;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
     Teuchos::RCP<Epetra_Vector>& Residual() override { return xffluidresidual_; }
     Teuchos::RCP<Epetra_Vector>& Zeros() override { return xffluidzeros_; }
     Teuchos::RCP<Epetra_Vector>& IncVel() override { return xffluidincvel_; }
@@ -92,13 +92,13 @@ namespace FLD
     Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> xffluidsplitter_;
     /// extractor used for splitting between velocity and pressure dof from the combined background
     /// & embedded fluid dof-map
-    Teuchos::RCP<CORE::LINALG::MapExtractor> xffluidvelpressplitter_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> xffluidvelpressplitter_;
     /// combined background and embedded fluid map extractor for dirichlet-constrained dof
-    Teuchos::RCP<CORE::LINALG::MapExtractor> xffluiddbcmaps_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> xffluiddbcmaps_;
     //@}
 
     /// full system matrix for coupled background and embedded fluid
-    Teuchos::RCP<CORE::LINALG::SparseOperator> xffluidsysmat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> xffluidsysmat_;
 
     /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> xffluidzeros_;

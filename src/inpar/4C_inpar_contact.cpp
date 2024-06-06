@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
@@ -25,10 +25,10 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   /* parameters for structural meshtying and contact */
   Teuchos::ParameterList& scontact = list->sublist("CONTACT DYNAMIC", false, "");
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "LINEAR_SOLVER", -1, "number of linear solver used for meshtying and contact", &scontact);
 
-  CORE::UTILS::BoolParameter("RESTART_WITH_CONTACT", "No",
+  Core::UTILS::BoolParameter("RESTART_WITH_CONTACT", "No",
       "Must be chosen if a non-contact simulation is to be restarted with contact", &scontact);
 
   setStringToIntegralParameter<int>("ADHESION", "None", "Type of adhesion law",
@@ -39,11 +39,11 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       tuple<std::string>("None", "Stick", "Tresca", "Coulomb"),
       tuple<int>(friction_none, friction_stick, friction_tresca, friction_coulomb), &scontact);
 
-  CORE::UTILS::BoolParameter("FRLESS_FIRST", "No",
+  Core::UTILS::BoolParameter("FRLESS_FIRST", "No",
       "If chosen the first time step of a newly in contact slave node is regarded as frictionless",
       &scontact);
 
-  CORE::UTILS::BoolParameter("GP_SLIP_INCR", "No",
+  Core::UTILS::BoolParameter("GP_SLIP_INCR", "No",
       "If chosen the slip increment is computed gp-wise which results to a non-objective quantity, "
       "but this would be consistent to wear and tsi calculations.",
       &scontact);
@@ -67,29 +67,29 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
           system_saddlepoint, system_saddlepoint, system_saddlepoint, system_none),
       &scontact);
 
-  CORE::UTILS::DoubleParameter("PENALTYPARAM", 0.0,
+  Core::UTILS::DoubleParameter("PENALTYPARAM", 0.0,
       "Penalty parameter for penalty / Uzawa augmented solution strategy", &scontact);
-  CORE::UTILS::DoubleParameter("PENALTYPARAMTAN", 0.0,
+  Core::UTILS::DoubleParameter("PENALTYPARAMTAN", 0.0,
       "Tangential penalty parameter for penalty / Uzawa augmented solution strategy", &scontact);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "UZAWAMAXSTEPS", 10, "Maximum no. of Uzawa steps for Uzawa solution strategy", &scontact);
-  CORE::UTILS::DoubleParameter("UZAWACONSTRTOL", 1.0e-8,
+  Core::UTILS::DoubleParameter("UZAWACONSTRTOL", 1.0e-8,
       "Tolerance of constraint norm for Uzawa solution strategy", &scontact);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "SEMI_SMOOTH_NEWTON", "Yes", "If chosen semi-smooth Newton concept is applied", &scontact);
 
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "SEMI_SMOOTH_CN", 1.0, "Weighting factor cn for semi-smooth PDASS", &scontact);
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "SEMI_SMOOTH_CT", 1.0, "Weighting factor ct for semi-smooth PDASS", &scontact);
 
-  CORE::UTILS::BoolParameter("CONTACTFORCE_ENDTIME", "No",
+  Core::UTILS::BoolParameter("CONTACTFORCE_ENDTIME", "No",
       "If chosen, the contact force is not evaluated at the generalized midpoint, but at the end "
       "of the time step",
       &scontact);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "VELOCITY_UPDATE", "No", "If chosen, velocity update method is applied", &scontact);
 
   setStringToIntegralParameter<int>("EMOUTPUT", "None", "Type of energy and momentum output",
@@ -99,28 +99,28 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
           output_file, output_file, output_both, output_both),
       &scontact);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "INITCONTACTBYGAP", "No", "Initialize init contact by weighted gap vector", &scontact);
 
-  CORE::UTILS::DoubleParameter("INITCONTACTGAPVALUE", 0.0,
+  Core::UTILS::DoubleParameter("INITCONTACTGAPVALUE", 0.0,
       "Value for initialization of init contact set with gap vector", &scontact);
 
   // solver convergence test parameters for contact/meshtying in saddlepoint formulation
   setStringToIntegralParameter<int>("NORMCOMBI_RESFCONTCONSTR", "And",
       "binary operator to combine contact constraints and residual force values",
-      tuple<std::string>("And", "Or"), tuple<int>(INPAR::STR::bop_and, INPAR::STR::bop_or),
+      tuple<std::string>("And", "Or"), tuple<int>(Inpar::STR::bop_and, Inpar::STR::bop_or),
       &scontact);
 
   setStringToIntegralParameter<int>("NORMCOMBI_DISPLAGR", "And",
       "binary operator to combine displacement increments and Lagrange multiplier increment values",
-      tuple<std::string>("And", "Or"), tuple<int>(INPAR::STR::bop_and, INPAR::STR::bop_or),
+      tuple<std::string>("And", "Or"), tuple<int>(Inpar::STR::bop_and, Inpar::STR::bop_or),
       &scontact);
 
-  CORE::UTILS::DoubleParameter("TOLCONTCONSTR", 1.0E-6,
+  Core::UTILS::DoubleParameter("TOLCONTCONSTR", 1.0E-6,
       "tolerance in the contact constraint norm for the newton iteration (saddlepoint formulation "
       "only)",
       &scontact);
-  CORE::UTILS::DoubleParameter("TOLLAGR", 1.0E-6,
+  Core::UTILS::DoubleParameter("TOLLAGR", 1.0E-6,
       "tolerance in the LM norm for the newton iteration (saddlepoint formulation only)",
       &scontact);
 
@@ -131,47 +131,47 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   setStringToIntegralParameter<int>("CONTACT_REGULARIZATION", "no", "use regularized contact",
       tuple<std::string>("no", "tanh"), tuple<int>(reg_none, reg_tanh), &scontact);
 
-  CORE::UTILS::BoolParameter("NONSMOOTH_GEOMETRIES", "No",
+  Core::UTILS::BoolParameter("NONSMOOTH_GEOMETRIES", "No",
       "If chosen the contact algorithm combines mortar and nts formulations. This is needed if "
       "contact between entities of different geometric dimension (such as contact between surfaces "
       "and lines, or lines and nodes) can occur",
       &scontact);
 
-  CORE::UTILS::BoolParameter("NONSMOOTH_CONTACT_SURFACE", "No",
+  Core::UTILS::BoolParameter("NONSMOOTH_CONTACT_SURFACE", "No",
       "This flag is used to alter the criterion for the evaluation of the so-called qualified "
       "vectors in the case of a self contact scenario. This is needed as the standard criterion is "
       "only valid for smooth surfaces and thus has to be altered, if the surface that is defined "
       "to be a self contact surface is non-smooth!",
       &scontact);
 
-  CORE::UTILS::DoubleParameter("HYBRID_ANGLE_MIN", -1.0,
+  Core::UTILS::DoubleParameter("HYBRID_ANGLE_MIN", -1.0,
       "Non-smooth contact: angle between cpp normal and element normal: begin transition (Mortar)",
       &scontact);
-  CORE::UTILS::DoubleParameter("HYBRID_ANGLE_MAX", -1.0,
+  Core::UTILS::DoubleParameter("HYBRID_ANGLE_MAX", -1.0,
       "Non-smooth contact: angle between cpp normal and element normal: end transition (NTS)",
       &scontact);
 
-  CORE::UTILS::BoolParameter("CPP_NORMALS", "No",
+  Core::UTILS::BoolParameter("CPP_NORMALS", "No",
       "If chosen the nodal normal field is created as averaged CPP normal field.", &scontact);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "TIMING_DETAILS", "No", "Enable and print detailed contact timings to screen.", &scontact);
 
   // --------------------------------------------------------------------------
   // sub-list "Augmented"
   Teuchos::ParameterList& augcontact = scontact.sublist("AUGMENTED");
 
-  CORE::UTILS::BoolParameter("PRINT_LINEAR_CONSERVATION", "No",
+  Core::UTILS::BoolParameter("PRINT_LINEAR_CONSERVATION", "No",
       "Do and print the linear momentum conservation check.", &augcontact);
 
-  CORE::UTILS::BoolParameter("PRINT_ANGULAR_CONSERVATION", "No",
+  Core::UTILS::BoolParameter("PRINT_ANGULAR_CONSERVATION", "No",
       "Do and print the angular momentum conservation check.", &augcontact);
 
   setStringToIntegralParameter<int>("VARIATIONAL_APPROACH", "incomplete",
       "Type of employed variational approach", tuple<std::string>("complete", "incomplete"),
       tuple<int>(var_complete, var_incomplete), &augcontact);
 
-  CORE::UTILS::BoolParameter("ADD_INACTIVE_FORCE_CONTRIBUTIONS", "No",
+  Core::UTILS::BoolParameter("ADD_INACTIVE_FORCE_CONTRIBUTIONS", "No",
       "Add the contribution from the inactive Lagrange multipliers to the"
       "force balance.",
       &augcontact);
@@ -180,7 +180,7 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       "Type of employed assemble strategy", tuple<std::string>("node_based"),
       tuple<int>(assemble_node_based), &augcontact);
 
-  CORE::UTILS::IntParameter("PARALLEL_REDIST_INTERVAL", -1,
+  Core::UTILS::IntParameter("PARALLEL_REDIST_INTERVAL", -1,
       "Specifies the Newton iteration interval in which the parallel "
       "redistribution is controlled. An interval value equal to or smaller than "
       "zero disables the dynamic redistribution control mechanism during the Newton"
@@ -191,12 +191,12 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   // sub-sub-list "Augmented/SteepestAscent"
   Teuchos::ParameterList& sacontact = augcontact.sublist("STEEPESTASCENT");
 
-  CORE::UTILS::DoubleParameter("CORRECTION_PARAMETER", 0.0,
+  Core::UTILS::DoubleParameter("CORRECTION_PARAMETER", 0.0,
       "Some penalty update methods use a user-specified correction parameter, "
       "which accelerates the convergence. This parameter can be specified here.",
       &sacontact);
 
-  CORE::UTILS::DoubleParameter("DECREASE_CORRECTION_PARAMETER", 1.0,
+  Core::UTILS::DoubleParameter("DECREASE_CORRECTION_PARAMETER", 1.0,
       "Some penalty update methods use a user-specified decrease correction "
       "parameter, which can be used to initiate a decrease of the "
       "regularization parameter in cumbersome situations.",
@@ -232,10 +232,10 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
           solution_steepest_ascent, solution_steepest_ascent_sp),
       &combo_contact);
 
-  CORE::UTILS::IntParameter("LINEAR_SOLVER_STRATEGY_0", -1,
+  Core::UTILS::IntParameter("LINEAR_SOLVER_STRATEGY_0", -1,
       "Linear solver for STRATEGY_0 of the COMBO strategy.", &combo_contact);
 
-  CORE::UTILS::IntParameter("LINEAR_SOLVER_STRATEGY_1", -1,
+  Core::UTILS::IntParameter("LINEAR_SOLVER_STRATEGY_1", -1,
       "Linear solver for STRATEGY_1 of the COMBO strategy.", &combo_contact);
 
   setStringToIntegralParameter<int>("SWITCHING_STRATEGY", "PreAsymptotic",
@@ -243,7 +243,7 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       " switching strategy to switch between the different solving strategies",
       tuple<std::string>("PreAsymptotic"), tuple<int>(switch_preasymptotic), &combo_contact);
 
-  CORE::UTILS::BoolParameter("PRINT2SCREEN", "Yes",
+  Core::UTILS::BoolParameter("PRINT2SCREEN", "Yes",
       "Activate the screen output of the COMBO strategy and the different "
       "switching strategies.",
       &combo_contact);
@@ -252,7 +252,7 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   // sub-sub-list "Augmented/Lagrange_Multiplier_Function"
   Teuchos::ParameterList& lm_funct = augcontact.sublist("LAGRANGE_MULTIPLIER_FUNCTION");
 
-  CORE::UTILS::IntParameter("LINEAR_SOLVER", -1,
+  Core::UTILS::IntParameter("LINEAR_SOLVER", -1,
       "Linear Solver number for the "
       "least squares problem.",
       &lm_funct);
@@ -261,17 +261,17 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   // sub-sub-list "Augmented/Plot"
   Teuchos::ParameterList& plot_contact = augcontact.sublist("PLOT");
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "RESOLUTION_X", 10, "Plot resolution in x/displacement direction", &plot_contact);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "RESOLUTION_Y", 10, "Plot resolution in y/Lagrange multiplier direction", &plot_contact);
 
-  CORE::UTILS::IntParameter("STEP", -1, "Plot this step.", &plot_contact);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter("STEP", -1, "Plot this step.", &plot_contact);
+  Core::UTILS::IntParameter(
       "ITER", -1, "Plot this iteration of the specified step.", &plot_contact);
 
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "OUTPUT_PRECISION", 16, "Precision for scientific numbers.", &plot_contact);
 
   setStringToIntegralParameter<PlotSupportType>("X_TYPE", "vague",
@@ -283,13 +283,13 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
           PlotSupportType::position_distance),
       &plot_contact);
 
-  CORE::UTILS::DoubleParameter("MIN_X", 1.0, "", &plot_contact);
-  CORE::UTILS::DoubleParameter("MAX_X", 1.0, "", &plot_contact);
+  Core::UTILS::DoubleParameter("MIN_X", 1.0, "", &plot_contact);
+  Core::UTILS::DoubleParameter("MAX_X", 1.0, "", &plot_contact);
 
-  CORE::UTILS::StringParameter(
+  Core::UTILS::StringParameter(
       "FIRST_REF_POINT", "0.0 0.0 0.0", "coordinates of the first reference point", &plot_contact);
 
-  CORE::UTILS::StringParameter("SECOND_REF_POINT", "0.0 0.0 0.0",
+  Core::UTILS::StringParameter("SECOND_REF_POINT", "0.0 0.0 0.0",
       "coordinates of the second reference point", &plot_contact);
 
   setStringToIntegralParameter<PlotSupportType>("Y_TYPE", "vague",
@@ -300,8 +300,8 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
           PlotSupportType::characteristic_element_length, PlotSupportType::position_angle),
       &plot_contact);
 
-  CORE::UTILS::DoubleParameter("MIN_Y", 1.0, "", &plot_contact);
-  CORE::UTILS::DoubleParameter("MAX_Y", 1.0, "", &plot_contact);
+  Core::UTILS::DoubleParameter("MIN_Y", 1.0, "", &plot_contact);
+  Core::UTILS::DoubleParameter("MAX_Y", 1.0, "", &plot_contact);
 
   setStringToIntegralParameter<PlotFuncName>("FUNC_NAME", "vague", "Plot type.",
       tuple<std::string>("vague", "Lagrangian", "Infeasibility", "Energy", "Energy_Gradient",
@@ -326,7 +326,7 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
           std::ios_base::out | std::ios_base::trunc, std::ios_base::out | std::ios_base::app),
       &plot_contact);
 
-  CORE::UTILS::IntParameter("WGAP_NODE_GID", -1,
+  Core::UTILS::IntParameter("WGAP_NODE_GID", -1,
       "Weighted gap of the slave node with "
       "this global ID will be considered, if FUNC_NAME == \"Weighted_GAP\".",
       &plot_contact);
@@ -351,7 +351,7 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
           PlotDirection::read_from_file, PlotDirection::zero),
       &plot_contact);
 
-  CORE::UTILS::StringParameter("DIRECTION_FILE", "none",
+  Core::UTILS::StringParameter("DIRECTION_FILE", "none",
       "Filename of the "
       "text file containing the plot direction.",
       &plot_contact);
@@ -373,9 +373,9 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       &plot_contact);
 
   // --------------------------------------------------------------------------
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "NITSCHE_THETA", 0.0, "+1: symmetric, 0: non-symmetric, -1: skew-symmetric", &scontact);
-  CORE::UTILS::DoubleParameter("NITSCHE_THETA_2", 1.0,
+  Core::UTILS::DoubleParameter("NITSCHE_THETA_2", 1.0,
       "+1: Chouly-type, 0: Burman penalty-free (only with theta=-1)", &scontact);
 
   setStringToIntegralParameter<int>("NITSCHE_WEIGHTING", "harmonic",
@@ -383,14 +383,14 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       tuple<std::string>("slave", "master", "harmonic"),
       tuple<int>(NitWgt_slave, NitWgt_master, NitWgt_harmonic), &scontact);
 
-  CORE::UTILS::BoolParameter("NITSCHE_PENALTY_ADAPTIVE", "yes",
+  Core::UTILS::BoolParameter("NITSCHE_PENALTY_ADAPTIVE", "yes",
       "adapt penalty parameter after each converged time step", &scontact);
 
-  CORE::UTILS::BoolParameter("REGULARIZED_NORMAL_CONTACT", "No",
+  Core::UTILS::BoolParameter("REGULARIZED_NORMAL_CONTACT", "No",
       "add a regularized normal contact formulation", &scontact);
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "REGULARIZATION_THICKNESS", -1., "maximum contact penetration", &scontact);
-  CORE::UTILS::DoubleParameter("REGULARIZATION_STIFFNESS", -1.,
+  Core::UTILS::DoubleParameter("REGULARIZATION_STIFFNESS", -1.,
       "initial contact stiffness (i.e. initial \"penalty parameter\")", &scontact);
 }
 

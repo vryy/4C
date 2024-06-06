@@ -19,18 +19,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace MORTAR
+namespace Mortar
 {
   class StrategyBase;
 }
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace CONTACT
     {
-      class LinearSystem : public NOX::NLN::LinearSystem
+      class LinearSystem : public NOX::Nln::LinearSystem
       {
        public:
         //! Standard constructor with full functionality.
@@ -38,11 +38,11 @@ namespace NOX
             Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
             const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-            const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+            const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
             const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
-            const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& M,
+            const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& M,
             const ::NOX::Epetra::Vector& cloneVector,
             const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject);
 
@@ -51,26 +51,26 @@ namespace NOX
             Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
             const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-            const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+            const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
             const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
-            const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& M,
+            const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& M,
             const ::NOX::Epetra::Vector& cloneVector);
 
         //! Sets the options of the underlying solver
-        CORE::LINALG::SolverParams set_solver_options(Teuchos::ParameterList& p,
-            Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
-            const NOX::NLN::SolutionType& solverType) override;
+        Core::LinAlg::SolverParams set_solver_options(Teuchos::ParameterList& p,
+            Teuchos::RCP<Core::LinAlg::Solver>& solverPtr,
+            const NOX::Nln::SolutionType& solverType) override;
 
         //! Returns a pointer to linear solver, which has to be used
-        NOX::NLN::SolutionType get_active_lin_solver(
-            const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
-            Teuchos::RCP<CORE::LINALG::Solver>& currSolver) override;
+        NOX::Nln::SolutionType get_active_lin_solver(
+            const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
+            Teuchos::RCP<Core::LinAlg::Solver>& currSolver) override;
 
         //! derived
         void set_linear_problem_for_solve(Epetra_LinearProblem& linear_problem,
-            CORE::LINALG::SparseOperator& jac, Epetra_Vector& lhs,
+            Core::LinAlg::SparseOperator& jac, Epetra_Vector& lhs,
             Epetra_Vector& rhs) const override;
 
         //! Combine the linear solution parts [derived]
@@ -83,11 +83,11 @@ namespace NOX
 
         //! Solve a linear system containing a diagonal matrix
         void apply_diagonal_inverse(
-            CORE::LINALG::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const;
+            Core::LinAlg::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const;
 
         /// return a pointer to the currently active linear solver
-        Teuchos::RCP<CORE::LINALG::Solver> get_linear_contact_solver(
-            const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers)
+        Teuchos::RCP<Core::LinAlg::Solver> get_linear_contact_solver(
+            const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers)
             const;
 
        private:
@@ -117,7 +117,7 @@ namespace NOX
            *
            *  \author hiermeier \date 04/17 */
           void ExtractActiveBlocks(
-              CORE::LINALG::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs);
+              Core::LinAlg::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs);
 
           /** \brief Set the original linear problem as sub-problem
            *
@@ -125,7 +125,7 @@ namespace NOX
            *
            *  \author hiermeier \date 04/17 */
           void SetOriginalSystem(
-              CORE::LINALG::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs);
+              Core::LinAlg::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs);
 
           /** \brief insert left hand side of the linear sub-problem into the global
            *  left hand side
@@ -141,21 +141,21 @@ namespace NOX
 
           const LinearSystem& linsys_;
 
-          Teuchos::RCP<CORE::LINALG::SparseOperator> p_jac_;
+          Teuchos::RCP<Core::LinAlg::SparseOperator> p_jac_;
           Teuchos::RCP<Epetra_Vector> p_lhs_;
           Teuchos::RCP<Epetra_Vector> p_rhs_;
         };
 
-        //! map of NOX::NLN::CONSTRAINT::Interface::Required objects
-        NOX::NLN::CONSTRAINT::ReqInterfaceMap i_constr_;
+        //! map of NOX::Nln::CONSTRAINT::Interface::Required objects
+        NOX::Nln::CONSTRAINT::ReqInterfaceMap i_constr_;
 
-        //! map of NOX::NLN::CONSTRAINT::Interface::Preconditioner objects
-        NOX::NLN::CONSTRAINT::PrecInterfaceMap i_constr_prec_;
+        //! map of NOX::Nln::CONSTRAINT::Interface::Preconditioner objects
+        NOX::Nln::CONSTRAINT::PrecInterfaceMap i_constr_prec_;
 
         mutable LinearSubProblem p_lin_prob_;
       };  // class LinearSystem
     }     // namespace CONTACT
-  }       // namespace NLN
+  }       // namespace Nln
 }  // namespace NOX
 
 

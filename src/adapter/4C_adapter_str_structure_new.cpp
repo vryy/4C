@@ -66,7 +66,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-ADAPTER::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew()
+Adapter::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew()
     : str_wrapper_(Teuchos::null),
       prbdyn_(Teuchos::null),
       sdyn_(Teuchos::null),
@@ -79,8 +79,8 @@ ADAPTER::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::Init(const Teuchos::ParameterList& prbdyn,
-    Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis)
+void Adapter::StructureBaseAlgorithmNew::Init(const Teuchos::ParameterList& prbdyn,
+    Teuchos::ParameterList& sdyn, Teuchos::RCP<Discret::Discretization> actdis)
 {
   issetup_ = false;
 
@@ -95,23 +95,23 @@ void ADAPTER::StructureBaseAlgorithmNew::Init(const Teuchos::ParameterList& prbd
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::Setup()
+void Adapter::StructureBaseAlgorithmNew::Setup()
 {
   if (not is_init()) FOUR_C_THROW("You have to call Init() first!");
 
   // major switch to different time integrators
-  switch (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(*sdyn_, "DYNAMICTYP"))
+  switch (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(*sdyn_, "DYNAMICTYP"))
   {
-    case INPAR::STR::dyna_statics:
-    case INPAR::STR::dyna_genalpha:
-    case INPAR::STR::dyna_genalpha_liegroup:
-    case INPAR::STR::dyna_onesteptheta:
-    case INPAR::STR::dyna_expleuler:
-    case INPAR::STR::dyna_centrdiff:
-    case INPAR::STR::dyna_ab2:
-    case INPAR::STR::dyna_ab4:
-    case INPAR::STR::dyna_euma:
-    case INPAR::STR::dyna_euimsto:
+    case Inpar::STR::dyna_statics:
+    case Inpar::STR::dyna_genalpha:
+    case Inpar::STR::dyna_genalpha_liegroup:
+    case Inpar::STR::dyna_onesteptheta:
+    case Inpar::STR::dyna_expleuler:
+    case Inpar::STR::dyna_centrdiff:
+    case Inpar::STR::dyna_ab2:
+    case Inpar::STR::dyna_ab4:
+    case Inpar::STR::dyna_euma:
+    case Inpar::STR::dyna_euimsto:
       setup_tim_int();  // <-- here is the show
       break;
     default:
@@ -126,7 +126,7 @@ void ADAPTER::StructureBaseAlgorithmNew::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::register_model_evaluator(
+void Adapter::StructureBaseAlgorithmNew::register_model_evaluator(
     const std::string name, Teuchos::RCP<STR::MODELEVALUATOR::Generic> me)
 {
   // safety checks
@@ -142,12 +142,12 @@ void ADAPTER::StructureBaseAlgorithmNew::register_model_evaluator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
+void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
 {
   if (not is_init()) FOUR_C_THROW("You have to call Init() first!");
 
   // get the problem instance
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   // get the restart step
   const int restart = problem->Restart();
 
@@ -155,7 +155,7 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   // Define, initialize and start the timer
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Teuchos::Time> t =
-      Teuchos::TimeMonitor::getNewTimer("ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure");
+      Teuchos::TimeMonitor::getNewTimer("Adapter::StructureTimIntBaseAlgorithm::SetupStructure");
   Teuchos::TimeMonitor monitor(*t);
 
   // ---------------------------------------------------------------------------
@@ -164,9 +164,9 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   if (actdis_->GetCondition("PointCoupling") != nullptr)
   {
-    std::vector<Teuchos::RCP<DRT::Discretization>> actdis_vec(1, actdis_);
+    std::vector<Teuchos::RCP<Discret::Discretization>> actdis_vec(1, actdis_);
     actdis_vec[0]->fill_complete(false, false, false);
-    CORE::REBALANCE::RebalanceDiscretizationsByBinning(actdis_vec, true);
+    Core::Rebalance::RebalanceDiscretizationsByBinning(actdis_vec, true);
   }
   else if (not actdis_->Filled() || not actdis_->HaveDofs())
   {
@@ -178,17 +178,17 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   // the different conditions
   // ---------------------------------------------------------------------------
   // define and initial with default value
-  Teuchos::RCP<std::set<enum INPAR::STR::ModelType>> modeltypes =
-      Teuchos::rcp(new std::set<enum INPAR::STR::ModelType>());
-  modeltypes->insert(INPAR::STR::model_structure);
+  Teuchos::RCP<std::set<enum Inpar::STR::ModelType>> modeltypes =
+      Teuchos::rcp(new std::set<enum Inpar::STR::ModelType>());
+  modeltypes->insert(Inpar::STR::model_structure);
   set_model_types(*modeltypes);
 
   // ---------------------------------------------------------------------------
   // Setup a element technology set by checking
   // the elements of the discretization
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<std::set<enum INPAR::STR::EleTech>> eletechs =
-      Teuchos::rcp(new std::set<enum INPAR::STR::EleTech>());
+  Teuchos::RCP<std::set<enum Inpar::STR::EleTech>> eletechs =
+      Teuchos::rcp(new std::set<enum Inpar::STR::EleTech>());
   detect_element_technologies(*eletechs);
 
   // ---------------------------------------------------------------------------
@@ -205,7 +205,7 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // Setup and create model specific linear solvers
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
+  Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
       linsolvers = STR::SOLVER::BuildLinSolvers(*modeltypes, *sdyn_, *actdis_);
 
   // ---------------------------------------------------------------------------
@@ -214,16 +214,16 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   {
     // make sure we IMR-like generalised-alpha requested for multi-scale
     // simulations
-    Teuchos::RCP<MAT::PAR::Bundle> materials = problem->Materials();
+    Teuchos::RCP<Mat::PAR::Bundle> materials = problem->Materials();
     for (const auto& [_, mat] : materials->Map())
     {
-      if (mat->Type() == CORE::Materials::m_struct_multiscale)
+      if (mat->Type() == Core::Materials::m_struct_multiscale)
       {
-        if (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(*sdyn_, "DYNAMICTYP") !=
-            INPAR::STR::dyna_genalpha)
+        if (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(*sdyn_, "DYNAMICTYP") !=
+            Inpar::STR::dyna_genalpha)
           FOUR_C_THROW("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
-        else if (CORE::UTILS::IntegralValue<INPAR::STR::MidAverageEnum>(
-                     sdyn_->sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_trlike)
+        else if (Core::UTILS::IntegralValue<Inpar::STR::MidAverageEnum>(
+                     sdyn_->sublist("GENALPHA"), "GENAVG") != Inpar::STR::midavg_trlike)
           FOUR_C_THROW(
               "In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=TrLike");
         break;
@@ -234,8 +234,8 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // Create context for output and restart
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis_->Writer();
-  if (CORE::UTILS::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis_->Writer();
+  if (Core::UTILS::IntegralValue<int>(*ioflags, "OUTPUT_BIN"))
   {
     output->WriteMesh(0, 0.0);
   }
@@ -243,7 +243,7 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // initialize/setup the input/output data container
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio = Teuchos::rcp(new STR::TIMINT::BaseDataIO());
+  Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio = Teuchos::rcp(new STR::TimeInt::BaseDataIO());
   dataio->Init(*ioflags, *sdyn_, *xparams, output);
   dataio->Setup();
 
@@ -251,39 +251,39 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
   // initialize/setup the structural dynamics data
   // container
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TIMINT::BaseDataSDyn> datasdyn = STR::TIMINT::BuildDataSDyn(*sdyn_);
+  Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn = STR::TimeInt::BuildDataSDyn(*sdyn_);
   datasdyn->Init(actdis_, *sdyn_, *xparams, modeltypes, eletechs, linsolvers);
   datasdyn->Setup();
 
   // ---------------------------------------------------------------------------
   // initialize/setup the global state data container
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate = Teuchos::null;
+  Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> dataglobalstate = Teuchos::null;
   set_global_state(dataglobalstate, datasdyn);
 
   // ---------------------------------------------------------------------------
   // in case of non-additive rotation (pseudo-)vector DOFs:
   // ---------------------------------------------------------------------------
-  if (eletechs->find(INPAR::STR::EleTech::rotvec) != eletechs->end())
+  if (eletechs->find(Inpar::STR::EleTech::rotvec) != eletechs->end())
   {
     // -------------------------------------------------------------------------
     // set the RotVecUpdater as new precomputeX operator for the nox nln group
     // -------------------------------------------------------------------------
     Teuchos::ParameterList& p_grp_opt = datasdyn->GetNoxParams().sublist("Group Options");
     // Get the current map. If there is no map, return a new empty one. (reference)
-    NOX::NLN::GROUP::PrePostOperator::Map& prepostgroup_map =
-        NOX::NLN::GROUP::PrePostOp::GetMap(p_grp_opt);
+    NOX::Nln::GROUP::PrePostOperator::Map& prepostgroup_map =
+        NOX::Nln::GROUP::PrePostOp::GetMap(p_grp_opt);
     // create the new rotation vector update pre/post operator
-    Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prepostrotvec_ptr =
-        Teuchos::rcp(new NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater(dataglobalstate));
+    Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> prepostrotvec_ptr =
+        Teuchos::rcp(new NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater(dataglobalstate));
     // insert/replace the old pointer in the map
-    prepostgroup_map[NOX::NLN::GROUP::prepost_rotvecupdate] = prepostrotvec_ptr;
+    prepostgroup_map[NOX::Nln::GROUP::prepost_rotvecupdate] = prepostrotvec_ptr;
   }
 
   // ---------------------------------------------------------------------------
   // Build time integrator
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
+  Teuchos::RCP<STR::TimeInt::Base> ti_strategy = Teuchos::null;
   set_time_integration_strategy(ti_strategy, dataio, datasdyn, dataglobalstate, restart);
 
 
@@ -296,45 +296,45 @@ void ADAPTER::StructureBaseAlgorithmNew::setup_tim_int()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::set_model_types(
-    std::set<enum INPAR::STR::ModelType>& modeltypes) const
+void Adapter::StructureBaseAlgorithmNew::set_model_types(
+    std::set<enum Inpar::STR::ModelType>& modeltypes) const
 {
   if (not is_init()) FOUR_C_THROW("You have to call Init() first!");
   // ---------------------------------------------------------------------------
   // check for meshtying and contact conditions
   // ---------------------------------------------------------------------------
   // --- contact conditions
-  std::vector<CORE::Conditions::Condition*> ccond(0);
+  std::vector<Core::Conditions::Condition*> ccond(0);
   actdis_->GetCondition("Contact", ccond);
   if (ccond.size())
   {
     // what's the current problem type?
-    CORE::ProblemType probtype = GLOBAL::Problem::Instance()->GetProblemType();
+    Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
     // ToDo: once the new structural time integration can handle
     //       condensed contact formulations, the model_evaluator
     //       can have its contact model. For now, the TSI Lagrange
     //       strategy resides in the TSI algorithm.
-    if (probtype == CORE::ProblemType::tsi)
+    if (probtype == Core::ProblemType::tsi)
     {
-      const Teuchos::ParameterList& contact = GLOBAL::Problem::Instance()->contact_dynamic_params();
-      if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
-          INPAR::CONTACT::solution_nitsche)
-        modeltypes.insert(INPAR::STR::model_contact);
+      const Teuchos::ParameterList& contact = Global::Problem::Instance()->contact_dynamic_params();
+      if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
+          Inpar::CONTACT::solution_nitsche)
+        modeltypes.insert(Inpar::STR::model_contact);
     }
     else
-      modeltypes.insert(INPAR::STR::model_contact);
+      modeltypes.insert(Inpar::STR::model_contact);
   }
   // --- meshtying conditions
-  std::vector<CORE::Conditions::Condition*> mtcond(0);
+  std::vector<Core::Conditions::Condition*> mtcond(0);
   actdis_->GetCondition("Mortar", mtcond);
-  if (mtcond.size()) modeltypes.insert(INPAR::STR::model_meshtying);
+  if (mtcond.size()) modeltypes.insert(Inpar::STR::model_meshtying);
 
   // check for 0D cardiovascular conditions
   // ---------------------------------------------------------------------------
-  std::vector<CORE::Conditions::Condition*> cardiovasc0dcond_4elementwindkessel(0);
-  std::vector<CORE::Conditions::Condition*> cardiovasc0dcond_arterialproxdist(0);
-  std::vector<CORE::Conditions::Condition*> cardiovasc0dcond_syspulcirculation(0);
-  std::vector<CORE::Conditions::Condition*> cardiovascrespir0dcond_syspulperiphcirculation(0);
+  std::vector<Core::Conditions::Condition*> cardiovasc0dcond_4elementwindkessel(0);
+  std::vector<Core::Conditions::Condition*> cardiovasc0dcond_arterialproxdist(0);
+  std::vector<Core::Conditions::Condition*> cardiovasc0dcond_syspulcirculation(0);
+  std::vector<Core::Conditions::Condition*> cardiovascrespir0dcond_syspulperiphcirculation(0);
   actdis_->GetCondition(
       "Cardiovascular0D4ElementWindkesselStructureCond", cardiovasc0dcond_4elementwindkessel);
   actdis_->GetCondition(
@@ -346,7 +346,7 @@ void ADAPTER::StructureBaseAlgorithmNew::set_model_types(
   if (cardiovasc0dcond_4elementwindkessel.size() or cardiovasc0dcond_arterialproxdist.size() or
       cardiovasc0dcond_syspulcirculation.size() or
       cardiovascrespir0dcond_syspulperiphcirculation.size())
-    modeltypes.insert(INPAR::STR::model_cardiovascular0d);
+    modeltypes.insert(Inpar::STR::model_cardiovascular0d);
 
   // ---------------------------------------------------------------------------
   // check for constraint conditions
@@ -354,12 +354,12 @@ void ADAPTER::StructureBaseAlgorithmNew::set_model_types(
   bool have_lag_constraint = false;
   bool have_pen_constraint = false;
   // --- enforcement by Lagrange multiplier
-  std::vector<CORE::Conditions::Condition*> lagcond_volconstr3d(0);
-  std::vector<CORE::Conditions::Condition*> lagcond_areaconstr3d(0);
-  std::vector<CORE::Conditions::Condition*> lagcond_areaconstr2d(0);
-  std::vector<CORE::Conditions::Condition*> lagcond_mpconline2d(0);
-  std::vector<CORE::Conditions::Condition*> lagcond_mpconplane3d(0);
-  std::vector<CORE::Conditions::Condition*> lagcond_mpcnormcomp3d(0);
+  std::vector<Core::Conditions::Condition*> lagcond_volconstr3d(0);
+  std::vector<Core::Conditions::Condition*> lagcond_areaconstr3d(0);
+  std::vector<Core::Conditions::Condition*> lagcond_areaconstr2d(0);
+  std::vector<Core::Conditions::Condition*> lagcond_mpconline2d(0);
+  std::vector<Core::Conditions::Condition*> lagcond_mpconplane3d(0);
+  std::vector<Core::Conditions::Condition*> lagcond_mpcnormcomp3d(0);
   actdis_->GetCondition("VolumeConstraint_3D", lagcond_volconstr3d);
   actdis_->GetCondition("AreaConstraint_3D", lagcond_areaconstr3d);
   actdis_->GetCondition("AreaConstraint_2D", lagcond_areaconstr2d);
@@ -370,45 +370,45 @@ void ADAPTER::StructureBaseAlgorithmNew::set_model_types(
       lagcond_mpconline2d.size() or lagcond_mpconplane3d.size() or lagcond_mpcnormcomp3d.size())
     have_lag_constraint = true;
   // --- enforcement by penalty law
-  std::vector<CORE::Conditions::Condition*> pencond_volconstr3d(0);
-  std::vector<CORE::Conditions::Condition*> pencond_areaconstr3d(0);
-  std::vector<CORE::Conditions::Condition*> pencond_mpcnormcomp3d(0);
+  std::vector<Core::Conditions::Condition*> pencond_volconstr3d(0);
+  std::vector<Core::Conditions::Condition*> pencond_areaconstr3d(0);
+  std::vector<Core::Conditions::Condition*> pencond_mpcnormcomp3d(0);
   actdis_->GetCondition("VolumeConstraint_3D_Pen", pencond_volconstr3d);
   actdis_->GetCondition("AreaConstraint_3D_Pen", pencond_areaconstr3d);
   actdis_->GetCondition("MPC_NormalComponent_3D_Pen", pencond_mpcnormcomp3d);
   if (pencond_volconstr3d.size() or pencond_areaconstr3d.size() or pencond_mpcnormcomp3d.size())
     have_pen_constraint = true;
   if (have_lag_constraint or have_pen_constraint)
-    modeltypes.insert(INPAR::STR::model_lag_pen_constraint);
+    modeltypes.insert(Inpar::STR::model_lag_pen_constraint);
 
   // ---------------------------------------------------------------------------
   // check for spring dashpot conditions
   // ---------------------------------------------------------------------------
-  std::vector<CORE::Conditions::Condition*> sdp_cond(0);
+  std::vector<Core::Conditions::Condition*> sdp_cond(0);
   actdis_->GetCondition("RobinSpringDashpot", sdp_cond);
-  if (sdp_cond.size()) modeltypes.insert(INPAR::STR::model_springdashpot);
+  if (sdp_cond.size()) modeltypes.insert(Inpar::STR::model_springdashpot);
   // ---------------------------------------------------------------------------
   // check for coupled problems
   // ---------------------------------------------------------------------------
   // get the problem instance
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   // what's the current problem type?
-  CORE::ProblemType probtype = problem->GetProblemType();
+  Core::ProblemType probtype = problem->GetProblemType();
   switch (probtype)
   {
-    case CORE::ProblemType::fsi:
-    case CORE::ProblemType::immersed_fsi:
-    case CORE::ProblemType::fbi:
-    case CORE::ProblemType::fsi_redmodels:
-    case CORE::ProblemType::fsi_lung:
-    case CORE::ProblemType::gas_fsi:
-    case CORE::ProblemType::ac_fsi:
-    case CORE::ProblemType::biofilm_fsi:
-    case CORE::ProblemType::thermo_fsi:
-    case CORE::ProblemType::fsi_xfem:
-    case CORE::ProblemType::pasi:
-    case CORE::ProblemType::ssi:
-    case CORE::ProblemType::ssti:
+    case Core::ProblemType::fsi:
+    case Core::ProblemType::immersed_fsi:
+    case Core::ProblemType::fbi:
+    case Core::ProblemType::fsi_redmodels:
+    case Core::ProblemType::fsi_lung:
+    case Core::ProblemType::gas_fsi:
+    case Core::ProblemType::ac_fsi:
+    case Core::ProblemType::biofilm_fsi:
+    case Core::ProblemType::thermo_fsi:
+    case Core::ProblemType::fsi_xfem:
+    case Core::ProblemType::pasi:
+    case Core::ProblemType::ssi:
+    case Core::ProblemType::ssti:
     {
       if (prbdyn_->INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
               "Partitioned Coupling Model"))
@@ -423,7 +423,7 @@ void ADAPTER::StructureBaseAlgorithmNew::set_model_types(
           FOUR_C_THROW(
               "The partitioned coupling model pointer is not allowed to be Teuchos::null!");
         // set the model type
-        modeltypes.insert(INPAR::STR::model_partitioned_coupling);
+        modeltypes.insert(Inpar::STR::model_partitioned_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
         sdyn_->set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
             "Partitioned Coupling Model", coupling_model_ptr);
@@ -438,7 +438,7 @@ void ADAPTER::StructureBaseAlgorithmNew::set_model_types(
         if (coupling_model_ptr.is_null())
           FOUR_C_THROW("The monolithic coupling model pointer is not allowed to be Teuchos::null!");
         // set the model type
-        modeltypes.insert(INPAR::STR::model_monolithic_coupling);
+        modeltypes.insert(Inpar::STR::model_monolithic_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
         sdyn_->set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
             "Monolithic Coupling Model", coupling_model_ptr);
@@ -453,7 +453,7 @@ void ADAPTER::StructureBaseAlgorithmNew::set_model_types(
         if (coupling_model_ptr.is_null())
           FOUR_C_THROW("The basic coupling model pointer is not allowed to be Teuchos::null!");
         // set the model type
-        modeltypes.insert(INPAR::STR::model_basic_coupling);
+        modeltypes.insert(Inpar::STR::model_basic_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
         sdyn_->set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
             "Basic Coupling Model", coupling_model_ptr);
@@ -469,66 +469,66 @@ void ADAPTER::StructureBaseAlgorithmNew::set_model_types(
   // check for beam interactions (either contact or potential-based)
   // ---------------------------------------------------------------------------
   // get beam contact strategy
-  const Teuchos::ParameterList& beamcontact = GLOBAL::Problem::Instance()->beam_contact_params();
-  INPAR::BEAMCONTACT::Strategy strategy =
-      CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
+  const Teuchos::ParameterList& beamcontact = Global::Problem::Instance()->beam_contact_params();
+  Inpar::BEAMCONTACT::Strategy strategy =
+      Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
 
-  INPAR::BEAMCONTACT::Modelevaluator modelevaluator =
-      CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Modelevaluator>(beamcontact, "MODELEVALUATOR");
+  Inpar::BEAMCONTACT::Modelevaluator modelevaluator =
+      Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Modelevaluator>(beamcontact, "MODELEVALUATOR");
 
   // conditions for potential-based beam interaction
-  std::vector<CORE::Conditions::Condition*> beampotconditions(0);
+  std::vector<Core::Conditions::Condition*> beampotconditions(0);
   actdis_->GetCondition("BeamPotentialLineCharge", beampotconditions);
 
   // conditions for beam penalty point coupling
-  std::vector<CORE::Conditions::Condition*> beampenaltycouplingconditions(0);
+  std::vector<Core::Conditions::Condition*> beampenaltycouplingconditions(0);
   actdis_->GetCondition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
 
 
-  if (strategy != INPAR::BEAMCONTACT::bstr_none and modelevaluator == INPAR::BEAMCONTACT::bstr_old)
-    modeltypes.insert(INPAR::STR::model_beam_interaction_old);
+  if (strategy != Inpar::BEAMCONTACT::bstr_none and modelevaluator == Inpar::BEAMCONTACT::bstr_old)
+    modeltypes.insert(Inpar::STR::model_beam_interaction_old);
 
   // ---------------------------------------------------------------------------
   // check for brownian dynamics
   // ---------------------------------------------------------------------------
-  if (CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->brownian_dynamics_params(), "BROWNDYNPROB"))
-    modeltypes.insert(INPAR::STR::model_browniandyn);
+  if (Core::UTILS::IntegralValue<int>(
+          Global::Problem::Instance()->brownian_dynamics_params(), "BROWNDYNPROB"))
+    modeltypes.insert(Inpar::STR::model_browniandyn);
 
   // ---------------------------------------------------------------------------
   // check for beam interaction
   // ---------------------------------------------------------------------------
-  if (CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("CROSSLINKING"),
+  if (Core::UTILS::IntegralValue<int>(
+          Global::Problem::Instance()->beam_interaction_params().sublist("CROSSLINKING"),
           "CROSSLINKER") or
-      CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("SPHERE BEAM LINK"),
+      Core::UTILS::IntegralValue<int>(
+          Global::Problem::Instance()->beam_interaction_params().sublist("SPHERE BEAM LINK"),
           "SPHEREBEAMLINKING") or
-      CORE::UTILS::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
-          "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
-      CORE::UTILS::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
-          "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
-      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
+      Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+          Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
+          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
+      Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+          Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
+          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none or
+      Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
+          Global::Problem::Instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID VOLUME MESHTYING"),
-          "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
-      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
+          "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none or
+      Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
+          Global::Problem::Instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID SURFACE MESHTYING"),
-          "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
-      Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
+          "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none or
+      Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
+          Global::Problem::Instance()->beam_interaction_params().sublist(
               "BEAM TO SOLID SURFACE CONTACT"),
-          "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
+          "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none or
       beampotconditions.size() > 0 or beampenaltycouplingconditions.size() > 0)
-    modeltypes.insert(INPAR::STR::model_beaminteraction);
+    modeltypes.insert(Inpar::STR::model_beaminteraction);
 
   // ---------------------------------------------------------------------------
   // check for constraints
   // ---------------------------------------------------------------------------
-  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> linePeriodicRve, surfPeriodicRve,
+  std::vector<Teuchos::RCP<Core::Conditions::Condition>> linePeriodicRve, surfPeriodicRve,
       pointLinearCoupledEquation;
   actdis_->GetCondition("LinePeriodicRve", linePeriodicRve);
   actdis_->GetCondition("SurfacePeriodicRve", surfPeriodicRve);
@@ -536,14 +536,14 @@ void ADAPTER::StructureBaseAlgorithmNew::set_model_types(
 
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
       pointLinearCoupledEquation.size() > 0)
-    modeltypes.insert(INPAR::STR::model_constraints);
+    modeltypes.insert(Inpar::STR::model_constraints);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::detect_element_technologies(
-    std::set<enum INPAR::STR::EleTech>& eletechs) const
+void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
+    std::set<enum Inpar::STR::EleTech>& eletechs) const
 {
   int isplasticity_local = 0;
   int isplasticity_global = 0;
@@ -562,44 +562,45 @@ void ADAPTER::StructureBaseAlgorithmNew::detect_element_technologies(
 
   for (int i = 0; i < actdis_->NumMyRowElements(); ++i)
   {
-    CORE::Elements::Element* actele = actdis_->lRowElement(i);
+    Core::Elements::Element* actele = actdis_->lRowElement(i);
     // Detect plasticity -------------------------------------------------------
-    if (actele->ElementType() == DRT::ELEMENTS::SoHex8PlastType::Instance() or
-        actele->ElementType() == DRT::ELEMENTS::SoHex27PlastType::Instance() or
-        actele->ElementType() == DRT::ELEMENTS::SoSh8PlastType::Instance() or
-        actele->ElementType() == DRT::ELEMENTS::SoHex18PlastType::Instance() or
-        actele->ElementType() == DRT::ELEMENTS::SoSh18PlastType::Instance())
+    if (actele->ElementType() == Discret::ELEMENTS::SoHex8PlastType::Instance() or
+        actele->ElementType() == Discret::ELEMENTS::SoHex27PlastType::Instance() or
+        actele->ElementType() == Discret::ELEMENTS::SoSh8PlastType::Instance() or
+        actele->ElementType() == Discret::ELEMENTS::SoHex18PlastType::Instance() or
+        actele->ElementType() == Discret::ELEMENTS::SoSh18PlastType::Instance())
     {
-      if (actele->Material()->MaterialType() == CORE::Materials::m_plelasthyper)
+      if (actele->Material()->MaterialType() == Core::Materials::m_plelasthyper)
         isplasticity_local = true;
     }
 
     // Detect EAS --------------------------------------------------------------
-    DRT::ELEMENTS::SoBase* so_base_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(actele);
+    Discret::ELEMENTS::SoBase* so_base_ele = dynamic_cast<Discret::ELEMENTS::SoBase*>(actele);
     if (so_base_ele != nullptr)
     {
       if (so_base_ele->HaveEAS()) iseas_local = 1;
     }
 
-    DRT::ELEMENTS::Shell7p* shell7p = dynamic_cast<DRT::ELEMENTS::Shell7p*>(actele);
+    Discret::ELEMENTS::Shell7p* shell7p = dynamic_cast<Discret::ELEMENTS::Shell7p*>(actele);
     if (shell7p)
-      if (shell7p->GetEleTech().find(INPAR::STR::EleTech::eas) != shell7p->GetEleTech().end())
+      if (shell7p->GetEleTech().find(Inpar::STR::EleTech::eas) != shell7p->GetEleTech().end())
         iseas_local = 1;
 
-    DRT::ELEMENTS::Solid* solid = dynamic_cast<DRT::ELEMENTS::Solid*>(actele);
+    Discret::ELEMENTS::Solid* solid = dynamic_cast<Discret::ELEMENTS::Solid*>(actele);
     if (solid != nullptr)
       if (solid->HaveEAS()) iseas_local = 1;
 
     // Detect additional pressure dofs -----------------------------------------
-    if (actele->ElementType() == DRT::ELEMENTS::SoSh8p8Type::Instance()) ispressure_local = 1;
+    if (actele->ElementType() == Discret::ELEMENTS::SoSh8p8Type::Instance()) ispressure_local = 1;
 
     // Detect fbar
-    DRT::ELEMENTS::SoHex8fbar* so_hex8fbar_ele = dynamic_cast<DRT::ELEMENTS::SoHex8fbar*>(actele);
+    Discret::ELEMENTS::SoHex8fbar* so_hex8fbar_ele =
+        dynamic_cast<Discret::ELEMENTS::SoHex8fbar*>(actele);
     if (so_hex8fbar_ele != nullptr) isfbar_local = 1;
 
     // Detect non-additive rotation-vector DOFs --------------------------------
-    if (actele->ElementType() == DRT::ELEMENTS::Beam3rType::Instance() or
-        actele->ElementType() == DRT::ELEMENTS::Beam3kType::Instance())
+    if (actele->ElementType() == Discret::ELEMENTS::Beam3rType::Instance() or
+        actele->ElementType() == Discret::ELEMENTS::Beam3kType::Instance())
     {
       isrotvec_local = true;
       break;
@@ -608,39 +609,39 @@ void ADAPTER::StructureBaseAlgorithmNew::detect_element_technologies(
 
   // plasticity - sum over all processors
   actdis_->Comm().SumAll(&isplasticity_local, &isplasticity_global, 1);
-  if (isplasticity_global > 0) eletechs.insert(INPAR::STR::EleTech::plasticity);
+  if (isplasticity_global > 0) eletechs.insert(Inpar::STR::EleTech::plasticity);
 
   // eas - sum over all processors
   actdis_->Comm().SumAll(&iseas_local, &iseas_global, 1);
-  if (iseas_global > 0) eletechs.insert(INPAR::STR::EleTech::eas);
+  if (iseas_global > 0) eletechs.insert(Inpar::STR::EleTech::eas);
 
   // pressure - sum over all processors
   actdis_->Comm().SumAll(&ispressure_local, &ispressure_global, 1);
-  if (ispressure_global > 0) eletechs.insert(INPAR::STR::EleTech::pressure);
+  if (ispressure_global > 0) eletechs.insert(Inpar::STR::EleTech::pressure);
 
   // fbar - sum over all processors
   actdis_->Comm().SumAll(&isfbar_local, &isfbar_global, 1);
-  if (isfbar_global > 0) eletechs.insert(INPAR::STR::EleTech::fbar);
+  if (isfbar_global > 0) eletechs.insert(Inpar::STR::EleTech::fbar);
 
   // rotation vector DOFs - sum over all processors
   actdis_->Comm().SumAll(&isrotvec_local, &isrotvec_global, 1);
-  if (isrotvec_global > 0) eletechs.insert(INPAR::STR::EleTech::rotvec);
+  if (isrotvec_global > 0) eletechs.insert(Inpar::STR::EleTech::rotvec);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& ioflags,
+void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& ioflags,
     Teuchos::ParameterList& xparams, Teuchos::ParameterList& time_adaptivity_params)
 {
   // get the problem instance and the problem type
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
-  CORE::ProblemType probtype = problem->GetProblemType();
+  Global::Problem* problem = Global::Problem::Instance();
+  Core::ProblemType probtype = problem->GetProblemType();
 
   // ---------------------------------------------------------------------------
   // show default parameters
   // ---------------------------------------------------------------------------
-  if ((actdis_->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, *sdyn_);
+  if ((actdis_->Comm()).MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, *sdyn_);
 
   // ---------------------------------------------------------------------------
   // get input parameter lists and copy them,
@@ -668,8 +669,8 @@ void ADAPTER::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat
   // file
-  if (CORE::UTILS::IntegralValue<INPAR::STR::DampKind>(*sdyn_, "DAMPING") ==
-      INPAR::STR::damp_rayleigh)
+  if (Core::UTILS::IntegralValue<Inpar::STR::DampKind>(*sdyn_, "DAMPING") ==
+      Inpar::STR::damp_rayleigh)
   {
     if (sdyn_->get<double>("K_DAMP") < 0.0)
     {
@@ -712,12 +713,12 @@ void ADAPTER::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
   // ---------------------------------------------------------------------------
   switch (probtype)
   {
-    case CORE::ProblemType::fsi:
-    case CORE::ProblemType::fsi_redmodels:
+    case Core::ProblemType::fsi:
+    case Core::ProblemType::fsi_redmodels:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
-      if (CORE::UTILS::IntegralValue<bool>(fsiada, "TIMEADAPTON"))
+      if (Core::UTILS::IntegralValue<bool>(fsiada, "TIMEADAPTON"))
       {
         // overrule time step size adaptivity control parameters
         if (time_adaptivity_params.get<std::string>("KIND") != "NONE")
@@ -731,13 +732,13 @@ void ADAPTER::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
 
           if (actdis_->Comm().MyPID() == 0)
           {
-            CORE::IO::cout
+            Core::IO::cout
                 << "*** Due to FSI time step size adaptivity with structure based error "
                    "estimation,\n"
                    "algorithmic control parameters in STRUCTURAL DYNAMIC/TIMEADAPTIVITY have been\n"
                    "overwritten by those from FSI DYNAMIC/TIMEADAPTIVITY."
-                << CORE::IO::endl
-                << CORE::IO::endl;
+                << Core::IO::endl
+                << Core::IO::endl;
           }
         }
       }
@@ -754,11 +755,11 @@ void ADAPTER::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::set_global_state(
-    Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
-    const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& datasdyn)
+void Adapter::StructureBaseAlgorithmNew::set_global_state(
+    Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& dataglobalstate,
+    const Teuchos::RCP<const STR::TimeInt::BaseDataSDyn>& datasdyn)
 {
-  dataglobalstate = STR::TIMINT::build_data_global_state();
+  dataglobalstate = STR::TimeInt::build_data_global_state();
   dataglobalstate->Init(actdis_, *sdyn_, datasdyn);
   dataglobalstate->Setup();
 }
@@ -766,17 +767,17 @@ void ADAPTER::StructureBaseAlgorithmNew::set_global_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::set_time_integration_strategy(
-    Teuchos::RCP<STR::TIMINT::Base>& ti_strategy,
-    const Teuchos::RCP<STR::TIMINT::BaseDataIO>& dataio,
-    const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& datasdyn,
-    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate, const int& restart)
+void Adapter::StructureBaseAlgorithmNew::set_time_integration_strategy(
+    Teuchos::RCP<STR::TimeInt::Base>& ti_strategy,
+    const Teuchos::RCP<STR::TimeInt::BaseDataIO>& dataio,
+    const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& datasdyn,
+    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& dataglobalstate, const int& restart)
 {
-  ti_strategy = STR::TIMINT::BuildStrategy(*sdyn_);
+  ti_strategy = STR::TimeInt::BuildStrategy(*sdyn_);
   ti_strategy->Init(dataio, datasdyn, dataglobalstate);
 
   /* In the restart case, we Setup the structural time integration after the
-   * discretization has been redistributed. See STR::TIMINT::Base::read_restart()
+   * discretization has been redistributed. See STR::TimeInt::Base::read_restart()
    * for more information.                                     hiermeier 05/16*/
   if (not restart) ti_strategy->Setup();
 }
@@ -784,14 +785,14 @@ void ADAPTER::StructureBaseAlgorithmNew::set_time_integration_strategy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::set_structure_wrapper(
+void Adapter::StructureBaseAlgorithmNew::set_structure_wrapper(
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams, const Teuchos::ParameterList& time_adaptivity_params,
-    Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
+    Teuchos::RCP<STR::TimeInt::Base> ti_strategy)
 {
   // try to firstly create the adaptive wrapper
   if (str_wrapper_.is_null())
-    str_wrapper_ = ADAPTER::StructureTimeAda::Create(time_adaptivity_params, ti_strategy);
+    str_wrapper_ = Adapter::StructureTimeAda::Create(time_adaptivity_params, ti_strategy);
 
   // if no adaptive wrapper was found, we try to create a standard one
   if (str_wrapper_.is_null()) create_wrapper(ti_strategy);
@@ -802,33 +803,34 @@ void ADAPTER::StructureBaseAlgorithmNew::set_structure_wrapper(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::create_wrapper(Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
+void Adapter::StructureBaseAlgorithmNew::create_wrapper(
+    Teuchos::RCP<STR::TimeInt::Base> ti_strategy)
 {
   // get the problem instance and the problem type
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
-  CORE::ProblemType probtype = problem->GetProblemType();
+  Global::Problem* problem = Global::Problem::Instance();
+  Core::ProblemType probtype = problem->GetProblemType();
 
   switch (probtype)
   {
-    case CORE::ProblemType::fsi:
-    case CORE::ProblemType::fsi_redmodels:
-    case CORE::ProblemType::fsi_lung:
-    case CORE::ProblemType::gas_fsi:
-    case CORE::ProblemType::ac_fsi:
-    case CORE::ProblemType::biofilm_fsi:
-    case CORE::ProblemType::thermo_fsi:
-    case CORE::ProblemType::fsi_xfem:
+    case Core::ProblemType::fsi:
+    case Core::ProblemType::fsi_redmodels:
+    case Core::ProblemType::fsi_lung:
+    case Core::ProblemType::gas_fsi:
+    case Core::ProblemType::ac_fsi:
+    case Core::ProblemType::biofilm_fsi:
+    case Core::ProblemType::thermo_fsi:
+    case Core::ProblemType::fsi_xfem:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
-      const int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+      const int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
 
       // Are there any constraint conditions active?
-      const std::set<INPAR::STR::ModelType>& modeltypes =
+      const std::set<Inpar::STR::ModelType>& modeltypes =
           ti_strategy->GetDataSDyn().GetModelTypes();
-      if (modeltypes.find(INPAR::STR::model_lag_pen_constraint) != modeltypes.end())
+      if (modeltypes.find(Inpar::STR::model_lag_pen_constraint) != modeltypes.end())
       {
         if ((actdis_->Comm()).MyPID() == 0)
-          CORE::IO::cout << "Using StructureNOXCorrectionWrapper()..." << CORE::IO::endl;
+          Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
             coupling == fsi_iter_constr_monolithicfluidsplit)
@@ -844,7 +846,7 @@ void ADAPTER::StructureBaseAlgorithmNew::create_wrapper(Teuchos::RCP<STR::TIMINT
             coupling == fsi_iter_lung_monolithicfluidsplit)
         {
           if ((actdis_->Comm()).MyPID() == 0)
-            CORE::IO::cout << "Using StructureNOXCorrectionWrapper()..." << CORE::IO::endl;
+            Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
           str_wrapper_ = Teuchos::rcp(
               new StructureLung(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
         }
@@ -856,53 +858,53 @@ void ADAPTER::StructureBaseAlgorithmNew::create_wrapper(Teuchos::RCP<STR::TIMINT
       }
       break;
     }
-    case CORE::ProblemType::fbi:
+    case Core::ProblemType::fbi:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
-      if (CORE::UTILS::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(
-              fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED") == INPAR::FSI::DirichletNeumann)
+      if (Core::UTILS::IntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
+              fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED") == Inpar::FSI::DirichletNeumann)
         str_wrapper_ = Teuchos::rcp(new FBIStructureWrapper(ti_strategy));
       else
         FOUR_C_THROW("Only DirichletNeumann is implemented for FBI so far");
       break;
     }
-    case CORE::ProblemType::immersed_fsi:
+    case Core::ProblemType::immersed_fsi:
     {
       str_wrapper_ = Teuchos::rcp(new FSIStructureWrapperImmersed(ti_strategy));
       break;
     }
-    case CORE::ProblemType::ssi:
-    case CORE::ProblemType::ssti:
+    case Core::ProblemType::ssi:
+    case Core::ProblemType::ssti:
     {
       str_wrapper_ = Teuchos::rcp(new SSIStructureWrapper(ti_strategy));
       break;
     }
-    case CORE::ProblemType::pasi:
+    case Core::ProblemType::pasi:
     {
       str_wrapper_ = Teuchos::rcp(new PASIStructureWrapper(ti_strategy));
       break;
     }
-    case CORE::ProblemType::redairways_tissue:
+    case Core::ProblemType::redairways_tissue:
       str_wrapper_ = Teuchos::rcp(new StructureRedAirway(ti_strategy));
       break;
-    case CORE::ProblemType::poroelast:
-    case CORE::ProblemType::poroscatra:
-    case CORE::ProblemType::fpsi:
-    case CORE::ProblemType::fps3i:
-    case CORE::ProblemType::fpsi_xfem:
+    case Core::ProblemType::poroelast:
+    case Core::ProblemType::poroscatra:
+    case Core::ProblemType::fpsi:
+    case Core::ProblemType::fps3i:
+    case Core::ProblemType::fpsi_xfem:
     {
       const Teuchos::ParameterList& porodyn = problem->poroelast_dynamic_params();
-      const INPAR::POROELAST::SolutionSchemeOverFields coupling =
-          CORE::UTILS::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
+      const Inpar::PoroElast::SolutionSchemeOverFields coupling =
+          Core::UTILS::IntegralValue<Inpar::PoroElast::SolutionSchemeOverFields>(
               porodyn, "COUPALGO");
       // Are there any constraint conditions active?
-      const std::set<INPAR::STR::ModelType>& modeltypes =
+      const std::set<Inpar::STR::ModelType>& modeltypes =
           ti_strategy->GetDataSDyn().GetModelTypes();
-      if (modeltypes.find(INPAR::STR::model_lag_pen_constraint) != modeltypes.end())
+      if (modeltypes.find(Inpar::STR::model_lag_pen_constraint) != modeltypes.end())
       {
-        if (coupling == INPAR::POROELAST::Monolithic_structuresplit or
-            coupling == INPAR::POROELAST::Monolithic_fluidsplit or
-            coupling == INPAR::POROELAST::Monolithic_nopenetrationsplit)
+        if (coupling == Inpar::PoroElast::Monolithic_structuresplit or
+            coupling == Inpar::PoroElast::Monolithic_fluidsplit or
+            coupling == Inpar::PoroElast::Monolithic_nopenetrationsplit)
           str_wrapper_ = Teuchos::rcp(new FPSIStructureWrapper(ti_strategy));
         else
           str_wrapper_ = Teuchos::rcp(new StructureConstrMerged(ti_strategy));

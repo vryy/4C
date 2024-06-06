@@ -34,9 +34,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Node;
     class Edge;
@@ -140,18 +140,18 @@ namespace CORE::GEO
      *
      *  \date 07/16
      *  \author hiermeier */
-    template <unsigned probdim, CORE::FE::CellType distype, typename valtype,
-        unsigned numNodesElement = CORE::FE::num_nodes<distype>,
-        unsigned dim = CORE::FE::dim<distype>>
+    template <unsigned probdim, Core::FE::CellType distype, typename valtype,
+        unsigned numNodesElement = Core::FE::num_nodes<distype>,
+        unsigned dim = Core::FE::dim<distype>>
     valtype EvalDerivsInParameterSpace(
-        const CORE::LINALG::Matrix<probdim, numNodesElement, valtype>& xyze,
-        const CORE::LINALG::Matrix<dim, 1, valtype>& rst,
-        CORE::LINALG::Matrix<probdim, numNodesElement, valtype>& deriv1,
-        CORE::LINALG::Matrix<dim, dim, valtype>& metrictensor,
-        CORE::LINALG::Matrix<probdim, probdim, valtype>& xjm,
-        CORE::LINALG::Matrix<probdim, probdim, valtype>* xij,
-        CORE::LINALG::Matrix<probdim, 1, valtype>* normalvec1,
-        CORE::LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
+        const Core::LinAlg::Matrix<probdim, numNodesElement, valtype>& xyze,
+        const Core::LinAlg::Matrix<dim, 1, valtype>& rst,
+        Core::LinAlg::Matrix<probdim, numNodesElement, valtype>& deriv1,
+        Core::LinAlg::Matrix<dim, dim, valtype>& metrictensor,
+        Core::LinAlg::Matrix<probdim, probdim, valtype>& xjm,
+        Core::LinAlg::Matrix<probdim, probdim, valtype>* xij,
+        Core::LinAlg::Matrix<probdim, 1, valtype>* normalvec1,
+        Core::LinAlg::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
     {
       valtype det = 0.0;
 
@@ -160,7 +160,7 @@ namespace CORE::GEO
       // ---------------------------------------------------------------
       if (dim == probdim)
       {
-        CORE::FE::shape_function_deriv1<distype>(rst, deriv1);
+        Core::FE::shape_function_deriv1<distype>(rst, deriv1);
         // compute transposed Jacobian matrix
         xjm.MultiplyNT(deriv1, xyze);
         // compute the inverse Jacobian and the determinant
@@ -183,18 +183,18 @@ namespace CORE::GEO
               "The normalvec1 is necessary to calculate the extended "
               "jacobian!");
 
-        CORE::LINALG::Matrix<dim, numNodesElement, valtype> deriv1_red;
-        CORE::FE::shape_function_deriv1<distype>(rst, deriv1_red);
+        Core::LinAlg::Matrix<dim, numNodesElement, valtype> deriv1_red;
+        Core::FE::shape_function_deriv1<distype>(rst, deriv1_red);
         // the metric tensor and the area of an infinitesimal surface/line element
         // optional-1 : get unit normal at integration point as well
         /* optional-2 : the throw_error flag is off, if the the normal is not going
          *              to be normalized. */
-        CORE::FE::ComputeMetricTensorForBoundaryEle<distype, probdim>(
+        Core::FE::ComputeMetricTensorForBoundaryEle<distype, probdim>(
             xyze, deriv1_red, metrictensor, det, unit_normal, normalvec1, unit_normal);
 
         /* transform the derivatives and Jacobians to the higher dimensional
          * coordinates (problem dimension) */
-        CORE::LINALG::Matrix<dim, probdim, valtype> xjm_red;
+        Core::LinAlg::Matrix<dim, probdim, valtype> xjm_red;
         xjm_red.MultiplyNT(deriv1_red, xyze);
 
         for (unsigned i = 0; i < probdim; ++i)
@@ -256,19 +256,19 @@ namespace CORE::GEO
      *
      *  \author hiermeier
      *  \date 08/16 */
-    template <unsigned probdim, CORE::FE::CellType distype, typename valtype,
-        unsigned numNodesElement = CORE::FE::num_nodes<distype>,
-        unsigned dim = CORE::FE::dim<distype>>
+    template <unsigned probdim, Core::FE::CellType distype, typename valtype,
+        unsigned numNodesElement = Core::FE::num_nodes<distype>,
+        unsigned dim = Core::FE::dim<distype>>
     inline valtype EvalDerivsInParameterSpace(
-        const CORE::LINALG::Matrix<probdim, numNodesElement, valtype>& xyze,
-        const CORE::LINALG::Matrix<dim, 1, valtype>& rst,
-        CORE::LINALG::Matrix<probdim, numNodesElement, valtype>& deriv1,
-        CORE::LINALG::Matrix<probdim, probdim, valtype>& xjm,
-        CORE::LINALG::Matrix<probdim, probdim, valtype>* xij,
-        CORE::LINALG::Matrix<probdim, 1, valtype>* normalvec1,
-        CORE::LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
+        const Core::LinAlg::Matrix<probdim, numNodesElement, valtype>& xyze,
+        const Core::LinAlg::Matrix<dim, 1, valtype>& rst,
+        Core::LinAlg::Matrix<probdim, numNodesElement, valtype>& deriv1,
+        Core::LinAlg::Matrix<probdim, probdim, valtype>& xjm,
+        Core::LinAlg::Matrix<probdim, probdim, valtype>* xij,
+        Core::LinAlg::Matrix<probdim, 1, valtype>* normalvec1,
+        Core::LinAlg::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
     {
-      CORE::LINALG::Matrix<dim, dim, valtype> metrictensor;
+      Core::LinAlg::Matrix<dim, dim, valtype> metrictensor;
       return EvalDerivsInParameterSpace<probdim, distype, valtype>(
           xyze, rst, deriv1, metrictensor, xjm, xij, normalvec1, normalvec2, unit_normal);
     }
@@ -295,12 +295,12 @@ namespace CORE::GEO
     {
       scale = 0;
       const int numNodes = xyze.N();
-      CORE::LINALG::Matrix<probdim, 1> d;
+      Core::LinAlg::Matrix<probdim, 1> d;
 
       for (int i = 0; i < numNodes; ++i)
       {
-        const CORE::LINALG::Matrix<probdim, 1> x1(&xyze(0, i), true);
-        const CORE::LINALG::Matrix<probdim, 1> x2(&xyze(0, (i + 1) % numNodes), true);
+        const Core::LinAlg::Matrix<probdim, 1> x1(&xyze(0, i), true);
+        const Core::LinAlg::Matrix<probdim, 1> x2(&xyze(0, (i + 1) % numNodes), true);
         d.Update(1, x2, -1, x1, 0);
         scale += d.Norm2();
       }
@@ -327,13 +327,13 @@ namespace CORE::GEO
      *
      *  \author hiermeier */
     template <unsigned probdim, class T>
-    void GetElementShift(const T& xyze, CORE::LINALG::Matrix<probdim, 1>& shift)
+    void GetElementShift(const T& xyze, Core::LinAlg::Matrix<probdim, 1>& shift)
     {
       shift = 0.0;
       const unsigned numNodes = static_cast<unsigned>(xyze.N());
       for (unsigned i = 0; i < numNodes; ++i)
       {
-        const CORE::LINALG::Matrix<probdim, 1> x1(&xyze(0, i), true);
+        const Core::LinAlg::Matrix<probdim, 1> x1(&xyze(0, i), true);
         shift.Update(1, x1, 1);
       }
       shift.Scale(1. / numNodes);
@@ -348,12 +348,12 @@ namespace CORE::GEO
      *   is the correction of a \e xyze matrix in the case of 2-dimensional problems.
      *   Please note, that the correction of a vector is in general unnecessary,
      *   since a vector can be corrected by using the view constructor of a new
-     *   CORE::LINALG::(T)Matrix.
+     *   Core::LinAlg::(T)Matrix.
      *
-     *  \param wrong_shape   (in) : matrix with the wrong shape (CORE::LINALG::SerialDenseMatrix
-     *                              or CORE::LINALG::(T)Matrix)
+     *  \param wrong_shape   (in) : matrix with the wrong shape (Core::LinAlg::SerialDenseMatrix
+     *                              or Core::LinAlg::(T)Matrix)
      *  \param correct_shape (out): matrix with the desired number of rows and columns.
-     *                              (CORE::LINALG::SerialDenseMatrix or CORE::LINALG::(T)Matrix)
+     *                              (Core::LinAlg::SerialDenseMatrix or Core::LinAlg::(T)Matrix)
      *
      *  \author hiermeier \date 11/16 */
     template <class T1, class T2>
@@ -381,19 +381,19 @@ namespace CORE::GEO
      *  \param unit_normal (in) : scale the normal to unit length
      *
      *  \author hiermeier \date 12/16 */
-    template <unsigned probdim, CORE::FE::CellType distype, class T1, class T2, class T3,
-        unsigned numNodesElement = CORE::FE::num_nodes<distype>,
-        unsigned dim = CORE::FE::dim<distype>>
+    template <unsigned probdim, Core::FE::CellType distype, class T1, class T2, class T3,
+        unsigned numNodesElement = Core::FE::num_nodes<distype>,
+        unsigned dim = Core::FE::dim<distype>>
     void EvalNormalVectors(const T1& xyze, const T2& rst, T3& normalvec1, T3* normalvec2 = nullptr,
         bool unit_normal = true)
     {
       if (dim >= probdim) FOUR_C_THROW("This function is only meaningful for the embedded case!");
 
-      CORE::LINALG::Matrix<dim, dim> metrictensor;
-      CORE::LINALG::Matrix<probdim, numNodesElement> deriv1;
-      CORE::LINALG::Matrix<probdim, probdim> xjm;
+      Core::LinAlg::Matrix<dim, dim> metrictensor;
+      Core::LinAlg::Matrix<probdim, numNodesElement> deriv1;
+      Core::LinAlg::Matrix<probdim, probdim> xjm;
 
-      CORE::LINALG::Matrix<probdim, numNodesElement> xyze_linalg;
+      Core::LinAlg::Matrix<probdim, numNodesElement> xyze_linalg;
       if (xyze.numRows() == probdim and xyze.numCols() == numNodesElement)
         xyze_linalg.SetView(xyze.values());
       else
@@ -401,17 +401,17 @@ namespace CORE::GEO
 
       if (static_cast<unsigned>(rst.M()) < dim)
         FOUR_C_THROW("The local coordinates have the wrong dimension!");
-      CORE::LINALG::Matrix<dim, 1> rst_linalg(rst.A(), true);
+      Core::LinAlg::Matrix<dim, 1> rst_linalg(rst.A(), true);
 
       if (static_cast<unsigned>(normalvec1.M()) < probdim or
           (normalvec2 and static_cast<unsigned>(normalvec2->M()) < probdim))
         FOUR_C_THROW("The normal vectors have the wrong dimenison!");
 
-      CORE::LINALG::Matrix<probdim, 1> normalvec1_linalg(normalvec1.A(), true);
+      Core::LinAlg::Matrix<probdim, 1> normalvec1_linalg(normalvec1.A(), true);
 
       if (normalvec2)
       {
-        CORE::LINALG::Matrix<probdim, 1> normalvec2_linalg((*normalvec2).A(), true);
+        Core::LinAlg::Matrix<probdim, 1> normalvec2_linalg((*normalvec2).A(), true);
         EvalDerivsInParameterSpace<probdim, distype, double>(xyze_linalg, rst_linalg, deriv1, xjm,
             nullptr, &normalvec1_linalg, &normalvec2_linalg, unit_normal);
 
@@ -439,31 +439,31 @@ namespace CORE::GEO
      *
      *  \author hiermeier \date 12/16 */
     template <unsigned probdim, class T1, class T2, class T3>
-    void EvalNormalVectors(CORE::FE::CellType distype, const T1& xyze, const T2& rst,
+    void EvalNormalVectors(Core::FE::CellType distype, const T1& xyze, const T2& rst,
         T3& normalvec1, T3* normalvec2 = nullptr, bool unit_normal = true)
     {
       switch (distype)
       {
-        case CORE::FE::CellType::line2:
-          EvalNormalVectors<probdim, CORE::FE::CellType::line2>(
+        case Core::FE::CellType::line2:
+          EvalNormalVectors<probdim, Core::FE::CellType::line2>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
-        case CORE::FE::CellType::tri3:
-          EvalNormalVectors<probdim, CORE::FE::CellType::tri3>(
+        case Core::FE::CellType::tri3:
+          EvalNormalVectors<probdim, Core::FE::CellType::tri3>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
-        case CORE::FE::CellType::quad4:
-          EvalNormalVectors<probdim, CORE::FE::CellType::quad4>(
+        case Core::FE::CellType::quad4:
+          EvalNormalVectors<probdim, Core::FE::CellType::quad4>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
         default:
           FOUR_C_THROW("Currently unsupported discretization type: %s",
-              CORE::FE::CellTypeToString(distype).c_str());
+              Core::FE::CellTypeToString(distype).c_str());
           exit(EXIT_FAILURE);
       }
     }
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

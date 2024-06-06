@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -33,31 +33,31 @@ namespace DRT
       virtual ~ScaTraFactory() = default;
 
       //! ProvideImpl
-      static ScaTraEleInterface* ProvideImpl(CORE::FE::CellType distype,
-          INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
+      static ScaTraEleInterface* ProvideImpl(Core::FE::CellType distype,
+          Inpar::ScaTra::ImplType problem, const int numdofpernode, const int numscal,
           const std::string& disname);
 
       //! ProvideImplHDG
-      static ScaTraEleInterface* ProvideImplHDG(CORE::FE::CellType distype,
-          INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
+      static ScaTraEleInterface* ProvideImplHDG(Core::FE::CellType distype,
+          Inpar::ScaTra::ImplType problem, const int numdofpernode, const int numscal,
           const std::string& disname);
 
      private:
       //! define ScatraEle instances dependent on problem
-      template <CORE::FE::CellType distype, int probdim>
-      static ScaTraEleInterface* define_problem_type(INPAR::SCATRA::ImplType problem,
+      template <Core::FE::CellType distype, int probdim>
+      static ScaTraEleInterface* define_problem_type(Inpar::ScaTra::ImplType problem,
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! define ScatraEle instances dependent on problem
-      template <CORE::FE::CellType distype, int probdim>
-      static ScaTraEleInterface* define_problem_type_hdg(INPAR::SCATRA::ImplType problem,
+      template <Core::FE::CellType distype, int probdim>
+      static ScaTraEleInterface* define_problem_type_hdg(Inpar::ScaTra::ImplType problem,
           const int numdofpernode, const int numscal, const std::string& disname);
 
     };  // end class ScaTraFactory
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

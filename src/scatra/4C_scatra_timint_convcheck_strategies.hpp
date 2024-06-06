@@ -23,7 +23,7 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
   // forward declaration
   class ScaTraTimIntImpl;
@@ -336,7 +336,7 @@ namespace SCATRA
     ConvCheckStrategyPoroMultiphaseScatraArtMeshTying(
         const ConvCheckStrategyPoroMultiphaseScatra& old);
   };  // class ConvCheckStrategyPoroMultiphaseScatra
-}  // namespace SCATRA
+}  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

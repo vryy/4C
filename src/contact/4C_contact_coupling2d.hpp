@@ -23,12 +23,12 @@ namespace CONTACT
   /*!
   \brief A class representing the framework for mortar coupling of ONE
          slave element and ONE master element of a contact interface in
-         2D. This is a derived class from MORTAR::Coupling2d which does
+         2D. This is a derived class from Mortar::Coupling2d which does
          the contact-specific stuff for 2d mortar coupling.
 
   */
 
-  class Coupling2d : public MORTAR::Coupling2d
+  class Coupling2d : public Mortar::Coupling2d
   {
    public:
     /*!
@@ -39,8 +39,8 @@ namespace CONTACT
     performed in parallel by individual processes.
 
     */
-    Coupling2d(DRT::Discretization& idiscret, int dim, bool quad, Teuchos::ParameterList& params,
-        MORTAR::Element& sele, MORTAR::Element& mele);
+    Coupling2d(Discret::Discretization& idiscret, int dim, bool quad,
+        Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele);
 
     //! @name Evlauation methods
 
@@ -51,29 +51,29 @@ namespace CONTACT
     a CONTACT::Integrator instance is created, which also
     does integration of the mortar quantity linearizations
 
-    This method integrates the overlap of the current MORTAR::Element
+    This method integrates the overlap of the current Mortar::Element
     pair sele_ / mele_ based on the integration limits (xiproj). The
     integration includes the Mortar matrices D/M and the gap g.
 
     */
-    bool IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
+    bool IntegrateOverlap(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
 
     /*!
     \brief Return type of wear surface definition
 
     */
-    INPAR::WEAR::WearSide WearSide()
+    Inpar::Wear::WearSide WearSide()
     {
-      return CORE::UTILS::IntegralValue<INPAR::WEAR::WearSide>(imortar_, "BOTH_SIDED_WEAR");
+      return Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(imortar_, "BOTH_SIDED_WEAR");
     }
 
     /*!
     \brief Return type of wear surface definition
 
     */
-    INPAR::WEAR::WearType WearType()
+    Inpar::Wear::WearType WearType()
     {
-      return CORE::UTILS::IntegralValue<INPAR::WEAR::WearType>(imortar_, "WEARTYPE");
+      return Core::UTILS::IntegralValue<Inpar::Wear::WearType>(imortar_, "WEARTYPE");
     }
 
     //@}
@@ -85,7 +85,7 @@ namespace CONTACT
     Coupling2d(const Coupling2d& old) = delete;
 
     // new variables as compared to base class
-    INPAR::CONTACT::SolvingStrategy stype_;
+    Inpar::CONTACT::SolvingStrategy stype_;
 
   };  // class Coupling2d
 
@@ -96,7 +96,7 @@ namespace CONTACT
 
   */
 
-  class Coupling2dManager : public MORTAR::Coupling2dManager
+  class Coupling2dManager : public Mortar::Coupling2dManager
   {
    public:
     /*!
@@ -107,8 +107,8 @@ namespace CONTACT
     performed in parallel by individual processes.
 
     */
-    Coupling2dManager(DRT::Discretization& idiscret, int dim, bool quad,
-        Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele);
+    Coupling2dManager(Discret::Discretization& idiscret, int dim, bool quad,
+        Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele);
 
 
     /*!
@@ -127,18 +127,18 @@ namespace CONTACT
     \brief Return the LM shape fcn type
 
     */
-    INPAR::MORTAR::ShapeFcn ShapeFcn()
+    Inpar::Mortar::ShapeFcn ShapeFcn()
     {
-      return CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_, "LM_SHAPEFCN");
+      return Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(imortar_, "LM_SHAPEFCN");
     }
 
     /*!
     \brief Evaluate mortar coupling
 
     */
-    void integrate_coupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
+    void integrate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
 
-    bool evaluate_coupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
+    bool evaluate_coupling(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) override;
     //@}
    private:
     /*!
@@ -152,7 +152,7 @@ namespace CONTACT
     Coupling2dManager operator=(const Coupling2dManager& old) = delete;
     Coupling2dManager(const Coupling2dManager& old) = delete;
 
-    INPAR::CONTACT::SolvingStrategy stype_;  // solving strategy
+    Inpar::CONTACT::SolvingStrategy stype_;  // solving strategy
 
   };  // class Coupling2dManager
 

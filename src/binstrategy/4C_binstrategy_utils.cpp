@@ -31,7 +31,7 @@ namespace BINSTRATEGY
   {
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void ExtendDiscretizationGhosting(Teuchos::RCP<DRT::Discretization> discret,
+    void ExtendDiscretizationGhosting(Teuchos::RCP<Discret::Discretization> discret,
         Teuchos::RCP<Epetra_Map> const& extendedelecolmap, bool assigndegreesoffreedom,
         bool initelements, bool doboundaryconditions)
     {
@@ -48,7 +48,7 @@ namespace BINSTRATEGY
       std::set<int> nodes;
       for (int lid = 0; lid < extendedelecolmap->NumMyElements(); ++lid)
       {
-        CORE::Elements::Element* ele = discret->gElement(extendedelecolmap->GID(lid));
+        Core::Elements::Element* ele = discret->gElement(extendedelecolmap->GID(lid));
         const int* nodeids = ele->NodeIds();
         for (int inode = 0; inode < ele->num_node(); ++inode) nodes.insert(nodeids[inode]);
       }
@@ -67,7 +67,7 @@ namespace BINSTRATEGY
       // print distribution after standard ghosting
       if (discret->Comm().MyPID() == 0)
         std::cout << "parallel distribution with extended ghosting" << std::endl;
-      CORE::REBALANCE::UTILS::print_parallel_distribution(*discret);
+      Core::Rebalance::UTILS::print_parallel_distribution(*discret);
 #endif
 
       return;
@@ -76,32 +76,32 @@ namespace BINSTRATEGY
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     BINSTRATEGY::UTILS::BinContentType ConvertElementToBinContentType(
-        CORE::Elements::Element const* const eleptr)
+        Core::Elements::Element const* const eleptr)
     {
       // (Todo make this nicer and cheaper)
 
-      if (dynamic_cast<DRT::ELEMENTS::Transport const*>(eleptr) != nullptr)
+      if (dynamic_cast<Discret::ELEMENTS::Transport const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Scatra;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::Fluid const*>(eleptr) != nullptr)
+      else if (dynamic_cast<Discret::ELEMENTS::Fluid const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Fluid;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::Bele3 const*>(eleptr) != nullptr)
+      else if (dynamic_cast<Discret::ELEMENTS::Bele3 const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::BELE3;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(eleptr) != nullptr)
+      else if (dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Beam;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::Rigidsphere const*>(eleptr) != nullptr)
+      else if (dynamic_cast<Discret::ELEMENTS::Rigidsphere const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::RigidSphere;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::SoBase const*>(eleptr) != nullptr ||
-               dynamic_cast<DRT::ELEMENTS::Solid const*>(eleptr) != nullptr)
+      else if (dynamic_cast<Discret::ELEMENTS::SoBase const*>(eleptr) != nullptr ||
+               dynamic_cast<Discret::ELEMENTS::Solid const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Solid;
       }
@@ -116,11 +116,11 @@ namespace BINSTRATEGY
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    void CommunicateElements(Teuchos::RCP<DRT::Discretization>& discret,
-        std::map<int, std::vector<CORE::Elements::Element*>> const& toranktosendeles)
+    void CommunicateElements(Teuchos::RCP<Discret::Discretization>& discret,
+        std::map<int, std::vector<Core::Elements::Element*>> const& toranktosendeles)
     {
       // build exporter
-      CORE::COMM::Exporter exporter(discret->Comm());
+      Core::Communication::Exporter exporter(discret->Comm());
       int const numproc = discret->Comm().NumProc();
 
       // -----------------------------------------------------------------------
@@ -129,13 +129,13 @@ namespace BINSTRATEGY
       // ---- pack data for sending -----
       std::map<int, std::vector<char>> sdata;
       std::vector<int> targetprocs(numproc, 0);
-      std::map<int, std::vector<CORE::Elements::Element*>>::const_iterator p;
+      std::map<int, std::vector<Core::Elements::Element*>>::const_iterator p;
       for (p = toranktosendeles.begin(); p != toranktosendeles.end(); ++p)
       {
-        std::vector<CORE::Elements::Element*>::const_iterator iter;
+        std::vector<Core::Elements::Element*>::const_iterator iter;
         for (iter = p->second.begin(); iter != p->second.end(); ++iter)
         {
-          CORE::COMM::PackBuffer data;
+          Core::Communication::PackBuffer data;
           (*iter)->Pack(data);
           data.StartPacking();
           (*iter)->Pack(data);
@@ -183,12 +183,12 @@ namespace BINSTRATEGY
           while (index < rdata.size())
           {
             std::vector<char> data;
-            CORE::COMM::ParObject::ExtractfromPack(index, rdata, data);
+            Core::Communication::ParObject::ExtractfromPack(index, rdata, data);
             // this Teuchos::rcp holds the memory of the node
-            Teuchos::RCP<CORE::COMM::ParObject> object =
-                Teuchos::rcp(CORE::COMM::Factory(data), true);
-            Teuchos::RCP<CORE::Elements::Element> element =
-                Teuchos::rcp_dynamic_cast<CORE::Elements::Element>(object);
+            Teuchos::RCP<Core::Communication::ParObject> object =
+                Teuchos::rcp(Core::Communication::Factory(data), true);
+            Teuchos::RCP<Core::Elements::Element> element =
+                Teuchos::rcp_dynamic_cast<Core::Elements::Element>(object);
             if (element == Teuchos::null) FOUR_C_THROW("Received object is not a element");
 
             // safety check
@@ -218,12 +218,12 @@ namespace BINSTRATEGY
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void CommunicateDistributionOfTransferredElementsToBins(
-        Teuchos::RCP<DRT::Discretization>& discret,
+        Teuchos::RCP<Discret::Discretization>& discret,
         std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosendbinids,
         std::map<int, std::set<int>>& bintorowelemap)
     {
       // build exporter
-      CORE::COMM::Exporter exporter(discret->Comm());
+      Core::Communication::Exporter exporter(discret->Comm());
       int const numproc = discret->Comm().NumProc();
 
       // -----------------------------------------------------------------------
@@ -238,10 +238,10 @@ namespace BINSTRATEGY
         std::vector<std::pair<int, std::vector<int>>>::const_iterator iter;
         for (iter = p->second.begin(); iter != p->second.end(); ++iter)
         {
-          CORE::COMM::PackBuffer data;
-          CORE::COMM::ParObject::AddtoPack(data, *iter);
+          Core::Communication::PackBuffer data;
+          Core::Communication::ParObject::AddtoPack(data, *iter);
           data.StartPacking();
-          CORE::COMM::ParObject::AddtoPack(data, *iter);
+          Core::Communication::ParObject::AddtoPack(data, *iter);
           sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
         }
         targetprocs[p->first] = 1;
@@ -286,7 +286,7 @@ namespace BINSTRATEGY
           while (index < rdata.size())
           {
             std::pair<int, std::vector<int>> pair;
-            CORE::COMM::ParObject::ExtractfromPack(index, rdata, pair);
+            Core::Communication::ParObject::ExtractfromPack(index, rdata, pair);
             std::vector<int>::const_iterator j;
             for (j = pair.second.begin(); j != pair.second.end(); ++j)
               bintorowelemap[*j].insert(pair.first);
@@ -305,8 +305,8 @@ namespace BINSTRATEGY
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void GetCurrentNodePos(Teuchos::RCP<const DRT::Discretization> const discret,
-        CORE::Nodes::Node const* node, Teuchos::RCP<const Epetra_Vector> const disnp,
+    void GetCurrentNodePos(Teuchos::RCP<const Discret::Discretization> const discret,
+        Core::Nodes::Node const* node, Teuchos::RCP<const Epetra_Vector> const disnp,
         double* currpos)
     {
       // Todo make this nicer
@@ -318,11 +318,11 @@ namespace BINSTRATEGY
       // first node of the  element here (for the sake of binning)
 
       // standard case
-      CORE::Nodes::Node const* node_with_position_Dofs = node;
+      Core::Nodes::Node const* node_with_position_Dofs = node;
 
-      const CORE::Elements::Element* element = node->Elements()[0];
-      const DRT::ELEMENTS::Beam3Base* beamelement =
-          dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
+      const Core::Elements::Element* element = node->Elements()[0];
+      const Discret::ELEMENTS::Beam3Base* beamelement =
+          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
 
       // fixme: should be do get position at xi with xi = 0.0?
       // if the node does not have position DoFs, we return the position of the first

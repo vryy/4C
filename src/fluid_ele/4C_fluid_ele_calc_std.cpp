@@ -16,15 +16,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>::Instance(
-    CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleCalcStd<distype>* Discret::ELEMENTS::FluidEleCalcStd<distype>::Instance(
+    Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcStd<distype>>(
-            new DRT::ELEMENTS::FluidEleCalcStd<distype>());
+        return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcStd<distype>>(
+            new Discret::ELEMENTS::FluidEleCalcStd<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -33,9 +33,9 @@ DRT::ELEMENTS::FluidEleCalcStd<distype>* DRT::ELEMENTS::FluidEleCalcStd<distype>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleCalcStd<distype>::FluidEleCalcStd()
-    : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleCalcStd<distype>::FluidEleCalcStd()
+    : Discret::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
 {
 }
 
@@ -43,20 +43,20 @@ DRT::ELEMENTS::FluidEleCalcStd<distype>::FluidEleCalcStd()
  *----------------------------------------------------------------------*/
 
 // template classes
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::wedge15>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalcStd<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::hex8>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::tet10>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::wedge15>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::pyramid5>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::FluidEleCalcStd<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

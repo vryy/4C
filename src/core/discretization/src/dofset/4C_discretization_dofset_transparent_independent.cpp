@@ -19,15 +19,15 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-CORE::Dofsets::TransparentIndependentDofSet::TransparentIndependentDofSet(
-    Teuchos::RCP<DRT::Discretization> sourcedis, bool parallel)
+Core::DOFSets::TransparentIndependentDofSet::TransparentIndependentDofSet(
+    Teuchos::RCP<Discret::Discretization> sourcedis, bool parallel)
     : TransparentDofSet(sourcedis, parallel)
 {
   return;
 }
 
-int CORE::Dofsets::TransparentIndependentDofSet::assign_degrees_of_freedom(
-    const DRT::Discretization& dis, const unsigned dspos, const int start)
+int Core::DOFSets::TransparentIndependentDofSet::assign_degrees_of_freedom(
+    const Discret::Discretization& dis, const unsigned dspos, const int start)
 {
   // first, we call the standard assign_degrees_of_freedom from the base class
   int count = IndependentDofSet::assign_degrees_of_freedom(dis, dspos, start);
@@ -47,7 +47,7 @@ int CORE::Dofsets::TransparentIndependentDofSet::assign_degrees_of_freedom(
   return count;
 }
 
-int CORE::Dofsets::TransparentIndependentDofSet::NumDofPerNode(const CORE::Nodes::Node& node) const
+int Core::DOFSets::TransparentIndependentDofSet::NumDofPerNode(const Core::Nodes::Node& node) const
 {
   return DofSet::NumDofPerNode(node);
 }

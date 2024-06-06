@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace INPUT
+namespace Input
 {
   /// Auxiliar routine to boolify integral Yes/No data
   ///
@@ -27,7 +27,7 @@ namespace INPUT
   void BoolifyValidInputParameters(Teuchos::ParameterList& list  ///< the valid input parameter list
   );
 
-}  // namespace INPUT
+}  // namespace Input
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

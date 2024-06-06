@@ -33,13 +33,13 @@ namespace
     GeometricSearch()
     {
       comm_ = Epetra_SerialComm();
-      verbosity_ = CORE::IO::minimal;
+      verbosity_ = Core::IO::minimal;
     }
 
    protected:
-    std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>> primitives_, predicates_;
+    std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> primitives_, predicates_;
     Epetra_SerialComm comm_;
-    CORE::IO::Verbositylevel verbosity_;
+    Core::IO::Verbositylevel verbosity_;
   };
 
   /**
@@ -59,9 +59,9 @@ namespace
     EXPECT_EQ(predicates_.size(), 1);
 
     const auto &[indices, offsets] =
-        CORE::GEOMETRICSEARCH::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
+        Core::GeometricSearch::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
 
-    const auto pairs = CORE::GEOMETRICSEARCH::GetPairs(indices, offsets);
+    const auto pairs = Core::GeometricSearch::GetPairs(indices, offsets);
 
     EXPECT_EQ(pairs.size(), 1);
     EXPECT_EQ(pairs[0].first, 0);
@@ -84,9 +84,9 @@ namespace
     EXPECT_EQ(predicates_.size(), 3);
 
     const auto &[indices, offsets] =
-        CORE::GEOMETRICSEARCH::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
+        Core::GeometricSearch::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
 
-    const auto pairs = CORE::GEOMETRICSEARCH::GetPairs(indices, offsets);
+    const auto pairs = Core::GeometricSearch::GetPairs(indices, offsets);
 
     EXPECT_EQ(pairs.size(), 0);
   }
@@ -107,9 +107,9 @@ namespace
     EXPECT_EQ(predicates_.size(), 0);
 
     const auto &[indices, offsets] =
-        CORE::GEOMETRICSEARCH::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
+        Core::GeometricSearch::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
 
-    const auto pairs = CORE::GEOMETRICSEARCH::GetPairs(indices, offsets);
+    const auto pairs = Core::GeometricSearch::GetPairs(indices, offsets);
 
     EXPECT_EQ(pairs.size(), 0);
   }
@@ -123,9 +123,9 @@ namespace
     EXPECT_EQ(predicates_.size(), 0);
 
     const auto &[indices, offsets] =
-        CORE::GEOMETRICSEARCH::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
+        Core::GeometricSearch::CollisionSearch(primitives_, predicates_, comm_, verbosity_);
 
-    const auto pairs = CORE::GEOMETRICSEARCH::GetPairs(indices, offsets);
+    const auto pairs = Core::GeometricSearch::GetPairs(indices, offsets);
 
     EXPECT_EQ(pairs.size(), 0);
   }

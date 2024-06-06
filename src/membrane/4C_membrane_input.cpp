@@ -18,14 +18,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ReadElement                                            fbraeu 06/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool DRT::ELEMENTS::Membrane<distype>::ReadElement(
-    const std::string& eletype, const std::string& eledistype, INPUT::LineDefinition* linedef)
+template <Core::FE::CellType distype>
+bool Discret::ELEMENTS::Membrane<distype>::ReadElement(
+    const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   // set up of materials with GP data (e.g., history variables)
   SolidMaterial()->Setup(intpoints_.nquad, linedef);
@@ -59,9 +59,9 @@ bool DRT::ELEMENTS::Membrane<distype>::ReadElement(
   return true;
 }
 
-template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::Membrane<CORE::FE::CellType::quad9>;
+template class Discret::ELEMENTS::Membrane<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::Membrane<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::Membrane<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::Membrane<Core::FE::CellType::quad9>;
 
 FOUR_C_NAMESPACE_CLOSE

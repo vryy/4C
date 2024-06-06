@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>::CreateGeometryPair(
-    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
+    const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   // Cast the geometry evaluation data to the correct format.
@@ -31,8 +31,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>::Creat
 
   // Explicitly create the cross section projection geometry pair here and check that the correct
   // parameter is set in the input file.
-  INPAR::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->GetStrategy();
-  if (strategy != INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_cross_section)
+  Inpar::GEOMETRYPAIR::LineTo3DStrategy strategy = line_to_3d_evaluation_data->GetStrategy();
+  if (strategy != Inpar::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_cross_section)
     FOUR_C_THROW(
         "The 2D-3D beam-to-volume mesh tying pair only works with the cross section projection "
         "geometry pair. This has to be specified in the input file.");
@@ -48,14 +48,14 @@ template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
     solid>::evaluate_beam_position_double(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                               integration_point,
-    CORE::LINALG::Matrix<3, 1, double>& r_beam, bool reference) const
+    Core::LinAlg::Matrix<3, 1, double>& r_beam, bool reference) const
 {
   auto evaluate_position = [&](const auto& q, auto& r_beam)
   {
     const auto eta = integration_point.GetEta();
-    CORE::LINALG::Matrix<3, 3, double> triad;
+    Core::LinAlg::Matrix<3, 3, double> triad;
     get_triad_at_xi_double(eta, triad, reference);
-    CORE::LINALG::Matrix<3, 1, double> r_cross_section_ref, r_cross_section_cur;
+    Core::LinAlg::Matrix<3, 1, double> r_cross_section_ref, r_cross_section_cur;
     r_cross_section_ref(0) = 0.0;
     r_cross_section_ref(1) = integration_point.GetEtaCrossSection()(0);
     r_cross_section_ref(2) = integration_point.GetEtaCrossSection()(1);

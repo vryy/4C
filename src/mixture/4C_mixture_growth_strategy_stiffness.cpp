@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : MIXTURE::PAR::MixtureGrowthStrategy(matdata), kappa_(matdata->Get<double>("KAPPA"))
 {
 }
@@ -35,25 +35,25 @@ MIXTURE::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
 }
 
 void MIXTURE::StiffnessGrowthStrategy::evaluate_inverse_growth_deformation_gradient(
-    CORE::LINALG::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
+    Core::LinAlg::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
-  iFgM = CORE::LINALG::IdentityMatrix<3>();
+  iFgM = Core::LinAlg::IdentityMatrix<3>();
 }
 
 void MIXTURE::StiffnessGrowthStrategy::evaluate_growth_stress_cmat(
     const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
-    const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
-    const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
-    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-    CORE::LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID) const
+    const Core::LinAlg::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
+    const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+    Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+    Core::LinAlg::Matrix<6, 6>& cmat, const int gp, const int eleGID) const
 {
-  CORE::LINALG::Matrix<3, 3> iC(false);
+  Core::LinAlg::Matrix<3, 3> iC(false);
   iC.MultiplyTN(F, F);
   iC.Invert();
 
-  CORE::LINALG::Matrix<6, 1> iC_stress(false);
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(iC, iC_stress);
+  Core::LinAlg::Matrix<6, 1> iC_stress(false);
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(iC, iC_stress);
 
   const double kappa = params_->kappa_;
   const double detF = F.Determinant();
@@ -75,7 +75,7 @@ void MIXTURE::StiffnessGrowthStrategy::evaluate_growth_stress_cmat(
   // contribution: Cinv \otimes Cinv
   cmat.MultiplyNT(delta5, iC_stress, iC_stress, 0.0);
   // contribution: Cinv \odot Cinv
-  MAT::AddtoCmatHolzapfelProduct(cmat, iC_stress, delta6);
+  Mat::AddtoCmatHolzapfelProduct(cmat, iC_stress, delta6);
 
   cmat.MultiplyNN(dgamma2DGrowthScalar, iC_stress, dCurrentReferenceGrowthScalarDC, 1.0);
 }

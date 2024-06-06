@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 // this routine is intended to determine a homogenized material
 // density for multi-scale analyses by averaging over the initial volume
 
-void DRT::ELEMENTS::NStet5::nstet5_homog(Teuchos::ParameterList& params)
+void Discret::ELEMENTS::NStet5::nstet5_homog(Teuchos::ParameterList& params)
 {
-  if (GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
+  if (Global::Problem::Instance(0)->GetCommunicators()->SubComm()->MyPID() == Owner())
   {
     const double density = Material()->Density(0);
 
@@ -41,18 +41,18 @@ void DRT::ELEMENTS::NStet5::nstet5_homog(Teuchos::ParameterList& params)
 /*----------------------------------------------------------------------*
  |  Read restart on the microscale                              lw 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5::nstet5_read_restart_multi()
+void Discret::ELEMENTS::NStet5::nstet5_read_restart_multi()
 {
   const int gp = 0;  // there is only one Gauss point
 
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
-  if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
+  if (mat->MaterialType() == Core::Materials::m_struct_multiscale)
   {
-    auto* micro = dynamic_cast<MAT::MicroMaterial*>(mat.get());
+    auto* micro = dynamic_cast<Mat::MicroMaterial*>(mat.get());
     int eleID = Id();
     bool eleowner = false;
-    if (GLOBAL::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
+    if (Global::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner())
       eleowner = true;
 
     micro->read_restart(gp, eleID, eleowner);

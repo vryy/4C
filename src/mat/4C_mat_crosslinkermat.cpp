@@ -19,11 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::PAR::CrosslinkerMat::CrosslinkerMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::CrosslinkerMat::CrosslinkerMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       link_element_matnum_(matdata->Get<double>("MATNUM")),
       jointtype_(
-          INPAR::BEAMINTERACTION::String2JointType((matdata->Get<std::string>("JOINTTYPE")))),
+          Inpar::BEAMINTERACTION::String2JointType((matdata->Get<std::string>("JOINTTYPE")))),
       linkinglength_(matdata->Get<double>("LINKINGLENGTH")),
       linkinglengthtol_(matdata->Get<double>("LINKINGLENGTHTOL")),
       linkingangle_(matdata->Get<double>("LINKINGANGLE")),
@@ -33,7 +33,7 @@ MAT::PAR::CrosslinkerMat::CrosslinkerMat(Teuchos::RCP<CORE::MAT::PAR::Material> 
       deltabelleq_(matdata->Get<double>("DELTABELLEQ")),
       nobonddistsphere(matdata->Get<double>("NOBONDDISTSPHERE")),
       linkertype_(
-          INPAR::BEAMINTERACTION::String2CrosslinkerType((matdata->Get<std::string>("TYPE"))))
+          Inpar::BEAMINTERACTION::String2CrosslinkerType((matdata->Get<std::string>("TYPE"))))
 {
   if (link_element_matnum_ < 0)
     FOUR_C_THROW(
@@ -51,17 +51,17 @@ MAT::PAR::CrosslinkerMat::CrosslinkerMat(Teuchos::RCP<CORE::MAT::PAR::Material> 
         "possible.");
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::CrosslinkerMat::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::CrosslinkerMat::create_material()
 {
-  return Teuchos::rcp(new MAT::CrosslinkerMat(this));
+  return Teuchos::rcp(new Mat::CrosslinkerMat(this));
 }
 
-MAT::CrosslinkerMatType MAT::CrosslinkerMatType::instance_;
+Mat::CrosslinkerMatType Mat::CrosslinkerMatType::instance_;
 
 
-CORE::COMM::ParObject* MAT::CrosslinkerMatType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::CrosslinkerMatType::Create(const std::vector<char>& data)
 {
-  MAT::CrosslinkerMat* linkermat = new MAT::CrosslinkerMat();
+  Mat::CrosslinkerMat* linkermat = new Mat::CrosslinkerMat();
   linkermat->Unpack(data);
   return linkermat;
 }
@@ -70,21 +70,21 @@ CORE::COMM::ParObject* MAT::CrosslinkerMatType::Create(const std::vector<char>& 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::CrosslinkerMat::CrosslinkerMat() : params_(nullptr) {}
+Mat::CrosslinkerMat::CrosslinkerMat() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::CrosslinkerMat::CrosslinkerMat(MAT::PAR::CrosslinkerMat* params) : params_(params) {}
+Mat::CrosslinkerMat::CrosslinkerMat(Mat::PAR::CrosslinkerMat* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void MAT::CrosslinkerMat::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::CrosslinkerMat::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -101,24 +101,24 @@ void MAT::CrosslinkerMat::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void MAT::CrosslinkerMat::Unpack(const std::vector<char>& data)
+void Mat::CrosslinkerMat::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::CrosslinkerMat*>(mat);
+        params_ = static_cast<Mat::PAR::CrosslinkerMat*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

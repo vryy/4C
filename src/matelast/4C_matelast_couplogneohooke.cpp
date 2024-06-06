@@ -14,8 +14,8 @@ continuum mechanics for finite element analysis", Cambridge, 1997.
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata)
 {
   std::string parmode = (matdata->Get<std::string>("MODE"));
@@ -43,12 +43,12 @@ MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
         "Poisson's ratio) or Lame");
 }
 
-MAT::ELASTIC::CoupLogNeoHooke::CoupLogNeoHooke(MAT::ELASTIC::PAR::CoupLogNeoHooke* params)
+Mat::Elastic::CoupLogNeoHooke::CoupLogNeoHooke(Mat::Elastic::PAR::CoupLogNeoHooke* params)
     : params_(params)
 {
 }
 
-void MAT::ELASTIC::CoupLogNeoHooke::AddShearMod(
+void Mat::Elastic::CoupLogNeoHooke::AddShearMod(
     bool& haveshearmod,  ///< non-zero shear modulus was added
     double& shearmod     ///< variable to add upon
 ) const
@@ -58,9 +58,9 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddShearMod(
   shearmod += params_->mue_;
 }
 
-void MAT::ELASTIC::CoupLogNeoHooke::AddStrainEnergy(double& psi,
-    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
-    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
+void Mat::Elastic::CoupLogNeoHooke::AddStrainEnergy(double& psi,
+    const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
+    const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double mue = params_->mue_;
   const double lambda = params_->lambda_;
@@ -74,8 +74,8 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddStrainEnergy(double& psi,
          lambda * 0.5 * pow(log(sqrt(prinv(2))), 2.);
 }
 
-void MAT::ELASTIC::CoupLogNeoHooke::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>& dPI,
-    CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+void Mat::Elastic::CoupLogNeoHooke::add_derivatives_principal(Core::LinAlg::Matrix<3, 1>& dPI,
+    Core::LinAlg::Matrix<6, 1>& ddPII, const Core::LinAlg::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {
   // ln of determinant of deformation gradient

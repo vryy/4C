@@ -18,12 +18,12 @@ problems. This material handles the communication between micro and macro materi
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::MAT::PAR
+namespace Core::Mat::PAR
 {
   class Material;
 }
 
-namespace MAT
+namespace Mat
 {
   // forward declaration
   class ScatraMultiScaleGP;
@@ -35,7 +35,7 @@ namespace MAT
     {
      public:
       //! constructor
-      ScatraMicroMacroCoupling(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ScatraMicroMacroCoupling(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! return name of micro-scale input file
       std::string MicroInputFileName() const { return microfile_; }
@@ -58,7 +58,7 @@ namespace MAT
       //! specific micro-scale surface area
       const double A_s_;
       //@}
-    };  // class MAT::PAR::ScatraMicroMacroCoupling
+    };  // class Mat::PAR::ScatraMicroMacroCoupling
   }     // namespace PAR
 
   /*----------------------------------------------------------------------*/
@@ -160,12 +160,12 @@ namespace MAT
 
    private:
     //! material parameters
-    virtual const MAT::PAR::ScatraMicroMacroCoupling* params() const = 0;
+    virtual const Mat::PAR::ScatraMicroMacroCoupling* params() const = 0;
 
     //! map between Gauss point ID and Gauss point submaterial
     std::map<int, Teuchos::RCP<ScatraMultiScaleGP>> matgp_;
   };  // material wrapper
-}  // namespace MAT
+}  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

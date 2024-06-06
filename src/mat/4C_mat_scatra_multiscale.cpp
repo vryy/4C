@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-MAT::PAR::ScatraMultiScale::ScatraMultiScale(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ScatraMultiScale::ScatraMultiScale(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : ScatraMat(matdata),
       ScatraMicroMacroCoupling(matdata),
       porosity_(matdata->Get<double>("POROSITY")),
@@ -27,18 +27,18 @@ MAT::PAR::ScatraMultiScale::ScatraMultiScale(Teuchos::RCP<CORE::MAT::PAR::Materi
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMultiScale::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMultiScale::create_material()
 {
-  return Teuchos::rcp(new MAT::ScatraMultiScale(this));
+  return Teuchos::rcp(new Mat::ScatraMultiScale(this));
 }
 
 
-MAT::ScatraMultiScaleType MAT::ScatraMultiScaleType::instance_;
+Mat::ScatraMultiScaleType Mat::ScatraMultiScaleType::instance_;
 
 
-CORE::COMM::ParObject* MAT::ScatraMultiScaleType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ScatraMultiScaleType::Create(const std::vector<char>& data)
 {
-  MAT::ScatraMultiScale* ScatraMatMultiScale = new MAT::ScatraMultiScale();
+  Mat::ScatraMultiScale* ScatraMatMultiScale = new Mat::ScatraMultiScale();
   ScatraMatMultiScale->Unpack(data);
   return ScatraMatMultiScale;
 }
@@ -46,12 +46,12 @@ CORE::COMM::ParObject* MAT::ScatraMultiScaleType::Create(const std::vector<char>
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-MAT::ScatraMultiScale::ScatraMultiScale() : params_(nullptr) { return; }
+Mat::ScatraMultiScale::ScatraMultiScale() : params_(nullptr) { return; }
 
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-MAT::ScatraMultiScale::ScatraMultiScale(MAT::PAR::ScatraMultiScale* params)
+Mat::ScatraMultiScale::ScatraMultiScale(Mat::PAR::ScatraMultiScale* params)
     : ScatraMat(params), params_(params)
 {
   return;
@@ -60,9 +60,9 @@ MAT::ScatraMultiScale::ScatraMultiScale(MAT::PAR::ScatraMultiScale* params)
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::ScatraMultiScale::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ScatraMultiScale::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -82,24 +82,24 @@ void MAT::ScatraMultiScale::Pack(CORE::COMM::PackBuffer& data) const
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::ScatraMultiScale::Unpack(const std::vector<char>& data)
+void Mat::ScatraMultiScale::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ScatraMultiScale*>(mat);
+        params_ = static_cast<Mat::PAR::ScatraMultiScale*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not match calling type %d!", mat->Type(),
             MaterialType());

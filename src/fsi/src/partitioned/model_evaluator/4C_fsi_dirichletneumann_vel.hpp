@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 // Forward declarations
 
-namespace ADAPTER
+namespace Adapter
 {
   class FBIConstraintenforcer;
 }
@@ -130,7 +130,7 @@ namespace FSI
      * \brief Object that allows to capsule the different constraint enforcement strategies and
      * effectively separating it from the actual algorithm
      */
-    Teuchos::RCP<ADAPTER::FBIConstraintenforcer> constraint_manager_;
+    Teuchos::RCP<Adapter::FBIConstraintenforcer> constraint_manager_;
 
     Teuchos::RCP<BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter> visualization_output_writer_;
   };

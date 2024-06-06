@@ -26,11 +26,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
-    : CORE::Elements::Element(id, owner),
+Discret::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
+    : Core::Elements::Element(id, owner),
       Tref_(0),
       centerline_hermite_(true),
-      filamenttype_(INPAR::BEAMINTERACTION::filtype_arbitrary),
+      filamenttype_(Inpar::BEAMINTERACTION::filtype_arbitrary),
       interface_ptr_(Teuchos::null),
       browndyn_interface_ptr_(Teuchos::null)
 {
@@ -39,8 +39,8 @@ DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3Base::Beam3Base(const DRT::ELEMENTS::Beam3Base& old)
-    : CORE::Elements::Element(old),
+Discret::ELEMENTS::Beam3Base::Beam3Base(const Discret::ELEMENTS::Beam3Base& old)
+    : Core::Elements::Element(old),
       Tref_(old.Tref_),
       centerline_hermite_(old.centerline_hermite_),
       bspotposxi_(old.bspotposxi_),
@@ -51,9 +51,9 @@ DRT::ELEMENTS::Beam3Base::Beam3Base(const DRT::ELEMENTS::Beam3Base& old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Beam3Base::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -73,11 +73,11 @@ void DRT::ELEMENTS::Beam3Base::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -87,25 +87,25 @@ void DRT::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
   // bspotposxi_
   ExtractfromPack(position, data, bspotposxi_);
   // filamenttype_
-  filamenttype_ = static_cast<INPAR::BEAMINTERACTION::FilamentType>(ExtractInt(position, data));
+  filamenttype_ = static_cast<Inpar::BEAMINTERACTION::FilamentType>(ExtractInt(position, data));
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::set_params_interface_ptr(const Teuchos::ParameterList& p)
+void Discret::ELEMENTS::Beam3Base::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   else
     interface_ptr_ = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::set_brownian_dyn_params_interface_ptr()
+void Discret::ELEMENTS::Beam3Base::set_brownian_dyn_params_interface_ptr()
 {
   browndyn_interface_ptr_ = interface_ptr_->get_brownian_dyn_param_interface();
 
@@ -114,7 +114,7 @@ void DRT::ELEMENTS::Beam3Base::set_brownian_dyn_params_interface_ptr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::ParamsInterface> DRT::ELEMENTS::Beam3Base::ParamsInterfacePtr()
+Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Beam3Base::ParamsInterfacePtr()
 {
   return interface_ptr_;
 }
@@ -122,15 +122,15 @@ Teuchos::RCP<CORE::Elements::ParamsInterface> DRT::ELEMENTS::Beam3Base::ParamsIn
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<BROWNIANDYN::ParamsInterface>
-DRT::ELEMENTS::Beam3Base::brownian_dyn_params_interface_ptr() const
+Discret::ELEMENTS::Beam3Base::brownian_dyn_params_interface_ptr() const
 {
   return browndyn_interface_ptr_;
 }
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-std::vector<int> DRT::ELEMENTS::Beam3Base::GetAdditiveDofGIDs(
-    const DRT::Discretization& discret, const CORE::Nodes::Node& node) const
+std::vector<int> Discret::ELEMENTS::Beam3Base::GetAdditiveDofGIDs(
+    const Discret::Discretization& discret, const Core::Nodes::Node& node) const
 {
   std::vector<int> dofgids;
   std::vector<int> dofindices;
@@ -151,8 +151,8 @@ std::vector<int> DRT::ELEMENTS::Beam3Base::GetAdditiveDofGIDs(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<int> DRT::ELEMENTS::Beam3Base::GetRotVecDofGIDs(
-    const DRT::Discretization& discret, const CORE::Nodes::Node& node) const
+std::vector<int> Discret::ELEMENTS::Beam3Base::GetRotVecDofGIDs(
+    const Discret::Discretization& discret, const Core::Nodes::Node& node) const
 {
   std::vector<int> dofgids;
   std::vector<int> dofindices;
@@ -170,15 +170,15 @@ std::vector<int> DRT::ELEMENTS::Beam3Base::GetRotVecDofGIDs(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Beam3Base::get_circular_cross_section_radius_for_interactions() const
+double Discret::ELEMENTS::Beam3Base::get_circular_cross_section_radius_for_interactions() const
 {
   return get_beam_material().get_interaction_radius();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(
-    CORE::LINALG::Matrix<3, 1>& refpos, const double& xi) const
+void Discret::ELEMENTS::Beam3Base::GetRefPosAtXi(
+    Core::LinAlg::Matrix<3, 1>& refpos, const double& xi) const
 {
   const int numclnodes = this->NumCenterlineNodes();
   const int numnodalvalues = this->hermite_centerline_interpolation() ? 2 : 1;
@@ -191,32 +191,32 @@ void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::get_beam_material() const
+Mat::BeamMaterial& Discret::ELEMENTS::Beam3Base::get_beam_material() const
 {
   // get the material law
-  Teuchos::RCP<CORE::MAT::Material> material_ptr = Material();
+  Teuchos::RCP<Core::Mat::Material> material_ptr = Material();
 
-  if (material_ptr->MaterialType() != CORE::Materials::m_beam_elast_hyper_generic)
+  if (material_ptr->MaterialType() != Core::Materials::m_beam_elast_hyper_generic)
     FOUR_C_THROW("unknown or improper type of material law! expected beam material law!");
 
-  return *static_cast<MAT::BeamMaterial*>(material_ptr.get());
+  return *static_cast<Mat::BeamMaterial*>(material_ptr.get());
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 
 template <typename T>
-MAT::BeamMaterialTemplated<T>& DRT::ELEMENTS::Beam3Base::get_templated_beam_material() const
+Mat::BeamMaterialTemplated<T>& Discret::ELEMENTS::Beam3Base::get_templated_beam_material() const
 {
-  return *Teuchos::rcp_dynamic_cast<MAT::BeamMaterialTemplated<T>>(Material(), true);
+  return *Teuchos::rcp_dynamic_cast<Mat::BeamMaterialTemplated<T>>(Material(), true);
 };
 
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void DRT::ELEMENTS::Beam3Base::get_constitutive_matrices(
-    CORE::LINALG::Matrix<3, 3, T>& CN, CORE::LINALG::Matrix<3, 3, T>& CM) const
+void Discret::ELEMENTS::Beam3Base::get_constitutive_matrices(
+    Core::LinAlg::Matrix<3, 3, T>& CN, Core::LinAlg::Matrix<3, 3, T>& CM) const
 {
   get_templated_beam_material<T>().get_constitutive_matrix_of_forces_material_frame(CN);
   get_templated_beam_material<T>().get_constitutive_matrix_of_moments_material_frame(CM);
@@ -225,8 +225,8 @@ void DRT::ELEMENTS::Beam3Base::get_constitutive_matrices(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void DRT::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_tensor(
-    double& mass_inertia_translational, CORE::LINALG::Matrix<3, 3, T>& J) const
+void Discret::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_tensor(
+    double& mass_inertia_translational, Core::LinAlg::Matrix<3, 3, T>& J) const
 {
   get_translational_mass_inertia_factor(mass_inertia_translational);
   get_beam_material().get_mass_moment_of_inertia_tensor_material_frame(J);
@@ -234,7 +234,7 @@ void DRT::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_ten
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::get_translational_mass_inertia_factor(
+void Discret::ELEMENTS::Beam3Base::get_translational_mass_inertia_factor(
     double& mass_inertia_translational) const
 {
   mass_inertia_translational = get_beam_material().get_translational_mass_inertia_factor();
@@ -242,11 +242,11 @@ void DRT::ELEMENTS::Beam3Base::get_translational_mass_inertia_factor(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::get_damping_coefficients(CORE::LINALG::Matrix<3, 1>& gamma) const
+void Discret::ELEMENTS::Beam3Base::get_damping_coefficients(Core::LinAlg::Matrix<3, 1>& gamma) const
 {
   switch (brownian_dyn_params_interface().how_beam_damping_coefficients_are_specified())
   {
-    case INPAR::BROWNIANDYN::cylinder_geometry_approx:
+    case Inpar::BROWNIANDYN::cylinder_geometry_approx:
     {
       /* These are coefficients for a straight cylindrical rod taken from
        * Howard, p. 107, table 6.2. The order is as follows:
@@ -266,7 +266,7 @@ void DRT::ELEMENTS::Beam3Base::get_damping_coefficients(CORE::LINALG::Matrix<3, 
       break;
     }
 
-    case INPAR::BROWNIANDYN::input_file:
+    case Inpar::BROWNIANDYN::input_file:
     {
       gamma(0) = brownian_dyn_params_interface()
                      .get_beam_damping_coefficient_prefactors_from_input_file()[0] *
@@ -293,13 +293,13 @@ void DRT::ELEMENTS::Beam3Base::get_damping_coefficients(CORE::LINALG::Matrix<3, 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <unsigned int ndim, typename T>
-void DRT::ELEMENTS::Beam3Base::get_background_velocity(
+void Discret::ELEMENTS::Beam3Base::get_background_velocity(
     Teuchos::ParameterList& params,  //!< parameter list
-    const CORE::LINALG::Matrix<ndim, 1, T>&
+    const Core::LinAlg::Matrix<ndim, 1, T>&
         evaluationpoint,                              //!< point at which background velocity and
                                                       //!< its gradient has to be computed
-    CORE::LINALG::Matrix<ndim, 1, T>& velbackground,  //!< velocity of background fluid
-    CORE::LINALG::Matrix<ndim, ndim, T>& velbackgroundgrad)
+    Core::LinAlg::Matrix<ndim, 1, T>& velbackground,  //!< velocity of background fluid
+    Core::LinAlg::Matrix<ndim, ndim, T>& velbackgroundgrad)
     const  //!< gradient of velocity of background fluid
 {
   /*note: this function is not yet a general one, but always assumes a shear flow, where the
@@ -321,8 +321,8 @@ void DRT::ELEMENTS::Beam3Base::get_background_velocity(
  | space; the shift affects computation on element level within that           |
  | iteration step, only (no change in global variables performed)              |
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
-    std::vector<double>& disp, CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const
+void Discret::ELEMENTS::Beam3Base::UnShiftNodePosition(
+    std::vector<double>& disp, Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox) const
 {
   /* get number of degrees of freedom per node; note:
    * the following function assumes the same number of degrees
@@ -334,7 +334,7 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
 
   // loop through all nodes except for the first node which remains
   // fixed as reference node
-  static CORE::LINALG::Matrix<3, 1> d(true), ref(true), X(true);
+  static Core::LinAlg::Matrix<3, 1> d(true), ref(true), X(true);
   d.Clear();
   ref.Clear();
   X.Clear();
@@ -358,8 +358,8 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::get_directions_of_shifts(std::vector<double>& disp,
-    CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox,
+void Discret::ELEMENTS::Beam3Base::get_directions_of_shifts(std::vector<double>& disp,
+    Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox,
     std::vector<bool>& shift_in_dim) const
 {
   /* get number of degrees of freedom per node; note:
@@ -374,7 +374,7 @@ void DRT::ELEMENTS::Beam3Base::get_directions_of_shifts(std::vector<double>& dis
 
   // loop through all nodes except for the first node which remains
   // fixed as reference node
-  static CORE::LINALG::Matrix<3, 1> d(true), ref(true), X(true);
+  static Core::LinAlg::Matrix<3, 1> d(true), ref(true), X(true);
   d.Clear();
   ref.Clear();
   X.Clear();
@@ -398,9 +398,9 @@ void DRT::ELEMENTS::Beam3Base::get_directions_of_shifts(std::vector<double>& dis
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(CORE::LINALG::Matrix<3, 1>& pos,
-    std::vector<double>& disp, INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn,
-    CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const
+void Discret::ELEMENTS::Beam3Base::GetPosOfBindingSpot(Core::LinAlg::Matrix<3, 1>& pos,
+    std::vector<double>& disp, Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn,
+    Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox) const
 {
   const double xi = bspotposxi_.at(linkertype)[bspotlocn];
   // get position
@@ -412,8 +412,8 @@ void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(CORE::LINALG::Matrix<3, 1>& p
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::get_triad_of_binding_spot(CORE::LINALG::Matrix<3, 3>& triad,
-    std::vector<double>& disp, INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
+void Discret::ELEMENTS::Beam3Base::get_triad_of_binding_spot(Core::LinAlg::Matrix<3, 3>& triad,
+    std::vector<double>& disp, Inpar::BEAMINTERACTION::CrosslinkerType linkertype,
     int bspotlocn) const
 {
   const double xi = bspotposxi_.at(linkertype)[bspotlocn];
@@ -423,17 +423,17 @@ void DRT::ELEMENTS::Beam3Base::get_triad_of_binding_spot(CORE::LINALG::Matrix<3,
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolume(
-    const DRT::Discretization& discret, const Epetra_Vector& result_data_dofbased,
-    const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const
+Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Beam3Base::GetBoundingVolume(
+    const Discret::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const Core::GeometricSearch::GeometricSearchParams& params) const
 {
   // Get the centerline dof values of the beam.
   std::vector<double> element_posdofvec;
   BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
       discret, this, Teuchos::rcpFromRef(result_data_dofbased), element_posdofvec);
-  CORE::GEOMETRICSEARCH::BoundingVolume bounding_volume;
+  Core::GeometricSearch::BoundingVolume bounding_volume;
 
-  CORE::LINALG::Matrix<3, 1, double> point;
+  Core::LinAlg::Matrix<3, 1, double> point;
 
   // TODO: replace this with convex hull from bezier curve (small student project?)
   // Add a certain number of points along the beam.
@@ -456,30 +456,30 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolum
 /*--------------------------------------------------------------------------------------------*
  | explicit template instantiations                                                           |
  *--------------------------------------------------------------------------------------------*/
-template void DRT::ELEMENTS::Beam3Base::get_constitutive_matrices<double>(
-    CORE::LINALG::Matrix<3, 3, double>& CN, CORE::LINALG::Matrix<3, 3, double>& CM) const;
-template void DRT::ELEMENTS::Beam3Base::get_constitutive_matrices<Sacado::Fad::DFad<double>>(
-    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CN,
-    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CM) const;
+template void Discret::ELEMENTS::Beam3Base::get_constitutive_matrices<double>(
+    Core::LinAlg::Matrix<3, 3, double>& CN, Core::LinAlg::Matrix<3, 3, double>& CM) const;
+template void Discret::ELEMENTS::Beam3Base::get_constitutive_matrices<Sacado::Fad::DFad<double>>(
+    Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>& CN,
+    Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>& CM) const;
 
 template void
-DRT::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_tensor<double>(
-    double&, CORE::LINALG::Matrix<3, 3, double>&) const;
-template void DRT::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_tensor<
+Discret::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_tensor<double>(
+    double&, Core::LinAlg::Matrix<3, 3, double>&) const;
+template void Discret::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_tensor<
     Sacado::Fad::DFad<double>>(
-    double&, CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
+    double&, Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
-template void DRT::ELEMENTS::Beam3Base::get_background_velocity<3, double>(Teuchos::ParameterList&,
-    const CORE::LINALG::Matrix<3, 1, double>&, CORE::LINALG::Matrix<3, 1, double>&,
-    CORE::LINALG::Matrix<3, 3, double>&) const;
-template void DRT::ELEMENTS::Beam3Base::get_background_velocity<3, Sacado::Fad::DFad<double>>(
-    Teuchos::ParameterList&, const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
+template void Discret::ELEMENTS::Beam3Base::get_background_velocity<3, double>(
+    Teuchos::ParameterList&, const Core::LinAlg::Matrix<3, 1, double>&,
+    Core::LinAlg::Matrix<3, 1, double>&, Core::LinAlg::Matrix<3, 3, double>&) const;
+template void Discret::ELEMENTS::Beam3Base::get_background_velocity<3, Sacado::Fad::DFad<double>>(
+    Teuchos::ParameterList&, const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
-template MAT::BeamMaterialTemplated<double>&
-DRT::ELEMENTS::Beam3Base::get_templated_beam_material<double>() const;
-template MAT::BeamMaterialTemplated<Sacado::Fad::DFad<double>>&
-DRT::ELEMENTS::Beam3Base::get_templated_beam_material<Sacado::Fad::DFad<double>>() const;
+template Mat::BeamMaterialTemplated<double>&
+Discret::ELEMENTS::Beam3Base::get_templated_beam_material<double>() const;
+template Mat::BeamMaterialTemplated<Sacado::Fad::DFad<double>>&
+Discret::ELEMENTS::Beam3Base::get_templated_beam_material<Sacado::Fad::DFad<double>>() const;
 
 FOUR_C_NAMESPACE_CLOSE

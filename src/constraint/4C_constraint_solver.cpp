@@ -25,8 +25,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 11/07|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::ConstraintSolver::ConstraintSolver(Teuchos::RCP<DRT::Discretization> discr,
-    CORE::LINALG::Solver& solver, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
+CONSTRAINTS::ConstraintSolver::ConstraintSolver(Teuchos::RCP<Discret::Discretization> discr,
+    Core::LinAlg::Solver& solver, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
     Teuchos::ParameterList params)
     : actdisc_(discr),
       max_iter_(params.get<int>("UZAWAMAXITER", 50)),
@@ -39,17 +39,17 @@ CONSTRAINTS::ConstraintSolver::ConstraintSolver(Teuchos::RCP<DRT::Discretization
 /*----------------------------------------------------------------------*
  |  set-up (public)                                             tk 11/07|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintSolver::Setup(Teuchos::RCP<DRT::Discretization> discr,
-    CORE::LINALG::Solver& solver, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
+void CONSTRAINTS::ConstraintSolver::Setup(Teuchos::RCP<Discret::Discretization> discr,
+    Core::LinAlg::Solver& solver, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
     Teuchos::ParameterList params)
 {
   solver_ = Teuchos::rcp(&solver, false);
 
-  algochoice_ = CORE::UTILS::IntegralValue<INPAR::STR::ConSolveAlgo>(params, "UZAWAALGO");
+  algochoice_ = Core::UTILS::IntegralValue<Inpar::STR::ConSolveAlgo>(params, "UZAWAALGO");
 
   // different setup for #adapttol_
   isadapttol_ = true;
-  isadapttol_ = (CORE::UTILS::IntegralValue<int>(params, "ADAPTCONV") == 1);
+  isadapttol_ = (Core::UTILS::IntegralValue<int>(params, "ADAPTCONV") == 1);
 
   // simple parameters
   adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
@@ -68,21 +68,21 @@ void CONSTRAINTS::ConstraintSolver::Setup(Teuchos::RCP<DRT::Discretization> disc
 |(public)                                                               |
 |Solve linear constrained system                                        |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintSolver::Solve(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> constr,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
+void CONSTRAINTS::ConstraintSolver::Solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> constr,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
     Teuchos::RCP<Epetra_Vector> lagrinc, const Teuchos::RCP<Epetra_Vector> rhsstand,
     const Teuchos::RCP<Epetra_Vector> rhsconstr)
 {
   switch (algochoice_)
   {
-    case INPAR::STR::consolve_uzawa:
+    case Inpar::STR::consolve_uzawa:
       solve_uzawa(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
       break;
-    case INPAR::STR::consolve_direct:
+    case Inpar::STR::consolve_direct:
       solve_direct(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
       break;
-    case INPAR::STR::consolve_simple:
+    case Inpar::STR::consolve_simple:
       solve_simple(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
       break;
     default:
@@ -95,9 +95,9 @@ void CONSTRAINTS::ConstraintSolver::Solve(Teuchos::RCP<CORE::LINALG::SparseMatri
 |(public)                                                               |
 |Solve linear constrained system by iterative Uzawa algorithm           |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> constr,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
+void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> constr,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
     Teuchos::RCP<Epetra_Vector> lagrinc, const Teuchos::RCP<Epetra_Vector> rhsstand,
     const Teuchos::RCP<Epetra_Vector> rhsconstr)
 {
@@ -118,13 +118,13 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<CORE::LINALG::Spars
 
   Teuchos::RCP<Epetra_Vector> constrTLagrInc = Teuchos::rcp(new Epetra_Vector(rhsstand->Map()));
   Teuchos::RCP<Epetra_Vector> constrTDispInc = Teuchos::rcp(new Epetra_Vector(rhsconstr->Map()));
-  // CORE::LINALG::SparseMatrix constrT =
-  // *(Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(constr));
+  // Core::LinAlg::SparseMatrix constrT =
+  // *(Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(constr));
 
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
-    dbcmaps_ = CORE::LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
+    dbcmaps_ = Core::LinAlg::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
 
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(rhsstand->Map(), true));
   Teuchos::RCP<Epetra_Vector> dirichzeros = dbcmaps_->ExtractCondVector(zeros);
@@ -152,7 +152,7 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<CORE::LINALG::Spars
   {
     // solve for disi
     // Solve K . IncD = -R  ===>  IncD_{n+1}
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     if (isadapttol_ && counter_ && numiter_uzawa)
     {
       solver_params.nonlin_tolerance = tolres_ / 10.0;
@@ -246,9 +246,9 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<CORE::LINALG::Spars
 |(public)                                                               |
 |Solve linear constrained system by iterative Uzawa algorithm           |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintSolver::solve_direct(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> constr,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
+void CONSTRAINTS::ConstraintSolver::solve_direct(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> constr,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
     Teuchos::RCP<Epetra_Vector> lagrinc, const Teuchos::RCP<Epetra_Vector> rhsstand,
     const Teuchos::RCP<Epetra_Vector> rhsconstr)
 {
@@ -256,31 +256,31 @@ void CONSTRAINTS::ConstraintSolver::solve_direct(Teuchos::RCP<CORE::LINALG::Spar
   Teuchos::RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(stiff->RowMap()));
   Teuchos::RCP<Epetra_Map> conrowmap = Teuchos::rcp(new Epetra_Map(constr->DomainMap()));
   // merge maps to one large map
-  Teuchos::RCP<Epetra_Map> mergedmap = CORE::LINALG::MergeMap(standrowmap, conrowmap, false);
+  Teuchos::RCP<Epetra_Map> mergedmap = Core::LinAlg::MergeMap(standrowmap, conrowmap, false);
   // define MapExtractor
-  CORE::LINALG::MapExtractor mapext(*mergedmap, standrowmap, conrowmap);
+  Core::LinAlg::MapExtractor mapext(*mergedmap, standrowmap, conrowmap);
 
   // initialize large Sparse Matrix and Epetra_Vectors
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> mergedmatrix =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*mergedmap, 81));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> mergedmatrix =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*mergedmap, 81));
   Teuchos::RCP<Epetra_Vector> mergedrhs = Teuchos::rcp(new Epetra_Vector(*mergedmap));
   Teuchos::RCP<Epetra_Vector> mergedsol = Teuchos::rcp(new Epetra_Vector(*mergedmap));
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
-    dbcmaps_ = CORE::LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
+    dbcmaps_ = Core::LinAlg::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
   // fill merged matrix using Add
   mergedmatrix->Add(*stiff, false, 1.0, 1.0);
   mergedmatrix->Add(*constr, false, 1.0, 1.0);
   mergedmatrix->Add(*constrT, true, 1.0, 1.0);
   mergedmatrix->Complete(*mergedmap, *mergedmap);
   // fill merged vectors using Export
-  CORE::LINALG::Export(*rhsconstr, *mergedrhs);
+  Core::LinAlg::Export(*rhsconstr, *mergedrhs);
   mergedrhs->Scale(-1.0);
-  CORE::LINALG::Export(*rhsstand, *mergedrhs);
+  Core::LinAlg::Export(*rhsstand, *mergedrhs);
 
   // solve
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = counter_ == 0;
   solver_->Solve(mergedmatrix->EpetraMatrix(), mergedsol, mergedrhs, solver_params);
@@ -293,33 +293,33 @@ void CONSTRAINTS::ConstraintSolver::solve_direct(Teuchos::RCP<CORE::LINALG::Spar
   return;
 }
 
-void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> constr,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
+void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> constr,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> constrT, Teuchos::RCP<Epetra_Vector> dispinc,
     Teuchos::RCP<Epetra_Vector> lagrinc, const Teuchos::RCP<Epetra_Vector> rhsstand,
     const Teuchos::RCP<Epetra_Vector> rhsconstr)
 {
   // row maps (assumed to equal to range map) and extractor
   Teuchos::RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(stiff->RowMap()));
   Teuchos::RCP<Epetra_Map> conrowmap = Teuchos::rcp(new Epetra_Map(constr->DomainMap()));
-  Teuchos::RCP<Epetra_Map> mergedrowmap = CORE::LINALG::MergeMap(standrowmap, conrowmap, false);
-  CORE::LINALG::MapExtractor rowmapext(*mergedrowmap, conrowmap, standrowmap);
+  Teuchos::RCP<Epetra_Map> mergedrowmap = Core::LinAlg::MergeMap(standrowmap, conrowmap, false);
+  Core::LinAlg::MapExtractor rowmapext(*mergedrowmap, conrowmap, standrowmap);
 
   // domain maps and extractor
   Teuchos::RCP<Epetra_Map> standdommap = Teuchos::rcp(new Epetra_Map(stiff->DomainMap()));
   Teuchos::RCP<Epetra_Map> condommap = Teuchos::rcp(new Epetra_Map(constr->DomainMap()));
-  Teuchos::RCP<Epetra_Map> mergeddommap = CORE::LINALG::MergeMap(standdommap, condommap, false);
-  CORE::LINALG::MapExtractor dommapext(*mergeddommap, condommap, standdommap);
+  Teuchos::RCP<Epetra_Map> mergeddommap = Core::LinAlg::MergeMap(standdommap, condommap, false);
+  Core::LinAlg::MapExtractor dommapext(*mergeddommap, condommap, standdommap);
 
   // cast constraint operators to matrices and save transpose of constraint matrix
-  CORE::LINALG::SparseMatrix constrTrans(*conrowmap, 81, false, true);
+  Core::LinAlg::SparseMatrix constrTrans(*conrowmap, 81, false, true);
   constrTrans.Add(*constrT, true, 1.0, 0.0);
   constrTrans.Complete(constrT->RangeMap(), constrT->DomainMap());
 
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
-    dbcmaps_ = CORE::LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
+    dbcmaps_ = Core::LinAlg::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
 
   // stuff needed for Dirichlet BCs
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(rhsstand->Map(), true));
@@ -332,7 +332,7 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<CORE::LINALG::Spar
   /*
   //make solver CheapSIMPLE-ready
   // meshtying/contact for structure
-  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& mcparams = Global::Problem::Instance()->contact_dynamic_params();
   // get the solver number used for meshtying/contact problems
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
   // check if the meshtying/contact solver has a valid solver number
@@ -343,14 +343,14 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<CORE::LINALG::Spar
 
   Teuchos::ParameterList sfparams =
       solver_->Params();  // save copy of original solver parameter list
-  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& mcparams = Global::Problem::Instance()->contact_dynamic_params();
   const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
-  solver_->Params() = CORE::LINALG::Solver::translate_solver_parameters(
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
+  solver_->Params() = Core::LinAlg::Solver::translate_solver_parameters(
+      Global::Problem::Instance()->SolverParams(linsolvernumber));
 
   // Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter
   // list solver_->Params() =
-  // CORE::LINALG::Solver::translate_solver_parameters(GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
+  // Core::LinAlg::Solver::translate_solver_parameters(Global::Problem::Instance()->SolverParams(linsolvernumber));
   if (!solver_->Params().isSublist("Belos Parameters")) FOUR_C_THROW("Iterative solver expected!");
 
   solver_->Params().set<bool>(
@@ -364,29 +364,29 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<CORE::LINALG::Spar
   if (simplersolvernumber == (-1))
     FOUR_C_THROW("no linear solver defined for Lagrange multipliers. Please set SIMPLER_SOLVER in
   CONTACT DYNAMIC to a valid number!"); solver_->put_solver_params_to_sub_params("Inverse2",
-      GLOBAL::Problem::Instance()->SolverParams(simplersolvernumber));
+      Global::Problem::Instance()->SolverParams(simplersolvernumber));
   */
 
   // build block matrix for SIMPLE
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>> mat =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> mat =
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           dommapext, rowmapext, 81, false, false));
-  mat->Assign(0, 0, CORE::LINALG::View, *stiff);
-  mat->Assign(0, 1, CORE::LINALG::View, *constr);
-  mat->Assign(1, 0, CORE::LINALG::View, constrTrans);
+  mat->Assign(0, 0, Core::LinAlg::View, *stiff);
+  mat->Assign(0, 1, Core::LinAlg::View, *constr);
+  mat->Assign(1, 0, Core::LinAlg::View, constrTrans);
   mat->Complete();
 
   // merged rhs using Export
   Teuchos::RCP<Epetra_Vector> mergedrhs = Teuchos::rcp(new Epetra_Vector(*mergedrowmap));
-  CORE::LINALG::Export(*rhsconstr, *mergedrhs);
+  Core::LinAlg::Export(*rhsconstr, *mergedrhs);
   mergedrhs->Scale(-1.0);
-  CORE::LINALG::Export(*rhscopy, *mergedrhs);
+  Core::LinAlg::Export(*rhscopy, *mergedrhs);
 
   // solution vector
   Teuchos::RCP<Epetra_Vector> mergedsol = Teuchos::rcp(new Epetra_Vector(*mergedrowmap));
 
   // solve
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = counter_ == 0;
   solver_->Solve(mat->EpetraOperator(), mergedsol, mergedrhs, solver_params);

@@ -25,11 +25,11 @@ FOUR_C_NAMESPACE_OPEN
               Split the facet into appropriate number of tri and quad Sudhakar 04/12 Work well
 for both convex and concave facets
 *------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::TriangulateFacet::SplitFacet()
+void Core::Geo::Cut::TriangulateFacet::SplitFacet()
 {
   // An edge should contain only 2 end points
   // delete all remaining points on the edge
-  KERNEL::DeleteInlinePts(ptlist_);
+  Kernel::DeleteInlinePts(ptlist_);
 
   // Deal with zero point facet -- this should never occur, but happens in axel10 cut-test
   if (ptlist_.size() == 0) return;
@@ -50,12 +50,12 @@ void CORE::GEO::CUT::TriangulateFacet::SplitFacet()
     split_.clear();
 
     // get concave (reflex) points of polygon
-    CORE::GEO::CUT::FacetShape geoType;
-    std::vector<int> ptConcavity = KERNEL::CheckConvexity(ptlist_, geoType);
+    Core::Geo::Cut::FacetShape geoType;
+    std::vector<int> ptConcavity = Kernel::CheckConvexity(ptlist_, geoType);
 
     // a convex polygon or a polygon with only one concave point can be
     // very easily split
-    if (geoType == CORE::GEO::CUT::Convex or geoType == CORE::GEO::CUT::SinglePtConcave)
+    if (geoType == Core::Geo::Cut::Convex or geoType == Core::Geo::Cut::SinglePtConcave)
     {
       split_convex_1pt_concave_facet(ptConcavity);
     }
@@ -79,24 +79,24 @@ void CORE::GEO::CUT::TriangulateFacet::SplitFacet()
                                / +    + \
                                +        +
 *--------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::TriangulateFacet::split4node_facet(
+void Core::Geo::Cut::TriangulateFacet::split4node_facet(
     std::vector<Point*>& poly, bool callFromSplitAnyFacet)
 {
   if (poly.size() != 4) FOUR_C_THROW("This is not a 4 noded facet");
 
-  CORE::GEO::CUT::FacetShape geoType;
-  std::vector<int> ptConcavity = KERNEL::CheckConvexity(poly, geoType);
+  Core::Geo::Cut::FacetShape geoType;
+  std::vector<int> ptConcavity = Kernel::CheckConvexity(poly, geoType);
 
   int indStart = 0;
 
   // convex quad can be directly added
-  if (geoType == CORE::GEO::CUT::Convex)
+  if (geoType == Core::Geo::Cut::Convex)
   {
     split_.push_back(poly);
     return;
   }
   // concave quad is split into two tri cells
-  else if (geoType == CORE::GEO::CUT::SinglePtConcave)
+  else if (geoType == Core::Geo::Cut::SinglePtConcave)
   {
     indStart = ptConcavity[0];
 
@@ -128,7 +128,7 @@ void CORE::GEO::CUT::TriangulateFacet::split4node_facet(
     /*if( callFromSplitAnyFacet )
     {
       std::cout<<"WARNING!!!! calling earclipping because splitanyfacet failed\n";
-      ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
+      ptConcavity = Kernel::CheckConvexity(  ptlist_, geoType );
       split_.clear();
       EarClipping( ptConcavity, false );
       return;
@@ -153,7 +153,7 @@ void CORE::GEO::CUT::TriangulateFacet::split4node_facet(
    inside the newCell formed                                                            Sudhakar
 07/12
 *----------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::TriangulateFacet::split_convex_1pt_concave_facet(std::vector<int> ptConcavity)
+void Core::Geo::Cut::TriangulateFacet::split_convex_1pt_concave_facet(std::vector<int> ptConcavity)
 {
   if (ptConcavity.size() > 1)
     FOUR_C_THROW("should be called only when the facet has one or no concave points");
@@ -202,7 +202,7 @@ void CORE::GEO::CUT::TriangulateFacet::split_convex_1pt_concave_facet(std::vecto
       if (lastPt == endPt) triDone = true;
     }
 
-    KERNEL::DeleteInlinePts(newCell);
+    Kernel::DeleteInlinePts(newCell);
 
     if (newCell.size() == 3 || convex)
       split_.push_back(newCell);
@@ -219,7 +219,7 @@ void CORE::GEO::CUT::TriangulateFacet::split_convex_1pt_concave_facet(std::vecto
  * Generalized facet splitting procedure which works for simple facets with any number  sudhakar
  *08/12 of concave points. Involves checking whether a reflex point is inside formed cell
  *---------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::TriangulateFacet::split_general_facet(std::vector<int> ptConcavity)
+void Core::Geo::Cut::TriangulateFacet::split_general_facet(std::vector<int> ptConcavity)
 {
   if (ptConcavity.size() < 2)
     FOUR_C_THROW("Call TriangulateFacet::split_convex_1pt_concave_facet in such cases");
@@ -284,7 +284,7 @@ void CORE::GEO::CUT::TriangulateFacet::split_general_facet(std::vector<int> ptCo
         newCell.push_back(ptlist_[fourthPt]);
       }
 
-      KERNEL::DeleteInlinePts(newCell);
+      Kernel::DeleteInlinePts(newCell);
 
       bool isEar = true;
 
@@ -298,7 +298,7 @@ void CORE::GEO::CUT::TriangulateFacet::split_general_facet(std::vector<int> ptCo
           if (std::find(newCell.begin(), newCell.end(), ptlist_[reflInd]) != newCell.end())
             continue;
 
-          if (KERNEL::PtInsideTriangle(newCell, ptlist_[reflInd]))
+          if (Kernel::PtInsideTriangle(newCell, ptlist_[reflInd]))
           {
             isEar = false;
             break;
@@ -320,7 +320,7 @@ void CORE::GEO::CUT::TriangulateFacet::split_general_facet(std::vector<int> ptCo
           if (std::find(newCell.begin(), newCell.end(), ptlist_[reflInd]) != newCell.end())
             continue;
 
-          if (KERNEL::PtInsideQuad(newCell, ptlist_[reflInd]))
+          if (Kernel::PtInsideQuad(newCell, ptlist_[reflInd]))
           {
             isEar = false;
             break;
@@ -356,7 +356,7 @@ void CORE::GEO::CUT::TriangulateFacet::split_general_facet(std::vector<int> ptCo
       if (ncross == num) FOUR_C_THROW("cannot form cell even after making one cycle");
     }
 
-    KERNEL::DeleteInlinePts(ptlist_);
+    Kernel::DeleteInlinePts(ptlist_);
     num = ptlist_.size();
     if (num == 3)
     {
@@ -371,9 +371,9 @@ void CORE::GEO::CUT::TriangulateFacet::split_general_facet(std::vector<int> ptCo
     else
     {
       ptConcavity.clear();
-      CORE::GEO::CUT::FacetShape geoType;
+      Core::Geo::Cut::FacetShape geoType;
 
-      ptConcavity = KERNEL::CheckConvexity(ptlist_, geoType);
+      ptConcavity = Kernel::CheckConvexity(ptlist_, geoType);
 
       concsize = ptConcavity.size();
       if (concsize < 2)  // new ptlist_ forms a convex facet
@@ -399,7 +399,7 @@ void CORE::GEO::CUT::TriangulateFacet::split_general_facet(std::vector<int> ptCo
             check whether the polygon has two continuous concave points.
             At the moment this is unused                                         sudhakar 04/12
 *-------------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::TriangulateFacet::has_two_continuous_concave_pts(std::vector<int> ptConcavity)
+bool Core::Geo::Cut::TriangulateFacet::has_two_continuous_concave_pts(std::vector<int> ptConcavity)
 {
   int siz = ptConcavity.size();
   if (siz < 2) return false;
@@ -419,21 +419,21 @@ bool CORE::GEO::CUT::TriangulateFacet::has_two_continuous_concave_pts(std::vecto
 }
 
 
-void CORE::GEO::CUT::TriangulateFacet::restore_last_ear(
+void Core::Geo::Cut::TriangulateFacet::restore_last_ear(
     int ear_head_index, std::vector<int>& ptConcavity)
 {
   std::vector<Point*> last_added_ear = split_.back();
   split_.pop_back();
   ptlist_.insert(ptlist_.begin() + ear_head_index, last_added_ear[1]);
 
-  CORE::GEO::CUT::FacetShape str1;
+  Core::Geo::Cut::FacetShape str1;
   ptConcavity.clear();
   ptConcavity =
-      KERNEL::CheckConvexity(ptlist_, str1, true, false);  // concave points for the new polygon
+      Kernel::CheckConvexity(ptlist_, str1, true, false);  // concave points for the new polygon
 }
 
 
-void CORE::GEO::CUT::TriangulateFacet::split_triangle_with_points_on_line(unsigned int start_id)
+void Core::Geo::Cut::TriangulateFacet::split_triangle_with_points_on_line(unsigned int start_id)
 {
   unsigned int polPts = ptlist_.size();
   unsigned int split_start = (start_id + 1) % polPts;
@@ -453,7 +453,7 @@ void CORE::GEO::CUT::TriangulateFacet::split_triangle_with_points_on_line(unsign
 }
 
 
-unsigned int CORE::GEO::CUT::TriangulateFacet::find_second_best_ear(
+unsigned int Core::Geo::Cut::TriangulateFacet::find_second_best_ear(
     std::vector<std::pair<std::vector<Point*>, unsigned int>>& ears, const std::vector<int>& reflex)
 {
   unsigned int polPts = ptlist_.size();
@@ -473,7 +473,7 @@ unsigned int CORE::GEO::CUT::TriangulateFacet::find_second_best_ear(
 
     bool isEar = true;
 
-    CORE::LINALG::Matrix<3, 3> tri_coord;
+    Core::LinAlg::Matrix<3, 3> tri_coord;
     tri[0]->Coordinates(tri_coord.A());
     tri[1]->Coordinates(tri_coord.A() + 3);
     tri[2]->Coordinates(tri_coord.A() + 6);
@@ -484,9 +484,9 @@ unsigned int CORE::GEO::CUT::TriangulateFacet::find_second_best_ear(
       // skip points of the triangle itself
       if (reflInd == ind0 || reflInd == ind2) continue;
 
-      CORE::LINALG::Matrix<3, 1> point_cord(ptlist_[reflInd]);
-      Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-          CORE::GEO::CUT::Position::Create(tri_coord, point_cord, CORE::FE::CellType::tri3);
+      Core::LinAlg::Matrix<3, 1> point_cord(ptlist_[reflInd]);
+      Teuchos::RCP<Core::Geo::Cut::Position> pos =
+          Core::Geo::Cut::Position::Create(tri_coord, point_cord, Core::FE::CellType::tri3);
       // precice computation if it is inside
       bool is_inside = pos->Compute(0.0);
       if (is_inside)
@@ -520,13 +520,13 @@ unsigned int CORE::GEO::CUT::TriangulateFacet::find_second_best_ear(
       {
         std::vector<Point*> tri_a = ears[a].first;
         const double tri_ear_head_proximity_a =
-            CORE::GEO::CUT::DistanceBetweenPoints(tri_a[1], tri_a[0]) +
-            CORE::GEO::CUT::DistanceBetweenPoints(tri_a[1], tri_a[2]);
+            Core::Geo::Cut::DistanceBetweenPoints(tri_a[1], tri_a[0]) +
+            Core::Geo::Cut::DistanceBetweenPoints(tri_a[1], tri_a[2]);
 
         std::vector<Point*> tri_b = ears[b].first;
         const double tri_ear_head_proximity_b =
-            CORE::GEO::CUT::DistanceBetweenPoints(tri_b[1], tri_b[0]) +
-            CORE::GEO::CUT::DistanceBetweenPoints(tri_b[1], tri_b[2]);
+            Core::Geo::Cut::DistanceBetweenPoints(tri_b[1], tri_b[0]) +
+            Core::Geo::Cut::DistanceBetweenPoints(tri_b[1], tri_b[2]);
 
         return tri_ear_head_proximity_a < tri_ear_head_proximity_b;
       });
@@ -537,7 +537,7 @@ unsigned int CORE::GEO::CUT::TriangulateFacet::find_second_best_ear(
     Called when facets have two adjacent concave points
     During the process, if facet is free of adjacent concave points, splitanyfacet() is called
 *--------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::TriangulateFacet::EarClipping(
+void Core::Geo::Cut::TriangulateFacet::EarClipping(
     std::vector<int> ptConcavity,  // list of concave points
     bool triOnly,                  // whether to create triangles only?
     bool DeleteInlinePts)          // how to deal with collinear points?
@@ -559,7 +559,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
 
     if (DeleteInlinePts)
     {
-      KERNEL::DeleteInlinePts(ptlist_);
+      Kernel::DeleteInlinePts(ptlist_);
       if (ptlist_.size() == 3)  // after deleting the inline points, it may have only 3 points
       {
         split_.push_back(ptlist_);
@@ -572,9 +572,9 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
     }
 
     ptConcavity.clear();
-    CORE::GEO::CUT::FacetShape geoType;
+    Core::Geo::Cut::FacetShape geoType;
 
-    ptConcavity = KERNEL::CheckConvexity(ptlist_, geoType, true, DeleteInlinePts);
+    ptConcavity = Kernel::CheckConvexity(ptlist_, geoType, true, DeleteInlinePts);
   }
 
 
@@ -612,7 +612,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
     bool haveinlinepts = false;
     if (not DeleteInlinePts)
     {
-      haveinlinepts = KERNEL::HaveInlinePts(ptlist_);
+      haveinlinepts = Kernel::HaveInlinePts(ptlist_);
     }
 
     // if (i) is an ear, the triangle formed by (i-1),i and (i+1) should be completely within the
@@ -649,7 +649,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
         unsigned reflInd = reflex[j];
         if (reflInd == ind0 || reflInd == ind2) continue;
 
-        if (KERNEL::PtInsideTriangle(tri, ptlist_[reflInd], DeleteInlinePts))
+        if (Kernel::PtInsideTriangle(tri, ptlist_[reflInd], DeleteInlinePts))
         {
           if (ptlist_[reflInd] != ptlist_[ind0] and ptlist_[reflInd] != ptlist_[i] and
               ptlist_[reflInd] != ptlist_[ind2])
@@ -682,7 +682,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
 
     if (DeleteInlinePts)
     {
-      KERNEL::DeleteInlinePts(ptlist_);  // delete inline points in the new polygon
+      Kernel::DeleteInlinePts(ptlist_);  // delete inline points in the new polygon
     }
 
     if (ptlist_.size() == 3)
@@ -697,9 +697,9 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
       break;
     }
 
-    CORE::GEO::CUT::FacetShape str1;
+    Core::Geo::Cut::FacetShape str1;
     ptConcavity.clear();
-    ptConcavity = KERNEL::CheckConvexity(
+    ptConcavity = Kernel::CheckConvexity(
         ptlist_, str1, true, DeleteInlinePts);  // concave points for the new polygon
 
     if (triOnly ==
@@ -739,8 +739,8 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
         }
         /// update triangle shape info
         ptConcavity.clear();
-        CORE::GEO::CUT::FacetShape str1;
-        ptConcavity = KERNEL::CheckConvexity(
+        Core::Geo::Cut::FacetShape str1;
+        ptConcavity = Kernel::CheckConvexity(
             ptlist_, str1, true, DeleteInlinePts);  // concave points for the new polygon
         last_added_ear = tri;
         last_added_ear_head = i;
@@ -802,13 +802,13 @@ void CORE::GEO::CUT::TriangulateFacet::EarClipping(
 (ptlist_) and the inner polygons (inlists_) are required. Triangles will be generated as output,
 which are all combined in one vector (split_).
 *------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
+void Core::Geo::Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
 {
   while (inlists_.size() != 0)
   {
     // 1) Transformation in local coordinates
-    std::map<int, CORE::LINALG::Matrix<3, 1>> localmaincyclepoints;
-    std::map<std::vector<int>, CORE::LINALG::Matrix<3, 1>> localholecyclespoints;
+    std::map<int, Core::LinAlg::Matrix<3, 1>> localmaincyclepoints;
+    std::map<std::vector<int>, Core::LinAlg::Matrix<3, 1>> localholecyclespoints;
     int j = 1;  // index for referencing a maincyclepoint
     std::vector<int> k(2);
     k[0] = 1;  // index for referencing a holecycle
@@ -816,8 +816,8 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
     for (std::vector<Point*>::iterator i = ptlist_.begin(); i != ptlist_.end(); ++i)
     {
       Point* maincyclepoint = *i;
-      CORE::LINALG::Matrix<3, 1> maincyclepointcoordinates;
-      CORE::LINALG::Matrix<3, 1> localmaincyclepointcoordinates;
+      Core::LinAlg::Matrix<3, 1> maincyclepointcoordinates;
+      Core::LinAlg::Matrix<3, 1> localmaincyclepointcoordinates;
       maincyclepoint->Coordinates(maincyclepointcoordinates.A());
       parentside->local_coordinates(
           maincyclepointcoordinates, localmaincyclepointcoordinates, false);
@@ -831,8 +831,8 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
            ++i)
       {
         Point* holecyclepoint = *i;
-        CORE::LINALG::Matrix<3, 1> holecyclepointcoordinates;
-        CORE::LINALG::Matrix<3, 1> localholecyclepointcoordinates;
+        Core::LinAlg::Matrix<3, 1> holecyclepointcoordinates;
+        Core::LinAlg::Matrix<3, 1> localholecyclepointcoordinates;
         holecyclepoint->Coordinates(holecyclepointcoordinates.A());
         parentside->local_coordinates(
             holecyclepointcoordinates, localholecyclepointcoordinates, false);
@@ -845,11 +845,11 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
     // 2) Holecyclepoint with the maximum r-value
     double maximumxvalue = -1;
     std::vector<int> maximumxvalueid(2);
-    for (std::map<std::vector<int>, CORE::LINALG::Matrix<3, 1>>::iterator i =
+    for (std::map<std::vector<int>, Core::LinAlg::Matrix<3, 1>>::iterator i =
              localholecyclespoints.begin();
          i != localholecyclespoints.end(); ++i)
     {
-      CORE::LINALG::Matrix<3, 1> localholecyclespoint = i->second;
+      Core::LinAlg::Matrix<3, 1> localholecyclespoint = i->second;
       if (localholecyclespoint(0, 0) > maximumxvalue)
       {
         maximumxvalue = localholecyclespoint(0, 0);
@@ -857,7 +857,7 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
       }
     }
     double correspondingyvalue = (localholecyclespoints[maximumxvalueid])(1, 0);
-    CORE::LINALG::Matrix<3, 1> maximumpoint;
+    Core::LinAlg::Matrix<3, 1> maximumpoint;
     maximumpoint(0, 0) = maximumxvalue;
     maximumpoint(1, 0) = correspondingyvalue;
     maximumpoint(2, 0) = 0;
@@ -959,7 +959,7 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
       inlists_.erase(iter);
       continue;
     }
-    CORE::LINALG::Matrix<3, 1> closestpoint;
+    Core::LinAlg::Matrix<3, 1> closestpoint;
     closestpoint(0, 0) = closestedgexvalue;
     closestpoint(1, 0) = correspondingyvalue;
     closestpoint(2, 0) = 0;
@@ -985,7 +985,7 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
     {
       // 5) Closest edge point with the maximum x value
       int potentuallyvisiblepointid;
-      CORE::LINALG::Matrix<3, 1> potentuallyvisiblepoint;
+      Core::LinAlg::Matrix<3, 1> potentuallyvisiblepoint;
       if (localmaincyclepoints[closestedgexvalueid[0]](0, 0) >
           localmaincyclepoints[closestedgexvalueid[1]](0, 0))
       {
@@ -1002,17 +1002,17 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
         potentuallyvisiblepoint(2, 0) = 0;
       }
       // 6) Reflex points in triangle
-      CORE::GEO::CUT::FacetShape geoType;
+      Core::Geo::Cut::FacetShape geoType;
       std::vector<int> reflexmaincyclepointids =
-          KERNEL::CheckConvexity(ptlist_, geoType, false, false);
+          Kernel::CheckConvexity(ptlist_, geoType, false, false);
       for (std::vector<int>::iterator i = reflexmaincyclepointids.begin();
            i != reflexmaincyclepointids.end(); ++i)
       {
         int* reflexmaincyclepointid = &*i;
-        (*reflexmaincyclepointid)++;  // a little inconsistency here with KERNEL::CheckConvexity
+        (*reflexmaincyclepointid)++;  // a little inconsistency here with Kernel::CheckConvexity
       }
       std::vector<int> insidemaincyclepointids;
-      CORE::LINALG::Matrix<3, 3> triangle;
+      Core::LinAlg::Matrix<3, 3> triangle;
       for (int i = 0; i < 3; ++i)
       {
         triangle(i, 0) = maximumpoint(i, 0);
@@ -1023,10 +1023,10 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
            i != reflexmaincyclepointids.end(); ++i)
       {
         int reflexmaincyclepointid = *i;
-        CORE::LINALG::Matrix<3, 1> reflexmaincyclepoint =
+        Core::LinAlg::Matrix<3, 1> reflexmaincyclepoint =
             localmaincyclepoints[reflexmaincyclepointid];
-        Teuchos::RCP<Position> pos = CORE::GEO::CUT::Position::Create(
-            triangle, reflexmaincyclepoint, CORE::FE::CellType::tri3);
+        Teuchos::RCP<Position> pos = Core::Geo::Cut::Position::Create(
+            triangle, reflexmaincyclepoint, Core::FE::CellType::tri3);
         bool within = pos->is_given_point_within_element();
         if (within)
         {
@@ -1046,7 +1046,7 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
              i != insidemaincyclepointids.end(); ++i)
         {
           int insidemaincyclepointid = *i;
-          CORE::LINALG::Matrix<3, 1> insidemaincyclepoint =
+          Core::LinAlg::Matrix<3, 1> insidemaincyclepoint =
               localmaincyclepoints[insidemaincyclepointid];
           double distance1 = sqrt(pow((closestpoint(0, 0) - maximumpoint(0, 0)), 2) +
                                   pow((closestpoint(1, 0) - maximumpoint(1, 0)), 2));
@@ -1078,7 +1078,7 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
                i != closestanglemaincyclepointids.end(); ++i)
           {
             int closestanglemaincyclepointid = *i;
-            CORE::LINALG::Matrix<3, 1> closestanglemaincyclepoint =
+            Core::LinAlg::Matrix<3, 1> closestanglemaincyclepoint =
                 localmaincyclepoints[closestanglemaincyclepointid];
             double distance = sqrt(pow((closestanglemaincyclepoint(0, 0) - maximumpoint(0, 0)), 2) +
                                    pow((closestanglemaincyclepoint(1, 0) - maximumpoint(1, 0)), 2));
@@ -1128,7 +1128,7 @@ void CORE::GEO::CUT::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
   this->EarClipping(ptConcavity, true, false);
 }
 
-bool CORE::GEO::CUT::TriangulateFacet::hasequal_ptlist_inlist(
+bool Core::Geo::Cut::TriangulateFacet::hasequal_ptlist_inlist(
     std::vector<Point*> ptlist, std::vector<std::vector<Point*>> inlists)
 {
   if (inlists.size() != 1)

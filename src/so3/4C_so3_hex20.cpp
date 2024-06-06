@@ -26,58 +26,61 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::SoHex20Type DRT::ELEMENTS::SoHex20Type::instance_;
+Discret::ELEMENTS::SoHex20Type Discret::ELEMENTS::SoHex20Type::instance_;
 
-DRT::ELEMENTS::SoHex20Type& DRT::ELEMENTS::SoHex20Type::Instance() { return instance_; }
+Discret::ELEMENTS::SoHex20Type& Discret::ELEMENTS::SoHex20Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::SoHex20Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SoHex20Type::Create(
+    const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::SoHex20(-1, -1);
+  auto* object = new Discret::ELEMENTS::SoHex20(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex20Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex20(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::SoHex20(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoHex20Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoHex20(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::SoHex20(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::SoHex20Type::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::SoHex20Type::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoHex20Type::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex20Type::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::SoHex20Type::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::SoHex20Type::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
+  std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
-  defs["HEX20"] = INPUT::LineDefinition::Builder()
+  defs["HEX20"] = Input::LineDefinition::Builder()
                       .AddIntVector("HEX20", 20)
                       .AddNamedInt("MAT")
                       .AddNamedString("KINEM")
@@ -97,24 +100,24 @@ void DRT::ELEMENTS::SoHex20Type::setup_element_definition(
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoHex20::SoHex20(int id, int owner)
-    : SoBase(id, owner), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
+Discret::ELEMENTS::SoHex20::SoHex20(int id, int owner)
+    : SoBase(id, owner), pstype_(Inpar::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
-  invJ_.resize(NUMGPT_SOH20, CORE::LINALG::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>(true));
+  invJ_.resize(NUMGPT_SOH20, Core::LinAlg::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>(true));
   detJ_.resize(NUMGPT_SOH20, 0.0);
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      GLOBAL::Problem::Instance()->getParameterList();
+      Global::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    pstype_ = PRESTRESS::GetType();
-    pstime_ = PRESTRESS::GetPrestressTime();
+    pstype_ = Prestress::GetType();
+    pstime_ = Prestress::GetPrestressTime();
 
-    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+    Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
-  if (PRESTRESS::IsMulf(pstype_))
-    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH20, NUMGPT_SOH20));
+  if (Prestress::IsMulf(pstype_))
+    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH20, NUMGPT_SOH20));
 
   return;
 }
@@ -123,7 +126,7 @@ DRT::ELEMENTS::SoHex20::SoHex20(int id, int owner)
  |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoHex20::SoHex20(const DRT::ELEMENTS::SoHex20& old)
+Discret::ELEMENTS::SoHex20::SoHex20(const Discret::ELEMENTS::SoHex20& old)
     : SoBase(old), detJ_(old.detJ_), pstype_(old.pstype_), pstime_(old.pstime_), time_(old.time_)
 {
   invJ_.resize(old.invJ_.size());
@@ -134,8 +137,8 @@ DRT::ELEMENTS::SoHex20::SoHex20(const DRT::ELEMENTS::SoHex20& old)
     invJ_[i] = old.invJ_[i];
   }
 
-  if (PRESTRESS::IsMulf(pstype_))
-    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
+  if (Prestress::IsMulf(pstype_))
+    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(*(old.prestress_)));
 
   return;
 }
@@ -143,23 +146,23 @@ DRT::ELEMENTS::SoHex20::SoHex20(const DRT::ELEMENTS::SoHex20& old)
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::SoHex20::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoHex20::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::SoHex20(*this);
+  auto* newelement = new Discret::ELEMENTS::SoHex20(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::SoHex20::Shape() const { return CORE::FE::CellType::hex20; }
+Core::FE::CellType Discret::ELEMENTS::SoHex20::Shape() const { return Core::FE::CellType::hex20; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex20::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::SoHex20::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -179,9 +182,9 @@ void DRT::ELEMENTS::SoHex20::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (PRESTRESS::IsMulf(pstype_))
+  if (Prestress::IsMulf(pstype_))
   {
-    CORE::COMM::ParObject::AddtoPack(data, *prestress_);
+    Core::Communication::ParObject::AddtoPack(data, *prestress_);
   }
 
   return;
@@ -191,11 +194,11 @@ void DRT::ELEMENTS::SoHex20::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex20::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoHex20::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -207,19 +210,19 @@ void DRT::ELEMENTS::SoHex20::Unpack(const std::vector<char>& data)
   // invJ_
   int size = 0;
   ExtractfromPack(position, data, size);
-  invJ_.resize(size, CORE::LINALG::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>(true));
+  invJ_.resize(size, Core::LinAlg::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   // Extract prestress
-  pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
+  pstype_ = static_cast<Inpar::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (PRESTRESS::IsMulf(pstype_))
+  if (Prestress::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);
     if (prestress_ == Teuchos::null)
-      prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH20, NUMGPT_SOH20));
+      prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH20, NUMGPT_SOH20));
     prestress_->Unpack(tmpprestress);
   }
 
@@ -233,7 +236,7 @@ void DRT::ELEMENTS::SoHex20::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex20::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoHex20::Print(std::ostream& os) const
 {
   os << "So_hex20 ";
   Element::Print(os);
@@ -245,25 +248,25 @@ void DRT::ELEMENTS::SoHex20::Print(std::ostream& os) const
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SoHex20::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex20::Surfaces()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralSurface, CORE::Elements::Element>(
-      CORE::COMM::buildSurfaces, *this);
+  return Core::Communication::ElementBoundaryFactory<StructuralSurface, Core::Elements::Element>(
+      Core::Communication::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SoHex20::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex20::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralLine, CORE::Elements::Element>(
-      CORE::COMM::buildLines, *this);
+  return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
+      Core::Communication::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex20::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::SoHex20::VisNames(std::map<std::string, int>& names)
 {
   SolidMaterial()->VisNames(names);
   return;
@@ -272,10 +275,10 @@ void DRT::ELEMENTS::SoHex20::VisNames(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                                  |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoHex20::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::SoHex20::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (CORE::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::VisData(name, data)) return true;
 
   return SolidMaterial()->VisData(name, data, NUMGPT_SOH20, this->Id());
 }

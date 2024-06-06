@@ -23,7 +23,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::ADAPTER
+namespace Core::Adapter
 {
   class CouplingConverter;
 }
@@ -182,7 +182,7 @@ namespace NOX
     class PartialNormF : public AdaptiveNewtonNormF
     {
      public:
-      PartialNormF(std::string name, const CORE::LINALG::MultiMapExtractor& extractor, int blocknum,
+      PartialNormF(std::string name, const Core::LinAlg::MultiMapExtractor& extractor, int blocknum,
           double tolerance,
           ::NOX::Abstract::Vector::NormType normType = ::NOX::Abstract::Vector::TwoNorm,
           ScaleType stype = Scaled);
@@ -191,7 +191,7 @@ namespace NOX
       double compute_norm(const ::NOX::Abstract::Group& grp) override;
 
      private:
-      const CORE::LINALG::MultiMapExtractor extractor_;
+      const Core::LinAlg::MultiMapExtractor extractor_;
       int blocknum_;
     };
 
@@ -200,20 +200,20 @@ namespace NOX
     class PartialSumNormF : public AdaptiveNewtonNormF
     {
      public:
-      PartialSumNormF(std::string name, const CORE::LINALG::MapExtractor& extractor1, double scale1,
-          const CORE::LINALG::MapExtractor& extractor2, double scale2,
-          Teuchos::RCP<CORE::ADAPTER::CouplingConverter> converter, double tolerance,
+      PartialSumNormF(std::string name, const Core::LinAlg::MapExtractor& extractor1, double scale1,
+          const Core::LinAlg::MapExtractor& extractor2, double scale2,
+          Teuchos::RCP<Core::Adapter::CouplingConverter> converter, double tolerance,
           ScaleType stype = Scaled);
 
      protected:
       double compute_norm(const ::NOX::Abstract::Group& grp) override;
 
      private:
-      const CORE::LINALG::MapExtractor extractor1_;
-      const CORE::LINALG::MapExtractor extractor2_;
+      const Core::LinAlg::MapExtractor extractor1_;
+      const Core::LinAlg::MapExtractor extractor2_;
       double scale1_;
       double scale2_;
-      Teuchos::RCP<CORE::ADAPTER::CouplingConverter> converter_;
+      Teuchos::RCP<Core::Adapter::CouplingConverter> converter_;
     };
 
 
@@ -300,14 +300,14 @@ namespace NOX
      public:
       //! Constructor for absolute norm
       /*! This constructor defaults to the \c Absolute tolerance type. */
-      PartialNormUpdate(std::string name, const CORE::LINALG::MultiMapExtractor& extractor,
+      PartialNormUpdate(std::string name, const Core::LinAlg::MultiMapExtractor& extractor,
           int blocknum, double tolerance,
           ::NOX::Abstract::Vector::NormType ntype = ::NOX::Abstract::Vector::TwoNorm,
           ScaleType stype = Scaled);
 
       //! Constructor for absolute norm
       /*! This constructor defaults to the \c Absolute ToleranceType and \c TWO NormType. */
-      PartialNormUpdate(std::string name, const CORE::LINALG::MultiMapExtractor& extractor,
+      PartialNormUpdate(std::string name, const Core::LinAlg::MultiMapExtractor& extractor,
           int blocknum, double tolerance, ScaleType stype = Scaled);
 
      protected:
@@ -315,7 +315,7 @@ namespace NOX
       double compute_norm(const Epetra_Vector& v) override;
 
      private:
-      const CORE::LINALG::MultiMapExtractor extractor_;
+      const Core::LinAlg::MultiMapExtractor extractor_;
       int blocknum_;
     };
 

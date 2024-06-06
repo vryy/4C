@@ -28,16 +28,16 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LineSearch::Backtrack::Backtrack(const Teuchos::RCP<::NOX::GlobalData>& gd,
+NOX::Nln::LineSearch::Backtrack::Backtrack(const Teuchos::RCP<::NOX::GlobalData>& gd,
     const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
-    const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
+    const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> innerTests,
     Teuchos::ParameterList& params)
     : ls_iters_(0),
       step_ptr_(nullptr),
       default_step_(0.0),
       reduction_factor_(0.0),
       check_type_(::NOX::StatusTest::Complete),
-      status_(NOX::NLN::INNER::StatusTest::status_unevaluated),
+      status_(NOX::Nln::Inner::StatusTest::status_unevaluated),
       outer_tests_ptr_(outerTests),
       inner_tests_ptr_(innerTests)
 {
@@ -46,7 +46,7 @@ NOX::NLN::LineSearch::Backtrack::Backtrack(const Teuchos::RCP<::NOX::GlobalData>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::LineSearch::Backtrack::reset(
+bool NOX::Nln::LineSearch::Backtrack::reset(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   Teuchos::ParameterList& p = params.sublist("Backtrack");
@@ -57,7 +57,7 @@ bool NOX::NLN::LineSearch::Backtrack::reset(
   ls_iters_ = 0;
   search_direction_ptr_ = Teuchos::null;
 
-  status_ = NOX::NLN::INNER::StatusTest::status_unevaluated;
+  status_ = NOX::Nln::Inner::StatusTest::status_unevaluated;
 
   default_step_ = p.get("Default Step", 1.0);
   reduction_factor_ = p.get("Reduction Factor", 0.5);
@@ -81,19 +81,19 @@ bool NOX::NLN::LineSearch::Backtrack::reset(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::LineSearch::Backtrack::reset()
+void NOX::Nln::LineSearch::Backtrack::reset()
 {
   ls_iters_ = 0;
   search_direction_ptr_ = Teuchos::null;
 
-  status_ = NOX::NLN::INNER::StatusTest::status_unevaluated;
+  status_ = NOX::Nln::Inner::StatusTest::status_unevaluated;
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, double& step,
+bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, double& step,
     const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s)
 {
   fp_except_.precompute();
@@ -147,10 +147,10 @@ bool NOX::NLN::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
     // check the outer status test for the full step length
     outer_tests_ptr_->checkStatus(s, check_type_);
 
-    const NOX::NLN::Solver::LineSearchBased& lsSolver =
-        static_cast<const NOX::NLN::Solver::LineSearchBased&>(s);
+    const NOX::Nln::Solver::LineSearchBased& lsSolver =
+        static_cast<const NOX::Nln::Solver::LineSearchBased&>(s);
 
-    const ::NOX::StatusTest::StatusType ostatus = lsSolver.GetStatus<NOX::NLN::StatusTest::NormF>();
+    const ::NOX::StatusTest::StatusType ostatus = lsSolver.GetStatus<NOX::Nln::StatusTest::NormF>();
 
     /* Skip the inner status test, if the outer NormF test is
      * already converged! */
@@ -167,7 +167,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
 
     utils_->out(::NOX::Utils::Warning) << "WARNING: Error caught = " << e << "\n";
 
-    status_ = NOX::NLN::INNER::StatusTest::status_step_too_long;
+    status_ = NOX::Nln::Inner::StatusTest::status_step_too_long;
     failed = true;
   }
   // clear the exception checks after the try/catch block
@@ -189,7 +189,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
   // -------------------------------------------------
   // inner backtracking loop
   // -------------------------------------------------
-  while (status_ == NOX::NLN::INNER::StatusTest::status_step_too_long)
+  while (status_ == NOX::Nln::Inner::StatusTest::status_step_too_long)
   {
     // -------------------------------------------------
     // reduce step length
@@ -219,7 +219,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
       if (utils_->isPrintType(::NOX::Utils::Warning))
         utils_->out() << "WARNING: Error caught = " << e << "\n";
 
-      status_ = NOX::NLN::INNER::StatusTest::status_step_too_long;
+      status_ = NOX::Nln::Inner::StatusTest::status_step_too_long;
     }
 
     // clear the exception checks after the try/catch block
@@ -230,24 +230,24 @@ bool NOX::NLN::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
   // -------------------------------------------------
   utils_->out(::NOX::Utils::InnerIteration) << ::NOX::Utils::fill(72, '=') << "\n";
 
-  if (status_ == NOX::NLN::INNER::StatusTest::status_step_too_short)
+  if (status_ == NOX::Nln::Inner::StatusTest::status_step_too_short)
     throw_error("compute()",
         "The current step is too short and no "
         "restoration phase is implemented!");
-  else if (status_ == NOX::NLN::INNER::StatusTest::status_no_descent_direction)
+  else if (status_ == NOX::Nln::Inner::StatusTest::status_no_descent_direction)
     throw_error("compute()", "The given search direction is no descent direction!");
 
   fp_except_.enable();
-  return (status_ == NOX::NLN::INNER::StatusTest::status_converged ? true : false);
+  return (status_ == NOX::Nln::Inner::StatusTest::status_converged ? true : false);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int NOX::NLN::LineSearch::Backtrack::GetNumIterations() const { return ls_iters_; }
+int NOX::Nln::LineSearch::Backtrack::GetNumIterations() const { return ls_iters_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const ::NOX::MeritFunction::Generic& NOX::NLN::LineSearch::Backtrack::GetMeritFunction() const
+const ::NOX::MeritFunction::Generic& NOX::Nln::LineSearch::Backtrack::GetMeritFunction() const
 {
   if (merit_function_ptr_.is_null())
     throw_error("GetMeritFunction", "The merit function pointer is not initialized!");
@@ -257,7 +257,7 @@ const ::NOX::MeritFunction::Generic& NOX::NLN::LineSearch::Backtrack::GetMeritFu
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const ::NOX::Abstract::Vector& NOX::NLN::LineSearch::Backtrack::GetSearchDirection() const
+const ::NOX::Abstract::Vector& NOX::Nln::LineSearch::Backtrack::GetSearchDirection() const
 {
   if (search_direction_ptr_.is_null())
     throw_error("GetSearchDirection", "The search direction ptr is not initialized!");
@@ -269,7 +269,7 @@ const ::NOX::Abstract::Vector& NOX::NLN::LineSearch::Backtrack::GetSearchDirecti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double NOX::NLN::LineSearch::Backtrack::GetStepLength() const
+double NOX::Nln::LineSearch::Backtrack::GetStepLength() const
 {
   if (step_ptr_ == nullptr) throw_error("GetStepLength", "Step pointer is nullptr!");
 
@@ -278,7 +278,7 @@ double NOX::NLN::LineSearch::Backtrack::GetStepLength() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LineSearch::Backtrack::SetStepLength(double step)
+void NOX::Nln::LineSearch::Backtrack::SetStepLength(double step)
 {
   if (step_ptr_ == nullptr) throw_error("SetStepLength", "Step pointer is nullptr!");
 
@@ -287,7 +287,7 @@ void NOX::NLN::LineSearch::Backtrack::SetStepLength(double step)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::LineSearch::Backtrack::CheckInnerStatus(
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::LineSearch::Backtrack::CheckInnerStatus(
     const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
     ::NOX::StatusTest::CheckType checkType) const
 {
@@ -296,10 +296,10 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::LineSearch::Backtrack::CheckIn
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LineSearch::Backtrack::print_update(std::ostream& os) const
+void NOX::Nln::LineSearch::Backtrack::print_update(std::ostream& os) const
 {
   // Print the status test parameters at each iteration if requested
-  if (status_ == NOX::NLN::INNER::StatusTest::status_step_too_long)
+  if (status_ == NOX::Nln::Inner::StatusTest::status_step_too_long)
   {
     os << ::NOX::Utils::fill(72, '-') << "\n";
     os << "-- Inner Status Test Results --\n";
@@ -307,7 +307,7 @@ void NOX::NLN::LineSearch::Backtrack::print_update(std::ostream& os) const
     os << ::NOX::Utils::fill(72, '-') << "\n";
   }
   // Print the final parameter values of the status test
-  if (status_ != NOX::NLN::INNER::StatusTest::status_step_too_long)
+  if (status_ != NOX::Nln::Inner::StatusTest::status_step_too_long)
   {
     os << ::NOX::Utils::fill(72, '-') << "\n";
     os << "-- Final Inner Status Test Results --\n";
@@ -318,11 +318,11 @@ void NOX::NLN::LineSearch::Backtrack::print_update(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LineSearch::Backtrack::throw_error(
+void NOX::Nln::LineSearch::Backtrack::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   std::ostringstream msg;
-  msg << "ERROR - NOX::NLN::LineSearch::Backtrack::" << functionName << " - " << errorMsg
+  msg << "ERROR - NOX::Nln::LineSearch::Backtrack::" << functionName << " - " << errorMsg
       << std::endl;
   FOUR_C_THROW(msg.str());
 }

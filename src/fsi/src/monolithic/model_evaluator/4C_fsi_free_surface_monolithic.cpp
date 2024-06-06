@@ -40,28 +40,28 @@ FSI::MonolithicBaseFS::MonolithicBaseFS(
     : AlgorithmBase(comm, timeparams)
 {
   // ask base algorithm for the fluid time integrator
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(
-      timeparams, GLOBAL::Problem::Instance()->FluidDynamicParams(), "fluid", true));
+  Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid = Teuchos::rcp(new Adapter::FluidBaseAlgorithm(
+      timeparams, Global::Problem::Instance()->FluidDynamicParams(), "fluid", true));
   fluid_ = fluid->fluid_field();
 
   // ask base algorithm for the ale time integrator
-  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
-      new ADAPTER::AleBaseAlgorithm(timeparams, GLOBAL::Problem::Instance()->GetDis("ale")));
-  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->ale_field());
+  Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::rcp(
+      new Adapter::AleBaseAlgorithm(timeparams, Global::Problem::Instance()->GetDis("ale")));
+  ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFluidWrapper>(ale->ale_field());
   if (ale_ == Teuchos::null)
-    FOUR_C_THROW("cast from ADAPTER::Ale to ADAPTER::AleFluidWrapper failed");
+    FOUR_C_THROW("cast from Adapter::Ale to Adapter::AleFluidWrapper failed");
 
-  coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::ADAPTER::Coupling& FSI::MonolithicBaseFS::fluid_ale_coupling() { return *coupfa_; }
+Core::Adapter::Coupling& FSI::MonolithicBaseFS::fluid_ale_coupling() { return *coupfa_; }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const CORE::ADAPTER::Coupling& FSI::MonolithicBaseFS::fluid_ale_coupling() const
+const Core::Adapter::Coupling& FSI::MonolithicBaseFS::fluid_ale_coupling() const
 {
   return *coupfa_;
 }
@@ -166,7 +166,7 @@ void FSI::MonolithicMainFS::Timeloop(
   Teuchos::RCP<std::ofstream> log;
   if (Comm().MyPID() == 0)
   {
-    std::string s = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+    std::string s = Global::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".iteration");
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
     (*log) << "# num procs      = " << Comm().NumProc() << "\n"
@@ -292,7 +292,7 @@ void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incr
 void FSI::MonolithicMainFS::set_dof_row_maps(
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
   blockrowdofmap_.Setup(*fullmap, maps);
 }
 
@@ -347,8 +347,8 @@ void FSI::MonolithicMainFS::set_default_parameters(
   lsParams.set<double>("base tolerance", fsimono.get<double>("BASETOL"));  // relative tolerance
   lsParams.set<double>(
       "adaptive distance", fsimono.get<double>("ADAPTIVEDIST"));  // adaptive distance
-  lsParams.set<INPAR::FSI::Verbosity>(
-      "verbosity", CORE::UTILS::IntegralValue<INPAR::FSI::Verbosity>(
+  lsParams.set<Inpar::FSI::Verbosity>(
+      "verbosity", Core::UTILS::IntegralValue<Inpar::FSI::Verbosity>(
                        fsidyn, "VERBOSITY"));  // verbosity level of FSI algorithm
 }
 
@@ -412,8 +412,8 @@ bool FSI::BlockMonolithicFS::computeJacobian(const Epetra_Vector& x, Epetra_Oper
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithicFS::computeJacobian");
   Evaluate(Teuchos::rcp(&x, false));
-  CORE::LINALG::BlockSparseMatrixBase& mat =
-      Teuchos::dyn_cast<CORE::LINALG::BlockSparseMatrixBase>(Jac);
+  Core::LinAlg::BlockSparseMatrixBase& mat =
+      Teuchos::dyn_cast<Core::LinAlg::BlockSparseMatrixBase>(Jac);
   setup_system_matrix(mat);
   return true;
 }
@@ -432,7 +432,7 @@ bool FSI::BlockMonolithicFS::computePreconditioner(
     // the perfect place to initialize the block preconditioners.
     SystemMatrix()->SetupPreconditioner();
 
-    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
     const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
     precondreusecount_ = fsimono.get<int>("PRECONDREUSE");
   }
@@ -460,23 +460,23 @@ void FSI::BlockMonolithicFS::prepare_time_step()
 FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : BlockMonolithicFS(comm, timeparams)
 {
-  aigtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
 
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
-      CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   set_default_parameters(fsidyn, nox_parameter_list());
 
-  CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
+  Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   // fluid to ale at the free surface
 
-  icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  icoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  const int ndim = Global::Problem::Instance()->NDim();
   icoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
       fluid_field()->Interface()->FSCondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->FSCondMap(), "FREESURFCoupling", ndim);
@@ -546,9 +546,9 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
   // create block system matrix
   switch (linearsolverstrategy_)
   {
-    case INPAR::FSI::PreconditionedKrylov:
+    case Inpar::FSI::PreconditionedKrylov:
       systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFS(extractor(), *fluid_field(),
-          *ale_field(), true, CORE::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"),
+          *ale_field(), true, Core::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"),
           pcomega[0], pciter[0], fpcomega[0], fpciter[0]));
       break;
     default:
@@ -578,11 +578,11 @@ void FSI::MonolithicFS::setup_rhs(Epetra_Vector& f, bool firstcall)
     //
     // And we are concerned with the u(n) part here.
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = ale_field()->BlockSystemMatrix();
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->BlockSystemMatrix();
     if (a == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
     // here we extract the free surface submatrices from position 2
-    CORE::LINALG::SparseMatrix& aig = a->Matrix(0, 2);
+    Core::LinAlg::SparseMatrix& aig = a->Matrix(0, 2);
 
     // extract fluid free surface velocities.
     Teuchos::RCP<Epetra_Vector> fveln = fluid_field()->extract_free_surface_veln();
@@ -597,12 +597,12 @@ void FSI::MonolithicFS::setup_rhs(Epetra_Vector& f, bool firstcall)
     extractor().AddVector(*rhs, 1, f);
 
     // shape derivatives
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> mmm = fluid_field()->ShapeDerivatives();
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->ShapeDerivatives();
     if (mmm != Teuchos::null)
     {
       // here we extract the free surface submatrices from position 2
-      CORE::LINALG::SparseMatrix& fmig = mmm->Matrix(0, 2);
-      CORE::LINALG::SparseMatrix& fmgg = mmm->Matrix(2, 2);
+      Core::LinAlg::SparseMatrix& fmig = mmm->Matrix(0, 2);
+      Core::LinAlg::SparseMatrix& fmgg = mmm->Matrix(2, 2);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
       fmig.Apply(*fveln, *rhs);
@@ -625,7 +625,7 @@ void FSI::MonolithicFS::setup_rhs(Epetra_Vector& f, bool firstcall)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicFS::setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat)
+void FSI::MonolithicFS::setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFS::setup_system_matrix");
 
@@ -634,17 +634,17 @@ void FSI::MonolithicFS::setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase&
 
   // split fluid matrix
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> f = fluid_field()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> f = fluid_field()->SystemMatrix();
 
   /*----------------------------------------------------------------------*/
 
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = ale_field()->BlockSystemMatrix();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->BlockSystemMatrix();
 
   if (a == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
   // here we extract the free surface submatrices from position 2
-  CORE::LINALG::SparseMatrix& aii = a->Matrix(0, 0);
-  CORE::LINALG::SparseMatrix& aig = a->Matrix(0, 2);
+  Core::LinAlg::SparseMatrix& aii = a->Matrix(0, 0);
+  Core::LinAlg::SparseMatrix& aig = a->Matrix(0, 2);
 
   /*----------------------------------------------------------------------*/
 
@@ -659,34 +659,34 @@ void FSI::MonolithicFS::setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase&
   // interface meshes.
   f->UnComplete();
 
-  mat.Assign(0, 0, CORE::LINALG::View, *f);
+  mat.Assign(0, 0, Core::LinAlg::View, *f);
 
   (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1. / timescale,
-      CORE::ADAPTER::CouplingSlaveConverter(*icoupfa_), mat.Matrix(1, 0));
-  mat.Assign(1, 1, CORE::LINALG::View, aii);
+      Core::Adapter::CouplingSlaveConverter(*icoupfa_), mat.Matrix(1, 0));
+  mat.Assign(1, 1, Core::LinAlg::View, aii);
 
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
 
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> mmm = fluid_field()->ShapeDerivatives();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->ShapeDerivatives();
   if (mmm != Teuchos::null)
   {
     // here we extract the free surface submatrices from position 2
-    CORE::LINALG::SparseMatrix& fmii = mmm->Matrix(0, 0);
-    CORE::LINALG::SparseMatrix& fmig = mmm->Matrix(0, 2);
-    CORE::LINALG::SparseMatrix& fmgi = mmm->Matrix(2, 0);
-    CORE::LINALG::SparseMatrix& fmgg = mmm->Matrix(2, 2);
+    Core::LinAlg::SparseMatrix& fmii = mmm->Matrix(0, 0);
+    Core::LinAlg::SparseMatrix& fmig = mmm->Matrix(0, 2);
+    Core::LinAlg::SparseMatrix& fmgi = mmm->Matrix(2, 0);
+    Core::LinAlg::SparseMatrix& fmgg = mmm->Matrix(2, 2);
 
     mat.Matrix(0, 0).Add(fmgg, false, 1. / timescale, 1.0);
     mat.Matrix(0, 0).Add(fmig, false, 1. / timescale, 1.0);
 
-    const CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
+    const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
     (*fmgitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmgi, 1.,
-        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(0, 1), false, false);
+        Core::Adapter::CouplingMasterConverter(coupfa), mat.Matrix(0, 1), false, false);
 
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        CORE::ADAPTER::CouplingMasterConverter(coupfa), mat.Matrix(0, 1), false, true);
+        Core::Adapter::CouplingMasterConverter(coupfa), mat.Matrix(0, 1), false, true);
   }
 
   // done. make sure all blocks are filled.
@@ -706,12 +706,12 @@ void FSI::MonolithicFS::initial_guess(Teuchos::RCP<Epetra_Vector> ig)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicFS::scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+void FSI::MonolithicFS::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -740,11 +740,11 @@ void FSI::MonolithicFS::scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, E
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFS::unscale_solution(
-    CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+    Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -813,7 +813,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::MonolithicFS::create_linear_syste
 
   switch (linearsolverstrategy_)
   {
-    case INPAR::FSI::PreconditionedKrylov:
+    case Inpar::FSI::PreconditionedKrylov:
       linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem(printParams, *lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
       break;
@@ -854,7 +854,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MonolithicFS::create_status_test(
   std::vector<Teuchos::RCP<const Epetra_Map>> interface;
   interface.push_back(fluid_field()->Interface()->FSCondMap());
   interface.push_back(Teuchos::null);
-  CORE::LINALG::MultiMapExtractor interfaceextract(*dof_row_map(), interface);
+  Core::LinAlg::MultiMapExtractor interfaceextract(*dof_row_map(), interface);
 
   Teuchos::RCP<::NOX::StatusTest::Combo> interfacecombo =
       Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
@@ -877,7 +877,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MonolithicFS::create_status_test(
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidvel;
   fluidvel.push_back(fluid_field()->InnerVelocityRowMap());
   fluidvel.push_back(Teuchos::null);
-  CORE::LINALG::MultiMapExtractor fluidvelextract(*dof_row_map(), fluidvel);
+  Core::LinAlg::MultiMapExtractor fluidvelextract(*dof_row_map(), fluidvel);
 
   Teuchos::RCP<::NOX::StatusTest::Combo> fluidvelcombo =
       Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
@@ -900,7 +900,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MonolithicFS::create_status_test(
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidpress;
   fluidpress.push_back(fluid_field()->PressureRowMap());
   fluidpress.push_back(Teuchos::null);
-  CORE::LINALG::MultiMapExtractor fluidpressextract(*dof_row_map(), fluidpress);
+  Core::LinAlg::MultiMapExtractor fluidpressextract(*dof_row_map(), fluidpress);
 
   Teuchos::RCP<::NOX::StatusTest::Combo> fluidpresscombo =
       Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
@@ -1020,10 +1020,10 @@ void NOX::FSI::GroupFS::CaptureSystemState()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::BlockPreconditioningMatrixFS::BlockPreconditioningMatrixFS(
-    const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::Fluid& fluid,
-    ADAPTER::AleFluidWrapper& ale, int symmetric, double omega, int iterations, double fomega,
+    const Core::LinAlg::MultiMapExtractor& maps, Adapter::Fluid& fluid,
+    Adapter::AleFluidWrapper& ale, int symmetric, double omega, int iterations, double fomega,
     int fiterations, FILE* err)
-    : CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+    : Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           maps, maps, 81, false, true),
       symmetric_(symmetric),
       omega_(omega),
@@ -1032,10 +1032,10 @@ FSI::BlockPreconditioningMatrixFS::BlockPreconditioningMatrixFS(
       fiterations_(fiterations),
       err_(err)
 {
-  fluidsolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(fluid.LinearSolver()));
+  fluidsolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(fluid.LinearSolver()));
 
 #ifndef BLOCKMATRIXMERGE
-  alesolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(ale.LinearSolver()));
+  alesolver_ = Teuchos::rcp(new Core::LinAlg::Preconditioner(ale.LinearSolver()));
 #endif
 }
 
@@ -1082,8 +1082,8 @@ void FSI::BlockPreconditioningMatrixFS::SetupPreconditioner()
   fluidsolver_->Setup(sparse_->EpetraMatrix());
 
 #else
-  const CORE::LINALG::SparseMatrix& fluidInnerOp = Matrix(0, 0);
-  const CORE::LINALG::SparseMatrix& aleInnerOp = Matrix(1, 1);
+  const Core::LinAlg::SparseMatrix& fluidInnerOp = Matrix(0, 0);
+  const Core::LinAlg::SparseMatrix& aleInnerOp = Matrix(1, 1);
 
   fluidsolver_->Setup(fluidInnerOp.EpetraMatrix());
   if (constalesolver_ == Teuchos::null) alesolver_->Setup(aleInnerOp.EpetraMatrix());
@@ -1094,7 +1094,7 @@ void FSI::BlockPreconditioningMatrixFS::SetupPreconditioner()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::BlockPreconditioningMatrixFS::local_block_richardson(
-    Teuchos::RCP<CORE::LINALG::Preconditioner> solver, const CORE::LINALG::SparseMatrix& innerOp,
+    Teuchos::RCP<Core::LinAlg::Preconditioner> solver, const Core::LinAlg::SparseMatrix& innerOp,
     Teuchos::RCP<Epetra_Vector> x, Teuchos::RCP<Epetra_Vector> y, Teuchos::RCP<Epetra_Vector> tmpx,
     int iterations, double omega, FILE* err, const Epetra_Comm& comm)
 {
@@ -1127,8 +1127,8 @@ void FSI::BlockPreconditioningMatrixFS::local_block_richardson(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-FSI::OverlappingBlockMatrixFS::OverlappingBlockMatrixFS(const CORE::LINALG::MultiMapExtractor& maps,
-    ADAPTER::Fluid& fluid, ADAPTER::AleFluidWrapper& ale, bool structuresplit, int symmetric,
+FSI::OverlappingBlockMatrixFS::OverlappingBlockMatrixFS(const Core::LinAlg::MultiMapExtractor& maps,
+    Adapter::Fluid& fluid, Adapter::AleFluidWrapper& ale, bool structuresplit, int symmetric,
     double omega, int iterations, double fomega, int fiterations, FILE* err)
     : BlockPreconditioningMatrixFS(
           maps, fluid, ale, symmetric, omega, iterations, fomega, fiterations, err),
@@ -1149,10 +1149,10 @@ void FSI::OverlappingBlockMatrixFS::SetupPreconditioner()
   fluidsolver_->Setup(sparse_->EpetraMatrix());
 
 #else
-  const CORE::LINALG::SparseMatrix& fluidInnerOp = Matrix(0, 0);
-  const CORE::LINALG::SparseMatrix& aleInnerOp = Matrix(1, 1);
+  const Core::LinAlg::SparseMatrix& fluidInnerOp = Matrix(0, 0);
+  const Core::LinAlg::SparseMatrix& aleInnerOp = Matrix(1, 1);
 
-  Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null;
   Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
 
   fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes,
@@ -1166,10 +1166,10 @@ void FSI::OverlappingBlockMatrixFS::SetupPreconditioner()
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFS::sgs(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
-  const CORE::LINALG::SparseMatrix& fluidInnerOp = Matrix(0, 0);
-  const CORE::LINALG::SparseMatrix& fluidMeshOp = Matrix(0, 1);
-  const CORE::LINALG::SparseMatrix& aleInnerOp = Matrix(1, 1);
-  const CORE::LINALG::SparseMatrix& aleBoundOp = Matrix(1, 0);
+  const Core::LinAlg::SparseMatrix& fluidInnerOp = Matrix(0, 0);
+  const Core::LinAlg::SparseMatrix& fluidMeshOp = Matrix(0, 1);
+  const Core::LinAlg::SparseMatrix& aleInnerOp = Matrix(1, 1);
+  const Core::LinAlg::SparseMatrix& aleBoundOp = Matrix(1, 0);
 
   // Extract vector blocks
   // RHS

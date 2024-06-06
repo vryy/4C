@@ -104,12 +104,12 @@ namespace CONTACT
     /*!
     \brief Set gap
     */
-    void SetNormal(CORE::LINALG::Matrix<3, 1, TYPE> normal) { normal_ = normal; };
+    void SetNormal(Core::LinAlg::Matrix<3, 1, TYPE> normal) { normal_ = normal; };
 
     /*!
     \brief Get gap
     */
-    CORE::LINALG::Matrix<3, 1, TYPE> GetNormal() { return normal_; };
+    Core::LinAlg::Matrix<3, 1, TYPE> GetNormal() { return normal_; };
 
     /*!
     \brief Get penalty parameter
@@ -207,7 +207,7 @@ namespace CONTACT
     TYPE gap_;
 
     // normal vector
-    CORE::LINALG::Matrix<3, 1, TYPE> normal_;
+    Core::LinAlg::Matrix<3, 1, TYPE> normal_;
 
     // penalty parameter
     double pp_;

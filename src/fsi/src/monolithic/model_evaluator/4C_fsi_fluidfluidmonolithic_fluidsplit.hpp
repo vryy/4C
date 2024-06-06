@@ -18,11 +18,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class FluidFluidFSI;
   class AleXFFsiWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace FSI
 {
@@ -56,20 +56,20 @@ namespace FSI
 
    private:
     /// access type-cast pointer to problem-specific fluid-wrapper
-    const Teuchos::RCP<ADAPTER::FluidFluidFSI>& fluid_field() { return fluid_; }
+    const Teuchos::RCP<Adapter::FluidFluidFSI>& fluid_field() { return fluid_; }
 
     /// access type-cast pointer to problem-specific ALE-wrapper
-    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& ale_field() { return ale_; }
+    const Teuchos::RCP<Adapter::AleXFFsiWrapper>& ale_field() { return ale_; }
 
     /// setup of extractor for merged Dirichlet maps
     void setup_dbc_map_extractor() override;
 
 
     /// type-cast pointer to problem-specific fluid-wrapper
-    Teuchos::RCP<ADAPTER::FluidFluidFSI> fluid_;
+    Teuchos::RCP<Adapter::FluidFluidFSI> fluid_;
 
     /// type-cast pointer to problem-specific ALE-wrapper
-    Teuchos::RCP<ADAPTER::AleXFFsiWrapper> ale_;
+    Teuchos::RCP<Adapter::AleXFFsiWrapper> ale_;
   };
 }  // namespace FSI
 

@@ -31,7 +31,7 @@ namespace PARTICLEENGINE
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHNeighborPairs;
 }
@@ -39,7 +39,7 @@ namespace PARTICLEINTERACTION
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHBoundaryParticleBase
   {
@@ -56,7 +56,7 @@ namespace PARTICLEINTERACTION
     //! setup boundary particle handler
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+        const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs);
 
     //! init boundary particle states
     virtual void init_boundary_particle_states(std::vector<double>& gravity) = 0;
@@ -72,7 +72,7 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+    std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs_;
 
     //! set of fluid particle types
     std::set<PARTICLEENGINE::TypeEnum> fluidtypes_;
@@ -90,7 +90,7 @@ namespace PARTICLEINTERACTION
     //! setup boundary particle handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs) override;
+        const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs) override;
 
     //! init boundary particle states
     void init_boundary_particle_states(std::vector<double>& gravity) override;
@@ -106,7 +106,7 @@ namespace PARTICLEINTERACTION
     std::vector<std::vector<std::vector<double>>> sumj_vel_j_wij_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

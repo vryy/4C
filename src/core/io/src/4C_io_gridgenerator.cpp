@@ -23,27 +23,27 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO::GRIDGENERATOR
+namespace Core::IO::GridGenerator
 {
   // forward declarations
-  Teuchos::RCP<CORE::Elements::Element> CreateHexElement(int eleid, int nodeoffset, int myrank,
-      INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
+  Teuchos::RCP<Core::Elements::Element> CreateHexElement(int eleid, int nodeoffset, int myrank,
+      Input::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
       std::string distype);
 
-  Teuchos::RCP<CORE::Elements::Element> CreateWedgeElement(int eleid, int nodeoffset, int myrank,
-      INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
+  Teuchos::RCP<Core::Elements::Element> CreateWedgeElement(int eleid, int nodeoffset, int myrank,
+      Input::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
       std::string distype);
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void CreateRectangularCuboidDiscretization(DRT::Discretization& dis,
-      const CORE::IO::GRIDGENERATOR::RectangularCuboidInputs& inputData, bool outputFlag)
+  void CreateRectangularCuboidDiscretization(Discret::Discretization& dis,
+      const Core::IO::GridGenerator::RectangularCuboidInputs& inputData, bool outputFlag)
   {
     const Epetra_Comm& comm = dis.Comm();
     const int myrank = comm.MyPID();
     const int numproc = comm.NumProc();
 
-    CORE::Elements::ElementDefinition ed;
+    Core::Elements::ElementDefinition ed;
     ed.setup_valid_element_lines();
 
     // safety checks
@@ -62,12 +62,12 @@ namespace CORE::IO::GRIDGENERATOR
     Teuchos::RCP<Epetra_Map> elementColMap;
 
     // Create initial (or final) map of row elements
-    CORE::FE::CellType distype_enum = CORE::FE::StringToCellType(inputData.distype_);
+    Core::FE::CellType distype_enum = Core::FE::StringToCellType(inputData.distype_);
     int numnewele = inputData.interval_[0] * inputData.interval_[1] * inputData.interval_[2];
     if (inputData.autopartition_)  // linear map
     {
       int scale = 1;
-      if (distype_enum == CORE::FE::CellType::wedge6 or distype_enum == CORE::FE::CellType::wedge15)
+      if (distype_enum == Core::FE::CellType::wedge6 or distype_enum == Core::FE::CellType::wedge15)
       {
         scale = 2;
       }
@@ -76,8 +76,8 @@ namespace CORE::IO::GRIDGENERATOR
     else  // fancy final box map
     {
       // Error for invalid element types!!!
-      if (distype_enum != CORE::FE::CellType::hex8 and distype_enum != CORE::FE::CellType::hex20 and
-          distype_enum != CORE::FE::CellType::hex27)
+      if (distype_enum != Core::FE::CellType::hex8 and distype_enum != Core::FE::CellType::hex20 and
+          distype_enum != Core::FE::CellType::hex27)
       {
         FOUR_C_THROW("This map-partition is only available for HEX-elements!");
       }
@@ -115,7 +115,7 @@ namespace CORE::IO::GRIDGENERATOR
       }
 
       if (myrank == 0 && outputFlag)
-        CORE::IO::cout << "Determined domain subdivision to: " << subdivisions[0] << "x"
+        Core::IO::cout << "Determined domain subdivision to: " << subdivisions[0] << "x"
                        << subdivisions[1] << "x" << subdivisions[2] << "\n";
 
       std::vector<unsigned int> xranges(subdivisions[0] + 1ul);
@@ -158,7 +158,7 @@ namespace CORE::IO::GRIDGENERATOR
 
       // For the time being we support old and new input facilities. To
       // smooth transition.
-      INPUT::LineDefinition* linedef = ed.ElementLines(inputData.elementtype_, inputData.distype_);
+      Input::LineDefinition* linedef = ed.ElementLines(inputData.elementtype_, inputData.distype_);
       if (linedef == nullptr)
         FOUR_C_THROW("a matching line definition is needed for %s %s",
             inputData.elementtype_.c_str(), inputData.distype_.c_str());
@@ -166,11 +166,11 @@ namespace CORE::IO::GRIDGENERATOR
       std::istringstream eleargstream(inputData.elearguments_);
       if (not linedef->Read(eleargstream, &inputData.distype_))
       {
-        CORE::IO::cout << "\n"
+        Core::IO::cout << "\n"
                        << eleid << " " << inputData.elementtype_ << " " << inputData.distype_
                        << " ";
-        linedef->Print(CORE::IO::cout.cout_replacement());
-        CORE::IO::cout << "\n";
+        linedef->Print(Core::IO::cout.cout_replacement());
+        Core::IO::cout << "\n";
         FOUR_C_THROW("failed to read element %d %s %s", eleid, inputData.elementtype_.c_str(),
             inputData.distype_.c_str());
       }
@@ -178,22 +178,22 @@ namespace CORE::IO::GRIDGENERATOR
       // Create specified elemnts
       switch (distype_enum)
       {
-        case CORE::FE::CellType::hex8:
-        case CORE::FE::CellType::hex20:
-        case CORE::FE::CellType::hex27:
+        case Core::FE::CellType::hex8:
+        case Core::FE::CellType::hex20:
+        case Core::FE::CellType::hex27:
         {
-          Teuchos::RCP<CORE::Elements::Element> ele =
+          Teuchos::RCP<Core::Elements::Element> ele =
               CreateHexElement(eleid, inputData.node_gid_of_first_new_node_, myrank, linedef,
                   inputData.interval_, inputData.elementtype_, inputData.distype_);
           // add element to discretization
           dis.add_element(ele);
           break;
         }
-        case CORE::FE::CellType::wedge6:
-        case CORE::FE::CellType::wedge15:
+        case Core::FE::CellType::wedge6:
+        case Core::FE::CellType::wedge15:
         {
-          Teuchos::RCP<CORE::Elements::Element> ele =
-              IO::GRIDGENERATOR::CreateWedgeElement(eleid, inputData.node_gid_of_first_new_node_,
+          Teuchos::RCP<Core::Elements::Element> ele =
+              IO::GridGenerator::CreateWedgeElement(eleid, inputData.node_gid_of_first_new_node_,
                   myrank, linedef, inputData.interval_, inputData.elementtype_, inputData.distype_);
           dis.add_element(ele);
           break;
@@ -210,18 +210,18 @@ namespace CORE::IO::GRIDGENERATOR
     if (inputData.autopartition_)
     {
       Teuchos::RCP<const Epetra_CrsGraph> nodeGraph =
-          CORE::REBALANCE::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
+          Core::Rebalance::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
 
       Teuchos::ParameterList rebalanceParams;
       rebalanceParams.set<std::string>("num parts", std::to_string(comm.NumProc()));
 
       std::tie(nodeRowMap, nodeColMap) =
-          CORE::REBALANCE::RebalanceNodeMaps(nodeGraph, rebalanceParams);
+          Core::Rebalance::RebalanceNodeMaps(nodeGraph, rebalanceParams);
     }
     else  // do not destroy our manual partitioning
     {
       Teuchos::RCP<const Epetra_CrsGraph> graph =
-          CORE::REBALANCE::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
+          Core::Rebalance::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
       nodeRowMap = Teuchos::rcp(new Epetra_Map(
           -1, graph->RowMap().NumMyElements(), graph->RowMap().MyGlobalElements(), 0, comm));
       nodeColMap = Teuchos::rcp(new Epetra_Map(
@@ -308,8 +308,8 @@ namespace CORE::IO::GRIDGENERATOR
         }
       }
 
-      Teuchos::RCP<CORE::Nodes::Node> node =
-          Teuchos::rcp(new CORE::Nodes::Node(gid, coords, myrank));
+      Teuchos::RCP<Core::Nodes::Node> node =
+          Teuchos::rcp(new Core::Nodes::Node(gid, coords, myrank));
       dis.AddNode(node);
     }
     dis.ExportColumnNodes(*nodeColMap);
@@ -318,13 +318,13 @@ namespace CORE::IO::GRIDGENERATOR
   /*----------------------------------------------------------------------*
    | create HEX type elements for the partition                           |
    *----------------------------------------------------------------------*/
-  Teuchos::RCP<CORE::Elements::Element> CreateHexElement(int eleid, int nodeOffset, int myrank,
-      INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
+  Teuchos::RCP<Core::Elements::Element> CreateHexElement(int eleid, int nodeOffset, int myrank,
+      Input::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
       std::string distype)
   {
     // Reserve nodeids for this element type
     std::vector<int> nodeids(
-        CORE::FE::getNumberOfElementNodes(CORE::FE::StringToCellType(distype)));
+        Core::FE::getNumberOfElementNodes(Core::FE::StringToCellType(distype)));
 
     // current element position
     const size_t ex = 2 * (eleid % interval[0]);
@@ -376,8 +376,8 @@ namespace CORE::IO::GRIDGENERATOR
         break;
     }
     // let the factory create a matching empty element
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        CORE::COMM::Factory(elementtype, distype, eleid, myrank);
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Core::Communication::Factory(elementtype, distype, eleid, myrank);
     ele->SetNodeIds(nodeids.size(), &(nodeids[0]));
     ele->ReadElement(elementtype, distype, linedef);
     return ele;
@@ -389,13 +389,13 @@ namespace CORE::IO::GRIDGENERATOR
    | part of HEX equivalent.                                              |
    | Wedges aligned in z-direction.                                       |
    *----------------------------------------------------------------------*/
-  Teuchos::RCP<CORE::Elements::Element> CreateWedgeElement(int eleid, int nodeoffset, int myrank,
-      INPUT::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
+  Teuchos::RCP<Core::Elements::Element> CreateWedgeElement(int eleid, int nodeoffset, int myrank,
+      Input::LineDefinition* linedef, std::array<int, 3> interval, std::string elementtype,
       std::string distype)
   {
     // Reserve nodeids for this element type
     std::vector<int> nodeids(
-        CORE::FE::getNumberOfElementNodes(CORE::FE::StringToCellType(distype)));
+        Core::FE::getNumberOfElementNodes(Core::FE::StringToCellType(distype)));
 
     // HEX-equivalent element
     int hex_equiv_eleid = int(eleid / 2);
@@ -474,13 +474,13 @@ namespace CORE::IO::GRIDGENERATOR
     }
 
     // let the factory create a matching empty element
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        CORE::COMM::Factory(elementtype, distype, eleid, myrank);
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Core::Communication::Factory(elementtype, distype, eleid, myrank);
     ele->SetNodeIds(nodeids.size(), &(nodeids[0]));
     ele->ReadElement(elementtype, distype, linedef);
     return ele;
   }
 
-}  // namespace CORE::IO::GRIDGENERATOR
+}  // namespace Core::IO::GridGenerator
 
 FOUR_C_NAMESPACE_CLOSE

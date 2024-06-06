@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods for namespace DRT
+\brief A collection of helper methods for namespace Discret
 
 \level 1
 
@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::GEO::update_reference_config_with_disp(
-    Teuchos::RCP<const DRT::Discretization> dis, Teuchos::RCP<const Epetra_Vector> disp)
+void Core::Geo::update_reference_config_with_disp(
+    Teuchos::RCP<const Discret::Discretization> dis, Teuchos::RCP<const Epetra_Vector> disp)
 {
   // Export row-displacments to col-displacements
   auto coldisp = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap()));
-  CORE::LINALG::Export(*disp, *coldisp);
+  Core::LinAlg::Export(*disp, *coldisp);
 
   for (const auto& mynode : dis->MyColNodeRange())
   {

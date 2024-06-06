@@ -19,25 +19,25 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-ADAPTER::StructureFactory::StructureFactory()
+Adapter::StructureFactory::StructureFactory()
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew>
-ADAPTER::StructureFactory::build_structure_algorithm(const Teuchos::ParameterList& sdyn) const
+Teuchos::RCP<Adapter::StructureBaseAlgorithmNew>
+Adapter::StructureFactory::build_structure_algorithm(const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase = Teuchos::null;
+  Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase = Teuchos::null;
 
-  const enum INPAR::STR::IntegrationStrategy intstrat =
-      CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+  const enum Inpar::STR::IntegrationStrategy intstrat =
+      Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
   switch (intstrat)
   {
-    case INPAR::STR::int_standard:
-      adapterbase = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithmNew());
+    case Inpar::STR::int_standard:
+      adapterbase = Teuchos::rcp(new Adapter::StructureBaseAlgorithmNew());
       break;
     default:
       FOUR_C_THROW("Unknown integration strategy!");
@@ -49,7 +49,7 @@ ADAPTER::StructureFactory::build_structure_algorithm(const Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::build_structure_algorithm(
+Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> Adapter::build_structure_algorithm(
     const Teuchos::ParameterList& sdyn)
 {
   StructureFactory factory;

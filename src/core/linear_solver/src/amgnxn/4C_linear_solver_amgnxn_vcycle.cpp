@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-CORE::LINEAR_SOLVER::AMGNXN::Vcycle::Vcycle(int NumLevels, int NumSweeps, int FirstLevel)
+Core::LinearSolver::AMGNxN::Vcycle::Vcycle(int NumLevels, int NumSweeps, int FirstLevel)
     : num_levels_(NumLevels),
       num_sweeps_(NumSweeps),
       first_level_(FirstLevel),
@@ -49,8 +49,7 @@ CORE::LINEAR_SOLVER::AMGNXN::Vcycle::Vcycle(int NumLevels, int NumSweeps, int Fi
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetOperators(
-    std::vector<Teuchos::RCP<BlockedMatrix>> Avec)
+void Core::LinearSolver::AMGNxN::Vcycle::SetOperators(std::vector<Teuchos::RCP<BlockedMatrix>> Avec)
 {
   if ((int)Avec.size() != num_levels_) FOUR_C_THROW("Error in Setting Avec_: Size dismatch.");
   for (int i = 0; i < num_levels_; i++)
@@ -66,7 +65,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetOperators(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetProjectors(
+void Core::LinearSolver::AMGNxN::Vcycle::SetProjectors(
     std::vector<Teuchos::RCP<BlockedMatrix>> Pvec)
 {
   if ((int)Pvec.size() != num_levels_ - 1) FOUR_C_THROW("Error in Setting Pvec_: Size dismatch.");
@@ -83,7 +82,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetProjectors(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetRestrictors(
+void Core::LinearSolver::AMGNxN::Vcycle::SetRestrictors(
     std::vector<Teuchos::RCP<BlockedMatrix>> Rvec)
 {
   if ((int)Rvec.size() != num_levels_ - 1) FOUR_C_THROW("Error in Setting Rvec_: Size dismatch.");
@@ -100,7 +99,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetRestrictors(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetPreSmoothers(
+void Core::LinearSolver::AMGNxN::Vcycle::SetPreSmoothers(
     std::vector<Teuchos::RCP<GenericSmoother>> SvecPre)
 {
   if ((int)SvecPre.size() != num_levels_) FOUR_C_THROW("Error in Setting SvecPre: Size dismatch.");
@@ -116,7 +115,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetPreSmoothers(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetPosSmoothers(
+void Core::LinearSolver::AMGNxN::Vcycle::SetPosSmoothers(
     std::vector<Teuchos::RCP<GenericSmoother>> SvecPos)
 {
   if ((int)SvecPos.size() != num_levels_ - 1)
@@ -132,7 +131,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::SetPosSmoothers(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::do_vcycle(
+void Core::LinearSolver::AMGNxN::Vcycle::do_vcycle(
     const BlockedVector& X, BlockedVector& Y, int level, bool InitialGuessIsZero) const
 {
   if (level != num_levels_ - 1)  // Perform one iteration of the V-cycle
@@ -174,7 +173,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::do_vcycle(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::Solve(
+void Core::LinearSolver::AMGNxN::Vcycle::Solve(
     const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero) const
 {
   // Check if everithing is set up
@@ -193,8 +192,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::Vcycle::Solve(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::VcycleSingle(
-    int NumLevels, int NumSweeps, int FirstLevel)
+Core::LinearSolver::AMGNxN::VcycleSingle::VcycleSingle(int NumLevels, int NumSweeps, int FirstLevel)
     : num_levels_(NumLevels),
       num_sweeps_(NumSweeps),
       first_level_(FirstLevel),
@@ -215,8 +213,8 @@ CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::VcycleSingle(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetOperators(
-    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Avec)
+void Core::LinearSolver::AMGNxN::VcycleSingle::SetOperators(
+    std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Avec)
 {
   if ((int)Avec.size() != num_levels_) FOUR_C_THROW("Error in Setting Avec_: Size dismatch.");
   for (int i = 0; i < num_levels_; i++)
@@ -232,8 +230,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetOperators(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetProjectors(
-    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Pvec)
+void Core::LinearSolver::AMGNxN::VcycleSingle::SetProjectors(
+    std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Pvec)
 {
   if ((int)Pvec.size() != num_levels_ - 1) FOUR_C_THROW("Error in Setting Pvec_: Size dismatch.");
   for (int i = 0; i < num_levels_ - 1; i++)
@@ -249,8 +247,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetProjectors(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetRestrictors(
-    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Rvec)
+void Core::LinearSolver::AMGNxN::VcycleSingle::SetRestrictors(
+    std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> Rvec)
 {
   if ((int)Rvec.size() != num_levels_ - 1) FOUR_C_THROW("Error in Setting Rvec_: Size dismatch.");
   for (int i = 0; i < num_levels_ - 1; i++)
@@ -266,7 +264,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetRestrictors(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetPreSmoothers(
+void Core::LinearSolver::AMGNxN::VcycleSingle::SetPreSmoothers(
     std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre)
 {
   if ((int)SvecPre.size() != num_levels_) FOUR_C_THROW("Error in Setting SvecPre: Size dismatch.");
@@ -282,7 +280,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetPreSmoothers(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetPosSmoothers(
+void Core::LinearSolver::AMGNxN::VcycleSingle::SetPosSmoothers(
     std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos)
 {
   if ((int)SvecPos.size() != num_levels_ - 1)
@@ -298,7 +296,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetPosSmoothers(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::do_vcycle(
+void Core::LinearSolver::AMGNxN::VcycleSingle::do_vcycle(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level, bool InitialGuessIsZero) const
 {
   if (level != num_levels_ - 1)  // Perform one iteration of the V-cycle
@@ -341,7 +339,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::do_vcycle(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::Apply(
+void Core::LinearSolver::AMGNxN::VcycleSingle::Apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
 {
   // Check if everithing is set up

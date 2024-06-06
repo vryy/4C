@@ -19,14 +19,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MultiMapExtractor;
   class SparseMatrix;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace ADAPTER
+namespace Adapter
 {
   class CouplingSlaveConverter;
 }
@@ -63,8 +63,8 @@ namespace SSI
      * @param[in] do_uncomplete          flag indicating if we need to uncomplete the matrix before
      *                                   adding something
      */
-    void apply_meshtying_to_structure_matrix(CORE::LINALG::SparseMatrix& ssi_structure_matrix,
-        Teuchos::RCP<const CORE::LINALG::SparseMatrix> structure_matrix, bool do_uncomplete);
+    void apply_meshtying_to_structure_matrix(Core::LinAlg::SparseMatrix& ssi_structure_matrix,
+        Teuchos::RCP<const Core::LinAlg::SparseMatrix> structure_matrix, bool do_uncomplete);
 
     /*!
      * @brief apply mesh tying to scatra manifold structure matrix
@@ -74,7 +74,7 @@ namespace SSI
      *                                           before adding something
      */
     virtual void apply_meshtying_to_scatra_manifold_structure(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> manifold_structure_matrix,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> manifold_structure_matrix,
         bool do_uncomplete) = 0;
 
     /*!
@@ -85,7 +85,7 @@ namespace SSI
      *                                         before adding something
      */
     virtual void apply_meshtying_to_scatra_structure(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix, bool do_uncomplete) = 0;
+        Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix, bool do_uncomplete) = 0;
 
     /*!
      * @brief apply mesh tying to structure right hand side vector
@@ -103,7 +103,7 @@ namespace SSI
      *                                         before adding something
      */
     virtual void apply_meshtying_to_structure_scatra(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix, bool do_uncomplete) = 0;
+        Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix, bool do_uncomplete) = 0;
 
    protected:
     /*!
@@ -113,8 +113,8 @@ namespace SSI
      *                                       constraints
      * @param[in] structure_xxx_matrix       structure xxx matrix block
      */
-    void apply_meshtying_to_structure_xxx(CORE::LINALG::SparseMatrix& ssi_structure_xxx_matrix,
-        const CORE::LINALG::SparseMatrix& structure_xxx_matrix);
+    void apply_meshtying_to_structure_xxx(Core::LinAlg::SparseMatrix& ssi_structure_xxx_matrix,
+        const Core::LinAlg::SparseMatrix& structure_xxx_matrix);
 
     /*!
      * @brief apply mesh tying to xxx-structure block
@@ -123,8 +123,8 @@ namespace SSI
      *                                       constraints
      * @param[in] xxx_structure_matrix       xxx structure matrix block
      */
-    void apply_meshtying_to_xxx_structure(CORE::LINALG::SparseMatrix& ssi_xxx_structure_matrix,
-        const CORE::LINALG::SparseMatrix& xxx_structure_matrix);
+    void apply_meshtying_to_xxx_structure(Core::LinAlg::SparseMatrix& ssi_xxx_structure_matrix,
+        const Core::LinAlg::SparseMatrix& xxx_structure_matrix);
 
     //! solve additional scatra field on manifolds
     bool is_sca_tra_manifold() const { return is_scatra_manifold_; }
@@ -139,13 +139,13 @@ namespace SSI
     }
 
     //! scatra structure contribution matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> temp_scatra_struct_mat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> temp_scatra_struct_mat_;
 
     //! scatra-manifold structure system matrix used to apply mesh tying to this matrix block
-    Teuchos::RCP<CORE::LINALG::SparseOperator> temp_scatramanifold_struct_mat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> temp_scatramanifold_struct_mat_;
 
     //! structure scatra system matrix used to apply mesh tying to this matrix block
-    Teuchos::RCP<CORE::LINALG::SparseOperator> temp_struct_scatra_mat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> temp_struct_scatra_mat_;
 
    private:
     /*!
@@ -154,7 +154,7 @@ namespace SSI
      *
      * @param[in,out] ssi_structure_matrix  structure matrix with mesh tying constraints
      */
-    void finalize_meshtying_structure_matrix(CORE::LINALG::SparseMatrix& ssi_structure_matrix);
+    void finalize_meshtying_structure_matrix(Core::LinAlg::SparseMatrix& ssi_structure_matrix);
 
     //! solve additional scatra field on manifolds
     const bool is_scatra_manifold_;
@@ -176,15 +176,15 @@ namespace SSI
         Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying);
 
     void apply_meshtying_to_scatra_manifold_structure(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> manifold_structure_matrix,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> manifold_structure_matrix,
         bool do_uncomplete) override;
 
     void apply_meshtying_to_scatra_structure(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix,
         bool do_uncomplete) override;
 
     void apply_meshtying_to_structure_scatra(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix,
         bool do_uncomplete) override;
   };
 
@@ -198,15 +198,15 @@ namespace SSI
         Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying);
 
     void apply_meshtying_to_scatra_manifold_structure(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> manifold_structure_matrix,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> manifold_structure_matrix,
         bool do_uncomplete) override;
 
     void apply_meshtying_to_scatra_structure(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix,
         bool do_uncomplete) override;
 
     void apply_meshtying_to_structure_scatra(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix,
         bool do_uncomplete) override;
 
    protected:
@@ -235,7 +235,7 @@ namespace SSI
 
   //! build specific mesh tying strategy
   Teuchos::RCP<SSI::MeshtyingStrategyBase> BuildMeshtyingStrategy(bool is_scatra_manifold,
-      CORE::LINALG::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+      Core::LinAlg::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
       Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying);
 }  // namespace SSI
 FOUR_C_NAMESPACE_CLOSE

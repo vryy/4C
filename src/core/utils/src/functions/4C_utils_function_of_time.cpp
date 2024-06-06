@@ -12,7 +12,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-CORE::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
+Core::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
     const std::vector<std::string>& expressions,
     std::vector<Teuchos::RCP<FunctionVariable>> variables)
     : variables_(std::move(variables))
@@ -21,13 +21,13 @@ CORE::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
   {
     {
       auto symbolicexpression =
-          Teuchos::rcp(new CORE::UTILS::SymbolicExpression<ValueType>(expression));
+          Teuchos::rcp(new Core::UTILS::SymbolicExpression<ValueType>(expression));
       expr_.push_back(symbolicexpression);
     }
   }
 }
 
-double CORE::UTILS::SymbolicFunctionOfTime::Evaluate(
+double Core::UTILS::SymbolicFunctionOfTime::Evaluate(
     const double time, const std::size_t component) const
 {
   std::map<std::string, ValueType> variable_values;
@@ -42,7 +42,7 @@ double CORE::UTILS::SymbolicFunctionOfTime::Evaluate(
   return expr_[component]->Value(variable_values);
 }
 
-double CORE::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
+double Core::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
     const double time, const std::size_t component) const
 {
   std::map<std::string, FirstDerivativeType> variable_values;
@@ -82,8 +82,8 @@ double CORE::UTILS::SymbolicFunctionOfTime::EvaluateDerivative(
   return f_dt;
 }
 
-Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
-    const std::vector<INPUT::LineDefinition>& function_line_defs)
+Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::TryCreateFunctionOfTime(
+    const std::vector<Input::LineDefinition>& function_line_defs)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfTime.
   // This line accepts optional components in the beginning although this is not directly supported
@@ -95,7 +95,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
     {
       call();
     }
-    catch (const CORE::Exception& e)
+    catch (const Core::Exception& e)
     {
     }
   };
@@ -123,7 +123,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
   for (int n = 0; n <= maxcomp; ++n)
   {
     // update the current row
-    const INPUT::LineDefinition& functcomp = function_line_defs[n];
+    const Input::LineDefinition& functcomp = function_line_defs[n];
 
     // check the validity of the n-th component
     int compid = 0;
@@ -140,14 +140,14 @@ Teuchos::RCP<CORE::UTILS::FunctionOfTime> CORE::UTILS::TryCreateFunctionOfTime(
   for (std::size_t j = 1; j <= numrowsvar; ++j)
   {
     // update the current row
-    const INPUT::LineDefinition& line = function_line_defs[maxcomp + j];
+    const Input::LineDefinition& line = function_line_defs[maxcomp + j];
 
     // read the number of the variable
     int varid;
     ignore_errors_in([&]() { line.ExtractInt("VARIABLE", varid); });
 
     const auto variable = std::invoke(
-        [&line]() -> Teuchos::RCP<CORE::UTILS::FunctionVariable>
+        [&line]() -> Teuchos::RCP<Core::UTILS::FunctionVariable>
         {
           // read the name of the variable
           std::string varname;

@@ -52,7 +52,7 @@ namespace
 
     // invert to get partial pressure for this concentration
     double inverted_Pb = 0.0;
-    POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
+    PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<double>(
         inverted_Pb, 0.0, CaO2_max, Pb50, n, alpha_eff);
 
     // check if partial pressure and numerically inverted partial pressure are equal
@@ -75,7 +75,7 @@ namespace
 
     // invert to get partial pressure for this concentration
     double inverted_Pb = 0.0;
-    POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
+    PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<double>(
         inverted_Pb, CaO2, CaO2_max, Pb50, n, alpha_eff);
 
     // check if partial pressure and numerically inverted partial pressure are equal
@@ -98,7 +98,7 @@ namespace
 
     // invert to get partial pressure for this concentration
     double inverted_Pb = 0.0;
-    POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
+    PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<double>(
         inverted_Pb, CaO2, CaO2_max, Pb50, n, alpha_eff);
 
     // check if partial pressure and numerically inverted partial pressure are equal
@@ -121,7 +121,7 @@ namespace
 
     // invert to get partial pressure for this concentration
     double inverted_Pb = 0.0;
-    POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
+    PoroMultiPhaseScaTra::UTILS::GetOxyPartialPressureFromConcentration<double>(
         inverted_Pb, CaO2, CaO2_max, Pb50, n, alpha_eff);
 
     // check if partial pressure and numerically inverted partial pressure are equal

@@ -15,14 +15,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void INPAR::MOR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::ModelOrderRed::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   Teuchos::ParameterList& mor = list->sublist("MOR", false, "");
 
-  CORE::UTILS::StringParameter(
+  Core::UTILS::StringParameter(
       "POD_MATRIX", "none", "filename of file containing projection matrix", &mor);
 }
 

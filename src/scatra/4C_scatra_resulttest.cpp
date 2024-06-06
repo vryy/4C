@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SCATRA::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatratimint)
-    : CORE::UTILS::ResultTest("SCATRA"), scatratimint_(scatratimint)
+ScaTra::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatratimint)
+    : Core::UTILS::ResultTest("SCATRA"), scatratimint_(scatratimint)
 {
   return;
 }
@@ -29,7 +29,7 @@ SCATRA::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void ScaTra::ScaTraResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -53,7 +53,7 @@ void SCATRA::ScaTraResultTest::test_node(INPUT::LineDefinition& res, int& nerr, 
   {
     if (scatratimint_->discretization()->HaveGlobalNode(node))
     {
-      CORE::Nodes::Node* actnode = scatratimint_->discretization()->gNode(node);
+      Core::Nodes::Node* actnode = scatratimint_->discretization()->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != scatratimint_->discretization()->Comm().MyPID()) return;
@@ -77,9 +77,9 @@ void SCATRA::ScaTraResultTest::test_node(INPUT::LineDefinition& res, int& nerr, 
 /*----------------------------------------------------------------------*
  | get nodal result to be tested                             fang 03/15 |
  *----------------------------------------------------------------------*/
-double SCATRA::ScaTraResultTest::result_node(
+double ScaTra::ScaTraResultTest::result_node(
     const std::string quantity,  //! name of quantity to be tested
-    CORE::Nodes::Node* node      //! node carrying the result to be tested
+    Core::Nodes::Node* node      //! node carrying the result to be tested
 ) const
 {
   // initialize variable for result
@@ -176,8 +176,8 @@ double SCATRA::ScaTraResultTest::result_node(
   else if (quantity == "s2ilayerthickness")
   {
     // extract scatra-scatra interface meshtying strategy class
-    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> strategy =
-        Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(scatratimint_->Strategy());
+    const Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> strategy =
+        Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint_->Strategy());
     if (strategy == Teuchos::null)
       FOUR_C_THROW("Couldn't extract scatra-scatra interface meshtying strategy class!");
 
@@ -186,13 +186,13 @@ double SCATRA::ScaTraResultTest::result_node(
     Teuchos::RCP<const Epetra_Vector> s2igrowthvec(Teuchos::null);
     switch (strategy->int_layer_growth_evaluation())
     {
-      case INPAR::S2I::growth_evaluation_monolithic:
+      case Inpar::S2I::growth_evaluation_monolithic:
       {
         s2igrowthvec = strategy->GrowthVarNp();
         break;
       }
 
-      case INPAR::S2I::growth_evaluation_semi_implicit:
+      case Inpar::S2I::growth_evaluation_semi_implicit:
       {
         s2igrowthvec = strategy->GrowthVarN();
         break;
@@ -220,13 +220,13 @@ double SCATRA::ScaTraResultTest::result_node(
     FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
-}  // SCATRA::ScaTraResultTest::ResultNode
+}  // ScaTra::ScaTraResultTest::ResultNode
 
 
 /*-------------------------------------------------------------------------------------*
  | test special quantity not associated with a particular element or node   fang 03/15 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void ScaTra::ScaTraResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only on specified discretization
   std::string disname;
@@ -256,7 +256,7 @@ void SCATRA::ScaTraResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr
 /*----------------------------------------------------------------------*
  | get special result to be tested                           fang 03/15 |
  *----------------------------------------------------------------------*/
-double SCATRA::ScaTraResultTest::result_special(
+double ScaTra::ScaTraResultTest::result_special(
     const std::string quantity  //! name of quantity to be tested
 ) const
 {
@@ -408,8 +408,8 @@ double SCATRA::ScaTraResultTest::result_special(
       FOUR_C_THROW("Invalid processor ID!");
 
     // extract scatra-scatra interface meshtying strategy class
-    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> strategy =
-        Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(scatratimint_->Strategy());
+    const Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> strategy =
+        Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint_->Strategy());
     if (strategy == Teuchos::null)
       FOUR_C_THROW("Couldn't extract scatra-scatra interface meshtying strategy class!");
 
@@ -472,6 +472,6 @@ double SCATRA::ScaTraResultTest::result_special(
     FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
-}  // SCATRA::ScaTraResultTest::result_special
+}  // ScaTra::ScaTraResultTest::result_special
 
 FOUR_C_NAMESPACE_CLOSE

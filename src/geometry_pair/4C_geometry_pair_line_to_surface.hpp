@@ -39,11 +39,11 @@ namespace GEOMETRYPAIR
 
   class LineToSurfaceEvaluationData;
 }  // namespace GEOMETRYPAIR
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 namespace GEOMETRYPAIR
 {
   template <typename scalar_type>
@@ -70,8 +70,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToSurface(const CORE::Elements::Element* element1,
-        const CORE::Elements::Element* element2,
+    GeometryPairLineToSurface(const Core::Elements::Element* element1,
+        const Core::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>&
             line_to_surface_evaluation_data);
 
@@ -108,9 +108,9 @@ namespace GEOMETRYPAIR
      * @param min_one_iteration (in) Flag if at least one NR iteration should be performed, even if
      * the initial residual satisfies the convergence check.
      */
-    void ProjectPointToOther(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+    void ProjectPointToOther(const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
         const ElementData<surface, scalar_type>& element_data_surface,
-        CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+        Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
         const bool min_one_iteration = false) const;
 
     /**
@@ -125,7 +125,7 @@ namespace GEOMETRYPAIR
         const ElementData<surface, scalar_type>& element_data_surface,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
         const scalar_type& eta_start,
-        const CORE::LINALG::Matrix<3, 1, scalar_type>& xi_start) const;
+        const Core::LinAlg::Matrix<3, 1, scalar_type>& xi_start) const;
 
     /**
      * \brief Return the pointer to the evaluation data of this pair.
@@ -158,7 +158,7 @@ namespace GEOMETRYPAIR
     void intersect_line_with_surface_edge(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<surface, scalar_type>& element_data_surface,
         const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
-        CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+        Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
         const bool min_one_iteration = false) const;
 
     /**
@@ -223,8 +223,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToSurfaceFADWrapper(const CORE::Elements::Element* element1,
-        const CORE::Elements::Element* element2,
+    GeometryPairLineToSurfaceFADWrapper(const Core::Elements::Element* element1,
+        const Core::Elements::Element* element2,
         const Teuchos::RCP<GeometryPairLineToSurface<double, line, surface>>& double_geometry_pair)
         : base_class(element1, element2, double_geometry_pair->GetEvaluationData()),
           geometry_pair_double_(double_geometry_pair){};
@@ -235,7 +235,7 @@ namespace GEOMETRYPAIR
      * For surface elements the pairs need the face element representing the surface, not the volume
      * element.
      */
-    inline void SetElement2(const CORE::Elements::Element* element2) override
+    inline void SetElement2(const Core::Elements::Element* element2) override
     {
       base_class::SetElement2(element2);
       geometry_pair_double_->SetElement2(element2);
@@ -291,7 +291,7 @@ namespace GEOMETRYPAIR
    */
   template <typename scalar_type, typename surface>
   bool ValidParameterSurface(
-      CORE::LINALG::Matrix<3, 1, scalar_type>& xi, const double normal_influence_direction)
+      Core::LinAlg::Matrix<3, 1, scalar_type>& xi, const double normal_influence_direction)
   {
     // We only need to check the normal distance if the coordinates are within the surface.
     if (!ValidParameter2D<surface>(xi)) return false;
@@ -320,9 +320,9 @@ namespace GEOMETRYPAIR
    * the initial residual satisfies the convergence check.
    */
   template <typename scalar_type, typename surface>
-  void ProjectPointToSurface(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+  void ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
       const ElementData<surface, scalar_type>& element_data_surface,
-      CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+      Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
       const double normal_influence_direction = -1.0, const bool min_one_iteration = false);
 }  // namespace GEOMETRYPAIR
 

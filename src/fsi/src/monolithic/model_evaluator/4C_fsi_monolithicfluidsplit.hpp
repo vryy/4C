@@ -21,11 +21,11 @@ with condensed fluid interface velocities
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class Structure;
   class Fluid;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace NOX
 {
@@ -36,7 +36,7 @@ namespace NOX
   }  // namespace FSI
 }  // namespace NOX
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class BlockSparseMatrixBase;
 }
@@ -47,12 +47,12 @@ namespace FSI
 
 }  // namespace FSI
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace FSI
 {
@@ -106,21 +106,21 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override;
 
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override;
 
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
+    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
 
     /// undo infnorm scaling from scaled solution
     void unscale_solution(
-        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
+        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
 
     //@}
 
@@ -195,10 +195,11 @@ namespace FSI
      */
     void create_node_owner_relationship(std::map<int, int>* nodeOwner,
         std::map<int, std::list<int>>* inverseNodeOwner,
-        std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
-        std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
-        Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
-        const INPAR::FSI::Redistribute domain) override
+        std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
+        std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
+        Teuchos::RCP<Discret::Discretization> structuredis,
+        Teuchos::RCP<Discret::Discretization> fluiddis,
+        const Inpar::FSI::Redistribute domain) override
     {
       FOUR_C_THROW("Not implemented!");
     }
@@ -222,7 +223,7 @@ namespace FSI
     //! We are dealing with NOX here, so we get absolute values. x is the sum of
     //! all increments up to this point.
     //!
-    //! \sa  ADAPTER::FluidFSI::displacement_to_velocity()
+    //! \sa  Adapter::FluidFSI::displacement_to_velocity()
     void extract_field_vectors(
         Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
@@ -271,18 +272,18 @@ namespace FSI
         bool slave_vectors_contain_interface_dofs) final;
 
     /// block system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fggtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgitransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> figtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fmgitransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fmggtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> fggtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> fgitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> figtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> fmgitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> fmggtransform_;
 
     ///@}
 
@@ -299,7 +300,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> aleresidual_;
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
+    Inpar::FSI::LinearBlockSolver linearsolverstrategy_;
 
     /// @name Recovery of Lagrange multiplier at the end of each time step
 
@@ -335,32 +336,32 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> ddialeinc_;
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fgicur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fgicur_;
 
     //! block \f$F_{\Gamma I,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fgiprev_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fgiprev_;
 
     //! block \f$F_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fggcur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fggcur_;
 
     //! block \f$F_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fggprev_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fggprev_;
 
     //! block \f$F_{\Gamma I,i+1}^G\f$ of fluid shape derivatives matrix at current NOX iteration
     //! \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmgicur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fmgicur_;
 
     //! block \f$F_{\Gamma I,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration
     //! \f$i\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmgiprev_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fmgiprev_;
 
     //! block \f$F_{\Gamma\Gamma,i+1}^G\f$ of fluid shape derivatives matrix at current NOX
     //! iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmggcur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fmggcur_;
 
     //! block \f$F_{\Gamma\Gamma,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration
     //! \f$i\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmggprev_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fmggprev_;
 
     //@}
 

@@ -40,7 +40,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
  *----------------------------------------------------------------------*/
-CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alphaf)
+CONTACT::Beam3cmanager::Beam3cmanager(Discret::Discretization& discret, double alphaf)
     : numnodes_(0),
       numnodalvalues_(0),
       pdiscret_(discret),
@@ -75,8 +75,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
       step_(0)
 {
   // initialize vectors of contact forces
-  fc_ = CORE::LINALG::CreateVector(*discret.dof_row_map(), false);
-  fcold_ = CORE::LINALG::CreateVector(*discret.dof_row_map(), false);
+  fc_ = Core::LinAlg::CreateVector(*discret.dof_row_map(), false);
+  fcold_ = Core::LinAlg::CreateVector(*discret.dof_row_map(), false);
   fc_->PutScalar(0.0);
   fcold_->PutScalar(0.0);
 
@@ -85,14 +85,14 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   btsolpairmap_.clear();
   oldbtsolpairmap_.clear();
 
-  // read parameter lists from GLOBAL::Problem
-  sbeamcontact_ = GLOBAL::Problem::Instance()->beam_contact_params();
-  sbeampotential_ = GLOBAL::Problem::Instance()->beam_potential_params();
-  scontact_ = GLOBAL::Problem::Instance()->contact_dynamic_params();
-  sstructdynamic_ = GLOBAL::Problem::Instance()->structural_dynamic_params();
+  // read parameter lists from Global::Problem
+  sbeamcontact_ = Global::Problem::Instance()->beam_contact_params();
+  sbeampotential_ = Global::Problem::Instance()->beam_potential_params();
+  scontact_ = Global::Problem::Instance()->contact_dynamic_params();
+  sstructdynamic_ = Global::Problem::Instance()->structural_dynamic_params();
 
   // indicate if beam-to-solid contact is applied
-  btsol_ = CORE::UTILS::IntegralValue<int>(beam_contact_parameters(), "BEAMS_BTSOL");
+  btsol_ = Core::UTILS::IntegralValue<int>(beam_contact_parameters(), "BEAMS_BTSOL");
 
   init_beam_contact_discret();
 
@@ -131,8 +131,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
     FOUR_C_THROW("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
 
   // initialize octtree for contact search
-  if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(sbeamcontact_, "BEAMS_OCTREE") !=
-      INPAR::BEAMCONTACT::boct_none)
+  if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::OctreeType>(sbeamcontact_, "BEAMS_OCTREE") !=
+      Inpar::BEAMCONTACT::boct_none)
   {
     if (!pdiscret_.Comm().MyPID())
       std::cout << "BTB-CO penalty         = " << currentpp_ << std::endl;
@@ -155,57 +155,57 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
 
   if (!pdiscret_.Comm().MyPID())
   {
-    if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
-        INPAR::BEAMCONTACT::bstr_penalty)
+    if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
+        Inpar::BEAMCONTACT::bstr_penalty)
       std::cout << "Strategy                 Penalty" << std::endl;
-    else if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(
-                 sbeamcontact_, "BEAMS_STRATEGY") == INPAR::BEAMCONTACT::bstr_gmshonly)
+    else if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Strategy>(
+                 sbeamcontact_, "BEAMS_STRATEGY") == Inpar::BEAMCONTACT::bstr_gmshonly)
       std::cout << "Strategy                 Gmsh Only" << std::endl;
     else
       FOUR_C_THROW("Unknown strategy for beam contact!");
 
-    switch (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+    switch (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
         sbeamcontact_, "BEAMS_PENALTYLAW"))
     {
-      case INPAR::BEAMCONTACT::pl_lp:
+      case Inpar::BEAMCONTACT::pl_lp:
       {
         std::cout << "Regularization Type      Linear penalty law!" << std::endl;
         break;
       }
-      case INPAR::BEAMCONTACT::pl_qp:
+      case Inpar::BEAMCONTACT::pl_qp:
       {
         std::cout << "Regularization Type      Quadratic penalty law!" << std::endl;
         break;
       }
-      case INPAR::BEAMCONTACT::pl_lnqp:
+      case Inpar::BEAMCONTACT::pl_lnqp:
       {
         std::cout << "Regularization Type      Linear penalty law with quadratic regularization "
                      "for negative gaps!"
                   << std::endl;
         break;
       }
-      case INPAR::BEAMCONTACT::pl_lpqp:
+      case Inpar::BEAMCONTACT::pl_lpqp:
       {
         std::cout << "Regularization Type      Linear penalty law with quadratic regularization "
                      "for positive gaps!"
                   << std::endl;
         break;
       }
-      case INPAR::BEAMCONTACT::pl_lpcp:
+      case Inpar::BEAMCONTACT::pl_lpcp:
       {
         std::cout << "Regularization Type      Linear penalty law with cubic regularization for "
                      "positive gaps!"
                   << std::endl;
         break;
       }
-      case INPAR::BEAMCONTACT::pl_lpdqp:
+      case Inpar::BEAMCONTACT::pl_lpdqp:
       {
         std::cout << "Regularization Type      Linear penalty law with double quadratic "
                      "regularization for positive gaps!"
                   << std::endl;
         break;
       }
-      case INPAR::BEAMCONTACT::pl_lpep:
+      case Inpar::BEAMCONTACT::pl_lpep:
       {
         std::cout << "Regularization Type      Linear penalty law with exponential regularization "
                      "for positive gaps!"
@@ -214,8 +214,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
       }
     }
 
-    if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
-            sbeamcontact_, "BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lp)
+    if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+            sbeamcontact_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lp)
     {
       std::cout << "Regularization Params    BEAMS_PENREGPARAM_G0 = "
                 << sbeamcontact_.get<double>("BEAMS_PENREGPARAM_G0", -1.0)
@@ -227,8 +227,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
                 << sbeamcontact_.get<double>("BEAMS_GAPSHIFTPARAM", 0.0) << std::endl;
     }
 
-    if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Damping>(sbeamcontact_, "BEAMS_DAMPING") ==
-        INPAR::BEAMCONTACT::bd_no)
+    if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Damping>(sbeamcontact_, "BEAMS_DAMPING") ==
+        Inpar::BEAMCONTACT::bd_no)
       std::cout << "Damping                  No Contact Damping Force Applied!" << std::endl;
     else
     {
@@ -250,8 +250,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
     std::cout << "================================================================\n" << std::endl;
   }
 
-  dis_ = CORE::LINALG::CreateVector(*ProblemDiscret().dof_row_map(), true);
-  dis_old_ = CORE::LINALG::CreateVector(*ProblemDiscret().dof_row_map(), true);
+  dis_ = Core::LinAlg::CreateVector(*ProblemDiscret().dof_row_map(), true);
+  dis_old_ = Core::LinAlg::CreateVector(*ProblemDiscret().dof_row_map(), true);
 
 
 
@@ -306,15 +306,15 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
     {
       std::cout << "=============== Beam Potential-Based Interaction ===============" << std::endl;
 
-      switch (CORE::UTILS::IntegralValue<INPAR::BEAMPOTENTIAL::BeamPotentialType>(
+      switch (Core::UTILS::IntegralValue<Inpar::BEAMPOTENTIAL::BeamPotentialType>(
           sbeampotential_, "BEAMPOTENTIAL_TYPE"))
       {
-        case INPAR::BEAMPOTENTIAL::beampot_surf:
+        case Inpar::BEAMPOTENTIAL::beampot_surf:
         {
           std::cout << "Potential Type:      Surface" << std::endl;
           break;
         }
-        case INPAR::BEAMPOTENTIAL::beampot_vol:
+        case Inpar::BEAMPOTENTIAL::beampot_vol:
         {
           std::cout << "Potential Type:      Volume" << std::endl;
           break;
@@ -335,8 +335,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
     searchradiuspot_ = sbeampotential_.get<double>("CUTOFFRADIUS", -1.0);
 
     // initialize octtree for search of potential-based interaction pairs
-    if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(
-            sbeampotential_, "BEAMPOT_OCTREE") != INPAR::BEAMCONTACT::boct_none)
+    if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::OctreeType>(
+            sbeampotential_, "BEAMPOT_OCTREE") != Inpar::BEAMCONTACT::boct_none)
     {
       if (searchradiuspot_ <= 0)
         FOUR_C_THROW(
@@ -369,8 +369,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
     }
 
     // flags to indicate, if beam-to-solid or beam-to-sphere potential-based interaction is applied
-    potbtsol_ = CORE::UTILS::IntegralValue<int>(sbeampotential_, "BEAMPOT_BTSOL");
-    potbtsph_ = CORE::UTILS::IntegralValue<int>(sbeampotential_, "BEAMPOT_BTSPH");
+    potbtsol_ = Core::UTILS::IntegralValue<int>(sbeampotential_, "BEAMPOT_BTSOL");
+    potbtsph_ = Core::UTILS::IntegralValue<int>(sbeampotential_, "BEAMPOT_BTSPH");
 
   }  // end: at least one beam potential line charge condition applied
 
@@ -392,12 +392,12 @@ void CONTACT::Beam3cmanager::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
+void CONTACT::Beam3cmanager::Evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
     const Epetra_Vector& disrow, Teuchos::ParameterList timeintparams, bool newsti, double time)
 {
   // get out of here if only interested in gmsh output
-  if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
-      INPAR::BEAMCONTACT::bstr_gmshonly)
+  if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
+      Inpar::BEAMCONTACT::bstr_gmshonly)
     return;
 
   // set time
@@ -407,7 +407,7 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
   dis_->Update(1.0, disrow, 0.0);
 
   // map linking node numbers and current node positions
-  std::map<int, CORE::LINALG::Matrix<3, 1>> currentpositions;
+  std::map<int, Core::LinAlg::Matrix<3, 1>> currentpositions;
   currentpositions.clear();
   // extract fully overlapping displacement vector on contact discretization from
   // displacement vector in row map format on problem discretization
@@ -422,7 +422,7 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
   //**********************************************************************
   // SEARCH
   //**********************************************************************
-  std::vector<std::vector<CORE::Elements::Element*>> elementpairs, elementpairspot;
+  std::vector<std::vector<Core::Elements::Element*>> elementpairs, elementpairspot;
   elementpairs.clear();
   elementpairspot.clear();
   //**********************************************************************
@@ -434,10 +434,10 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
     elementpairs = tree_->OctTreeSearch(currentpositions);
 
     t_end = Teuchos::Time::wallTime() - t_start;
-    Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
+    Teuchos::ParameterList ioparams = Global::Problem::Instance()->IOParams();
     if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
-      CORE::IO::cout(CORE::IO::standard)
-          << "      OctTree Search (Contact): " << t_end << " seconds" << CORE::IO::endl;
+      Core::IO::cout(Core::IO::standard)
+          << "      OctTree Search (Contact): " << t_end << " seconds" << Core::IO::endl;
   }
   //**********************************************************************
   // Contact: brute-force search
@@ -448,10 +448,10 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
 
     elementpairs = brute_force_search(currentpositions, searchradius_, sphericalsearchradius_);
     t_end = Teuchos::Time::wallTime() - t_start;
-    Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
+    Teuchos::ParameterList ioparams = Global::Problem::Instance()->IOParams();
     if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
-      CORE::IO::cout(CORE::IO::standard)
-          << "      Brute Force Search (Contact): " << t_end << " seconds" << CORE::IO::endl;
+      Core::IO::cout(Core::IO::standard)
+          << "      Brute Force Search (Contact): " << t_end << " seconds" << Core::IO::endl;
   }
 
   t_start = Teuchos::Time::wallTime();
@@ -470,10 +470,10 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
       elementpairspot = pottree_->OctTreeSearch(currentpositions);
 
       double t_end = Teuchos::Time::wallTime() - t_start;
-      Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
+      Teuchos::ParameterList ioparams = Global::Problem::Instance()->IOParams();
       if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
-        CORE::IO::cout(CORE::IO::standard)
-            << "      OctTree Search (Potential): " << t_end << " seconds" << CORE::IO::endl;
+        Core::IO::cout(Core::IO::standard)
+            << "      OctTree Search (Potential): " << t_end << " seconds" << Core::IO::endl;
     }
     //**********************************************************************
     // Potential-based interaction: brute-force search
@@ -485,10 +485,10 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
       elementpairspot = brute_force_search(currentpositions, searchradiuspot_,
           searchradiuspot_);  // TODO do we need a sphericalsearchradius here as well?
       double t_end = Teuchos::Time::wallTime() - t_start;
-      Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
+      Teuchos::ParameterList ioparams = Global::Problem::Instance()->IOParams();
       if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
-        CORE::IO::cout(CORE::IO::standard)
-            << "      Brute Force Search (Potential): " << t_end << " seconds" << CORE::IO::endl;
+        Core::IO::cout(Core::IO::standard)
+            << "      Brute Force Search (Potential): " << t_end << " seconds" << Core::IO::endl;
     }
 
     fill_potential_pairs_vectors(elementpairspot);
@@ -518,14 +518,14 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
   fc_->PutScalar(0.0);
 
   // initialize contact stiffness and uncomplete global stiffness
-  stiffc_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(stiffmatrix.RangeMap(), 100));
+  stiffc_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(stiffmatrix.RangeMap(), 100));
   stiffmatrix.UnComplete();
 
 
   t_end = Teuchos::Time::wallTime() - t_start;
   if (!pdiscret_.Comm().MyPID())
-    CORE::IO::cout(CORE::IO::debug)
-        << "      Pair management: " << t_end << " seconds. " << CORE::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << "      Pair management: " << t_end << " seconds. " << Core::IO::endl;
   t_start = Teuchos::Time::wallTime();
 
   // evaluate all element pairs (BTB, BTSOL, BTSPH; Contact and Potential)
@@ -533,15 +533,15 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
 
   t_end = Teuchos::Time::wallTime() - t_start;
   if (!pdiscret_.Comm().MyPID())
-    CORE::IO::cout(CORE::IO::debug)
-        << "      Evaluate Contact Pairs: " << t_end << " seconds. " << CORE::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << "      Evaluate Contact Pairs: " << t_end << " seconds. " << Core::IO::endl;
   double sumproc_evaluationtime = 0.0;
   Comm().SumAll(&t_end, &sumproc_evaluationtime, 1);
   contactevaluationtime_ += sumproc_evaluationtime;
   t_start = Teuchos::Time::wallTime();
 
-  if (CORE::UTILS::IntegralValue<INPAR::STR::MassLin>(sstructdynamic_, "MASSLIN") !=
-      INPAR::STR::ml_rotations)
+  if (Core::UTILS::IntegralValue<Inpar::STR::MassLin>(sstructdynamic_, "MASSLIN") !=
+      Inpar::STR::ml_rotations)
   {
     // assemble contact forces into global fres vector
     fres.Update(1.0 - alphaf_, *fc_, 1.0);
@@ -578,8 +578,8 @@ void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, E
 
   t_end = Teuchos::Time::wallTime() - t_start;
   if (!pdiscret_.Comm().MyPID())
-    CORE::IO::cout(CORE::IO::debug)
-        << "      Post-manage Pairs: " << t_end << " seconds. " << CORE::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << "      Post-manage Pairs: " << t_end << " seconds. " << Core::IO::endl;
 
   return;
 }
@@ -600,7 +600,7 @@ void CONTACT::Beam3cmanager::shift_dis_map(const Epetra_Vector& disrow, Epetra_V
     double disp = disrow[(*ProblemDiscret().dof_row_map()).LID(problem_gid)];
     discrow.ReplaceGlobalValue(btsolcontact_gid, 0, disp);
   }
-  CORE::LINALG::Export(discrow, disccol);
+  Core::LinAlg::Export(discrow, disccol);
 
   return;
 }
@@ -622,8 +622,8 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // the copied beam contact discretization.
 
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_.Comm().Clone());
-  btsoldiscret_ = Teuchos::rcp(new DRT::Discretization(
-      (std::string) "beam to solid contact", comm, GLOBAL::Problem::Instance()->NDim()));
+  btsoldiscret_ = Teuchos::rcp(new Discret::Discretization(
+      (std::string) "beam to solid contact", comm, Global::Problem::Instance()->NDim()));
   dofoffsetmap_.clear();
   std::map<int, std::vector<int>> nodedofs;
   nodedofs.clear();
@@ -631,9 +631,9 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // loop over all column nodes of underlying problem discret and add
   for (int i = 0; i < (ProblemDiscret().NodeColMap())->NumMyElements(); ++i)
   {
-    CORE::Nodes::Node* node = ProblemDiscret().lColNode(i);
+    Core::Nodes::Node* node = ProblemDiscret().lColNode(i);
     if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
-    Teuchos::RCP<CORE::Nodes::Node> newnode = Teuchos::rcp(node->Clone());
+    Teuchos::RCP<Core::Nodes::Node> newnode = Teuchos::rcp(node->Clone());
     if (BEAMINTERACTION::UTILS::IsBeamNode(*newnode))
     {
       BTSolDiscret().AddNode(newnode);
@@ -657,9 +657,9 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // loop over all column elements of underlying problem discret and add
   for (int i = 0; i < (ProblemDiscret().ElementColMap())->NumMyElements(); ++i)
   {
-    CORE::Elements::Element* ele = ProblemDiscret().lColElement(i);
+    Core::Elements::Element* ele = ProblemDiscret().lColElement(i);
     if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
-    Teuchos::RCP<CORE::Elements::Element> newele = Teuchos::rcp(ele->Clone());
+    Teuchos::RCP<Core::Elements::Element> newele = Teuchos::rcp(ele->Clone());
     if (BEAMINTERACTION::UTILS::IsBeamElement(*newele) or
         BEAMINTERACTION::UTILS::IsRigidSphereElement(*newele))
     {
@@ -670,14 +670,14 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // begin: determine surface elements and their nodes
 
   // vector that contains solid-to-solid and beam-to-solid contact pairs
-  std::vector<CORE::Conditions::Condition*> beamandsolidcontactconditions(0);
+  std::vector<Core::Conditions::Condition*> beamandsolidcontactconditions(0);
   ProblemDiscret().GetCondition("Contact", beamandsolidcontactconditions);
 
   // vector that solely contains beam-to-solid contact pairs
-  std::vector<CORE::Conditions::Condition*> btscontactconditions(0);
+  std::vector<Core::Conditions::Condition*> btscontactconditions(0);
 
   // vector that solely contains beam-to-solid meshtying pairs
-  std::vector<CORE::Conditions::Condition*> btsmeshtyingconditions(0);
+  std::vector<Core::Conditions::Condition*> btsmeshtyingconditions(0);
 
   // sort out solid-to-solid contact pairs, since these are treated in the contact framework
   for (int i = 0; i < (int)beamandsolidcontactconditions.size(); ++i)
@@ -706,7 +706,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       int gid = (*nodeids)[k];
       // do only nodes that I have in my discretization
       if (!ProblemDiscret().NodeColMap()->MyGID(gid)) continue;
-      CORE::Nodes::Node* node = ProblemDiscret().gNode(gid);
+      Core::Nodes::Node* node = ProblemDiscret().gNode(gid);
 
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
@@ -730,7 +730,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   for (int j = 0; j < (int)btscontactconditions.size(); ++j)
   {
     // get elements from condition j of current group
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& currele =
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele =
         btscontactconditions[j]->Geometry();
 
     // elements in a boundary condition have a unique id
@@ -745,7 +745,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     int gsize = 0;
     Comm().SumAll(&lsize, &gsize, 1);
 
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator fool;
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator fool;
     for (fool = currele.begin(); fool != currele.end(); ++fool)
     {
       // The IDs of the surface elements of each conditions begin with zero. Therefore we have to
@@ -756,7 +756,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       // element IDs being identical to these beam element IDs within the contact discretization we
       // have to add the additional offset maxproblemid, which is identical to the maximal element
       // ID in the problem discretization.
-      Teuchos::RCP<CORE::Elements::Element> ele = fool->second;
+      Teuchos::RCP<Core::Elements::Element> ele = fool->second;
       Teuchos::RCP<CONTACT::Element> cele =
           Teuchos::rcp(new CONTACT::Element(ele->Id() + ggsize + maxproblemid + 1, ele->Owner(),
               ele->Shape(), ele->num_node(), ele->NodeIds(),
@@ -785,12 +785,12 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       int gid = (*nodeids)[k];
       // do only nodes that I have in my discretization
       if (!ProblemDiscret().NodeColMap()->MyGID(gid)) continue;
-      CORE::Nodes::Node* node = ProblemDiscret().gNode(gid);
+      Core::Nodes::Node* node = ProblemDiscret().gNode(gid);
 
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
-      Teuchos::RCP<MORTAR::Node> mtnode = Teuchos::rcp(
-          new MORTAR::Node(node->Id(), node->X(), node->Owner(), ProblemDiscret().Dof(0, node),
+      Teuchos::RCP<Mortar::Node> mtnode = Teuchos::rcp(
+          new Mortar::Node(node->Id(), node->X(), node->Owner(), ProblemDiscret().Dof(0, node),
               false));  // all solid elements are master elements
 
       // note that we do not have to worry about double entries
@@ -808,7 +808,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   for (int j = 0; j < (int)btsmeshtyingconditions.size(); ++j)
   {
     // get elements from condition j of current group
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& currele =
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& currele =
         btsmeshtyingconditions[j]->Geometry();
 
     // elements in a boundary condition have a unique id
@@ -823,7 +823,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     int gsize = 0;
     Comm().SumAll(&lsize, &gsize, 1);
 
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator fool;
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator fool;
     for (fool = currele.begin(); fool != currele.end(); ++fool)
     {
       // The IDs of the surface elements of each conditions begin with zero. Therefore we have to
@@ -834,9 +834,9 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       // element IDs being identical to these beam element IDs within the contact discretization we
       // have to add the additional offset maxproblemid, which is identical to the maximal element
       // ID in the problem discretization.
-      Teuchos::RCP<CORE::Elements::Element> ele = fool->second;
-      Teuchos::RCP<MORTAR::Element> mtele =
-          Teuchos::rcp(new MORTAR::Element(ele->Id() + ggsize + maxproblemid + 1, ele->Owner(),
+      Teuchos::RCP<Core::Elements::Element> ele = fool->second;
+      Teuchos::RCP<Mortar::Element> mtele =
+          Teuchos::rcp(new Mortar::Element(ele->Id() + ggsize + maxproblemid + 1, ele->Owner(),
               ele->Shape(), ele->num_node(), ele->NodeIds(),
               false,    // all solid elements are master elements
               false));  // no nurbs allowed up to now
@@ -881,9 +881,9 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
 
   // gathers information of (e)stproc and writes it into (e)rtproc; in the end (e)rtproc
   // is a vector which contains the numbers of all processors which own nodes/elements.
-  CORE::LINALG::Gather<int>(
+  Core::LinAlg::Gather<int>(
       stproc, rtproc, BTSolDiscret().Comm().NumProc(), allproc.data(), BTSolDiscret().Comm());
-  CORE::LINALG::Gather<int>(
+  Core::LinAlg::Gather<int>(
       estproc, ertproc, BTSolDiscret().Comm().NumProc(), allproc.data(), BTSolDiscret().Comm());
 
   // in analogy to (e)stproc and (e)rtproc the variables (e)rdata gather all the row ID
@@ -893,8 +893,8 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   std::vector<int> erdata;
 
   // gather all gids of nodes redundantly from (e)sdata into (e)rdata
-  CORE::LINALG::Gather<int>(sdata, rdata, (int)rtproc.size(), rtproc.data(), BTSolDiscret().Comm());
-  CORE::LINALG::Gather<int>(
+  Core::LinAlg::Gather<int>(sdata, rdata, (int)rtproc.size(), rtproc.data(), BTSolDiscret().Comm());
+  Core::LinAlg::Gather<int>(
       esdata, erdata, (int)ertproc.size(), ertproc.data(), BTSolDiscret().Comm());
 
   // build completely overlapping node map (on participating processors)
@@ -926,13 +926,14 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   BTSolDiscret().fill_complete(true, false, false);
 
   // communicate the map nodedofs to all proccs
-  CORE::COMM::Exporter ex(*(ProblemDiscret().NodeColMap()), *(BTSolDiscret().NodeColMap()), Comm());
+  Core::Communication::Exporter ex(
+      *(ProblemDiscret().NodeColMap()), *(BTSolDiscret().NodeColMap()), Comm());
   ex.Export(nodedofs);
 
   // Determine offset between the IDs of problem discretization and BTSol discretization
   for (int i = 0; i < (BTSolDiscret().NodeColMap())->NumMyElements(); ++i)
   {
-    CORE::Nodes::Node* node = BTSolDiscret().lColNode(i);
+    Core::Nodes::Node* node = BTSolDiscret().lColNode(i);
     int nodeid = node->Id();
     std::vector<int> btsolnodedofids = BTSolDiscret().Dof(0, node);
     std::vector<int> originalnodedofids = nodedofs[nodeid];
@@ -956,7 +957,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
  |  Set current displacement state                            popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::set_current_positions(
-    std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol)
+    std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol)
 {
   //**********************************************************************
   // get positions of all nodes (fully overlapping map) and store
@@ -967,7 +968,7 @@ void CONTACT::Beam3cmanager::set_current_positions(
   for (int i = 0; i < FullNodes()->NumMyElements(); ++i)
   {
     // get node pointer
-    CORE::Nodes::Node* node = BTSolDiscret().lColNode(i);
+    Core::Nodes::Node* node = BTSolDiscret().lColNode(i);
 
     // TODO maybe this can be done in a more elegant way in the future
     /* check whether node is a beam node which is NOT used for centerline interpolation
@@ -980,7 +981,7 @@ void CONTACT::Beam3cmanager::set_current_positions(
     std::vector<int> dofnode = BTSolDiscret().Dof(node);
 
     // nodal positions
-    CORE::LINALG::Matrix<3, 1> currpos;
+    Core::LinAlg::Matrix<3, 1> currpos;
     currpos(0) = node->X()[0] + disccol[BTSolDiscret().DofColMap()->LID(dofnode[0])];
     currpos(1) = node->X()[1] + disccol[BTSolDiscret().DofColMap()->LID(dofnode[1])];
     currpos(2) = node->X()[2] + disccol[BTSolDiscret().DofColMap()->LID(dofnode[2])];
@@ -996,11 +997,11 @@ void CONTACT::Beam3cmanager::set_current_positions(
  |  Set current displacement state                            popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::set_state(
-    std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol)
+    std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol)
 {
   // map to store the nodal tangent vectors (necessary for Kirchhoff type beams) and adress it with
   // the node ID
-  std::map<int, CORE::LINALG::Matrix<3, 1>> currenttangents;
+  std::map<int, Core::LinAlg::Matrix<3, 1>> currenttangents;
   currenttangents.clear();
 
   // Update of nodal tangents for Kirchhoff elements; nodal positions have already been set in
@@ -1008,7 +1009,7 @@ void CONTACT::Beam3cmanager::set_state(
   for (int i = 0; i < FullNodes()->NumMyElements(); ++i)
   {
     // get node pointer
-    CORE::Nodes::Node* node = BTSolDiscret().lColNode(i);
+    Core::Nodes::Node* node = BTSolDiscret().lColNode(i);
 
     // TODO maybe this can be done in a more elegant way in the future
     /* check whether node is a beam node which is NOT used for centerline interpolation
@@ -1024,34 +1025,34 @@ void CONTACT::Beam3cmanager::set_state(
       // get GIDs of this node's degrees of freedom
       std::vector<int> dofnode = BTSolDiscret().Dof(node);
 
-      CORE::LINALG::Matrix<3, 1> currtan(true);
+      Core::LinAlg::Matrix<3, 1> currtan(true);
       for (int i = 0; i < numnodes_;
            i++)  // TODO for now, use number of centerline nodes numnodes_ (=2) (no matter how many
                  // nodes the function call node->Elements()[0]->num_node() would tell you)
       {
         if (node->Elements()[0]->Nodes()[i]->Id() == node->Id() and
-            node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3ebType::Instance())
+            node->Elements()[0]->ElementType() == Discret::ELEMENTS::Beam3ebType::Instance())
         {
-          const DRT::ELEMENTS::Beam3eb* ele =
-              dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node->Elements()[0]);
+          const Discret::ELEMENTS::Beam3eb* ele =
+              dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(node->Elements()[0]);
           currtan(0) = ((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3])];
           currtan(1) = ((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
           currtan(2) = ((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
         }
         else if (node->Elements()[0]->Nodes()[i]->Id() == node->Id() and
-                 node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3kType::Instance())
+                 node->Elements()[0]->ElementType() == Discret::ELEMENTS::Beam3kType::Instance())
         {
-          const DRT::ELEMENTS::Beam3k* ele =
-              dynamic_cast<const DRT::ELEMENTS::Beam3k*>(node->Elements()[0]);
+          const Discret::ELEMENTS::Beam3k* ele =
+              dynamic_cast<const Discret::ELEMENTS::Beam3k*>(node->Elements()[0]);
           currtan(0) = ((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3])];
           currtan(1) = ((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
           currtan(2) = ((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
         }
         else if (node->Elements()[0]->Nodes()[i]->Id() == node->Id() and
-                 node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3rType::Instance())
+                 node->Elements()[0]->ElementType() == Discret::ELEMENTS::Beam3rType::Instance())
         {
-          const DRT::ELEMENTS::Beam3r* ele =
-              dynamic_cast<const DRT::ELEMENTS::Beam3r*>(node->Elements()[0]);
+          const Discret::ELEMENTS::Beam3r* ele =
+              dynamic_cast<const Discret::ELEMENTS::Beam3r*>(node->Elements()[0]);
           currtan(0) = ((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[6])];
           currtan(1) = ((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[7])];
           currtan(2) = ((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[8])];
@@ -1075,8 +1076,8 @@ void CONTACT::Beam3cmanager::set_state(
   for (int i = 0; i < (int)pairs_.size(); ++i)
   {
     // temporary matrices to store nodal coordinates of each element
-    CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
-    CORE::LINALG::SerialDenseMatrix ele2pos(3 * numnodalvalues_, numnodes_);
+    Core::LinAlg::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
+    Core::LinAlg::SerialDenseMatrix ele2pos(3 * numnodalvalues_, numnodes_);
     // Positions: Loop over all nodes of element 1
     /* be careful here: beam eles (such as beam3k, beam3r) may have intermediate
      * nodes which are not used for centerline interpolation and thus do not have
@@ -1086,7 +1087,7 @@ void CONTACT::Beam3cmanager::set_state(
     for (int m = 0; m < numnodes_; m++)
     {
       int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
-      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      Core::LinAlg::Matrix<3, 1> temppos = currentpositions[tempGID];
 
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
@@ -1098,7 +1099,7 @@ void CONTACT::Beam3cmanager::set_state(
       for (int m = 0; m < numnodes_; m++)
       {
         int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
-        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
+        Core::LinAlg::Matrix<3, 1> temptan = currenttangents[tempGID];
 
         // store updated nodal tangents
         for (int n = 0; n < 3; n++) ele1pos(n + 3, m) = temptan(n);
@@ -1108,7 +1109,7 @@ void CONTACT::Beam3cmanager::set_state(
     for (int m = 0; m < numnodes_; m++)
     {
       int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
-      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      Core::LinAlg::Matrix<3, 1> temppos = currentpositions[tempGID];
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele2pos(n, m) = temppos(n);
     }
@@ -1118,7 +1119,7 @@ void CONTACT::Beam3cmanager::set_state(
       for (int m = 0; m < numnodes_; m++)
       {
         int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
-        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
+        Core::LinAlg::Matrix<3, 1> temptan = currenttangents[tempGID];
 
         // store updated nodal tangents
         for (int n = 0; n < 3; n++) ele2pos(n + 3, m) = temptan(n);
@@ -1129,8 +1130,8 @@ void CONTACT::Beam3cmanager::set_state(
   }
   // Update also the interpolated tangents if the tangentsmoothing is activated for Reissner beams
   int smoothing =
-      CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Smoothing>(sbeamcontact_, "BEAMS_SMOOTHING");
-  if (smoothing != INPAR::BEAMCONTACT::bsm_none)
+      Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Smoothing>(sbeamcontact_, "BEAMS_SMOOTHING");
+  if (smoothing != Inpar::BEAMCONTACT::bsm_none)
   {
     for (int i = 0; i < (int)pairs_.size(); ++i)
     {
@@ -1143,13 +1144,13 @@ void CONTACT::Beam3cmanager::set_state(
   {
     int numnodessol = ((btsolpairs_[i])->Element2())->num_node();
     // temporary matrices to store nodal coordinates of each element
-    CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
-    CORE::LINALG::SerialDenseMatrix ele2pos(3, numnodessol);
+    Core::LinAlg::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
+    Core::LinAlg::SerialDenseMatrix ele2pos(3, numnodessol);
     // Positions: Loop over all nodes of element 1 (beam element)
     for (int m = 0; m < numnodes_; m++)
     {
       int tempGID = ((btsolpairs_[i]->Element1())->NodeIds())[m];
-      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      Core::LinAlg::Matrix<3, 1> temppos = currentpositions[tempGID];
 
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
@@ -1161,7 +1162,7 @@ void CONTACT::Beam3cmanager::set_state(
       for (int m = 0; m < numnodes_; m++)
       {
         int tempGID = ((btsolpairs_[i]->Element1())->NodeIds())[m];
-        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
+        Core::LinAlg::Matrix<3, 1> temptan = currenttangents[tempGID];
 
         // store updated nodal tangents
         for (int n = 0; n < 3; n++) ele1pos(n + 3, m) = temptan(n);
@@ -1171,7 +1172,7 @@ void CONTACT::Beam3cmanager::set_state(
     for (int m = 0; m < (btsolpairs_[i]->Element2())->num_node(); m++)
     {
       int tempGID = ((btsolpairs_[i]->Element2())->NodeIds())[m];
-      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      Core::LinAlg::Matrix<3, 1> temppos = currentpositions[tempGID];
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele2pos(n, m) = temppos(n);
     }
@@ -1194,20 +1195,20 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
 
   for (int i = 0; i < ProblemDiscret().NumMyColElements(); i++)
   {
-    CORE::Elements::Element* element = ProblemDiscret().lColElement(i);
-    const CORE::Elements::ElementType& eot = element->ElementType();
-    if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
+    Core::Elements::Element* element = ProblemDiscret().lColElement(i);
+    const Core::Elements::ElementType& eot = element->ElementType();
+    if (eot == Discret::ELEMENTS::Beam3ebType::Instance())
     {
-      const DRT::ELEMENTS::Beam3eb* beam3ebelement =
-          dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(element);
+      const Discret::ELEMENTS::Beam3eb* beam3ebelement =
+          dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(element);
 
       if (fabs(beam3ebelement->GetKappaMax()) > kappa_max)
         kappa_max = fabs(beam3ebelement->GetKappaMax());
     }
-    else if (eot == DRT::ELEMENTS::Beam3rType::Instance())
+    else if (eot == Discret::ELEMENTS::Beam3rType::Instance())
     {
-      const DRT::ELEMENTS::Beam3r* beam3relement =
-          dynamic_cast<const DRT::ELEMENTS::Beam3r*>(element);
+      const Discret::ELEMENTS::Beam3r* beam3relement =
+          dynamic_cast<const Discret::ELEMENTS::Beam3r*>(element);
 
       if (fabs(beam3relement->GetKappaMax()) > kappa_max)
         kappa_max = fabs(beam3relement->GetKappaMax());
@@ -1277,9 +1278,9 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
  |  BTB, BTSOL and BTSPH contact pair vectors                grill 09/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
-    const std::vector<std::vector<CORE::Elements::Element*>> elementpairs)
+    const std::vector<std::vector<Core::Elements::Element*>> elementpairs)
 {
-  std::vector<std::vector<CORE::Elements::Element*>> formattedelementpairs;
+  std::vector<std::vector<Core::Elements::Element*>> formattedelementpairs;
   formattedelementpairs.clear();
 
   // Besides beam-to-beam contact we also can handle beam-to-solid contact and beam to sphere
@@ -1296,7 +1297,7 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
     // if ele1 is no beam element, but ele2 is one, we have to change the order
     else if (BEAMINTERACTION::UTILS::IsBeamElement(*(elementpairs[i])[1]))
     {
-      std::vector<CORE::Elements::Element*> elementpairaux;
+      std::vector<Core::Elements::Element*> elementpairaux;
       elementpairaux.clear();
       elementpairaux.push_back((elementpairs[i])[1]);
       elementpairaux.push_back((elementpairs[i])[0]);
@@ -1317,12 +1318,12 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
   if ((int)formattedelementpairs.size() > 0)
   {
     // search for the first beam element in vector pairs
-    const CORE::Elements::ElementType& pair1_ele1_type =
+    const Core::Elements::ElementType& pair1_ele1_type =
         ((formattedelementpairs[0])[0])->ElementType();
     for (int k = 0; k < (int)formattedelementpairs.size(); ++k)
     {
-      const CORE::Elements::ElementType& ele1_type = ((formattedelementpairs[k])[0])->ElementType();
-      const CORE::Elements::ElementType& ele2_type = ((formattedelementpairs[k])[1])->ElementType();
+      const Core::Elements::ElementType& ele1_type = ((formattedelementpairs[k])[0])->ElementType();
+      const Core::Elements::ElementType& ele2_type = ((formattedelementpairs[k])[1])->ElementType();
 
       // ele1 and ele2 (in case this is a beam element) have to be of the same type as ele1 of the
       // first pair
@@ -1346,8 +1347,8 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
   // beam-to-solid or beam-to-sphere pairs) need this history information.
   for (int k = 0; k < (int)formattedelementpairs.size(); k++)
   {
-    CORE::Elements::Element* ele1 = (formattedelementpairs[k])[0];
-    CORE::Elements::Element* ele2 = (formattedelementpairs[k])[1];
+    Core::Elements::Element* ele1 = (formattedelementpairs[k])[0];
+    Core::Elements::Element* ele2 = (formattedelementpairs[k])[1];
     int currid1 = ele1->Id();
     int currid2 = ele2->Id();
 
@@ -1438,8 +1439,8 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
   pdiscret_.Comm().SumAll(&numpairsthisproc, &numpairs, 1);
 
   if (pdiscret_.Comm().MyPID() == 0)
-    CORE::IO::cout(CORE::IO::standard)
-        << "\t Total number of BTB contact pairs:     " << numpairs << CORE::IO::endl;
+    Core::IO::cout(Core::IO::standard)
+        << "\t Total number of BTB contact pairs:     " << numpairs << Core::IO::endl;
 
   if (btsol_)
   {
@@ -1449,8 +1450,8 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
     pdiscret_.Comm().SumAll(&numpairsthisproc, &numpairs, 1);
 
     if (pdiscret_.Comm().MyPID() == 0)
-      CORE::IO::cout(CORE::IO::standard)
-          << "\t Total number of BTSOL contact pairs:    " << numpairs << CORE::IO::endl;
+      Core::IO::cout(Core::IO::standard)
+          << "\t Total number of BTSOL contact pairs:    " << numpairs << Core::IO::endl;
   }
 }
 
@@ -1459,9 +1460,9 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
  |  BTB, BTSOL and BTSPH potential pair vectors              grill 09/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
-    const std::vector<std::vector<CORE::Elements::Element*>> elementpairs)
+    const std::vector<std::vector<Core::Elements::Element*>> elementpairs)
 {
-  std::vector<std::vector<CORE::Elements::Element*>> formattedelementpairs;
+  std::vector<std::vector<Core::Elements::Element*>> formattedelementpairs;
   formattedelementpairs.clear();
 
   // Besides beam-to-beam potentials, we can also handle beam to sphere potentials
@@ -1479,7 +1480,7 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
     // if ele1 is no beam element, but ele2 is one, we have to change the order
     else if (BEAMINTERACTION::UTILS::IsBeamElement(*(elementpairs[i])[1]))
     {
-      std::vector<CORE::Elements::Element*> elementpairaux;
+      std::vector<Core::Elements::Element*> elementpairaux;
       elementpairaux.clear();
       elementpairaux.push_back((elementpairs[i])[1]);
       elementpairaux.push_back((elementpairs[i])[0]);
@@ -1496,18 +1497,18 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
   // Create Beam3tobeampotentialinterface instances in the btbpotpairs_ vector
   for (int k = 0; k < (int)formattedelementpairs.size(); k++)
   {
-    CORE::Elements::Element* ele1 = (formattedelementpairs[k])[0];
-    CORE::Elements::Element* ele2 = (formattedelementpairs[k])[1];
+    Core::Elements::Element* ele1 = (formattedelementpairs[k])[0];
+    Core::Elements::Element* ele2 = (formattedelementpairs[k])[1];
 
     // get the conditions applied to both elements of the pair and decide whether they need to be
     // evaluated
-    std::vector<CORE::Conditions::Condition*> conds1, conds2;
+    std::vector<Core::Conditions::Condition*> conds1, conds2;
 
     // since only the nodes know about their conditions, we need this workaround
     // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it
     // is sufficient to check only one node
-    CORE::Nodes::Node** nodes1;
-    CORE::Nodes::Node** nodes2;
+    Core::Nodes::Node** nodes1;
+    Core::Nodes::Node** nodes2;
     nodes1 = ele1->Nodes();
     nodes2 = ele2->Nodes();
 
@@ -1566,8 +1567,8 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
 /*----------------------------------------------------------------------*
  |  search possible contact element pairs                     popp 04/10|
  *----------------------------------------------------------------------*/
-std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute_force_search(
-    std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const double searchradius,
+std::vector<std::vector<Core::Elements::Element*>> CONTACT::Beam3cmanager::brute_force_search(
+    std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, const double searchradius,
     const double sphericalsearchradius)
 {
   //**********************************************************************
@@ -1581,7 +1582,7 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
   // NOTE: This is a brute force search! The time to search across n nodes
   // goes with n^2, which is not efficient at all....
   //**********************************************************************
-  std::vector<std::vector<CORE::Elements::Element*>> newpairs;
+  std::vector<std::vector<Core::Elements::Element*>> newpairs;
   newpairs.clear();
 
   //**********************************************************************
@@ -1593,7 +1594,7 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
   {
     // get global id, node itself and current position
     int firstgid = ColNodes()->GID(i);
-    CORE::Nodes::Node* firstnode = BTSolDiscret().gNode(firstgid);
+    Core::Nodes::Node* firstnode = BTSolDiscret().gNode(firstgid);
 
     // TODO see also LOOP 2 below
     /* check whether node position has been stored in currentpositions previously;
@@ -1612,7 +1613,7 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
       }
     }
 
-    CORE::LINALG::Matrix<3, 1> firstpos = currentpositions[firstgid];
+    Core::LinAlg::Matrix<3, 1> firstpos = currentpositions[firstgid];
 
     // create storage for neighbouring nodes to be excluded.
     std::vector<int> neighbournodeids(0);
@@ -1620,11 +1621,11 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
     std::vector<int> NearNodesGIDs;
 
     // get the elements 'firstnode' is linked to
-    CORE::Elements::Element** neighboureles = firstnode->Elements();
+    Core::Elements::Element** neighboureles = firstnode->Elements();
     // loop over all adjacent elements and their nodes
     for (int j = 0; j < firstnode->NumElement(); ++j)
     {
-      CORE::Elements::Element* thisele = neighboureles[j];
+      Core::Elements::Element* thisele = neighboureles[j];
       for (int k = 0; k < thisele->num_node(); ++k)
       {
         int nodeid = thisele->NodeIds()[k];
@@ -1646,7 +1647,7 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
       // TODO see comment above
       if (currentpositions.find(secondgid) == currentpositions.end()) continue;
 
-      CORE::LINALG::Matrix<3, 1> secondpos = currentpositions[secondgid];
+      Core::LinAlg::Matrix<3, 1> secondpos = currentpositions[secondgid];
 
       // nothing to do for identical pair
       if (firstgid == secondgid) continue;
@@ -1664,7 +1665,7 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
       // compute distance by comparing firstpos <-> secondpos
       if (neighbouring == false)
       {
-        CORE::LINALG::Matrix<3, 1> distance;
+        Core::LinAlg::Matrix<3, 1> distance;
         for (int k = 0; k < 3; k++) distance(k) = secondpos(k) - firstpos(k);
 
         // nodes are near if distance < search radius
@@ -1691,7 +1692,7 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
     for (int j = 0; j < firstnode->NumElement(); ++j)
     {
       // element pointer
-      CORE::Elements::Element* ele1 = neighboureles[j];
+      Core::Elements::Element* ele1 = neighboureles[j];
 
       // insert into element vector
       FirstElesGIDs.push_back(ele1->Id());
@@ -1701,15 +1702,15 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
     for (int j = 0; j < (int)NearNodesGIDs.size(); ++j)
     {
       // node pointer
-      CORE::Nodes::Node* tempnode = BTSolDiscret().gNode(NearNodesGIDs[j]);
+      Core::Nodes::Node* tempnode = BTSolDiscret().gNode(NearNodesGIDs[j]);
       // getting the elements tempnode is linked to
-      CORE::Elements::Element** TempEles = tempnode->Elements();
+      Core::Elements::Element** TempEles = tempnode->Elements();
 
       // loop over all elements adjacent to tempnode
       for (int k = 0; k < tempnode->NumElement(); ++k)
       {
         // element pointer
-        CORE::Elements::Element* ele2 = TempEles[k];
+        Core::Elements::Element* ele2 = TempEles[k];
         // insert into element vector
         SecondElesGIDs.push_back(ele2->Id());
       }
@@ -1748,7 +1749,7 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
     for (int j = 0; j < (int)FirstElesGIDs.size(); ++j)
     {
       // beam element pointer
-      CORE::Elements::Element* ele1 = BTSolDiscret().gElement(FirstElesGIDs[j]);
+      Core::Elements::Element* ele1 = BTSolDiscret().gElement(FirstElesGIDs[j]);
 
       // node ids adjacent to this element
       const int* NodesEle1 = ele1->NodeIds();
@@ -1757,7 +1758,7 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
       for (int k = 0; k < (int)SecondElesGIDsRej.size(); ++k)
       {
         // get and cast a pointer on an element
-        CORE::Elements::Element* ele2 = BTSolDiscret().gElement(SecondElesGIDsRej[k]);
+        Core::Elements::Element* ele2 = BTSolDiscret().gElement(SecondElesGIDsRej[k]);
 
         // close element id
         const int* NodesEle2 = ele2->NodeIds();
@@ -1798,7 +1799,7 @@ std::vector<std::vector<CORE::Elements::Element*>> CONTACT::Beam3cmanager::brute
         if (!elements_neighbouring && !foundbefore &&
             close_midpoint_distance(ele1, ele2, currentpositions, sphericalsearchradius))
         {
-          std::vector<CORE::Elements::Element*> contactelementpair;
+          std::vector<Core::Elements::Element*> contactelementpair;
           contactelementpair.clear();
           if (ele1->Id() < ele2->Id())
           {
@@ -1886,7 +1887,7 @@ void CONTACT::Beam3cmanager::set_min_max_ele_radius()
   {
     // get pointer onto element
     int gid = RowElements()->GID(i);
-    CORE::Elements::Element* thisele = BTSolDiscret().gElement(gid);
+    Core::Elements::Element* thisele = BTSolDiscret().gElement(gid);
 
     double eleradius = 0.0;
 
@@ -1925,7 +1926,7 @@ void CONTACT::Beam3cmanager::get_max_ele_length(double& maxelelength)
   {
     // get pointer onto element
     int gid = RowElements()->GID(i);
-    CORE::Elements::Element* thisele = BTSolDiscret().gElement(gid);
+    Core::Elements::Element* thisele = BTSolDiscret().gElement(gid);
 
     double elelength = 0.0;
 
@@ -1934,8 +1935,8 @@ void CONTACT::Beam3cmanager::get_max_ele_length(double& maxelelength)
       // get global IDs of edge nodes and pointers
       int node0_gid = thisele->NodeIds()[0];
       int node1_gid = thisele->NodeIds()[1];
-      CORE::Nodes::Node* node0 = BTSolDiscret().gNode(node0_gid);
-      CORE::Nodes::Node* node1 = BTSolDiscret().gNode(node1_gid);
+      Core::Nodes::Node* node0 = BTSolDiscret().gNode(node0_gid);
+      Core::Nodes::Node* node1 = BTSolDiscret().gNode(node1_gid);
 
       // get coordinates of edge nodes
       std::vector<double> x_n0(3);
@@ -1994,7 +1995,7 @@ void CONTACT::Beam3cmanager::Update(
 
   // If the original gap function definition is applied, the displacement per time is not allowed
   // to be larger than the smalles beam cross section radius occurring in the discretization!
-  bool newgapfunction = CORE::UTILS::IntegralValue<int>(beam_contact_parameters(), "BEAMS_NEWGAP");
+  bool newgapfunction = Core::UTILS::IntegralValue<int>(beam_contact_parameters(), "BEAMS_NEWGAP");
   if (!newgapfunction)
   {
     double maxdeltadisscalefac = sbeamcontact_.get<double>("BEAMS_MAXDELTADISSCALEFAC", 1.0);
@@ -2034,7 +2035,7 @@ void CONTACT::Beam3cmanager::Update(
         // afterwards. Otherwise the contact force would be applied in the wrong direction and the
         // beams could cross!
         pairs_[i]->InvertNormal();
-        Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
+        Teuchos::ParameterList ioparams = Global::Problem::Instance()->IOParams();
         if (!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY", 0))
           std::cout << "      Warning: Penetration to large, choose higher penalty parameter!"
                     << std::endl;
@@ -2324,33 +2325,34 @@ void CONTACT::Beam3cmanager::GmshOutput(
       for (int i = 0; i < FullElements()->NumMyElements(); ++i)
       {
         // get pointer onto current beam element
-        CORE::Elements::Element* element = BTSolDiscret().lColElement(i);
+        Core::Elements::Element* element = BTSolDiscret().lColElement(i);
 
         // write output in specific function
-        const CORE::Elements::ElementType& eot = element->ElementType();
+        const Core::Elements::ElementType& eot = element->ElementType();
 
         // no output for solid elements here
-        if (eot != DRT::ELEMENTS::Beam3ebType::Instance() and
-            eot != DRT::ELEMENTS::Beam3rType::Instance() and
-            eot != DRT::ELEMENTS::Beam3kType::Instance() and
-            eot != DRT::ELEMENTS::RigidsphereType::Instance())
+        if (eot != Discret::ELEMENTS::Beam3ebType::Instance() and
+            eot != Discret::ELEMENTS::Beam3rType::Instance() and
+            eot != Discret::ELEMENTS::Beam3kType::Instance() and
+            eot != Discret::ELEMENTS::RigidsphereType::Instance())
           continue;
 
         //**********
         // BEAM3R
         //**********
         // standard procedure for Reissner beams or rigid spheres
-        if (eot == DRT::ELEMENTS::Beam3rType::Instance() or
-            eot == DRT::ELEMENTS::RigidsphereType::Instance())
+        if (eot == Discret::ELEMENTS::Beam3rType::Instance() or
+            eot == Discret::ELEMENTS::RigidsphereType::Instance())
         {
           //*******************************************************************
           // special output for BEAM3r with Hermite center line interpolation
           //*******************************************************************
           bool done = false;
-          if (eot == DRT::ELEMENTS::Beam3rType::Instance())
+          if (eot == Discret::ELEMENTS::Beam3rType::Instance())
           {
             // this cast is necessary in order to use the method ->Tref() and others
-            const DRT::ELEMENTS::Beam3r* ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(element);
+            const Discret::ELEMENTS::Beam3r* ele =
+                dynamic_cast<const Discret::ELEMENTS::Beam3r*>(element);
 
             if (ele->hermite_centerline_interpolation())
             {
@@ -2358,13 +2360,13 @@ void CONTACT::Beam3cmanager::GmshOutput(
               done = true;
 
               // this cast is necessary in order to use the method ->Tref()
-              const DRT::ELEMENTS::Beam3r* ele =
-                  dynamic_cast<const DRT::ELEMENTS::Beam3r*>(element);
+              const Discret::ELEMENTS::Beam3r* ele =
+                  dynamic_cast<const Discret::ELEMENTS::Beam3r*>(element);
 
               int nnodescl = 2;
-              CORE::LINALG::SerialDenseMatrix nodalcoords(3, nnodescl);
-              CORE::LINALG::SerialDenseMatrix nodaltangents(3, nnodescl);
-              CORE::LINALG::SerialDenseMatrix coord(3, n_axial);
+              Core::LinAlg::SerialDenseMatrix nodalcoords(3, nnodescl);
+              Core::LinAlg::SerialDenseMatrix nodaltangents(3, nnodescl);
+              Core::LinAlg::SerialDenseMatrix coord(3, n_axial);
 
               // compute current nodal positions (center line only)
               for (int i = 0; i < 3; ++i)
@@ -2397,7 +2399,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
                       i * 2.0 /
                           (n_axial -
                               1);  // parameter coordinate of position vector on beam centerline
-                  CORE::LINALG::Matrix<3, 1> r;
+                  Core::LinAlg::Matrix<3, 1> r;
                   ele->GetPosAtXi(r, xi, disp_totlag);  // position vector on beam centerline
 
                   for (int j = 0; j < 3; j++) coord(j, i) = r(j);
@@ -2421,7 +2423,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
           {
             // prepare storage for nodal coordinates
             int nnodes = element->num_node();
-            CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
+            Core::LinAlg::SerialDenseMatrix coord(3, nnodes);
 
             // compute current nodal positions
             for (int id = 0; id < 3; ++id)
@@ -2476,15 +2478,16 @@ void CONTACT::Beam3cmanager::GmshOutput(
         // BEAM3EB
         //**********
         // initially straight torsion-free Kirchhoff beams need a special treatment
-        else if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
+        else if (eot == Discret::ELEMENTS::Beam3ebType::Instance())
         {
           // this cast is necessary in order to use the method ->Tref()
-          const DRT::ELEMENTS::Beam3eb* ele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(element);
+          const Discret::ELEMENTS::Beam3eb* ele =
+              dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(element);
           // prepare storage for nodal coordinates
           int nnodes = element->num_node();
-          CORE::LINALG::SerialDenseMatrix nodalcoords(3, nnodes);
-          CORE::LINALG::SerialDenseMatrix nodaltangents(3, nnodes);
-          CORE::LINALG::SerialDenseMatrix coord(3, n_axial);
+          Core::LinAlg::SerialDenseMatrix nodalcoords(3, nnodes);
+          Core::LinAlg::SerialDenseMatrix nodaltangents(3, nnodes);
+          Core::LinAlg::SerialDenseMatrix coord(3, n_axial);
 
           // compute current nodal positions
           for (int i = 0; i < 3; ++i)
@@ -2516,7 +2519,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
             {
               // parameter coordinate of position vector on beam centerline
               double xi = -1.0 + i * 2.0 / (n_axial - 1);
-              CORE::LINALG::Matrix<3, 1> r;
+              Core::LinAlg::Matrix<3, 1> r;
               ele->GetPosAtXi(r, xi, disp_totlag);  // position vector on beam centerline
 
               for (int j = 0; j < 3; j++) coord(j, i) = r(j);
@@ -2536,15 +2539,16 @@ void CONTACT::Beam3cmanager::GmshOutput(
         // BEAM3K
         //**********
         // full strong/weak Kirchhoff beams need a special treatment
-        else if (eot == DRT::ELEMENTS::Beam3kType::Instance())
+        else if (eot == Discret::ELEMENTS::Beam3kType::Instance())
         {
           // this cast is necessary in order to use the method ->Tref()
-          const DRT::ELEMENTS::Beam3k* ele = dynamic_cast<const DRT::ELEMENTS::Beam3k*>(element);
+          const Discret::ELEMENTS::Beam3k* ele =
+              dynamic_cast<const Discret::ELEMENTS::Beam3k*>(element);
           // prepare storage for nodal coordinates
           int nnodes = element->num_node();
-          CORE::LINALG::SerialDenseMatrix nodalcoords(3, nnodes);
-          CORE::LINALG::SerialDenseMatrix nodaltangents(3, nnodes);
-          CORE::LINALG::SerialDenseMatrix coord(3, n_axial);
+          Core::LinAlg::SerialDenseMatrix nodalcoords(3, nnodes);
+          Core::LinAlg::SerialDenseMatrix nodaltangents(3, nnodes);
+          Core::LinAlg::SerialDenseMatrix coord(3, n_axial);
 
           // compute current nodal positions
           for (int i = 0; i < 3; ++i)
@@ -2574,15 +2578,15 @@ void CONTACT::Beam3cmanager::GmshOutput(
           if (ele->RotVec())
           {
             // compute tangents from rotation vectors
-            CORE::LINALG::Matrix<3, 1> theta;
-            CORE::LINALG::Matrix<3, 3> R;
+            Core::LinAlg::Matrix<3, 1> theta;
+            Core::LinAlg::Matrix<3, 3> R;
             for (int j = 0; j < element->num_node(); ++j)
             {
               theta(0) = nodaltangents(0, j);
               theta(1) = nodaltangents(1, j);
               theta(2) = nodaltangents(2, j);
               R.Clear();
-              CORE::LARGEROTATIONS::angletotriad(theta, R);
+              Core::LargeRotations::angletotriad(theta, R);
               std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
               double lt = disccol[BTSolDiscret().DofColMap()->LID(dofnode[6])];
               nodaltangents(0, j) = (1.0 + lt) * R(0, 0);
@@ -2612,7 +2616,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
                   -1.0 +
                   i * 2.0 /
                       (n_axial - 1);  // parameter coordinate of position vector on beam centerline
-              CORE::LINALG::Matrix<3, 1> r;
+              Core::LinAlg::Matrix<3, 1> r;
               ele->GetPosAtXi(r, xi, disp_totlag);  // position vector on beam centerline
 
               for (int j = 0; j < 3; j++) coord(j, i) = r(j);
@@ -2640,17 +2644,17 @@ void CONTACT::Beam3cmanager::GmshOutput(
       // loop over pairs vector in order to print normal vector
       for (int i = 0; i < (int)pairs_.size(); ++i)
       {
-        std::vector<CORE::LINALG::Matrix<3, 1>> r1_vec = pairs_[i]->GetX1();
-        std::vector<CORE::LINALG::Matrix<3, 1>> r2_vec = pairs_[i]->GetX2();
+        std::vector<Core::LinAlg::Matrix<3, 1>> r1_vec = pairs_[i]->GetX1();
+        std::vector<Core::LinAlg::Matrix<3, 1>> r2_vec = pairs_[i]->GetX2();
         std::vector<double> contactforce = pairs_[i]->GetContactForce();
 
         int numcps = pairs_[i]->GetNumCps();
 
         for (int j = 0; j < (int)r1_vec.size(); j++)
         {
-          CORE::LINALG::Matrix<3, 1> normal(true);
-          CORE::LINALG::Matrix<3, 1> r1(true);
-          CORE::LINALG::Matrix<3, 1> r2(true);
+          Core::LinAlg::Matrix<3, 1> normal(true);
+          Core::LinAlg::Matrix<3, 1> r1(true);
+          Core::LinAlg::Matrix<3, 1> r2(true);
 
           double fac = 1.0;
           double color = 1.0;
@@ -2696,7 +2700,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
       for (int i = 0; i < ProblemDiscret().NumMyColElements(); ++i)
       {
         // Get pointer onto current beam element
-        CORE::Elements::Element* element = ProblemDiscret().lColElement(i);
+        Core::Elements::Element* element = ProblemDiscret().lColElement(i);
 
         if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
         {
@@ -2707,7 +2711,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
       for (int i = 0; i < BTSolDiscret().NumMyColElements(); ++i)
       {
         // Get pointer onto current beam element
-        CORE::Elements::Element* element = BTSolDiscret().lColElement(i);
+        Core::Elements::Element* element = BTSolDiscret().lColElement(i);
 
         if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
         {
@@ -2721,15 +2725,15 @@ void CONTACT::Beam3cmanager::GmshOutput(
       // for creating an unique filename if contact forces should be written in a text file
 
       // Get number of Gauss points used for one contact interval
-      const int numgp = CORE::FE::IntegrationPoints1D(DRT::UTILS::GAUSSRULE).nquad;
+      const int numgp = Core::FE::IntegrationPoints1D(Discret::UTILS::GAUSSRULE).nquad;
 
       // Get moment of inertia
       // double Iyy1 = 0.0;
       // if ((int)btsolpairs_.size() > 0)
       //{
-      //  CORE::Elements::Element* element1 =
-      //  const_cast<CORE::Elements::Element*>(btsolpairs_[0]->Element1()); Iyy1 =
-      //  (dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element1))->MomentOfInertiaY();
+      //  Core::Elements::Element* element1 =
+      //  const_cast<Core::Elements::Element*>(btsolpairs_[0]->Element1()); Iyy1 =
+      //  (dynamic_cast<Discret::ELEMENTS::Beam3eb*>(element1))->MomentOfInertiaY();
       //}
 
       // Get number of beam elements and surface elements on contact surface
@@ -2737,7 +2741,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
       int numele2 = 0;
       for (int i = 0; i < ColElements()->NumMyElements(); ++i)
       {
-        CORE::Elements::Element* element = BTSolDiscret().lColElement(i);
+        Core::Elements::Element* element = BTSolDiscret().lColElement(i);
         if (BEAMCONTACT::UTILS::IsBeamElement(*element))
           numele1++;
         else
@@ -2748,24 +2752,24 @@ void CONTACT::Beam3cmanager::GmshOutput(
       std::string shape2 = "unknown";
       if ((int)btsolpairs_.size() > 0)
       {
-        CORE::Elements::Element* element2 =
-            const_cast<CORE::Elements::Element*>(btsolpairs_[0]->Element2());
+        Core::Elements::Element* element2 =
+            const_cast<Core::Elements::Element*>(btsolpairs_[0]->Element2());
 
         switch (element2->Shape())
         {
-          case CORE::FE::CellType::tri3:
+          case Core::FE::CellType::tri3:
             shape2 = "tri3";
             break;
-          case CORE::FE::CellType::tri6:
+          case Core::FE::CellType::tri6:
             shape2 = "tri6";
             break;
-          case CORE::FE::CellType::quad4:
+          case Core::FE::CellType::quad4:
             shape2 = "quad4";
             break;
-          case CORE::FE::CellType::quad8:
+          case Core::FE::CellType::quad8:
             shape2 = "quad8";
             break;
-          case CORE::FE::CellType::quad9:
+          case Core::FE::CellType::quad9:
             shape2 = "quad9";
             break;
           default:
@@ -2969,7 +2973,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
   for (int i = 0; i < ProblemDiscret().NumMyColElements(); ++i)
   {
     // Get pointer onto current beam element
-    CORE::Elements::Element* element = ProblemDiscret().lColElement(i);
+    Core::Elements::Element* element = ProblemDiscret().lColElement(i);
 
     if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
     {
@@ -3039,21 +3043,21 @@ void CONTACT::Beam3cmanager::GmshOutput(
  |  Compute rotation matrix R                                cyron 01/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::transform_angle_to_triad(
-    CORE::LINALG::SerialDenseVector& theta, CORE::LINALG::SerialDenseMatrix& R)
+    Core::LinAlg::SerialDenseVector& theta, Core::LinAlg::SerialDenseMatrix& R)
 {
   // compute spin matrix according to Crisfield Vol. 2, equation (16.8)
-  CORE::LINALG::SerialDenseMatrix spin(3, 3);
+  Core::LinAlg::SerialDenseMatrix spin(3, 3);
   compute_spin(spin, theta);
 
   // nompute norm of theta
-  double theta_abs = CORE::LINALG::Norm2(theta);
+  double theta_abs = Core::LinAlg::Norm2(theta);
 
   // build an identity matrix
-  CORE::LINALG::SerialDenseMatrix identity(3, 3);
+  Core::LinAlg::SerialDenseMatrix identity(3, 3);
   for (int i = 0; i < 3; i++) identity(i, i) = 1.0;
 
   // square of spin matrix
-  CORE::LINALG::SerialDenseMatrix spin2(3, 3);
+  Core::LinAlg::SerialDenseMatrix spin2(3, 3);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       for (int k = 0; k < 3; k++) spin2(i, k) += spin(i, j) * spin(j, k);
@@ -3072,7 +3076,7 @@ void CONTACT::Beam3cmanager::transform_angle_to_triad(
  |  Compute spin (private)                                    cyron 01/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::compute_spin(
-    CORE::LINALG::SerialDenseMatrix& spin, CORE::LINALG::SerialDenseVector& rotationangle)
+    Core::LinAlg::SerialDenseMatrix& spin, Core::LinAlg::SerialDenseVector& rotationangle)
 {
   // initialization
   const double spinscale = 1.0;
@@ -3256,40 +3260,40 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
   btsolconstrnorm_ = 0.0;
 
   // print results to screen
-  Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
+  Teuchos::ParameterList ioparams = Global::Problem::Instance()->IOParams();
   if (Comm().MyPID() == 0 && ioparams.get<int>("STDOUTEVRY", 0))
   {
-    CORE::IO::cout(CORE::IO::debug)
-        << CORE::IO::endl
+    Core::IO::cout(Core::IO::debug)
+        << Core::IO::endl
         << "      ***********************************BTB************************************"
-        << CORE::IO::endl;
-    CORE::IO::cout(CORE::IO::debug)
-        << "      Penalty parameter                = " << currentpp_ << CORE::IO::endl;
-    CORE::IO::cout(CORE::IO::debug)
-        << "      Minimal current Gap              = " << minallgap << CORE::IO::endl;
-    CORE::IO::cout(CORE::IO::debug)
-        << "      Minimal current rel. Gap         = " << minallrelgap << CORE::IO::endl;
-    CORE::IO::cout(CORE::IO::debug)
-        << "      Current Constraint Norm          = " << constrnorm_ << CORE::IO::endl;
-    CORE::IO::cout(CORE::IO::debug)
-        << "      Maximal current Gap              = " << maxallgap << CORE::IO::endl;
-    CORE::IO::cout(CORE::IO::debug)
-        << "      Maximal current rel. Gap         = " << maxallrelgap << CORE::IO::endl;
+        << Core::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << "      Penalty parameter                = " << currentpp_ << Core::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << "      Minimal current Gap              = " << minallgap << Core::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << "      Minimal current rel. Gap         = " << minallrelgap << Core::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << "      Current Constraint Norm          = " << constrnorm_ << Core::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << "      Maximal current Gap              = " << maxallgap << Core::IO::endl;
+    Core::IO::cout(Core::IO::debug)
+        << "      Maximal current rel. Gap         = " << maxallrelgap << Core::IO::endl;
 
     if ((int)btsolpairs_.size())
     {
-      CORE::IO::cout(CORE::IO::debug)
-          << CORE::IO::endl
+      Core::IO::cout(Core::IO::debug)
+          << Core::IO::endl
           << "      ***********************************BTSOL**********************************"
-          << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::debug)
-          << "      BTSOL-Penalty parameter     = " << btspp_ << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::debug)
-          << "      Current Constraint Norm   = " << btsolconstrnorm_ << CORE::IO::endl;
+          << Core::IO::endl;
+      Core::IO::cout(Core::IO::debug)
+          << "      BTSOL-Penalty parameter     = " << btspp_ << Core::IO::endl;
+      Core::IO::cout(Core::IO::debug)
+          << "      Current Constraint Norm   = " << btsolconstrnorm_ << Core::IO::endl;
     }
-    CORE::IO::cout(CORE::IO::debug)
+    Core::IO::cout(Core::IO::debug)
         << "      **************************************************************************"
-        << CORE::IO::endl;
+        << Core::IO::endl;
   }
 
   return;
@@ -3312,16 +3316,16 @@ void CONTACT::Beam3cmanager::UpdateAllPairs()
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::ConsoleOutput()
 {
-  Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
+  Teuchos::ParameterList ioparams = Global::Problem::Instance()->IOParams();
   if (ioparams.get<int>("STDOUTEVRY", 0))
   {
     // begin output
     if (Comm().MyPID() == 0)
     {
-      CORE::IO::cout(CORE::IO::verbose)
+      Core::IO::cout(Core::IO::verbose)
           << "\n    Active contact "
              "set------------------------------------------------------------\n";
-      CORE::IO::cout(CORE::IO::verbose)
+      Core::IO::cout(Core::IO::verbose)
           << "    ID1            ID2              T xi       eta      angle    gap         force\n";
     }
     Comm().Barrier();
@@ -3444,7 +3448,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
               numepc++;
             }
 
-            CORE::IO::cout(CORE::IO::verbose)
+            Core::IO::cout(Core::IO::verbose)
                 << "    " << std::setw(5) << std::left << id1 << "(" << std::setw(3) << std::right
                 << segmentids[j].first + 1 << "/" << std::setw(3) << numsegments.first << ")"
                 << " " << std::setw(5) << std::left << id2 << "(" << std::setw(3) << std::right
@@ -3455,8 +3459,8 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
                 << angles[j] / M_PI * 180.0 << std::setw(12) << std::left << std::scientific
                 << gaps[j] << std::setw(12) << std::left << std::scientific << forces[j]
                 << std::setprecision(6) << std::resetiosflags(std::ios::scientific) << std::right
-                << CORE::IO::endl
-                << CORE::IO::flush;
+                << Core::IO::endl
+                << Core::IO::flush;
           }
         }
       }
@@ -3566,67 +3570,67 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
 #endif
 
     // print results to screen
-    Teuchos::ParameterList ioparams = GLOBAL::Problem::Instance()->IOParams();
+    Teuchos::ParameterList ioparams = Global::Problem::Instance()->IOParams();
     if (Comm().MyPID() == 0 && ioparams.get<int>("STDOUTEVRY", 0))
     {
-      CORE::IO::cout(CORE::IO::standard)
-          << "\n    Number of Point-to-Point Contact Pairs: " << sumpro_numperpc << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose)
+      Core::IO::cout(Core::IO::standard)
+          << "\n    Number of Point-to-Point Contact Pairs: " << sumpro_numperpc << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
           << "    Number of Point Contacts in Transition Range: " << sumpro_numperpc_transitions
-          << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::standard)
-          << "    Number of Line-to-Line Contact Pairs: " << sumpro_numparc << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::standard)
-          << "    Number of Endpoint Contact Pairs: " << sumpro_numepc << CORE::IO::endl;
+          << Core::IO::endl;
+      Core::IO::cout(Core::IO::standard)
+          << "    Number of Line-to-Line Contact Pairs: " << sumpro_numparc << Core::IO::endl;
+      Core::IO::cout(Core::IO::standard)
+          << "    Number of Endpoint Contact Pairs: " << sumpro_numepc << Core::IO::endl;
 
-      CORE::IO::cout(CORE::IO::verbose)
-          << "    Minimal contact angle: " << sumpro_minangle << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose)
-          << "    Maximal contact angle: " << sumpro_maxangle << CORE::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
+          << "    Minimal contact angle: " << sumpro_minangle << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
+          << "    Maximal contact angle: " << sumpro_maxangle << Core::IO::endl;
 
-      CORE::IO::cout(CORE::IO::verbose)
-          << "    Minimal current Point-to-Point gap: " << sumpro_mincpgap << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose)
-          << "    Minimal current Line-to-Line gap: " << sumpro_mingpgap << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose)
-          << "    Minimal current Endpoint gap: " << sumpro_minepgap << CORE::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
+          << "    Minimal current Point-to-Point gap: " << sumpro_mincpgap << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
+          << "    Minimal current Line-to-Line gap: " << sumpro_mingpgap << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
+          << "    Minimal current Endpoint gap: " << sumpro_minepgap << Core::IO::endl;
 
-      CORE::IO::cout(CORE::IO::standard)
-          << "    Minimal total Point-to-Point Gap = " << mintotalsimgap_cp_ << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::standard)
-          << "    Minimal total Line-to-Line Gap   = " << mintotalsimgap_gp_ << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::standard)
-          << "    Minimal total Endpoint Gap       = " << mintotalsimgap_ep_ << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose)
-          << "    Minimal total rel. Gap           = " << mintotalsimrelgap_ << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose)
-          << "    Minimal total unconv. Gap        = " << mintotalsimunconvgap_ << CORE::IO::endl;
+      Core::IO::cout(Core::IO::standard)
+          << "    Minimal total Point-to-Point Gap = " << mintotalsimgap_cp_ << Core::IO::endl;
+      Core::IO::cout(Core::IO::standard)
+          << "    Minimal total Line-to-Line Gap   = " << mintotalsimgap_gp_ << Core::IO::endl;
+      Core::IO::cout(Core::IO::standard)
+          << "    Minimal total Endpoint Gap       = " << mintotalsimgap_ep_ << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
+          << "    Minimal total rel. Gap           = " << mintotalsimrelgap_ << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
+          << "    Minimal total unconv. Gap        = " << mintotalsimunconvgap_ << Core::IO::endl;
 
-      CORE::IO::cout(CORE::IO::debug)
-          << "    Maximal current Point-to-Point gap: " << sumpro_maxcpgap << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::debug)
-          << "    Maximal current Line-to-Line gap: " << sumpro_maxgpgap << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::debug)
-          << "    Maximal current Endpoint gap: " << sumpro_maxepgap << CORE::IO::endl;
+      Core::IO::cout(Core::IO::debug)
+          << "    Maximal current Point-to-Point gap: " << sumpro_maxcpgap << Core::IO::endl;
+      Core::IO::cout(Core::IO::debug)
+          << "    Maximal current Line-to-Line gap: " << sumpro_maxgpgap << Core::IO::endl;
+      Core::IO::cout(Core::IO::debug)
+          << "    Maximal current Endpoint gap: " << sumpro_maxepgap << Core::IO::endl;
 
-      CORE::IO::cout(CORE::IO::debug)
-          << "    Maximal total Point-to-Point Gap = " << maxtotalsimgap_cp_ << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::debug)
-          << "    Maximal total Line-to-Line Gap   = " << maxtotalsimgap_gp_ << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::debug)
-          << "    Maximal total Endpoint Gap       = " << maxtotalsimgap_ep_ << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::debug)
-          << "    Maximal total rel. Gap           = " << maxtotalsimrelgap_ << CORE::IO::endl;
+      Core::IO::cout(Core::IO::debug)
+          << "    Maximal total Point-to-Point Gap = " << maxtotalsimgap_cp_ << Core::IO::endl;
+      Core::IO::cout(Core::IO::debug)
+          << "    Maximal total Line-to-Line Gap   = " << maxtotalsimgap_gp_ << Core::IO::endl;
+      Core::IO::cout(Core::IO::debug)
+          << "    Maximal total Endpoint Gap       = " << maxtotalsimgap_ep_ << Core::IO::endl;
+      Core::IO::cout(Core::IO::debug)
+          << "    Maximal total rel. Gap           = " << maxtotalsimrelgap_ << Core::IO::endl;
 
-      CORE::IO::cout(CORE::IO::debug)
-          << "    global_kappa_max_: " << global_kappa_max_ << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::debug)
-          << "    contactevaluationtime_: " << contactevaluationtime_ << CORE::IO::endl;
+      Core::IO::cout(Core::IO::debug)
+          << "    global_kappa_max_: " << global_kappa_max_ << Core::IO::endl;
+      Core::IO::cout(Core::IO::debug)
+          << "    contactevaluationtime_: " << contactevaluationtime_ << Core::IO::endl;
     }
 
     // end output
     Comm().Barrier();
-    if (Comm().MyPID() == 0) CORE::IO::cout(CORE::IO::standard) << CORE::IO::endl;
+    if (Comm().MyPID() == 0) Core::IO::cout(Core::IO::standard) << Core::IO::endl;
   }
   return;
 }
@@ -3635,17 +3639,17 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
  |  Compute gmsh output for 2-noded elements (private)        popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_2_noded(const int& n,
-    const CORE::LINALG::SerialDenseMatrix& coord, const CORE::Elements::Element* thisele,
+    const Core::LinAlg::SerialDenseMatrix& coord, const Core::Elements::Element* thisele,
     std::stringstream& gmshfilecontent)
 {
   // some local variables
-  CORE::LINALG::SerialDenseMatrix prism(3, 6);
-  CORE::LINALG::SerialDenseVector axis(3);
-  CORE::LINALG::SerialDenseVector radiusvec1(3);
-  CORE::LINALG::SerialDenseVector radiusvec2(3);
-  CORE::LINALG::SerialDenseVector auxvec(3);
-  CORE::LINALG::SerialDenseVector theta(3);
-  CORE::LINALG::SerialDenseMatrix R(3, 3);
+  Core::LinAlg::SerialDenseMatrix prism(3, 6);
+  Core::LinAlg::SerialDenseVector axis(3);
+  Core::LinAlg::SerialDenseVector radiusvec1(3);
+  Core::LinAlg::SerialDenseVector radiusvec2(3);
+  Core::LinAlg::SerialDenseVector auxvec(3);
+  Core::LinAlg::SerialDenseVector theta(3);
+  Core::LinAlg::SerialDenseMatrix R(3, 3);
 
   double eleradius = BEAMINTERACTION::CalcEleRadius(thisele);
 
@@ -3676,7 +3680,7 @@ void CONTACT::Beam3cmanager::gmsh_2_noded(const int& n,
 
   // compute three dimensional angle theta
   for (int j = 0; j < theta.length(); ++j) axis[j] = coord(j, 1) - coord(j, 0);
-  double norm_axis = CORE::LINALG::Norm2(axis);
+  double norm_axis = Core::LinAlg::Norm2(axis);
   for (int j = 0; j < axis.length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
   // Compute rotation matirx R
@@ -3710,18 +3714,18 @@ void CONTACT::Beam3cmanager::gmsh_2_noded(const int& n,
   // get first point on surface for node1 and node2
   for (int j = 0; j < 3; ++j)
   {
-    prism(j, 1) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
-    prism(j, 4) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
+    prism(j, 1) += radiusvec1[j] / Core::LinAlg::Norm2(radiusvec1) * eleradius;
+    prism(j, 4) += radiusvec1[j] / Core::LinAlg::Norm2(radiusvec1) * eleradius;
   }
 
   // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-  CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
+  Core::LinAlg::multiply(radiusvec2, R, radiusvec1);
 
   // get second point on surface for node1 and node2
   for (int j = 0; j < 3; j++)
   {
-    prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
-    prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+    prism(j, 2) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
+    prism(j, 5) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
   }
 
   // now first prism is built -> put coordinates into filecontent-stream
@@ -3761,13 +3765,13 @@ void CONTACT::Beam3cmanager::gmsh_2_noded(const int& n,
     }
 
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-    CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
+    Core::LinAlg::multiply(radiusvec2, R, radiusvec1);
 
     // get second point on surface for node1 and node2
     for (int j = 0; j < 3; ++j)
     {
-      prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
-      prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+      prism(j, 2) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
+      prism(j, 5) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
     }
 
     // put coordinates into filecontent-stream
@@ -3792,18 +3796,18 @@ void CONTACT::Beam3cmanager::gmsh_2_noded(const int& n,
  |  Compute gmsh output for 3-noded elements (private)        popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_3_noded(const int& n,
-    const CORE::LINALG::SerialDenseMatrix& allcoord, const CORE::Elements::Element* thisele,
+    const Core::LinAlg::SerialDenseMatrix& allcoord, const Core::Elements::Element* thisele,
     std::stringstream& gmshfilecontent)
 {
   // some local variables
-  CORE::LINALG::SerialDenseMatrix prism(3, 6);
-  CORE::LINALG::SerialDenseVector axis(3);
-  CORE::LINALG::SerialDenseVector radiusvec1(3);
-  CORE::LINALG::SerialDenseVector radiusvec2(3);
-  CORE::LINALG::SerialDenseVector auxvec(3);
-  CORE::LINALG::SerialDenseVector theta(3);
-  CORE::LINALG::SerialDenseMatrix R(3, 3);
-  CORE::LINALG::SerialDenseMatrix coord(3, 2);
+  Core::LinAlg::SerialDenseMatrix prism(3, 6);
+  Core::LinAlg::SerialDenseVector axis(3);
+  Core::LinAlg::SerialDenseVector radiusvec1(3);
+  Core::LinAlg::SerialDenseVector radiusvec2(3);
+  Core::LinAlg::SerialDenseVector auxvec(3);
+  Core::LinAlg::SerialDenseVector theta(3);
+  Core::LinAlg::SerialDenseMatrix R(3, 3);
+  Core::LinAlg::SerialDenseMatrix coord(3, 2);
 
   double eleradius = BEAMINTERACTION::CalcEleRadius(thisele);
 
@@ -3859,7 +3863,7 @@ void CONTACT::Beam3cmanager::gmsh_3_noded(const int& n,
 
     // compute three dimensional angle theta
     for (int j = 0; j < theta.length(); ++j) axis[j] = coord(j, 1) - coord(j, 0);
-    double norm_axis = CORE::LINALG::Norm2(axis);
+    double norm_axis = Core::LinAlg::Norm2(axis);
     for (int j = 0; j < axis.length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
     // Compute rotation matrix R
@@ -3893,18 +3897,18 @@ void CONTACT::Beam3cmanager::gmsh_3_noded(const int& n,
     // get first point on surface for node1 and node2
     for (int j = 0; j < 3; ++j)
     {
-      prism(j, 1) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
-      prism(j, 4) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
+      prism(j, 1) += radiusvec1[j] / Core::LinAlg::Norm2(radiusvec1) * eleradius;
+      prism(j, 4) += radiusvec1[j] / Core::LinAlg::Norm2(radiusvec1) * eleradius;
     }
 
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-    CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
+    Core::LinAlg::multiply(radiusvec2, R, radiusvec1);
 
     // get second point on surface for node1 and node2
     for (int j = 0; j < 3; j++)
     {
-      prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
-      prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+      prism(j, 2) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
+      prism(j, 5) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
     }
 
     // now first prism is built -> put coordinates into filecontent-stream
@@ -3944,13 +3948,13 @@ void CONTACT::Beam3cmanager::gmsh_3_noded(const int& n,
       }
 
       // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-      CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
+      Core::LinAlg::multiply(radiusvec2, R, radiusvec1);
 
       // get second point on surface for node1 and node2
       for (int j = 0; j < 3; ++j)
       {
-        prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
-        prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+        prism(j, 2) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
+        prism(j, 5) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
       }
 
       // put coordinates into filecontent-stream
@@ -3978,22 +3982,23 @@ void CONTACT::Beam3cmanager::gmsh_3_noded(const int& n,
  |  Compute gmsh output for 3-noded elements (private)       meier 04/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_4_noded(const int& n,
-    const CORE::LINALG::SerialDenseMatrix& allcoord, const CORE::Elements::Element* thisele,
+    const Core::LinAlg::SerialDenseMatrix& allcoord, const Core::Elements::Element* thisele,
     std::stringstream& gmshfilecontent)
 {
   // some local variables
-  CORE::LINALG::SerialDenseMatrix prism(3, 6);
-  CORE::LINALG::SerialDenseVector axis(3);
-  CORE::LINALG::SerialDenseVector radiusvec1(3);
-  CORE::LINALG::SerialDenseVector radiusvec2(3);
-  CORE::LINALG::SerialDenseVector auxvec(3);
-  CORE::LINALG::SerialDenseVector theta(3);
-  CORE::LINALG::SerialDenseMatrix R(3, 3);
-  CORE::LINALG::SerialDenseMatrix coord(3, 2);
+  Core::LinAlg::SerialDenseMatrix prism(3, 6);
+  Core::LinAlg::SerialDenseVector axis(3);
+  Core::LinAlg::SerialDenseVector radiusvec1(3);
+  Core::LinAlg::SerialDenseVector radiusvec2(3);
+  Core::LinAlg::SerialDenseVector auxvec(3);
+  Core::LinAlg::SerialDenseVector theta(3);
+  Core::LinAlg::SerialDenseMatrix R(3, 3);
+  Core::LinAlg::SerialDenseMatrix coord(3, 2);
 
 
   // get radius of element
-  const DRT::ELEMENTS::Beam3Base* thisbeam = static_cast<const DRT::ELEMENTS::Beam3Base*>(thisele);
+  const Discret::ELEMENTS::Beam3Base* thisbeam =
+      static_cast<const Discret::ELEMENTS::Beam3Base*>(thisele);
 
   if (thisbeam == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
@@ -4061,7 +4066,7 @@ void CONTACT::Beam3cmanager::gmsh_4_noded(const int& n,
 
     // compute three dimensional angle theta
     for (int j = 0; j < theta.length(); ++j) axis[j] = coord(j, 1) - coord(j, 0);
-    double norm_axis = CORE::LINALG::Norm2(axis);
+    double norm_axis = Core::LinAlg::Norm2(axis);
     for (int j = 0; j < axis.length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
     // Compute rotation matrix R
@@ -4095,18 +4100,18 @@ void CONTACT::Beam3cmanager::gmsh_4_noded(const int& n,
     // get first point on surface for node1 and node2
     for (int j = 0; j < 3; ++j)
     {
-      prism(j, 1) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
-      prism(j, 4) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
+      prism(j, 1) += radiusvec1[j] / Core::LinAlg::Norm2(radiusvec1) * eleradius;
+      prism(j, 4) += radiusvec1[j] / Core::LinAlg::Norm2(radiusvec1) * eleradius;
     }
 
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-    CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
+    Core::LinAlg::multiply(radiusvec2, R, radiusvec1);
 
     // get second point on surface for node1 and node2
     for (int j = 0; j < 3; j++)
     {
-      prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
-      prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+      prism(j, 2) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
+      prism(j, 5) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
     }
 
     // now first prism is built -> put coordinates into filecontent-stream
@@ -4146,13 +4151,13 @@ void CONTACT::Beam3cmanager::gmsh_4_noded(const int& n,
       }
 
       // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-      CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
+      Core::LinAlg::multiply(radiusvec2, R, radiusvec1);
 
       // get second point on surface for node1 and node2
       for (int j = 0; j < 3; ++j)
       {
-        prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
-        prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+        prism(j, 2) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
+        prism(j, 5) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
       }
 
       // put coordinates into filecontent-stream
@@ -4180,21 +4185,22 @@ void CONTACT::Beam3cmanager::gmsh_4_noded(const int& n,
  |  Compute gmsh output for N-noded elements (private)       meier 02/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_n_noded(const int& n, int& n_axial,
-    const CORE::LINALG::SerialDenseMatrix& allcoord, const CORE::Elements::Element* thisele,
+    const Core::LinAlg::SerialDenseMatrix& allcoord, const Core::Elements::Element* thisele,
     std::stringstream& gmshfilecontent)
 {
   // some local variables
-  CORE::LINALG::SerialDenseMatrix prism(3, 6);
-  CORE::LINALG::SerialDenseVector axis(3);
-  CORE::LINALG::SerialDenseVector radiusvec1(3);
-  CORE::LINALG::SerialDenseVector radiusvec2(3);
-  CORE::LINALG::SerialDenseVector auxvec(3);
-  CORE::LINALG::SerialDenseVector theta(3);
-  CORE::LINALG::SerialDenseMatrix R(3, 3);
-  CORE::LINALG::SerialDenseMatrix coord(3, 2);
+  Core::LinAlg::SerialDenseMatrix prism(3, 6);
+  Core::LinAlg::SerialDenseVector axis(3);
+  Core::LinAlg::SerialDenseVector radiusvec1(3);
+  Core::LinAlg::SerialDenseVector radiusvec2(3);
+  Core::LinAlg::SerialDenseVector auxvec(3);
+  Core::LinAlg::SerialDenseVector theta(3);
+  Core::LinAlg::SerialDenseMatrix R(3, 3);
+  Core::LinAlg::SerialDenseMatrix coord(3, 2);
 
   // get radius of element
-  const DRT::ELEMENTS::Beam3Base* thisbeam = static_cast<const DRT::ELEMENTS::Beam3Base*>(thisele);
+  const Discret::ELEMENTS::Beam3Base* thisbeam =
+      static_cast<const Discret::ELEMENTS::Beam3Base*>(thisele);
 
   if (thisbeam == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
@@ -4273,7 +4279,7 @@ void CONTACT::Beam3cmanager::gmsh_n_noded(const int& n, int& n_axial,
     // compute three dimensional angle theta
     for (int j = 0; j < 3; ++j) axis[j] = coord(j, 1) - coord(j, 0);
 
-    double norm_axis = CORE::LINALG::Norm2(axis);
+    double norm_axis = Core::LinAlg::Norm2(axis);
     for (int j = 0; j < 3; ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
     // Compute rotation matrix R
@@ -4307,18 +4313,18 @@ void CONTACT::Beam3cmanager::gmsh_n_noded(const int& n, int& n_axial,
     // get first point on surface for node1 and node2
     for (int j = 0; j < 3; ++j)
     {
-      prism(j, 1) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
-      prism(j, 4) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
+      prism(j, 1) += radiusvec1[j] / Core::LinAlg::Norm2(radiusvec1) * eleradius;
+      prism(j, 4) += radiusvec1[j] / Core::LinAlg::Norm2(radiusvec1) * eleradius;
     }
 
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-    CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
+    Core::LinAlg::multiply(radiusvec2, R, radiusvec1);
 
     // get second point on surface for node1 and node2
     for (int j = 0; j < 3; j++)
     {
-      prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
-      prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+      prism(j, 2) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
+      prism(j, 5) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
     }
 
     // now first prism is built -> put coordinates into filecontent-stream
@@ -4358,13 +4364,13 @@ void CONTACT::Beam3cmanager::gmsh_n_noded(const int& n, int& n_axial,
       }
 
       // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-      CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
+      Core::LinAlg::multiply(radiusvec2, R, radiusvec1);
 
       // get second point on surface for node1 and node2
       for (int j = 0; j < 3; ++j)
       {
-        prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
-        prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+        prism(j, 2) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
+        prism(j, 5) += radiusvec2[j] / Core::LinAlg::Norm2(radiusvec2) * eleradius;
       }
 
       // put coordinates into filecontent-stream
@@ -4392,7 +4398,7 @@ void CONTACT::Beam3cmanager::gmsh_n_noded(const int& n, int& n_axial,
  |  Compute gmsh output for N-noded elements (private)       meier 02/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_n_noded_line(const int& n, const int& n_axial,
-    const CORE::LINALG::SerialDenseMatrix& allcoord, const CORE::Elements::Element* thisele,
+    const Core::LinAlg::SerialDenseMatrix& allcoord, const Core::Elements::Element* thisele,
     std::stringstream& gmshfilecontent)
 {
   // declaring variable for color of elements
@@ -4449,19 +4455,19 @@ void CONTACT::Beam3cmanager::gmsh_n_noded_line(const int& n, const int& n_axial,
 /*----------------------------------------------------------------------*
  |  Compute gmsh output for sphere elements (private)        grill 03/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::gmsh_sphere(const CORE::LINALG::SerialDenseMatrix& coord,
-    const CORE::Elements::Element* thisele, std::stringstream& gmshfilecontent)
+void CONTACT::Beam3cmanager::gmsh_sphere(const Core::LinAlg::SerialDenseMatrix& coord,
+    const Core::Elements::Element* thisele, std::stringstream& gmshfilecontent)
 {
   double eleradius = 0.0;
   double color = 1.0;
 
   // get radius of element
-  const CORE::Elements::ElementType& eot = thisele->ElementType();
+  const Core::Elements::ElementType& eot = thisele->ElementType();
 
-  if (eot == DRT::ELEMENTS::RigidsphereType::Instance())
+  if (eot == Discret::ELEMENTS::RigidsphereType::Instance())
   {
-    const DRT::ELEMENTS::Rigidsphere* thisparticle =
-        static_cast<const DRT::ELEMENTS::Rigidsphere*>(thisele);
+    const Discret::ELEMENTS::Rigidsphere* thisparticle =
+        static_cast<const Discret::ELEMENTS::Rigidsphere*>(thisele);
     eleradius = thisparticle->Radius();
   }
   else
@@ -4705,12 +4711,12 @@ void CONTACT::Beam3cmanager::gmsh_refine_icosphere(std::vector<std::vector<doubl
 /*----------------------------------------------------------------------*
  | Compute Gmsh output for solid elements                               |
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::gmsh_solid(const CORE::Elements::Element* element,
+void CONTACT::Beam3cmanager::gmsh_solid(const Core::Elements::Element* element,
     const Epetra_Vector& disrow, std::stringstream& gmshfilecontent)
 {
   // Prepare storage for nodal coordinates
   int nnodes = element->num_node();
-  CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
+  Core::LinAlg::SerialDenseMatrix coord(3, nnodes);
 
   // Compute current nodal positions
   for (int i_dim = 0; i_dim < 3; i_dim++)
@@ -4736,7 +4742,7 @@ void CONTACT::Beam3cmanager::gmsh_solid(const CORE::Elements::Element* element,
   switch (element->Shape())
   {
     // 8-noded hexahedron
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
       const int n_surfNodes = 4;
       gmsh_get_surf_color(element, n_surfNodes, surfNodes, surfColor);
@@ -4759,7 +4765,7 @@ void CONTACT::Beam3cmanager::gmsh_solid(const CORE::Elements::Element* element,
       break;
     }
     // 20-noded hexahedron
-    case CORE::FE::CellType::hex20:
+    case Core::FE::CellType::hex20:
     {
       const int n_surfNodes = 8;
       gmsh_get_surf_color(element, n_surfNodes, surfNodes, surfColor);
@@ -4812,12 +4818,12 @@ void CONTACT::Beam3cmanager::gmsh_solid(const CORE::Elements::Element* element,
  | Compute Gmsh output for solid surface element numbers                |
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::gmsh_solid_surface_element_numbers(
-    const CORE::Elements::Element* element, const Epetra_Vector& disrow,
+    const Core::Elements::Element* element, const Epetra_Vector& disrow,
     std::stringstream& gmshfilecontent)
 {
   // Prepare storage for nodal coordinates
   int nnodes = element->num_node();
-  CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
+  Core::LinAlg::SerialDenseMatrix coord(3, nnodes);
 
   // Compute current nodal positions
   for (int i_dim = 0; i_dim < 3; i_dim++)
@@ -4857,7 +4863,7 @@ void CONTACT::Beam3cmanager::gmsh_solid_surface_element_numbers(
 /*----------------------------------------------------------------------*
  | Get color of solid element surfaces for GMSH-Output                  |
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::gmsh_get_surf_color(const CORE::Elements::Element* element,
+void CONTACT::Beam3cmanager::gmsh_get_surf_color(const Core::Elements::Element* element,
     const int& n_surfNodes, const int surfNodes[6][9], double surfColor[6])
 {
   // Loop over all surfaces to get their colors
@@ -4869,8 +4875,8 @@ void CONTACT::Beam3cmanager::gmsh_get_surf_color(const CORE::Elements::Element* 
       int found = 0;
 
       // Get surface element
-      CORE::Elements::Element* bts_element2 =
-          const_cast<CORE::Elements::Element*>(btsolpairs_[i_pair]->Element2());
+      Core::Elements::Element* bts_element2 =
+          const_cast<Core::Elements::Element*>(btsolpairs_[i_pair]->Element2());
 
       // Loop over all nodes of bts surface element
       for (int j = 0; j < bts_element2->num_node(); j++)
@@ -4984,9 +4990,9 @@ void CONTACT::Beam3cmanager::gmsh_st(
 /*----------------------------------------------------------------------*
  |  Determine number of nodes and nodal DoFs of element      meier 02/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::set_element_type_and_distype(CORE::Elements::Element* ele1)
+void CONTACT::Beam3cmanager::set_element_type_and_distype(Core::Elements::Element* ele1)
 {
-  const DRT::ELEMENTS::Beam3Base* ele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele1);
+  const Discret::ELEMENTS::Beam3Base* ele = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele1);
 
   numnodes_ = ele->NumCenterlineNodes();
   numnodalvalues_ = ele->hermite_centerline_interpolation() ? 2 : 1;
@@ -4997,21 +5003,21 @@ void CONTACT::Beam3cmanager::set_element_type_and_distype(CORE::Elements::Elemen
 /*----------------------------------------------------------------------*
  | Is element midpoint distance smaller than search radius?  meier 02/14|
  *----------------------------------------------------------------------*/
-bool CONTACT::Beam3cmanager::close_midpoint_distance(const CORE::Elements::Element* ele1,
-    const CORE::Elements::Element* ele2,
-    std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const double sphericalsearchradius)
+bool CONTACT::Beam3cmanager::close_midpoint_distance(const Core::Elements::Element* ele1,
+    const Core::Elements::Element* ele2,
+    std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, const double sphericalsearchradius)
 {
   if (sphericalsearchradius == -1.0) return true;
 
-  CORE::LINALG::Matrix<3, 1> midpos1(true);
-  CORE::LINALG::Matrix<3, 1> midpos2(true);
-  CORE::LINALG::Matrix<3, 1> diffvector(true);
+  Core::LinAlg::Matrix<3, 1> midpos1(true);
+  Core::LinAlg::Matrix<3, 1> midpos2(true);
+  Core::LinAlg::Matrix<3, 1> diffvector(true);
 
   // get midpoint position of element 1
   if (ele1->num_node() == 2)  // 2-noded beam element
   {
-    const CORE::Nodes::Node* node1ele1 = ele1->Nodes()[0];
-    const CORE::Nodes::Node* node2ele1 = ele1->Nodes()[1];
+    const Core::Nodes::Node* node1ele1 = ele1->Nodes()[0];
+    const Core::Nodes::Node* node2ele1 = ele1->Nodes()[1];
 
     for (int i = 0; i < 3; ++i)
       midpos1(i) =
@@ -5019,7 +5025,7 @@ bool CONTACT::Beam3cmanager::close_midpoint_distance(const CORE::Elements::Eleme
   }
   else if (ele1->num_node() == 1)  // rigidsphere element
   {
-    const CORE::Nodes::Node* node1ele1 = ele1->Nodes()[0];
+    const Core::Nodes::Node* node1ele1 = ele1->Nodes()[0];
 
     for (int i = 0; i < 3; ++i) midpos1(i) = (currentpositions[node1ele1->Id()])(i);
   }
@@ -5027,8 +5033,8 @@ bool CONTACT::Beam3cmanager::close_midpoint_distance(const CORE::Elements::Eleme
   // get midpoint position of element 2
   if (ele2->num_node() == 2)  // 2-noded beam element
   {
-    const CORE::Nodes::Node* node1ele2 = ele2->Nodes()[0];
-    const CORE::Nodes::Node* node2ele2 = ele2->Nodes()[1];
+    const Core::Nodes::Node* node1ele2 = ele2->Nodes()[0];
+    const Core::Nodes::Node* node2ele2 = ele2->Nodes()[1];
 
     for (int i = 0; i < 3; ++i)
       midpos2(i) =
@@ -5036,7 +5042,7 @@ bool CONTACT::Beam3cmanager::close_midpoint_distance(const CORE::Elements::Eleme
   }
   else if (ele2->num_node() == 1)  // rigidsphere element
   {
-    const CORE::Nodes::Node* node1ele2 = ele2->Nodes()[0];
+    const Core::Nodes::Node* node1ele2 = ele2->Nodes()[0];
 
     for (int i = 0; i < 3; ++i) midpos2(i) = (currentpositions[node1ele2->Id()])(i);
   }
@@ -5053,7 +5059,7 @@ bool CONTACT::Beam3cmanager::close_midpoint_distance(const CORE::Elements::Eleme
 /*----------------------------------------------------------------------*
  | read contact force for restart  meier 02/15|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::read_restart(CORE::IO::DiscretizationReader& reader)
+void CONTACT::Beam3cmanager::read_restart(Core::IO::DiscretizationReader& reader)
 {
   reader.ReadVector(fcold_, "fcold");
   reader.ReadVector(dis_old_, "dis_old");
@@ -5079,7 +5085,7 @@ void CONTACT::Beam3cmanager::read_restart(CORE::IO::DiscretizationReader& reader
 /*----------------------------------------------------------------------*
  | write contact force for restart  meier 02/15|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::write_restart(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+void CONTACT::Beam3cmanager::write_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   write_restart(*output);
 
@@ -5089,7 +5095,7 @@ void CONTACT::Beam3cmanager::write_restart(Teuchos::RCP<CORE::IO::Discretization
 /*----------------------------------------------------------------------*
  | write contact force for restart  meier 02/15|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::write_restart(CORE::IO::DiscretizationWriter& output)
+void CONTACT::Beam3cmanager::write_restart(Core::IO::DiscretizationWriter& output)
 {
   output.WriteVector("fcold", fcold_);
   output.WriteVector("dis_old", dis_old_);

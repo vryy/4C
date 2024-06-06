@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR::CONSTRAINTS
+namespace Inpar::CONSTRAINTS
 {
   /// type of the submodel for constraintmodels
   enum class SubModelType
@@ -29,7 +29,7 @@ namespace INPAR::CONSTRAINTS
   {
     penalty_regularization  ///< penalty method
   };
-}  // namespace INPAR::CONSTRAINTS
+}  // namespace Inpar::CONSTRAINTS
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -25,23 +25,23 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
 
-namespace INPUT
+namespace Input
 {
   class LineDefinition;
 }
 
-namespace MAT
+namespace Mat
 {
   // forward declarations
-  namespace ELASTIC
+  namespace Elastic
   {
     class StructuralTensorStrategyBase;
-  }  // namespace ELASTIC
+  }  // namespace Elastic
   class BaseAnisotropyExtension;
 
   /*!
@@ -72,7 +72,7 @@ namespace MAT
      *
      * @param data (in/out) : data object
      */
-    void PackAnisotropy(CORE::COMM::PackBuffer& data) const;
+    void PackAnisotropy(Core::Communication::PackBuffer& data) const;
 
     /*!
      * Unpack all data from another processor
@@ -145,7 +145,7 @@ namespace MAT
      *
      * \param fibers Vector of element fibers
      */
-    void SetElementFibers(const std::vector<CORE::LINALG::Matrix<3, 1>>& fibers);
+    void SetElementFibers(const std::vector<Core::LinAlg::Matrix<3, 1>>& fibers);
 
     /*!
      * \brief Set Gauss point fibers. First index represents the Gauss point, second index the
@@ -153,14 +153,14 @@ namespace MAT
      *
      * @param fibers Vector of Gauss point fibers
      */
-    void SetGaussPointFibers(const std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& fibers);
+    void SetGaussPointFibers(const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& fibers);
 
     /*!
      * Reads the line definition of an element to get the fibers defined on the element
      *
      * @param linedef (in) : Input line of the corresponding element
      */
-    void read_anisotropy_from_element(INPUT::LineDefinition* linedef);
+    void read_anisotropy_from_element(Input::LineDefinition* linedef);
 
     /*!
      * This method extracts the Gauss-point fibers written by the elements into the ParameterList
@@ -190,33 +190,33 @@ namespace MAT
      * \brief Returns the i-th element fiber
      *
      * \param i zerobased Id of the fiber
-     * \return const CORE::LINALG::Matrix<3, 1>& Reference to the fiber vector
+     * \return const Core::LinAlg::Matrix<3, 1>& Reference to the fiber vector
      */
-    const CORE::LINALG::Matrix<3, 1>& GetElementFiber(unsigned int i) const;
+    const Core::LinAlg::Matrix<3, 1>& GetElementFiber(unsigned int i) const;
 
     /*!
      * \brief Returns an vector of all element fibers
      *
-     * \return const std::vector<CORE::LINALG::Matrix<3, 1>>&
+     * \return const std::vector<Core::LinAlg::Matrix<3, 1>>&
      */
-    const std::vector<CORE::LINALG::Matrix<3, 1>>& GetElementFibers() const;
+    const std::vector<Core::LinAlg::Matrix<3, 1>>& GetElementFibers() const;
 
     /*!
      * \brief Returns the a vector of all Gauss point fibers. The first index is the GP, the second
      * index is the zero pased fiber id
      *
-     * \return const std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>&
+     * \return const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>&
      */
-    const std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& GetGPFibers() const;
+    const std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>>& GetGPFibers() const;
 
     /*!
      * \brief Returns the i-th Gauss-point fiber at the Gauss point
      *
      * \param gp Gauss point
      * \param i zerobased fiber id
-     * \return const CORE::LINALG::Matrix<3, 1>&
+     * \return const Core::LinAlg::Matrix<3, 1>&
      */
-    const CORE::LINALG::Matrix<3, 1>& GetGPFiber(unsigned int gp, unsigned int i) const;
+    const Core::LinAlg::Matrix<3, 1>& GetGPFiber(unsigned int gp, unsigned int i) const;
     ///@}
 
     /*!
@@ -229,7 +229,7 @@ namespace MAT
     void register_anisotropy_extension(BaseAnisotropyExtension& extension);
 
    private:
-    void insert_fibers(std::vector<CORE::LINALG::Matrix<3, 1>> fiber);
+    void insert_fibers(std::vector<Core::LinAlg::Matrix<3, 1>> fiber);
     /// Number of Gauss points
     unsigned numgp_ = 0;
 
@@ -243,13 +243,13 @@ namespace MAT
      * Fibers of the element. The first index is for the Gauss points, the second index is for the
      * fiber id
      */
-    std::vector<CORE::LINALG::Matrix<3, 1>> element_fibers_;
+    std::vector<Core::LinAlg::Matrix<3, 1>> element_fibers_;
 
     /**
      * Fibers of the element. The first index is for the Gauss points, the second index is for the
      * fiber id
      */
-    std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>> gp_fibers_;
+    std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>> gp_fibers_;
 
     /// Cylinder coordinate system manager on element level
     std::optional<CylinderCoordinateSystemManager> element_cylinder_coordinate_system_manager_;
@@ -260,7 +260,7 @@ namespace MAT
     /// Anisotropy to extend the functionality
     std::vector<Teuchos::RCP<BaseAnisotropyExtension>> extensions_;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

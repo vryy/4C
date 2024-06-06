@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declarations.
-namespace ADAPTER
+namespace Adapter
 {
   class FBIConstraintenforcer;
 }
@@ -34,7 +34,7 @@ namespace FBI
 {
   class BeamToFluidMeshtyingVtkOutputParams;
 }
-namespace STR::TIMINT
+namespace STR::TimeInt
 {
   class ParamsRuntimeOutput;
 }
@@ -69,8 +69,8 @@ namespace BEAMINTERACTION
      * output options.
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      */
-    void Setup(const CORE::IO::VisualizationParameters& visualization_params,
-        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+    void Setup(const Core::IO::VisualizationParameters& visualization_params,
+        Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
         Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr);
 
     /**
@@ -79,7 +79,7 @@ namespace BEAMINTERACTION
      * pointer since this function is called from within the sub model evaluator, which does not
      * (and probably can not) have a RCP to itself.
      */
-    void write_output_runtime(const Teuchos::RCP<ADAPTER::FBIConstraintenforcer>& couplingenforcer,
+    void write_output_runtime(const Teuchos::RCP<Adapter::FBIConstraintenforcer>& couplingenforcer,
         int i_step, double time) const;
 
     /**
@@ -90,7 +90,7 @@ namespace BEAMINTERACTION
      * @param i_iteration (in) current number of iteration.
      */
     void write_output_runtime_iteration(
-        const Teuchos::RCP<ADAPTER::FBIConstraintenforcer>& couplingenforcer, int i_iteration,
+        const Teuchos::RCP<Adapter::FBIConstraintenforcer>& couplingenforcer, int i_iteration,
         int i_step, double time) const;
 
    private:
@@ -103,7 +103,7 @@ namespace BEAMINTERACTION
      * @param time (in) Scalar time value for this visualization step.
      */
     void write_output_beam_to_fluid_mesh_tying(
-        const Teuchos::RCP<ADAPTER::FBIConstraintenforcer>& couplingenforcer, int i_step,
+        const Teuchos::RCP<Adapter::FBIConstraintenforcer>& couplingenforcer, int i_step,
         double time) const;
 
     /**
@@ -130,7 +130,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase> output_writer_base_ptr_;
 
     //! visualization parameters
-    CORE::IO::VisualizationParameters visualization_params_;
+    Core::IO::VisualizationParameters visualization_params_;
   };
 
 }  // namespace BEAMINTERACTION

@@ -24,12 +24,12 @@ transport
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace SCATRA
+namespace ScaTra
 {
   // forward declarations
   class ScaTraTimIntImpl;
@@ -41,7 +41,7 @@ namespace SCATRA
    public:
     //! constructor
     HomIsoTurbInitialScalarField(
-        ScaTraTimIntImpl& timeint, const INPAR::SCATRA::InitialField initfield);
+        ScaTraTimIntImpl& timeint, const Inpar::ScaTra::InitialField initfield);
 
     //! calculate initial field
     void calculate_initial_field();
@@ -62,14 +62,14 @@ namespace SCATRA
     double calculate_energy_from_spectrum(double k);
 
     //! scatra discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! state vectors to be initialized
     Teuchos::RCP<Epetra_Vector> phinp_;
     Teuchos::RCP<Epetra_Vector> phin_;
 
     //! type of energy spectrum for initialization
-    INPAR::SCATRA::InitialField type_;
+    Inpar::ScaTra::InitialField type_;
 
     //! number of resolved mode
     int nummodes_;
@@ -78,7 +78,7 @@ namespace SCATRA
     Teuchos::RCP<std::vector<double>> coordinates_;
   };
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

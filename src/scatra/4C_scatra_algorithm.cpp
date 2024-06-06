@@ -20,14 +20,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SCATRA::ScaTraAlgorithm::ScaTraAlgorithm(const Epetra_Comm& comm,  ///< communicator
+ScaTra::ScaTraAlgorithm::ScaTraAlgorithm(const Epetra_Comm& comm,  ///< communicator
     const Teuchos::ParameterList& scatradyn,                       ///< scatra parameter list
     const Teuchos::ParameterList& fdyn,                            ///< fluid parameter list
     const std::string scatra_disname,                              ///< scatra discretization name
     const Teuchos::ParameterList& solverparams                     ///< solver parameter list
     )
     : ScaTraFluidCouplingAlgorithm(comm, scatradyn, false, scatra_disname, solverparams),
-      natconv_(CORE::UTILS::IntegralValue<int>(scatradyn, "NATURAL_CONVECTION")),
+      natconv_(Core::UTILS::IntegralValue<int>(scatradyn, "NATURAL_CONVECTION")),
       natconvitmax_(scatradyn.sublist("NONLINEAR").get<int>("ITEMAX_OUTER")),
       natconvittol_(scatradyn.sublist("NONLINEAR").get<double>("CONVTOL_OUTER")),
       velincnp_(Teuchos::null),
@@ -39,10 +39,10 @@ SCATRA::ScaTraAlgorithm::ScaTraAlgorithm(const Epetra_Comm& comm,  ///< communic
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::Setup()
+void ScaTra::ScaTraAlgorithm::Setup()
 {
   // call setup in base class
-  ADAPTER::ScaTraFluidCouplingAlgorithm::Setup();
+  Adapter::ScaTraFluidCouplingAlgorithm::Setup();
 
   // create vectors
   velincnp_ = Teuchos::rcp(
@@ -55,15 +55,15 @@ void SCATRA::ScaTraAlgorithm::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::Init()
+void ScaTra::ScaTraAlgorithm::Init()
 {
   // call init in base class
-  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
+  Adapter::ScaTraFluidCouplingAlgorithm::Init();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::TimeLoop()
+void ScaTra::ScaTraAlgorithm::TimeLoop()
 {
   // safety checks
   check_is_init();
@@ -80,7 +80,7 @@ void SCATRA::ScaTraAlgorithm::TimeLoop()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::time_loop_one_way()
+void ScaTra::ScaTraAlgorithm::time_loop_one_way()
 {
   // safety checks
   check_is_init();
@@ -116,7 +116,7 @@ void SCATRA::ScaTraAlgorithm::time_loop_one_way()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::time_loop_two_way()
+void ScaTra::ScaTraAlgorithm::time_loop_two_way()
 {
   // safety checks
   check_is_init();
@@ -146,7 +146,7 @@ void SCATRA::ScaTraAlgorithm::time_loop_two_way()
 /*----------------------------------------------------------------------*
  | Initial calculations for two-way coupling time loop       fang 08/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::prepare_time_loop_two_way()
+void ScaTra::ScaTraAlgorithm::prepare_time_loop_two_way()
 {
   // safety checks
   check_is_init();
@@ -155,10 +155,10 @@ void SCATRA::ScaTraAlgorithm::prepare_time_loop_two_way()
   // safety check
   switch ((fluid_field()->TimIntScheme()))
   {
-    case INPAR::FLUID::timeint_afgenalpha:
-    case INPAR::FLUID::timeint_bdf2:
-    case INPAR::FLUID::timeint_one_step_theta:
-    case INPAR::FLUID::timeint_stationary:
+    case Inpar::FLUID::timeint_afgenalpha:
+    case Inpar::FLUID::timeint_bdf2:
+    case Inpar::FLUID::timeint_one_step_theta:
+    case Inpar::FLUID::timeint_stationary:
       break;
     default:
     {
@@ -176,7 +176,7 @@ void SCATRA::ScaTraAlgorithm::prepare_time_loop_two_way()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::prepare_time_step()
+void ScaTra::ScaTraAlgorithm::prepare_time_step()
 {
   // safety checks
   check_is_init();
@@ -202,7 +202,7 @@ void SCATRA::ScaTraAlgorithm::prepare_time_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::prepare_time_step_convection()
+void ScaTra::ScaTraAlgorithm::prepare_time_step_convection()
 {
   // safety checks
   check_is_init();
@@ -215,10 +215,10 @@ void SCATRA::ScaTraAlgorithm::prepare_time_step_convection()
 
   switch ((fluid_field()->TimIntScheme()))
   {
-    case INPAR::FLUID::timeint_afgenalpha:
-    case INPAR::FLUID::timeint_bdf2:
-    case INPAR::FLUID::timeint_one_step_theta:
-    case INPAR::FLUID::timeint_stationary:
+    case Inpar::FLUID::timeint_afgenalpha:
+    case Inpar::FLUID::timeint_bdf2:
+    case Inpar::FLUID::timeint_one_step_theta:
+    case Inpar::FLUID::timeint_stationary:
     {
       fluid_field()->SetIterScalarFields(ScaTraField()->Densafnp(),
           ScaTraField()->Densafnp(),  // not needed, provided as dummy vector
@@ -248,7 +248,7 @@ void SCATRA::ScaTraAlgorithm::prepare_time_step_convection()
 /*----------------------------------------------------------------------*
  | Print scatra solver type to screen                        fang 08/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::print_sca_tra_solver()
+void ScaTra::ScaTraAlgorithm::print_sca_tra_solver()
 {
   if (Comm().MyPID() == 0)
     std::cout
@@ -257,7 +257,7 @@ void SCATRA::ScaTraAlgorithm::print_sca_tra_solver()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::do_fluid_step()
+void ScaTra::ScaTraAlgorithm::do_fluid_step()
 {
   // solve nonlinear Navier-Stokes system
   if (Comm().MyPID() == 0)
@@ -272,7 +272,7 @@ void SCATRA::ScaTraAlgorithm::do_fluid_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::do_transport_step()
+void ScaTra::ScaTraAlgorithm::do_transport_step()
 {
   print_sca_tra_solver();
 
@@ -285,7 +285,7 @@ void SCATRA::ScaTraAlgorithm::do_transport_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::set_velocity_field()
+void ScaTra::ScaTraAlgorithm::set_velocity_field()
 {
   // safety checks
   check_is_init();
@@ -305,16 +305,16 @@ void SCATRA::ScaTraAlgorithm::set_velocity_field()
 
   switch (fluid_field()->TimIntScheme())
   {
-    case INPAR::FLUID::timeint_npgenalpha:
-    case INPAR::FLUID::timeint_afgenalpha:
+    case Inpar::FLUID::timeint_npgenalpha:
+    case Inpar::FLUID::timeint_afgenalpha:
     {
       ScaTraField()->set_velocity_field(fluid_to_scatra(fluid_field()->Velaf()),
           fluid_to_scatra(fluid_field()->Accam()), fluid_to_scatra(fluid_field()->Velaf()), fsvel);
       break;
     }
-    case INPAR::FLUID::timeint_one_step_theta:
-    case INPAR::FLUID::timeint_bdf2:
-    case INPAR::FLUID::timeint_stationary:
+    case Inpar::FLUID::timeint_one_step_theta:
+    case Inpar::FLUID::timeint_bdf2:
+    case Inpar::FLUID::timeint_stationary:
     {
       ScaTraField()->set_velocity_field(fluid_to_scatra(fluid_field()->Velnp()),
           fluid_to_scatra(fluid_field()->Hist()), fluid_to_scatra(fluid_field()->Velnp()), fsvel);
@@ -330,7 +330,7 @@ void SCATRA::ScaTraAlgorithm::set_velocity_field()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::outer_iteration_convection()
+void ScaTra::ScaTraAlgorithm::outer_iteration_convection()
 {
   // safety checks
   check_is_init();
@@ -354,16 +354,16 @@ void SCATRA::ScaTraAlgorithm::outer_iteration_convection()
   const int numdim = 3;
   // create output file name
   std::stringstream temp;
-  temp << GLOBAL::Problem::Instance()->OutputControlFile()->FileName() << "_nonliniter_step"
+  temp << Global::Problem::Instance()->OutputControlFile()->FileName() << "_nonliniter_step"
        << Step();
   std::string outname = temp.str();
-  std::string probtype = GLOBAL::Problem::Instance()->ProblemName();
+  std::string probtype = Global::Problem::Instance()->ProblemName();
 
-  Teuchos::RCP<CORE::IO::OutputControl> myoutputcontrol =
-      Teuchos::rcp(new CORE::IO::OutputControl(ScaTraField().discretization()->Comm(), probtype,
-          CORE::FE::ShapeFunctionType::polynomial, "myinput", outname, numdim, 0, 1000));
+  Teuchos::RCP<Core::IO::OutputControl> myoutputcontrol =
+      Teuchos::rcp(new Core::IO::OutputControl(ScaTraField().discretization()->Comm(), probtype,
+          Core::FE::ShapeFunctionType::polynomial, "myinput", outname, numdim, 0, 1000));
   // create discretization writer with my own control settings
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> myoutput = ScaTraField().discretization()->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> myoutput = ScaTraField().discretization()->Writer();
   myoutput->SetOutput(myoutputcontrol);
   // write mesh at step 0
   myoutput->WriteMesh(0, 0.0);
@@ -413,7 +413,7 @@ void SCATRA::ScaTraAlgorithm::outer_iteration_convection()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::update()
+void ScaTra::ScaTraAlgorithm::update()
 {
   fluid_field()->Update();
   ScaTraField()->Update();
@@ -421,7 +421,7 @@ void SCATRA::ScaTraAlgorithm::update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::update_convection()
+void ScaTra::ScaTraAlgorithm::update_convection()
 {
   // update scatra and fluid fields
   ScaTraField()->Update();
@@ -430,7 +430,7 @@ void SCATRA::ScaTraAlgorithm::update_convection()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::output()
+void ScaTra::ScaTraAlgorithm::output()
 {
   // Note: The order is important here! In here control file entries are
   // written. And these entries define the order in which the filters handle
@@ -458,7 +458,7 @@ void SCATRA::ScaTraAlgorithm::output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool SCATRA::ScaTraAlgorithm::convergence_check(
+bool ScaTra::ScaTraAlgorithm::convergence_check(
     int natconvitnum, const int natconvitmax, const double natconvittol)
 {
   // convergence check based on phi and velocity increment
@@ -468,7 +468,7 @@ bool SCATRA::ScaTraAlgorithm::convergence_check(
   //     | phi_n+1 |_2
 
   bool stopnonliniter = false;
-  Teuchos::RCP<CORE::LINALG::MapExtractor> phisplitter = ScaTraField()->Splitter();
+  Teuchos::RCP<Core::LinAlg::MapExtractor> phisplitter = ScaTraField()->Splitter();
   // Variables to save different L2 - Norms
 
   double velincnorm_L2(0.0);
@@ -589,7 +589,7 @@ bool SCATRA::ScaTraAlgorithm::convergence_check(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::ReadInflowRestart(int restart)
+void ScaTra::ScaTraAlgorithm::ReadInflowRestart(int restart)
 {
   // in case a inflow generation in the inflow section has been performed,
   // there are not any scatra results available and the initial field is used
@@ -603,10 +603,10 @@ void SCATRA::ScaTraAlgorithm::ReadInflowRestart(int restart)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScaTraAlgorithm::TestResults()
+void ScaTra::ScaTraAlgorithm::TestResults()
 {
-  GLOBAL::Problem::Instance()->AddFieldTest(fluid_field()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->AddFieldTest(create_sca_tra_field_test());
-  GLOBAL::Problem::Instance()->TestAll(Comm());
+  Global::Problem::Instance()->AddFieldTest(fluid_field()->CreateFieldTest());
+  Global::Problem::Instance()->AddFieldTest(create_sca_tra_field_test());
+  Global::Problem::Instance()->TestAll(Comm());
 }
 FOUR_C_NAMESPACE_CLOSE

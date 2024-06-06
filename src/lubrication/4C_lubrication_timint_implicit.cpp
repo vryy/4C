@@ -37,22 +37,22 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                     (public) wirtz 11/15 |
  *----------------------------------------------------------------------*/
-LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     :  // call constructor for "nontrivial" objects
       solver_(solver),
       params_(params),
       myrank_(actdis->Comm().MyPID()),
       isale_(extraparams->get<bool>("isale")),
       incremental_(true),
-      modified_reynolds_(CORE::UTILS::IntegralValue<int>(*params, "MODIFIED_REYNOLDS_EQU")),
-      addsqz_(CORE::UTILS::IntegralValue<int>(*params, "ADD_SQUEEZE_TERM")),
-      purelub_(CORE::UTILS::IntegralValue<int>(*params, "PURE_LUB")),
-      outmean_(CORE::UTILS::IntegralValue<int>(*params, "OUTMEAN")),
-      outputgmsh_(CORE::UTILS::IntegralValue<int>(*params, "OUTPUT_GMSH")),
-      output_state_matlab_(CORE::UTILS::IntegralValue<int>(*params, "MATLAB_STATE_OUTPUT")),
+      modified_reynolds_(Core::UTILS::IntegralValue<int>(*params, "MODIFIED_REYNOLDS_EQU")),
+      addsqz_(Core::UTILS::IntegralValue<int>(*params, "ADD_SQUEEZE_TERM")),
+      purelub_(Core::UTILS::IntegralValue<int>(*params, "PURE_LUB")),
+      outmean_(Core::UTILS::IntegralValue<int>(*params, "OUTMEAN")),
+      outputgmsh_(Core::UTILS::IntegralValue<int>(*params, "OUTPUT_GMSH")),
+      output_state_matlab_(Core::UTILS::IntegralValue<int>(*params, "MATLAB_STATE_OUTPUT")),
       time_(0.0),
       maxtime_(params->get<double>("MAXTIME")),
       step_(0),
@@ -61,7 +61,7 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
       dtele_(0.0),
       dtsolve_(0.0),
       iternum_(0),
-      nsd_(GLOBAL::Problem::Instance()->NDim()),
+      nsd_(Global::Problem::Instance()->NDim()),
       // Initialization of degrees of freedom variables
       prenp_(Teuchos::null),
       nds_disp_(-1),
@@ -114,28 +114,28 @@ void LUBRICATION::TimIntImpl::Init()
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
   sysmat_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->dof_row_map()), 27, false, true));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27, false, true));
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
   // -------------------------------------------------------------------
   // solutions at time n+1 and n
-  prenp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  prenp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
   // -------------------------------------------------------------------
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
+  dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    eleparams.set<const CORE::UTILS::FunctionManager*>(
-        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
+    eleparams.set<const Core::UTILS::FunctionManager*>(
+        "function_manager", &Global::Problem::Instance()->FunctionManager());
     discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
@@ -145,20 +145,20 @@ void LUBRICATION::TimIntImpl::Init()
   // create vectors associated to solution process
   // -------------------------------------------------------------------
   // the vector containing body and surface forces
-  neumann_loads_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  neumann_loads_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // the residual vector --- more or less the rhs
-  residual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  residual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // residual vector containing the normal boundary fluxes
-  trueresidual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  trueresidual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // incremental solution vector
-  increment_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  increment_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // iterative pressure increments Incp_{n+1}
   // also known as residual pressures
-  prei_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  prei_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   return;
 }  // TimIntImpl::Init()
@@ -280,7 +280,7 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
 
   // initialize height vectors
   Teuchos::RCP<Epetra_Vector> height =
-      CORE::LINALG::CreateVector(*discret_->dof_row_map(nds), true);
+      Core::LinAlg::CreateVector(*discret_->dof_row_map(nds), true);
 
   int err(0);
   const int heightfuncno = params_->get<int>("HFUNCNO");
@@ -288,7 +288,7 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
   for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
   {
     // get the processor local node
-    CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+    Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
     // get dofs associated with current node
     std::vector<int> nodedofs = discret_->Dof(nds, lnode);
@@ -296,8 +296,8 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
     for (int index = 0; index < nsd_; ++index)
     {
       double heightfuncvalue =
-          GLOBAL::Problem::Instance()
-              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
+          Global::Problem::Instance()
+              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
               .Evaluate(lnode->X().data(), time_, index);
 
       // get global and local dof IDs
@@ -324,7 +324,7 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
   eleparams.set("total time", time_);
 
   // initialize velocity vectors
-  Teuchos::RCP<Epetra_Vector> vel = CORE::LINALG::CreateVector(*discret_->dof_row_map(nds), true);
+  Teuchos::RCP<Epetra_Vector> vel = Core::LinAlg::CreateVector(*discret_->dof_row_map(nds), true);
 
   int err(0);
   const int velfuncno = params_->get<int>("VELFUNCNO");
@@ -332,15 +332,15 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
   for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
   {
     // get the processor local node
-    CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+    Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
 
     // get dofs associated with current node
     std::vector<int> nodedofs = discret_->Dof(nds, lnode);
 
     for (int index = 0; index < nsd_; ++index)
     {
-      double velfuncvalue = GLOBAL::Problem::Instance()
-                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
+      double velfuncvalue = Global::Problem::Instance()
+                                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
                                 .Evaluate(lnode->X().data(), time_, index);
 
       // get global and local dof IDs
@@ -496,7 +496,7 @@ void LUBRICATION::TimIntImpl::Output(const int num)
   {
     std::ostringstream filename;
     filename << "Result_Step" << step_ << ".m";
-    CORE::LINALG::PrintVectorInMatlabFormat(filename.str(), *prenp_);
+    Core::LinAlg::PrintVectorInMatlabFormat(filename.str(), *prenp_);
   }
   // NOTE:
   // statistics output for normal fluxes at boundaries was already done during Update()
@@ -529,8 +529,8 @@ void LUBRICATION::TimIntImpl::apply_dirichlet_bc(
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // actual time t_{n+1}
-  p.set<const CORE::UTILS::FunctionManager*>(
-      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
+  p.set<const Core::UTILS::FunctionManager*>(
+      "function_manager", &Global::Problem::Instance()->FunctionManager());
 
   // predicted Dirichlet values
   // \c  prenp then also holds prescribed new Dirichlet values
@@ -686,7 +686,7 @@ void LUBRICATION::TimIntImpl::nonlinear_solve()
   const double ittol = params_->get<double>("CONVTOL");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool isadapttol = (CORE::UTILS::IntegralValue<int>(*params_, "ADAPTCONV"));
+  const bool isadapttol = (Core::UTILS::IntegralValue<int>(*params_, "ADAPTCONV"));
   const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER");
   const double abstolres = params_->get<double>("ABSTOLRES");
   double actresidual(0.0);
@@ -709,13 +709,13 @@ void LUBRICATION::TimIntImpl::nonlinear_solve()
       // time measurement: application of DBC to system
       TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:       + apply DBC to system");
 
-      CORE::LINALG::apply_dirichlet_to_system(
+      Core::LinAlg::apply_dirichlet_to_system(
           *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
       // additionally apply Dirichlet condition to unprojectable nodes
       // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
       if (inf_gap_toggle_lub_ != Teuchos::null)
-        CORE::LINALG::apply_dirichlet_to_system(
+        Core::LinAlg::apply_dirichlet_to_system(
             *sysmat_, *increment_, *residual_, *zeros_, *inf_gap_toggle_lub_);
     }
 
@@ -733,7 +733,7 @@ void LUBRICATION::TimIntImpl::nonlinear_solve()
       TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:       + call linear solver");
 
       // do adaptive linear solver tolerance (not in first solve)
-      CORE::LINALG::SolverParams solver_params;
+      Core::LinAlg::SolverParams solver_params;
       if (isadapttol && iternum_ > 1)
       {
         solver_params.nonlin_tolerance = ittol;
@@ -1010,13 +1010,13 @@ void LUBRICATION::TimIntImpl::output_state()
         Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(), nsd_, true));
     for (int inode = 0; inode < discret_->NumMyRowNodes(); ++inode)
     {
-      CORE::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->lRowNode(inode);
       for (int idim = 0; idim < nsd_; ++idim)
         (*dispnp_multi)[idim][discret_->NodeRowMap()->LID(node->Id())] =
             (*dispnp)[dispnp->Map().LID(discret_->Dof(nds_disp_, node, idim))];
     }
 
-    output_->WriteVector("dispnp", dispnp_multi, CORE::IO::nodevector);
+    output_->WriteVector("dispnp", dispnp_multi, Core::IO::nodevector);
   }
 
   return;
@@ -1038,10 +1038,10 @@ inline void LUBRICATION::TimIntImpl::increment_time_and_step()
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
 {
-  const INPAR::LUBRICATION::CalcError calcerr =
-      CORE::UTILS::IntegralValue<INPAR::LUBRICATION::CalcError>(*params_, "CALCERROR");
+  const Inpar::LUBRICATION::CalcError calcerr =
+      Core::UTILS::IntegralValue<Inpar::LUBRICATION::CalcError>(*params_, "CALCERROR");
 
-  if (calcerr == INPAR::LUBRICATION::calcerror_no)  // do nothing (the usual case))
+  if (calcerr == Inpar::LUBRICATION::calcerror_no)  // do nothing (the usual case))
     return;
 
   // create the parameters for the error calculation
@@ -1052,7 +1052,7 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
 
   switch (calcerr)
   {
-    case INPAR::LUBRICATION::calcerror_byfunction:
+    case Inpar::LUBRICATION::calcerror_byfunction:
     {
       const int errorfunctnumber = params_->get<int>("CALCERRORNO");
       if (errorfunctnumber < 1)
@@ -1074,8 +1074,8 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
   discret_->set_state("prenp", prenp_);
 
   // get (squared) error values
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(4));
   discret_->EvaluateScalars(eleparams, errors);
   discret_->ClearState();
 
@@ -1097,7 +1097,7 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
   {
     // print last error in a separate file
 
-    const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+    const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
     const std::string fname = simulation + "_pressure_time.relerror";
 
     if (step_ == 0)
@@ -1136,7 +1136,7 @@ void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) 
   const bool screen_out = true;
 
   // create Gmsh postprocessing file
-  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
       "solution_field_pressure", discret_->Writer()->Output()->FileName(), step, 500, screen_out,
       discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
@@ -1145,7 +1145,7 @@ void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) 
     gmshfilecontent << "View \" "
                     << "Prenp \" {" << std::endl;
     // draw pressure field 'Prenp' for every element
-    CORE::IO::GMSH::ScalarFieldToGmsh(discret_, prenp_, gmshfilecontent);
+    Core::IO::Gmsh::ScalarFieldToGmsh(discret_, prenp_, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -1173,8 +1173,8 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
     if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
     // evaluate integrals of pressure(s) and domain
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> pressures =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> pressures =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
     discret_->EvaluateScalars(eleparams, pressures);
     discret_->ClearState();  // clean up
 
@@ -1194,7 +1194,7 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
       // file output
       std::stringstream number;
       number << num;
-      const std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileName() +
+      const std::string fname = Global::Problem::Instance()->OutputControlFile()->FileName() +
                                 number.str() + ".meanvalues.txt";
 
       std::ofstream f;
@@ -1224,9 +1224,9 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
 /*----------------------------------------------------------------------*
  | return system matrix downcasted as sparse matrix         wirtz 01/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> LUBRICATION::TimIntImpl::SystemMatrix()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> LUBRICATION::TimIntImpl::SystemMatrix()
 {
-  return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
+  return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
 }
 
 
@@ -1238,20 +1238,20 @@ void LUBRICATION::TimIntImpl::Evaluate()
 {
   // put zero pressure value, where no gap is defined
   if (inf_gap_toggle_lub_ != Teuchos::null)
-    CORE::LINALG::apply_dirichlet_to_system(*prenp_, *residual_, *zeros_, *inf_gap_toggle_lub_);
+    Core::LinAlg::apply_dirichlet_to_system(*prenp_, *residual_, *zeros_, *inf_gap_toggle_lub_);
 
   // call elements to calculate system matrix and rhs and assemble
   assemble_mat_and_rhs();
 
   // Apply Dirichlet boundary conditions to system of equations
   // residual values are supposed to be zero at Dirichlet boundaries
-  CORE::LINALG::apply_dirichlet_to_system(
+  Core::LinAlg::apply_dirichlet_to_system(
       *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
   // additionally apply Dirichlet condition to unprojectable nodes
   // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
   if (inf_gap_toggle_lub_ != Teuchos::null)
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *sysmat_, *increment_, *residual_, *zeros_, *inf_gap_toggle_lub_);
 }
 

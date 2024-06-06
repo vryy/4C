@@ -19,37 +19,37 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 struct _SOH8_DATA;
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
 
   namespace ELEMENTS
   {
-    class SoHex8P1J1Type : public CORE::Elements::ElementType
+    class SoHex8P1J1Type : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "So_Hex8P1J1Type"; }
 
       static SoHex8P1J1Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -113,7 +113,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -132,7 +132,7 @@ namespace DRT
      \ref Pack and \ref Unpack are used to communicate this element
 
      */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -155,9 +155,9 @@ namespace DRT
       \param D_T_bar (out): current reference moduli
       \param t (in): current volume theta
       */
-      void ConvertMat(const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& cmat,
-          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& F,
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& D_T_bar, const double t);
+      void ConvertMat(const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& cmat,
+          const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& F,
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& D_T_bar, const double t);
 
       SoHex8P1J1Type& ElementType() const override { return SoHex8P1J1Type::Instance(); }
 
@@ -169,7 +169,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       void InitKpt()
       {
@@ -217,54 +217,54 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       //! Compute internal force, its stiffness and mass matrix
       void force_stiff_mass(const std::vector<int>& lm,  ///< location matrix
           const std::vector<double>& disp,               ///< current displacements
           const std::vector<double>& residual,           ///< current residual displ
-          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>*
+          Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>*
               stiffmatrix,                                             ///< element stiffness matrix
-          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
-          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force,      ///< element internal force vector
-          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force_str,  // structure force
-          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
+          Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force,      ///< element internal force vector
+          Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force_str,  // structure force
+          Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,  ///< stress output option
-          const INPAR::STR::StrainType iostrain   ///< strain output option
+          const Inpar::STR::StressType iostress,  ///< stress output option
+          const Inpar::STR::StrainType iostrain   ///< strain output option
       );
 
       /// Return stress at Gauss point
-      void Stress(CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>*
+      void Stress(Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>*
                       elestress,                  ///< store the stress herein
-          const INPAR::STR::StressType iostress,  ///< stress type
+          const Inpar::STR::StressType iostress,  ///< stress type
           const int gp,                           ///< Gauss point index
           const double& detdefgrd,                ///< determinant of (assumed) deformation gradient
-          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>&
+          const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>&
               defgrd,  ///< (assumed) deformation gradient
-          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress  ///< Cauchy stress vector
+          const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& stress  ///< Cauchy stress vector
       );
 
       /// Return strain at Gauss point
-      void Strain(CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>*
+      void Strain(Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>*
                       elestrain,                  ///< store the strain herein
-          const INPAR::STR::StrainType iostrain,  ///< strain type to store for post-proc
+          const Inpar::STR::StrainType iostrain,  ///< strain type to store for post-proc
           const int gp,                           ///< Gauss point index
           const double& detdefgrd,                ///< determinant of (assumed) deformation gradient
-          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,  ///< deformation gradient
-          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>&
+          const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,  ///< deformation gradient
+          const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>&
               glstrain  ///< Green-Lagrange strain vector
       );
 
       /// Push-pull-operator
-      static void PushPullOperator(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
+      static void PushPullOperator(Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>&
                                        g,  ///< (G_ab^AB or G_AB^ab) or (G^ab_AB or G^AB_ab)
-          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>&
+          const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>&
               f,                  ///< [F^-1]=[F^B_b] or [F]=[F^b_B]
           const bool& transpose,  ///< co-variant if true
           const double& fac       //  a scaling factor, eg det(F)
@@ -280,41 +280,41 @@ namespace DRT
       // don't want = operator
       SoHex8P1J1& operator=(const SoHex8P1J1& old);
 
-      CORE::LINALG::Matrix<1, NUMDOF_SOH8> k_pu_;
-      CORE::LINALG::Matrix<1, NUMDOF_SOH8> k_tu_;
-      CORE::LINALG::Matrix<1, 1> r_t_;
-      CORE::LINALG::Matrix<1, 1> r_p_;
+      Core::LinAlg::Matrix<1, NUMDOF_SOH8> k_pu_;
+      Core::LinAlg::Matrix<1, NUMDOF_SOH8> k_tu_;
+      Core::LinAlg::Matrix<1, 1> r_t_;
+      Core::LinAlg::Matrix<1, 1> r_p_;
 
-      CORE::LINALG::Matrix<6, 1> m_;
-      CORE::LINALG::Matrix<6, 6> identity6_;
-      CORE::LINALG::Matrix<6, 6> i_d_;
-      CORE::LINALG::Matrix<6, 6> i_0_;
+      Core::LinAlg::Matrix<6, 1> m_;
+      Core::LinAlg::Matrix<6, 6> identity6_;
+      Core::LinAlg::Matrix<6, 6> i_d_;
+      Core::LinAlg::Matrix<6, 6> i_0_;
 
 
       /// @name Discontinuous primary field variables
       //@{
-      CORE::LINALG::Matrix<1, 1> p_;    ///< pressure at current time/load step
-      CORE::LINALG::Matrix<1, 1> p_o_;  ///< (old) pressure at last converged time/load step
-      CORE::LINALG::Matrix<1, 1> dp_;   ///< pressure increment
-      CORE::LINALG::Matrix<1, 1>
+      Core::LinAlg::Matrix<1, 1> p_;    ///< pressure at current time/load step
+      Core::LinAlg::Matrix<1, 1> p_o_;  ///< (old) pressure at last converged time/load step
+      Core::LinAlg::Matrix<1, 1> dp_;   ///< pressure increment
+      Core::LinAlg::Matrix<1, 1>
           t_;  ///< determinant of deformation gradient at current time/load step
-      CORE::LINALG::Matrix<1, 1>
+      Core::LinAlg::Matrix<1, 1>
           t_o_;  ///< (old) Jacobian of deformation gradient at last converged time/load step
-      CORE::LINALG::Matrix<1, 1> dt_;  ///< jacobian increment
+      Core::LinAlg::Matrix<1, 1> dt_;  ///< jacobian increment
       //@}
 
       double k_pt_{};
       double k_tt_{};
-      CORE::LINALG::Matrix<1, 1> p_temp_;
-      CORE::LINALG::Matrix<1, 1> t_temp_;
+      Core::LinAlg::Matrix<1, 1> p_temp_;
+      Core::LinAlg::Matrix<1, 1> t_temp_;
 
-      CORE::LINALG::Matrix<24, 24> k_uu_;
-      CORE::LINALG::Matrix<24, 1> f_u_;
+      Core::LinAlg::Matrix<24, 24> k_uu_;
+      Core::LinAlg::Matrix<24, 1> f_u_;
     };
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

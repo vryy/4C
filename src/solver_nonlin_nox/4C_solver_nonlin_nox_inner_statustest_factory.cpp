@@ -30,19 +30,19 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::Factory::Factory()
+NOX::Nln::Inner::StatusTest::Factory::Factory()
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::build_inner_status_tests(Teuchos::ParameterList& p,
+Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>
+NOX::Nln::Inner::StatusTest::Factory::build_inner_status_tests(Teuchos::ParameterList& p,
     const ::NOX::Utils& u,
-    std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
+    std::map<std::string, Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>>* tagged_tests) const
 {
-  Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> status_test;
+  Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> status_test;
 
   std::string test_type = "???";
 
@@ -51,7 +51,7 @@ NOX::NLN::INNER::StatusTest::Factory::build_inner_status_tests(Teuchos::Paramete
   else
   {
     FOUR_C_THROW(
-        "Error - The \"Test Type\" is a required parameter in the NOX::NLN::StatusTest::Factory!");
+        "Error - The \"Test Type\" is a required parameter in the NOX::Nln::StatusTest::Factory!");
   }
 
   if (test_type == "Combo")
@@ -84,8 +84,8 @@ NOX::NLN::INNER::StatusTest::Factory::build_inner_status_tests(Teuchos::Paramete
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::build_armijo_test(
+Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>
+NOX::Nln::Inner::StatusTest::Factory::build_armijo_test(
     Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   // ------------------------------------------
@@ -111,20 +111,20 @@ NOX::NLN::INNER::StatusTest::Factory::build_armijo_test(
   // ------------------------------------------
   std::size_t maxHistSize = static_cast<unsigned>(p.get<int>("Maximal History Length", 1));
 
-  Teuchos::RCP<NOX::NLN::INNER::StatusTest::Armijo> status_test = Teuchos::null;
+  Teuchos::RCP<NOX::Nln::Inner::StatusTest::Armijo> status_test = Teuchos::null;
   if (isMonotone)
-    status_test = Teuchos::rcp(new NOX::NLN::INNER::StatusTest::Armijo(c_1));
+    status_test = Teuchos::rcp(new NOX::Nln::Inner::StatusTest::Armijo(c_1));
   else
     status_test =
-        Teuchos::rcp(new NOX::NLN::INNER::StatusTest::Armijo(c_1, isMonotone, maxHistSize));
+        Teuchos::rcp(new NOX::Nln::Inner::StatusTest::Armijo(c_1, isMonotone, maxHistSize));
 
   return status_test;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::build_filter_test(
+Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>
+NOX::Nln::Inner::StatusTest::Factory::build_filter_test(
     Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   FilterParams fparams;
@@ -142,7 +142,7 @@ NOX::NLN::INNER::StatusTest::Factory::build_filter_test(
 
     // build infeasibility function object
     infeasibility_vec.push_back(
-        Teuchos::rcp(new NOX::NLN::MeritFunction::Infeasibility(p_infeasibility, u)));
+        Teuchos::rcp(new NOX::Nln::MeritFunction::Infeasibility(p_infeasibility, u)));
 
     /// clear and increase infeasibility function count string
     infeasibility_count.str("");
@@ -162,17 +162,17 @@ NOX::NLN::INNER::StatusTest::Factory::build_filter_test(
 
   // read second order correction parameters
   fparams.use_soc_ = p.get<bool>("Second Order Correction", true);
-  fparams.soc_type_ = NOX::NLN::CorrectionType::vague;
+  fparams.soc_type_ = NOX::Nln::CorrectionType::vague;
   if (fparams.use_soc_)
   {
     // setup validator
     fparams.soc_type_ =
-        NOX::NLN::PUTILS::SetAndValidate<NOX::NLN::CorrectionType>(p, "SOC Type", "auto",
+        NOX::Nln::ParameterUtils::SetAndValidate<NOX::Nln::CorrectionType>(p, "SOC Type", "auto",
             "Second order correction type. Per default the "
             "SOC type is set to \"auto\".",
             Teuchos::tuple<std::string>("auto", "cheap", "full"),
-            Teuchos::tuple<NOX::NLN::CorrectionType>(NOX::NLN::CorrectionType::soc_automatic,
-                NOX::NLN::CorrectionType::soc_cheap, NOX::NLN::CorrectionType::soc_full));
+            Teuchos::tuple<NOX::Nln::CorrectionType>(NOX::Nln::CorrectionType::soc_automatic,
+                NOX::Nln::CorrectionType::soc_cheap, NOX::Nln::CorrectionType::soc_full));
   }
 
   // build internal Armijo test
@@ -197,16 +197,16 @@ NOX::NLN::INNER::StatusTest::Factory::build_filter_test(
       FOUR_C_THROW("The Initial Max Theta Blocking Scaling must be greater than 0.0.");
   }
 
-  Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter> status_test_ptr =
-      Teuchos::rcp(new NOX::NLN::INNER::StatusTest::Filter(fparams, u));
+  Teuchos::RCP<NOX::Nln::Inner::StatusTest::Filter> status_test_ptr =
+      Teuchos::rcp(new NOX::Nln::Inner::StatusTest::Filter(fparams, u));
 
   return status_test_ptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::build_upper_bound_test(
+Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>
+NOX::Nln::Inner::StatusTest::Factory::build_upper_bound_test(
     Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   // Get upper bound as specified in xml file
@@ -220,9 +220,9 @@ NOX::NLN::INNER::StatusTest::Factory::build_upper_bound_test(
   }
 
   const std::string& quantity_type_string = p.get("Quantity Type", "???");
-  const NOX::NLN::StatusTest::QuantityType qtype =
-      NOX::NLN::StatusTest::String2QuantityType(quantity_type_string);
-  if (qtype == NOX::NLN::StatusTest::quantity_unknown)
+  const NOX::Nln::StatusTest::QuantityType qtype =
+      NOX::Nln::StatusTest::String2QuantityType(quantity_type_string);
+  if (qtype == NOX::Nln::StatusTest::quantity_unknown)
   {
     std::ostringstream msg;
     FOUR_C_THROW(
@@ -246,32 +246,33 @@ NOX::NLN::INNER::StatusTest::Factory::build_upper_bound_test(
     TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, msg);
   }
 
-  Teuchos::RCP<NOX::NLN::INNER::StatusTest::UpperBound> status_test =
-      Teuchos::rcp(new NOX::NLN::INNER::StatusTest::UpperBound(upperboundval, norm_type, qtype));
+  Teuchos::RCP<NOX::Nln::Inner::StatusTest::UpperBound> status_test =
+      Teuchos::rcp(new NOX::Nln::Inner::StatusTest::UpperBound(upperboundval, norm_type, qtype));
 
   return status_test;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::build_combo_test(Teuchos::ParameterList& p,
+Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>
+NOX::Nln::Inner::StatusTest::Factory::build_combo_test(Teuchos::ParameterList& p,
     const ::NOX::Utils& u,
-    std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
+    std::map<std::string, Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>>* tagged_tests) const
 {
   if (not p.isParameter("Combo Type")) FOUR_C_THROW("You have to specify a \"Combo Type\".");
 
 
   ::NOX::StatusTest::Combo::ComboType combo_type =
-      NOX::NLN::PUTILS::SetAndValidate<::NOX::StatusTest::Combo::ComboType>(p, "Combo Type", "AND",
+      NOX::Nln::ParameterUtils::SetAndValidate<::NOX::StatusTest::Combo::ComboType>(p, "Combo Type",
+          "AND",
           "Combination type to combine multiple inner "
           "status tests. Possible choices are AND and OR.",
           Teuchos::tuple<std::string>("AND", "OR"),
           Teuchos::tuple<::NOX::StatusTest::Combo::ComboType>(
               ::NOX::StatusTest::Combo::AND, ::NOX::StatusTest::Combo::OR));
 
-  Teuchos::RCP<NOX::NLN::INNER::StatusTest::Combo> combo_test =
-      Teuchos::rcp(new NOX::NLN::INNER::StatusTest::Combo(combo_type, &u));
+  Teuchos::RCP<NOX::Nln::Inner::StatusTest::Combo> combo_test =
+      Teuchos::rcp(new NOX::Nln::Inner::StatusTest::Combo(combo_type, &u));
 
   int i = 0;
   std::ostringstream subtest_name;
@@ -280,7 +281,7 @@ NOX::NLN::INNER::StatusTest::Factory::build_combo_test(Teuchos::ParameterList& p
   {
     Teuchos::ParameterList& subtest_list = p.sublist(subtest_name.str(), true);
 
-    Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> subtest =
+    Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> subtest =
         this->build_inner_status_tests(subtest_list, u, tagged_tests);
 
     combo_test->addStatusTest(subtest);
@@ -296,9 +297,9 @@ NOX::NLN::INNER::StatusTest::Factory::build_combo_test(Teuchos::ParameterList& p
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::INNER::StatusTest::Factory::check_and_tag_test(const Teuchos::ParameterList& p,
-    const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& test,
-    std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
+bool NOX::Nln::Inner::StatusTest::Factory::check_and_tag_test(const Teuchos::ParameterList& p,
+    const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& test,
+    std::map<std::string, Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>>* tagged_tests) const
 {
   if ((Teuchos::isParameterType<std::string>(p, "Tag")) && (tagged_tests != nullptr))
   {
@@ -311,21 +312,21 @@ bool NOX::NLN::INNER::StatusTest::Factory::check_and_tag_test(const Teuchos::Par
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Factory::throw_error(
+void NOX::Nln::Inner::StatusTest::Factory::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   std::ostringstream msg;
-  msg << "ERROR - NOX::NLN::INNER::StatusTest::Factory::" << functionName << " - " << errorMsg
+  msg << "ERROR - NOX::Nln::Inner::StatusTest::Factory::" << functionName << " - " << errorMsg
       << std::endl;
   FOUR_C_THROW(msg.str());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::build_inner_status_tests(Teuchos::ParameterList& p,
+Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>
+NOX::Nln::Inner::StatusTest::build_inner_status_tests(Teuchos::ParameterList& p,
     const ::NOX::Utils& u,
-    std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests)
+    std::map<std::string, Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>>* tagged_tests)
 {
   Factory factory;
   return factory.build_inner_status_tests(p, u, tagged_tests);
@@ -333,8 +334,8 @@ NOX::NLN::INNER::StatusTest::build_inner_status_tests(Teuchos::ParameterList& p,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
-NOX::NLN::INNER::StatusTest::Factory::build_volume_change_test(
+Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>
+NOX::Nln::Inner::StatusTest::Factory::build_volume_change_test(
     Teuchos::ParameterList& p, const ::NOX::Utils& u) const
 {
   VolumeChangeParams vcparams;

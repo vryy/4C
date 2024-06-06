@@ -19,10 +19,10 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  using namespace DRT::UTILS;
+  using namespace Discret::UTILS;
 
-  Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateXfluidFunction(
-      const std::vector<INPUT::LineDefinition>& function_line_defs)
+  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> CreateXfluidFunction(
+      const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
@@ -103,7 +103,7 @@ namespace
       else
       {
         FOUR_C_THROW("How did you end up here :)?");
-        return Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>(nullptr);
+        return Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>(nullptr);
       }
     }
     else if (function_lin_def.HaveNamed("TAYLORCOUETTEFLOW"))
@@ -222,17 +222,17 @@ namespace
     }
     else
     {
-      return Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>(nullptr);
+      return Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>(nullptr);
     }
   }
 }  // namespace
 
-void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_manager)
+void Discret::UTILS::AddValidXfluidFunctions(Core::UTILS::FunctionManager& function_manager)
 {
-  INPUT::LineDefinition gerstenbergerforwardfacingstep =
-      INPUT::LineDefinition::Builder().AddTag("FORWARDFACINGSTEP").Build();
+  Input::LineDefinition gerstenbergerforwardfacingstep =
+      Input::LineDefinition::Builder().AddTag("FORWARDFACINGSTEP").Build();
 
-  INPUT::LineDefinition movinglevelsetcylinder = INPUT::LineDefinition::Builder()
+  Input::LineDefinition movinglevelsetcylinder = Input::LineDefinition::Builder()
                                                      .AddTag("MOVINGLEVELSETCYLINDER")
                                                      .add_named_double_vector("ORIGIN", 3)
                                                      .AddNamedDouble("RADIUS")
@@ -241,7 +241,7 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
                                                      .AddNamedDouble("MAXSPEED")
                                                      .Build();
 
-  INPUT::LineDefinition movinglevelsettorus = INPUT::LineDefinition::Builder()
+  Input::LineDefinition movinglevelsettorus = Input::LineDefinition::Builder()
                                                   .AddTag("MOVINGLEVELSETTORUS")
                                                   .add_named_double_vector("ORIGIN", 3)
                                                   .add_named_double_vector("ORIENTVEC_TORUS", 3)
@@ -255,8 +255,8 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
                                                   .AddNamedDouble("ROTATION_RAMPTIME")
                                                   .Build();
 
-  INPUT::LineDefinition movinglevelsettorusvelocity =
-      INPUT::LineDefinition::Builder()
+  Input::LineDefinition movinglevelsettorusvelocity =
+      Input::LineDefinition::Builder()
           .AddTag("MOVINGLEVELSETTORUSVELOCITY")
           .add_named_double_vector("ORIGIN", 3)
           .add_named_double_vector("ORIENTVEC_TORUS", 3)
@@ -270,8 +270,8 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
           .AddNamedDouble("ROTATION_RAMPTIME")
           .Build();
 
-  INPUT::LineDefinition movinglevelsettorussliplength =
-      INPUT::LineDefinition::Builder()
+  Input::LineDefinition movinglevelsettorussliplength =
+      Input::LineDefinition::Builder()
           .AddTag("MOVINGLEVELSETTORUSSLIPLENGTH")
           .add_named_double_vector("ORIGIN", 3)
           .add_named_double_vector("ORIENTVEC_TORUS", 3)
@@ -286,7 +286,7 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
           .AddNamedInt("SLIP_FUNCT")
           .Build();
 
-  INPUT::LineDefinition taylorcouetteflow = INPUT::LineDefinition::Builder()
+  Input::LineDefinition taylorcouetteflow = Input::LineDefinition::Builder()
                                                 .AddTag("TAYLORCOUETTEFLOW")
                                                 .AddNamedDouble("RADIUS_I")
                                                 .AddNamedDouble("RADIUS_O")
@@ -299,7 +299,7 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
                                                 .AddNamedDouble("VISCOSITY")
                                                 .Build();
 
-  INPUT::LineDefinition urquizaboxflow = INPUT::LineDefinition::Builder()
+  Input::LineDefinition urquizaboxflow = Input::LineDefinition::Builder()
                                              .AddTag("URQUIZABOXFLOW")
                                              .AddNamedDouble("LENGTHX")
                                              .AddNamedDouble("LENGTHY")
@@ -310,8 +310,8 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
                                              .add_optional_named_double_vector("COMBINATION", 2)
                                              .Build();
 
-  INPUT::LineDefinition urquizaboxflowtraction =
-      INPUT::LineDefinition::Builder()
+  Input::LineDefinition urquizaboxflowtraction =
+      Input::LineDefinition::Builder()
           .AddTag("URQUIZABOXFLOW_TRACTION")
           .AddNamedDouble("LENGTHX")
           .AddNamedDouble("LENGTHY")
@@ -322,8 +322,8 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
           .add_optional_named_double_vector("COMBINATION", 2)
           .Build();
 
-  INPUT::LineDefinition urquizaboxflowforce =
-      INPUT::LineDefinition::Builder()
+  Input::LineDefinition urquizaboxflowforce =
+      Input::LineDefinition::Builder()
           .AddTag("URQUIZABOXFLOW_FORCE")
           .AddNamedDouble("LENGTHX")
           .AddNamedDouble("LENGTHY")
@@ -334,7 +334,7 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
           .add_optional_named_double_vector("COMBINATION", 2)
           .Build();
 
-  std::vector<INPUT::LineDefinition> lines;
+  std::vector<Input::LineDefinition> lines;
 
   lines.emplace_back(std::move(gerstenbergerforwardfacingstep));
   lines.emplace_back(std::move(movinglevelsetcylinder));
@@ -351,9 +351,9 @@ void DRT::UTILS::AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_
 
 
 
-DRT::UTILS::GerstenbergerForwardfacingStep::GerstenbergerForwardfacingStep() {}
+Discret::UTILS::GerstenbergerForwardfacingStep::GerstenbergerForwardfacingStep() {}
 
-double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(
+double Discret::UTILS::GerstenbergerForwardfacingStep::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   //  //cube_Gerstenberger:
@@ -421,7 +421,7 @@ double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(
 }
 
 
-DRT::UTILS::MovingLevelSetCylinder::MovingLevelSetCylinder(std::vector<double>* origin,
+Discret::UTILS::MovingLevelSetCylinder::MovingLevelSetCylinder(std::vector<double>* origin,
     double radius, std::vector<double>* direction, double distance, double maxspeed)
 {
   // Origin of the geometry
@@ -457,7 +457,7 @@ DRT::UTILS::MovingLevelSetCylinder::MovingLevelSetCylinder(std::vector<double>* 
   // std::cout << "T_halfcycle: " << (L/2)/maxspeed * PI; //i.e. -d/2 -> d/2
 }
 
-double DRT::UTILS::MovingLevelSetCylinder::Evaluate(
+double Discret::UTILS::MovingLevelSetCylinder::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // d = L/2 * sin(f*t-PI/2)
@@ -482,7 +482,7 @@ double DRT::UTILS::MovingLevelSetCylinder::Evaluate(
 }
 
 
-DRT::UTILS::MovingLSTorus::MovingLSTorus(std::vector<double>* origin,
+Discret::UTILS::MovingLSTorus::MovingLSTorus(std::vector<double>* origin,
     std::vector<double>* orientationvec_torus, double radius, double radius_tube,
     std::vector<double>* direction, double distance, double maxspeed,
     std::vector<double>* rotvector, double rotspeed, double rotramptime)
@@ -584,7 +584,7 @@ DRT::UTILS::MovingLSTorus::MovingLSTorus(std::vector<double>* origin,
 }
 
 
-DRT::UTILS::MovingLevelSetTorus::MovingLevelSetTorus(std::vector<double>* origin,
+Discret::UTILS::MovingLevelSetTorus::MovingLevelSetTorus(std::vector<double>* origin,
     std::vector<double>* orientationvec_torus, double radius, double radius_tube,
     std::vector<double>* direction, double distance, double maxspeed,
     std::vector<double>* rotvector, double rotspeed, double rotramptime)
@@ -593,7 +593,7 @@ DRT::UTILS::MovingLevelSetTorus::MovingLevelSetTorus(std::vector<double>* origin
 {
 }
 
-double DRT::UTILS::MovingLevelSetTorus::Evaluate(
+double Discret::UTILS::MovingLevelSetTorus::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // d = L/2 * sin(f*t-PI/2)
@@ -696,16 +696,16 @@ double DRT::UTILS::MovingLevelSetTorus::Evaluate(
 }
 
 
-DRT::UTILS::MovingLevelSetTorusVelocity::MovingLevelSetTorusVelocity(std::vector<double>* origin,
-    std::vector<double>* orientationvec_torus, double radius, double radius_tube,
-    std::vector<double>* direction, double distance, double maxspeed,
+Discret::UTILS::MovingLevelSetTorusVelocity::MovingLevelSetTorusVelocity(
+    std::vector<double>* origin, std::vector<double>* orientationvec_torus, double radius,
+    double radius_tube, std::vector<double>* direction, double distance, double maxspeed,
     std::vector<double>* rotvector, double rotspeed, double rotramptime)
     : MovingLSTorus(origin, orientationvec_torus, radius, radius_tube, direction, distance,
           maxspeed, rotvector, rotspeed, rotramptime)
 {
 }
 
-double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(
+double Discret::UTILS::MovingLevelSetTorusVelocity::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // d = L/2 * sin(f*t-PI/2)
@@ -796,7 +796,7 @@ double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(
 }
 
 
-DRT::UTILS::MovingLevelSetTorusSliplength::MovingLevelSetTorusSliplength(
+Discret::UTILS::MovingLevelSetTorusSliplength::MovingLevelSetTorusSliplength(
     std::vector<double>* origin, std::vector<double>* orientationvec_torus, double radius,
     double radius_tube, std::vector<double>* direction, double distance, double maxspeed,
     std::vector<double>* rotvector, double rotspeed, double rotramptime, int slipfunct)
@@ -835,7 +835,7 @@ DRT::UTILS::MovingLevelSetTorusSliplength::MovingLevelSetTorusSliplength(
   }
 }
 
-double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(
+double Discret::UTILS::MovingLevelSetTorusSliplength::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // coefficient for sinus.
@@ -966,7 +966,7 @@ double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(
 }
 
 
-DRT::UTILS::TaylorCouetteFlow::TaylorCouetteFlow(double radius_inner, double radius_outer,
+Discret::UTILS::TaylorCouetteFlow::TaylorCouetteFlow(double radius_inner, double radius_outer,
     double vel_theta_inner, double vel_theta_outer, double sliplength_inner,
     double sliplength_outer, double traction_theta_inner, double traction_theta_outer,
     double viscosity)
@@ -1022,7 +1022,7 @@ DRT::UTILS::TaylorCouetteFlow::TaylorCouetteFlow(double radius_inner, double rad
         (0.5 * ((radius_outer * radius_outer) - (radius_inner * radius_inner)));
 }
 
-double DRT::UTILS::TaylorCouetteFlow::Evaluate(
+double Discret::UTILS::TaylorCouetteFlow::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   double radius = sqrt(xp[0] * xp[0] + xp[1] * xp[1]);
@@ -1049,7 +1049,7 @@ double DRT::UTILS::TaylorCouetteFlow::Evaluate(
   return 1.0;
 }
 
-std::vector<double> DRT::UTILS::TaylorCouetteFlow::evaluate_spatial_derivative(
+std::vector<double> Discret::UTILS::TaylorCouetteFlow::evaluate_spatial_derivative(
     const double* xp, const double t, const std::size_t component) const
 {
   // u_x = -(c1_*r + c2_/r)*y/r = -(c1_*y + c2_*y/(x^2+y^2))
@@ -1105,7 +1105,7 @@ std::vector<double> DRT::UTILS::TaylorCouetteFlow::evaluate_spatial_derivative(
 }
 
 
-DRT::UTILS::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, double rotation,
+Discret::UTILS::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, double rotation,
     double viscosity, double density, int functno, std::vector<double> lincomb)
     : lengthx_(lengthx),
       lengthy_(lengthy),
@@ -1151,7 +1151,7 @@ DRT::UTILS::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, doubl
   (rotvector_[1])[1] = cos(rotation_);
 }
 
-double DRT::UTILS::UrquizaBoxFlow::Evaluate(
+double Discret::UTILS::UrquizaBoxFlow::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // CASE 1:
@@ -1303,7 +1303,7 @@ double DRT::UTILS::UrquizaBoxFlow::Evaluate(
   return 0.0;
 }
 
-std::vector<double> DRT::UTILS::UrquizaBoxFlow::evaluate_spatial_derivative(
+std::vector<double> Discret::UTILS::UrquizaBoxFlow::evaluate_spatial_derivative(
     const double* xp, const double t, const std::size_t component) const
 {
   //  CASE 1:
@@ -1398,13 +1398,13 @@ std::vector<double> DRT::UTILS::UrquizaBoxFlow::evaluate_spatial_derivative(
 }
 
 
-DRT::UTILS::UrquizaBoxFlowForce::UrquizaBoxFlowForce(double lengthx, double lengthy,
+Discret::UTILS::UrquizaBoxFlowForce::UrquizaBoxFlowForce(double lengthx, double lengthy,
     double rotation, double viscosity, double density, int functno, std::vector<double> lincomb)
     : UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, std::move(lincomb))
 {
 }
 
-double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(
+double Discret::UTILS::UrquizaBoxFlowForce::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   double x = xp[0];
@@ -1552,13 +1552,13 @@ double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(
 }
 
 
-DRT::UTILS::UrquizaBoxFlowTraction::UrquizaBoxFlowTraction(double lengthx, double lengthy,
+Discret::UTILS::UrquizaBoxFlowTraction::UrquizaBoxFlowTraction(double lengthx, double lengthy,
     double rotation, double viscosity, double density, int functno, std::vector<double> lincomb)
     : UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, std::move(lincomb))
 {
 }
 
-double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(
+double Discret::UTILS::UrquizaBoxFlowTraction::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   double tol = 1e-13;

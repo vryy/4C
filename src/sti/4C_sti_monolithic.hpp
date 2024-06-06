@@ -22,12 +22,12 @@ class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class BlockSparseMatrixBase;
   class MapExtractor;
@@ -39,7 +39,7 @@ namespace CORE::LINALG
   class MatrixRowTransform;
   class Equilibration;
   enum class MatrixType;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace STI
 {
@@ -65,7 +65,7 @@ namespace STI
     //! output matrix to *.csv file for debugging purposes, with global row and column IDs of matrix
     //! components in ascending order across all processors
     static void OutputMatrixToFile(
-        const Teuchos::RCP<const CORE::LINALG::SparseOperator>
+        const Teuchos::RCP<const Core::LinAlg::SparseOperator>
             sparseoperator,           //!< sparse or block sparse matrix to be output
         const int precision = 16,     //!< output precision
         const double tolerance = -1.  //!< output omission tolerance
@@ -79,18 +79,18 @@ namespace STI
     );
 
     //! return algebraic solver for global system of equations
-    const CORE::LINALG::Solver& Solver() const { return *solver_; };
+    const Core::LinAlg::Solver& Solver() const { return *solver_; };
 
    private:
     //! Apply Dirichlet conditions to assembled OD blocks
     void apply_dirichlet_off_diag(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& scatrathermo_domain_interface,
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& thermoscatra_domain_interface);
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& scatrathermo_domain_interface,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& thermoscatra_domain_interface);
 
     //! Assemble interface and domain contributions of OD blocks
     void assemble_domain_interface_off_diag(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& scatrathermo_domain_interface,
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& thermoscatra_domain_interface);
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& scatrathermo_domain_interface,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& thermoscatra_domain_interface);
 
     //! assemble global system of equations
     void assemble_mat_and_rhs();
@@ -128,38 +128,38 @@ namespace STI
     const double restol_;
 
     //! global map extractor (0: scatra, 1: thermo)
-    Teuchos::RCP<CORE::LINALG::MapExtractor> maps_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> maps_;
 
     // flag for double condensation of linear equations associated with temperature field
     const bool condensationthermo_;
 
     //! global system matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix_;
 
     //! type of global system matrix in global system of equations
-    const CORE::LINALG::MatrixType matrixtype_;
+    const Core::LinAlg::MatrixType matrixtype_;
 
     //! scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo
     //! degrees of freedom), domain contributions
-    Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermoblockdomain_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatrathermoblockdomain_;
 
     //! scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo
     //! degrees of freedom), interface contributions
-    Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermoblockinterface_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatrathermoblockinterface_;
 
     //! thermo-scatra block of global system matrix (derivatives of thermo residuals w.r.t. scatra
     //! degrees of freedom), domain contributions
-    Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatrablockdomain_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermoscatrablockdomain_;
 
     //! thermo-scatra block of global system matrix (derivatives of thermo residuals w.r.t. scatra
     //! degrees of freedom), interface contributions
-    Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatrablockinterface_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermoscatrablockinterface_;
 
     //! map extractor associated with blocks of global system matrix
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockmaps_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockmaps_;
 
     //! map extractor associated with all degrees of freedom inside temperature field
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockmapthermo_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockmapthermo_;
 
     //! global increment vector for Newton-Raphson iteration
     Teuchos::RCP<Epetra_Vector> increment_;
@@ -174,32 +174,32 @@ namespace STI
     double dtsolve_;
 
     //! algebraic solver for global system of equations
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
 
     //! inverse sums of absolute values of row entries in global system matrix
     Teuchos::RCP<Epetra_Vector> invrowsums_;
 
     //! interface coupling adapter for scatra discretization
-    Teuchos::RCP<const CORE::ADAPTER::Coupling> icoupscatra_;
+    Teuchos::RCP<const Core::Adapter::Coupling> icoupscatra_;
 
     //! interface coupling adapter for thermo discretization
-    Teuchos::RCP<const CORE::ADAPTER::Coupling> icoupthermo_;
+    Teuchos::RCP<const Core::Adapter::Coupling> icoupthermo_;
 
     //! slave-to-master row transformation operator for scatra-thermo block of global system matrix
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> islavetomasterrowtransformscatraod_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> islavetomasterrowtransformscatraod_;
 
     //! slave-to-master column transformation operator for thermo-scatra block of global system
     //! matrix
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> islavetomastercoltransformthermood_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> islavetomastercoltransformthermood_;
 
     //! master-to-slave row transformation operator for thermo-scatra block of global system matrix
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> islavetomasterrowtransformthermood_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> islavetomasterrowtransformthermood_;
 
     //! evaluation of OD blocks for scatra-thermo coupling
     Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> scatrathermooffdiagcoupling_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<CORE::LINALG::Equilibration> equilibration_;
+    Teuchos::RCP<Core::LinAlg::Equilibration> equilibration_;
   };  // class Monolithic : public Algorithm
 }  // namespace STI
 FOUR_C_NAMESPACE_CLOSE

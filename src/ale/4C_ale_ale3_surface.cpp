@@ -15,15 +15,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::Ale3SurfaceType DRT::ELEMENTS::Ale3SurfaceType::instance_;
+Discret::ELEMENTS::Ale3SurfaceType Discret::ELEMENTS::Ale3SurfaceType::instance_;
 
-DRT::ELEMENTS::Ale3SurfaceType& DRT::ELEMENTS::Ale3SurfaceType::Instance() { return instance_; }
+Discret::ELEMENTS::Ale3SurfaceType& Discret::ELEMENTS::Ale3SurfaceType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode, const int* nodeids,
-    CORE::Nodes::Node** nodes, DRT::ELEMENTS::Ale3* parent, const int lsurface)
-    : CORE::Elements::FaceElement(id, owner)
+Discret::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Discret::ELEMENTS::Ale3* parent, const int lsurface)
+    : Core::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -32,35 +35,35 @@ DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode, const int*
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale3Surface::Ale3Surface(const DRT::ELEMENTS::Ale3Surface& old)
-    : CORE::Elements::FaceElement(old)
+Discret::ELEMENTS::Ale3Surface::Ale3Surface(const Discret::ELEMENTS::Ale3Surface& old)
+    : Core::Elements::FaceElement(old)
 {
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Ale3Surface::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Ale3Surface::Clone() const
 {
-  DRT::ELEMENTS::Ale3Surface* newelement = new DRT::ELEMENTS::Ale3Surface(*this);
+  Discret::ELEMENTS::Ale3Surface* newelement = new Discret::ELEMENTS::Ale3Surface(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::Ale3Surface::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Ale3Surface::Shape() const
 {
   switch (num_node())
   {
     case 3:
-      return CORE::FE::CellType::tri3;
+      return Core::FE::CellType::tri3;
     case 4:
-      return CORE::FE::CellType::quad4;
+      return Core::FE::CellType::quad4;
     case 6:
-      return CORE::FE::CellType::tri6;
+      return Core::FE::CellType::tri6;
     case 8:
-      return CORE::FE::CellType::quad8;
+      return Core::FE::CellType::quad8;
     case 9:
-      return CORE::FE::CellType::quad9;
+      return Core::FE::CellType::quad9;
     default:
       FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;
@@ -69,21 +72,21 @@ CORE::FE::CellType DRT::ELEMENTS::Ale3Surface::Shape() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale3Surface::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Ale3Surface::Pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Ale3Surface element does not support communication");
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale3Surface::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Ale3Surface::Unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this Ale3Surface element does not support communication");
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale3Surface::Print(std::ostream& os) const
+void Discret::ELEMENTS::Ale3Surface::Print(std::ostream& os) const
 {
   os << "Ale3Surface ";
   Element::Print(os);

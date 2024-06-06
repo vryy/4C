@@ -16,13 +16,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STRUMULTI
+namespace MultiScale
 {
   // std::endless loop for supporting procs in multi scale problems
   void np_support_drt();
 
 
-}  // namespace STRUMULTI
+}  // namespace MultiScale
 
 FOUR_C_NAMESPACE_CLOSE
 

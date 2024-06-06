@@ -29,17 +29,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -48,10 +48,10 @@ namespace XFEM
 {
   namespace UTILS
   {
-    void PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> dis,
+    void PrintDiscretizationToStream(Teuchos::RCP<Discret::Discretization> dis,
         const std::string& disname, bool elements, bool elecol, bool nodes, bool nodecol,
         bool faces, bool facecol, std::ostream& s,
-        std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = nullptr);
+        std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos = nullptr);
 
     class XFEMDiscretizationBuilder
     {
@@ -60,12 +60,13 @@ namespace XFEM
       XFEMDiscretizationBuilder(){/* should stay empty! */};
 
       void setup_xfem_discretization(const Teuchos::ParameterList& xgen_params,
-          Teuchos::RCP<DRT::Discretization> dis, int numdof = 4) const;
+          Teuchos::RCP<Discret::Discretization> dis, int numdof = 4) const;
 
       //! setup xfem discretization and embedded discretization
       void setup_xfem_discretization(const Teuchos::ParameterList& xgen_params,
-          Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Discretization> embedded_dis,
-          const std::string& embedded_cond_name, int numdof = 4) const;
+          Teuchos::RCP<Discret::Discretization> dis,
+          Teuchos::RCP<Discret::Discretization> embedded_dis, const std::string& embedded_cond_name,
+          int numdof = 4) const;
 
       /*! \brief Setup xfem discretization and embedded discretization
        *  by using a boundary condition vector
@@ -115,31 +116,32 @@ namespace XFEM
        *  \author hiermeier
        *  \date 06/16 */
       int setup_xfem_discretization(const Teuchos::ParameterList& xgen_params,
-          Teuchos::RCP<DRT::Discretization> src_dis, Teuchos::RCP<DRT::Discretization> target_dis,
-          const std::vector<CORE::Conditions::Condition*>& boundary_conds) const;
+          Teuchos::RCP<Discret::Discretization> src_dis,
+          Teuchos::RCP<Discret::Discretization> target_dis,
+          const std::vector<Core::Conditions::Condition*>& boundary_conds) const;
 
      private:
       //! split a discretization into two by removing conditioned nodes
       //! in source and adding to target
       void split_discretization_by_condition(
-          Teuchos::RCP<DRT::Discretization> sourcedis,  //< initially contains all
-          Teuchos::RCP<DRT::Discretization> targetdis,  //< initially empty
-          std::vector<CORE::Conditions::Condition*>&
+          Teuchos::RCP<Discret::Discretization> sourcedis,  //< initially contains all
+          Teuchos::RCP<Discret::Discretization> targetdis,  //< initially empty
+          std::vector<Core::Conditions::Condition*>&
               conditions,  //< conditioned nodes to be shifted to target
           const std::vector<std::string>& conditions_to_copy  //< conditions to copy to target
       ) const;
 
       /*! split the discretization by removing the given elements and nodes in
        *  the source discretization and adding them to the target discretization */
-      void split_discretization(Teuchos::RCP<DRT::Discretization> sourcedis,
-          Teuchos::RCP<DRT::Discretization> targetdis,
-          const std::map<int, CORE::Nodes::Node*>& sourcenodes,
-          const std::map<int, CORE::Nodes::Node*>& sourcegnodes,
-          const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& sourceelements,
+      void split_discretization(Teuchos::RCP<Discret::Discretization> sourcedis,
+          Teuchos::RCP<Discret::Discretization> targetdis,
+          const std::map<int, Core::Nodes::Node*>& sourcenodes,
+          const std::map<int, Core::Nodes::Node*>& sourcegnodes,
+          const std::map<int, Teuchos::RCP<Core::Elements::Element>>& sourceelements,
           const std::vector<std::string>& conditions_to_copy) const;
 
       //! re-partitioning of newly created discretizations (e.g. split by condition)
-      void redistribute(Teuchos::RCP<DRT::Discretization> dis, std::vector<int>& noderowvec,
+      void redistribute(Teuchos::RCP<Discret::Discretization> dis, std::vector<int>& noderowvec,
           std::vector<int>& nodecolvec) const;
 
       /*! \brief Split a discretization into two parts by removing elements near boundary
@@ -152,22 +154,22 @@ namespace XFEM
        *  \date 06/16
        *  \author hiermeier  */
       void split_discretization_by_boundary_condition(
-          const Teuchos::RCP<DRT::Discretization>& sourcedis,
-          const Teuchos::RCP<DRT::Discretization>& targetdis,
-          const std::vector<CORE::Conditions::Condition*>& boundary_conds,
+          const Teuchos::RCP<Discret::Discretization>& sourcedis,
+          const Teuchos::RCP<Discret::Discretization>& targetdis,
+          const std::vector<Core::Conditions::Condition*>& boundary_conds,
           const std::vector<std::string>& conditions_to_copy) const;
 
       /** \brief remove conditions which are no longer part of the splitted
        *         partial discretizations, respectively
        *
        *  \author  hiermeier \date 10/16 */
-      Teuchos::RCP<CORE::Conditions::Condition> split_condition(
-          const CORE::Conditions::Condition* src_cond, const std::vector<int>& nodecolvec,
+      Teuchos::RCP<Core::Conditions::Condition> split_condition(
+          const Core::Conditions::Condition* src_cond, const std::vector<int>& nodecolvec,
           const Epetra_Comm& comm) const;
     };  // class XFEMDiscretizationBuilder
   }     // namespace UTILS
 
-  class DiscretizationXWall : public DRT::DiscretizationFaces
+  class DiscretizationXWall : public Discret::DiscretizationFaces
   {
    public:
     /*!
@@ -198,8 +200,8 @@ namespace XFEM
     \param node (in)        : the node
     \param element (in)     : the element (optionally)
     */
-    void Dof(std::vector<int>& dof, const CORE::Nodes::Node* node, unsigned nds,
-        unsigned nodaldofset, const CORE::Elements::Element* element = nullptr) const override
+    void Dof(std::vector<int>& dof, const Core::Nodes::Node* node, unsigned nds,
+        unsigned nodaldofset, const Core::Elements::Element* element = nullptr) const override
     {
       if (nds > 1) FOUR_C_THROW("xwall discretization can only handle one dofset at the moment");
 
@@ -209,7 +211,7 @@ namespace XFEM
       std::vector<int> totaldof;
       dofsets_[nds]->Dof(totaldof, node, nodaldofset);
 
-      if (element == nullptr && element->Shape() == CORE::FE::CellType::hex8)
+      if (element == nullptr && element->Shape() == Core::FE::CellType::hex8)
         FOUR_C_THROW("element required for location vector of hex8 element");
 
       int size;

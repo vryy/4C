@@ -18,16 +18,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
   class TimIntBDF2 : public virtual ScaTraTimIntImpl
   {
    public:
     /// Standard Constructor
-    TimIntBDF2(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::Solver> solver,
+    TimIntBDF2(Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::Solver> solver,
         Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     /// Setup time integration scheme
     void Setup() override;
@@ -51,7 +51,7 @@ namespace SCATRA
 
     /// read restart data
     void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
     /// routine to return scalar field phi at time step n+alpha_F
     Teuchos::RCP<Epetra_Vector> Phiaf() override { return Teuchos::null; }
@@ -134,7 +134,7 @@ namespace SCATRA
     /// fine-scale solution vector at time n+1
     Teuchos::RCP<Epetra_Vector> fsphinp_;
   };  // class TimIntBDF2
-}  // namespace SCATRA
+}  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

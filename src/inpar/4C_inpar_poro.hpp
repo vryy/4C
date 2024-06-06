@@ -13,7 +13,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR::PORO
+namespace Inpar::Poro
 {
   //! poro element implementation type
   enum class PoroType
@@ -23,7 +23,7 @@ namespace INPAR::PORO
     pressure_velocity_based
   };
 
-}  // namespace INPAR::PORO
+}  // namespace Inpar::Poro
 
 FOUR_C_NAMESPACE_CLOSE
 

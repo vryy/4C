@@ -17,11 +17,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   ActionType act = none;
 
@@ -31,8 +31,8 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
     return 0;
   else if (action == "calc_MPC_stiff")
   {
-    Teuchos::RCP<CORE::Conditions::Condition> condition =
-        params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
+    Teuchos::RCP<Core::Conditions::Condition> condition =
+        params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
     const std::string& type = condition->parameters().Get<std::string>("control value");
 
     if (type == "dist")
@@ -59,12 +59,12 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numnode = 3;
       const int numdim = 2;
-      CORE::LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
+      Core::LinAlg::Matrix<numnode, numdim> xscurr;  // material coord. of element
       spatial_configuration(xscurr, mydisp);
-      CORE::LINALG::Matrix<numdim, 1> elementnormal;
+      Core::LinAlg::Matrix<numdim, 1> elementnormal;
       compute_normal(xscurr, elementnormal);
       double normaldistance = compute_normal_dist(xscurr, elementnormal);
       compute_first_deriv_dist(xscurr, elevec1, elementnormal);
@@ -79,10 +79,10 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       const int numnode = 3;
       const int numdim = 2;
-      CORE::LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
+      Core::LinAlg::Matrix<numnode, numdim> xscurr;  // material coord. of element
       spatial_configuration(xscurr, mydisp);
 
       double angle = compute_angle(xscurr);
@@ -101,14 +101,14 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
   return 0;
 
 
-}  // end of DRT::ELEMENTS::ConstraintElement2::Evaluate
+}  // end of Discret::ELEMENTS::ConstraintElement2::Evaluate
 
 /*----------------------------------------------------------------------*
  * Evaluate Neumann (->FOUR_C_THROW) */
-int DRT::ELEMENTS::ConstraintElement2::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::ConstraintElement2::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("You called Evaluate Neumann of constraint element.");
   return 0;
@@ -117,8 +117,8 @@ int DRT::ELEMENTS::ConstraintElement2::evaluate_neumann(Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------*
  * compute 2d normal */
-void DRT::ELEMENTS::ConstraintElement2::compute_normal(
-    const CORE::LINALG::Matrix<3, 2>& xc, CORE::LINALG::Matrix<2, 1>& elenorm)
+void Discret::ELEMENTS::ConstraintElement2::compute_normal(
+    const Core::LinAlg::Matrix<3, 2>& xc, Core::LinAlg::Matrix<2, 1>& elenorm)
 {
   elenorm(0, 0) = xc(0, 1) - xc(1, 1);
   elenorm(1, 0) = -xc(0, 0) + xc(1, 0);
@@ -128,8 +128,8 @@ void DRT::ELEMENTS::ConstraintElement2::compute_normal(
 
 /*----------------------------------------------------------------------*
  * normal distance between third point and line */
-double DRT::ELEMENTS::ConstraintElement2::compute_normal_dist(
-    const CORE::LINALG::Matrix<3, 2>& xc, const CORE::LINALG::Matrix<2, 1>& normal)
+double Discret::ELEMENTS::ConstraintElement2::compute_normal_dist(
+    const Core::LinAlg::Matrix<3, 2>& xc, const Core::LinAlg::Matrix<2, 1>& normal)
 {
   return (normal(0, 0) * (-xc(0, 0) + xc(2, 0)) - normal(1, 0) * (xc(0, 1) - xc(2, 1))) /
          normal.Norm2();
@@ -137,7 +137,7 @@ double DRT::ELEMENTS::ConstraintElement2::compute_normal_dist(
 
 /*----------------------------------------------------------------------*
  * compute angle at second point */
-double DRT::ELEMENTS::ConstraintElement2::compute_angle(const CORE::LINALG::Matrix<3, 2>& xc)
+double Discret::ELEMENTS::ConstraintElement2::compute_angle(const Core::LinAlg::Matrix<3, 2>& xc)
 {
   return (acos((xc(0, 1) * (xc(1, 0) - xc(2, 0)) + xc(1, 1) * xc(2, 0) - xc(1, 0) * xc(2, 1) +
                    xc(0, 0) * (-xc(1, 1) + xc(2, 1))) /
@@ -149,9 +149,9 @@ double DRT::ELEMENTS::ConstraintElement2::compute_angle(const CORE::LINALG::Matr
 
 /*----------------------------------------------------------------------*
  * second derivatives */
-void DRT::ELEMENTS::ConstraintElement2::compute_first_deriv_dist(
-    const CORE::LINALG::Matrix<3, 2>& xc, CORE::LINALG::SerialDenseVector& elevector,
-    const CORE::LINALG::Matrix<2, 1>& normal)
+void Discret::ELEMENTS::ConstraintElement2::compute_first_deriv_dist(
+    const Core::LinAlg::Matrix<3, 2>& xc, Core::LinAlg::SerialDenseVector& elevector,
+    const Core::LinAlg::Matrix<2, 1>& normal)
 {
   double normcube = pow(normal.Norm2(), 3);
 
@@ -182,19 +182,19 @@ void DRT::ELEMENTS::ConstraintElement2::compute_first_deriv_dist(
 
 /*----------------------------------------------------------------------*
  * first derivatives */
-void DRT::ELEMENTS::ConstraintElement2::compute_first_deriv_angle(
-    const CORE::LINALG::Matrix<3, 2>& xc, CORE::LINALG::SerialDenseVector& elevector)
+void Discret::ELEMENTS::ConstraintElement2::compute_first_deriv_angle(
+    const Core::LinAlg::Matrix<3, 2>& xc, Core::LinAlg::SerialDenseVector& elevector)
 {
-  CORE::LINALG::SerialDenseVector vec1(2);
+  Core::LinAlg::SerialDenseVector vec1(2);
   vec1[1] = xc(0, 0) - xc(1, 0);
   vec1[0] = -(xc(0, 1) - xc(1, 1));
 
-  CORE::LINALG::SerialDenseVector vec2(2);
+  Core::LinAlg::SerialDenseVector vec2(2);
   vec2[0] = -xc(1, 0) + xc(2, 0);
   vec2[1] = -xc(1, 1) + xc(2, 1);
 
-  const double vec1normsquare = pow(CORE::LINALG::Norm2(vec1), 2);
-  const double vec2normsquare = pow(CORE::LINALG::Norm2(vec2), 2);
+  const double vec1normsquare = pow(Core::LinAlg::Norm2(vec1), 2);
+  const double vec2normsquare = pow(Core::LinAlg::Norm2(vec2), 2);
 
   elevector[0] = -((vec2[1] / sqrt(vec1normsquare * vec2normsquare) -
                        (vec2normsquare * vec1[1] *
@@ -254,9 +254,9 @@ void DRT::ELEMENTS::ConstraintElement2::compute_first_deriv_angle(
 
 /*----------------------------------------------------------------------*
  * second derivatives */
-void DRT::ELEMENTS::ConstraintElement2::compute_second_deriv_dist(
-    const CORE::LINALG::Matrix<3, 2>& xc, CORE::LINALG::SerialDenseMatrix& elematrix,
-    const CORE::LINALG::Matrix<2, 1>& normal)
+void Discret::ELEMENTS::ConstraintElement2::compute_second_deriv_dist(
+    const Core::LinAlg::Matrix<3, 2>& xc, Core::LinAlg::SerialDenseMatrix& elematrix,
+    const Core::LinAlg::Matrix<2, 1>& normal)
 {
   double normsquare = pow(normal.Norm2(), 2);
   double normcube = pow(normal.Norm2(), 3);
@@ -466,19 +466,19 @@ void DRT::ELEMENTS::ConstraintElement2::compute_second_deriv_dist(
 
 /*----------------------------------------------------------------------*
  * second derivatives */
-void DRT::ELEMENTS::ConstraintElement2::compute_second_deriv_angle(
-    const CORE::LINALG::Matrix<3, 2>& xc, CORE::LINALG::SerialDenseMatrix& elematrix)
+void Discret::ELEMENTS::ConstraintElement2::compute_second_deriv_angle(
+    const Core::LinAlg::Matrix<3, 2>& xc, Core::LinAlg::SerialDenseMatrix& elematrix)
 {
-  CORE::LINALG::SerialDenseVector vec1(2);
+  Core::LinAlg::SerialDenseVector vec1(2);
   vec1[1] = xc(0, 0) - xc(1, 0);
   vec1[0] = -(xc(0, 1) - xc(1, 1));
 
-  CORE::LINALG::SerialDenseVector vec2(2);
+  Core::LinAlg::SerialDenseVector vec2(2);
   vec2[0] = -xc(1, 0) + xc(2, 0);
   vec2[1] = -xc(1, 1) + xc(2, 1);
 
-  const double vec1sq = pow(CORE::LINALG::Norm2(vec1), 2);
-  const double vec2sq = pow(CORE::LINALG::Norm2(vec2), 2);
+  const double vec1sq = pow(Core::LinAlg::Norm2(vec1), 2);
+  const double vec2sq = pow(Core::LinAlg::Norm2(vec2), 2);
 
   elematrix(0, 0) =
       -(((-2 * vec2sq * vec1[1] * vec2[1]) / pow(vec1sq * vec2sq, 1.5) -

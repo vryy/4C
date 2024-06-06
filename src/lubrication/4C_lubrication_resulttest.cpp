@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  | ctor                                                     wirtz 11/15 |
  *----------------------------------------------------------------------*/
 LUBRICATION::ResultTest::ResultTest(Teuchos::RCP<TimIntImpl> lubrication)
-    : CORE::UTILS::ResultTest("LUBRICATION"),
+    : Core::UTILS::ResultTest("LUBRICATION"),
       dis_(lubrication->discretization()),
       mysol_(lubrication->Prenp()),
       mynumiter_(lubrication->IterNum())
@@ -34,7 +34,7 @@ LUBRICATION::ResultTest::ResultTest(Teuchos::RCP<TimIntImpl> lubrication)
 /*----------------------------------------------------------------------*
  | test node                                                wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void LUBRICATION::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -57,7 +57,7 @@ void LUBRICATION::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, i
   {
     if (dis_->HaveGlobalNode(node))
     {
-      CORE::Nodes::Node* actnode = dis_->gNode(node);
+      Core::Nodes::Node* actnode = dis_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
       if (actnode->Owner() != dis_->Comm().MyPID()) return;
@@ -83,7 +83,7 @@ void LUBRICATION::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, i
  *----------------------------------------------------------------------*/
 double LUBRICATION::ResultTest::result_node(
     const std::string quantity,  //! name of quantity to be tested
-    CORE::Nodes::Node* node      //! node carrying the result to be tested
+    Core::Nodes::Node* node      //! node carrying the result to be tested
 ) const
 {
   // initialize variable for result
@@ -106,7 +106,7 @@ double LUBRICATION::ResultTest::result_node(
 /*-------------------------------------------------------------------------------------*
  | test special quantity not associated with a particular element or node  wirtz 11/15 |
  *-------------------------------------------------------------------------------------*/
-void LUBRICATION::ResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void LUBRICATION::ResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only once
   if (dis_->Comm().MyPID() == 0)

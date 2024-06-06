@@ -23,23 +23,23 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   // forward declaration
   class Mixture;
 
   namespace PAR
   {
-    class Mixture : public CORE::MAT::PAR::Parameter
+    class Mixture : public Core::Mat::PAR::Parameter
     {
-      friend class MAT::Mixture;
+      friend class Mat::Mixture;
 
      public:
       /// Standard constructor
       ///
       /// This constructor recursively calls the constructors of the
       /// parameter sets of the hyperelastic summands.
-      explicit Mixture(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+      explicit Mixture(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
 
       /// @name material parameters
@@ -52,19 +52,19 @@ namespace MAT
 
       /// @}
 
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
     };
   }  // namespace PAR
 
 
-  class MixtureType : public CORE::COMM::ParObjectType
+  class MixtureType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "MixtureType"; }
 
     static MixtureType& Instance() { return instance_; }
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MixtureType instance_;
@@ -96,7 +96,7 @@ namespace MAT
     Mixture();
 
     /// Constructor for the material given the material parameters
-    explicit Mixture(MAT::PAR::Mixture* params);
+    explicit Mixture(Mat::PAR::Mixture* params);
 
 
     /// @name Packing and Unpacking
@@ -114,7 +114,7 @@ namespace MAT
      *
      * @param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack data from a char vector into this class
@@ -130,9 +130,9 @@ namespace MAT
     /// @)
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (!(kinem == Inpar::STR::KinemType::nonlinearTotLag))
       {
         FOUR_C_THROW(
             "element and material kinematics are not compatible. Use Nonlinear total lagrangian"
@@ -141,14 +141,14 @@ namespace MAT
     }
 
     /// Return material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_mixture;
+      return Core::Materials::m_mixture;
     }
 
     /// Create a copy of this material
     /// \return copy of this material
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new Mixture(*this));
     }
@@ -159,7 +159,7 @@ namespace MAT
      *
      * @return Material parameters
      */
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /*!
      * \brief Setup of the material (Read the input line definition of the element)
@@ -169,7 +169,7 @@ namespace MAT
      * @param numgp Number of Gauss-points
      * @param linedef Line definition of the element
      */
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     /*!
      * \brief Post setup routine that will be called before the first Evaluate call
@@ -188,7 +188,7 @@ namespace MAT
      * @param params Container for additional information
      * @param eleGID Global element id
      */
-    void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int gp, Teuchos::ParameterList& params,
+    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int gp, Teuchos::ParameterList& params,
         int eleGID) override;
 
     /// \brief This material law uses the extended update method
@@ -206,9 +206,9 @@ namespace MAT
      * @param cmat (out) Linearization of the material law in Voigt notation
      * @param eleGID (in) Global element id
      */
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
         const int eleGID) final;
 
     /// \brief Return material mass density given by mixture rule
@@ -218,11 +218,11 @@ namespace MAT
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(
-        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
    private:
     /// Material parameters
-    MAT::PAR::Mixture* params_;
+    Mat::PAR::Mixture* params_;
 
     /// list of the references to the constituents
     std::shared_ptr<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>> constituents_;
@@ -240,7 +240,7 @@ namespace MAT
     Anisotropy anisotropy_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

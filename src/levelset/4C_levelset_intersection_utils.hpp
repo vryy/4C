@@ -28,28 +28,28 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class ElementHandle;
     class LevelSetIntersection;
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
-namespace SCATRA
+namespace ScaTra
 {
-  namespace LEVELSET
+  namespace LevelSet
   {
     /** \brief level-set intersection utils class
      *
@@ -70,9 +70,9 @@ namespace SCATRA
        *
        *  \author rasthofer \date 09/13 */
       void CaptureZeroLevelSet(const Teuchos::RCP<const Epetra_Vector>& phi,
-          const Teuchos::RCP<const DRT::Discretization>& scatradis, double& volumedomainminus,
+          const Teuchos::RCP<const Discret::Discretization>& scatradis, double& volumedomainminus,
           double& volumedomainplus, double& zerosurface,
-          std::map<int, CORE::GEO::BoundaryIntCells>& elementBoundaryIntCells);
+          std::map<int, Core::Geo::BoundaryIntCells>& elementBoundaryIntCells);
 
       /** \brief Set desired positions
        *
@@ -85,33 +85,33 @@ namespace SCATRA
        *
        *  \author hiermeier \date 11/16 */
       void SetDesiredPositions(
-          const std::vector<CORE::GEO::CUT::Point::PointPosition>& desired_pos);
+          const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_pos);
 
      protected:
       /// reset class member variables
       void reset();
 
       template <typename T>
-      void get_zero_level_set(const Epetra_Vector& phi, const DRT::Discretization& scatradis,
+      void get_zero_level_set(const Epetra_Vector& phi, const Discret::Discretization& scatradis,
           std::map<int, T>& elementBoundaryIntCells, bool cut_screenoutput = false);
 
       /** \brief export boundary integration cells from this proc to parallel distribution
        *
        * \author henke \date 12/09 */
       void export_interface(
-          std::map<int, CORE::GEO::BoundaryIntCells>& myinterface, const Epetra_Comm& comm);
+          std::map<int, Core::Geo::BoundaryIntCells>& myinterface, const Epetra_Comm& comm);
 
       /** \brief pack boundary integration cells from set into char array
        *
        *  \author henke \date 12/09 */
-      void pack_boundary_int_cells(const std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap,
-          CORE::COMM::PackBuffer& dataSend);
+      void pack_boundary_int_cells(const std::map<int, Core::Geo::BoundaryIntCells>& intcellmap,
+          Core::Communication::PackBuffer& dataSend);
 
       /** brief unpack boundary integration cells from char array
        *
        * \author henke \date 12/09 */
       void unpack_boundary_int_cells(const std::vector<char>& dataRecv,
-          std::map<int, CORE::GEO::BoundaryIntCells>& intcellmap);
+          std::map<int, Core::Geo::BoundaryIntCells>& intcellmap);
 
       /// return the volume of the plus domain
       inline double& volume_plus() { return volumeplus_; };
@@ -127,7 +127,7 @@ namespace SCATRA
        *      inside  --> minus domain
        *
        *  \author hiermeier \date 11/16 */
-      void add_to_volume(CORE::GEO::CUT::Point::PointPosition pos, double vol);
+      void add_to_volume(Core::Geo::Cut::Point::PointPosition pos, double vol);
 
       /// access the boundary cell surface value
       inline double& surface() { return surface_; };
@@ -135,63 +135,63 @@ namespace SCATRA
       /** \brief prepare the cut algorithm
        *
        *  \author hiermeier \date 11/16 */
-      void prepare_cut(const CORE::Elements::Element* ele, const DRT::Discretization& scatradis,
-          const Epetra_Vector& phicol, CORE::LINALG::SerialDenseMatrix& xyze,
+      void prepare_cut(const Core::Elements::Element* ele, const Discret::Discretization& scatradis,
+          const Epetra_Vector& phicol, Core::LinAlg::SerialDenseMatrix& xyze,
           std::vector<double>& phi_nodes, std::vector<int>& node_ids) const;
 
       /// perform the cut operation
-      CORE::GEO::CUT::ElementHandle* cut(CORE::GEO::CUT::LevelSetIntersection& levelset,
-          const CORE::LINALG::SerialDenseMatrix& xyze, const std::vector<double>& phi_nodes,
+      Core::Geo::Cut::ElementHandle* cut(Core::Geo::Cut::LevelSetIntersection& levelset,
+          const Core::LinAlg::SerialDenseMatrix& xyze, const std::vector<double>& phi_nodes,
           bool cut_screenoutput) const;
 
       /// collect the cut elements after a successful cut operation
-      void collect_cut_eles(CORE::GEO::CUT::ElementHandle& ehandle,
-          CORE::GEO::CUT::plain_element_set& cuteles, CORE::FE::CellType distype) const;
+      void collect_cut_eles(Core::Geo::Cut::ElementHandle& ehandle,
+          Core::Geo::Cut::plain_element_set& cuteles, Core::FE::CellType distype) const;
 
       /** \brief check the point position (OR-combination)
        *
        *  \param curr_pos (in) : current position of the volume cell
        *
        *  \author hiermeier \date 11/16 */
-      bool is_point_position(const CORE::GEO::CUT::Point::PointPosition& curr_pos)
+      bool is_point_position(const Core::Geo::Cut::Point::PointPosition& curr_pos)
       {
         return is_point_position(curr_pos, desired_positions());
       }
-      bool is_point_position(const CORE::GEO::CUT::Point::PointPosition& curr_pos,
-          const std::vector<CORE::GEO::CUT::Point::PointPosition>& desired_pos) const;
+      bool is_point_position(const Core::Geo::Cut::Point::PointPosition& curr_pos,
+          const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_pos) const;
 
       /** \brief get the zero level-set
        *
        *  \author rasthofer \date 09/13 */
-      void get_zero_level_set_contour(const CORE::GEO::CUT::plain_element_set& cuteles,
-          const CORE::LINALG::SerialDenseMatrix& xyze, CORE::FE::CellType distype);
+      void get_zero_level_set_contour(const Core::Geo::Cut::plain_element_set& cuteles,
+          const Core::LinAlg::SerialDenseMatrix& xyze, Core::FE::CellType distype);
 
       /// check for supported boundary cell discretization types
-      virtual void check_boundary_cell_type(CORE::FE::CellType distype_bc) const;
+      virtual void check_boundary_cell_type(Core::FE::CellType distype_bc) const;
 
-      virtual void add_to_boundary_int_cells_per_ele(const CORE::LINALG::SerialDenseMatrix& xyze,
-          const CORE::GEO::CUT::BoundaryCell& bcell, CORE::FE::CellType distype_ele);
+      virtual void add_to_boundary_int_cells_per_ele(const Core::LinAlg::SerialDenseMatrix& xyze,
+          const Core::Geo::Cut::BoundaryCell& bcell, Core::FE::CellType distype_ele);
 
       /// access the private boundary cell vector
       template <typename T>
       T& boundary_int_cells_per_ele();
 
-      const std::vector<CORE::GEO::CUT::Point::PointPosition>& desired_positions();
+      const std::vector<Core::Geo::Cut::Point::PointPosition>& desired_positions();
 
      protected:
       /** check the level set values before we add a new element to the
-       *  CORE::GEO::CUT::LevelSetIntersection object */
+       *  Core::Geo::Cut::LevelSetIntersection object */
       bool check_lsv_;
 
       /// vector containing the desired positions ( default: outside )
-      std::vector<CORE::GEO::CUT::Point::PointPosition> desired_positions_;
+      std::vector<Core::Geo::Cut::Point::PointPosition> desired_positions_;
 
      private:
       /// boundary cell vector
-      CORE::GEO::BoundaryIntCells list_boundary_int_cellsper_ele_;
+      Core::Geo::BoundaryIntCells list_boundary_int_cellsper_ele_;
 
       // boundary cell pointer vector
-      CORE::GEO::BoundaryIntCellPtrs boundary_cells_per_ele_;
+      Core::Geo::BoundaryIntCellPtrs boundary_cells_per_ele_;
 
       /// accumulated value of the plus domain volumes (POSITION == outside)
       double volumeplus_;
@@ -205,22 +205,22 @@ namespace SCATRA
 
     /*----------------------------------------------------------------------------*/
     template <>
-    inline CORE::GEO::BoundaryIntCells&
-    Intersection::boundary_int_cells_per_ele<CORE::GEO::BoundaryIntCells>()
+    inline Core::Geo::BoundaryIntCells&
+    Intersection::boundary_int_cells_per_ele<Core::Geo::BoundaryIntCells>()
     {
       return list_boundary_int_cellsper_ele_;
     }
 
     /*----------------------------------------------------------------------------*/
     template <>
-    inline CORE::GEO::BoundaryIntCellPtrs&
-    Intersection::boundary_int_cells_per_ele<CORE::GEO::BoundaryIntCellPtrs>()
+    inline Core::Geo::BoundaryIntCellPtrs&
+    Intersection::boundary_int_cells_per_ele<Core::Geo::BoundaryIntCellPtrs>()
     {
       return boundary_cells_per_ele_;
     }
 
-  }  // namespace LEVELSET
-}  // namespace SCATRA
+  }  // namespace LevelSet
+}  // namespace ScaTra
 
 
 FOUR_C_NAMESPACE_CLOSE

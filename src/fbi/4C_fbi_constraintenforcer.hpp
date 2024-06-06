@@ -21,12 +21,12 @@ interaction.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class FSIStructureWrapper;
   class FluidMovingBoundary;
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace BEAMINTERACTION
 {
@@ -37,12 +37,12 @@ namespace BINSTRATEGY
 {
   class BinningStrategy;
 }
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -51,13 +51,13 @@ namespace FBI
 {
   class FBIGeometryCoupler;
 }
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class SparseOperator;
   class MapExtractor;
-}  // namespace CORE::LINALG
-namespace ADAPTER
+}  // namespace Core::LinAlg
+namespace Adapter
 {
   class ConstraintEnforcerFactory;
   class FBIConstraintBridge;
@@ -94,8 +94,8 @@ namespace ADAPTER
      *\param[in] structure wrapper for the structure solver
      *\param[in] fluid moving boundary wrapper for the fluid solver
      */
-    virtual void Setup(Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure,
-        Teuchos::RCP<ADAPTER::FluidMovingBoundary> fluid);
+    virtual void Setup(Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
+        Teuchos::RCP<Adapter::FluidMovingBoundary> fluid);
 
     /** \brief Hand the binning strategy used for the distribution of the fluid mesh
      *  to the object responsible for the element pair search in the FBI framework
@@ -152,21 +152,21 @@ namespace ADAPTER
     virtual void PrepareFluidSolve() = 0;
 
     /// Get function for the structure field #structure_
-    Teuchos::RCP<const ADAPTER::FSIStructureWrapper> GetStructure() const { return structure_; };
+    Teuchos::RCP<const Adapter::FSIStructureWrapper> GetStructure() const { return structure_; };
 
     /// Get function for the bridge object #bridge_
-    Teuchos::RCP<const ADAPTER::FBIConstraintBridge> GetBridge() const { return bridge_; };
+    Teuchos::RCP<const Adapter::FBIConstraintBridge> GetBridge() const { return bridge_; };
 
     /// Handle fbi specific output
     virtual void Output(double time, int step) = 0;
 
    protected:
-    /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
+    /** \brief You will have to use the Adapter::ConstraintEnforcerFactory
      *
      * \param[in] bridge an object managing the pair contributins
      * \param[in] geometrycoupler an object managing the search, parallel communication, ect.
      */
-    FBIConstraintenforcer(Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge,
+    FBIConstraintenforcer(Teuchos::RCP<Adapter::FBIConstraintBridge> bridge,
         Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler);
 
     /**
@@ -189,7 +189,7 @@ namespace ADAPTER
      *\param[out] beam_dofvec current positions and velocities of the beam element
      *\param[out] fluid_dofvec current positions and velocities of the fluid element
      */
-    virtual void extract_current_element_dofs(std::vector<CORE::Elements::Element const*> elements,
+    virtual void extract_current_element_dofs(std::vector<Core::Elements::Element const*> elements,
         std::vector<double>& beam_dofvec, std::vector<double>& fluid_dofvec) const;
 
     /**
@@ -200,7 +200,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the fluid system matrix
      */
-    virtual Teuchos::RCP<const CORE::LINALG::SparseOperator> assemble_fluid_coupling_matrix() const
+    virtual Teuchos::RCP<const Core::LinAlg::SparseOperator> assemble_fluid_coupling_matrix() const
     {
       FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -214,7 +214,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the structure system matrix
      */
-    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> assemble_structure_coupling_matrix()
+    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> assemble_structure_coupling_matrix()
         const
     {
       FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
@@ -250,19 +250,19 @@ namespace ADAPTER
     };
 
     /// Get function for the fluid field #fluid_
-    Teuchos::RCP<ADAPTER::FluidMovingBoundary> get_fluid() const { return fluid_; };
+    Teuchos::RCP<Adapter::FluidMovingBoundary> get_fluid() const { return fluid_; };
 
     /// Get function for the structure and the fluid discretization in the vector #discretizations_
-    std::vector<Teuchos::RCP<DRT::Discretization>> get_discretizations() const
+    std::vector<Teuchos::RCP<Discret::Discretization>> get_discretizations() const
     {
       return discretizations_;
     }
 
     /// Get function for the bridge object #bridge_
-    Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge() const { return bridge_; };
+    Teuchos::RCP<Adapter::FBIConstraintBridge> bridge() const { return bridge_; };
 
     /// Get map extractor to split fluid velocity and pressure values
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> get_velocity_pressure_splitter() const
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_velocity_pressure_splitter() const
     {
       return velocity_pressure_splitter_;
     }
@@ -271,20 +271,20 @@ namespace ADAPTER
     FBIConstraintenforcer() = delete;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP<ADAPTER::FluidMovingBoundary> fluid_;
+    Teuchos::RCP<Adapter::FluidMovingBoundary> fluid_;
 
     /// underlying structure of the FSI problem
-    Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;
+    Teuchos::RCP<Adapter::FSIStructureWrapper> structure_;
 
     /// Vector containing both (fluid and structure) field discretizations
-    std::vector<Teuchos::RCP<DRT::Discretization>> discretizations_;
+    std::vector<Teuchos::RCP<Discret::Discretization>> discretizations_;
 
     /**
      * \brief Object bridging the gap between the specific implementation of the constraint
      * enforcement technique and the specific implementation of the meshtying discretization
      * approach
      */
-    Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge_;
+    Teuchos::RCP<Adapter::FBIConstraintBridge> bridge_;
 
     /**
      * \brief Object handling geometric operations like the search of embedded pairs as well as the
@@ -304,9 +304,9 @@ namespace ADAPTER
      * velocities  = OtherVector
      * pressure    = CondVector
      */
-    Teuchos::RCP<CORE::LINALG::MapExtractor> velocity_pressure_splitter_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> velocity_pressure_splitter_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

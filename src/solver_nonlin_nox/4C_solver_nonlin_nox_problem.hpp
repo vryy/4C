@@ -27,42 +27,42 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     class GlobalData;
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace INNER
+    }    // namespace Inner
 
     class Problem
     {
      public:
       //! minimal constructor
-      Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData);
+      Problem(const Teuchos::RCP<NOX::Nln::GlobalData>& noxNlnGlobalData);
 
       //! standard constructor
-      Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
+      Problem(const Teuchos::RCP<NOX::Nln::GlobalData>& noxNlnGlobalData,
           const Teuchos::RCP<::NOX::Epetra::Vector>& x,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& A);
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& A);
 
       //! destructor
       virtual ~Problem() = default;
 
       //! initialize stuff (can be overloaded in derived classes)
       virtual void Initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& A);
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& A);
 
       //! create the linear system for the NOX framework
       virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system() const;
@@ -74,16 +74,16 @@ namespace NOX
       void create_outer_status_test(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) const;
 
       virtual void CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTest,
-          Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTest) const;
+          Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTest) const;
 
       //! check final status of the non-linear solving procedure
       virtual void CheckFinalStatus(const ::NOX::StatusTest::StatusType& finalStatus) const;
 
       /// access the global data object
-      NOX::NLN::GlobalData& NlnGlobalData() { return *noxNlnGlobalData_; }
+      NOX::Nln::GlobalData& NlnGlobalData() { return *noxNlnGlobalData_; }
 
       /// access the global data object ptr
-      Teuchos::RCP<NOX::NLN::GlobalData> NlnGlobalDataPtr() { return noxNlnGlobalData_; }
+      Teuchos::RCP<NOX::Nln::GlobalData> NlnGlobalDataPtr() { return noxNlnGlobalData_; }
 
      protected:
       inline void check_init() const
@@ -101,7 +101,7 @@ namespace NOX
 
       bool isjac_;
 
-      Teuchos::RCP<NOX::NLN::GlobalData> noxNlnGlobalData_;
+      Teuchos::RCP<NOX::Nln::GlobalData> noxNlnGlobalData_;
 
       /** ptr to the state vector RCP. In this way the strong_count is neither lost
        *  nor increased. */
@@ -109,11 +109,11 @@ namespace NOX
 
       /** ptr to the state matrix RCP. In this way the strong_count is neither lost
        *  nor increased. */
-      const Teuchos::RCP<CORE::LINALG::SparseOperator>* jac_;
+      const Teuchos::RCP<Core::LinAlg::SparseOperator>* jac_;
 
-      Teuchos::RCP<CORE::LINALG::SparseOperator> precMat_;
+      Teuchos::RCP<Core::LinAlg::SparseOperator> precMat_;
     };
-  }  // namespace NLN
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
   /// Basic algorithm for the transport of passive scalars in the fluid velocity field
   /*!
@@ -26,7 +26,7 @@ namespace SCATRA
     \author gjb
     \date 07/08
    */
-  class ScaTraAlgorithm : public ADAPTER::ScaTraFluidCouplingAlgorithm
+  class ScaTraAlgorithm : public Adapter::ScaTraFluidCouplingAlgorithm
   {
    public:
     /// constructor
@@ -119,7 +119,7 @@ namespace SCATRA
     const int samstop_;
   };
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

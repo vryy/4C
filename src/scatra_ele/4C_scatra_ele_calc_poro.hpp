@@ -19,19 +19,19 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace MAT
+namespace Mat
 {
   class ScatraMat;
 }
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     class ScaTraEleDiffManagerPoro;
 
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleCalcPoro : public virtual ScaTraEleCalc<distype>
     {
      protected:
@@ -53,79 +53,79 @@ namespace DRT
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      //   virtual int Evaluate(CORE::Elements::Element*                 ele,
+      //   virtual int Evaluate(Core::Elements::Element*                 ele,
       //                        Teuchos::ParameterList&       params,
-      //                        DRT::Discretization &         discretization,
+      //                        Discret::Discretization &         discretization,
       //                        const std::vector<int> &      lm,
-      //                        CORE::LINALG::SerialDenseMatrix&     elemat1_epetra,
-      //                        CORE::LINALG::SerialDenseMatrix&     elemat2_epetra,
-      //                        CORE::LINALG::SerialDenseVector&     elevec1_epetra,
-      //                        CORE::LINALG::SerialDenseVector&     elevec2_epetra,
-      //                        CORE::LINALG::SerialDenseVector&     elevec3_epetra);
+      //                        Core::LinAlg::SerialDenseMatrix&     elemat1_epetra,
+      //                        Core::LinAlg::SerialDenseMatrix&     elemat2_epetra,
+      //                        Core::LinAlg::SerialDenseVector&     elevec1_epetra,
+      //                        Core::LinAlg::SerialDenseVector&     elevec2_epetra,
+      //                        Core::LinAlg::SerialDenseVector&     elevec3_epetra);
 
      protected:
       //! evaluate action
-      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, const SCATRA::Action& action,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
-      //   int EvaluateODMesh(  CORE::Elements::Element*                 ele,
+      //   int EvaluateODMesh(  Core::Elements::Element*                 ele,
       //                        Teuchos::ParameterList&       params,
-      //                        DRT::Discretization &         discretization,
+      //                        Discret::Discretization &         discretization,
       //                        const std::vector<int> &      lm,
-      //                        CORE::LINALG::SerialDenseMatrix&     elemat1_epetra,
-      //                        CORE::LINALG::SerialDenseMatrix&     elemat2_epetra,
-      //                        CORE::LINALG::SerialDenseVector&     elevec1_epetra,
-      //                        CORE::LINALG::SerialDenseVector&     elevec2_epetra,
-      //                        CORE::LINALG::SerialDenseVector&     elevec3_epetra);
+      //                        Core::LinAlg::SerialDenseMatrix&     elemat1_epetra,
+      //                        Core::LinAlg::SerialDenseMatrix&     elemat2_epetra,
+      //                        Core::LinAlg::SerialDenseVector&     elevec1_epetra,
+      //                        Core::LinAlg::SerialDenseVector&     elevec2_epetra,
+      //                        Core::LinAlg::SerialDenseVector&     elevec3_epetra);
       //
-      //   int EvaluateODFluid(  CORE::Elements::Element*                 ele,
+      //   int EvaluateODFluid(  Core::Elements::Element*                 ele,
       //                        Teuchos::ParameterList&       params,
-      //                        DRT::Discretization &         discretization,
+      //                        Discret::Discretization &         discretization,
       //                        const std::vector<int> &      lm,
-      //                        CORE::LINALG::SerialDenseMatrix&     elemat1_epetra,
-      //                        CORE::LINALG::SerialDenseMatrix&     elemat2_epetra,
-      //                        CORE::LINALG::SerialDenseVector&     elevec1_epetra,
-      //                        CORE::LINALG::SerialDenseVector&     elevec2_epetra,
-      //                        CORE::LINALG::SerialDenseVector&     elevec3_epetra);
+      //                        Core::LinAlg::SerialDenseMatrix&     elemat1_epetra,
+      //                        Core::LinAlg::SerialDenseMatrix&     elemat2_epetra,
+      //                        Core::LinAlg::SerialDenseVector&     elevec1_epetra,
+      //                        Core::LinAlg::SerialDenseVector&     elevec2_epetra,
+      //                        Core::LinAlg::SerialDenseVector&     elevec3_epetra);
       //
       //   //! calculate matrix and rhs. Here the whole thing is hidden.
       //   virtual void sysmat_od_mesh(
-      //     CORE::Elements::Element*                         ele,       //!< the element we are
-      //     dealing with CORE::LINALG::SerialDenseMatrix&             emat,      //!< element
+      //     Core::Elements::Element*                         ele,       //!< the element we are
+      //     dealing with Core::LinAlg::SerialDenseMatrix&             emat,      //!< element
       //     matrix to calculate const int                     numdofpernode
       //   );
       //
       //   //! calculate matrix and rhs. Here the whole thing is hidden.
       //   virtual void sysmat_od_fluid(
-      //     CORE::Elements::Element*                         ele,       //!< the element we are
-      //     dealing with CORE::LINALG::SerialDenseMatrix&             emat,      //!< element
+      //     Core::Elements::Element*                         ele,       //!< the element we are
+      //     dealing with Core::LinAlg::SerialDenseMatrix&             emat,      //!< element
       //     matrix to calculate const int                     numdofpernode
       //   );
 
       //! read element coordinates
-      void read_element_coordinates(const CORE::Elements::Element* ele) override;
+      void read_element_coordinates(const Core::Elements::Element* ele) override;
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      void extract_element_and_node_values(CORE::Elements::Element* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la) override;
+      void extract_element_and_node_values(Core::Elements::Element* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la) override;
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      virtual void extract_element_and_node_values_poro(CORE::Elements::Element* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la);
+      virtual void extract_element_and_node_values_poro(Core::Elements::Element* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la);
 
       //! get the material parameters
       void get_material_params(
-          const CORE::Elements::Element* ele,  //!< the element we are dealing with
+          const Core::Elements::Element* ele,  //!< the element we are dealing with
           std::vector<double>& densn,          //!< density at t_(n)
           std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
           std::vector<double>& densam,         //!< density at t_(n+alpha_M)
@@ -135,7 +135,7 @@ namespace DRT
 
       //! compute porosity based on solid, fluid and (potentially) scatra solution
       virtual void compute_porosity(
-          const CORE::Elements::Element* ele  //!< the element we are dealing with
+          const Core::Elements::Element* ele  //!< the element we are dealing with
       );
 
       //! compute pore pressure
@@ -143,7 +143,7 @@ namespace DRT
 
       //! material ScaTra
       void mat_scatra(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -155,7 +155,7 @@ namespace DRT
 
       //! set diffusivity for poro scatra problem (i.e. scale by porosity)
       virtual void set_diffusivity(
-          const Teuchos::RCP<const MAT::ScatraMat>& material, const int k, const double scale);
+          const Teuchos::RCP<const Mat::ScatraMat>& material, const int k, const double scale);
 
       //! set densisties for poro scatra problem (i.e. scale by porosity)
       virtual void set_densities(double porosity,
@@ -165,8 +165,8 @@ namespace DRT
       );
 
       //! calculate scalar(s) and domain integral
-      void calculate_scalars(const CORE::Elements::Element* ele,
-          CORE::LINALG::SerialDenseVector& scalars, bool inverting, bool calc_grad_phi) override;
+      void calculate_scalars(const Core::Elements::Element* ele,
+          Core::LinAlg::SerialDenseVector& scalars, bool inverting, bool calc_grad_phi) override;
 
 
       //! get poro diffusion manager
@@ -180,10 +180,10 @@ namespace DRT
       /*========================================================================*/
 
       //! initial node coordinates
-      CORE::LINALG::Matrix<nsd_, nen_> xyze0_;
+      Core::LinAlg::Matrix<nsd_, nen_> xyze0_;
 
       //! nodal porosity values at t_(n+1)
-      CORE::LINALG::Matrix<nen_, 1> eporosity_;
+      Core::LinAlg::Matrix<nen_, 1> eporosity_;
 
       //! flag indacting a node based porosity
       bool isnodalporosity_;
@@ -243,7 +243,7 @@ namespace DRT
       /*========================================================================*/
 
       //! return convective velocity
-      virtual const CORE::LINALG::Matrix<NSD, 1>& ConVel(const int k) const {
+      virtual const Core::LinAlg::Matrix<NSD, 1>& ConVel(const int k) const {
           //    if(k<NO_CONVECTION_NR)
           {return my::convelint_;
     }
@@ -251,11 +251,11 @@ namespace DRT
     //      return zeroconvel_;
   };  // namespace ELEMENTS
   //! return convective part in convective form
-  virtual const CORE::LINALG::Matrix<NEN, 1>& Conv(const int k) const
+  virtual const Core::LinAlg::Matrix<NEN, 1>& Conv(const int k) const
   {  //    if(k<NO_CONVECTION_NR)
     {
       return my::conv_;
-    }  // namespace DRT
+    }  // namespace Discret
        //    else
        //      return zeroconv_;
   }
@@ -271,10 +271,10 @@ namespace DRT
   }
 
  private:
-  CORE::LINALG::Matrix<NSD, 1> zeroconvel_;
-  CORE::LINALG::Matrix<NEN, 1> zeroconv_;
+  Core::LinAlg::Matrix<NSD, 1> zeroconvel_;
+  Core::LinAlg::Matrix<NEN, 1> zeroconv_;
   double zero_;
-};  // namespace DRT
+};  // namespace Discret
 }
 }
 

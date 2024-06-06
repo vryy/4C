@@ -34,7 +34,7 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -70,23 +70,24 @@ namespace DRT
 
       */
       virtual int evaluate_edge_based_stabilization(
-          DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
-          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
-          DRT::ELEMENTS::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
-          DRT::ELEMENTS::FluidEleParameterIntFace&
-              fldintfacepara,                   ///< general parameter for internal face
-          Teuchos::ParameterList& params,       ///< parameter list
-          DRT::Discretization& discretization,  ///< discretization
-          std::vector<int>& patchlm,            ///< patch local map
-          std::vector<int>& lm_masterToPatch,   ///< local map between master dofs and patchlm
-          std::vector<int>& lm_slaveToPatch,    ///< local map between slave dofs and patchlm
-          std::vector<int>& lm_faceToPatch,     ///< local map between face dofs and patchlm
+          Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
+          Discret::ELEMENTS::FluidEleParameterTimInt&
+              fldparatimint,  ///< time-integration parameter
+          Discret::ELEMENTS::FluidEleParameterIntFace&
+              fldintfacepara,                       ///< general parameter for internal face
+          Teuchos::ParameterList& params,           ///< parameter list
+          Discret::Discretization& discretization,  ///< discretization
+          std::vector<int>& patchlm,                ///< patch local map
+          std::vector<int>& lm_masterToPatch,       ///< local map between master dofs and patchlm
+          std::vector<int>& lm_slaveToPatch,        ///< local map between slave dofs and patchlm
+          std::vector<int>& lm_faceToPatch,         ///< local map between face dofs and patchlm
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-          std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
-          std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
+          std::vector<Core::LinAlg::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
+          std::vector<Core::LinAlg::SerialDenseVector>& elevec_blocks   ///< element vector blocks
           ) = 0;
 
 
@@ -99,7 +100,7 @@ namespace DRT
         \param surfele (in):   fluid internal surface element
 
       */
-      static FluidIntFaceStab* Impl(DRT::ELEMENTS::FluidIntFace* surfele);
+      static FluidIntFaceStab* Impl(Discret::ELEMENTS::FluidIntFace* surfele);
     };
 
 
@@ -119,20 +120,20 @@ namespace DRT
     //-----------------------------------------------------------------
     ///
     //-----------------------------------------------------------------
-    template <CORE::FE::CellType distype, CORE::FE::CellType pdistype, CORE::FE::CellType ndistype>
+    template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
     class FluidInternalSurfaceStab : public FluidIntFaceStab
     {
      public:
       /// Singleton access method
       static FluidInternalSurfaceStab<distype, pdistype, ndistype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// Constructor with number of nodes
       FluidInternalSurfaceStab();
 
 
       /// number of space dimensions of the FluidIntFace element
-      static constexpr int facensd_ = CORE::FE::dim<distype>;
+      static constexpr int facensd_ = Core::FE::dim<distype>;
 
       /// number of space dimensions of the parent element
       static constexpr int nsd_ = facensd_ + 1;
@@ -141,19 +142,19 @@ namespace DRT
       static constexpr int numdofpernode_ = nsd_ + 1;
 
       /// number of nodes
-      static constexpr int iel = CORE::FE::num_nodes<distype>;
+      static constexpr int iel = Core::FE::num_nodes<distype>;
 
       /// number of parentnodes
-      static constexpr int piel = CORE::FE::num_nodes<pdistype>;
+      static constexpr int piel = Core::FE::num_nodes<pdistype>;
 
       /// number of parentnodes of neighbor element
-      static constexpr int niel = CORE::FE::num_nodes<ndistype>;
+      static constexpr int niel = Core::FE::num_nodes<ndistype>;
 
       /// number of second order derivatives for master element
-      static constexpr int numderiv2_p = CORE::FE::DisTypeToNumDeriv2<pdistype>::numderiv2;
+      static constexpr int numderiv2_p = Core::FE::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
       /// number of second order derivatives for slave element
-      static constexpr int numderiv2_n = CORE::FE::DisTypeToNumDeriv2<ndistype>::numderiv2;
+      static constexpr int numderiv2_n = Core::FE::DisTypeToNumDeriv2<ndistype>::numderiv2;
 
 
 
@@ -169,39 +170,40 @@ namespace DRT
 
       */
       int evaluate_edge_based_stabilization(
-          DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
-          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
-          DRT::ELEMENTS::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
-          DRT::ELEMENTS::FluidEleParameterIntFace&
-              fldintfacepara,                   ///< general parameter for internal face
-          Teuchos::ParameterList& params,       ///< parameter list
-          DRT::Discretization& discretization,  ///< discretization
-          std::vector<int>& patchlm,            ///< patch local map
-          std::vector<int>& lm_masterToPatch,   ///< local map between master dofs and patchlm
-          std::vector<int>& lm_slaveToPatch,    ///< local map between slave dofs and patchlm
-          std::vector<int>& lm_faceToPatch,     ///< local map between face dofs and patchlm
+          Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
+          Discret::ELEMENTS::FluidEleParameterTimInt&
+              fldparatimint,  ///< time-integration parameter
+          Discret::ELEMENTS::FluidEleParameterIntFace&
+              fldintfacepara,                       ///< general parameter for internal face
+          Teuchos::ParameterList& params,           ///< parameter list
+          Discret::Discretization& discretization,  ///< discretization
+          std::vector<int>& patchlm,                ///< patch local map
+          std::vector<int>& lm_masterToPatch,       ///< local map between master dofs and patchlm
+          std::vector<int>& lm_slaveToPatch,        ///< local map between slave dofs and patchlm
+          std::vector<int>& lm_faceToPatch,         ///< local map between face dofs and patchlm
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-          std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
-          std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
+          std::vector<Core::LinAlg::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
+          std::vector<Core::LinAlg::SerialDenseVector>& elevec_blocks   ///< element vector blocks
           ) override;
 
      private:
-      int degree(const CORE::FE::CellType parent_ele_distype);
+      int degree(const Core::FE::CellType parent_ele_distype);
 
       //! reassemble matrix block from master-slave pairs to patch-node block for field (row, col)
       void reassemble_mat_block(const int row_block,   ///< row block
           const int col_block,                         ///< column block
-          CORE::LINALG::SerialDenseMatrix& mat_block,  ///< matrix block
-          CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * piel>&
+          Core::LinAlg::SerialDenseMatrix& mat_block,  ///< matrix block
+          Core::LinAlg::Matrix<numdofpernode_ * piel, numdofpernode_ * piel>&
               elematrix_mm,  ///< element matrix master-master block
-          CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * niel>&
+          Core::LinAlg::Matrix<numdofpernode_ * piel, numdofpernode_ * niel>&
               elematrix_ms,  ///< element matrix master-slave block
-          CORE::LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * piel>&
+          Core::LinAlg::Matrix<numdofpernode_ * niel, numdofpernode_ * piel>&
               elematrix_sm,  ///< element matrix slave-master block
-          CORE::LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * niel>&
+          Core::LinAlg::Matrix<numdofpernode_ * niel, numdofpernode_ * niel>&
               elematrix_ss,  ///< element matrix slave-slave block
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
@@ -211,10 +213,10 @@ namespace DRT
 
       //! reassemble rhs block from master/slave rhs to patch-node block for field (row)
       void reassemble_rhs_block(const int row_block,   ///< row block
-          CORE::LINALG::SerialDenseVector& rhs_block,  ///< rhs block
-          CORE::LINALG::Matrix<numdofpernode_ * piel, 1>&
+          Core::LinAlg::SerialDenseVector& rhs_block,  ///< rhs block
+          Core::LinAlg::Matrix<numdofpernode_ * piel, 1>&
               elevector_m,  ///< element vector master block
-          CORE::LINALG::Matrix<numdofpernode_ * niel, 1>&
+          Core::LinAlg::Matrix<numdofpernode_ * niel, 1>&
               elevector_s,  ///< element vector slave block
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
@@ -226,7 +228,7 @@ namespace DRT
       void get_element_data(FluidIntFace* surfele,      ///< surface FluidIntFace element
           Fluid* master_ele,                            ///< master parent element
           Fluid* slave_ele,                             ///< slave  parent element
-          Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
+          Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
           std::vector<double>& mypvelaf,                ///< master velaf
           std::vector<double>& mypvelnp,                ///< master velnp
           std::vector<double>& mypedispnp,              ///< master dispnp
@@ -240,11 +242,11 @@ namespace DRT
 
       //! evaluate shape functions and derivatives at integr. point
       double eval_shape_func_and_derivs_at_int_point(const double wquad,  ///< Gaussian weight
-          const CORE::LINALG::Matrix<facensd_, 1>&
+          const Core::LinAlg::Matrix<facensd_, 1>&
               xi_gp,  ///< local coordinates of gaussian point w.r.t the master's face
-          const CORE::LINALG::Matrix<nsd_, 1>&
+          const Core::LinAlg::Matrix<nsd_, 1>&
               p_xi_gp,  ///< local coordinates of gaussian point w.r.t master element
-          const CORE::LINALG::Matrix<nsd_, 1>&
+          const Core::LinAlg::Matrix<nsd_, 1>&
               n_xi_gp,              ///< local coordinates of gaussian point w.r.t slave element
           int master_eid,           ///< master parent element
           int slave_eid,            ///< slave parent element
@@ -253,7 +255,7 @@ namespace DRT
 
       //! evaluate shape functions and derivatives at integr. point
       double eval_shape_func_and_derivs_at_int_point(
-          CORE::FE::GaussIntegration::iterator& iquad,  ///< actual integration point
+          Core::FE::GaussIntegration::iterator& iquad,  ///< actual integration point
           int master_eid,                               ///< master parent element
           int slave_eid,                                ///< slave parent element
           bool use2ndderiv = false                      ///< flag to use 2nd order derivatives
@@ -267,7 +269,7 @@ namespace DRT
 
       //! set the convective velocity
       void set_convective_velint(
-          DRT::ELEMENTS::FluidEleParameterIntFace& fldintfacepara, const bool isale);
+          Discret::ELEMENTS::FluidEleParameterIntFace& fldintfacepara, const bool isale);
 
       //! Provide pressure and viscous u (EOS) ghost penalty stabilization for full! 2nd order
       //! derivatives
@@ -286,7 +288,7 @@ namespace DRT
       );
 
       //! Provide divergence and streamline (EOS) stabilization assembly for fluid
-      void div_streamline_eos(const CORE::LINALG::Matrix<nsd_, nsd_>&
+      void div_streamline_eos(const Core::LinAlg::Matrix<nsd_, nsd_>&
               vderxyaf_diff_scaled  ///< difference of velocity gradients * tau x (time factor rhs)
                                     ///< x (integration factor)
       );
@@ -305,29 +307,29 @@ namespace DRT
       );
 
       //! compute h_k w.r.t master and slave element
-      void compute_patch_hk(Fluid* master,       ///< master fluid element
-          Fluid* slave,                          ///< slave fluid element
-          DRT::ELEMENTS::FluidIntFace* intface,  ///< intface element
-          const INPAR::FLUID::EosElementLength&
+      void compute_patch_hk(Fluid* master,           ///< master fluid element
+          Fluid* slave,                              ///< slave fluid element
+          Discret::ELEMENTS::FluidIntFace* intface,  ///< intface element
+          const Inpar::FLUID::EosElementLength&
               eos_element_length  ///< which definition of element length?
       );
 
       //! compute h_k based on the largest diameter of the element's faces(3D), lines(2D) element
       double compute_patch_hk_surf_with_max_diameter(Fluid* master,  ///< master fluid element
           Fluid* slave,                                              ///< slave fluid element
-          DRT::ELEMENTS::FluidIntFace* intface                       ///< intface element
+          Discret::ELEMENTS::FluidIntFace* intface                   ///< intface element
       );
 
       //! compute h_e based on the diameter of the intfaace surface(3D) and the length of the
       //! intface line(2D)
-      double compute_surf_diameter(DRT::ELEMENTS::FluidIntFace* intface  ///< intface element
+      double compute_surf_diameter(Discret::ELEMENTS::FluidIntFace* intface  ///< intface element
       );
 
       //! compute h_k based on distance of quadrilateral element to opposite surface/edge - just for
       //! quadrilateral/hexahedral elements
       double compute_patch_hk_dist_to_opp_surf(Fluid* master,  ///< master fluid element
           Fluid* slave,                                        ///< slave fluid element
-          DRT::ELEMENTS::FluidIntFace* intface                 ///< intface element
+          Discret::ELEMENTS::FluidIntFace* intface             ///< intface element
       );
 
       //! compute h_k based on the largest diameter of the element's faces(3D), lines(2D) element,
@@ -335,7 +337,7 @@ namespace DRT
       //! elements)
       double compute_patch_hk_diameter_to_opp_surf(Fluid* master,  ///< master fluid element
           Fluid* slave,                                            ///< slave fluid element
-          DRT::ELEMENTS::FluidIntFace* intface                     ///< intface element
+          Discret::ELEMENTS::FluidIntFace* intface                 ///< intface element
       );
 
       //! compute h_k based on the maximal diameter of the master and slave element
@@ -367,7 +369,7 @@ namespace DRT
         \brief provide parameter r_alpha depending on polynomial degree and shape of element
         for each parent distype required for certain stabilization parameter definitions
        */
-      inline void r_pow_alpha(CORE::FE::CellType parent_distype, double& r_visc, double& r_conv)
+      inline void r_pow_alpha(Core::FE::CellType parent_distype, double& r_visc, double& r_conv)
       {
         // the scaling factor for face/edge-oriented stabilizations is r^alpha with
         // *    r_triangle      = highest polynomial degree on triangle/tet
@@ -380,26 +382,26 @@ namespace DRT
 
         switch (parent_distype)
         {
-          case CORE::FE::CellType::hex8:
-          case CORE::FE::CellType::tet4:
-          case CORE::FE::CellType::pyramid5:
-          case CORE::FE::CellType::wedge6:
-          case CORE::FE::CellType::quad4:
-          case CORE::FE::CellType::tri3:
-          case CORE::FE::CellType::line2:
+          case Core::FE::CellType::hex8:
+          case Core::FE::CellType::tet4:
+          case Core::FE::CellType::pyramid5:
+          case Core::FE::CellType::wedge6:
+          case Core::FE::CellType::quad4:
+          case Core::FE::CellType::tri3:
+          case Core::FE::CellType::line2:
           {
             r_visc = 1.0;  ///< 1.0^4
             r_conv = 1.0;  ///< 1.0^(7/2)
             break;
           }
-          case CORE::FE::CellType::hex20:
-          case CORE::FE::CellType::hex27:
-          case CORE::FE::CellType::tet10:
-          case CORE::FE::CellType::wedge15:
-          case CORE::FE::CellType::quad8:
-          case CORE::FE::CellType::quad9:
-          case CORE::FE::CellType::tri6:
-          case CORE::FE::CellType::line3:
+          case Core::FE::CellType::hex20:
+          case Core::FE::CellType::hex27:
+          case Core::FE::CellType::tet10:
+          case Core::FE::CellType::wedge15:
+          case Core::FE::CellType::quad8:
+          case Core::FE::CellType::quad9:
+          case Core::FE::CellType::tri6:
+          case Core::FE::CellType::line3:
           {
             r_visc = 16.0;                   ///< 2.0^4
             r_conv = 11.313708498984761164;  ///< 2.0^(7/2)
@@ -513,7 +515,7 @@ namespace DRT
           double& h_e                      ///< element length w.r.t parent element
       )
       {
-        static CORE::LINALG::Matrix<nsd_, numnode> xyz_surf(true);
+        static Core::LinAlg::Matrix<nsd_, numnode> xyz_surf(true);
         xyz_surf.Clear();
 
         if (connectivity.size() != numnode)
@@ -616,7 +618,7 @@ namespace DRT
           double& h_e                      ///< element length w.r.t parent element
       )
       {
-        static CORE::LINALG::Matrix<nsd_, numnode> xyz_surf(true);
+        static Core::LinAlg::Matrix<nsd_, numnode> xyz_surf(true);
         xyz_surf.Clear();
 
         if (connectivity.size() != numnode)
@@ -674,7 +676,7 @@ namespace DRT
       {
         // matrix that contains the coordinates of the start and end point of the connecting lines
         // between the two opposite surfaces
-        static CORE::LINALG::Matrix<nsd_, numlines * 2> xyze_distance_lines;
+        static Core::LinAlg::Matrix<nsd_, numlines * 2> xyze_distance_lines;
         xyze_distance_lines.Clear();
 
         if (master == true)  // is parent element the master element?
@@ -765,10 +767,10 @@ namespace DRT
 
       //! find the surface at the opposite side, return the local side id of opposite side
       //! return -1 if not unique!
-      int find_opposite_surface(CORE::FE::CellType ele_distype, const int surfacelocalid)
+      int find_opposite_surface(Core::FE::CellType ele_distype, const int surfacelocalid)
       {
-        if (ele_distype == CORE::FE::CellType::hex8 or ele_distype == CORE::FE::CellType::hex20 or
-            ele_distype == CORE::FE::CellType::hex27)
+        if (ele_distype == Core::FE::CellType::hex8 or ele_distype == Core::FE::CellType::hex20 or
+            ele_distype == Core::FE::CellType::hex27)
         {
           switch (surfacelocalid)
           {
@@ -795,9 +797,9 @@ namespace DRT
               break;
           }
         }
-        else if (ele_distype == CORE::FE::CellType::quad4 or
-                 ele_distype == CORE::FE::CellType::quad8 or
-                 ele_distype == CORE::FE::CellType::quad9)
+        else if (ele_distype == Core::FE::CellType::quad4 or
+                 ele_distype == Core::FE::CellType::quad8 or
+                 ele_distype == Core::FE::CellType::quad9)
         {
           switch (surfacelocalid)
           {
@@ -818,9 +820,9 @@ namespace DRT
               break;
           }
         }
-        if (ele_distype == CORE::FE::CellType::tet4 or ele_distype == CORE::FE::CellType::tet10 or
-            ele_distype == CORE::FE::CellType::tri3 or ele_distype == CORE::FE::CellType::tri6 or
-            ele_distype == CORE::FE::CellType::pyramid5)
+        if (ele_distype == Core::FE::CellType::tet4 or ele_distype == Core::FE::CellType::tet10 or
+            ele_distype == Core::FE::CellType::tri3 or ele_distype == Core::FE::CellType::tri6 or
+            ele_distype == Core::FE::CellType::pyramid5)
         {
           // no unique opposite side
           return -1;
@@ -917,7 +919,7 @@ namespace DRT
        \brief computation of the EOS-stabilization parameter and ghost penalty parameter
       */
       void compute_stabilization_params(const bool is_ghost_penalty_reconstruct,
-          const bool use2ndderiv, const INPAR::FLUID::EosTauType tautype,
+          const bool use2ndderiv, const Inpar::FLUID::EosTauType tautype,
           const bool EOS_conv_stream, const bool EOS_conv_cross, const bool EOS_div_vel_jump,
           const double max_vel_L2_norm, const double timefac, const double gamma_ghost_penalty_visc,
           const double gamma_ghost_penalty_trans, const double gamma_ghost_penalty_u_2nd,
@@ -925,105 +927,105 @@ namespace DRT
 
      private:
       // element matrices in block structure master vs. slave
-      CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * piel>
+      Core::LinAlg::Matrix<numdofpernode_ * piel, numdofpernode_ * piel>
           elematrix_mm_;  ///< element matrix master-master block
-      CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * niel>
+      Core::LinAlg::Matrix<numdofpernode_ * piel, numdofpernode_ * niel>
           elematrix_ms_;  ///< element matrix master-slave block
-      CORE::LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * piel>
+      Core::LinAlg::Matrix<numdofpernode_ * niel, numdofpernode_ * piel>
           elematrix_sm_;  ///< element matrix slave-master block
-      CORE::LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * niel>
+      Core::LinAlg::Matrix<numdofpernode_ * niel, numdofpernode_ * niel>
           elematrix_ss_;  ///< element matrix slave-slave block
 
-      CORE::LINALG::Matrix<numdofpernode_ * piel, 1> elevector_m_;  ///< element vector master block
-      CORE::LINALG::Matrix<numdofpernode_ * niel, 1> elevector_s_;  ///< element vector slave block
+      Core::LinAlg::Matrix<numdofpernode_ * piel, 1> elevector_m_;  ///< element vector master block
+      Core::LinAlg::Matrix<numdofpernode_ * niel, 1> elevector_s_;  ///< element vector slave block
 
       // nodal arrays
       // ------------
       //! node coordinates of parent (master) element
-      CORE::LINALG::Matrix<nsd_, piel> pxyze_;
+      Core::LinAlg::Matrix<nsd_, piel> pxyze_;
       //! array of nodal velocities, intermediate time level
-      CORE::LINALG::Matrix<nsd_, piel> pevelaf_;
+      Core::LinAlg::Matrix<nsd_, piel> pevelaf_;
       //! array of nodal grid velocities, time n+1
-      CORE::LINALG::Matrix<nsd_, piel> pegridv_;
+      Core::LinAlg::Matrix<nsd_, piel> pegridv_;
       //! array of nodal velocities, new time level
-      CORE::LINALG::Matrix<nsd_, piel> pevelnp_;
+      Core::LinAlg::Matrix<nsd_, piel> pevelnp_;
       //! array of nodal advective velocities
-      CORE::LINALG::Matrix<nsd_, piel> peconvvelaf_;
+      Core::LinAlg::Matrix<nsd_, piel> peconvvelaf_;
       //! array of nodal pressure, new time level
-      CORE::LINALG::Matrix<piel, 1> peprenp_;
+      Core::LinAlg::Matrix<piel, 1> peprenp_;
       //! array of nodal grid displacements, parent element, new time level
-      CORE::LINALG::Matrix<nsd_, piel> pedispnp_;
+      Core::LinAlg::Matrix<nsd_, piel> pedispnp_;
       //! array of nodal grid displacements, surface element, new time level
-      CORE::LINALG::Matrix<nsd_, piel> edispnp_;
+      Core::LinAlg::Matrix<nsd_, piel> edispnp_;
 
       //! node coordinates of neighbor (slave) element
-      CORE::LINALG::Matrix<nsd_, niel> nxyze_;
+      Core::LinAlg::Matrix<nsd_, niel> nxyze_;
       //! array of nodal velocities, intermediate time level
-      CORE::LINALG::Matrix<nsd_, niel> nevelaf_;
+      Core::LinAlg::Matrix<nsd_, niel> nevelaf_;
       //! array of nodal grid velocities, time n+1
-      CORE::LINALG::Matrix<nsd_, niel> negridv_;
+      Core::LinAlg::Matrix<nsd_, niel> negridv_;
       //! array of nodal velocities, new time level
-      CORE::LINALG::Matrix<nsd_, niel> nevelnp_;
+      Core::LinAlg::Matrix<nsd_, niel> nevelnp_;
       //! array of nodal advective velocities
-      CORE::LINALG::Matrix<nsd_, niel> neconvvelaf_;
+      Core::LinAlg::Matrix<nsd_, niel> neconvvelaf_;
       //! array of nodal pressure, new time level
-      CORE::LINALG::Matrix<niel, 1> neprenp_;
+      Core::LinAlg::Matrix<niel, 1> neprenp_;
       //! array of nodal grid displacements, neighbor element, new time level
-      CORE::LINALG::Matrix<nsd_, niel> nedispnp_;
+      Core::LinAlg::Matrix<nsd_, niel> nedispnp_;
 
       //! node coordinates of boundary element
-      CORE::LINALG::Matrix<nsd_, iel> xyze_;
+      Core::LinAlg::Matrix<nsd_, iel> xyze_;
 
       //! linearisation of convection, convective part for parent element
-      CORE::LINALG::Matrix<piel, 1> p_conv_c_;
+      Core::LinAlg::Matrix<piel, 1> p_conv_c_;
       //! linearisation of convection, convective part for neighbor element
-      CORE::LINALG::Matrix<niel, 1> n_conv_c_;
+      Core::LinAlg::Matrix<niel, 1> n_conv_c_;
 
 
       // shape functions and derivatives, mapping from reference element to actual geometry
       // ----------------------------------------------------------------------------------
       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
-      CORE::LINALG::Matrix<nsd_, nsd_> pxjm_;
+      Core::LinAlg::Matrix<nsd_, nsd_> pxjm_;
       //! its inverse
-      CORE::LINALG::Matrix<nsd_, nsd_> pxji_;
+      Core::LinAlg::Matrix<nsd_, nsd_> pxji_;
       //! vector of shape functions, parent element
-      CORE::LINALG::Matrix<piel, 1> pfunct_;
+      Core::LinAlg::Matrix<piel, 1> pfunct_;
       //! vector of shape function derivatives in reference coordinate system, parent element
-      CORE::LINALG::Matrix<nsd_, piel> pderiv_;
+      Core::LinAlg::Matrix<nsd_, piel> pderiv_;
       //! vector of shape function derivatives in global coordinate system
-      CORE::LINALG::Matrix<nsd_, piel> pderxy_;
+      Core::LinAlg::Matrix<nsd_, piel> pderxy_;
       //! vector of shape function (2nd) derivatives in reference coordinate system, parent element
-      CORE::LINALG::Matrix<numderiv2_p, piel> pderiv2_;
+      Core::LinAlg::Matrix<numderiv2_p, piel> pderiv2_;
       //! vector of shape function (2nd) derivatives in global coordinate system
-      CORE::LINALG::Matrix<numderiv2_p, piel> pderxy2_;
+      Core::LinAlg::Matrix<numderiv2_p, piel> pderxy2_;
 
       // ----------------------------------------------------------------------------------
       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
-      CORE::LINALG::Matrix<nsd_, nsd_> nxjm_;
+      Core::LinAlg::Matrix<nsd_, nsd_> nxjm_;
       //! its inverse
-      CORE::LINALG::Matrix<nsd_, nsd_> nxji_;
+      Core::LinAlg::Matrix<nsd_, nsd_> nxji_;
       //! vector of shape functions, parent element
-      CORE::LINALG::Matrix<niel, 1> nfunct_;
+      Core::LinAlg::Matrix<niel, 1> nfunct_;
       //! vector of shape function derivatives in reference coordinate system, parent element
-      CORE::LINALG::Matrix<nsd_, niel> nderiv_;
+      Core::LinAlg::Matrix<nsd_, niel> nderiv_;
       //! vector of shape function derivatives in global coordinate system
-      CORE::LINALG::Matrix<nsd_, niel> nderxy_;
+      Core::LinAlg::Matrix<nsd_, niel> nderxy_;
       //! vector of shape function (2nd) derivatives in reference coordinate system, parent element
-      CORE::LINALG::Matrix<numderiv2_n, niel> nderiv2_;
+      Core::LinAlg::Matrix<numderiv2_n, niel> nderiv2_;
       //! vector of shape function (2nd) derivatives in global coordinate system
-      CORE::LINALG::Matrix<numderiv2_n, niel> nderxy2_;
+      Core::LinAlg::Matrix<numderiv2_n, niel> nderxy2_;
 
 
       //! vector of shape functions, boundary element
-      CORE::LINALG::Matrix<iel, 1> funct_;
+      Core::LinAlg::Matrix<iel, 1> funct_;
       //! vector of shape function derivatives in reference coordinate system, boundary element
-      CORE::LINALG::Matrix<facensd_, iel> deriv_;
+      Core::LinAlg::Matrix<facensd_, iel> deriv_;
       //! normal vector on surface element (outward pointing from parent element)
-      CORE::LINALG::Matrix<nsd_, 1> n_;
+      Core::LinAlg::Matrix<nsd_, 1> n_;
       //! derivatives of surface in all reference directions
-      CORE::LINALG::Matrix<facensd_, nsd_> dxyzdrs_;
+      Core::LinAlg::Matrix<facensd_, nsd_> dxyzdrs_;
       //! the metric tensor
-      CORE::LINALG::Matrix<facensd_, facensd_> metrictensor_;
+      Core::LinAlg::Matrix<facensd_, facensd_> metrictensor_;
       //! the area of an infintesimal surface element
       double drs_;
 
@@ -1033,81 +1035,81 @@ namespace DRT
       // ---------------------------------------------------
 
       //! local coordinates w.r.t face
-      CORE::LINALG::Matrix<facensd_, 1> xsi_;
+      Core::LinAlg::Matrix<facensd_, 1> xsi_;
       //! velocity in gausspoint, time n+af
-      CORE::LINALG::Matrix<nsd_, 1> velintaf_;
+      Core::LinAlg::Matrix<nsd_, 1> velintaf_;
       //! velocity in gausspoint, time n+1
-      CORE::LINALG::Matrix<nsd_, 1> velintnp_;
+      Core::LinAlg::Matrix<nsd_, 1> velintnp_;
       //! grid velocity in gausspoint, time n+1 (master side, for ALE-fluid)
-      CORE::LINALG::Matrix<nsd_, 1> gridvelint_;
+      Core::LinAlg::Matrix<nsd_, 1> gridvelint_;
       //! convective velocity in gausspoint, time n+1 (master side, for ALE-fluid)
-      CORE::LINALG::Matrix<nsd_, 1> convvelint_;
+      Core::LinAlg::Matrix<nsd_, 1> convvelint_;
       //! parent velocity derivatives in gausspoint, time n+af
-      CORE::LINALG::Matrix<nsd_, nsd_> pvderxyaf_;
+      Core::LinAlg::Matrix<nsd_, nsd_> pvderxyaf_;
       //! neighbor velocity derivatives in gausspoint, time n+af
-      CORE::LINALG::Matrix<nsd_, nsd_> nvderxyaf_;
+      Core::LinAlg::Matrix<nsd_, nsd_> nvderxyaf_;
       //! parent velocity derivatives in gausspoint, time n+1
-      CORE::LINALG::Matrix<nsd_, nsd_> pvderxynp_;
+      Core::LinAlg::Matrix<nsd_, nsd_> pvderxynp_;
       //! neighbor velocity derivatives in gausspoint, time n+1
-      CORE::LINALG::Matrix<nsd_, nsd_> nvderxynp_;
+      Core::LinAlg::Matrix<nsd_, nsd_> nvderxynp_;
       //! parent velocity (2nd) derivatives in gausspoint, time n+af
-      CORE::LINALG::Matrix<nsd_, numderiv2_p> pvderxy2af_;
+      Core::LinAlg::Matrix<nsd_, numderiv2_p> pvderxy2af_;
       //! neighbor velocity (2nd) derivatives in gausspoint, time n+af
-      CORE::LINALG::Matrix<nsd_, numderiv2_n> nvderxy2af_;
+      Core::LinAlg::Matrix<nsd_, numderiv2_n> nvderxy2af_;
 
       //! parent velocity (2nd) derivatives in gausspoint, time n+af
-      CORE::LINALG::Matrix<1, numderiv2_p> ppderxy2af_;
+      Core::LinAlg::Matrix<1, numderiv2_p> ppderxy2af_;
       //! neighbor velocity (2nd) derivatives in gausspoint, time n+af
-      CORE::LINALG::Matrix<1, numderiv2_n> npderxy2af_;
+      Core::LinAlg::Matrix<1, numderiv2_n> npderxy2af_;
 
       //! velocity gradient difference, time n+af
-      CORE::LINALG::Matrix<nsd_, nsd_> vderxyaf_diff_;
+      Core::LinAlg::Matrix<nsd_, nsd_> vderxyaf_diff_;
       //! velocity gradient difference, time n+1
-      CORE::LINALG::Matrix<nsd_, nsd_> vderxynp_diff_;
+      Core::LinAlg::Matrix<nsd_, nsd_> vderxynp_diff_;
 
 
       //! pressure in gausspoint, time n+1
       double prenp_;
       //! parent pressure derivatives in gausspoint, time n+1
-      CORE::LINALG::Matrix<nsd_, 1> pprederxy_;
+      Core::LinAlg::Matrix<nsd_, 1> pprederxy_;
       //! neighbor velocity derivatives in gausspoint, time n+1
-      CORE::LINALG::Matrix<nsd_, 1> nprederxy_;
+      Core::LinAlg::Matrix<nsd_, 1> nprederxy_;
 
-      CORE::LINALG::Matrix<piel, piel> pderiv_dyad_pderiv_;
-      CORE::LINALG::Matrix<piel, piel> pderiv_dyad_pderiv_tau_timefacfac_;
-      CORE::LINALG::Matrix<piel, piel> pderiv_dyad_pderiv_tau_timefacfacpre_;
+      Core::LinAlg::Matrix<piel, piel> pderiv_dyad_pderiv_;
+      Core::LinAlg::Matrix<piel, piel> pderiv_dyad_pderiv_tau_timefacfac_;
+      Core::LinAlg::Matrix<piel, piel> pderiv_dyad_pderiv_tau_timefacfacpre_;
 
-      CORE::LINALG::Matrix<piel, niel> pderiv_dyad_nderiv_;
-      CORE::LINALG::Matrix<piel, niel> pderiv_dyad_nderiv_tau_timefacfac_;
-      CORE::LINALG::Matrix<piel, niel> pderiv_dyad_nderiv_tau_timefacfacpre_;
+      Core::LinAlg::Matrix<piel, niel> pderiv_dyad_nderiv_;
+      Core::LinAlg::Matrix<piel, niel> pderiv_dyad_nderiv_tau_timefacfac_;
+      Core::LinAlg::Matrix<piel, niel> pderiv_dyad_nderiv_tau_timefacfacpre_;
 
-      CORE::LINALG::Matrix<niel, niel> nderiv_dyad_nderiv_;
-      CORE::LINALG::Matrix<niel, niel> nderiv_dyad_nderiv_tau_timefacfac_;
-      CORE::LINALG::Matrix<niel, niel> nderiv_dyad_nderiv_tau_timefacfacpre_;
+      Core::LinAlg::Matrix<niel, niel> nderiv_dyad_nderiv_;
+      Core::LinAlg::Matrix<niel, niel> nderiv_dyad_nderiv_tau_timefacfac_;
+      Core::LinAlg::Matrix<niel, niel> nderiv_dyad_nderiv_tau_timefacfacpre_;
 
       //! vector of shape function derivatives in global coordinate system scaled with
       //! tau_timefacfac
-      CORE::LINALG::Matrix<nsd_, piel> pderxy_tau_timefacfac_;
+      Core::LinAlg::Matrix<nsd_, piel> pderxy_tau_timefacfac_;
       //! vector of shape function derivatives in global coordinate system scaled with
       //! tau_timefacfac
-      CORE::LINALG::Matrix<nsd_, niel> nderxy_tau_timefacfac_;
+      Core::LinAlg::Matrix<nsd_, niel> nderxy_tau_timefacfac_;
 
 
       //! face/edge integration points
-      Teuchos::RCP<CORE::FE::GaussPoints> intpoints_;
+      Teuchos::RCP<Core::FE::GaussPoints> intpoints_;
 
       //! number of Gaussian points
       unsigned int numgp_;
 
-      CORE::LINALG::SerialDenseMatrix p_xi_points_;
-      CORE::LINALG::SerialDenseMatrix n_xi_points_;
-      CORE::LINALG::SerialDenseMatrix face_xi_points_master_;
-      CORE::LINALG::SerialDenseMatrix face_xi_points_slave_;
+      Core::LinAlg::SerialDenseMatrix p_xi_points_;
+      Core::LinAlg::SerialDenseMatrix n_xi_points_;
+      Core::LinAlg::SerialDenseMatrix face_xi_points_master_;
+      Core::LinAlg::SerialDenseMatrix face_xi_points_slave_;
 
 
-      CORE::LINALG::Matrix<facensd_, 1> face_xi_gp_;
-      CORE::LINALG::Matrix<nsd_, 1> p_xi_gp_;
-      CORE::LINALG::Matrix<nsd_, 1> n_xi_gp_;
+      Core::LinAlg::Matrix<facensd_, 1> face_xi_gp_;
+      Core::LinAlg::Matrix<nsd_, 1> p_xi_gp_;
+      Core::LinAlg::Matrix<nsd_, 1> n_xi_gp_;
 
       // element, side, line connectivity
       // ---------------------------------------------------
@@ -1183,7 +1185,7 @@ namespace DRT
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

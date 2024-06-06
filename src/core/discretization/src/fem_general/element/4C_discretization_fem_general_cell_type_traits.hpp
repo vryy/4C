@@ -23,37 +23,37 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE
+namespace Core::FE
 {
   //! @name Type traits for cell shape based on cell types
   /// @{
-  template <CORE::FE::CellType celltype>
-  inline static constexpr bool is_tet = DETAILS::is_tet<celltype>::value;
+  template <Core::FE::CellType celltype>
+  inline static constexpr bool is_tet = Details::is_tet<celltype>::value;
 
-  template <CORE::FE::CellType celltype>
-  inline static constexpr bool is_hex = DETAILS::is_hex<celltype>::value;
+  template <Core::FE::CellType celltype>
+  inline static constexpr bool is_hex = Details::is_hex<celltype>::value;
 
-  template <CORE::FE::CellType celltype>
-  inline static constexpr bool is_nurbs = DETAILS::is_nurbs<celltype>::value;
+  template <Core::FE::CellType celltype>
+  inline static constexpr bool is_nurbs = Details::is_nurbs<celltype>::value;
 
-  template <CORE::FE::CellType celltype>
-  inline static constexpr bool is_wedge = DETAILS::is_wedge<celltype>::value;
+  template <Core::FE::CellType celltype>
+  inline static constexpr bool is_wedge = Details::is_wedge<celltype>::value;
 
-  template <CORE::FE::CellType celltype>
-  inline static constexpr bool is_pyramid = DETAILS::is_pyramid<celltype>::value;
+  template <Core::FE::CellType celltype>
+  inline static constexpr bool is_pyramid = Details::is_pyramid<celltype>::value;
 
-  template <CORE::FE::CellType celltype>
-  inline static constexpr bool is_quad = DETAILS::is_quad<celltype>::value;
+  template <Core::FE::CellType celltype>
+  inline static constexpr bool is_quad = Details::is_quad<celltype>::value;
 
-  template <CORE::FE::CellType celltype>
-  inline static constexpr bool is_tri = DETAILS::is_tri<celltype>::value;
+  template <Core::FE::CellType celltype>
+  inline static constexpr bool is_tri = Details::is_tri<celltype>::value;
 
-  template <CORE::FE::CellType celltype>
-  inline static constexpr bool is_line = DETAILS::is_line<celltype>::value;
+  template <Core::FE::CellType celltype>
+  inline static constexpr bool is_line = Details::is_line<celltype>::value;
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   inline static constexpr bool use_lagrange_shapefnct =
-      DETAILS::use_lagrange_shapefnct<celltype>::value;
+      Details::use_lagrange_shapefnct<celltype>::value;
   /// @}
 
 
@@ -78,7 +78,7 @@ namespace CORE::FE
    * @tparam t
    */
   template <typename... t>
-  using Join = typename DETAILS::Join<t...>::type;
+  using Join = typename Details::Join<t...>::type;
   ///@}
 
   /*!
@@ -89,7 +89,7 @@ namespace CORE::FE
    * list for different cell types. You can do it like so:
    *
    * @code{.cpp}
-   * using CellTypes = CORE::FE::celltype_sequence<CellType, CellType::hex8, CellType::hex27>
+   * using CellTypes = Core::FE::celltype_sequence<CellType, CellType::hex8, CellType::hex27>
    *
    * // results in BaseTypeList<Base<CellType::hex8>, Base<CellType::hex27>>
    * using BaseTypeList = apply_celltype_sequence<Base, CellTypes>;
@@ -100,7 +100,7 @@ namespace CORE::FE
    * cell type
    *
    * @code{.cpp}
-   * namespace DETAILS
+   * namespace Details
    * {
    *   template <typename Tuple>
    *   struct CreateVariant;
@@ -113,7 +113,7 @@ namespace CORE::FE
    * }
    *
    * template <typename... Ts>
-   * using CreateVariantType = typename DETAILS::CreateVariant<Ts...>::type;
+   * using CreateVariantType = typename Details::CreateVariant<Ts...>::type;
    *
    * // results in std::variant<Base<CellType::hex8>, Base<CellType::hex27>>
    * using Variant = CreateVariantType<BaseTypeList>;
@@ -122,9 +122,9 @@ namespace CORE::FE
    * @tparam Base
    * @tparam CellTypeList
    */
-  template <template <CORE::FE::CellType> typename Base, typename CellTypeSequence>
+  template <template <Core::FE::CellType> typename Base, typename CellTypeSequence>
   using apply_celltype_sequence =
-      typename DETAILS::apply_celltype_sequence<BaseTypeList, Base, CellTypeSequence>::type;
+      typename Details::apply_celltype_sequence<BaseTypeList, Base, CellTypeSequence>::type;
 
   /*!
    * @brief Returns a std::array of celltypes defined in the given integer sequence
@@ -133,17 +133,17 @@ namespace CORE::FE
    */
   template <typename celltypes>
   static constexpr std::array celltype_array =
-      DETAILS::celltype_sequence_to_array<celltypes>::value;
+      Details::celltype_sequence_to_array<celltypes>::value;
 
   /*!
-   * @brief a CORE::FE::celltype_sequence holding all @p CellTypes including @p none and @p max
+   * @brief a Core::FE::celltype_sequence holding all @p CellTypes including @p none and @p max
    */
-  using all_celltypes = DETAILS::make_celltype_sequence<CellType::dis_none, CellType::max_distype>;
+  using all_celltypes = Details::make_celltype_sequence<CellType::dis_none, CellType::max_distype>;
   /*!
-   * @brief a CORE::FE::celltype_sequence holding all physical @p CellTypes , i.e. all CellTypes
+   * @brief a Core::FE::celltype_sequence holding all physical @p CellTypes , i.e. all CellTypes
    * except @p none and @p max
    */
-  using all_physical_celltypes = DETAILS::make_celltype_sequence<static_cast<CellType>(1),
+  using all_physical_celltypes = Details::make_celltype_sequence<static_cast<CellType>(1),
       static_cast<CellType>(static_cast<std::size_t>(CellType::max_distype) - 1)>;
   ///@}
 
@@ -177,7 +177,7 @@ namespace CORE::FE
    * You can also pass a sequence of supported celltypes
    *
    * @code{.cpp}
-   * using hex_celltypes = CORE::FE::celltype_sequence<CellType::hex8, CellType::hex16,
+   * using hex_celltypes = Core::FE::celltype_sequence<CellType::hex8, CellType::hex16,
    * CellType::hex18, CellType::hex20, CellType::hex27>; auto result =
    * CellTypeSwitch<hex_celltypes>(celltype, [](auto celltype_t) {
    *   // do_sth<...>(); must be defined for all celltypes listed in hex_celltypes
@@ -192,7 +192,7 @@ namespace CORE::FE
    *
    * In order to throw a custom error message, do it like so:
    * @code{.cpp}
-   * using hex_celltypes = CORE::FE::celltype_sequence<CellType::hex8, CellType::hex16,
+   * using hex_celltypes = Core::FE::celltype_sequence<CellType::hex8, CellType::hex16,
    * CellType::hex18, CellType::hex20, CellType::hex27>; auto result =
    * CellTypeSwitch<hex_celltypes>(celltype, [](auto celltype_t) {
    *   // do_sth<...>(); must be defined for all celltypes listed in hex_celltypes
@@ -204,7 +204,7 @@ namespace CORE::FE
    *
    * In order to do a default operation, do it like so:
    * @code{.cpp}
-   * using hex_celltypes = CORE::FE::celltype_sequence<CellType::hex8, CellType::hex16,
+   * using hex_celltypes = Core::FE::celltype_sequence<CellType::hex8, CellType::hex16,
    * CellType::hex18, CellType::hex20, CellType::hex27>; auto result =
    * CellTypeSwitch<hex_celltypes>(celltype, [](auto celltype_t) {
    *   // do_sth<...>(); must be defined for all celltypes listed in hex_celltypes
@@ -225,107 +225,107 @@ namespace CORE::FE
    * celltype as argument for the default operation. The compile time celltype can be obtained with
    * the @p operator() . Typically, a lambda function with @p auto parameter is passed. either throw
    * an error or return a convertible type to @p fct return type.
-   * @tparam celltype_sequence : a CORE::FE::celltype_sequence holding a list of all implemented
+   * @tparam celltype_sequence : a Core::FE::celltype_sequence holding a list of all implemented
    * celltypes (default: all physical celltypes, i.e. all except none and max)
    * @return returns the invoked result of @p fct
    */
   template <typename celltype_sequence = all_physical_celltypes, typename Function,
       typename UnsupportedCellTypeCallable =
-          DETAILS::ThrowUnsupportedCellTypeError<celltype_sequence>>
+          Details::ThrowUnsupportedCellTypeError<celltype_sequence>>
   auto CellTypeSwitch(CellType celltype, Function fct,
       UnsupportedCellTypeCallable unsupported_celltype_callable = {})
   {
     switch (celltype)
     {
       case CellType::dis_none:
-        return DETAILS::CellTypeSwitchItem<CellType::dis_none, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::dis_none, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::quad4:
-        return DETAILS::CellTypeSwitchItem<CellType::quad4, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::quad4, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::quad6:
-        return DETAILS::CellTypeSwitchItem<CellType::quad6, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::quad6, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::quad8:
-        return DETAILS::CellTypeSwitchItem<CellType::quad8, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::quad8, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::quad9:
-        return DETAILS::CellTypeSwitchItem<CellType::quad9, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::quad9, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::tri3:
-        return DETAILS::CellTypeSwitchItem<CellType::tri3, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::tri3, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::tri6:
-        return DETAILS::CellTypeSwitchItem<CellType::tri6, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::tri6, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex8:
-        return DETAILS::CellTypeSwitchItem<CellType::hex8, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::hex8, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex16:
-        return DETAILS::CellTypeSwitchItem<CellType::hex16, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::hex16, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex18:
-        return DETAILS::CellTypeSwitchItem<CellType::hex18, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::hex18, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex20:
-        return DETAILS::CellTypeSwitchItem<CellType::hex20, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::hex20, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex27:
-        return DETAILS::CellTypeSwitchItem<CellType::hex27, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::hex27, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::tet4:
-        return DETAILS::CellTypeSwitchItem<CellType::tet4, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::tet4, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::tet10:
-        return DETAILS::CellTypeSwitchItem<CellType::tet10, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::tet10, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::wedge6:
-        return DETAILS::CellTypeSwitchItem<CellType::wedge6, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::wedge6, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::wedge15:
-        return DETAILS::CellTypeSwitchItem<CellType::wedge15, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::wedge15, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::pyramid5:
-        return DETAILS::CellTypeSwitchItem<CellType::pyramid5, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::pyramid5, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::line2:
-        return DETAILS::CellTypeSwitchItem<CellType::line2, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::line2, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::line3:
-        return DETAILS::CellTypeSwitchItem<CellType::line3, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::line3, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::line4:
-        return DETAILS::CellTypeSwitchItem<CellType::line4, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::line4, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::line5:
-        return DETAILS::CellTypeSwitchItem<CellType::line5, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::line5, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::line6:
-        return DETAILS::CellTypeSwitchItem<CellType::line6, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::line6, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::point1:
-        return DETAILS::CellTypeSwitchItem<CellType::point1, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::point1, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs2:
-        return DETAILS::CellTypeSwitchItem<CellType::nurbs2, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::nurbs2, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs3:
-        return DETAILS::CellTypeSwitchItem<CellType::nurbs3, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::nurbs3, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs4:
-        return DETAILS::CellTypeSwitchItem<CellType::nurbs4, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::nurbs4, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs9:
-        return DETAILS::CellTypeSwitchItem<CellType::nurbs9, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::nurbs9, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs8:
-        return DETAILS::CellTypeSwitchItem<CellType::nurbs8, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::nurbs8, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs27:
-        return DETAILS::CellTypeSwitchItem<CellType::nurbs27, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::nurbs27, celltype_sequence>(
             fct, unsupported_celltype_callable);
       case CellType::max_distype:
-        return DETAILS::CellTypeSwitchItem<CellType::max_distype, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::max_distype, celltype_sequence>(
             fct, unsupported_celltype_callable);
     }
     FOUR_C_THROW(
@@ -339,7 +339,7 @@ namespace CORE::FE
    * @tparam celltype
    */
   template <CellType celltype>
-  static constexpr auto celltype_string = DETAILS::CellTypeInformation<celltype>::name;
+  static constexpr auto celltype_string = Details::CellTypeInformation<celltype>::name;
 
   /*!
    * @brief Returns a string representation of the celltype
@@ -356,7 +356,7 @@ namespace CORE::FE
   inline CellType StringToCellType(const std::string& celltype_str)
   {
     constexpr std::array all_names =
-        DETAILS::celltype_sequence_to_string_array<all_celltypes>::value;
+        Details::celltype_sequence_to_string_array<all_celltypes>::value;
 
     const auto* found_position =
         std::find(std::begin(all_names), std::end(all_names), celltype_str);
@@ -377,7 +377,7 @@ namespace CORE::FE
    * @tparam celltype
    */
   template <CellType celltype>
-  static constexpr int dim = DETAILS::CellTypeInformation<celltype>::dim;
+  static constexpr int dim = Details::CellTypeInformation<celltype>::dim;
 
   /*!
    * @brief Compile time mapping from celltype to number of nodes of the element
@@ -385,7 +385,7 @@ namespace CORE::FE
    * @tparam celltype
    */
   template <CellType celltype>
-  static constexpr int num_nodes = DETAILS::CellTypeInformation<celltype>::num_nodes;
+  static constexpr int num_nodes = Details::CellTypeInformation<celltype>::num_nodes;
 
   /*!
    * @brief Compile time mapping from celltype to number of element faces
@@ -393,7 +393,7 @@ namespace CORE::FE
    * @tparam celltype
    */
   template <CellType celltype>
-  static constexpr int num_faces = DETAILS::CellTypeInformation<celltype>::num_faces;
+  static constexpr int num_faces = Details::CellTypeInformation<celltype>::num_faces;
 
   /*!
    * @brief Compile time mapping from celltype to order of the shape functions
@@ -401,9 +401,9 @@ namespace CORE::FE
    * @tparam celltype
    */
   template <CellType celltype>
-  static constexpr CellType order = DETAILS::CellTypeInformation<celltype>::order;
+  static constexpr CellType order = Details::CellTypeInformation<celltype>::order;
 
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

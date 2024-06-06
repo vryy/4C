@@ -14,16 +14,16 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Compute vector 2-norm                                               |
  *----------------------------------------------------------------------*/
-double CORE::LINALG::Norm2(const CORE::LINALG::SerialDenseVector& v) { return v.normFrobenius(); }
+double Core::LinAlg::Norm2(const Core::LinAlg::SerialDenseVector& v) { return v.normFrobenius(); }
 
 /*----------------------------------------------------------------------*
  |  b = alpha*a + beta*b                                                |
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Update(double alpha, const CORE::LINALG::SerialDenseVector& a, double beta,
-    CORE::LINALG::SerialDenseVector& b)
+void Core::LinAlg::Update(double alpha, const Core::LinAlg::SerialDenseVector& a, double beta,
+    Core::LinAlg::SerialDenseVector& b)
 {
   b.scale(beta);
-  CORE::LINALG::SerialDenseVector acopy(a);
+  Core::LinAlg::SerialDenseVector acopy(a);
   acopy.scale(alpha);
   b += acopy;
 }

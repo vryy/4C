@@ -26,37 +26,37 @@ FOUR_C_NAMESPACE_OPEN
 MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::Factory(int matid)
 {
   // for the sake of safety
-  if (GLOBAL::Problem::Instance()->Materials() == Teuchos::null)
+  if (Global::Problem::Instance()->Materials() == Teuchos::null)
   {
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   }
 
   // yet another safety check
-  if (GLOBAL::Problem::Instance()->Materials()->Num() == 0)
+  if (Global::Problem::Instance()->Materials()->Num() == 0)
   {
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
   }
 
   // retrieve problem instance to read from
-  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // retrieve validated input line of material ID in question
-  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
 
   switch (curmat->Type())
   {
-    case CORE::Materials::mix_prestress_strategy_cylinder:
+    case Core::Materials::mix_prestress_strategy_cylinder:
     {
-      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::IsotropicCylinderPrestressStrategy>(
+      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::IsotropicCylinderPrestressStrategy>(
           curmat);
     }
-    case CORE::Materials::mix_prestress_strategy_iterative:
+    case Core::Materials::mix_prestress_strategy_iterative:
     {
-      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::IterativePrestressStrategy>(curmat);
+      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::IterativePrestressStrategy>(curmat);
     }
-    case CORE::Materials::mix_prestress_strategy_constant:
+    case Core::Materials::mix_prestress_strategy_constant:
     {
-      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::ConstantPrestressStrategy>(curmat);
+      return Mat::CreateMaterialParameterInstance<MIXTURE::PAR::ConstantPrestressStrategy>(curmat);
     }
     default:
       FOUR_C_THROW(

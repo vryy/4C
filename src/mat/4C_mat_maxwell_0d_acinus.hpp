@@ -26,18 +26,18 @@ spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for Maxwell 0D acinar material
     ///
-    class Maxwell0dAcinus : public CORE::MAT::PAR::Parameter
+    class Maxwell0dAcinus : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      Maxwell0dAcinus(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Maxwell0dAcinus(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -52,20 +52,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class Maxwell_0d_acinus
 
   }  // namespace PAR
 
-  class Maxwell0dAcinusType : public CORE::COMM::ParObjectType
+  class Maxwell0dAcinusType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "maxwell_0d_acinusType"; }
 
     static Maxwell0dAcinusType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static Maxwell0dAcinusType instance_;
@@ -75,14 +75,14 @@ namespace MAT
   /// Wrapper for Maxwell 0D acinar material
   ///
   /// This object exists (several times) at every element
-  class Maxwell0dAcinus : public CORE::MAT::Material
+  class Maxwell0dAcinus : public Core::Mat::Material
   {
    public:
     /// construct empty material object
     Maxwell0dAcinus();
 
     /// construct the material object given material parameters
-    explicit Maxwell0dAcinus(MAT::PAR::Maxwell0dAcinus* params);
+    explicit Maxwell0dAcinus(Mat::PAR::Maxwell0dAcinus* params);
 
     //! @name Packing and Unpacking
 
@@ -107,7 +107,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -126,7 +126,7 @@ namespace MAT
     /*!
       \brief
     */
-    virtual void Setup(INPUT::LineDefinition* linedef)
+    virtual void Setup(Input::LineDefinition* linedef)
     {
       FOUR_C_THROW(
           "Setup not implemented yet! Check your material type, "
@@ -136,10 +136,10 @@ namespace MAT
     /*!
        \brief
      */
-    virtual void Evaluate(CORE::LINALG::SerialDenseVector& epnp,
-        CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
-        CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
-        const DRT::REDAIRWAYS::ElemParams& params, const double NumOfAcini, const double Vo,
+    virtual void Evaluate(Core::LinAlg::SerialDenseVector& epnp,
+        Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
+        Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
+        const Discret::ReducedLung::ElemParams& params, const double NumOfAcini, const double Vo,
         double time, double dt)
     {
       FOUR_C_THROW("Evaluate not implemented yet !");
@@ -148,13 +148,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_0d_maxwell_acinus;
+      return Core::Materials::m_0d_maxwell_acinus;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new Maxwell0dAcinus(*this));
     }
@@ -175,7 +175,7 @@ namespace MAT
     double Viscosity2() const { return params_->viscosity2_; }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return value of class parameter
     virtual double GetParams(std::string parametername);
@@ -196,10 +196,10 @@ namespace MAT
 
    protected:
     /// my material parameters
-    MAT::PAR::Maxwell0dAcinus* params_;
+    Mat::PAR::Maxwell0dAcinus* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -24,7 +24,7 @@ correct implementation is still missing.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -51,75 +51,75 @@ namespace DRT
         This class does not provide a definition for this function, it
         must be defined in ElemagBoundaryImpl.
        */
-      virtual int evaluate_neumann(DRT::ELEMENTS::ElemagBoundary* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseMatrix* elemat1) = 0;
+      virtual int evaluate_neumann(Discret::ELEMENTS::ElemagBoundary* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseMatrix* elemat1) = 0;
 
       /// Evaluate routine for boundary elements inteface
-      virtual int Evaluate(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) = 0;
+      virtual int Evaluate(Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) = 0;
 
       /// Internal implementation class for ElemagBoundary elements
-      static ElemagBoundaryImplInterface* Impl(const CORE::Elements::Element* ele);
+      static ElemagBoundaryImplInterface* Impl(const Core::Elements::Element* ele);
 
     };  // class ElemagBoundaryImplInterface
 
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ElemagBoundaryImpl : public ElemagBoundaryImplInterface
     {
      public:
       /// Singleton access method
       static ElemagBoundaryImpl<distype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       /// Constructor
       ElemagBoundaryImpl();
 
       //! number of element nodes
-      static constexpr int bdrynen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int bdrynen_ = Core::FE::num_nodes<distype>;
 
       //! number of space dimensions of the ElemagBoundary element
-      static constexpr int bdrynsd_ = CORE::FE::dim<distype>;
+      static constexpr int bdrynsd_ = Core::FE::dim<distype>;
 
       //! number of space dimensions of the parent element
       static constexpr int nsd_ = bdrynsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
-      int evaluate_neumann(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseMatrix* elemat1) override;
+      int evaluate_neumann(Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseMatrix* elemat1) override;
 
       /// Evaluate routine for boundary elements
-      int Evaluate(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int Evaluate(Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
      private:
       //! node coordinates for boundary element
-      CORE::LINALG::Matrix<nsd_, bdrynen_> xyze_;
+      Core::LinAlg::Matrix<nsd_, bdrynen_> xyze_;
       //! coordinates of current integration point in reference coordinates
-      CORE::LINALG::Matrix<bdrynsd_, 1> xsi_;
+      Core::LinAlg::Matrix<bdrynsd_, 1> xsi_;
       //! array for shape functions for boundary element
-      CORE::LINALG::Matrix<bdrynen_, 1> funct_;
+      Core::LinAlg::Matrix<bdrynen_, 1> funct_;
       //! array for shape function derivatives for boundary element
-      CORE::LINALG::Matrix<bdrynsd_, bdrynen_> deriv_;
+      Core::LinAlg::Matrix<bdrynsd_, bdrynen_> deriv_;
       //! normal vector pointing out of the domain
-      CORE::LINALG::Matrix<nsd_, 1> unitnormal_;
+      Core::LinAlg::Matrix<nsd_, 1> unitnormal_;
       //! velocity vector at integration point
-      CORE::LINALG::Matrix<nsd_, 1> velint_;
+      Core::LinAlg::Matrix<nsd_, 1> velint_;
       //! infinitesimal area element drs
       double drs_;
       //! integration factor
@@ -128,7 +128,7 @@ namespace DRT
     };  // class ElemagBoundaryImpl
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

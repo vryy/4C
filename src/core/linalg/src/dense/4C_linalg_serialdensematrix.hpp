@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
   \brief A class that wraps Teuchos::SerialDenseMatrix
@@ -35,8 +35,8 @@ namespace CORE::LINALG
     /*!
        \brief Standard Copy Constructor wraps
         Teuchos::SerialDenseMatrix(const SerialDenseMatrix& Source);
-       This allows to use the CORE::LINALG::SerialDenseVector in place of
-       CORE::LINALG::SerialDenseMatrix at the cost of a copy operation
+       This allows to use the Core::LinAlg::SerialDenseVector in place of
+       Core::LinAlg::SerialDenseMatrix at the cost of a copy operation
     */
     SerialDenseMatrix(const Base& Source, Teuchos::ETransp trans = Teuchos::NO_TRANS)
         : Base(Source, trans)
@@ -74,7 +74,7 @@ namespace CORE::LINALG
     mat.print(out);
     return out;
   }
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

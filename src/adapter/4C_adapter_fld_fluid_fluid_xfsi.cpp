@@ -29,10 +29,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidFluidXFSI::FluidFluidXFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
-    const std::string coupling_name_xfsi, Teuchos::RCP<CORE::LINALG::Solver> solver,
+Adapter::FluidFluidXFSI::FluidFluidXFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
+    const std::string coupling_name_xfsi, Teuchos::RCP<Core::LinAlg::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : XFluidFSI(fluid, coupling_name_xfsi, solver, params, output)
 {
   // make sure
@@ -42,7 +42,7 @@ ADAPTER::FluidFluidXFSI::FluidFluidXFSI(Teuchos::RCP<Fluid> fluid,  // the XFlui
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidXFSI::Init()
+void Adapter::FluidFluidXFSI::Init()
 {
   // call base class init
   XFluidFSI::Init();

@@ -33,22 +33,22 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
  *----------------------------------------------------------------------*/
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class MapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace POROELAST
+namespace PoroElast
 {
   class Monolithic;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class AleFpsiWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace FSI
 {
@@ -87,9 +87,9 @@ namespace FPSI
     void output() override;
 
     //! @name access sub-fields
-    const Teuchos::RCP<POROELAST::Monolithic>& poro_field() { return poroelast_subproblem_; };
-    const Teuchos::RCP<ADAPTER::FluidFPSI>& fluid_field() { return fluid_subproblem_; };
-    const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& ale_field() { return ale_; };
+    const Teuchos::RCP<PoroElast::Monolithic>& poro_field() { return poroelast_subproblem_; };
+    const Teuchos::RCP<Adapter::FluidFPSI>& fluid_field() { return fluid_subproblem_; };
+    const Teuchos::RCP<Adapter::AleFpsiWrapper>& ale_field() { return ale_; };
 
     //@}
 
@@ -98,11 +98,11 @@ namespace FPSI
 
    protected:
     //! underlying poroelast problem
-    Teuchos::RCP<POROELAST::Monolithic> poroelast_subproblem_;
+    Teuchos::RCP<PoroElast::Monolithic> poroelast_subproblem_;
     //! underlying fluid of the FSI problem
-    Teuchos::RCP<ADAPTER::FluidFPSI> fluid_subproblem_;
+    Teuchos::RCP<Adapter::FluidFPSI> fluid_subproblem_;
     //! underlying ale of the FSI problem
-    Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale_;
+    Teuchos::RCP<Adapter::AleFpsiWrapper> ale_;
 
     //! flag defines if FSI Interface exists for this problem
     bool FSI_Interface_exists_;
@@ -112,18 +112,18 @@ namespace FPSI
     Teuchos::RCP<FPSI::FpsiCoupling>& FPSICoupl() { return fpsicoupl_; }
 
     //! @name Access General Couplings
-    CORE::ADAPTER::Coupling& fluid_ale_coupling() { return *coupfa_; }
+    Core::Adapter::Coupling& fluid_ale_coupling() { return *coupfa_; }
 
-    const CORE::ADAPTER::Coupling& fluid_ale_coupling() const { return *coupfa_; }
+    const Core::Adapter::Coupling& fluid_ale_coupling() const { return *coupfa_; }
 
     // Couplings for FSI
-    CORE::ADAPTER::Coupling& structure_fluid_coupling_fsi() { return *coupsf_fsi_; }
-    CORE::ADAPTER::Coupling& structure_ale_coupling_fsi() { return *coupsa_fsi_; }
-    CORE::ADAPTER::Coupling& interface_fluid_ale_coupling_fsi() { return *icoupfa_fsi_; }
+    Core::Adapter::Coupling& structure_fluid_coupling_fsi() { return *coupsf_fsi_; }
+    Core::Adapter::Coupling& structure_ale_coupling_fsi() { return *coupsa_fsi_; }
+    Core::Adapter::Coupling& interface_fluid_ale_coupling_fsi() { return *icoupfa_fsi_; }
 
-    const CORE::ADAPTER::Coupling& structure_fluid_coupling_fsi() const { return *coupsf_fsi_; }
-    const CORE::ADAPTER::Coupling& structure_ale_coupling_fsi() const { return *coupsa_fsi_; }
-    const CORE::ADAPTER::Coupling& interface_fluid_ale_coupling_fsi() const
+    const Core::Adapter::Coupling& structure_fluid_coupling_fsi() const { return *coupsf_fsi_; }
+    const Core::Adapter::Coupling& structure_ale_coupling_fsi() const { return *coupsa_fsi_; }
+    const Core::Adapter::Coupling& interface_fluid_ale_coupling_fsi() const
     {
       return *icoupfa_fsi_;
     }
@@ -155,19 +155,19 @@ namespace FPSI
    private:
     //! FPSI - COUPLING
     //! coupling of fluid and ale in the entire fluid volume
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupfa_;
 
     //! FSI - COUPLING
     //! coupling of structure and fluid at the interface
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsf_fsi_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupsf_fsi_;
     //! coupling of structure and ale at the interface
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsa_fsi_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupsa_fsi_;
     //! coupling of fluid and ale in the entire fluid volume
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_fsi_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupfa_fsi_;
     //! coupling of all interface fluid and ale dofs
-    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa_fsi_;
+    Teuchos::RCP<Core::Adapter::Coupling> icoupfa_fsi_;
     //! coupling of FPSI+FSI interface overlapping dofs of structure and freefluid
-    Teuchos::RCP<CORE::ADAPTER::Coupling> iffcoupsf_fsi_;
+    Teuchos::RCP<Core::Adapter::Coupling> iffcoupsf_fsi_;
 
     //! FPSI Coupling Object
     Teuchos::RCP<FPSI::FpsiCoupling> fpsicoupl_;
@@ -209,12 +209,12 @@ namespace FPSI
     virtual void setup_rhs(bool firstcall = false) = 0;
 
     //! build system matrix form sub fields + coupling
-    virtual void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
+    virtual void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) = 0;
     //! build system matrix form sub fields + coupling
     virtual void setup_system_matrix() { setup_system_matrix(*SystemMatrix()); }
 
     //! access system matrix
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
     /// setup solver
     void SetupSolver() override;
@@ -246,7 +246,7 @@ namespace FPSI
     void linear_solve();
 
     //! solve using line search method
-    void LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& sparse);
+    void LineSearch(Teuchos::RCP<Core::LinAlg::SparseMatrix>& sparse);
 
     //! create linear solver (setup of parameter lists, etc...)
     void create_linear_solver();
@@ -273,7 +273,7 @@ namespace FPSI
     virtual Teuchos::RCP<Epetra_Map> combined_dbc_map();
 
     //! extractor to communicate between full monolithic map and block maps
-    const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    const Core::LinAlg::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
     //! set conductivity (for fps3i)
     void SetConductivity(double conduct);
@@ -283,9 +283,9 @@ namespace FPSI
 
    protected:
     //! block systemmatrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
     //! dof row map splitted in (field) blocks
-    CORE::LINALG::MultiMapExtractor blockrowdofmap_;
+    Core::LinAlg::MultiMapExtractor blockrowdofmap_;
     //! dof row map (not splitted)
     Teuchos::RCP<Epetra_Map> fullmap_;
     //! increment between Newton steps k and k+1
@@ -294,7 +294,7 @@ namespace FPSI
     //! zero vector of full length
     Teuchos::RCP<Epetra_Vector> zeros_;
     //! linear algebraic solver
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
     //! rhs of FPSI system
     Teuchos::RCP<Epetra_Vector> rhs_;
     Teuchos::RCP<Epetra_Vector> rhsold_;
@@ -338,9 +338,9 @@ namespace FPSI
     //! flag for direct solver of linear system
     bool directsolve_;
 
-    enum INPAR::FPSI::ConvergenceNorm normtypeinc_;
-    enum INPAR::FPSI::ConvergenceNorm normtypefres_;
-    enum INPAR::FPSI::BinaryOp combinedconvergence_;
+    enum Inpar::FPSI::ConvergenceNorm normtypeinc_;
+    enum Inpar::FPSI::ConvergenceNorm normtypefres_;
+    enum Inpar::FPSI::BinaryOp combinedconvergence_;
 
     double toleranceiterinc_;
     double toleranceresidualforces_;

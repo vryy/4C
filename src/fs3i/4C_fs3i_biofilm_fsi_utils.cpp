@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BIOFILM::UTILS::ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> scatradis,
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp)
+void FS3I::BioFilm::UTILS::ScatraChangeConfig(Teuchos::RCP<Discret::Discretization> scatradis,
+    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp)
 {
   const int numnode = (scatradis->NodeColMap())->NumMyElements();
 
@@ -27,7 +27,7 @@ void FS3I::BIOFILM::UTILS::ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> 
   Teuchos::RCP<Epetra_Vector> coldisp = Teuchos::rcp(new Epetra_Vector(*(dis->DofColMap())));
 
   // Export row-displacments to col-displacements
-  CORE::LINALG::Export(*disp, *coldisp);
+  Core::LinAlg::Export(*disp, *coldisp);
 
 
   const Epetra_Vector& gvector = *coldisp;
@@ -37,10 +37,10 @@ void FS3I::BIOFILM::UTILS::ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> 
   {
     // get current node
     int gid = (scatradis->NodeColMap())->GID(index);
-    CORE::Nodes::Node* mynode = scatradis->gNode(gid);
+    Core::Nodes::Node* mynode = scatradis->gNode(gid);
 
     // get local fluid/structure node with the same local node id
-    CORE::Nodes::Node* lnode = dis->lColNode(index);
+    Core::Nodes::Node* lnode = dis->lColNode(index);
 
     // get degrees of freedom associated with this fluid/structure node
     std::vector<int> nodedofs = dis->Dof(0, lnode);
@@ -50,7 +50,7 @@ void FS3I::BIOFILM::UTILS::ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> 
     std::vector<double> nvector(3, 0.0);
 
     // determine number of space dimensions
-    const int numdim = GLOBAL::Problem::Instance()->NDim();
+    const int numdim = Global::Problem::Instance()->NDim();
 
     for (int i = 0; i < numdim; ++i)
     {

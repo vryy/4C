@@ -19,9 +19,9 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
@@ -32,11 +32,11 @@ namespace MAT
        * MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436
        * GAMMA 0.0 [INIT 1] [FIB_COMP Yes] [ADAPT_ANGLE No]
        */
-      class CoupAnisoExpoTwoCoup : public MAT::PAR::ParameterAniso
+      class CoupAnisoExpoTwoCoup : public Mat::PAR::ParameterAniso
       {
        public:
         /// constructor with given material parameters
-        explicit CoupAnisoExpoTwoCoup(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        explicit CoupAnisoExpoTwoCoup(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -61,11 +61,11 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
       };  // class CoupAnisoExpoTwoCoup
@@ -84,14 +84,14 @@ namespace MAT
        *
        * \param params Material parameters
        */
-      explicit CoupAnisoExpoTwoCoupAnisoExtension(MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params);
+      explicit CoupAnisoExpoTwoCoupAnisoExtension(Mat::Elastic::PAR::CoupAnisoExpoTwoCoup* params);
 
       /*!
        * \brief Pack all data for parallel distribution and restart
        *
        * \param data data array to pack to
        */
-      void PackAnisotropy(CORE::COMM::PackBuffer& data) const override;
+      void PackAnisotropy(Core::Communication::PackBuffer& data) const override;
 
       /*!
        * \brief Unpack data from the pack from parallel distribution and restart
@@ -112,10 +112,10 @@ namespace MAT
        * notation
        *
        * \param gp Gauss point
-       * \return const CORE::LINALG::Matrix<6, 1>& Reference to the coupled structural tensor in
+       * \return const Core::LinAlg::Matrix<6, 1>& Reference to the coupled structural tensor in
        * stress like Voigt notation
        */
-      const CORE::LINALG::Matrix<6, 1>& get_coupled_structural_tensor_stress(int gp) const;
+      const Core::LinAlg::Matrix<6, 1>& get_coupled_structural_tensor_stress(int gp) const;
 
       /*!
        * \brief Returns the coupled scalar product at the Gauss point
@@ -131,7 +131,7 @@ namespace MAT
 
       /// mixed structural tensor (symmetric) \f$\frac{1}{2}(a1 \otimes a2 + a2 \otimes a1)\f$ in
       /// stress like Voigt notation
-      std::vector<CORE::LINALG::Matrix<6, 1>> a1_a2_;
+      std::vector<Core::LinAlg::Matrix<6, 1>> a1_a2_;
     };
 
     /*!
@@ -157,15 +157,15 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      explicit CoupAnisoExpoTwoCoup(MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params);
+      explicit CoupAnisoExpoTwoCoup(Mat::Elastic::PAR::CoupAnisoExpoTwoCoup* params);
 
       /// @name Access material constants
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_coupanisoexpotwocoup;
+        return Core::Materials::mes_coupanisoexpotwocoup;
       }
       //@}
 
@@ -178,7 +178,7 @@ namespace MAT
 
       /// @name Methods for Packing and Unpacking
       ///@{
-      void PackSummand(CORE::COMM::PackBuffer& data) const override;
+      void PackSummand(Core::Communication::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -186,9 +186,9 @@ namespace MAT
 
       /// Add anisotropic principal stresses
       void add_stress_aniso_principal(
-          const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+          const Core::LinAlg::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          Core::LinAlg::Matrix<6, 6>& cmat,       ///< material stiffness matrix
+          Core::LinAlg::Matrix<6, 1>& stress,     ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
           int gp,      ///< Gauss point
@@ -197,13 +197,13 @@ namespace MAT
 
       /// Set fiber directions
       void SetFiberVecs(double newgamma,             ///< new angle
-          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
-          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+          const Core::LinAlg::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const Core::LinAlg::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /// Indicator for formulation
@@ -220,14 +220,14 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params_;
+      Mat::Elastic::PAR::CoupAnisoExpoTwoCoup* params_;
 
       /// Special anisotropic behavior
       CoupAnisoExpoTwoCoupAnisoExtension anisotropy_extension_;
     };  // namespace PAR
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

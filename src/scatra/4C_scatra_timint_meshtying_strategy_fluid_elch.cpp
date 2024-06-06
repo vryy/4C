@@ -17,34 +17,34 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
-SCATRA::MeshtyingStrategyFluidElch::MeshtyingStrategyFluidElch(SCATRA::ScaTraTimIntElch* elchtimint)
+ScaTra::MeshtyingStrategyFluidElch::MeshtyingStrategyFluidElch(ScaTra::ScaTraTimIntElch* elchtimint)
     : MeshtyingStrategyFluid(elchtimint)
 {
   return;
-}  // SCATRA::MeshtyingStrategyFluidElch::MeshtyingStrategyFluidElch
+}  // ScaTra::MeshtyingStrategyFluidElch::MeshtyingStrategyFluidElch
 
 
 /*----------------------------------------------------------------------------*
  | perform setup of fluid-fluid meshtying (electrochemistry)       fang 12/14 |
  *----------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyFluidElch::InitMeshtying()
+void ScaTra::MeshtyingStrategyFluidElch::InitMeshtying()
 {
   // Important: Meshtying for electrochemistry problems is not well tested!
   // safety check
-  if (CORE::UTILS::IntegralValue<INPAR::FLUID::MeshTying>(*(scatratimint_->ScatraParameterList()),
-          "MESHTYING") == INPAR::FLUID::condensed_bmat_merged and
-      elch_tim_int()->EquPot() == INPAR::ELCH::equpot_enc)
+  if (Core::UTILS::IntegralValue<Inpar::FLUID::MeshTying>(*(scatratimint_->ScatraParameterList()),
+          "MESHTYING") == Inpar::FLUID::condensed_bmat_merged and
+      elch_tim_int()->EquPot() == Inpar::ElCh::equpot_enc)
     FOUR_C_THROW(
         "In the context of meshtying, the ion-transport system including the electroneutrality "
         "condition cannot be solved in a block matrix!");
 
   // call setup in base class
-  SCATRA::MeshtyingStrategyFluid::InitMeshtying();
+  ScaTra::MeshtyingStrategyFluid::InitMeshtying();
 
   return;
 }
 
-void SCATRA::MeshtyingStrategyFluidElch::setup_meshtying()
+void ScaTra::MeshtyingStrategyFluidElch::setup_meshtying()
 {
   // safety check
   if (scatratimint_->NumScal() < 1)
@@ -56,7 +56,7 @@ void SCATRA::MeshtyingStrategyFluidElch::setup_meshtying()
   // special case: only potential is coupled
   // =>   coupleddof = [0, 0, ..., 0, 1]
   std::vector<int> coupleddof(scatratimint_->NumScal() + 1, 1);
-  if (CORE::UTILS::IntegralValue<int>(*(elch_tim_int()->ElchParameterList()), "ONLYPOTENTIAL"))
+  if (Core::UTILS::IntegralValue<int>(*(elch_tim_int()->ElchParameterList()), "ONLYPOTENTIAL"))
     for (int i = 0; i < scatratimint_->NumScal(); ++i) coupleddof[i] = 0;
 
   meshtying_->setup_meshtying(coupleddof);
@@ -65,12 +65,12 @@ void SCATRA::MeshtyingStrategyFluidElch::setup_meshtying()
 /*------------------------------------------------------------------------*
  | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
  *------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyFluidElch::init_conv_check_strategy()
+void ScaTra::MeshtyingStrategyFluidElch::init_conv_check_strategy()
 {
-  convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(
+  convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStdElch(
       scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
 
   return;
-}  // SCATRA::MeshtyingStrategyFluidElch::init_conv_check_strategy
+}  // ScaTra::MeshtyingStrategyFluidElch::init_conv_check_strategy
 
 FOUR_C_NAMESPACE_CLOSE

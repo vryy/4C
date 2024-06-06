@@ -39,23 +39,23 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 // definition and initialization of static members
-unsigned NOX::NLN::INNER::StatusTest::Filter::Point::num_coords_(0);
-unsigned NOX::NLN::INNER::StatusTest::Filter::Point::num_obj_coords_(0);
-double NOX::NLN::INNER::StatusTest::Filter::Point::gamma_obj_(0.0);
-double NOX::NLN::INNER::StatusTest::Filter::Point::gamma_theta_(0.0);
-std::vector<bool> NOX::NLN::INNER::StatusTest::Filter::Point::isvalid_scaling_;
-CORE::LINALG::SerialDenseVector NOX::NLN::INNER::StatusTest::Filter::Point::scale_;
-CORE::LINALG::SerialDenseVector NOX::NLN::INNER::StatusTest::Filter::Point::weights_;
-CORE::LINALG::SerialDenseVector
-    NOX::NLN::INNER::StatusTest::Filter::Point::global_scaled_max_thetas_;
-double NOX::NLN::INNER::StatusTest::Filter::Point::global_init_max_theta_scale_;
-std::set<Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter::Point>,
-    NOX::NLN::INNER::StatusTest::RcpComp<NOX::NLN::INNER::StatusTest::Filter::Point>>
-    NOX::NLN::INNER::StatusTest::Filter::Point::filter_point_register_;
+unsigned NOX::Nln::Inner::StatusTest::Filter::Point::num_coords_(0);
+unsigned NOX::Nln::Inner::StatusTest::Filter::Point::num_obj_coords_(0);
+double NOX::Nln::Inner::StatusTest::Filter::Point::gamma_obj_(0.0);
+double NOX::Nln::Inner::StatusTest::Filter::Point::gamma_theta_(0.0);
+std::vector<bool> NOX::Nln::Inner::StatusTest::Filter::Point::isvalid_scaling_;
+Core::LinAlg::SerialDenseVector NOX::Nln::Inner::StatusTest::Filter::Point::scale_;
+Core::LinAlg::SerialDenseVector NOX::Nln::Inner::StatusTest::Filter::Point::weights_;
+Core::LinAlg::SerialDenseVector
+    NOX::Nln::Inner::StatusTest::Filter::Point::global_scaled_max_thetas_;
+double NOX::Nln::Inner::StatusTest::Filter::Point::global_init_max_theta_scale_;
+std::set<Teuchos::RCP<NOX::Nln::Inner::StatusTest::Filter::Point>,
+    NOX::Nln::Inner::StatusTest::RcpComp<NOX::Nln::Inner::StatusTest::Filter::Point>>
+    NOX::Nln::Inner::StatusTest::Filter::Point::filter_point_register_;
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::Filter::Filter(const FilterParams& fparams, const ::NOX::Utils& utils)
+NOX::Nln::Inner::StatusTest::Filter::Filter(const FilterParams& fparams, const ::NOX::Utils& utils)
     : status_(status_unevaluated),
       theta_(fparams.infeasibility_vec_),
       curr_points_(plain_const_point_pair(Teuchos::null, Teuchos::null)),
@@ -92,7 +92,7 @@ NOX::NLN::INNER::StatusTest::Filter::Filter(const FilterParams& fparams, const :
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::reset()
+void NOX::Nln::Inner::StatusTest::Filter::reset()
 {
   filter_.clear();
   blocking_.filter_iterates_.clear();
@@ -101,7 +101,7 @@ void NOX::NLN::INNER::StatusTest::Filter::reset()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::set_margin_safety_factors()
+void NOX::Nln::Inner::StatusTest::Filter::Point::set_margin_safety_factors()
 {
   gamma_obj_ = std::min<double>(
       1.0e-6, 1.0 / (2.0 * std::sqrt<double>(static_cast<double>(num_coords_)).real()));
@@ -111,14 +111,14 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::set_margin_safety_factors()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::clear_filter_point_register()
+void NOX::Nln::Inner::StatusTest::Filter::Point::clear_filter_point_register()
 {
   filter_point_register_.clear();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::resetStaticMembers()
+void NOX::Nln::Inner::StatusTest::Filter::Point::resetStaticMembers()
 {
   if (isvalid_scaling_.size() < num_coords_)
     isvalid_scaling_.resize(num_coords_, false);
@@ -141,7 +141,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::resetStaticMembers()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::resetStaticMembers(const unsigned num_obj_coords,
+void NOX::Nln::Inner::StatusTest::Filter::Point::resetStaticMembers(const unsigned num_obj_coords,
     const unsigned num_theta_coords, const double weight_objective_func,
     const double weight_infeasibility_func, const double init_max_theta_scale)
 {
@@ -162,7 +162,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::resetStaticMembers(const unsign
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::reinitFilter(
+void NOX::Nln::Inner::StatusTest::Filter::Point::reinitFilter(
     plain_point_set& filter, const Infeasibility& infeasibility_func, const double& downscale_fac)
 {
   filter.clear();
@@ -185,8 +185,8 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::reinitFilter(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter::Point>
-NOX::NLN::INNER::StatusTest::Filter::Point::create(const ::NOX::MeritFunction::Generic& merit_func,
+Teuchos::RCP<NOX::Nln::Inner::StatusTest::Filter::Point>
+NOX::Nln::Inner::StatusTest::Filter::Point::create(const ::NOX::MeritFunction::Generic& merit_func,
     const Infeasibility& infeasibility_func, const ::NOX::Abstract::Group& grp)
 {
   Teuchos::RCP<Point> point_ptr = Teuchos::rcp(new Point);
@@ -202,8 +202,8 @@ NOX::NLN::INNER::StatusTest::Filter::Point::create(const ::NOX::MeritFunction::G
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter::Point>
-NOX::NLN::INNER::StatusTest::Filter::Point::makeFilterPoint(const Point& p, const bool do_scaling)
+Teuchos::RCP<NOX::Nln::Inner::StatusTest::Filter::Point>
+NOX::Nln::Inner::StatusTest::Filter::Point::makeFilterPoint(const Point& p, const bool do_scaling)
 {
   Teuchos::RCP<Point> fp_ptr = Teuchos::rcp(new Point(p));
   Point& fp = *fp_ptr;
@@ -222,7 +222,7 @@ NOX::NLN::INNER::StatusTest::Filter::Point::makeFilterPoint(const Point& p, cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::add_filter_point_to_register(
+void NOX::Nln::Inner::StatusTest::Filter::Point::add_filter_point_to_register(
     const Teuchos::RCP<Point>& fp_ptr)
 {
   for (auto it = filter_point_register_.begin(); it != filter_point_register_.end();)
@@ -239,7 +239,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::add_filter_point_to_register(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::scale_coordinate_of_all_registered_filter_points(
+void NOX::Nln::Inner::StatusTest::Filter::Point::scale_coordinate_of_all_registered_filter_points(
     const int id)
 {
   if (isvalid_scaling_[id]) return;
@@ -256,7 +256,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::scale_coordinate_of_all_registe
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::scale_max_theta_values(const double& fac)
+void NOX::Nln::Inner::StatusTest::Filter::Point::scale_max_theta_values(const double& fac)
 {
   const unsigned length = static_cast<unsigned>(global_scaled_max_thetas_.length());
   for (unsigned i = 0; i < length; ++i) global_scaled_max_thetas_(i) *= fac;
@@ -264,7 +264,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::scale_max_theta_values(const do
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::set_initial_scaled_max_theta_value(
+void NOX::Nln::Inner::StatusTest::Filter::Point::set_initial_scaled_max_theta_value(
     const int id, const double& val)
 {
   if (isvalid_scaling_[id]) return;
@@ -279,7 +279,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::set_initial_scaled_max_theta_va
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::scale()
+void NOX::Nln::Inner::StatusTest::Filter::Point::scale()
 {
   for (int i = 0; i < coords_.length(); ++i)
   {
@@ -299,7 +299,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::scale()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::setMargin()
+void NOX::Nln::Inner::StatusTest::Filter::Point::setMargin()
 {
   const double max_theta = maxTheta();
 
@@ -316,7 +316,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::setMargin()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::INNER::StatusTest::Filter::Point::IsFeasible(const double tol) const
+bool NOX::Nln::Inner::StatusTest::Filter::Point::IsFeasible(const double tol) const
 {
   if (is_feasible_) return true;
 
@@ -335,7 +335,7 @@ bool NOX::NLN::INNER::StatusTest::Filter::Point::IsFeasible(const double tol) co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::INNER::StatusTest::Filter::Point::is_sufficiently_reduced_compared_to_max_theta(
+bool NOX::Nln::Inner::StatusTest::Filter::Point::is_sufficiently_reduced_compared_to_max_theta(
     const double& red_fac) const
 {
   if (not is_filter_point_) FOUR_C_THROW("This routine is only meant for filter points!");
@@ -349,11 +349,11 @@ bool NOX::NLN::INNER::StatusTest::Filter::Point::is_sufficiently_reduced_compare
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::setNorm() { norm_ = CORE::LINALG::Norm2(coords_); }
+void NOX::Nln::Inner::StatusTest::Filter::Point::setNorm() { norm_ = Core::LinAlg::Norm2(coords_); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::NLN::INNER::StatusTest::Filter::Point::print(
+std::ostream& NOX::Nln::Inner::StatusTest::Filter::Point::print(
     std::ostream& stream, int par_indent_length, const ::NOX::Utils* u) const
 {
   std::string par_indent;
@@ -400,7 +400,7 @@ std::ostream& NOX::NLN::INNER::StatusTest::Filter::Point::print(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Infeasibility::computef(
+void NOX::Nln::Inner::StatusTest::Filter::Infeasibility::computef(
     double* theta_values, const ::NOX::Abstract::Group& grp) const
 {
   plain_merit_func_set::const_iterator cit = vector_.begin();
@@ -414,7 +414,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Infeasibility::computef(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned NOX::NLN::INNER::StatusTest::Filter::Infeasibility::findMaxThetaId(
+unsigned NOX::Nln::Inner::StatusTest::Filter::Infeasibility::findMaxThetaId(
     double* theta_values) const
 {
   unsigned max_theta_id = 0;
@@ -432,7 +432,7 @@ unsigned NOX::NLN::INNER::StatusTest::Filter::Infeasibility::findMaxThetaId(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::init_points(const Interface::Required& interface,
+void NOX::Nln::Inner::StatusTest::Filter::init_points(const Interface::Required& interface,
     const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp)
 {
   const int iter_newton = solver.getNumIterations();
@@ -478,14 +478,14 @@ void NOX::NLN::INNER::StatusTest::Filter::init_points(const Interface::Required&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Filter::CheckStatus(
+enum NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter::CheckStatus(
     const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
-  const NOX::NLN::LineSearch::Generic* linesearch_ptr =
-      dynamic_cast<const NOX::NLN::LineSearch::Generic*>(&interface);
+  const NOX::Nln::LineSearch::Generic* linesearch_ptr =
+      dynamic_cast<const NOX::Nln::LineSearch::Generic*>(&interface);
   if (not linesearch_ptr) FOUR_C_THROW("Dynamic cast failed!");
-  const NOX::NLN::LineSearch::Generic& linesearch = *linesearch_ptr;
+  const NOX::Nln::LineSearch::Generic& linesearch = *linesearch_ptr;
 
   // do stuff at the beginning of a line search call
   const int iter_ls = interface.GetNumIterations();
@@ -526,7 +526,7 @@ enum NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Filter
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::set_trial_point(
+void NOX::Nln::Inner::StatusTest::Filter::set_trial_point(
     const ::NOX::MeritFunction::Generic& merit_func, const ::NOX::Abstract::Group& grp)
 {
   curr_points_.second = Point::create(merit_func, theta_, grp);
@@ -535,8 +535,8 @@ void NOX::NLN::INNER::StatusTest::Filter::set_trial_point(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::execute_check_status(
-    const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
+void NOX::Nln::Inner::StatusTest::Filter::execute_check_status(
+    const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
   const ::NOX::MeritFunction::Generic& merit_func = linesearch.GetMeritFunction();
@@ -604,21 +604,21 @@ void NOX::NLN::INNER::StatusTest::Filter::execute_check_status(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::INNER::StatusTest::Filter::get_constraint_tolerance(
+double NOX::Nln::Inner::StatusTest::Filter::get_constraint_tolerance(
     const ::NOX::Solver::Generic& solver) const
 {
-  const NOX::NLN::Solver::LineSearchBased* ls_solver =
-      dynamic_cast<const NOX::NLN::Solver::LineSearchBased*>(&solver);
+  const NOX::Nln::Solver::LineSearchBased* ls_solver =
+      dynamic_cast<const NOX::Nln::Solver::LineSearchBased*>(&solver);
   if (not ls_solver) FOUR_C_THROW("The given non-linear solver is not line search based!");
 
   ::NOX::StatusTest::Generic* normf_test =
-      ls_solver->get_outer_status_test_with_quantity<NOX::NLN::StatusTest::NormF>(
-          NOX::NLN::StatusTest::quantity_contact_normal);
+      ls_solver->get_outer_status_test_with_quantity<NOX::Nln::StatusTest::NormF>(
+          NOX::Nln::StatusTest::quantity_contact_normal);
 
   if (normf_test)
   {
-    const double true_tol = dynamic_cast<NOX::NLN::StatusTest::NormF&>(*normf_test)
-                                .GetTrueTolerance(NOX::NLN::StatusTest::quantity_contact_normal);
+    const double true_tol = dynamic_cast<NOX::Nln::StatusTest::NormF&>(*normf_test)
+                                .GetTrueTolerance(NOX::Nln::StatusTest::quantity_contact_normal);
     if (true_tol < 0.0) FOUR_C_THROW("Something went wrong!");
 
     utils_.out(::NOX::Utils::Debug)
@@ -633,8 +633,8 @@ double NOX::NLN::INNER::StatusTest::Filter::get_constraint_tolerance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Blocking::Check(
-    const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
+void NOX::Nln::Inner::StatusTest::Filter::Blocking::Check(
+    const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp, const Point& rejected_fp)
 {
   // sanity check
@@ -660,7 +660,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Blocking::Check(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Blocking::AddFilterIterate(
+void NOX::Nln::Inner::StatusTest::Filter::Blocking::AddFilterIterate(
     const int newton_iter, const Point& rejected_fp)
 {
   if (newton_iter <= 0) return;
@@ -692,7 +692,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Blocking::AddFilterIterate(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Blocking::ReinitializeFilter()
+void NOX::Nln::Inner::StatusTest::Filter::Blocking::ReinitializeFilter()
 {
   // get the number of rejections due to the filter in the last Newton iterate
   const unsigned last_rej_num = filter_iterates_.back().second;
@@ -710,7 +710,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Blocking::ReinitializeFilter()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Blocking::PrintInfo(std::ostream& os) const
+void NOX::Nln::Inner::StatusTest::Filter::Blocking::PrintInfo(std::ostream& os) const
 {
   os << ::NOX::Utils::fill(40, '+') << "\n";
   os << "FILTER REINITIALIZATION"
@@ -728,8 +728,8 @@ void NOX::NLN::INNER::StatusTest::Filter::Blocking::PrintInfo(std::ostream& os) 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Filter::post_check_status(
-    const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter::post_check_status(
+    const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
   const int iter_ls = linesearch.GetNumIterations();
@@ -751,8 +751,8 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Filter::pos
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::throw_if_step_too_short(
-    const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver) const
+void NOX::Nln::Inner::StatusTest::Filter::throw_if_step_too_short(
+    const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver) const
 {
   const double& step = linesearch.GetStepLength();
   const enum ::NOX::StatusTest::StatusType active_set_status = get_active_set_status(solver);
@@ -763,14 +763,14 @@ void NOX::NLN::INNER::StatusTest::Filter::throw_if_step_too_short(
         "amin = %1.6e. This indicates that we can't find a feasible solution "
         "in the current search direction and we decide to stop here. (active-set status = %s)",
         step, gamma_alpha_ * amin_,
-        NOX::NLN::StatusTest::StatusType2String(active_set_status).c_str());
+        NOX::Nln::StatusTest::StatusType2String(active_set_status).c_str());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::StatusType
-NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::execute(
-    const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
+NOX::Nln::Inner::StatusTest::StatusType
+NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::execute(
+    const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
   // avoid recursive execution calls
@@ -778,7 +778,7 @@ NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::execute(
   issoc_ = true;
 
   ::NOX::Abstract::Group& mutable_grp = const_cast<::NOX::Abstract::Group&>(grp);
-  NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>(mutable_grp);
+  NOX::Nln::Group& nln_grp = dynamic_cast<NOX::Nln::Group&>(mutable_grp);
   curr_type_ = which_type(solver);
 
   filter_.utils_.out() << "SOC-type       = " << CorrectionType2String(curr_type_) << "\n";
@@ -798,7 +798,7 @@ NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::execute(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::CorrectionType NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::which_type(
+NOX::Nln::CorrectionType NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::which_type(
     const ::NOX::Solver::Generic& solver) const
 {
   switch (user_type_)
@@ -824,8 +824,8 @@ NOX::NLN::CorrectionType NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrect
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::CorrectionType
-NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::automatic_type_choice(
+NOX::Nln::CorrectionType
+NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::automatic_type_choice(
     const ::NOX::Solver::Generic& solver) const
 {
   const enum ::NOX::StatusTest::StatusType active_set_status =
@@ -854,8 +854,8 @@ NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::automatic_type_choic
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::postprocess(
-    const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
+void NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::postprocess(
+    const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
     ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
   soc_status_ = status_unevaluated;
@@ -887,8 +887,8 @@ void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::postprocess(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::solve(
-    const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
+void NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::solve(
+    const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
     ::NOX::Abstract::Group& grp) const
 {
   // copy parameter list and perform the second order correction step
@@ -905,8 +905,8 @@ void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::solve(
       Teuchos::rcp(new ::NOX::Epetra::Vector(dir_ptr, ::NOX::Epetra::Vector::CreateView));
 
   // compute the new direction
-  const NOX::NLN::Solver::LineSearchBased& nln_solver =
-      dynamic_cast<const NOX::NLN::Solver::LineSearchBased&>(solver);
+  const NOX::Nln::Solver::LineSearchBased& nln_solver =
+      dynamic_cast<const NOX::Nln::Solver::LineSearchBased&>(solver);
   ::NOX::Direction::Generic& direction = nln_solver.GetDirection();
   bool success = direction.compute(*nox_dir, grp, solver);
   if (not success) FOUR_C_THROW("Solving of the SOC system failed!");
@@ -917,15 +917,15 @@ void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::solve(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::compute_system(
-    NOX::NLN::Group& grp, const ::NOX::Solver::Generic& solver) const
+void NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::compute_system(
+    NOX::Nln::Group& grp, const ::NOX::Solver::Generic& solver) const
 {
   grp.compute_correction_system(curr_type_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::print(std::ostream& os) const
+void NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::print(std::ostream& os) const
 {
   os << "\n" << ::NOX::Utils::fill(46, '=') << "\n";
   os << "Performed a Second Order Correction (SOC) step\n";
@@ -939,10 +939,10 @@ void NOX::NLN::INNER::StatusTest::Filter::SecondOrderCorrection::print(std::ostr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::BackupState::create(
+void NOX::Nln::Inner::StatusTest::Filter::BackupState::create(
     const ::NOX::Abstract::Group& grp, const ::NOX::Abstract::Vector& dir)
 {
-  const NOX::NLN::Group* nln_grp_ptr = dynamic_cast<const NOX::NLN::Group*>(&grp);
+  const NOX::Nln::Group* nln_grp_ptr = dynamic_cast<const NOX::Nln::Group*>(&grp);
   if (not nln_grp_ptr) FOUR_C_THROW("Dynamic_cast failed!");
 
   if (xvector_.is_null())
@@ -961,13 +961,13 @@ void NOX::NLN::INNER::StatusTest::Filter::BackupState::create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::BackupState::recover(::NOX::Abstract::Group& grp) const
+void NOX::Nln::Inner::StatusTest::Filter::BackupState::recover(::NOX::Abstract::Group& grp) const
 {
   if (xvector_.is_null()) FOUR_C_THROW("The xvector_ is not set!");
 
   grp.setX(*xvector_);
 
-  NOX::NLN::Group& nln_grp = dynamic_cast<NOX::NLN::Group&>(grp);
+  NOX::Nln::Group& nln_grp = dynamic_cast<NOX::Nln::Group&>(grp);
   nln_grp.recover_from_backup_state();
 
   nln_grp.computeF();
@@ -977,7 +977,7 @@ void NOX::NLN::INNER::StatusTest::Filter::BackupState::recover(::NOX::Abstract::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::BackupState::check_recovered_state(
+void NOX::Nln::Inner::StatusTest::Filter::BackupState::check_recovered_state(
     const ::NOX::Abstract::Vector& f) const
 {
   const double recovered_normf = f.norm(::NOX::Abstract::Vector::TwoNorm);
@@ -994,14 +994,14 @@ void NOX::NLN::INNER::StatusTest::Filter::BackupState::check_recovered_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::recover_from_backup(::NOX::Abstract::Group& grp) const
+void NOX::Nln::Inner::StatusTest::Filter::recover_from_backup(::NOX::Abstract::Group& grp) const
 {
   backup_.recover(grp);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Filter::is_admissible_step(
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter::is_admissible_step(
     const ::NOX::Solver::Generic& solver, const double& step) const
 {
   if (step >= gamma_alpha_ * amin_)
@@ -1012,15 +1012,15 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Filter::is_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum ::NOX::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Filter::get_active_set_status(
+enum ::NOX::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter::get_active_set_status(
     const ::NOX::Solver::Generic& solver) const
 {
-  const NOX::NLN::Solver::LineSearchBased* ls_solver =
-      dynamic_cast<const NOX::NLN::Solver::LineSearchBased*>(&solver);
+  const NOX::Nln::Solver::LineSearchBased* ls_solver =
+      dynamic_cast<const NOX::Nln::Solver::LineSearchBased*>(&solver);
   if (not ls_solver) FOUR_C_THROW("The given non-linear solver is not line search based!");
 
   ::NOX::StatusTest::Generic* active_set_test =
-      ls_solver->GetOuterStatusTest<NOX::NLN::StatusTest::ActiveSet>();
+      ls_solver->GetOuterStatusTest<NOX::Nln::StatusTest::ActiveSet>();
 
   if (not active_set_test) return ::NOX::StatusTest::Unevaluated;
 
@@ -1029,8 +1029,8 @@ enum ::NOX::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Filter::get_acti
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::NLN::INNER::StatusTest::StatusType
-NOX::NLN::INNER::StatusTest::Filter::sufficient_reduction_check(const Point& trial_fp) const
+enum NOX::Nln::Inner::StatusTest::StatusType
+NOX::Nln::Inner::StatusTest::Filter::sufficient_reduction_check(const Point& trial_fp) const
 {
   const Point& previous_fp = *curr_fpoints_.first;
 
@@ -1047,7 +1047,7 @@ NOX::NLN::INNER::StatusTest::Filter::sufficient_reduction_check(const Point& tri
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::augment_filter()
+void NOX::Nln::Inner::StatusTest::Filter::augment_filter()
 {
   const Teuchos::RCP<Point> new_fp_ptr = curr_fpoints_.second;
 
@@ -1082,8 +1082,8 @@ void NOX::NLN::INNER::StatusTest::Filter::augment_filter()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::NLN::INNER::StatusTest::FilterStatusType
-NOX::NLN::INNER::StatusTest::Filter::acceptability_check(const Point& trial_fp)
+enum NOX::Nln::Inner::StatusTest::FilterStatusType
+NOX::Nln::Inner::StatusTest::Filter::acceptability_check(const Point& trial_fp)
 {
   const unsigned prefiltering_index = prefiltering(trial_fp);
 
@@ -1121,7 +1121,7 @@ NOX::NLN::INNER::StatusTest::Filter::acceptability_check(const Point& trial_fp)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned NOX::NLN::INNER::StatusTest::Filter::prefiltering(const Point& trial_fp)
+unsigned NOX::Nln::Inner::StatusTest::Filter::prefiltering(const Point& trial_fp)
 {
   const double sqrt_num_coords =
       std::sqrt<double>(static_cast<double>(trial_fp.num_coords_)).real();
@@ -1174,7 +1174,7 @@ unsigned NOX::NLN::INNER::StatusTest::Filter::prefiltering(const Point& trial_fp
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::identify_non_dominated_filter_points(
+void NOX::Nln::Inner::StatusTest::Filter::identify_non_dominated_filter_points(
     const Point& trial_fp, const unsigned non_dominated_index)
 {
   non_dominated_filter_points_.reserve(filter_.size());
@@ -1210,14 +1210,14 @@ void NOX::NLN::INNER::StatusTest::Filter::identify_non_dominated_filter_points(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::setup_model_terms(const ::NOX::Abstract::Vector& dir,
+void NOX::Nln::Inner::StatusTest::Filter::setup_model_terms(const ::NOX::Abstract::Vector& dir,
     const ::NOX::Abstract::Group& grp, const Interface::Required& interface)
 {
   const ::NOX::MeritFunction::Generic& merit_func = interface.GetMeritFunction();
   if (dynamic_cast<const MeritFunction::Lagrangian*>(&merit_func))
   {
-    const NOX::NLN::MeritFunction::Lagrangian& lagrangian =
-        dynamic_cast<const NOX::NLN::MeritFunction::Lagrangian&>(merit_func);
+    const NOX::Nln::MeritFunction::Lagrangian& lagrangian =
+        dynamic_cast<const NOX::Nln::MeritFunction::Lagrangian&>(merit_func);
 
     model_lin_terms_(0) = lagrangian.computeSlope(dir, grp);
     model_mixed_terms_(0) = lagrangian.compute_mixed2nd_order_terms(dir, grp);
@@ -1232,7 +1232,7 @@ void NOX::NLN::INNER::StatusTest::Filter::setup_model_terms(const ::NOX::Abstrac
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::compute_minimal_step_length_estimates()
+void NOX::Nln::Inner::StatusTest::Filter::compute_minimal_step_length_estimates()
 {
   /* compute minimal step length estimate based on the 2nd objective function
    * filter acceptability check */
@@ -1256,7 +1256,7 @@ void NOX::NLN::INNER::StatusTest::Filter::compute_minimal_step_length_estimates(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::INNER::StatusTest::Filter::minimal_step_length_estimate_of_obj_func_filter_check()
+double NOX::Nln::Inner::StatusTest::Filter::minimal_step_length_estimate_of_obj_func_filter_check()
     const
 {
   double amin_obj = 1.0;
@@ -1347,7 +1347,7 @@ double NOX::NLN::INNER::StatusTest::Filter::minimal_step_length_estimate_of_obj_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::INNER::StatusTest::Filter::minimal_step_length_estimate_of_f_type_condition() const
+double NOX::Nln::Inner::StatusTest::Filter::minimal_step_length_estimate_of_f_type_condition() const
 {
   // linear term of the objective model
   const double obj_slope = model_lin_terms_(0);
@@ -1407,7 +1407,7 @@ double NOX::NLN::INNER::StatusTest::Filter::minimal_step_length_estimate_of_f_ty
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::INNER::StatusTest::Filter::check_f_type_switching_condition(const double step) const
+bool NOX::Nln::Inner::StatusTest::Filter::check_f_type_switching_condition(const double step) const
 {
   const double obj_model = get_obj_model(step);
 
@@ -1427,7 +1427,7 @@ bool NOX::NLN::INNER::StatusTest::Filter::check_f_type_switching_condition(const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::INNER::StatusTest::Filter::compute_f_type_switching_condition(
+double NOX::Nln::Inner::StatusTest::Filter::compute_f_type_switching_condition(
     const double step, const double d) const
 {
   FOUR_C_ASSERT(d > 0.0, "The scaling factor d is smaller than / equal to zero!");
@@ -1457,14 +1457,14 @@ double NOX::NLN::INNER::StatusTest::Filter::compute_f_type_switching_condition(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::INNER::StatusTest::Filter::get_obj_model(const double step) const
+double NOX::Nln::Inner::StatusTest::Filter::get_obj_model(const double step) const
 {
   return step * model_lin_terms_(0) + step * step * model_mixed_terms_(0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::INNER::StatusTest::Filter::Infeasibility::minimal_step_length_estimate(
+double NOX::Nln::Inner::StatusTest::Filter::Infeasibility::minimal_step_length_estimate(
     const double* accepted_theta, const double* theta_slope) const
 {
   double amin = 1.0;
@@ -1494,7 +1494,7 @@ double NOX::NLN::INNER::StatusTest::Filter::Infeasibility::minimal_step_length_e
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Infeasibility::computeSlope(
+void NOX::Nln::Inner::StatusTest::Filter::Infeasibility::computeSlope(
     const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp,
     double* theta_slope_values) const
 {
@@ -1510,7 +1510,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Infeasibility::computeSlope(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Infeasibility::compute_mixed2nd_order_terms(
+void NOX::Nln::Inner::StatusTest::Filter::Infeasibility::compute_mixed2nd_order_terms(
     const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp,
     double* theta_mixed_values) const
 {
@@ -1520,14 +1520,14 @@ void NOX::NLN::INNER::StatusTest::Filter::Infeasibility::compute_mixed2nd_order_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Filter::GetStatus() const
+enum NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter::GetStatus() const
 {
   return status_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::NLN::INNER::StatusTest::Filter::Print(std::ostream& stream, int indent) const
+std::ostream& NOX::Nln::Inner::StatusTest::Filter::Print(std::ostream& stream, int indent) const
 {
   std::string indent_str;
   indent_str.assign(indent, ' ');

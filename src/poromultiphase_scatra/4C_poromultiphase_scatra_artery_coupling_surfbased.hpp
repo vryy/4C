@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace POROMULTIPHASESCATRA
+namespace PoroMultiPhaseScaTra
 {
   // forward declaration
   class PoroMultiPhaseScatraArteryCouplingPairBase;
@@ -28,18 +28,18 @@ namespace POROMULTIPHASESCATRA
   {
    public:
     //! create using a Epetra_Comm
-    PoroMultiPhaseScaTraArtCouplSurfBased(Teuchos::RCP<DRT::Discretization> arterydis,
-        Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
+    PoroMultiPhaseScaTraArtCouplSurfBased(Teuchos::RCP<Discret::Discretization> arterydis,
+        Teuchos::RCP<Discret::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
         const std::string& condname, const std::string& artcoupleddofname,
         const std::string& contcoupleddofname);
 
     //! set-up of global system of equations of coupled problem
-    void SetupSystem(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art,
+    void SetupSystem(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
         Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
-        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
-        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art) override;
+        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
+        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art) override;
 
     //! setup the strategy
     void Setup() override;
@@ -51,7 +51,7 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;
 
     //! Evaluate the 1D-3D coupling
-    void Evaluate(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+    void Evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
    private:
@@ -92,10 +92,10 @@ namespace POROMULTIPHASESCATRA
      * @return true if pair is not active, false otherwise
      */
     static bool is_not_active(
-        const Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
+        const Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
             coupling_pair);
   };
-}  // namespace POROMULTIPHASESCATRA
+}  // namespace PoroMultiPhaseScaTra
 
 
 FOUR_C_NAMESPACE_CLOSE

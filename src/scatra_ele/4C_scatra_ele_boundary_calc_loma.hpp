@@ -16,15 +16,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     // class implementation
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcLoma : public ScaTraEleBoundaryCalc<distype, probdim>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
+      typedef Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
       using my::nen_;
       using my::nsd_;
       using my::nsd_ele_;
@@ -36,14 +36,14 @@ namespace DRT
 
 
       //! evaluate action
-      int evaluate_action(CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, SCATRA::BoundaryAction action,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int evaluate_action(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, ScaTra::BoundaryAction action,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
      private:
       //! private constructor for singletons
@@ -51,16 +51,16 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate loma thermal press
-      void calc_loma_therm_press(CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la);
+      void calc_loma_therm_press(Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la);
 
       //! calculate Neumann inflow boundary conditions
-      void neumann_inflow(const CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs) override;
+      void neumann_inflow(const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs) override;
 
       //! integral of normal diffusive flux and velocity over boundary surface
-      void norm_diff_flux_and_vel_integral(const CORE::Elements::Element* ele,
+      void norm_diff_flux_and_vel_integral(const Core::Elements::Element* ele,
           Teuchos::ParameterList& params, const std::vector<double>& enormdiffflux,
           const std::vector<double>& enormvel);
 
@@ -68,7 +68,7 @@ namespace DRT
       double thermpress_;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

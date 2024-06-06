@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ARTERY
+namespace Arteries
 {
   /*--------------------------------------------------------------------------*/
   /*!
@@ -38,7 +38,7 @@ namespace ARTERY
     evaluate_scatra_analytically
   };
 
-}  // namespace ARTERY
+}  // namespace Arteries
 
 FOUR_C_NAMESPACE_CLOSE
 

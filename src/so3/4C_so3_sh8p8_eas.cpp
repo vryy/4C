@@ -15,14 +15,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8p8::eas_init()
+void Discret::ELEMENTS::SoSh8p8::eas_init()
 {
   // ordinary matrices and vectors
   soh8_easinit();
 
   // specials
   // EAS matrix K_{alpha pres}
-  CORE::LINALG::SerialDenseMatrix Kap(neas_, NUMPRES_);
+  Core::LinAlg::SerialDenseMatrix Kap(neas_, NUMPRES_);
   easdata_.Kap = Kap;
 }
 

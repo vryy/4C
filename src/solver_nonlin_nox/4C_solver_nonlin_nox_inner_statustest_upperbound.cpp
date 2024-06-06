@@ -25,9 +25,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::UpperBound::UpperBound(const double& upperboundval,
+NOX::Nln::Inner::StatusTest::UpperBound::UpperBound(const double& upperboundval,
     const ::NOX::Abstract::Vector::NormType normtype,
-    const NOX::NLN::StatusTest::QuantityType qtype)
+    const NOX::Nln::StatusTest::QuantityType qtype)
     : status_(status_unevaluated),
       normtype_(normtype),
       qtype_(qtype),
@@ -40,30 +40,30 @@ NOX::NLN::INNER::StatusTest::UpperBound::UpperBound(const double& upperboundval,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::INNER::StatusTest::UpperBound::get_search_direction_length(
-    const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
+double NOX::Nln::Inner::StatusTest::UpperBound::get_search_direction_length(
+    const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp) const
 {
-  const NOX::NLN::Group& nln_grp = dynamic_cast<const NOX::NLN::Group&>(grp);
+  const NOX::Nln::Group& nln_grp = dynamic_cast<const NOX::Nln::Group&>(grp);
 
   return nln_grp.GetTrialUpdateNorm(linesearch.GetSearchDirection(), normtype_, qtype_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::UpperBound::CheckStatus(
-    const NOX::NLN::INNER::StatusTest::Interface::Required& interface,
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound::CheckStatus(
+    const NOX::Nln::Inner::StatusTest::Interface::Required& interface,
     const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
     ::NOX::StatusTest::CheckType checkType)
 {
   /* check if it is a line search object: upper bound for Newton step size only
    * makes sense as inner status test for line search solvers */
-  const NOX::NLN::LineSearch::Generic* linesearch =
-      dynamic_cast<const NOX::NLN::LineSearch::Generic*>(&interface);
+  const NOX::Nln::LineSearch::Generic* linesearch =
+      dynamic_cast<const NOX::Nln::LineSearch::Generic*>(&interface);
   if (linesearch == nullptr)
   {
     std::ostringstream msg;
-    msg << "Dynamic cast to NOX::NLN::LineSearch::Generic failed!\n\n"
+    msg << "Dynamic cast to NOX::Nln::LineSearch::Generic failed!\n\n"
         << "The UpperBound rule status test supports only Line Search problems!";
     throw_error("CheckStatus", msg.str());
   }
@@ -87,12 +87,12 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::UpperBound:
      * several unnecessary evaluations of rhs (computeF calls). */
     if (status_ == status_step_too_long)
     {
-      NOX::NLN::LineSearch::Generic* linesearch_mutable =
-          const_cast<NOX::NLN::LineSearch::Generic*>(linesearch);
+      NOX::Nln::LineSearch::Generic* linesearch_mutable =
+          const_cast<NOX::Nln::LineSearch::Generic*>(linesearch);
 
       /* the following is equivalent to dividing the step successively by two until
        * criterion is met. note: upperboundval_!=0 is checked in
-       * NOX::NLN::INNER::StatusTest::Factory::build_upper_bound_test */
+       * NOX::Nln::Inner::StatusTest::Factory::build_upper_bound_test */
       reduction_fac_ =
           std::pow(0.5, std::ceil(std::log(stepmaxval_ / upperboundval_) / std::log(2)));
 
@@ -123,14 +123,14 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::UpperBound:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::UpperBound::GetStatus() const
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound::GetStatus() const
 {
   return status_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::NLN::INNER::StatusTest::UpperBound::Print(std::ostream& stream, int indent) const
+std::ostream& NOX::Nln::Inner::StatusTest::UpperBound::Print(std::ostream& stream, int indent) const
 {
   std::string indent_string;
   indent_string.assign(indent, ' ');
@@ -149,11 +149,11 @@ std::ostream& NOX::NLN::INNER::StatusTest::UpperBound::Print(std::ostream& strea
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::UpperBound::throw_error(
+void NOX::Nln::Inner::StatusTest::UpperBound::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   std::ostringstream msg;
-  msg << "ERROR - NOX::NLN::INNER::StatusTest::UpperBound::" << functionName << " - " << errorMsg
+  msg << "ERROR - NOX::Nln::Inner::StatusTest::UpperBound::" << functionName << " - " << errorMsg
       << std::endl;
   FOUR_C_THROW(msg.str());
 }

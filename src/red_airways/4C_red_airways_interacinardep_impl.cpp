@@ -2,8 +2,8 @@
 /*! \file
 
 \brief Internal implementation of RedInterAcinarDep element. Methods implemented here
-       are called by inter_acinar_dep_evaluate.cpp by DRT::ELEMENTS::RedInterAcinarDep::Evaluate()
-       with the corresponding action.
+       are called by inter_acinar_dep_evaluate.cpp by
+Discret::ELEMENTS::RedInterAcinarDep::Evaluate() with the corresponding action.
 
 
 \level 3
@@ -32,17 +32,18 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedInterAcinarDepImplInterface* DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(
-    DRT::ELEMENTS::RedInterAcinarDep* red_acinus)
+Discret::ELEMENTS::RedInterAcinarDepImplInterface*
+Discret::ELEMENTS::RedInterAcinarDepImplInterface::Impl(
+    Discret::ELEMENTS::RedInterAcinarDep* red_acinus)
 {
   switch (red_acinus->Shape())
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      static InterAcinarDepImpl<CORE::FE::CellType::line2>* acinus;
+      static InterAcinarDepImpl<Core::FE::CellType::line2>* acinus;
       if (acinus == nullptr)
       {
-        acinus = new InterAcinarDepImpl<CORE::FE::CellType::line2>;
+        acinus = new InterAcinarDepImpl<Core::FE::CellType::line2>;
       }
       return acinus;
     }
@@ -58,8 +59,8 @@ DRT::ELEMENTS::RedInterAcinarDepImplInterface* DRT::ELEMENTS::RedInterAcinarDepI
 /*----------------------------------------------------------------------*
  | Constructor (public)                                    ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
 {
 }
 
@@ -67,21 +68,21 @@ DRT::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
 /*----------------------------------------------------------------------*
  | Evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<CORE::MAT::Material> mat)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
 {
   // Get the vector with inter-acinar linkers
   Teuchos::RCP<const Epetra_Vector> ial = discretization.GetState("intr_ac_link");
 
   // Extract local values from the global vectors
   std::vector<double> myial(lm.size());
-  CORE::FE::ExtractMyValues(*ial, myial, lm);
+  Core::FE::ExtractMyValues(*ial, myial, lm);
 
   // Calculate the system matrix for inter-acinar linkers
   sysmat(myial, elemat1_epetra, elevec1_epetra);
@@ -97,12 +98,13 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
  | matically evaluated during the assembly process later.               |
  |                                              (private)  ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const Core::Mat::Material> material)
 {
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // Set the generation number for the inter-acinar linker element to -2.0
   int gid = ele->Id();
@@ -124,9 +126,9 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
  | per node). The right hand side is zero.                              |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::sysmat(std::vector<double>& ial,
-    CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::InterAcinarDepImpl<distype>::sysmat(std::vector<double>& ial,
+    Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs)
 {
   // Get the number of inter_acinar linkers on the 1st node (N0)
   double N0 = ial[0];
@@ -150,14 +152,15 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::sysmat(std::vector<double>& ial
  |  Evaluate the values of the degrees of freedom           ismail 04/13|
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcinarDep* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcinarDep* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // Get total time
   const double time = evaluation_data.time;
@@ -171,10 +174,10 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // Create objects for element arrays
-  CORE::LINALG::SerialDenseVector epnp(numnode);
+  Core::LinAlg::SerialDenseVector epnp(numnode);
 
   // Get all values at the last computed time step
   for (int i = 0; i < numnode; ++i)
@@ -196,7 +199,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
         double BCin = 0.0;
         if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
         {
-          CORE::Conditions::Condition* condition =
+          Core::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().Get<std::string>("boundarycond"));
@@ -210,8 +213,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           // Get factor of first CURVE
           if ((*curve)[0] >= 0)
           {
-            curvefac = GLOBAL::Problem::Instance()
-                           ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
+            curvefac = Global::Problem::Instance()
+                           ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
                            .Evaluate(time);
             BCin = (*vals)[0] * curvefac;
           }
@@ -230,8 +233,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           double functionfac = 0.0;
           if (functnum > 0)
           {
-            functionfac = GLOBAL::Problem::Instance()
-                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            functionfac = Global::Problem::Instance()
+                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
           }
 
@@ -240,8 +243,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           double curve2fac = 1.0;
           if (curve) curve2num = (*curve)[1];
           if (curve2num >= 0)
-            curve2fac = GLOBAL::Problem::Instance()
-                            ->FunctionById<CORE::UTILS::FunctionOfTime>(curve2num)
+            curve2fac = Global::Problem::Instance()
+                            ->FunctionById<Core::UTILS::FunctionOfTime>(curve2num)
                             .Evaluate(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
@@ -266,7 +269,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
         {
           if (Bc == "VolumeDependentPleuralPressure")
           {
-            CORE::Conditions::Condition* pplCond =
+            Core::Conditions::Condition* pplCond =
                 ele->Nodes()[i]->GetCondition("RedAirwayVolDependentPleuralPressureCond");
             double Pp_np = 0.0;
             if (pplCond)
@@ -278,8 +281,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)
               {
-                curvefac = GLOBAL::Problem::Instance()
-                               ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
+                curvefac = Global::Problem::Instance()
+                               ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
                                .Evaluate(time);
               }
 
@@ -310,8 +313,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
                     "TAU and RV are used. Set all others to zero. TAU is not allowed to be zero.");
               }
 
-              DRT::REDAIRWAYS::EvaluationData& evaluation_data =
-                  DRT::REDAIRWAYS::EvaluationData::get();
+              Discret::ReducedLung::EvaluationData& evaluation_data =
+                  Discret::ReducedLung::EvaluationData::get();
 
               if (ppl_Type == "Linear_Polynomial")
               {
@@ -361,7 +364,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
             BCin += Pp_np;
           }
 
-          DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+          Discret::ReducedLung::EvaluationData& evaluation_data =
+              Discret::ReducedLung::EvaluationData::get();
           // Set pressure at node i
           int gid;
           double val;
@@ -398,7 +402,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
             exit(1);
           }
 
-          DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+          Discret::ReducedLung::EvaluationData& evaluation_data =
+              Discret::ReducedLung::EvaluationData::get();
 
           // Set pressure at node i
           int gid;

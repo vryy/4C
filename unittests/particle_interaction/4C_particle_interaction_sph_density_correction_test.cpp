@@ -16,13 +16,13 @@ namespace
   class SPHDensityCorrectionInteriorTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionInterior> densitycorrection_;
+    std::unique_ptr<ParticleInteraction::SPHDensityCorrectionInterior> densitycorrection_;
 
    public:
     SPHDensityCorrectionInteriorTest()
     {
       // create density correction handler
-      densitycorrection_ = std::make_unique<PARTICLEINTERACTION::SPHDensityCorrectionInterior>();
+      densitycorrection_ = std::make_unique<ParticleInteraction::SPHDensityCorrectionInterior>();
 
       // init density correction handler
       densitycorrection_->Init();
@@ -67,12 +67,12 @@ namespace
   class SPHDensityCorrectionNormalizedTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionNormalized> densitycorrection_;
+    std::unique_ptr<ParticleInteraction::SPHDensityCorrectionNormalized> densitycorrection_;
 
     SPHDensityCorrectionNormalizedTest()
     {
       // create density correction handler
-      densitycorrection_ = std::make_unique<PARTICLEINTERACTION::SPHDensityCorrectionNormalized>();
+      densitycorrection_ = std::make_unique<ParticleInteraction::SPHDensityCorrectionNormalized>();
 
       // init density correction handler
       densitycorrection_->Init();
@@ -116,12 +116,12 @@ namespace
   class SPHDensityCorrectionRandlesTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionRandles> densitycorrection_;
+    std::unique_ptr<ParticleInteraction::SPHDensityCorrectionRandles> densitycorrection_;
 
     SPHDensityCorrectionRandlesTest()
     {
       // create density correction handler
-      densitycorrection_ = std::make_unique<PARTICLEINTERACTION::SPHDensityCorrectionRandles>();
+      densitycorrection_ = std::make_unique<ParticleInteraction::SPHDensityCorrectionRandles>();
 
       // init density correction handler
       densitycorrection_->Init();

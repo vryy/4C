@@ -23,19 +23,19 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   class Pstream;
 }
 
 
-namespace INPUT
+namespace Input
 {
   /// construct list with all parameters and documentation
   Teuchos::RCP<const Teuchos::ParameterList> ValidParameters();
 
   /// print all parameters that have a default value
-  void PrintDefaultParameters(CORE::IO::Pstream& stream, const Teuchos::ParameterList& list);
+  void PrintDefaultParameters(Core::IO::Pstream& stream, const Teuchos::ParameterList& list);
 
   /// print flag sections of dat file with given list
   void PrintDatHeader(std::ostream& stream, const Teuchos::ParameterList& list,
@@ -49,7 +49,7 @@ namespace INPUT
    */
   bool NeedToPrintEqualSign(const Teuchos::ParameterList& list);
 
-}  // namespace INPUT
+}  // namespace Input
 
 
 /*! print list of valid parameters with documentation */

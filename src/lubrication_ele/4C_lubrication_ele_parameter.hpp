@@ -24,7 +24,7 @@ parameters required for Lubrication element evaluation.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -73,7 +73,7 @@ namespace DRT
 
     };  // class LubricationEleParameter
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 

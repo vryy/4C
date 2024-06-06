@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 // #define WRITE_GMSH
 
-namespace MORTAR
+namespace Mortar
 {
   class Element;
 }
@@ -40,23 +40,23 @@ namespace CONTACT
   class NitscheStrategy;
 }  // namespace CONTACT
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     class StructuralSurface;
   }
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class SideHandle;
     class VolumeCell;
@@ -64,9 +64,9 @@ namespace CORE::GEO
     class Element;
     class ElementHandle;
     class Side;
-  }  // namespace CUT
+  }  // namespace Cut
   class CutWizard;
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 namespace XFEM
 {
@@ -89,19 +89,19 @@ namespace XFEM
           mcfpi_ps_pf_(Teuchos::null),
           mcidx_(0),
           isporo_(false),
-          visc_stab_trace_estimate_(INPAR::XFEM::ViscStab_TraceEstimate_CT_div_by_hk),
-          visc_stab_hk_(INPAR::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf),
+          visc_stab_trace_estimate_(Inpar::XFEM::ViscStab_TraceEstimate_CT_div_by_hk),
+          visc_stab_hk_(Inpar::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf),
           nit_stab_gamma_(-1),
           is_pseudo_2_d_(false),
-          mass_conservation_scaling_(INPAR::XFEM::MassConservationScaling_only_visc),
-          mass_conservation_combination_(INPAR::XFEM::MassConservationCombination_sum),
+          mass_conservation_scaling_(Inpar::XFEM::MassConservationScaling_only_visc),
+          mass_conservation_combination_(Inpar::XFEM::MassConservationCombination_sum),
           dt_(-1),
           theta_(-1),
           parallel_(false),
           min_surf_id_(-1),
           min_mortar_id_(-1),
           so_surf_id_to_mortar_ele_(std::vector<CONTACT::Element*>()),
-          mortar_id_to_so_surf_ele_(std::vector<DRT::ELEMENTS::StructuralSurface*>()),
+          mortar_id_to_so_surf_ele_(std::vector<Discret::ELEMENTS::StructuralSurface*>()),
           mortar_id_to_somc_(std::vector<int>()),
           mortar_id_to_sosid_(std::vector<int>()),
           extrapolate_to_zero_(false),
@@ -116,8 +116,8 @@ namespace XFEM
     //! destructor
     virtual ~XFluidContactComm() = default;
     /// Initialize overall Fluid State (includes the Cut intersection information)
-    void initialize_fluid_state(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
-        Teuchos::RCP<DRT::Discretization> fluiddis,
+    void initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
+        Teuchos::RCP<Discret::Discretization> fluiddis,
         Teuchos::RCP<XFEM::ConditionManager> condition_manager,
         Teuchos::RCP<Teuchos::ParameterList> fluidparams);
 
@@ -130,18 +130,18 @@ namespace XFEM
     }
 
     /// Get the FSI traction called from contact gausspoint
-    double Get_FSI_Traction(MORTAR::Element* ele,        // Mortar Element
-        const CORE::LINALG::Matrix<3, 1>& xsi_parent,    // local coord in the parent element
-        const CORE::LINALG::Matrix<2, 1>& xsi_boundary,  // local coord on the boundary element
-        const CORE::LINALG::Matrix<3, 1>& normal,        // normal for projection
+    double Get_FSI_Traction(Mortar::Element* ele,        // Mortar Element
+        const Core::LinAlg::Matrix<3, 1>& xsi_parent,    // local coord in the parent element
+        const Core::LinAlg::Matrix<2, 1>& xsi_boundary,  // local coord on the boundary element
+        const Core::LinAlg::Matrix<3, 1>& normal,        // normal for projection
         bool& FSI_integrated,
         bool& gp_on_this_proc,  // for serial run
         double* poropressure = nullptr);
 
     /// Get the FSI traction called from contact gausspoint
-    double Get_FSI_Traction(const MORTAR::Element* ele,
-        const CORE::LINALG::Matrix<2, 1>& xsi_parent,
-        const CORE::LINALG::Matrix<1, 1>& xsi_boundary, const CORE::LINALG::Matrix<2, 1>& normal,
+    double Get_FSI_Traction(const Mortar::Element* ele,
+        const Core::LinAlg::Matrix<2, 1>& xsi_parent,
+        const Core::LinAlg::Matrix<1, 1>& xsi_boundary, const Core::LinAlg::Matrix<2, 1>& normal,
         bool& FSI_integrated,
         bool& gp_on_this_proc,  // for serial run
         double* poropressure = nullptr)
@@ -154,7 +154,7 @@ namespace XFEM
     /// -->evaluate NIT-Contact
     bool Get_Contact_State(int sid,  // Solid Surface Element
         std::string mcname,
-        const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
+        const Core::LinAlg::Matrix<2, 1>& xsi,  // local coord on the ele element
         const double& full_fsi_traction,        // stressfluid + penalty ...
         double& gap);
 
@@ -171,7 +171,7 @@ namespace XFEM
       return so_surf_id_to_mortar_ele_.at(soSurfId - min_surf_id_);
     }
     /// Get the solid surface element for the contact element id
-    DRT::ELEMENTS::StructuralSurface* GetSurfEle(const int mortarId)
+    Discret::ELEMENTS::StructuralSurface* GetSurfEle(const int mortarId)
     {
       return mortar_id_to_so_surf_ele_.at(mortarId - min_mortar_id_);
     }
@@ -183,7 +183,7 @@ namespace XFEM
     int GetSurfSid(const int mortarId) { return mortar_id_to_sosid_.at(mortarId - min_mortar_id_); }
 
     /// Setup Interface element connection vectors based on points
-    void SetupSurfElePtrs(DRT::Discretization& contact_interface_dis);
+    void SetupSurfElePtrs(Discret::Discretization& contact_interface_dis);
 
     /// Get element size of background mesh
     double Get_h();
@@ -193,7 +193,7 @@ namespace XFEM
 
     /// Get the CUT integration points for this contact element (id)
     void get_cut_side_integration_points(
-        int sid, CORE::LINALG::SerialDenseMatrix& coords, std::vector<double>& weights, int& npg);
+        int sid, Core::LinAlg::SerialDenseMatrix& coords, std::vector<double>& weights, int& npg);
 
     /// Finalize Map of interface element owners
     void fill_complete_sele_map();
@@ -226,7 +226,7 @@ namespace XFEM
     void create_new_gmsh_files();
 
     /// Write Gmsh files
-    void Gmsh_Write(CORE::LINALG::Matrix<3, 1> x, double val, int section);
+    void Gmsh_Write(Core::LinAlg::Matrix<3, 1> x, double val, int section);
 
     /// Increment gausspoint counter
     void Inc_GP(int state) { ++sum_gps_[state]; }
@@ -241,56 +241,57 @@ namespace XFEM
     //! The the contact state at local coord of Element cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
     bool check_nitsche_contact_state(CONTACT::Element* cele,
-        const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
+        const Core::LinAlg::Matrix<2, 1>& xsi,  // local coord on the ele element
         const double& full_fsi_traction,        // stressfluid + penalty
         double& gap                             // gap
     );
 
     /// Get the fluid states at specific selexi
     void get_states(const int fluidele_id, const std::vector<int>& fluid_nds,
-        const DRT::ELEMENTS::StructuralSurface* sele, const CORE::LINALG::Matrix<2, 1>& selexsi,
-        const CORE::LINALG::Matrix<3, 1>& x, CORE::Elements::Element*& fluidele,
-        CORE::LINALG::SerialDenseMatrix& ele_xyze, std::vector<double>& velpres,
+        const Discret::ELEMENTS::StructuralSurface* sele, const Core::LinAlg::Matrix<2, 1>& selexsi,
+        const Core::LinAlg::Matrix<3, 1>& x, Core::Elements::Element*& fluidele,
+        Core::LinAlg::SerialDenseMatrix& ele_xyze, std::vector<double>& velpres,
         std::vector<double>& disp, std::vector<double>& ivel, double& pres_m,
-        CORE::LINALG::Matrix<3, 1>& vel_m, CORE::LINALG::Matrix<3, 1>& vel_s,
-        CORE::LINALG::Matrix<3, 3>& vderxy_m, CORE::LINALG::Matrix<3, 1>& velpf_s);
+        Core::LinAlg::Matrix<3, 1>& vel_m, Core::LinAlg::Matrix<3, 1>& vel_s,
+        Core::LinAlg::Matrix<3, 3>& vderxy_m, Core::LinAlg::Matrix<3, 1>& velpf_s);
 
     /// Get the Nitsche penalty parameter
-    void get_penalty_param(CORE::Elements::Element* fluidele,
-        CORE::GEO::CUT::VolumeCell* volumecell, CORE::LINALG::SerialDenseMatrix& ele_xyze,
-        const CORE::LINALG::Matrix<3, 1>& elenormal, double& penalty_fac,
-        const CORE::LINALG::Matrix<3, 1>& vel_m);
+    void get_penalty_param(Core::Elements::Element* fluidele,
+        Core::Geo::Cut::VolumeCell* volumecell, Core::LinAlg::SerialDenseMatrix& ele_xyze,
+        const Core::LinAlg::Matrix<3, 1>& elenormal, double& penalty_fac,
+        const Core::LinAlg::Matrix<3, 1>& vel_m);
 
     /// Get the Nitsche penalty parameter
-    void get_penalty_param(DRT::ELEMENTS::StructuralSurface* sele, double& penalty_fac);
+    void get_penalty_param(Discret::ELEMENTS::StructuralSurface* sele, double& penalty_fac);
 
     /// Get the volumecell for local coord xsi on sele
-    bool get_volumecell(DRT::ELEMENTS::StructuralSurface*& sele, CORE::LINALG::Matrix<2, 1>& xsi,
-        CORE::GEO::CUT::SideHandle*& sidehandle, std::vector<int>& nds, int& eleid,
-        CORE::GEO::CUT::VolumeCell*& volumecell, CORE::LINALG::Matrix<3, 1>& elenormal,
-        CORE::LINALG::Matrix<3, 1>& x, bool& FSI_integrated, double& distance);
+    bool get_volumecell(Discret::ELEMENTS::StructuralSurface*& sele,
+        Core::LinAlg::Matrix<2, 1>& xsi, Core::Geo::Cut::SideHandle*& sidehandle,
+        std::vector<int>& nds, int& eleid, Core::Geo::Cut::VolumeCell*& volumecell,
+        Core::LinAlg::Matrix<3, 1>& elenormal, Core::LinAlg::Matrix<3, 1>& x, bool& FSI_integrated,
+        double& distance);
 
     /// Evaluate the distance of x the boundary of a side
-    double distanceto_side(CORE::LINALG::Matrix<3, 1>& x, CORE::GEO::CUT::Side* side,
-        CORE::LINALG::Matrix<3, 1>& closest_x);
+    double distanceto_side(Core::LinAlg::Matrix<3, 1>& x, Core::Geo::Cut::Side* side,
+        Core::LinAlg::Matrix<3, 1>& closest_x);
 
     /// Find the next physical interface side to x
-    CORE::GEO::CUT::Side* findnext_physical_side(CORE::LINALG::Matrix<3, 1>& x,
-        CORE::GEO::CUT::Side* initSide, CORE::GEO::CUT::SideHandle*& sidehandle,
-        CORE::LINALG::Matrix<2, 1>& newxsi, double& distance);
+    Core::Geo::Cut::Side* findnext_physical_side(Core::LinAlg::Matrix<3, 1>& x,
+        Core::Geo::Cut::Side* initSide, Core::Geo::Cut::SideHandle*& sidehandle,
+        Core::LinAlg::Matrix<2, 1>& newxsi, double& distance);
 
     /// Get list of potentiall next physical sides
-    void update_physical_sides(CORE::GEO::CUT::Side* side,
-        std::set<CORE::GEO::CUT::Side*>& performed_sides,
-        std::set<CORE::GEO::CUT::Side*>& physical_sides);
+    void update_physical_sides(Core::Geo::Cut::Side* side,
+        std::set<Core::Geo::Cut::Side*>& performed_sides,
+        std::set<Core::Geo::Cut::Side*>& physical_sides);
 
     /// Get neighboring sides
-    std::vector<CORE::GEO::CUT::Side*> get_new_neighboring_sides(
-        CORE::GEO::CUT::Side* side, std::set<CORE::GEO::CUT::Side*>& performed_sides);
+    std::vector<Core::Geo::Cut::Side*> get_new_neighboring_sides(
+        Core::Geo::Cut::Side* side, std::set<Core::Geo::Cut::Side*>& performed_sides);
 
     /// Get next element
-    CORE::GEO::CUT::Element* get_next_element(CORE::GEO::CUT::Element* ele,
-        std::set<CORE::GEO::CUT::Element*>& performed_elements, int& lastid);
+    Core::Geo::Cut::Element* get_next_element(Core::Geo::Cut::Element* ele,
+        std::set<Core::Geo::Cut::Element*>& performed_elements, int& lastid);
 
     /// access to contact/meshtying bridge
     CONTACT::NitscheStrategy& get_contact_strategy() { return contact_strategy_; }
@@ -300,9 +301,9 @@ namespace XFEM
     /// Surface element pointers setup
     bool ele_ptrs_already_setup_;
     /// The XFluid CutWizard
-    Teuchos::RCP<CORE::GEO::CutWizard> cutwizard_;
+    Teuchos::RCP<Core::Geo::CutWizard> cutwizard_;
     /// The Background Fluid discretization
-    Teuchos::RCP<DRT::Discretization> fluiddis_;
+    Teuchos::RCP<Discret::Discretization> fluiddis_;
     /// The XFEM Condition Manager
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
     /// A list of all mesh coupling objects
@@ -315,17 +316,17 @@ namespace XFEM
     bool isporo_;
 
     /// Viscous trace estimate for FSI-Nit-Pen
-    INPAR::XFEM::ViscStabTraceEstimate visc_stab_trace_estimate_;
+    Inpar::XFEM::ViscStabTraceEstimate visc_stab_trace_estimate_;
     /// h-definition for FSI-Nit-Pen
-    INPAR::XFEM::ViscStabHk visc_stab_hk_;
+    Inpar::XFEM::ViscStabHk visc_stab_hk_;
     /// reference penalty parameter for FSI-Nit-Pen
     double nit_stab_gamma_;
     /// pseudo 2D flag for 2D simulation with one element in z-direction
     bool is_pseudo_2_d_;
     /// mass conservation scaline on FSI-Nit-Pen
-    INPAR::XFEM::MassConservationScaling mass_conservation_scaling_;
+    Inpar::XFEM::MassConservationScaling mass_conservation_scaling_;
     /// How to combine the contribution on FSI-Nit-Pen
-    INPAR::XFEM::MassConservationCombination mass_conservation_combination_;
+    Inpar::XFEM::MassConservationCombination mass_conservation_combination_;
     /// timestep
     double dt_;
     /// theta factor of OST-scheme
@@ -341,7 +342,7 @@ namespace XFEM
     /// Vector for translation of Structural Surface Id to Contact Element
     std::vector<CONTACT::Element*> so_surf_id_to_mortar_ele_;
     /// Vector for translation of Mortar Element Id to Structural Surface
-    std::vector<DRT::ELEMENTS::StructuralSurface*> mortar_id_to_so_surf_ele_;
+    std::vector<Discret::ELEMENTS::StructuralSurface*> mortar_id_to_so_surf_ele_;
     /// Vector for translation of Mortar Element Id to Mesh Coupling Object Id
     std::vector<int> mortar_id_to_somc_;
     /// Vector for translation of Mortar Element Id to Structural Surface Id
@@ -370,7 +371,7 @@ namespace XFEM
     std::set<int> higher_contact_elements_comm_;
 
     /// For Gmsh Output
-    std::vector<std::vector<std::pair<CORE::LINALG::Matrix<3, 1>, double>>> plot_data_;
+    std::vector<std::vector<std::pair<Core::LinAlg::Matrix<3, 1>, double>>> plot_data_;
 
     /// Summarized Contact gps
     /// 0 ... Contact, 1 ... Contact_NoContactNoFSI, 2 ... Contact_NoContactFSI, 3 ...
@@ -378,7 +379,7 @@ namespace XFEM
     std::vector<int> sum_gps_;
 
     /// store the last evaluted set of physical sides for solid side with id key
-    std::pair<int, std::set<CORE::GEO::CUT::Side*>> last_physical_sides_;
+    std::pair<int, std::set<Core::Geo::Cut::Side*>> last_physical_sides_;
 
     /// last computed element h measure with key fluidele id
     std::pair<int, double> last_ele_h_;

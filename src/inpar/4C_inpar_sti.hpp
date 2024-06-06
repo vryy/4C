@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace INPAR
+namespace Inpar
 {
   namespace STI
   {
@@ -48,9 +48,9 @@ namespace INPAR
 
     //! set valid conditions for scatra-thermo interaction
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
   }  // namespace STI
-}  // namespace INPAR
+}  // namespace Inpar
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -29,41 +29,41 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | hyperelastic material for membranes                   sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-namespace MAT
+namespace Mat
 {
   // forward declaration
-  namespace ELASTIC
+  namespace Elastic
   {
     class Summand;
-  }  // namespace ELASTIC
+  }  // namespace Elastic
 
   class MembraneElastHyper;
 
   namespace PAR
   {
-    class MembraneElastHyper : public MAT::PAR::ElastHyper
+    class MembraneElastHyper : public Mat::PAR::ElastHyper
     {
-      friend class MAT::MembraneElastHyper;
+      friend class Mat::MembraneElastHyper;
 
      public:
       /// standard constructor
-      MembraneElastHyper(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      MembraneElastHyper(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class MembraneElastHyper
 
   }  // namespace PAR
 
-  class MembraneElastHyperType : public CORE::COMM::ParObjectType
+  class MembraneElastHyperType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "Membrane_ElastHyperType"; }
 
     static MembraneElastHyperType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MembraneElastHyperType instance_;
@@ -79,7 +79,7 @@ namespace MAT
   ///\f[
   ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
   ///\f]
-  /// in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELASTIC::Summand.
+  /// in which the individual \f$\Psi_i\f$ is implemented as #Mat::Elastic::Summand.
   ///
   /// Quite often the right Cauchy-Green 2-tensor \f$\boldsymbol{C}\f$
   /// is replaced by its various invariant forms as argument.
@@ -100,14 +100,14 @@ namespace MAT
   // forward declaration
   class Material;
 
-  class MembraneElastHyper : public ElastHyper, public MAT::MembraneMaterialLocalCoordinates
+  class MembraneElastHyper : public ElastHyper, public Mat::MembraneMaterialLocalCoordinates
   {
    public:
     /// construct empty material object
     MembraneElastHyper();
 
     /// construct the material object given material parameters
-    explicit MembraneElastHyper(MAT::PAR::MembraneElastHyper* params);
+    explicit MembraneElastHyper(Mat::PAR::MembraneElastHyper* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -129,7 +129,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -146,34 +146,34 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_membrane_elasthyper;
+      return Core::Materials::m_membrane_elasthyper;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new MembraneElastHyper(*this));
     }
 
     /// setup
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
-    void UpdateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
-        const CORE::LINALG::Matrix<3, 3>& Q_trafo, int gp, int eleGID) override
+    void UpdateMembrane(const Core::LinAlg::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
+        const Core::LinAlg::Matrix<3, 3>& Q_trafo, int gp, int eleGID) override
     {
       // nothing to do
     }
 
-    void EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
-        const CORE::LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
-        const CORE::LINALG::Matrix<3, 3>& Q_trafo, CORE::LINALG::Matrix<3, 1>& stress,
-        CORE::LINALG::Matrix<3, 3>& cmat, int gp, int eleGID) override;
+    void EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>& defgrd,
+        const Core::LinAlg::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
+        const Core::LinAlg::Matrix<3, 3>& Q_trafo, Core::LinAlg::Matrix<3, 1>& stress,
+        Core::LinAlg::Matrix<3, 3>& cmat, int gp, int eleGID) override;
 
     /// evaluate strain energy function
     virtual void StrainEnergy(
-        CORE::LINALG::Matrix<3, 3>& cauchygreen,  ///< right Cauchy-Green tensor
+        Core::LinAlg::Matrix<3, 3>& cauchygreen,  ///< right Cauchy-Green tensor
         double& psi,                              ///< Strain energy function
         int gp,                                   ///< Gauss point
         int eleGID                                ///< Element GID
@@ -181,16 +181,16 @@ namespace MAT
 
    protected:
     /// calculate anisotropic stress and elasticity tensor
-    virtual void evaluate_anisotropic_stress_cmat(CORE::LINALG::Matrix<3, 1>& stress_aniso,
-        CORE::LINALG::Matrix<3, 3>& cmat_aniso, const CORE::LINALG::Matrix<3, 3>& Q_trafo,
-        const CORE::LINALG::Matrix<3, 1>& rcg, const double& rcg33, Teuchos::ParameterList& params,
+    virtual void evaluate_anisotropic_stress_cmat(Core::LinAlg::Matrix<3, 1>& stress_aniso,
+        Core::LinAlg::Matrix<3, 3>& cmat_aniso, const Core::LinAlg::Matrix<3, 3>& Q_trafo,
+        const Core::LinAlg::Matrix<3, 1>& rcg, const double& rcg33, Teuchos::ParameterList& params,
         int gp, int eleGID);
 
     /// vector of fiber vectors
-    std::vector<CORE::LINALG::Matrix<3, 1>> fibervecs_;
+    std::vector<Core::LinAlg::Matrix<3, 1>> fibervecs_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

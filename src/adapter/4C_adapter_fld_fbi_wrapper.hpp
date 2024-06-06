@@ -19,19 +19,19 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
 
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief Fluid field adapter for fluid beam interaction
    *
@@ -42,9 +42,9 @@ namespace ADAPTER
   {
    public:
     /// Constructor
-    FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
+    FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /** \brief Pass in additional contributions from coupling terms for the system matrix
      *
@@ -56,7 +56,7 @@ namespace ADAPTER
      * need to be assembled into the overall fluid system matrix
      */
     virtual void set_coupling_contributions(
-        Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix);
+        Teuchos::RCP<const Core::LinAlg::SparseOperator> matrix);
 
     /**
      * \brief Resets the external forces acting on the fluid to zero
@@ -65,7 +65,7 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<const FLD::Meshtying> GetMeshtying();
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

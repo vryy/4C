@@ -26,35 +26,35 @@ Pack, Unpack, NumDofPerNode etc.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   class So3Material;
 }
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   // forward declaration
   class SolidEleCalcInterface;
 
-  class SolidType : public CORE::Elements::ElementType
+  class SolidType : public Core::Elements::ElementType
   {
    public:
     void setup_element_definition(
-        std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions) override;
+        std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions) override;
 
-    Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+    Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
         const std::string elecelltype, const int id, const int owner) override;
 
-    Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+    Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
     [[nodiscard]] std::string Name() const override { return "SolidType"; }
 
     void nodal_block_information(
-        CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+        Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+    Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+        Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
     static SolidType& Instance();
 
@@ -63,7 +63,7 @@ namespace DRT::ELEMENTS
 
   };  // class SolidType
 
-  class Solid : public CORE::Elements::Element
+  class Solid : public Core::Elements::Element
   {
     friend class SolidType;
 
@@ -81,27 +81,27 @@ namespace DRT::ELEMENTS
 
     //!@}
 
-    [[nodiscard]] CORE::Elements::Element* Clone() const override;
+    [[nodiscard]] Core::Elements::Element* Clone() const override;
 
     [[nodiscard]] int UniqueParObjectId() const override
     {
       return SolidType::Instance().UniqueParObjectId();
     };
 
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 
-    [[nodiscard]] CORE::Elements::ElementType& ElementType() const override
+    [[nodiscard]] Core::Elements::ElementType& ElementType() const override
     {
       return SolidType::Instance();
     }
 
-    [[nodiscard]] CORE::FE::CellType Shape() const override { return celltype_; };
+    [[nodiscard]] Core::FE::CellType Shape() const override { return celltype_; };
 
-    void SetKinematicType(INPAR::STR::KinemType kintype) { solid_ele_property_.kintype = kintype; }
+    void SetKinematicType(Inpar::STR::KinemType kintype) { solid_ele_property_.kintype = kintype; }
 
-    [[nodiscard]] virtual Teuchos::RCP<MAT::So3Material> SolidMaterial(int nummat = 0) const;
+    [[nodiscard]] virtual Teuchos::RCP<Mat::So3Material> SolidMaterial(int nummat = 0) const;
 
     [[nodiscard]] int NumLine() const override;
 
@@ -109,29 +109,29 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] int NumVolume() const override;
 
-    std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+    std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
-    std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+    std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
-    [[nodiscard]] int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
+    [[nodiscard]] int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
 
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
     bool ReadElement(const std::string& eletype, const std::string& celltype,
-        INPUT::LineDefinition* linedef) override;
+        Input::LineDefinition* linedef) override;
 
-    int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseVector& elevec2,
-        CORE::LINALG::SerialDenseVector& elevec3) override;
+    int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+        std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+        Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseVector& elevec2,
+        Core::LinAlg::SerialDenseVector& elevec3) override;
 
-    int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        CORE::Conditions::Condition& condition, std::vector<int>& lm,
-        CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+    int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+        Core::Conditions::Condition& condition, std::vector<int>& lm,
+        Core::LinAlg::SerialDenseVector& elevec1,
+        Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
-    Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override
+    Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override
     {
       return interface_ptr_;
     }
@@ -174,12 +174,12 @@ namespace DRT::ELEMENTS
      */
     template <int dim>
     double GetCauchyNDirAtXi(const std::vector<double>& disp,
-        const CORE::LINALG::Matrix<dim, 1>& xi, const CORE::LINALG::Matrix<dim, 1>& n,
-        const CORE::LINALG::Matrix<dim, 1>& dir, CauchyNDirLinearizations<dim>& linearizations);
+        const Core::LinAlg::Matrix<dim, 1>& xi, const Core::LinAlg::Matrix<dim, 1>& n,
+        const Core::LinAlg::Matrix<dim, 1>& dir, CauchyNDirLinearizations<dim>& linearizations);
 
    private:
     //! cell type
-    CORE::FE::CellType celltype_ = CORE::FE::CellType::dis_none;
+    Core::FE::CellType celltype_ = Core::FE::CellType::dis_none;
 
     //! solid element properties
     SolidElementProperties solid_ele_property_{};
@@ -195,7 +195,7 @@ namespace DRT::ELEMENTS
 
   };  // class Solid
 
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& list)
+void Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& list)
 {
   // Add the input parameters for line to 3D coupling.
 
@@ -34,7 +34,7 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& lis
       &list);
 
   // Number of search points for segmentation.
-  CORE::UTILS::IntParameter("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 6,
+  Core::UTILS::IntParameter("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 6,
       "Number of search points for segmentation", &list);
 
   // What to do if not all Gauss points of a segment project valid
@@ -47,11 +47,11 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& lis
       &list);
 
   // Number of integration points on the line.
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "GAUSS_POINTS", 6, "Number of Gauss Points for the integral evaluations", &list);
 
   // Number of integration along the circumference in cross section coupling.
-  CORE::UTILS::IntParameter("INTEGRATION_POINTS_CIRCUMFERENCE", 6,
+  Core::UTILS::IntParameter("INTEGRATION_POINTS_CIRCUMFERENCE", 6,
       "Number of Integration points along the circumferencial direction of the beam. This is "
       "parameter is only used in beam to cylinder meshtying. No gauss integration is "
       "used along the circumferencial direction, equally spaced integration points are used.",
@@ -61,7 +61,7 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& lis
 /**
  *
  */
-void INPAR::GEOMETRYPAIR::SetValidParametersLineToSurface(Teuchos::ParameterList& list)
+void Inpar::GEOMETRYPAIR::SetValidParametersLineToSurface(Teuchos::ParameterList& list)
 {
   // Add the input parameters for line to surface coupling.
 
@@ -77,40 +77,40 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineToSurface(Teuchos::ParameterList
 /**
  *
  */
-CORE::FE::GaussRule1D INPAR::GEOMETRYPAIR::IntToGaussRule1D(const int n_gauss_points)
+Core::FE::GaussRule1D Inpar::GEOMETRYPAIR::IntToGaussRule1D(const int n_gauss_points)
 {
   switch (n_gauss_points)
   {
     case 1:
-      return CORE::FE::GaussRule1D::line_1point;
+      return Core::FE::GaussRule1D::line_1point;
     case 2:
-      return CORE::FE::GaussRule1D::line_2point;
+      return Core::FE::GaussRule1D::line_2point;
     case 3:
-      return CORE::FE::GaussRule1D::line_3point;
+      return Core::FE::GaussRule1D::line_3point;
     case 4:
-      return CORE::FE::GaussRule1D::line_4point;
+      return Core::FE::GaussRule1D::line_4point;
     case 5:
-      return CORE::FE::GaussRule1D::line_5point;
+      return Core::FE::GaussRule1D::line_5point;
     case 6:
-      return CORE::FE::GaussRule1D::line_6point;
+      return Core::FE::GaussRule1D::line_6point;
     case 7:
-      return CORE::FE::GaussRule1D::line_7point;
+      return Core::FE::GaussRule1D::line_7point;
     case 8:
-      return CORE::FE::GaussRule1D::line_8point;
+      return Core::FE::GaussRule1D::line_8point;
     case 9:
-      return CORE::FE::GaussRule1D::line_9point;
+      return Core::FE::GaussRule1D::line_9point;
     case 10:
-      return CORE::FE::GaussRule1D::line_10point;
+      return Core::FE::GaussRule1D::line_10point;
     case 20:
-      return CORE::FE::GaussRule1D::line_20point;
+      return Core::FE::GaussRule1D::line_20point;
     case 32:
-      return CORE::FE::GaussRule1D::line_32point;
+      return Core::FE::GaussRule1D::line_32point;
     case 50:
-      return CORE::FE::GaussRule1D::line_50point;
+      return Core::FE::GaussRule1D::line_50point;
     default:
     {
       FOUR_C_THROW("No Gauss rule defined for %d points", n_gauss_points);
-      return CORE::FE::GaussRule1D::undefined;
+      return Core::FE::GaussRule1D::undefined;
     }
   }
 };

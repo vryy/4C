@@ -25,18 +25,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class Solver;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
 }
@@ -54,9 +54,9 @@ namespace FLD
   {
    public:
     /// Standard Constructor
-    XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
+    XWall(Teuchos::RCP<Discret::Discretization> dis, int nsd,
         Teuchos::RCP<Teuchos::ParameterList>& params,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
         Teuchos::RCP<FLD::UTILS::StressManager> wssmanager);
 
     /// Destructor
@@ -66,7 +66,7 @@ namespace FLD
     virtual void SetXWallParams(Teuchos::ParameterList& eleparams);
 
     // adapt ml nullspace for aggregation for scale separation (mfs)
-    void AdaptMLNullspace(const Teuchos::RCP<CORE::LINALG::Solver>& solver);
+    void AdaptMLNullspace(const Teuchos::RCP<Core::LinAlg::Solver>& solver);
 
     // get output vector of enriched dofs
     Teuchos::RCP<Epetra_Vector> GetOutputVector(Teuchos::RCP<Epetra_Vector> vel);
@@ -83,12 +83,12 @@ namespace FLD
     {
       Teuchos::RCP<Epetra_Vector> tauw =
           Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-      CORE::LINALG::Export(*tauw_, *tauw);
+      Core::LinAlg::Export(*tauw_, *tauw);
       return tauw;
     }
 
     // read restart including wall stresses
-    void read_restart(CORE::IO::DiscretizationReader& reader);
+    void read_restart(Core::IO::DiscretizationReader& reader);
 
     // fix residual at Dirichlet-inflow nodes such that the wss can be calculated
     Teuchos::RCP<Epetra_Vector> FixDirichletInflow(Teuchos::RCP<Epetra_Vector> trueresidual);
@@ -139,7 +139,7 @@ namespace FLD
     void overwrite_transferred_values();
 
     //! discretisation
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! fluid params
     Teuchos::RCP<Teuchos::ParameterList> params_;
@@ -196,7 +196,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> oldinctauw_;
 
     //! matrix projecting the wall shear stress to off-wall nodes
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tauwcouplingmattrans_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tauwcouplingmattrans_;
 
     //! toggle vector, standard node row map
     Teuchos::RCP<Epetra_Vector> xwalltoggle_;
@@ -208,13 +208,13 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> xtoggleloc_;
 
     //! redistributed xwall discretization
-    Teuchos::RCP<DRT::Discretization> xwdiscret_;
+    Teuchos::RCP<Discret::Discretization> xwdiscret_;
 
     //! mass matrix for projection
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix_;
 
     //! solver for projection
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
 
     //! increment of veln during projection
     Teuchos::RCP<Epetra_Vector> incveln_;
@@ -268,13 +268,13 @@ namespace FLD
     double dens_;
 
     //! when and how to update tauw
-    enum INPAR::FLUID::XWallTauwType tauwtype_;
+    enum Inpar::FLUID::XWallTauwType tauwtype_;
 
     //! how to calculate tauw
-    enum INPAR::FLUID::XWallTauwCalcType tauwcalctype_;
+    enum Inpar::FLUID::XWallTauwCalcType tauwcalctype_;
 
     //! how to blend
-    enum INPAR::FLUID::XWallBlendingType blendingtype_;
+    enum Inpar::FLUID::XWallBlendingType blendingtype_;
 
     //! projection
     bool proj_;
@@ -296,9 +296,9 @@ namespace FLD
   {
    public:
     /// Standard Constructor
-    XWallAleFSI(Teuchos::RCP<DRT::Discretization> dis, int nsd,
+    XWallAleFSI(Teuchos::RCP<Discret::Discretization> dis, int nsd,
         Teuchos::RCP<Teuchos::ParameterList>& params,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
         Teuchos::RCP<FLD::UTILS::StressManager> wssmanager, Teuchos::RCP<Epetra_Vector> dispnp,
         Teuchos::RCP<Epetra_Vector> gridv);
 

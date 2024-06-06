@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace StatusTest
     {
@@ -47,7 +47,7 @@ namespace NOX
       {
        public:
         //! Constructor
-        NormF(const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
+        NormF(const std::vector<NOX::Nln::StatusTest::QuantityType>& checkList,
             const std::vector<::NOX::StatusTest::NormF::ToleranceType>& toltype,
             const std::vector<double>& tolerance,
             const std::vector<::NOX::Abstract::Vector::NormType>& ntype,
@@ -60,25 +60,25 @@ namespace NOX
         //@{
         //! Returns the value of the F-norm of the corresponding quantity computed in the last call
         //! to checkStatus.
-        virtual double GetNormF(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        virtual double GetNormF(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! Returns the true tolerance of the corresponding quantity.
-        virtual double GetTrueTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        virtual double GetTrueTolerance(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! Returns the specified tolerance set in the constructor for the corresponding quantity.
         virtual double get_specified_tolerance(
-            const NOX::NLN::StatusTest::QuantityType& qType) const;
+            const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! Returns the initial tolerance of the corresponding quantity.
-        virtual double GetInitialTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        virtual double GetInitialTolerance(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         /*! \brief Returns the norm type as <int> of the desired quantity
          *
          *  If the given quantity cannot be found a default value of -100 is returned. */
-        int GetNormType(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        int GetNormType(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! Check for the given quantity
-        bool IsQuantity(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        bool IsQuantity(const NOX::Nln::StatusTest::QuantityType& qType) const;
         //@}
 
         ::NOX::StatusTest::StatusType checkStatus(
@@ -109,7 +109,7 @@ namespace NOX
         const std::size_t nChecks_;
 
         //! enums of the quantities we want to check
-        std::vector<NOX::NLN::StatusTest::QuantityType> checkList_;
+        std::vector<NOX::Nln::StatusTest::QuantityType> checkList_;
 
         //! global status
         ::NOX::StatusTest::StatusType gStatus_;
@@ -142,7 +142,7 @@ namespace NOX
         ::NOX::Utils utils_;
       };  // class NormF
     }     // namespace StatusTest
-  }       // namespace NLN
+  }       // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

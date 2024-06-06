@@ -23,25 +23,25 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace CONTACT
 {
@@ -82,23 +82,23 @@ namespace CONTACT
   namespace UTILS
   {
     /// Get the solid to solid contact conditions
-    int GetContactConditions(std::vector<CORE::Conditions::Condition*>& contact_conditions,
-        const std::vector<CORE::Conditions::Condition*>& beamandsolidcontactconditions,
+    int GetContactConditions(std::vector<Core::Conditions::Condition*>& contact_conditions,
+        const std::vector<Core::Conditions::Condition*>& beamandsolidcontactconditions,
         const bool& throw_error = true);
 
     /// Find the solid to solid contact conditions and combine them to contact condition groups
     int GetContactConditionGroups(
-        std::vector<std::vector<CORE::Conditions::Condition*>>& ccond_grps,
-        const DRT::Discretization& discret_wrapper, const bool& throw_error = true);
+        std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
+        const Discret::Discretization& discret_wrapper, const bool& throw_error = true);
 
     /// Combine the solid to solid contact conditions to contact condition groups
     void GetContactConditionGroups(
-        std::vector<std::vector<CORE::Conditions::Condition*>>& ccond_grps,
-        const std::vector<CORE::Conditions::Condition*>& cconds);
+        std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
+        const std::vector<Core::Conditions::Condition*>& cconds);
 
     /// Gather information which side is master and which side is slave
     void GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vector<bool>& isself,
-        const std::vector<CORE::Conditions::Condition*>& cond_grp);
+        const std::vector<Core::Conditions::Condition*>& cond_grp);
 
     /**
      * \brief Gather information on initialization (Active/Inactive)
@@ -115,11 +115,11 @@ namespace CONTACT
      * \author cschmidt \date 11/18 */
     void GetInitializationInfo(bool& Two_half_pass, bool& Check_nonsmooth_selfcontactsurface,
         bool& Searchele_AllProc, std::vector<bool>& isactive, std::vector<bool>& isslave,
-        std::vector<bool>& isself, const std::vector<CORE::Conditions::Condition*>& cond_grp);
+        std::vector<bool>& isself, const std::vector<Core::Conditions::Condition*>& cond_grp);
 
     /// write conservation data to an output file
     void WriteConservationDataToFile(const int mypid, const int interface_id, const int nln_iter,
-        const CORE::LINALG::SerialDenseMatrix& conservation_data, const std::string& ofile_path,
+        const Core::LinAlg::SerialDenseMatrix& conservation_data, const std::string& ofile_path,
         const std::string& prefix);
 
     /** \brief Detect DBC slave nodes and elements
@@ -150,21 +150,21 @@ namespace CONTACT
        *                              contain at least one DBC slave node
        *
        *  \author hiermeier \date 01/18 */
-      static void detect_dbc_slave_nodes_and_elements(const DRT::Discretization& str_discret,
-          const std::vector<std::vector<CORE::Conditions::Condition*>>& ccond_grps,
-          std::set<const CORE::Nodes::Node*>& dbc_slave_nodes,
-          std::set<const CORE::Elements::Element*>& dbc_slave_eles);
+      static void detect_dbc_slave_nodes_and_elements(const Discret::Discretization& str_discret,
+          const std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
+          std::set<const Core::Nodes::Node*>& dbc_slave_nodes,
+          std::set<const Core::Elements::Element*>& dbc_slave_eles);
 
      private:
       static void detect_dbc_slave_nodes(
-          std::map<const CORE::Nodes::Node*, int>& dbc_slave_node_map,
-          const DRT::Discretization& str_discret,
-          const std::vector<const CORE::Conditions::Condition*>& sl_conds);
+          std::map<const Core::Nodes::Node*, int>& dbc_slave_node_map,
+          const Discret::Discretization& str_discret,
+          const std::vector<const Core::Conditions::Condition*>& sl_conds);
 
       static void detect_dbc_slave_elements(
-          std::set<const CORE::Elements::Element*>& dbc_slave_eles,
-          const std::map<const CORE::Nodes::Node*, int>& dbc_slave_nodes,
-          const std::vector<const CORE::Conditions::Condition*>& sl_conds);
+          std::set<const Core::Elements::Element*>& dbc_slave_eles,
+          const std::map<const Core::Nodes::Node*, int>& dbc_slave_nodes,
+          const std::vector<const Core::Conditions::Condition*>& sl_conds);
     };  // class DbcHandler
 
   }  // namespace UTILS

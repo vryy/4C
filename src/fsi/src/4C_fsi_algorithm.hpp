@@ -27,11 +27,11 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class FSIStructureWrapper;
   class StructureBaseAlgorithmNew;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 namespace FSI
@@ -57,7 +57,7 @@ namespace FSI
     \author u.kue
     \date 02/08
    */
-  class Algorithm : public ADAPTER::AlgorithmBase
+  class Algorithm : public Adapter::AlgorithmBase
   {
    public:
     /// create using a Epetra_Comm
@@ -68,10 +68,10 @@ namespace FSI
     virtual void Setup();
 
     /// access to structure field
-    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& structure_field() { return structure_; }
+    const Teuchos::RCP<Adapter::FSIStructureWrapper>& structure_field() { return structure_; }
 
     /// access to fluid field
-    const Teuchos::RCP<ADAPTER::FluidMovingBoundary>& MBFluidField() { return fluid_; }
+    const Teuchos::RCP<Adapter::FluidMovingBoundary>& MBFluidField() { return fluid_; }
 
     /// read restart data
     void read_restart(int step) override;
@@ -101,27 +101,27 @@ namespace FSI
     //@}
 
     /// return the structure fluid coupling object
-    CORE::ADAPTER::Coupling& structure_fluid_coupling();
+    Core::Adapter::Coupling& structure_fluid_coupling();
 
     /// return const version of structure fluid coupling object
-    const CORE::ADAPTER::Coupling& structure_fluid_coupling() const;
+    const Core::Adapter::Coupling& structure_fluid_coupling() const;
 
    protected:
     /// underlying structure of the FSI problem
-    Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;
+    Teuchos::RCP<Adapter::FSIStructureWrapper> structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP<ADAPTER::FluidMovingBoundary> fluid_;
+    Teuchos::RCP<Adapter::FluidMovingBoundary> fluid_;
 
     /// RCP pointer to the base algorithm of the structure
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr_;
+    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr_;
 
     /// use deprecated old structural time integration. todo Has to be removed !
     bool use_old_structure_;
 
    private:
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsf_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupsf_;
   };
 }  // namespace FSI
 

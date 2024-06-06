@@ -36,7 +36,7 @@ void STR::MODELEVALUATOR::Constraints::Setup()
   check_init();
 
   constraint_stiff_ptr_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
 
   constraint_force_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().DofRowMapView(), true));
 
@@ -53,12 +53,12 @@ void STR::MODELEVALUATOR::Constraints::set_sub_model_types()
 {
   check_init();
 
-  submodeltypes_ = std::set<enum INPAR::CONSTRAINTS::SubModelType>();
+  submodeltypes_ = std::set<enum Inpar::CONSTRAINTS::SubModelType>();
 
   // ---------------------------------------------------------------------------
   // check for multi point constraints
   // ---------------------------------------------------------------------------
-  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> linePeriodicRve, surfPeriodicRve,
+  std::vector<Teuchos::RCP<Core::Conditions::Condition>> linePeriodicRve, surfPeriodicRve,
       pointLinearCoupledEquation;
 
   discret_ptr()->GetCondition("LinePeriodicRve", linePeriodicRve);
@@ -68,7 +68,7 @@ void STR::MODELEVALUATOR::Constraints::set_sub_model_types()
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
       pointLinearCoupledEquation.size() > 0)
   {
-    submodeltypes_.insert(INPAR::CONSTRAINTS::SubModelType::submodel_pbc_rve);
+    submodeltypes_.insert(Inpar::CONSTRAINTS::SubModelType::submodel_pbc_rve);
   }
 }
 /*----------------------------------------------------------------------------*
@@ -85,7 +85,7 @@ void STR::MODELEVALUATOR::Constraints::create_sub_model_evaluators()
   {
     switch (mt)
     {
-      case INPAR::CONSTRAINTS::SubModelType::submodel_pbc_rve:
+      case Inpar::CONSTRAINTS::SubModelType::submodel_pbc_rve:
       {
         sub_model_vec_ptr_.emplace_back(
             Teuchos::rcp(new CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager(
@@ -173,7 +173,7 @@ void STR::MODELEVALUATOR::Constraints::pre_evaluate()
 bool STR::MODELEVALUATOR::Constraints::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *constraint_force_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *constraint_force_ptr_);
   constraint_force_ptr_->PutScalar(0.0);
   return true;
 }
@@ -181,9 +181,9 @@ bool STR::MODELEVALUATOR::Constraints::assemble_force(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Constraints::assemble_jacobian(
-    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
+    Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
 
   jac_dd_ptr->Add(*constraint_stiff_ptr_, false, timefac_np, 1.0);
 
@@ -194,20 +194,20 @@ bool STR::MODELEVALUATOR::Constraints::assemble_jacobian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Constraints::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // There is nothing to write for now
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::read_restart(CORE::IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::Constraints::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   // There is nothing to read for now
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::Predict(const INPAR::STR::PredEnum& pred_type) {}
+void STR::MODELEVALUATOR::Constraints::Predict(const Inpar::STR::PredEnum& pred_type) {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -248,7 +248,7 @@ void STR::MODELEVALUATOR::Constraints::ResetStepState()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Constraints::OutputStepState(
-    CORE::IO::DiscretizationWriter& iowriter) const
+    Core::IO::DiscretizationWriter& iowriter) const
 {
 }
 
@@ -296,7 +296,7 @@ void STR::MODELEVALUATOR::Constraints::evaluate_jacobian_contributions_from_elem
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Constraints::assemble_jacobian_contributions_from_element_level_for_ptc(
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n)
 {
   FOUR_C_THROW("This function is not yet implemented");
 }

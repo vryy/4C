@@ -24,15 +24,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluate_action(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, const SCATRA::Action& action,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluate_action(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   //(for now) only first dof set considered
   const std::vector<int>& lm = la[0].lm_;
@@ -40,38 +40,38 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluate_ac
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::Action::time_update_material:
+    case ScaTra::Action::time_update_material:
     {
-      std::vector<Teuchos::RCP<MAT::Myocard>> updatemat;
+      std::vector<Teuchos::RCP<Mat::Myocard>> updatemat;
       updatemat.reserve(my::numscal_);
 
       // access the general material
-      Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
+      Teuchos::RCP<Core::Mat::Material> material = ele->Material();
 
       // first, determine the materials which need a time update, i.e. myocard materials
-      if (material->MaterialType() == CORE::Materials::m_matlist)
+      if (material->MaterialType() == Core::Materials::m_matlist)
       {
-        const Teuchos::RCP<MAT::MatList> actmat = Teuchos::rcp_dynamic_cast<MAT::MatList>(material);
+        const Teuchos::RCP<Mat::MatList> actmat = Teuchos::rcp_dynamic_cast<Mat::MatList>(material);
         if (actmat->NumMat() < my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
         for (int k = 0; k < my::numscal_; ++k)
         {
           const int matid = actmat->MatID(k);
-          Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
+          Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
 
-          if (singlemat->MaterialType() == CORE::Materials::m_myocard)
+          if (singlemat->MaterialType() == Core::Materials::m_myocard)
           {
             // reference to Teuchos::rcp not possible here, since the material
             // is required to be not const for this application
-            updatemat.push_back(Teuchos::rcp_dynamic_cast<MAT::Myocard>(singlemat));
+            updatemat.push_back(Teuchos::rcp_dynamic_cast<Mat::Myocard>(singlemat));
           }
         }
       }
 
-      if (material->MaterialType() == CORE::Materials::m_myocard)
+      if (material->MaterialType() == Core::Materials::m_myocard)
       {  // reference to Teuchos::rcp not possible here, since the material is required to be
         // not const for this application
-        updatemat.push_back(Teuchos::rcp_dynamic_cast<MAT::Myocard>(material));
+        updatemat.push_back(Teuchos::rcp_dynamic_cast<Mat::Myocard>(material));
       }
 
       if (updatemat.size() > 0)  // found at least one material to be updated
@@ -86,7 +86,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluate_ac
         // extract local values from the global vectors
         Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
         if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-        CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+        Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
         my::eval_shape_func_and_derivs_at_ele_center();
 
@@ -100,20 +100,20 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluate_ac
       break;
     }
 
-    case SCATRA::Action::get_material_internal_state:
+    case ScaTra::Action::get_material_internal_state:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
       if (ele->Owner() == discretization.Comm().MyPID())
       {
         // access the general material
-        Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
+        Teuchos::RCP<Core::Mat::Material> material = ele->Material();
         Teuchos::RCP<Epetra_MultiVector> material_internal_state =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
 
-        if (material->MaterialType() == CORE::Materials::m_myocard)
+        if (material->MaterialType() == Core::Materials::m_myocard)
         {
-          Teuchos::RCP<MAT::Myocard> material =
-              Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
+          Teuchos::RCP<Mat::Myocard> material =
+              Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->Material());
           for (int k = 0; k < material_internal_state->NumVectors(); ++k)
           {
             int err = material_internal_state->ReplaceGlobalValue(
@@ -128,20 +128,20 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluate_ac
       break;
     }
 
-    case SCATRA::Action::set_material_internal_state:
+    case ScaTra::Action::set_material_internal_state:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
       if (ele->Owner() == discretization.Comm().MyPID())
       {
         // access the general material
-        Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
+        Teuchos::RCP<Core::Mat::Material> material = ele->Material();
         Teuchos::RCP<Epetra_Vector> material_internal_state_component =
             params.get<Teuchos::RCP<Epetra_Vector>>("material_internal_state_component");
 
-        if (material->MaterialType() == CORE::Materials::m_myocard)
+        if (material->MaterialType() == Core::Materials::m_myocard)
         {
-          Teuchos::RCP<MAT::Myocard> material =
-              Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
+          Teuchos::RCP<Mat::Myocard> material =
+              Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->Material());
           int k = params.get<int>("k");
           material->SetInternalState(k, (*material_internal_state_component)[ele->Id()]);
         }
@@ -150,20 +150,20 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluate_ac
 
     break;
 
-    case SCATRA::Action::get_material_ionic_currents:
+    case ScaTra::Action::get_material_ionic_currents:
     {
       // NOTE: add integral values only for elements which are NOT ghosted!
       if (ele->Owner() == discretization.Comm().MyPID())
       {
         // access the general material
-        Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
+        Teuchos::RCP<Core::Mat::Material> material = ele->Material();
         Teuchos::RCP<Epetra_MultiVector> material_ionic_currents =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("material_ionic_currents");
 
-        if (material->MaterialType() == CORE::Materials::m_myocard)
+        if (material->MaterialType() == Core::Materials::m_myocard)
         {
-          Teuchos::RCP<MAT::Myocard> material =
-              Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
+          Teuchos::RCP<Mat::Myocard> material =
+              Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->Material());
           for (int k = 0; k < material_ionic_currents->NumVectors(); ++k)
           {
             int err = material_ionic_currents->ReplaceGlobalValue(
@@ -192,33 +192,33 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluate_ac
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::line3, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line2, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tri3, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tri6, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad4, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad4, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::nurbs9, 2>;
+// Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad9, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::hex8, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::hex8, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::tet10, 3>;
+// Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::hex27, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tet4, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tet10, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::pyramid5, 3>;
+// Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::pyramid5, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<CORE::FE::CellType::nurbs27>;
+// Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace MeritFunction
     {
@@ -123,7 +123,7 @@ namespace NOX
       };
 
     }  // namespace MeritFunction
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

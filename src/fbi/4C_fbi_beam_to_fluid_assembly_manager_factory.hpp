@@ -20,12 +20,12 @@ constraint discretization approach
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -74,8 +74,8 @@ namespace BEAMINTERACTION
      */
     static Teuchos::RCP<
         BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
-    create_assembly_manager(Teuchos::RCP<const DRT::Discretization> discretization1,
-        Teuchos::RCP<const DRT::Discretization> discretization2,
+    create_assembly_manager(Teuchos::RCP<const Discret::Discretization> discretization1,
+        Teuchos::RCP<const Discret::Discretization> discretization2,
         std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
         const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr,
         Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy);

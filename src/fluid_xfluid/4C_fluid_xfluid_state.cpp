@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 FLD::XFluidState::CouplingState::CouplingState(
     const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
-    const Teuchos::RCP<DRT::Discretization>& slavediscret_mat,
-    const Teuchos::RCP<DRT::Discretization>& slavediscret_rhs)
+    const Teuchos::RCP<Discret::Discretization>& slavediscret_mat,
+    const Teuchos::RCP<Discret::Discretization>& slavediscret_rhs)
     : is_active_(true)
 {
   if (slavediscret_mat == Teuchos::null)
@@ -44,16 +44,16 @@ FLD::XFluidState::CouplingState::CouplingState(
   // of this state container
   // no explicit Dirichlet, otherwise new matrices will be created in ApplyDirichlet
   // NOTE: setting explicit Dirichlet to false can cause problems with ML preconditioner (see remark
-  // in CORE::LINALG::Sparsematrix) however, we prefer not to build new matrices in ApplyDirichlet
-  C_xs_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *xfluiddofrowmap, 300, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
-  C_sx_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *slavediscret_mat->dof_row_map(), 300, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
-  C_ss_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *slavediscret_mat->dof_row_map(), 300, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+  // in Core::LinAlg::Sparsematrix) however, we prefer not to build new matrices in ApplyDirichlet
+  C_xs_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *xfluiddofrowmap, 300, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  C_sx_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *slavediscret_mat->dof_row_map(), 300, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  C_ss_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *slavediscret_mat->dof_row_map(), 300, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
-  rhC_s_ = CORE::LINALG::CreateVector(*slavediscret_rhs->dof_row_map(), true);
-  rhC_s_col_ = CORE::LINALG::CreateVector(*slavediscret_rhs->DofColMap(), true);
+  rhC_s_ = Core::LinAlg::CreateVector(*slavediscret_rhs->dof_row_map(), true);
+  rhC_s_col_ = Core::LinAlg::CreateVector(*slavediscret_rhs->DofColMap(), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -123,7 +123,7 @@ void FLD::XFluidState::CouplingState::Destroy(bool throw_exception)
  |  Constructor for XFluidState                             kruse 08/14 |
  *----------------------------------------------------------------------*/
 FLD::XFluidState::XFluidState(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-    const Teuchos::RCP<CORE::GEO::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
+    const Teuchos::RCP<Core::Geo::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
     const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
     const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap)
     : xfluiddofrowmap_(xfluiddofrowmap),
@@ -150,7 +150,7 @@ void FLD::XFluidState::init_system_matrix()
   // REMARK: call the SparseMatrix: * explicitdirichlet = false (is used in ApplyDirichlet, true
   // would create a new matrix when DBS will be applied)
   //                                    setting flag to false can cause problems with ML
-  //                                    preconditioner (see remark in CORE::LINALG::Sparsematrix)
+  //                                    preconditioner (see remark in Core::LinAlg::Sparsematrix)
   //                                    however, we prefer not to build new matrices in
   //                                    ApplyDirichlet
   //                                * savegraph = true/false: To save the graph (pattern for
@@ -169,8 +169,8 @@ void FLD::XFluidState::init_system_matrix()
   // elements around a node
   //   + edge-based couplings component-wise v_x->u_x, v_y->u_y, v_z->u_z, q->p
   //   number of non-zeros (for hex8 elements): 108+54 = 162
-  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *xfluiddofrowmap_, 162, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+  sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *xfluiddofrowmap_, 162, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
 }
 
 
@@ -182,43 +182,43 @@ void FLD::XFluidState::init_state_vectors()
   // Vectors passed to the element
   // -----------------------------
   // velocity/pressure at time n+1, n and n-1
-  velnp_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
-  veln_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
-  velnm_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
+  velnp_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  veln_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  velnm_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
 
   // velocity/pressure at time n+alpha_F
-  velaf_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
+  velaf_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
 
 
   // acceleration/(scalar time derivative) at time n+1 and n
-  accnp_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
-  accn_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
+  accnp_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  accn_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
 
   // acceleration/(scalar time derivative) at time n+alpha_M/(n+alpha_M/n)
-  accam_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
+  accam_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
 
   // scalar at time n+alpha_F/n+1 and n+alpha_M/n
   // (only required for low-Mach-number case)
   // ... this is a dummy to avoid errors
-  scaaf_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
-  scaam_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
+  scaaf_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  scaam_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
 
   // history vector
-  hist_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
+  hist_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
 
   // the vector containing body and surface forces
-  neumann_loads_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
+  neumann_loads_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
 
   // rhs: standard (stabilized) residual vector (rhs for the incremental form)
-  residual_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
-  residual_col_ = CORE::LINALG::CreateVector(*xfluiddofcolmap_, true);
-  trueresidual_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
+  residual_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
+  residual_col_ = Core::LinAlg::CreateVector(*xfluiddofcolmap_, true);
+  trueresidual_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
 
   // nonlinear iteration increment vector
-  incvel_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
+  incvel_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
+  zeros_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -251,7 +251,7 @@ void FLD::XFluidState::init_coupling_matrices_and_rhs()
         // coupling rhs terms can be assembled into the fluid residual
 
         // create weak rcp's which simplifies deleting the systemmatrix
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_weakRCP =
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_weakRCP =
             sysmat_.create_weak();  // no increment in strong reference counter
         Teuchos::RCP<Epetra_Vector> residual_weakRCP = residual_.create_weak();
         Teuchos::RCP<Epetra_Vector> residual_col_weakRCP = residual_col_.create_weak();
@@ -285,11 +285,11 @@ void FLD::XFluidState::InitALEStateVectors(const Teuchos::RCP<XFEM::Discretizati
     Teuchos::RCP<const Epetra_Vector> gridvnp_initmap)
 {
   //! @name Ale Displacement at time n+1
-  dispnp_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
+  dispnp_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
   xdiscret->export_initialto_active_vector(dispnp_initmap, dispnp_);
 
   //! @name Grid Velocity at time n+1
-  gridvnp_ = CORE::LINALG::CreateVector(*xfluiddofrowmap_, true);
+  gridvnp_ = Core::LinAlg::CreateVector(*xfluiddofrowmap_, true);
   xdiscret->export_initialto_active_vector(gridvnp_initmap, gridvnp_);
 }
 
@@ -357,25 +357,25 @@ void FLD::XFluidState::zero_system_matrix_and_rhs()
  |  Set dirichlet- and velocity/pressure-map extractor      kruse 08/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidState::SetupMapExtractors(
-    const Teuchos::RCP<DRT::Discretization>& xfluiddiscret, const double& time)
+    const Teuchos::RCP<Discret::Discretization>& xfluiddiscret, const double& time)
 {
   // create dirichlet map extractor
   Teuchos::ParameterList eleparams;
   // other parameters needed by the elements
   eleparams.set("total time", time);
-  eleparams.set<const CORE::UTILS::FunctionManager*>(
-      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
+  eleparams.set<const Core::UTILS::FunctionManager*>(
+      "function_manager", &Global::Problem::Instance()->FunctionManager());
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
+  dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
   xfluiddiscret->evaluate_dirichlet(
       eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
 
   zeros_->PutScalar(0.0);
 
   // create vel-pres splitter
-  const int numdim = GLOBAL::Problem::Instance()->NDim();
-  velpressplitter_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
-  CORE::LINALG::CreateMapExtractorFromDiscretization(*xfluiddiscret, numdim, 1, *velpressplitter_);
+  const int numdim = Global::Problem::Instance()->NDim();
+  velpressplitter_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+  Core::LinAlg::CreateMapExtractorFromDiscretization(*xfluiddiscret, numdim, 1, *velpressplitter_);
 }
 
 

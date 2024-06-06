@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::LubricationBaseAlgorithm::Setup(
+void Adapter::LubricationBaseAlgorithm::Setup(
     const Teuchos::ParameterList& prbdyn,          ///< parameter list for global problem
     const Teuchos::ParameterList& lubricationdyn,  ///< parameter list for Lubrication subproblem
     const Teuchos::ParameterList& solverparams,    ///< parameter list for Lubrication solver
@@ -36,8 +36,8 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = GLOBAL::Problem::Instance()->GetDis(disname);
+  Teuchos::RCP<Discret::Discretization> actdis = Teuchos::null;
+  actdis = Global::Problem::Instance()->GetDis(disname);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -47,7 +47,7 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0, 0.0);
 
   // -------------------------------------------------------------------
@@ -55,8 +55,8 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
   // -------------------------------------------------------------------
   // TODO: TAW use of solverparams??? change input parameter to solver number instead of parameter
   // list? -> no default paramter possible any more
-  Teuchos::RCP<CORE::LINALG::Solver> solver =
-      Teuchos::rcp(new CORE::LINALG::Solver(solverparams, actdis->Comm()));
+  Teuchos::RCP<Core::LinAlg::Solver> solver =
+      Teuchos::rcp(new Core::LinAlg::Solver(solverparams, actdis->Comm()));
   actdis->compute_null_space_if_necessary(solver->Params());
 
   // -------------------------------------------------------------------
@@ -101,13 +101,13 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::UTILS::ResultTest>
-ADAPTER::LubricationBaseAlgorithm::create_lubrication_field_test()
+Teuchos::RCP<Core::UTILS::ResultTest>
+Adapter::LubricationBaseAlgorithm::create_lubrication_field_test()
 {
   return Teuchos::rcp(new LUBRICATION::ResultTest(lubrication_));
 }
 
-Teuchos::RCP<CORE::IO::DiscretizationWriter> ADAPTER::LubricationBaseAlgorithm::DiscWriter()
+Teuchos::RCP<Core::IO::DiscretizationWriter> Adapter::LubricationBaseAlgorithm::DiscWriter()
 {
   return lubrication_->DiscWriter();
 }

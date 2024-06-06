@@ -16,7 +16,7 @@ comparison instead of a cumbersome std::string compare.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
   /*--------------------------------------------------------------------------*/
   /*!
@@ -165,7 +165,7 @@ namespace SCATRA
     elch,
     temp
   };
-}  // namespace SCATRA
+}  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

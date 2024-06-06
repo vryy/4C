@@ -32,12 +32,12 @@ loop for the evaluation.
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace MAT
+namespace Mat
 {
   class So3Material;
-}  // namespace MAT
+}  // namespace Mat
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -49,29 +49,29 @@ namespace DRT
     class Shell7pLine;
 
 
-    class Shell7pType : public CORE::Elements::ElementType
+    class Shell7pType : public Core::Elements::ElementType
     {
      public:
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       [[nodiscard]] std::string Name() const override { return "Shell7pType"; }
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       static Shell7pType& Instance();
 
@@ -118,7 +118,7 @@ namespace DRT
       *      PhD-Thesis
       *
       */
-    class Shell7p : public CORE::Elements::Element
+    class Shell7p : public Core::Elements::Element
     {
      public:
       //! @name Friends
@@ -133,11 +133,11 @@ namespace DRT
       @param id    (in): A globally unique element id
       @param owner (in): owner processor of the element
       */
-      Shell7p(int id, int owner) : CORE::Elements::Element(id, owner){};
+      Shell7p(int id, int owner) : Core::Elements::Element(id, owner){};
 
 
       //! copy constructor
-      Shell7p(const DRT::ELEMENTS::Shell7p& other);
+      Shell7p(const Discret::ELEMENTS::Shell7p& other);
 
       //! copy assignment operator
       Shell7p& operator=(const Shell7p& other);
@@ -149,48 +149,48 @@ namespace DRT
       Shell7p& operator=(Shell7p&& other) noexcept = default;
       //! @}
 
-      [[nodiscard]] CORE::Elements::Element* Clone() const override;
+      [[nodiscard]] Core::Elements::Element* Clone() const override;
 
       [[nodiscard]] int UniqueParObjectId() const override
       {
         return Shell7pType::Instance().UniqueParObjectId();
       };
 
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       void Unpack(const std::vector<char>& data) override;
 
-      [[nodiscard]] CORE::Elements::ElementType& ElementType() const override
+      [[nodiscard]] Core::Elements::ElementType& ElementType() const override
       {
         return Shell7pType::Instance();
       }
 
-      [[nodiscard]] CORE::FE::CellType Shape() const override { return distype_; };
+      [[nodiscard]] Core::FE::CellType Shape() const override { return distype_; };
 
       [[nodiscard]] int NumLine() const override;
 
       [[nodiscard]] int NumSurface() const override;
 
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
-      [[nodiscard]] int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 6; }
+      [[nodiscard]] int NumDofPerNode(const Core::Nodes::Node& node) const override { return 6; }
 
       [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
       //! @name Evaluation
       //! @{
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& dof_index_array,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& dof_index_array,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1) override;
       //@}
 
       //! @name Query methods
@@ -210,11 +210,11 @@ namespace DRT
       //! @}
 
       bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
-      [[nodiscard]] const std::set<INPAR::STR::EleTech>& GetEleTech() const { return eletech_; }
+      [[nodiscard]] const std::set<Inpar::STR::EleTech>& GetEleTech() const { return eletech_; }
 
-      [[nodiscard]] Teuchos::RCP<MAT::So3Material> SolidMaterial(int nummat = 0) const;
+      [[nodiscard]] Teuchos::RCP<Mat::So3Material> SolidMaterial(int nummat = 0) const;
 
       void Print(std::ostream& os) const override;
 
@@ -224,12 +224,12 @@ namespace DRT
 
       [[nodiscard]] const double& GetThickness() const { return thickness_; }
 
-      [[nodiscard]] const CORE::LINALG::SerialDenseMatrix& GetDirectors() const
+      [[nodiscard]] const Core::LinAlg::SerialDenseMatrix& GetDirectors() const
       {
         return nodal_directors_;
       }
 
-      inline void set_all_nodal_directors(const CORE::LINALG::SerialDenseMatrix& nodal_directors)
+      inline void set_all_nodal_directors(const Core::LinAlg::SerialDenseMatrix& nodal_directors)
       {
         nodal_directors_ = nodal_directors;
       }
@@ -243,19 +243,19 @@ namespace DRT
 
      private:
       //! discretization type
-      CORE::FE::CellType distype_ = CORE::FE::CellType::dis_none;
+      Core::FE::CellType distype_ = Core::FE::CellType::dis_none;
 
       //! interface ptr, data exchange between the element and the time integrator.
       Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_ = Teuchos::null;
 
       //! element technology
-      std::set<INPAR::STR::EleTech> eletech_ = {};
+      std::set<Inpar::STR::EleTech> eletech_ = {};
 
       //! shell thickness in reference frame
       double thickness_ = 0.0;
 
       //! nodal director matrix
-      CORE::LINALG::SerialDenseMatrix nodal_directors_{};
+      Core::LinAlg::SerialDenseMatrix nodal_directors_{};
 
       //! flag, whether the post setup of materials is already called
       bool material_post_setup_ = false;
@@ -264,7 +264,7 @@ namespace DRT
       std::shared_ptr<Shell7pEleCalcInterface> shell_interface_ = nullptr;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::SSIStructureWrapper::SSIStructureWrapper(Teuchos::RCP<Structure> structure)
+Adapter::SSIStructureWrapper::SSIStructureWrapper(Teuchos::RCP<Structure> structure)
     : StructureWrapper(structure)
 {
 }

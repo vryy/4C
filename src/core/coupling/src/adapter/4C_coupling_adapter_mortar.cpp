@@ -29,9 +29,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::ADAPTER::CouplingMortar::CouplingMortar(int spatial_dimension,
+Core::Adapter::CouplingMortar::CouplingMortar(int spatial_dimension,
     Teuchos::ParameterList mortar_coupling_params, Teuchos::ParameterList contact_dynamic_params,
-    CORE::FE::ShapeFunctionType shape_function_type)
+    Core::FE::ShapeFunctionType shape_function_type)
     : spatial_dimension_(spatial_dimension),
       mortar_coupling_params_(mortar_coupling_params),
       contact_dynamic_params_(contact_dynamic_params),
@@ -44,33 +44,33 @@ CORE::ADAPTER::CouplingMortar::CouplingMortar(int spatial_dimension,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::Setup(const Teuchos::RCP<DRT::Discretization>& masterdis,
-    const Teuchos::RCP<DRT::Discretization>& slavedis,
-    const Teuchos::RCP<DRT::Discretization>& aledis, const std::vector<int>& coupleddof,
+void Core::Adapter::CouplingMortar::Setup(const Teuchos::RCP<Discret::Discretization>& masterdis,
+    const Teuchos::RCP<Discret::Discretization>& slavedis,
+    const Teuchos::RCP<Discret::Discretization>& aledis, const std::vector<int>& coupleddof,
     const std::string& couplingcond, const Epetra_Comm& comm,
-    const CORE::UTILS::FunctionManager& function_manager, const bool slavewithale,
+    const Core::UTILS::FunctionManager& function_manager, const bool slavewithale,
     const bool slidingale, const int nds_master, const int nds_slave)
 {
   // initialize maps for row nodes
-  std::map<int, CORE::Nodes::Node*> masternodes;
-  std::map<int, CORE::Nodes::Node*> slavenodes;
+  std::map<int, Core::Nodes::Node*> masternodes;
+  std::map<int, Core::Nodes::Node*> slavenodes;
 
   // initialize maps for column nodes
-  std::map<int, CORE::Nodes::Node*> mastergnodes;
-  std::map<int, CORE::Nodes::Node*> slavegnodes;
+  std::map<int, Core::Nodes::Node*> mastergnodes;
+  std::map<int, Core::Nodes::Node*> slavegnodes;
 
   // initialize maps for elements
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>> masterelements;
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>> slaveelements;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>> masterelements;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>> slaveelements;
 
   // Coupling condition is defined by "MORTAR COUPLING CONDITIONS"
   // There is only one discretization (masterdis == slavedis). Therefore, the node set have to be
   // separated beforehand.
   if (couplingcond == "Mortar" || couplingcond == "MortarMulti")
   {
-    std::vector<CORE::Conditions::Condition*> conds;
-    std::vector<CORE::Conditions::Condition*> conds_master(0);
-    std::vector<CORE::Conditions::Condition*> conds_slave(0);
+    std::vector<Core::Conditions::Condition*> conds;
+    std::vector<Core::Conditions::Condition*> conds_master(0);
+    std::vector<Core::Conditions::Condition*> conds_slave(0);
     masterdis->GetCondition(couplingcond, conds);
 
     for (unsigned i = 0; i < conds.size(); i++)
@@ -84,11 +84,11 @@ void CORE::ADAPTER::CouplingMortar::Setup(const Teuchos::RCP<DRT::Discretization
     }
 
     // Fill maps based on condition for master side (masterdis == slavedis)
-    CORE::Conditions::FindConditionObjects(
+    Core::Conditions::FindConditionObjects(
         *masterdis, masternodes, mastergnodes, masterelements, conds_master);
 
     // Fill maps based on condition for slave side (masterdis == slavedis)
-    CORE::Conditions::FindConditionObjects(
+    Core::Conditions::FindConditionObjects(
         *slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
   }
   // Coupling condition is defined by "FSI COUPLING CONDITIONS"
@@ -97,11 +97,11 @@ void CORE::ADAPTER::CouplingMortar::Setup(const Teuchos::RCP<DRT::Discretization
   else
   {
     // Fill maps based on condition for master side (masterdis != slavedis)
-    CORE::Conditions::FindConditionObjects(
+    Core::Conditions::FindConditionObjects(
         *masterdis, masternodes, mastergnodes, masterelements, couplingcond);
 
     // Fill maps based on condition for slave side (masterdis != slavedis)
-    CORE::Conditions::FindConditionObjects(
+    Core::Conditions::FindConditionObjects(
         *slavedis, slavenodes, slavegnodes, slaveelements, couplingcond);
   }
 
@@ -127,11 +127,11 @@ void CORE::ADAPTER::CouplingMortar::Setup(const Teuchos::RCP<DRT::Discretization
 
   // interface displacement (=0) has to be merged from slave and master discretization
   Teuchos::RCP<Epetra_Map> dofrowmap =
-      CORE::LINALG::MergeMap(masterdofrowmap_, slavedofrowmap_, false);
-  Teuchos::RCP<Epetra_Vector> dispn = CORE::LINALG::CreateVector(*dofrowmap, true);
+      Core::LinAlg::MergeMap(masterdofrowmap_, slavedofrowmap_, false);
+  Teuchos::RCP<Epetra_Vector> dispn = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // set displacement state in mortar interface
-  interface_->set_state(MORTAR::state_new_displacement, *dispn);
+  interface_->set_state(Mortar::state_new_displacement, *dispn);
 
   // print message
   if (myrank == 0)
@@ -153,8 +153,8 @@ void CORE::ADAPTER::CouplingMortar::Setup(const Teuchos::RCP<DRT::Discretization
   // displacements.
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!
-  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::MeshRelocation>(inputmortar, "MESH_RELOCATION") ==
-      INPAR::MORTAR::relocation_initial)
+  if (Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(inputmortar, "MESH_RELOCATION") ==
+      Inpar::Mortar::relocation_initial)
   {
     // Warning:
     // Mesh relocation is not possible if coupled degrees of freedom are less than
@@ -193,9 +193,9 @@ void CORE::ADAPTER::CouplingMortar::Setup(const Teuchos::RCP<DRT::Discretization
 /*----------------------------------------------------------------------*
  | check for overlap of slave and Dirichlet boundaries      farah 02/16 |
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::check_slave_dirichlet_overlap(
-    const Teuchos::RCP<DRT::Discretization>& slavedis, const Epetra_Comm& comm,
-    const CORE::UTILS::FunctionManager& function_manager)
+void Core::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
+    const Teuchos::RCP<Discret::Discretization>& slavedis, const Epetra_Comm& comm,
+    const Core::UTILS::FunctionManager& function_manager)
 {
   // safety check
   check_setup();
@@ -205,18 +205,18 @@ void CORE::ADAPTER::CouplingMortar::check_slave_dirichlet_overlap(
   bool overlap = false;
   Teuchos::ParameterList p;
   p.set("total time", 0.0);
-  p.set<const CORE::UTILS::FunctionManager*>("function_manager", &function_manager);
-  Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps = Teuchos::rcp(new CORE::LINALG::MapExtractor());
-  Teuchos::RCP<Epetra_Vector> temp = CORE::LINALG::CreateVector(*(slavedis->dof_row_map()), true);
+  p.set<const Core::UTILS::FunctionManager*>("function_manager", &function_manager);
+  Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+  Teuchos::RCP<Epetra_Vector> temp = Core::LinAlg::CreateVector(*(slavedis->dof_row_map()), true);
   slavedis->evaluate_dirichlet(p, temp, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps);
 
   // loop over all slave row nodes of the interface
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
-    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
+    Core::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
-    MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
+    Mortar::Node* mtnode = static_cast<Mortar::Node*>(node);
 
     // check if this node's dofs are in dbcmap
     for (int k = 0; k < mtnode->NumDof(); ++k)
@@ -249,16 +249,16 @@ void CORE::ADAPTER::CouplingMortar::check_slave_dirichlet_overlap(
 /*----------------------------------------------------------------------*
  | setup routine for mortar framework                        ehrl 08/13 |
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::setup_interface(
-    const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
-    const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
+void Core::Adapter::CouplingMortar::setup_interface(
+    const Teuchos::RCP<Discret::Discretization>& masterdis,  ///< master discretization
+    const Teuchos::RCP<Discret::Discretization>& slavedis,   ///< slave discretization
     const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
-    const std::map<int, CORE::Nodes::Node*>&
+    const std::map<int, Core::Nodes::Node*>&
         mastergnodes,  ///< master nodes, including ghosted nodes
-    const std::map<int, CORE::Nodes::Node*>& slavegnodes,  ///< slave nodes, including ghosted nodes
-    const std::map<int, Teuchos::RCP<CORE::Elements::Element>>&
+    const std::map<int, Core::Nodes::Node*>& slavegnodes,  ///< slave nodes, including ghosted nodes
+    const std::map<int, Teuchos::RCP<Core::Elements::Element>>&
         masterelements,                                                         ///< master elements
-    const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& slaveelements,  ///< slave elements
+    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,  ///< slave elements
     const Epetra_Comm& comm,                                                    ///< communicator
     const bool slavewithale,  ///< flag defining if slave is ALE
     const bool slidingale,    ///< flag indicating sliding ALE case
@@ -280,7 +280,7 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
   input.setParameters(contact_dynamic_params_);
 
   // is this a nurbs problem?
-  const bool nurbs = shape_function_type_ == CORE::FE::ShapeFunctionType::nurbs;
+  const bool nurbs = shape_function_type_ == Core::FE::ShapeFunctionType::nurbs;
   input.set<bool>("NURBS", nurbs);
 
   // set valid parameter values
@@ -290,7 +290,7 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
   input.set<int>("DIMENSION", spatial_dimension_);
 
   // create an empty mortar interface
-  interface_ = MORTAR::Interface::Create(0, comm, spatial_dimension_, input);
+  interface_ = Mortar::Interface::Create(0, comm, spatial_dimension_, input);
 
   // number of dofs per node based on the coupling vector coupleddof
   const int dof = coupleddof.size();
@@ -327,10 +327,10 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
     if (coupleddof[ii] == 1) ++numcoupleddof;
 
   // feeding master nodes to the interface including ghosted nodes
-  std::map<int, CORE::Nodes::Node*>::const_iterator nodeiter;
+  std::map<int, Core::Nodes::Node*>::const_iterator nodeiter;
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
-    CORE::Nodes::Node* node = nodeiter->second;
+    Core::Nodes::Node* node = nodeiter->second;
     // vector containing only the gids of the coupled dofs (size numcoupleddof)
     std::vector<int> dofids(numcoupleddof);
     int ii = 0;
@@ -345,17 +345,17 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
         ii += 1;
       }
     }
-    Teuchos::RCP<MORTAR::Node> mrtrnode =
-        Teuchos::rcp(new MORTAR::Node(node->Id(), node->X(), node->Owner(), dofids, false));
+    Teuchos::RCP<Mortar::Node> mrtrnode =
+        Teuchos::rcp(new Mortar::Node(node->Id(), node->X(), node->Owner(), dofids, false));
 
-    if (nurbs) MORTAR::UTILS::prepare_nurbs_node(node, mrtrnode);
+    if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, mrtrnode);
     interface_->AddMortarNode(mrtrnode);
   }
 
   // feeding slave nodes to the interface including ghosted nodes
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
-    CORE::Nodes::Node* node = nodeiter->second;
+    Core::Nodes::Node* node = nodeiter->second;
     // vector containing only the gids of the coupled dofs (size numcoupleddof)
     std::vector<int> dofids(numcoupleddof);
     int ii = 0;
@@ -370,10 +370,10 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
         ii += 1;
       }
     }
-    Teuchos::RCP<MORTAR::Node> mrtrnode = Teuchos::rcp(
-        new MORTAR::Node(node->Id() + nodeoffset, node->X(), node->Owner(), dofids, true));
+    Teuchos::RCP<Mortar::Node> mrtrnode = Teuchos::rcp(
+        new Mortar::Node(node->Id() + nodeoffset, node->X(), node->Owner(), dofids, true));
 
-    if (nurbs) MORTAR::UTILS::prepare_nurbs_node(node, mrtrnode);
+    if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, mrtrnode);
     interface_->AddMortarNode(mrtrnode);
   }
 
@@ -394,32 +394,32 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
   if (slidingale == true) eleoffset = masterdis->ElementRowMap()->MaxAllGID() + 1;
 
   // feeding master elements to the interface
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator elemiter;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
-    Teuchos::RCP<CORE::Elements::Element> ele = elemiter->second;
-    Teuchos::RCP<MORTAR::Element> mrtrele = Teuchos::rcp(new MORTAR::Element(
+    Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
+    Teuchos::RCP<Mortar::Element> mrtrele = Teuchos::rcp(new Mortar::Element(
         ele->Id(), ele->Owner(), ele->Shape(), ele->num_node(), ele->NodeIds(), false, nurbs));
 
-    if (nurbs) MORTAR::UTILS::prepare_nurbs_element(*masterdis, ele, mrtrele, spatial_dimension_);
+    if (nurbs) Mortar::UTILS::prepare_nurbs_element(*masterdis, ele, mrtrele, spatial_dimension_);
     interface_->AddMortarElement(mrtrele);
   }
 
   // feeding slave elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
-    Teuchos::RCP<CORE::Elements::Element> ele = elemiter->second;
+    Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
 
     // Here, we have to distinguish between standard and sliding ale since mortar elements are
     // generated from the identical element sets in the case of sliding ale Therefore, we introduce
     // an element offset AND a node offset for the the slave mortar elements
     if (slidingale == false)
     {
-      Teuchos::RCP<MORTAR::Element> mrtrele =
-          Teuchos::rcp(new MORTAR::Element(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
+      Teuchos::RCP<Mortar::Element> mrtrele =
+          Teuchos::rcp(new Mortar::Element(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
               ele->num_node(), ele->NodeIds(), true, nurbs));
 
-      if (nurbs) MORTAR::UTILS::prepare_nurbs_element(*slavedis, ele, mrtrele, spatial_dimension_);
+      if (nurbs) Mortar::UTILS::prepare_nurbs_element(*slavedis, ele, mrtrele, spatial_dimension_);
       interface_->AddMortarElement(mrtrele);
     }
     else
@@ -430,8 +430,8 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
         nidsoff.push_back(ele->NodeIds()[ele->num_node() - 1 - i] + nodeoffset);
       }
 
-      Teuchos::RCP<MORTAR::Element> mrtrele =
-          Teuchos::rcp(new MORTAR::Element(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
+      Teuchos::RCP<Mortar::Element> mrtrele =
+          Teuchos::rcp(new Mortar::Element(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
               ele->num_node(), nidsoff.data(), true, nurbs));
 
       interface_->AddMortarElement(mrtrele);
@@ -445,12 +445,12 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
    * fill_complete(), so we skip this expensive operation here and do it later. DOFs have to be
    * assigned only once!
    */
-  const INPAR::MORTAR::ParallelRedist parallelRedist =
-      Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
+  const Inpar::Mortar::ParallelRedist parallelRedist =
+      Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(
           input.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
   {
     bool isFinalDistribution = false;
-    if (parallelRedist == INPAR::MORTAR::ParallelRedist::redist_none or comm.NumProc() == 1)
+    if (parallelRedist == Inpar::Mortar::ParallelRedist::redist_none or comm.NumProc() == 1)
       isFinalDistribution = true;
 
     interface_->fill_complete(isFinalDistribution);
@@ -469,7 +469,7 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
   //**********************************************************************
-  if (parallelRedist != INPAR::MORTAR::ParallelRedist::redist_none and comm.NumProc() > 1)
+  if (parallelRedist != Inpar::Mortar::ParallelRedist::redist_none and comm.NumProc() > 1)
   {
     // redistribute optimally among all procs
     interface_->Redistribute();
@@ -495,8 +495,8 @@ void CORE::ADAPTER::CouplingMortar::setup_interface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretization> slavedis,
-    Teuchos::RCP<DRT::Discretization> aledis, Teuchos::RCP<const Epetra_Map> masterdofrowmap,
+void Core::Adapter::CouplingMortar::mesh_relocation(Teuchos::RCP<Discret::Discretization> slavedis,
+    Teuchos::RCP<Discret::Discretization> aledis, Teuchos::RCP<const Epetra_Map> masterdofrowmap,
     Teuchos::RCP<const Epetra_Map> slavedofrowmap, Teuchos::RCP<Epetra_Vector>& idisp,
     const Epetra_Comm& comm, bool slavewithale)
 {
@@ -510,22 +510,22 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   // (0) check constraints in reference configuration
   //**********************************************************************
   // build global vectors of slave and master coordinates
-  Teuchos::RCP<Epetra_Vector> xs = CORE::LINALG::CreateVector(*slavedofrowmap, true);
-  Teuchos::RCP<Epetra_Vector> xm = CORE::LINALG::CreateVector(*masterdofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> xs = Core::LinAlg::CreateVector(*slavedofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> xm = Core::LinAlg::CreateVector(*masterdofrowmap, true);
 
   // loop over all slave row nodes
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
-    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
+    Core::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
-    MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
+    Mortar::Node* mtnode = static_cast<Mortar::Node*>(node);
 
     // prepare assembly
     // minimum three coupling dof's otherwise this method is not working
     // since the slave map is based on dof<dim
     // -> spacial coordinates cannot be assembled in vector based on this map
-    CORE::LINALG::SerialDenseVector val(dim);
+    Core::LinAlg::SerialDenseVector val(dim);
     std::vector<int> lm(dim, 0.0);
     std::vector<int> lmowner(dim, 0.0);
 
@@ -550,22 +550,22 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
     }
 
     // do assembly
-    CORE::LINALG::Assemble(*xs, val, lm, lmowner);
+    Core::LinAlg::Assemble(*xs, val, lm, lmowner);
   }
 
   // loop over all master row nodes
   for (int j = 0; j < interface_->MasterRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->MasterRowNodes()->GID(j);
-    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
+    Core::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
-    MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
+    Mortar::Node* mtnode = static_cast<Mortar::Node*>(node);
 
     // prepare assembly
     // minimum three coupling dof's otherwise this method is not working
     // since the slave map is based on dof<dim
     // -> spacial coordinates cannot be assembled in vector based on this map
-    CORE::LINALG::SerialDenseVector val(dim);
+    Core::LinAlg::SerialDenseVector val(dim);
     std::vector<int> lm(dim, 0.0);
     std::vector<int> lmowner(dim, 0.0);
 
@@ -589,7 +589,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
     }
 
     // do assembly
-    CORE::LINALG::Assemble(*xm, val, lm, lmowner);
+    Core::LinAlg::Assemble(*xm, val, lm, lmowner);
   }
 
   // compute g-vector at global level
@@ -597,7 +597,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   D_->Multiply(false, *xs, *Dxs);
   Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*slavedofrowmap));
   M_->Multiply(false, *xm, *Mxm);
-  Teuchos::RCP<Epetra_Vector> gold = CORE::LINALG::CreateVector(*slavedofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> gold = Core::LinAlg::CreateVector(*slavedofrowmap, true);
   gold->Update(1.0, *Dxs, 1.0);
   gold->Update(-1.0, *Mxm, 1.0);
   double gnorm = 0.0;
@@ -641,7 +641,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   // ONLY, and there is still the underlying problem discretization
   // dealing with the classical finite element evaluation. Thus, it is
   // very important that we apply the nodal relocation to BOTH the
-  // MORTAR::Node(s) in the meshtying interface discretization AND to the
+  // Mortar::Node(s) in the meshtying interface discretization AND to the
   // DRT:Nodes in the underlying problem discretization.
   // Finally, we have to ask ourselves whether the node column distribution
   // of the slave nodes in the interface discretization is IDENTICAL
@@ -649,8 +649,8 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   // is NOT necessarily the case, as we might have redistributed the
   // interface among all processors. Thus, we loop over the fully over-
   // lapping slave column map here to keep all processors around. Then,
-  // the first modification (MORTAR::Node) is always performed, but the
-  // second modification (CORE::Nodes::Node) is only performed if the respective
+  // the first modification (Mortar::Node) is always performed, but the
+  // second modification (Core::Nodes::Node) is only performed if the respective
   // node in contained in the problem node column map.
   //**********************************************************************
 
@@ -658,15 +658,15 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   // (1) get master positions on global level
   //**********************************************************************
   // fill Xmaster first
-  Teuchos::RCP<Epetra_Vector> Xmaster = CORE::LINALG::CreateVector(*masterdofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> Xmaster = Core::LinAlg::CreateVector(*masterdofrowmap, true);
 
   // loop over all master row nodes on the current interface
   for (int j = 0; j < interface_->MasterRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->MasterRowNodes()->GID(j);
-    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
+    Core::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
-    MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
+    Mortar::Node* mtnode = static_cast<Mortar::Node*>(node);
 
     // do assembly (overwrite duplicate nodes)
     // minimum three coupling dof's otherwise this method is not working
@@ -687,7 +687,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   // (2) solve for modified slave positions on global level
   //**********************************************************************
   // relocate modified slave positions
-  Teuchos::RCP<Epetra_Vector> Xslavemod = CORE::LINALG::CreateVector(*slavedofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> Xslavemod = Core::LinAlg::CreateVector(*slavedofrowmap, true);
 
   // this is trivial for dual Lagrange multipliers
   P_->Multiply(false, *Xmaster, *Xslavemod);
@@ -697,10 +697,10 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   // (3) perform mesh relocation node by node
   //**********************************************************************
   // export Xslavemod to fully overlapping column map for current interface
-  Teuchos::RCP<Epetra_Map> fullsdofs = CORE::LINALG::AllreduceEMap(*(interface_->SlaveRowDofs()));
-  Teuchos::RCP<Epetra_Map> fullsnodes = CORE::LINALG::AllreduceEMap(*(interface_->SlaveRowNodes()));
+  Teuchos::RCP<Epetra_Map> fullsdofs = Core::LinAlg::AllreduceEMap(*(interface_->SlaveRowDofs()));
+  Teuchos::RCP<Epetra_Map> fullsnodes = Core::LinAlg::AllreduceEMap(*(interface_->SlaveRowNodes()));
   Epetra_Vector Xslavemodcol(*fullsdofs, false);
-  CORE::LINALG::Export(*Xslavemod, Xslavemodcol);
+  Core::LinAlg::Export(*Xslavemod, Xslavemodcol);
 
   // loop over all slave nodes on the current interface
   for (int j = 0; j < fullsnodes->NumMyElements(); ++j)
@@ -713,13 +713,13 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
     bool isininterfacecolmap = false;
     int ilid = interface_->SlaveColNodes()->LID(gid);
     if (ilid >= 0) isininterfacecolmap = true;
-    CORE::Nodes::Node* node = nullptr;
-    MORTAR::Node* mtnode = nullptr;
+    Core::Nodes::Node* node = nullptr;
+    Mortar::Node* mtnode = nullptr;
     if (isininterfacecolmap)
     {
       node = interface_->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
-      mtnode = static_cast<MORTAR::Node*>(node);
+      mtnode = static_cast<Mortar::Node*>(node);
     }
 
     // ... AND standard node in underlying slave discret
@@ -727,7 +727,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
     bool isinproblemcolmap = false;
     int lid = slavedis->NodeColMap()->LID(gid);
     if (lid >= 0) isinproblemcolmap = true;
-    CORE::Nodes::Node* pnode = nullptr;
+    Core::Nodes::Node* pnode = nullptr;
     if (isinproblemcolmap)
     {
       pnode = slavedis->gNode(gid);
@@ -737,7 +737,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
     // ... AND standard node in ALE discret if fluid=slave
     // (check if the node is available on this processor)
     bool isinproblemcolmap2 = false;
-    CORE::Nodes::Node* alenode = nullptr;
+    Core::Nodes::Node* alenode = nullptr;
     if (aledis != Teuchos::null)
     {
       int lid2 = aledis->NodeColMap()->LID(gid);
@@ -812,8 +812,8 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
     // const_cast to force modifed X() into pnode
     // const_cast to force modifed X() into alenode if fluid=slave
     // (remark: this is REALLY BAD coding)
-    if (CORE::UTILS::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-            mortar_coupling_params_, "MESH_RELOCATION") == INPAR::MORTAR::relocation_initial)
+    if (Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(
+            mortar_coupling_params_, "MESH_RELOCATION") == Inpar::Mortar::relocation_initial)
     {
       for (int k = 0; k < dim; ++k)
       {
@@ -832,8 +832,8 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
           const_cast<double&>(alenode->X()[k]) = Xnewglobal[k];
       }
     }
-    else if (CORE::UTILS::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-                 mortar_coupling_params_, "MESH_RELOCATION") == INPAR::MORTAR::relocation_timestep)
+    else if (Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(
+                 mortar_coupling_params_, "MESH_RELOCATION") == Inpar::Mortar::relocation_timestep)
     {
       // modification of ALE displacements
       if (isininterfacecolmap and idisp != Teuchos::null)
@@ -871,19 +871,19 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   // (4) re-evaluate constraints in reference configuration
   //**********************************************************************
   // build global vectors of slave and master coordinates
-  xs = CORE::LINALG::CreateVector(*slavedofrowmap, true);
-  xm = CORE::LINALG::CreateVector(*masterdofrowmap, true);
+  xs = Core::LinAlg::CreateVector(*slavedofrowmap, true);
+  xm = Core::LinAlg::CreateVector(*masterdofrowmap, true);
 
   // loop over all slave row nodes
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->SlaveRowNodes()->GID(j);
-    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
+    Core::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
-    MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
+    Mortar::Node* mtnode = static_cast<Mortar::Node*>(node);
 
     // prepare assembly
-    CORE::LINALG::SerialDenseVector val(dim);
+    Core::LinAlg::SerialDenseVector val(dim);
     std::vector<int> lm(dim);
     std::vector<int> lmowner(dim);
 
@@ -907,19 +907,19 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
     }
 
     // do assembly
-    CORE::LINALG::Assemble(*xs, val, lm, lmowner);
+    Core::LinAlg::Assemble(*xs, val, lm, lmowner);
   }
 
   // loop over all master row nodes
   for (int j = 0; j < interface_->MasterRowNodes()->NumMyElements(); ++j)
   {
     int gid = interface_->MasterRowNodes()->GID(j);
-    CORE::Nodes::Node* node = interface_->Discret().gNode(gid);
+    Core::Nodes::Node* node = interface_->Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
-    MORTAR::Node* mtnode = static_cast<MORTAR::Node*>(node);
+    Mortar::Node* mtnode = static_cast<Mortar::Node*>(node);
 
     // prepare assembly
-    CORE::LINALG::SerialDenseVector val(dim);
+    Core::LinAlg::SerialDenseVector val(dim);
     std::vector<int> lm(dim);
     std::vector<int> lmowner(dim);
 
@@ -943,7 +943,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
     }
 
     // do assembly
-    CORE::LINALG::Assemble(*xm, val, lm, lmowner);
+    Core::LinAlg::Assemble(*xm, val, lm, lmowner);
   }
 
   // compute g-vector at global level
@@ -951,7 +951,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   D_->Multiply(false, *xs, *Dxs);
   Mxm = Teuchos::rcp(new Epetra_Vector(*slavedofrowmap));
   M_->Multiply(false, *xm, *Mxm);
-  Teuchos::RCP<Epetra_Vector> gnew = CORE::LINALG::CreateVector(*slavedofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> gnew = Core::LinAlg::CreateVector(*slavedofrowmap, true);
   gnew->Update(1.0, *Dxs, 1.0);
   gnew->Update(-1.0, *Mxm, 1.0);
   gnew->Norm2(&gnorm);
@@ -969,7 +969,7 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
   // if slave=fluid, we are lucky because fluid elements do not
   // need any re-relocation (unlike structural elements)
   // fluid elements: empty implementation (return 0)
-  CORE::COMM::ParObjectFactory::Instance().initialize_elements(*slavedis);
+  Core::Communication::ParObjectFactory::Instance().initialize_elements(*slavedis);
 
   // print message
   if (comm.MyPID() == 0)
@@ -989,22 +989,22 @@ void CORE::ADAPTER::CouplingMortar::mesh_relocation(Teuchos::RCP<DRT::Discretiza
 /*----------------------------------------------------------------------*
  |  compute projection operator P                            farah 01/16|
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::create_p()
+void Core::Adapter::CouplingMortar::create_p()
 {
   // safety check
   check_setup();
 
   // check
-  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::ShapeFcn>(
-          Interface()->interface_params(), "LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
+  if (Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(
+          Interface()->interface_params(), "LM_SHAPEFCN") != Inpar::Mortar::shape_dual)
     FOUR_C_THROW("Creation of P operator only for dual shape functions!");
 
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
   /********************************************************************/
   D_->Complete();
-  Dinv_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*D_));
-  Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(*slavedofrowmap_, true);
+  Dinv_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*D_));
+  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*slavedofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -1033,7 +1033,7 @@ void CORE::ADAPTER::CouplingMortar::create_p()
   Dinv_->Complete();
 
   // do the multiplication P = inv(D) * M
-  P_ = CORE::LINALG::MLMultiply(*Dinv_, false, *M_, false, false, false, true);
+  P_ = Core::LinAlg::MLMultiply(*Dinv_, false, *M_, false, false, false, true);
 
   // complete the matrix
   P_->Complete(*masterdofrowmap_, *slavedofrowmap_);
@@ -1045,13 +1045,13 @@ void CORE::ADAPTER::CouplingMortar::create_p()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
+void Core::Adapter::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
 {
   // safety check
   check_setup();
 
   // set new displacement state in mortar interface
-  interface_->set_state(MORTAR::state_new_displacement, *idisp);
+  interface_->set_state(Mortar::state_new_displacement, *idisp);
   Evaluate();
   matrix_row_col_transform();
 
@@ -1061,7 +1061,7 @@ void CORE::ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::Evaluate(
+void Core::Adapter::CouplingMortar::Evaluate(
     Teuchos::RCP<Epetra_Vector> idispma, Teuchos::RCP<Epetra_Vector> idispsl)
 {
   // safety checks
@@ -1075,7 +1075,7 @@ void CORE::ADAPTER::CouplingMortar::Evaluate(
   idispsl->ReplaceMap(*slavedofrowmap_);
 
   Teuchos::RCP<Epetra_Map> dofrowmap =
-      CORE::LINALG::MergeMap(*pmasterdofrowmap_, *pslavedofrowmap_, false);
+      Core::LinAlg::MergeMap(*pmasterdofrowmap_, *pslavedofrowmap_, false);
   Teuchos::RCP<Epetra_Import> master_importer =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *pmasterdofrowmap_));
   Teuchos::RCP<Epetra_Import> slaveImporter =
@@ -1083,7 +1083,7 @@ void CORE::ADAPTER::CouplingMortar::Evaluate(
 
   // Import master and slave displacements into a single vector
   int err = 0;
-  Teuchos::RCP<Epetra_Vector> idisp_master_slave = CORE::LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> idisp_master_slave = Core::LinAlg::CreateVector(*dofrowmap, true);
   err = idisp_master_slave->Import(*idispma, *master_importer, Add);
   if (err != 0)
     FOUR_C_THROW("Import failed with error code %d. See Epetra source code for details.", err);
@@ -1092,7 +1092,7 @@ void CORE::ADAPTER::CouplingMortar::Evaluate(
     FOUR_C_THROW("Import failed with error code %d. See Epetra source code for details.", err);
 
   // set new displacement state in mortar interface
-  interface_->set_state(MORTAR::state_new_displacement, *idisp_master_slave);
+  interface_->set_state(Mortar::state_new_displacement, *idisp_master_slave);
 
   Evaluate();
   matrix_row_col_transform();
@@ -1106,8 +1106,8 @@ void CORE::ADAPTER::CouplingMortar::Evaluate(
 /*----------------------------------------------------------------------*
  *  Create integration cells for mortar interface           farah 01/16 |
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::EvaluateGeometry(
-    std::vector<Teuchos::RCP<MORTAR::IntCell>>& intcells  //!< vector of mortar integration cells
+void Core::Adapter::CouplingMortar::EvaluateGeometry(
+    std::vector<Teuchos::RCP<Mortar::IntCell>>& intcells  //!< vector of mortar integration cells
 )
 {
   // safety check
@@ -1122,7 +1122,7 @@ void CORE::ADAPTER::CouplingMortar::EvaluateGeometry(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::Evaluate()
+void Core::Adapter::CouplingMortar::Evaluate()
 {
   // safety check
   check_setup();
@@ -1135,10 +1135,10 @@ void CORE::ADAPTER::CouplingMortar::Evaluate()
   // (Note that redistslave and redistmaster are the slave and master row maps
   // after parallel redistribution. If no redistribution was performed, they
   // are of course identical to slavedofrowmap_/masterdofrowmap_!)
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrix =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 10));
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> mmatrix =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 100));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 10));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 100));
   interface_->AssembleDM(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
@@ -1156,7 +1156,7 @@ void CORE::ADAPTER::CouplingMortar::Evaluate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::matrix_row_col_transform()
+void Core::Adapter::CouplingMortar::matrix_row_col_transform()
 {
   // safety check
   check_setup();
@@ -1164,8 +1164,8 @@ void CORE::ADAPTER::CouplingMortar::matrix_row_col_transform()
   // check for parallel redistribution
   bool parredist = false;
   const Teuchos::ParameterList& input = mortar_coupling_params_.sublist("PARALLEL REDISTRIBUTION");
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") !=
-      INPAR::MORTAR::ParallelRedist::redist_none)
+  if (Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(input, "PARALLEL_REDIST") !=
+      Inpar::Mortar::ParallelRedist::redist_none)
     parredist = true;
 
   // only for parallel redistribution case
@@ -1175,25 +1175,25 @@ void CORE::ADAPTER::CouplingMortar::matrix_row_col_transform()
       FOUR_C_THROW("Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
-    D_ = MORTAR::matrix_row_col_transform(D_, pslavedofrowmap_, pslavedofrowmap_);
-    M_ = MORTAR::matrix_row_col_transform(M_, pslavedofrowmap_, pmasterdofrowmap_);
-    Dinv_ = MORTAR::matrix_row_col_transform(Dinv_, pslavedofrowmap_, pslavedofrowmap_);
-    P_ = MORTAR::matrix_row_col_transform(P_, pslavedofrowmap_, pmasterdofrowmap_);
+    D_ = Mortar::matrix_row_col_transform(D_, pslavedofrowmap_, pslavedofrowmap_);
+    M_ = Mortar::matrix_row_col_transform(M_, pslavedofrowmap_, pmasterdofrowmap_);
+    Dinv_ = Mortar::matrix_row_col_transform(Dinv_, pslavedofrowmap_, pslavedofrowmap_);
+    P_ = Mortar::matrix_row_col_transform(P_, pslavedofrowmap_, pmasterdofrowmap_);
   }
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::evaluate_with_mesh_relocation(
-    Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::RCP<DRT::Discretization> aledis,
+void Core::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
+    Teuchos::RCP<Discret::Discretization> slavedis, Teuchos::RCP<Discret::Discretization> aledis,
     Teuchos::RCP<Epetra_Vector>& idisp, const Epetra_Comm& comm, bool slavewithale)
 {
   // safety check
   check_setup();
 
   // set new displacement state in mortar interface
-  interface_->set_state(MORTAR::state_new_displacement, *idisp);
+  interface_->set_state(Mortar::state_new_displacement, *idisp);
 
   // in the following two steps MORTAR does all the work for new interface displacements
   interface_->Initialize();
@@ -1203,10 +1203,10 @@ void CORE::ADAPTER::CouplingMortar::evaluate_with_mesh_relocation(
   // (Note that redistslave and redistmaster are the slave and master row maps
   // after parallel redistribution. If no redistribution was performed, they
   // are of course identical to slavedofrowmap_/masterdofrowmap_!)
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrix =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 10));
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> mmatrix =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 100));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 10));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 100));
   interface_->AssembleDM(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
@@ -1216,10 +1216,10 @@ void CORE::ADAPTER::CouplingMortar::evaluate_with_mesh_relocation(
   M_ = mmatrix;
 
   // Build Dinv
-  Dinv_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*D_));
+  Dinv_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*D_));
 
   // extract diagonal of invd into diag
-  Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(*slavedofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*slavedofrowmap_, true);
   Dinv_->ExtractDiagonalCopy(*diag);
 
   // set zero diagonal values to dummy 1.0
@@ -1239,8 +1239,8 @@ void CORE::ADAPTER::CouplingMortar::evaluate_with_mesh_relocation(
   // displacements.
   // Example: nodes at the interface are also moved for matching discretizations
   // (P should be "unity matrix")!
-  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-          mortar_coupling_params_, "MESH_RELOCATION") == INPAR::MORTAR::relocation_timestep)
+  if (Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(
+          mortar_coupling_params_, "MESH_RELOCATION") == Inpar::Mortar::relocation_timestep)
     mesh_relocation(slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
 
   // only for parallel redistribution case
@@ -1252,7 +1252,7 @@ void CORE::ADAPTER::CouplingMortar::evaluate_with_mesh_relocation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
+Teuchos::RCP<Epetra_Vector> Core::Adapter::CouplingMortar::MasterToSlave(
     Teuchos::RCP<Epetra_Vector> mv) const
 {
   // safety check
@@ -1274,7 +1274,7 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
+Teuchos::RCP<Epetra_MultiVector> Core::Adapter::CouplingMortar::MasterToSlave(
     Teuchos::RCP<Epetra_MultiVector> mv) const
 {
   // safety check
@@ -1296,7 +1296,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
+Teuchos::RCP<Epetra_MultiVector> Core::Adapter::CouplingMortar::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv) const
 {
   // safety check
@@ -1318,7 +1318,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
+Teuchos::RCP<Epetra_Vector> Core::Adapter::CouplingMortar::MasterToSlave(
     Teuchos::RCP<const Epetra_Vector> mv) const
 {
   // safety check
@@ -1340,7 +1340,7 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::MasterToSlave(
+void Core::Adapter::CouplingMortar::MasterToSlave(
     Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -1361,7 +1361,7 @@ void CORE::ADAPTER::CouplingMortar::MasterToSlave(
   std::copy(
       sv_aux.Values(), sv_aux.Values() + (sv_aux.MyLength() * sv_aux.NumVectors()), sv->Values());
 
-  // in contrast to the ADAPTER::Coupling class we do not need to export here, as
+  // in contrast to the Adapter::Coupling class we do not need to export here, as
   // the mortar interface itself has (or should have) guaranteed the same distribution of master and
   // slave dis on all procs
 }
@@ -1369,7 +1369,7 @@ void CORE::ADAPTER::CouplingMortar::MasterToSlave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::SlaveToMaster(
+void Core::Adapter::CouplingMortar::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -1390,7 +1390,7 @@ void CORE::ADAPTER::CouplingMortar::SlaveToMaster(
   std::copy(
       tempm->Values(), tempm->Values() + (tempm->MyLength() * tempm->NumVectors()), mv->Values());
 
-  // in contrast to the ADAPTER::Coupling class we do not need to export here, as
+  // in contrast to the Adapter::Coupling class we do not need to export here, as
   // the mortar interface itself has (or should have) guaranteed the same distribution of master and
   // slave dis on all procs
 }
@@ -1398,7 +1398,7 @@ void CORE::ADAPTER::CouplingMortar::SlaveToMaster(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
+Teuchos::RCP<Epetra_Vector> Core::Adapter::CouplingMortar::SlaveToMaster(
     Teuchos::RCP<const Epetra_Vector> sv) const
 {
   // safety check
@@ -1415,7 +1415,7 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
+Teuchos::RCP<Epetra_Vector> Core::Adapter::CouplingMortar::SlaveToMaster(
     Teuchos::RCP<Epetra_Vector> sv) const
 {
   // safety check
@@ -1432,7 +1432,7 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
+Teuchos::RCP<Epetra_MultiVector> Core::Adapter::CouplingMortar::SlaveToMaster(
     Teuchos::RCP<Epetra_MultiVector> sv) const
 {
   // safety check
@@ -1450,7 +1450,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
+Teuchos::RCP<Epetra_MultiVector> Core::Adapter::CouplingMortar::SlaveToMaster(
     Teuchos::RCP<const Epetra_MultiVector> sv) const
 {
   // safety check
@@ -1468,11 +1468,11 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::MortarCondensation(
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>& k, Teuchos::RCP<Epetra_Vector>& rhs) const
+void Core::Adapter::CouplingMortar::MortarCondensation(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& k, Teuchos::RCP<Epetra_Vector>& rhs) const
 {
-  MORTAR::UTILS::MortarMatrixCondensation(k, P_, P_);
-  MORTAR::UTILS::MortarRhsCondensation(rhs, P_);
+  Mortar::UTILS::MortarMatrixCondensation(k, P_, P_);
+  Mortar::UTILS::MortarRhsCondensation(rhs, P_);
 
   return;
 }
@@ -1480,10 +1480,10 @@ void CORE::ADAPTER::CouplingMortar::MortarCondensation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::ADAPTER::CouplingMortar::MortarRecover(
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>& k, Teuchos::RCP<Epetra_Vector>& inc) const
+void Core::Adapter::CouplingMortar::MortarRecover(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& k, Teuchos::RCP<Epetra_Vector>& inc) const
 {
-  MORTAR::UTILS::MortarRecover(inc, P_);
+  Mortar::UTILS::MortarRecover(inc, P_);
   return;
 }
 

@@ -29,13 +29,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
 }
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   /*!
   \brief A set of degrees of freedom
@@ -123,7 +123,7 @@ namespace CORE::Dofsets
    private:
   };  // class FixedSizeDofSet
 
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 FOUR_C_NAMESPACE_CLOSE
 

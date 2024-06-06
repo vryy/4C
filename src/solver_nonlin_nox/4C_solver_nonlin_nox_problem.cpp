@@ -43,7 +43,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Problem::Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData)
+NOX::Nln::Problem::Problem(const Teuchos::RCP<NOX::Nln::GlobalData>& noxNlnGlobalData)
     : isinit_(false),
       isjac_(false),
       noxNlnGlobalData_(noxNlnGlobalData),
@@ -56,9 +56,9 @@ NOX::NLN::Problem::Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGloba
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Problem::Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
+NOX::Nln::Problem::Problem(const Teuchos::RCP<NOX::Nln::GlobalData>& noxNlnGlobalData,
     const Teuchos::RCP<::NOX::Epetra::Vector>& x,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& A)
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& A)
     : isinit_(false),
       noxNlnGlobalData_(noxNlnGlobalData),
       xVector_(nullptr),
@@ -70,8 +70,8 @@ NOX::NLN::Problem::Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGloba
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Problem::Initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& A)
+void NOX::Nln::Problem::Initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& A)
 {
   // in the standard case, we use the input rhs and matrix
   // ToDo Check if CreateView is sufficient
@@ -87,7 +87,7 @@ void NOX::NLN::Problem::Initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::Problem::create_linear_system() const
+Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::Problem::create_linear_system() const
 {
   check_init();
   if (not is_jac())
@@ -95,18 +95,18 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::NLN::Problem::create_linear_syste
         "You have to set a jacobian first, before you can create a "
         "linear system!");
 
-  const NOX::NLN::LinSystem::LinearSystemType linsystype =
-      NOX::NLN::AUX::GetLinearSystemType(noxNlnGlobalData_->GetLinSolvers());
+  const NOX::Nln::LinSystem::LinearSystemType linsystype =
+      NOX::Nln::Aux::GetLinearSystemType(noxNlnGlobalData_->GetLinSolvers());
   Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject = noxNlnGlobalData_->GetScalingObject();
 
   // build the linear system --> factory call
-  return NOX::NLN::LinSystem::BuildLinearSystem(
+  return NOX::Nln::LinSystem::BuildLinearSystem(
       linsystype, *noxNlnGlobalData_, *jac_, *xVector_, precMat_, scalingObject);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
+Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::Problem::CreateGroup(
     const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys) const
 {
   check_init();
@@ -118,20 +118,20 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
   const std::string nlnSolver = params.get<std::string>("Nonlinear Solver", "");
   if (noxNlnGlobalData_->GetIsConstrained())
   {
-    const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iconstr =
+    const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iconstr =
         noxNlnGlobalData_->get_constraint_interfaces();
-    noxgrp = Teuchos::rcp(new NOX::NLN::CONSTRAINT::Group(params.sublist("Printing"),
+    noxgrp = Teuchos::rcp(new NOX::Nln::CONSTRAINT::Group(params.sublist("Printing"),
         params.sublist("Group Options"), iReq, **xVector_, linSys, iconstr));
   }
   else if (nlnSolver.compare("Single Step") == 0)
   {
     std::cout << "Single Step Group is selected" << std::endl;
-    noxgrp = Teuchos::rcp(new NOX::NLN::SINGLESTEP::Group(
+    noxgrp = Teuchos::rcp(new NOX::Nln::SINGLESTEP::Group(
         params.sublist("Printing"), params.sublist("Group Options"), iReq, **xVector_, linSys));
   }
   else
   {
-    noxgrp = Teuchos::rcp(new NOX::NLN::Group(
+    noxgrp = Teuchos::rcp(new NOX::Nln::Group(
         params.sublist("Printing"), params.sublist("Group Options"), iReq, **xVector_, linSys));
   }
 
@@ -140,7 +140,7 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Problem::create_outer_status_test(
+void NOX::Nln::Problem::create_outer_status_test(
     Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) const
 {
   Teuchos::ParameterList& p = noxNlnGlobalData_->GetNlnParameterList();
@@ -149,13 +149,13 @@ void NOX::NLN::Problem::create_outer_status_test(
   Teuchos::ParameterList& oParams =
       p.sublist("Status Test", true).sublist("Outer Status Test", true);
   outerTests =
-      NOX::NLN::StatusTest::build_outer_status_tests(oParams, noxNlnGlobalData_->GetNoxUtils());
+      NOX::Nln::StatusTest::build_outer_status_tests(oParams, noxNlnGlobalData_->GetNoxUtils());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Problem::CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
-    Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests) const
+void NOX::Nln::Problem::CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
+    Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests) const
 {
   create_outer_status_test(outerTests);
 
@@ -166,7 +166,7 @@ void NOX::NLN::Problem::CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generi
       p.sublist("Status Test").sublist("Inner Status Test").numParams() != 0)
   {
     Teuchos::ParameterList& iParams = p.sublist("Status Test", true).sublist("Inner Status Test");
-    innerTests = NOX::NLN::INNER::StatusTest::build_inner_status_tests(
+    innerTests = NOX::Nln::Inner::StatusTest::build_inner_status_tests(
         iParams, noxNlnGlobalData_->GetNoxUtils());
   }
 
@@ -175,7 +175,7 @@ void NOX::NLN::Problem::CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Problem::CheckFinalStatus(const ::NOX::StatusTest::StatusType& finalStatus) const
+void NOX::Nln::Problem::CheckFinalStatus(const ::NOX::StatusTest::StatusType& finalStatus) const
 {
   if (finalStatus != ::NOX::StatusTest::Converged)
   {

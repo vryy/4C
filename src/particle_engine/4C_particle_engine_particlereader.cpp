@@ -29,8 +29,8 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-INPUT::ParticleReader::ParticleReader(
-    const CORE::IO::DatFileReader& reader, std::string sectionname)
+Input::ParticleReader::ParticleReader(
+    const Core::IO::DatFileReader& reader, std::string sectionname)
     : reader_(reader), comm_(reader.Comm()), sectionname_(std::move(sectionname))
 {
   // empty constructor
@@ -39,7 +39,7 @@ INPUT::ParticleReader::ParticleReader(
 /*---------------------------------------------------------------------------*
  | do the actual reading of particles                         sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles)
+void Input::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles)
 {
   const int myrank = comm_->MyPID();
   const int numproc = comm_->NumProc();
@@ -53,7 +53,7 @@ void INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
     Teuchos::Time time("", true);
 
     if (!myrank && !reader_.MyOutputFlag())
-      CORE::IO::cout << "Read and create particles\n" << CORE::IO::flush;
+      Core::IO::cout << "Read and create particles\n" << Core::IO::flush;
 
     // read in the particles block-wise:
     // EITHER one block per processor so that the number of blocks is numproc

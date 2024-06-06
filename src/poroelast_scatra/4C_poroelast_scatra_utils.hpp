@@ -23,32 +23,32 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace MAT
+namespace Mat
 {
   class Material;
-}  // namespace MAT
+}  // namespace Mat
 
-namespace POROELAST
+namespace PoroElast
 {
   class PoroBase;
 }
 
-namespace POROELASTSCATRA
+namespace PoroElastScaTra
 {
   class PoroScatraBase;
 
@@ -56,21 +56,21 @@ namespace POROELASTSCATRA
   //! poroelasticity-scatra problems
   namespace UTILS
   {
-    Teuchos::RCP<CORE::LINALG::MapExtractor> BuildPoroScatraSplitter(
-        Teuchos::RCP<DRT::Discretization> dis);
+    Teuchos::RCP<Core::LinAlg::MapExtractor> BuildPoroScatraSplitter(
+        Teuchos::RCP<Discret::Discretization> dis);
 
     //! check if element is a poro-scatra-element
-    bool IsPoroScatraElement(const CORE::Elements::Element* actele);
+    bool IsPoroScatraElement(const Core::Elements::Element* actele);
 
     //! check if element is a poro-scatra-p1-element
-    bool IsPoroP1ScatraElement(const CORE::Elements::Element* actele);
+    bool IsPoroP1ScatraElement(const Core::Elements::Element* actele);
 
 
-    Teuchos::RCP<CORE::LINALG::MapExtractor> BuildPoroSplitter(
-        Teuchos::RCP<DRT::Discretization> dis);
+    Teuchos::RCP<Core::LinAlg::MapExtractor> BuildPoroSplitter(
+        Teuchos::RCP<Discret::Discretization> dis);
 
     //! create solution algorithm depending on input file
-    Teuchos::RCP<POROELAST::PoroBase> CreatePoroAlgorithm(
+    Teuchos::RCP<PoroElast::PoroBase> CreatePoroAlgorithm(
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
         const Epetra_Comm& comm,                   //!< communicator(i)
         bool setup_solve = true  //!< setup linear solver for Poroelastic problem (only required if
@@ -78,14 +78,14 @@ namespace POROELASTSCATRA
     );
 
     //! create solution algorithm depending on input file
-    Teuchos::RCP<POROELASTSCATRA::PoroScatraBase> CreatePoroScatraAlgorithm(
+    Teuchos::RCP<PoroElastScaTra::PoroScatraBase> CreatePoroScatraAlgorithm(
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)
         const Epetra_Comm& comm                    //!< communicator(i)
     );
 
     //! reset Material pointers after redistribution
-    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discretization> sourcedis,
-        Teuchos::RCP<const DRT::Discretization> targetdis);
+    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const Discret::Discretization> sourcedis,
+        Teuchos::RCP<const Discret::Discretization> targetdis);
 
     /*!
      Create volume ghosting:
@@ -101,24 +101,24 @@ namespace POROELASTSCATRA
      element is lost! (Parent Element Pointer is not communicated)
      */
     void create_volume_ghosting(
-        DRT::Discretization& idiscret);  // redistributed interface discretization of contact!
+        Discret::Discretization& idiscret);  // redistributed interface discretization of contact!
 
     /*! Reconnect Face Element - Parent Element Pointers!
      Parent Element need to be ghosted on the processors where Face Elements
      exist already.
      */
-    void reconnect_parent_pointers(DRT::Discretization& idiscret, DRT::Discretization& voldiscret,
-        DRT::Discretization* voldiscret2 = nullptr);
+    void reconnect_parent_pointers(Discret::Discretization& idiscret,
+        Discret::Discretization& voldiscret, Discret::Discretization* voldiscret2 = nullptr);
 
     //! Determine norm of vector
-    double calculate_vector_norm(const enum INPAR::POROELAST::VectorNorm norm,  //!< norm to use
+    double calculate_vector_norm(const enum Inpar::PoroElast::VectorNorm norm,  //!< norm to use
         const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
     );
 
     //! Set the slave and master elements of the face element
-    void SetSlaveAndMaster(const DRT::Discretization& voldiscret,
-        const DRT::Discretization* voldiscret2, const Epetra_Map* elecolmap,
-        CORE::Elements::FaceElement* faceele);
+    void SetSlaveAndMaster(const Discret::Discretization& voldiscret,
+        const Discret::Discretization* voldiscret2, const Epetra_Map* elecolmap,
+        Core::Elements::FaceElement* faceele);
 
     //! strategy for material assignment for non matching meshes with poro
 
@@ -138,27 +138,29 @@ namespace POROELASTSCATRA
 
      \author vuong 10/14
      */
-    class PoroMaterialStrategy : public CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy
+    class PoroMaterialStrategy : public Core::VolMortar::UTILS::DefaultMaterialStrategy
     {
      public:
       //! constructor
       PoroMaterialStrategy() = default;
 
       //! assignment of fluid material to structure material
-      void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
-          CORE::Elements::Element* ele1, const std::vector<int>& ids_2,
-          Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2) override;
+      void AssignMaterial2To1(const Core::VolMortar::VolMortarCoupl* volmortar,
+          Core::Elements::Element* ele1, const std::vector<int>& ids_2,
+          Teuchos::RCP<Discret::Discretization> dis1,
+          Teuchos::RCP<Discret::Discretization> dis2) override;
 
       //! assignment of structure material to fluid material
-      void AssignMaterial1To2(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
-          CORE::Elements::Element* ele2, const std::vector<int>& ids_1,
-          Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2) override;
+      void AssignMaterial1To2(const Core::VolMortar::VolMortarCoupl* volmortar,
+          Core::Elements::Element* ele2, const std::vector<int>& ids_1,
+          Teuchos::RCP<Discret::Discretization> dis1,
+          Teuchos::RCP<Discret::Discretization> dis2) override;
     };
   }  // namespace UTILS
 
   void PrintLogo();
 
-}  // namespace POROELASTSCATRA
+}  // namespace PoroElastScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

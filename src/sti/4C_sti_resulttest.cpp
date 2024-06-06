@@ -22,7 +22,7 @@ STI::STIResultTest::STIResultTest(const Teuchos::RCP<STI::Algorithm>&
         sti_algorithm  //!< time integrator for scatra-thermo interaction
     )
     // call base class constructor
-    : CORE::UTILS::ResultTest("STI"),
+    : Core::UTILS::ResultTest("STI"),
 
       // store pointer to time integrator for scatra-thermo interaction
       sti_algorithm_(sti_algorithm)
@@ -35,7 +35,7 @@ STI::STIResultTest::STIResultTest(const Teuchos::RCP<STI::Algorithm>&
  | test special quantity not associated with a particular element or node   fang 01/17 |
  *-------------------------------------------------------------------------------------*/
 void STI::STIResultTest::TestSpecial(
-    INPUT::LineDefinition& res,  //!< input file line containing result test specification
+    Input::LineDefinition& res,  //!< input file line containing result test specification
     int& nerr,                   //!< number of failed result tests
     int& test_count              ///< number of result tests
 )

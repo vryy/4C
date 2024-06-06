@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace MAT
+namespace Mat
 {
   class CoordinateSystemProvider;
 }
@@ -40,7 +40,7 @@ namespace MIXTURE
 
      public:
       /// constructor
-      explicit IterativePrestressStrategy(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+      explicit IterativePrestressStrategy(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
       /// create prestress strategy instance of matching type with my parameters
       std::unique_ptr<MIXTURE::PrestressStrategy> create_prestress_strategy() override;
@@ -74,13 +74,13 @@ namespace MIXTURE
         int eleGID) override;
 
     void EvaluatePrestress(const MixtureRule& mixtureRule,
-        const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
-        MIXTURE::MixtureConstituent& constituent, CORE::LINALG::Matrix<3, 3>& G,
+        const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+        MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    void Update(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
-        MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
-        CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
+    void Update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+        MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
+        Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
    private:
     /// Holder for internal parameters

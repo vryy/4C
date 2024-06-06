@@ -12,10 +12,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::vector<double> CORE::FE::element_center_refe_coords(const CORE::Elements::Element& ele)
+std::vector<double> Core::FE::element_center_refe_coords(const Core::Elements::Element& ele)
 {
   // get nodes of element
-  const CORE::Nodes::Node* const* nodes = ele.Nodes();
+  const Core::Nodes::Node* const* nodes = ele.Nodes();
   const int numnodes = ele.num_node();
   const double invnumnodes = 1.0 / numnodes;
 

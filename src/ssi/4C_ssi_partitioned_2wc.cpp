@@ -47,15 +47,15 @@ void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // call the SSI parameter lists
-  const Teuchos::ParameterList& ssicontrol = GLOBAL::Problem::Instance()->SSIControlParams();
+  const Teuchos::ParameterList& ssicontrol = Global::Problem::Instance()->SSIControlParams();
   const Teuchos::ParameterList& ssicontrolpart =
-      GLOBAL::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+      Global::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
 
   // do some checks
   {
     auto structtimealgo =
-        CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP");
-    if (structtimealgo == INPAR::STR::dyna_statics)
+        Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(structparams, "DYNAMICTYP");
+    if (structtimealgo == Inpar::STR::dyna_statics)
     {
       FOUR_C_THROW(
           "If you use statics as the structural time integrator no velocities will be calculated "
@@ -63,18 +63,18 @@ void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
           "the deformations will not be applied to the scalar transport problem!");
     }
 
-    auto convform = CORE::UTILS::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams, "CONVFORM");
-    if (convform == INPAR::SCATRA::convform_convective)
+    auto convform = Core::UTILS::IntegralValue<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
+    if (convform == Inpar::ScaTra::convform_convective)
     {
       // get scatra discretization
-      Teuchos::RCP<DRT::Discretization> scatradis =
-          GLOBAL::Problem::Instance()->GetDis(scatra_disname);
+      Teuchos::RCP<Discret::Discretization> scatradis =
+          Global::Problem::Instance()->GetDis(scatra_disname);
 
       // loop over all elements of scatra discretization to check if impltype is correct or not
       for (int i = 0; i < scatradis->NumMyColElements(); ++i)
       {
-        if ((dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i)))->ImplType() !=
-            INPAR::SCATRA::impltype_refconcreac)
+        if ((dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->lColElement(i)))->ImplType() !=
+            Inpar::ScaTra::impltype_refconcreac)
         {
           FOUR_C_THROW(
               "If the scalar transport problem is solved on the deforming domain, the conservative "
@@ -105,8 +105,8 @@ void SSI::SSIPart2WC::Setup()
   SSI::SSIPart::Setup();
 
   // construct increment vectors
-  scaincnp_ = CORE::LINALG::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
-  dispincnp_ = CORE::LINALG::CreateVector(*structure_field()->dof_row_map(0), true);
+  scaincnp_ = Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
+  dispincnp_ = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(0), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -136,7 +136,7 @@ void SSI::SSIPart2WC::Timeloop()
     Comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
-    if (CORE::UTILS::IntegralValue<int>(
+    if (Core::UTILS::IntegralValue<int>(
             *ScaTraField()->ScatraParameterList(), "OUTPUTNONLINSOLVERSTATS"))
       ScaTraField()->output_nonlin_solver_stats(IterationCount(), dtnonlinsolve, Step(), Comm());
 
@@ -248,7 +248,7 @@ void SSI::SSIPart2WC::update_and_output()
   if (SSIInterfaceContact())
   {
     // re-evaluate the contact to re-obtain the displ state
-    const auto& model_eval = structure_field()->ModelEvaluator(INPAR::STR::model_structure);
+    const auto& model_eval = structure_field()->ModelEvaluator(Inpar::STR::model_structure);
     const auto& cparams = model_eval.EvalData().ContactPtr();
     nitsche_strategy_ssi()->Integrate(*cparams);
   }
@@ -474,7 +474,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::Init(const Epetra_Comm& comm,
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const Teuchos::ParameterList& ssicontrolpart =
-      GLOBAL::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+      Global::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
 
   // Get minimal relaxation parameter from input file
   omega_ = ssicontrolpart.get<double>("STARTOMEGA");
@@ -496,9 +496,9 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
 
   // these are the relaxed inputs
   Teuchos::RCP<Epetra_Vector> dispnp =
-      CORE::LINALG::CreateVector(*(structure_field()->dof_row_map(0)), true);
+      Core::LinAlg::CreateVector(*(structure_field()->dof_row_map(0)), true);
   Teuchos::RCP<Epetra_Vector> velnp =
-      CORE::LINALG::CreateVector(*(structure_field()->dof_row_map(0)), true);
+      Core::LinAlg::CreateVector(*(structure_field()->dof_row_map(0)), true);
 
   while (!stopnonliniter)
   {
@@ -595,7 +595,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::Setup()
   SSI::SSIPart2WC::Setup();
 
   // setup old scatra increment vector
-  dispincnpold_ = CORE::LINALG::CreateVector(*structure_field()->dof_row_map(0), true);
+  dispincnpold_ = Core::LinAlg::CreateVector(*structure_field()->dof_row_map(0), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -604,7 +604,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::Setup()
 void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const int itnum)
 {
   const Teuchos::ParameterList& ssicontrolpart =
-      GLOBAL::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+      Global::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
 
   // Get maximal relaxation parameter from input file
   const double maxomega = ssicontrolpart.get<double>("MAXOMEGA");
@@ -614,7 +614,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
   // calculate difference of current (i+1) and old (i) residual vector
   // dispincnpdiff = ( r^{i+1}_{n+1} - r^i_{n+1} )
   Teuchos::RCP<Epetra_Vector> dispincnpdiff =
-      CORE::LINALG::CreateVector(*(structure_field()->dof_row_map(0)), true);
+      Core::LinAlg::CreateVector(*(structure_field()->dof_row_map(0)), true);
   dispincnpdiff->Update(
       1.0, *dispincnp_, (-1.0), *dispincnpold_, 0.0);  // update r^{i+1}_{n+1} - r^i_{n+1}
 
@@ -700,7 +700,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::Init(const Epetra_Comm& comm,
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const Teuchos::ParameterList& ssicontrolpart =
-      GLOBAL::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+      Global::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
 
   // Get start relaxation parameter from input file
   omega_ = ssicontrolpart.get<double>("STARTOMEGA");
@@ -732,7 +732,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
 
   // this is the relaxed input
   Teuchos::RCP<Epetra_Vector> phinp =
-      CORE::LINALG::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
+      Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
 
   while (!stopnonliniter)
   {
@@ -813,7 +813,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::Setup()
   SSI::SSIPart2WC::Setup();
 
   // setup old scatra increment vector
-  scaincnpold_ = CORE::LINALG::CreateVector(*ScaTraField()->discretization()->dof_row_map(), true);
+  scaincnpold_ = Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -822,7 +822,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::Setup()
 void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const int itnum)
 {
   const Teuchos::ParameterList& ssicontrolpart =
-      GLOBAL::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+      Global::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
 
   // Get maximal relaxation parameter from input file
   const double maxomega = ssicontrolpart.get<double>("MAXOMEGA");
@@ -831,7 +831,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
 
   // scaincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
   Teuchos::RCP<Epetra_Vector> scaincnpdiff =
-      CORE::LINALG::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
+      Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(0), true);
   scaincnpdiff->Update(1.0, *scaincnp_, (-1.0), *scaincnpold_, 0.0);
 
   double scaincnpdiffnorm = 0.0;

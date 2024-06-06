@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   // forward declarations
   class Coupling;
@@ -35,7 +35,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<DRT::Discretization> boundary_discretization();
+    Teuchos::RCP<Discret::Discretization> boundary_discretization();
 
     /// communication object at the struct interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& StructInterface();
@@ -76,7 +76,7 @@ namespace ADAPTER
     //@}
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

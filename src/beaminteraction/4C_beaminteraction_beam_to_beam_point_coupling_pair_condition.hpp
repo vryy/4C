@@ -28,7 +28,7 @@ namespace BEAMINTERACTION
   {
    public:
     BeamToBeamPointCouplingCondition(
-        const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line,
+        const Teuchos::RCP<const Core::Conditions::Condition>& condition_line,
         double positional_penalty_parameter, double rotational_penalty_parameter)
         : BeamInteractionConditionBase(condition_line),
           positional_penalty_parameter_(positional_penalty_parameter),
@@ -49,13 +49,13 @@ namespace BEAMINTERACTION
      * \brief Create the beam contact pairs needed for this condition (derived).
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<CORE::Elements::Element const*>& ele_ptrs) override;
+        const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
     /**
      * \brief Build the ID sets for this condition. The ID sets will be used to check if an element
      * is in this condition.
      */
-    void BuildIdSets(const Teuchos::RCP<const DRT::Discretization>& discretization) override;
+    void BuildIdSets(const Teuchos::RCP<const Discret::Discretization>& discretization) override;
 
 
    private:

@@ -18,17 +18,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
@@ -50,10 +50,10 @@ namespace STR
       const Teuchos::ParameterList& ioflags,                //!< input-output-flags
       const Teuchos::ParameterList& sdyn,                   //!< structural dynamic flags
       const Teuchos::ParameterList& xparams,                //!< extra flags
-      Teuchos::RCP<DRT::Discretization>& actdis,            //!< discretisation
-      Teuchos::RCP<CORE::LINALG::Solver>& solver,           //!< the solver
-      Teuchos::RCP<CORE::LINALG::Solver>& contactsolver,    //!< the solver for contact/meshtying
-      Teuchos::RCP<CORE::IO::DiscretizationWriter>& output  //!< output writer
+      Teuchos::RCP<Discret::Discretization>& actdis,        //!< discretisation
+      Teuchos::RCP<Core::LinAlg::Solver>& solver,           //!< the solver
+      Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,    //!< the solver for contact/meshtying
+      Teuchos::RCP<Core::IO::DiscretizationWriter>& output  //!< output writer
   );
 
   /*====================================================================*/
@@ -65,10 +65,10 @@ namespace STR
       const Teuchos::ParameterList& ioflags,                //!< input-output-flags
       const Teuchos::ParameterList& sdyn,                   //!< structural dynamic flags
       const Teuchos::ParameterList& xparams,                //!< extra flags
-      Teuchos::RCP<DRT::Discretization>& actdis,            //!< discretisation
-      Teuchos::RCP<CORE::LINALG::Solver>& solver,           //!< the solver
-      Teuchos::RCP<CORE::LINALG::Solver>& contactsolver,    //!< the contact solver
-      Teuchos::RCP<CORE::IO::DiscretizationWriter>& output  //!< output writer
+      Teuchos::RCP<Discret::Discretization>& actdis,        //!< discretisation
+      Teuchos::RCP<Core::LinAlg::Solver>& solver,           //!< the solver
+      Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,    //!< the contact solver
+      Teuchos::RCP<Core::IO::DiscretizationWriter>& output  //!< output writer
   );
 
   /*====================================================================*/
@@ -80,10 +80,10 @@ namespace STR
       const Teuchos::ParameterList& ioflags,                //!< input-output-flags
       const Teuchos::ParameterList& sdyn,                   //!< structural dynamic flags
       const Teuchos::ParameterList& xparams,                //!< extra flags
-      Teuchos::RCP<DRT::Discretization>& actdis,            //!< discretisation
-      Teuchos::RCP<CORE::LINALG::Solver>& solver,           //!< the solver
-      Teuchos::RCP<CORE::LINALG::Solver>& contactsolver,    //!< the solver for contact/meshtying
-      Teuchos::RCP<CORE::IO::DiscretizationWriter>& output  //!< output writer
+      Teuchos::RCP<Discret::Discretization>& actdis,        //!< discretisation
+      Teuchos::RCP<Core::LinAlg::Solver>& solver,           //!< the solver
+      Teuchos::RCP<Core::LinAlg::Solver>& contactsolver,    //!< the solver for contact/meshtying
+      Teuchos::RCP<Core::IO::DiscretizationWriter>& output  //!< output writer
   );
 
 }  // namespace STR

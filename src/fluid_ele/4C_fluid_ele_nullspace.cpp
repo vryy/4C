@@ -11,8 +11,8 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FLD
 {
-  CORE::LINALG::SerialDenseMatrix ComputeFluidNullSpace(
-      const CORE::Nodes::Node& node, const int numdof, const int dimnsp)
+  Core::LinAlg::SerialDenseMatrix ComputeFluidNullSpace(
+      const Core::Nodes::Node& node, const int numdof, const int dimnsp)
   {
     /* the rigid body modes for fluids are:
 
@@ -29,7 +29,7 @@ namespace FLD
 
     if (numdof > 10) FOUR_C_THROW("Cannot define more than 10 degrees of freedom!");
 
-    CORE::LINALG::SerialDenseMatrix nullspace(numdof, dimnsp);
+    Core::LinAlg::SerialDenseMatrix nullspace(numdof, dimnsp);
     for (int i = 0; i < numdof; i++)
     {
       for (int j = 0; j < dimnsp; j++)

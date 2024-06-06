@@ -17,41 +17,42 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::Shell7pType DRT::ELEMENTS::Shell7pType::instance_;
+Discret::ELEMENTS::Shell7pType Discret::ELEMENTS::Shell7pType::instance_;
 
-DRT::ELEMENTS::Shell7pType& DRT::ELEMENTS::Shell7pType::Instance() { return instance_; }
+Discret::ELEMENTS::Shell7pType& Discret::ELEMENTS::Shell7pType::Instance() { return instance_; }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Shell7pType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Shell7pType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SHELL7P") return Create(id, owner);
   return Teuchos::null;
 }
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Shell7pType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Shell7pType::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::Shell7p(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::Shell7p(id, owner));
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::Shell7pType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Shell7pType::Create(
+    const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::Shell7p(-1, -1);
+  auto* object = new Discret::ELEMENTS::Shell7p(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-void DRT::ELEMENTS::Shell7pType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::Shell7pType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  STR::UTILS::SHELL::NodalBlockInformationShell(dwele, numdf, dimns, nv, np);
+  STR::UTILS::Shell::NodalBlockInformationShell(dwele, numdf, dimns, nv, np);
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Shell7pType::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Shell7pType::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  auto* shell = dynamic_cast<DRT::ELEMENTS::Shell7p*>(node.Elements()[0]);
+  auto* shell = dynamic_cast<Discret::ELEMENTS::Shell7p*>(node.Elements()[0]);
   if (!shell) FOUR_C_THROW("Cannot cast to Shell7p");
   int j;
   for (j = 0; j < shell->num_node(); ++j)
@@ -60,21 +61,21 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Shell7pType::ComputeNullSpace(
   double half_thickness = shell->GetThickness() / 2.0;
 
   // set director
-  const CORE::LINALG::SerialDenseMatrix nodal_directors = shell->GetDirectors();
-  CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, 1> director(true);
-  for (int dim = 0; dim < SHELL::DETAIL::num_dim; ++dim)
+  const Core::LinAlg::SerialDenseMatrix nodal_directors = shell->GetDirectors();
+  Core::LinAlg::Matrix<Shell::DETAIL::num_dim, 1> director(true);
+  for (int dim = 0; dim < Shell::DETAIL::num_dim; ++dim)
     director(dim, 0) = nodal_directors(j, dim) * half_thickness;
 
-  return STR::UTILS::SHELL::ComputeShellNullSpace(node, x0, director);
+  return STR::UTILS::Shell::ComputeShellNullSpace(node, x0, director);
 }
 
 
-void DRT::ELEMENTS::Shell7pType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::Shell7pType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SHELL7P"];
+  std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["SHELL7P"];
 
-  defsgeneral["QUAD4"] = INPUT::LineDefinition::Builder()
+  defsgeneral["QUAD4"] = Input::LineDefinition::Builder()
                              .AddIntVector("QUAD4", 4)
                              .AddNamedInt("MAT")
                              .AddNamedDouble("THICK")
@@ -93,7 +94,7 @@ void DRT::ELEMENTS::Shell7pType::setup_element_definition(
                              .add_optional_named_double_vector("FIBER3", 3)
                              .Build();
 
-  defsgeneral["QUAD8"] = INPUT::LineDefinition::Builder()
+  defsgeneral["QUAD8"] = Input::LineDefinition::Builder()
                              .AddIntVector("QUAD8", 8)
                              .AddNamedInt("MAT")
                              .AddNamedDouble("THICK")
@@ -112,7 +113,7 @@ void DRT::ELEMENTS::Shell7pType::setup_element_definition(
                              .add_optional_named_double_vector("FIBER3", 3)
                              .Build();
 
-  defsgeneral["QUAD9"] = INPUT::LineDefinition::Builder()
+  defsgeneral["QUAD9"] = Input::LineDefinition::Builder()
                              .AddIntVector("QUAD9", 9)
                              .AddNamedInt("MAT")
                              .AddNamedDouble("THICK")
@@ -131,7 +132,7 @@ void DRT::ELEMENTS::Shell7pType::setup_element_definition(
                              .add_optional_named_double_vector("FIBER3", 3)
                              .Build();
 
-  defsgeneral["TRI3"] = INPUT::LineDefinition::Builder()
+  defsgeneral["TRI3"] = Input::LineDefinition::Builder()
                             .AddIntVector("TRI3", 3)
                             .AddNamedInt("MAT")
                             .AddNamedDouble("THICK")
@@ -144,7 +145,7 @@ void DRT::ELEMENTS::Shell7pType::setup_element_definition(
                             .add_optional_named_double_vector("FIBER3", 3)
                             .Build();
 
-  defsgeneral["TRI6"] = INPUT::LineDefinition::Builder()
+  defsgeneral["TRI6"] = Input::LineDefinition::Builder()
                             .AddIntVector("TRI6", 6)
                             .AddNamedInt("MAT")
                             .AddNamedDouble("THICK")
@@ -158,17 +159,17 @@ void DRT::ELEMENTS::Shell7pType::setup_element_definition(
                             .Build();
 }
 
-int DRT::ELEMENTS::Shell7pType::Initialize(DRT::Discretization& dis)
+int Discret::ELEMENTS::Shell7pType::Initialize(Discret::Discretization& dis)
 {
-  STR::UTILS::SHELL::DIRECTOR::SetupShellElementDirectors(*this, dis);
+  STR::UTILS::Shell::Director::SetupShellElementDirectors(*this, dis);
 
   return 0;
 }
 
 
 
-DRT::ELEMENTS::Shell7p::Shell7p(const DRT::ELEMENTS::Shell7p& other)
-    : CORE::Elements::Element(other),
+Discret::ELEMENTS::Shell7p::Shell7p(const Discret::ELEMENTS::Shell7p& other)
+    : Core::Elements::Element(other),
       distype_(other.distype_),
       interface_ptr_(other.interface_ptr_),
       eletech_(other.eletech_),
@@ -180,10 +181,11 @@ DRT::ELEMENTS::Shell7p::Shell7p(const DRT::ELEMENTS::Shell7p& other)
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(other, other.eletech_);
 }
 
-DRT::ELEMENTS::Shell7p& DRT::ELEMENTS::Shell7p::operator=(const DRT::ELEMENTS::Shell7p& other)
+Discret::ELEMENTS::Shell7p& Discret::ELEMENTS::Shell7p::operator=(
+    const Discret::ELEMENTS::Shell7p& other)
 {
   if (this == &other) return *this;
-  CORE::Elements::Element::operator=(other);
+  Core::Elements::Element::operator=(other);
   distype_ = other.distype_;
   interface_ptr_ = other.interface_ptr_;
   eletech_ = other.eletech_;
@@ -196,25 +198,28 @@ DRT::ELEMENTS::Shell7p& DRT::ELEMENTS::Shell7p::operator=(const DRT::ELEMENTS::S
 }
 
 
-CORE::Elements::Element* DRT::ELEMENTS::Shell7p::Clone() const { return new Shell7p(*this); }
+Core::Elements::Element* Discret::ELEMENTS::Shell7p::Clone() const { return new Shell7p(*this); }
 
 
-int DRT::ELEMENTS::Shell7p::NumLine() const { return CORE::FE::getNumberOfElementLines(distype_); }
-
-
-int DRT::ELEMENTS::Shell7p::NumSurface() const { return 1; }
-
-
-void DRT::ELEMENTS::Shell7p::Pack(CORE::COMM::PackBuffer& data) const
+int Discret::ELEMENTS::Shell7p::NumLine() const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  return Core::FE::getNumberOfElementLines(distype_);
+}
+
+
+int Discret::ELEMENTS::Shell7p::NumSurface() const { return 1; }
+
+
+void Discret::ELEMENTS::Shell7p::Pack(Core::Communication::PackBuffer& data) const
+{
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class Element
-  CORE::Elements::Element::Pack(data);
+  Core::Elements::Element::Pack(data);
   // discretization type
   AddtoPack(data, (int)distype_);
   // element technology
@@ -226,24 +231,24 @@ void DRT::ELEMENTS::Shell7p::Pack(CORE::COMM::PackBuffer& data) const
   // Setup flag for material post setup
   data.AddtoPack(material_post_setup_);
   // optional data, e.g., EAS data, current thickness,..
-  std::shared_ptr<SHELL::Serializable> serializable_interface =
-      std::dynamic_pointer_cast<SHELL::Serializable>(shell_interface_);
+  std::shared_ptr<Shell::Serializable> serializable_interface =
+      std::dynamic_pointer_cast<Shell::Serializable>(shell_interface_);
   if (serializable_interface != nullptr) serializable_interface->Pack(data);
 }
 
 
-void DRT::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
   // discretization type
-  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
   // element technology
   ExtractfromPack(position, data, eletech_);
   // thickness in reference frame
@@ -251,11 +256,11 @@ void DRT::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
   // nodal directors
   ExtractfromPack(position, data, nodal_directors_);
   // Setup flag for material post setup
-  CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, material_post_setup_);
   // reset shell calculation interface
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(*this, eletech_);
-  std::shared_ptr<SHELL::Serializable> serializable_interface =
-      std::dynamic_pointer_cast<SHELL::Serializable>(shell_interface_);
+  std::shared_ptr<Shell::Serializable> serializable_interface =
+      std::dynamic_pointer_cast<Shell::Serializable>(shell_interface_);
   if (serializable_interface != nullptr) serializable_interface->Unpack(position, data);
 
   if (position != data.size())
@@ -263,19 +268,19 @@ void DRT::ELEMENTS::Shell7p::Unpack(const std::vector<char>& data)
 }
 
 
-Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::Shell7p::SolidMaterial(int nummat) const
+Teuchos::RCP<Mat::So3Material> Discret::ELEMENTS::Shell7p::SolidMaterial(int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(
-      CORE::Elements::Element::Material(nummat), true);
+  return Teuchos::rcp_dynamic_cast<Mat::So3Material>(
+      Core::Elements::Element::Material(nummat), true);
 }
 
 
-void DRT::ELEMENTS::Shell7p::set_params_interface_ptr(const Teuchos::ParameterList& p)
+void Discret::ELEMENTS::Shell7p::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   }
   else
   {
@@ -284,7 +289,7 @@ void DRT::ELEMENTS::Shell7p::set_params_interface_ptr(const Teuchos::ParameterLi
 }
 
 
-void DRT::ELEMENTS::Shell7p::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::Shell7p::VisNames(std::map<std::string, int>& names)
 {
   std::string result_thickness = "thickness";
   names[result_thickness] = 1;
@@ -292,10 +297,10 @@ void DRT::ELEMENTS::Shell7p::VisNames(std::map<std::string, int>& names)
 }  // VisNames()
 
 
-bool DRT::ELEMENTS::Shell7p::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::Shell7p::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (CORE::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::VisData(name, data)) return true;
 
   shell_interface_->VisData(name, data);
 
@@ -304,32 +309,33 @@ bool DRT::ELEMENTS::Shell7p::VisData(const std::string& name, std::vector<double
 }  // VisData()
 
 
-void DRT::ELEMENTS::Shell7p::Print(std::ostream& os) const
+void Discret::ELEMENTS::Shell7p::Print(std::ostream& os) const
 {
   os << "Shell7p ";
-  os << " discretization type: " << CORE::FE::CellTypeToString(distype_).c_str();
+  os << " discretization type: " << Core::FE::CellTypeToString(distype_).c_str();
   Element::Print(os);
 }
 
 
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Shell7p::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Shell7p::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<Shell7pLine, Shell7p>(CORE::COMM::buildLines, *this);
+  return Core::Communication::ElementBoundaryFactory<Shell7pLine, Shell7p>(
+      Core::Communication::buildLines, *this);
 }
 
 
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Shell7p::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Shell7p::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
 
-bool DRT::ELEMENTS::Shell7p::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::Shell7p::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   STR::ELEMENTS::ShellData shell_data = {};
 
   // set discretization type
-  distype_ = CORE::FE::StringToCellType(distype);
+  distype_ = Core::FE::StringToCellType(distype);
 
   // set thickness in reference frame
   linedef->ExtractDouble("THICK", thickness_);
@@ -340,8 +346,8 @@ bool DRT::ELEMENTS::Shell7p::ReadElement(
   STR::ELEMENTS::ShellLockingTypes locking_types = {};
   if (linedef->HaveNamed("EAS"))
   {
-    eletech_.insert(INPAR::STR::EleTech::eas);
-    STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(distype_, linedef, locking_types);
+    eletech_.insert(Inpar::STR::EleTech::eas);
+    STR::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(distype_, linedef, locking_types);
   }
 
   // set calculation interface pointer
@@ -350,14 +356,14 @@ bool DRT::ELEMENTS::Shell7p::ReadElement(
   // read and set ANS technology for element
   if (linedef->HaveNamed("ANS"))
   {
-    shell_data.num_ans = STR::UTILS::SHELL::READELEMENT::ReadAndSetNumANS(distype_);
+    shell_data.num_ans = STR::UTILS::Shell::ReadElement::ReadAndSetNumANS(distype_);
   }
 
   // read SDC
   linedef->ExtractDouble("SDC", shell_data.sdc);
 
   // read and set number of material model
-  SetMaterial(0, MAT::Factory(STR::UTILS::SHELL::READELEMENT::ReadAndSetElementMaterial(linedef)));
+  SetMaterial(0, Mat::Factory(STR::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(linedef)));
 
   // setup shell calculation interface
   shell_interface_->Setup(*this, *SolidMaterial(), linedef, locking_types, shell_data);

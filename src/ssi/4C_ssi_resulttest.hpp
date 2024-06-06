@@ -34,7 +34,7 @@ namespace SSI
     \author fang
     \date 11/2017
   */
-  class SSIResultTest : public CORE::UTILS::ResultTest
+  class SSIResultTest : public Core::UTILS::ResultTest
   {
    public:
     /*!
@@ -44,7 +44,7 @@ namespace SSI
      */
     explicit SSIResultTest(const Teuchos::RCP<const SSI::SSIBase> ssi_base);
 
-    void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /*!

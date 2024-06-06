@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Scl::Scl(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::Scl::Scl(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : ElchSingleMat(matdata),
       valence_(matdata->Get<double>("VALENCE")),
       transnrcurve_(matdata->Get<int>("TRANSNR")),
@@ -33,8 +33,8 @@ MAT::PAR::Scl::Scl(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
       cbulk_(matdata->Get<double>("BULK_CONC")),
       susceptibility_(matdata->Get<double>("SUSCEPT")),
       delta_nu_(matdata->Get<double>("DELTA_NU")),
-      faraday_(GLOBAL::Problem::Instance()->ELCHControlParams().get<double>("FARADAY_CONSTANT")),
-      epsilon_0_(GLOBAL::Problem::Instance()
+      faraday_(Global::Problem::Instance()->ELCHControlParams().get<double>("FARADAY_CONSTANT")),
+      epsilon_0_(Global::Problem::Instance()
                      ->ELCHControlParams()
                      .sublist("DIFFCOND")
                      .get<double>("PERMITTIVITY_VACUUM"))
@@ -49,35 +49,35 @@ MAT::PAR::Scl::Scl(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Scl::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::Scl::create_material()
 {
-  return Teuchos::rcp(new MAT::Scl(this));
+  return Teuchos::rcp(new Mat::Scl(this));
 }
 
-MAT::SclType MAT::SclType::instance_;
+Mat::SclType Mat::SclType::instance_;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::COMM::ParObject* MAT::SclType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::SclType::Create(const std::vector<char>& data)
 {
-  auto* scl = new MAT::Scl();
+  auto* scl = new Mat::Scl();
   scl->Unpack(data);
   return scl;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Scl::Scl() : params_(nullptr) {}
+Mat::Scl::Scl() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Scl::Scl(MAT::PAR::Scl* params) : params_(params) {}
+Mat::Scl::Scl(Mat::PAR::Scl* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Scl::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::Scl::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -92,25 +92,25 @@ void MAT::Scl::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Scl::Unpack(const std::vector<char>& data)
+void Mat::Scl::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Scl*>(mat);
+        params_ = static_cast<Mat::PAR::Scl*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -123,7 +123,7 @@ void MAT::Scl::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::compute_transference_number(const double cint) const
+double Mat::Scl::compute_transference_number(const double cint) const
 {
   if (trans_nr_curve() < 0)
     return eval_pre_defined_funct(trans_nr_curve(), cint, trans_nr_params());
@@ -131,15 +131,15 @@ double MAT::Scl::compute_transference_number(const double cint) const
     return eval_pre_defined_funct(-1, cint, trans_nr_params());
   else
   {
-    return GLOBAL::Problem::Instance()
-        ->FunctionById<CORE::UTILS::FunctionOfScalar>(trans_nr_curve() - 1)
+    return Global::Problem::Instance()
+        ->FunctionById<Core::UTILS::FunctionOfScalar>(trans_nr_curve() - 1)
         .Evaluate(cint);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::compute_first_deriv_trans(const double cint) const
+double Mat::Scl::compute_first_deriv_trans(const double cint) const
 {
   if (trans_nr_curve() < 0)
     return eval_first_deriv_pre_defined_funct(trans_nr_curve(), cint, trans_nr_params());
@@ -147,15 +147,15 @@ double MAT::Scl::compute_first_deriv_trans(const double cint) const
     return eval_first_deriv_pre_defined_funct(-1, cint, trans_nr_params());
   else
   {
-    return GLOBAL::Problem::Instance()
-        ->FunctionById<CORE::UTILS::FunctionOfScalar>(trans_nr_curve() - 1)
+    return Global::Problem::Instance()
+        ->FunctionById<Core::UTILS::FunctionOfScalar>(trans_nr_curve() - 1)
         .EvaluateDerivative(cint, 1);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::compute_diffusion_coefficient(
+double Mat::Scl::compute_diffusion_coefficient(
     const double concentration, const double temperature) const
 {
   // L indicates the mobility factor corresponding to the linear onsager relation
@@ -211,7 +211,7 @@ double MAT::Scl::compute_diffusion_coefficient(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::compute_concentration_derivative_of_diffusion_coefficient(
+double Mat::Scl::compute_concentration_derivative_of_diffusion_coefficient(
     const double concentration, const double temperature) const
 {
   // L indicates the mobility factor corresponding to the linear onsager relation, which is
@@ -256,14 +256,14 @@ double MAT::Scl::compute_concentration_derivative_of_diffusion_coefficient(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::inv_val_valence_faraday_squared() const
+double Mat::Scl::inv_val_valence_faraday_squared() const
 {
   return std::pow(Valence() * params_->faraday_, -2);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::ComputePermittivity() const
+double Mat::Scl::ComputePermittivity() const
 {
   const double susceptibility = compute_susceptibility();
   return ((1.0 + susceptibility) * params_->epsilon_0_);
@@ -271,7 +271,7 @@ double MAT::Scl::ComputePermittivity() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::compute_onsager_coefficient(
+double Mat::Scl::compute_onsager_coefficient(
     const double concentration, const double temperature) const
 {
   // onsager coefficient (mobility factor) is derived from the measurable ionic conductivity and is
@@ -284,7 +284,7 @@ double MAT::Scl::compute_onsager_coefficient(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Scl::compute_concentration_derivative_of_onsager_coefficient(
+double Mat::Scl::compute_concentration_derivative_of_onsager_coefficient(
     const double concentration, const double temperature) const
 {
   // derivative of mobility factor w.r.t concentration depends on the concentration dependence of

@@ -25,7 +25,7 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -96,7 +96,7 @@ namespace DRT
       };
 
       /// Return output type of Gauss point data
-      INPAR::STR::GaussPointDataOutputType gauss_point_data_output() const
+      Inpar::STR::GaussPointDataOutputType gauss_point_data_output() const
       {
         check_init_setup();
         return gauss_point_data_output_type_;
@@ -147,12 +147,12 @@ namespace DRT
       bool output_stress_strain_;
 
       /// Output type of Gauss point data
-      INPAR::STR::GaussPointDataOutputType gauss_point_data_output_type_;
+      Inpar::STR::GaussPointDataOutputType gauss_point_data_output_type_;
       //@}
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -22,13 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declaration.
-namespace INPAR
+namespace Inpar
 {
-  namespace BEAMTOSOLID
+  namespace BeamToSolid
   {
     enum class BeamToSolidMortarShapefunctions;
   }
-}  // namespace INPAR
+}  // namespace Inpar
 
 
 namespace BEAMINTERACTION
@@ -63,10 +63,10 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
-        CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
-        CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+    void evaluate_and_assemble_mortar_contributions(const Discret::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
+        Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
+        Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
@@ -74,10 +74,10 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the local mortar matrices for this contact element pair.
      */
-    void evaluate_dm(CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
-        CORE::LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double>& local_M,
-        CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
-        CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const;
+    void evaluate_dm(Core::LinAlg::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+        Core::LinAlg::Matrix<mortar::n_dof_, surface::n_dof_, double>& local_M,
+        Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_kappa,
+        Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_constraint) const;
   };
 
   /**
@@ -87,8 +87,8 @@ namespace BEAMINTERACTION
    * @return Pointer to the created pair.
    */
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BeamToSolidSurfaceMeshtyingPairMortarFactory(
-      const CORE::FE::CellType surface_shape,
-      const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction);
+      const Core::FE::CellType surface_shape,
+      const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction);
 }  // namespace BEAMINTERACTION
 
 FOUR_C_NAMESPACE_CLOSE

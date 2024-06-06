@@ -24,8 +24,8 @@ Writing a new unit test roughly works like this:
 ### Testing for FOUR_C_THROW
 
 - In unit test executables, `FOUR_C_THROW` is automatically replaced by a version that throws a
-  `CORE::Exception`.
-- You can test for errors with `EXPECT_THROW(<code_with_error>, CORE::Exception);`
+  `Core::Exception`.
+- You can test for errors with `EXPECT_THROW(<code_with_error>, Core::Exception);`
 
 ### Testing code that runs in parallel
 

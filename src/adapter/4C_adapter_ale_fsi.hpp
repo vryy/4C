@@ -34,14 +34,14 @@ namespace ALE
 
 /*----------------------------------------------------------------------------*/
 /* class definitions */
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief ALE Wrapper for FSI Problems
    *
    *  Provide FSI specific ALE functionalities here by overloading the respective
-   *  routines from ADAPTER::AleWrapper
+   *  routines from Adapter::AleWrapper
    *
-   *  \sa ADAPTER::Ale, ADAPTER::AleWrapper
+   *  \sa Adapter::Ale, Adapter::AleWrapper
    *
    *  \author mayr.mt \date 10/2014
    */
@@ -66,7 +66,7 @@ namespace ADAPTER
     }
 
     //! get Dirichlet map extractor
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
     {
       return AleWrapper::GetDBCMapExtractor();
     }
@@ -75,7 +75,7 @@ namespace ADAPTER
     Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
 
   };  // class AleFsiWrapper
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

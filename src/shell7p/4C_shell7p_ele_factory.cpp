@@ -16,60 +16,60 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::unique_ptr<DRT::ELEMENTS::Shell7pEleCalcInterface>
-DRT::ELEMENTS::Shell7pFactory::provide_shell7p_calculation_interface(
-    const CORE::Elements::Element& ele, const std::set<INPAR::STR::EleTech>& eletech)
+std::unique_ptr<Discret::ELEMENTS::Shell7pEleCalcInterface>
+Discret::ELEMENTS::Shell7pFactory::provide_shell7p_calculation_interface(
+    const Core::Elements::Element& ele, const std::set<Inpar::STR::EleTech>& eletech)
 {
   switch (ele.Shape())
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      return define_calculation_interface_type<CORE::FE::CellType::quad4>(eletech);
+      return define_calculation_interface_type<Core::FE::CellType::quad4>(eletech);
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
-      return define_calculation_interface_type<CORE::FE::CellType::quad8>(eletech);
+      return define_calculation_interface_type<Core::FE::CellType::quad8>(eletech);
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      return define_calculation_interface_type<CORE::FE::CellType::quad9>(eletech);
+      return define_calculation_interface_type<Core::FE::CellType::quad9>(eletech);
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      return define_calculation_interface_type<CORE::FE::CellType::tri3>(eletech);
+      return define_calculation_interface_type<Core::FE::CellType::tri3>(eletech);
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      return define_calculation_interface_type<CORE::FE::CellType::tri6>(eletech);
+      return define_calculation_interface_type<Core::FE::CellType::tri6>(eletech);
     }
     default:
       FOUR_C_THROW("unknown distype provided");
   }
 }
 
-template <CORE::FE::CellType distype>
-std::unique_ptr<DRT::ELEMENTS::Shell7pEleCalcInterface>
-DRT::ELEMENTS::Shell7pFactory::define_calculation_interface_type(
-    const std::set<INPAR::STR::EleTech>& eletech)
+template <Core::FE::CellType distype>
+std::unique_ptr<Discret::ELEMENTS::Shell7pEleCalcInterface>
+Discret::ELEMENTS::Shell7pFactory::define_calculation_interface_type(
+    const std::set<Inpar::STR::EleTech>& eletech)
 {
   // here we go into the different cases for element technology
   switch (eletech.size())
   {
     // no element technology
     case 0:
-      return std::make_unique<DRT::ELEMENTS::Shell7pEleCalc<distype>>();
+      return std::make_unique<Discret::ELEMENTS::Shell7pEleCalc<distype>>();
     // simple: just one element technology
     case 1:
       switch (*eletech.begin())
       {
-        case INPAR::STR::EleTech::eas:
+        case Inpar::STR::EleTech::eas:
         {
-          if constexpr ((distype != CORE::FE::CellType::quad4) &&
-                        (distype != CORE::FE::CellType::quad9))
+          if constexpr ((distype != Core::FE::CellType::quad4) &&
+                        (distype != Core::FE::CellType::quad9))
           {
             FOUR_C_THROW("EAS is only implemented for quad4 and quad9 elements.");
           }
-          return std::make_unique<DRT::ELEMENTS::Shell7pEleCalcEas<distype>>();
+          return std::make_unique<Discret::ELEMENTS::Shell7pEleCalcEas<distype>>();
         }
         default:
           FOUR_C_THROW("unknown element technology");

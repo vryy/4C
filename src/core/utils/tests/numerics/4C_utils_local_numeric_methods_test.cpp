@@ -21,7 +21,7 @@ namespace
   {
     std::function<double(double)> function = [](double x) { return std::pow(x, 2) - 1; };
 
-    double root = CORE::UTILS::Bisection(function, 0.0, 5.0, 1e-12, 200);
+    double root = Core::UTILS::Bisection(function, 0.0, 5.0, 1e-12, 200);
 
     EXPECT_NEAR(root, 1.0, 1e-12);
   }
@@ -38,7 +38,7 @@ namespace
     // correct dfdx would be dfdx = 2x
     const double ref_dfdx = 2 * x;
 
-    double dfdx = CORE::UTILS::FirstDerivativeCentralDifferences(f_xminus, f_xplus, h);
+    double dfdx = Core::UTILS::FirstDerivativeCentralDifferences(f_xminus, f_xplus, h);
 
     EXPECT_NEAR(dfdx, ref_dfdx, std::pow(h, 2.0));
   }
@@ -56,7 +56,7 @@ namespace
     // correct dfdx would be ddfddx = 2
     const double ref_ddfddx = 2;
 
-    double ddfddx = CORE::UTILS::SecondDerivativeCentralDifferences(f_xminus, f_x, f_xplus, h);
+    double ddfddx = Core::UTILS::SecondDerivativeCentralDifferences(f_xminus, f_x, f_xplus, h);
 
     EXPECT_NEAR(ddfddx, ref_ddfddx, std::pow(h, 2.0));
   }

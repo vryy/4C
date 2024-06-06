@@ -31,13 +31,13 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  |Evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::RedInterAcinarDep::ActionType act = RedInterAcinarDep::none;
+  Discret::ELEMENTS::RedInterAcinarDep::ActionType act = RedInterAcinarDep::none;
 
   // get the action required
   std::string action = params.get<std::string>("action", "none");
@@ -83,13 +83,13 @@ int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
   /*
     Here one must add the steps for evaluating an element
   */
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
   switch (act)
   {
     case calc_sys_matrix_rhs:
     {
-      return DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Evaluate(
+      return Discret::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Evaluate(
           this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
     }
     break;
@@ -99,13 +99,13 @@ int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
     break;
     case get_initial_state:
     {
-      DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Initial(
+      Discret::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Initial(
           this, params, discretization, lm, elevec3, mat);
     }
     break;
     case set_bc:
     {
-      DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->EvaluateTerminalBC(
+      Discret::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->EvaluateTerminalBC(
           this, params, discretization, lm, elevec1, mat);
     }
     break;
@@ -120,7 +120,7 @@ int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
 
     case get_coupled_values:
     {
-      DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->GetCoupledValues(
+      Discret::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->GetCoupledValues(
           this, params, discretization, lm, mat);
     }
     break;
@@ -165,13 +165,13 @@ int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
   }  // end of switch(act)
 
   return 0;
-}  // end of DRT::ELEMENTS::RedInterAcinarDep::Evaluate
+}  // end of Discret::ELEMENTS::RedInterAcinarDep::Evaluate
 
 
-int DRT::ELEMENTS::RedInterAcinarDep::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::RedInterAcinarDep::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   return 0;
 }
@@ -182,9 +182,9 @@ int DRT::ELEMENTS::RedInterAcinarDep::evaluate_neumann(Teuchos::ParameterList& p
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedInterAcinarDep::evaluate_dirichlet(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1)
+int Discret::ELEMENTS::RedInterAcinarDep::evaluate_dirichlet(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
   return 0;
 }
@@ -194,17 +194,17 @@ int DRT::ELEMENTS::RedInterAcinarDep::evaluate_dirichlet(Teuchos::ParameterList&
  | Get optimal gaussrule for discretisation type                        |
  |                                                                      |
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::get_optimal_gaussrule(
-    const CORE::FE::CellType& distype)
+Core::FE::GaussRule1D Discret::ELEMENTS::RedInterAcinarDep::get_optimal_gaussrule(
+    const Core::FE::CellType& distype)
 {
-  CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;
+  Core::FE::GaussRule1D rule = Core::FE::GaussRule1D::undefined;
   switch (distype)
   {
-    case CORE::FE::CellType::line2:
-      rule = CORE::FE::GaussRule1D::line_2point;
+    case Core::FE::CellType::line2:
+      rule = Core::FE::GaussRule1D::line_2point;
       break;
-    case CORE::FE::CellType::line3:
-      rule = CORE::FE::GaussRule1D::line_3point;
+    case Core::FE::CellType::line3:
+      rule = Core::FE::GaussRule1D::line_3point;
       break;
     default:
       FOUR_C_THROW("Unknown number of nodes for Gaussrule initialization in inter-acinar linker.");
@@ -218,16 +218,16 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::get_optimal_gaussrule(
  | Check, whether higher order derivatives for shape functions          |
  | (dxdx, dxdy, ...) are necessary|                                     |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::RedInterAcinarDep::is_higher_order_element(
-    const CORE::FE::CellType distype) const
+bool Discret::ELEMENTS::RedInterAcinarDep::is_higher_order_element(
+    const Core::FE::CellType distype) const
 {
   bool hoel = true;
   switch (distype)
   {
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
       hoel = true;
       break;
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
       hoel = false;
       break;
     default:

@@ -26,60 +26,60 @@ documentation.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
-  namespace GMSH
+  namespace Gmsh
   {
-    //! for each CORE::FE::CellType find the appropriate Gmsh file type
+    //! for each Core::FE::CellType find the appropriate Gmsh file type
     inline std::string distypeToGmshElementHeader(
-        const CORE::FE::CellType distype  ///< element shape
+        const Core::FE::CellType distype  ///< element shape
     )
     {
       switch (distype)
       {
-        case CORE::FE::CellType::hex8:
+        case Core::FE::CellType::hex8:
           return "H";
           break;
-        case CORE::FE::CellType::hex20:
+        case Core::FE::CellType::hex20:
           return "H";
           break;
-        case CORE::FE::CellType::hex27:
+        case Core::FE::CellType::hex27:
           return "H";
           break;
-        case CORE::FE::CellType::tet4:
+        case Core::FE::CellType::tet4:
           return "S";
           break;
-        case CORE::FE::CellType::tet10:
+        case Core::FE::CellType::tet10:
           return "S";
           break;
-        case CORE::FE::CellType::point1:
+        case Core::FE::CellType::point1:
           return "P";
           break;
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
           return "Q";
           break;
-        case CORE::FE::CellType::quad8:
+        case Core::FE::CellType::quad8:
           return "Q";
           break;
-        case CORE::FE::CellType::quad9:
+        case Core::FE::CellType::quad9:
           return "Q";
           break;
-        case CORE::FE::CellType::tri3:
+        case Core::FE::CellType::tri3:
           return "T";
           break;
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::tri6:
           return "T";
           break;
-        case CORE::FE::CellType::line2:
+        case Core::FE::CellType::line2:
           return "L";
           break;
-        case CORE::FE::CellType::line3:
+        case Core::FE::CellType::line3:
           return "L2";
           break;
-        case CORE::FE::CellType::wedge6:
+        case Core::FE::CellType::wedge6:
           return "I";
           break;
-        case CORE::FE::CellType::wedge15:
+        case Core::FE::CellType::wedge15:
           return "I";
           break;
         default:
@@ -88,56 +88,56 @@ namespace CORE::IO
       return "xxx";
     }
 
-    //! for each CORE::FE::CellType find the appropriate number of element nodes for
+    //! for each Core::FE::CellType find the appropriate number of element nodes for
     //! Gmsh output
-    inline int distypeToGmshNumNode(const CORE::FE::CellType distype  ///< element shape
+    inline int distypeToGmshNumNode(const Core::FE::CellType distype  ///< element shape
     )
     {
       switch (distype)
       {
-        case CORE::FE::CellType::hex8:
+        case Core::FE::CellType::hex8:
           return 8;
           break;
-        case CORE::FE::CellType::hex20:
+        case Core::FE::CellType::hex20:
           return 8;
           break;
-        case CORE::FE::CellType::hex27:
+        case Core::FE::CellType::hex27:
           return 8;
           break;
-        case CORE::FE::CellType::tet4:
+        case Core::FE::CellType::tet4:
           return 4;
           break;
-        case CORE::FE::CellType::tet10:
+        case Core::FE::CellType::tet10:
           return 4;
           break;
-        case CORE::FE::CellType::point1:
+        case Core::FE::CellType::point1:
           return 1;
           break;
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
           return 4;
           break;
-        case CORE::FE::CellType::quad8:
+        case Core::FE::CellType::quad8:
           return 4;
           break;
-        case CORE::FE::CellType::quad9:
+        case Core::FE::CellType::quad9:
           return 4;
           break;
-        case CORE::FE::CellType::tri3:
+        case Core::FE::CellType::tri3:
           return 3;
           break;
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::tri6:
           return 3;
           break;
-        case CORE::FE::CellType::line2:
+        case Core::FE::CellType::line2:
           return 2;
           break;
-        case CORE::FE::CellType::line3:
+        case Core::FE::CellType::line3:
           return 3;
           break;
-        case CORE::FE::CellType::wedge6:
+        case Core::FE::CellType::wedge6:
           return 6;
           break;
-        case CORE::FE::CellType::wedge15:
+        case Core::FE::CellType::wedge15:
           return 6;
           break;
         default:
@@ -147,7 +147,7 @@ namespace CORE::IO
     }
 
     //! write scalar field to Gmsh postprocessing file
-    void ScalarFieldToGmsh(const Teuchos::RCP<DRT::Discretization> discret,  ///< discretization
+    void ScalarFieldToGmsh(const Teuchos::RCP<Discret::Discretization> discret,  ///< discretization
         const Teuchos::RCP<const Epetra_Vector> scalarfield,  ///< scalar field to output
         std::ostream& s                                       ///< output stream
     );
@@ -155,7 +155,7 @@ namespace CORE::IO
     //! write scalar field to Gmsh postprocessing file
     //  Can we replace the ScalarFieldToGmsh function with this (nds=0)?
     void ScalarFieldDofBasedToGmsh(
-        const Teuchos::RCP<DRT::Discretization> discret,      ///< discretization
+        const Teuchos::RCP<Discret::Discretization> discret,  ///< discretization
         const Teuchos::RCP<const Epetra_Vector> scalarfield,  ///< scalar field to output
         const int nds,                                        ///< dofset
         std::ostream& s                                       ///< output stream
@@ -163,7 +163,7 @@ namespace CORE::IO
 
     //! write scalar field to Gmsh postprocessing file
     void ScalarElementFieldToGmsh(
-        const Teuchos::RCP<DRT::Discretization> discret,      ///< discretization
+        const Teuchos::RCP<Discret::Discretization> discret,  ///< discretization
         const Teuchos::RCP<const Epetra_Vector> scalarfield,  ///< scalar field to output
         std::ostream& s                                       ///< output stream
     );
@@ -172,7 +172,7 @@ namespace CORE::IO
     //! when writing the given vectorfield is displacement, displacenodes can be set true
     //! then it writes the nodal coordinates at the present time step.
     void VectorFieldDofBasedToGmsh(
-        const Teuchos::RCP<DRT::Discretization> discret,      ///< discretization
+        const Teuchos::RCP<Discret::Discretization> discret,  ///< discretization
         const Teuchos::RCP<const Epetra_Vector> vectorfield,  ///< vector field to output
         std::ostream& s,                                      ///< output stream
         const int nds = 0,  ///< number of dofset associated with vector field
@@ -180,31 +180,31 @@ namespace CORE::IO
 
     //! write dof-based vector field to Gmsh postprocessing file
     void VectorFieldMultiVectorDofBasedToGmsh(
-        const Teuchos::RCP<const DRT::Discretization> discret,     ///< discretization
-        const Teuchos::RCP<const Epetra_MultiVector> vectorfield,  ///< vector field to output
-        std::ostream& s,                                           ///< output stream
+        const Teuchos::RCP<const Discret::Discretization> discret,  ///< discretization
+        const Teuchos::RCP<const Epetra_MultiVector> vectorfield,   ///< vector field to output
+        std::ostream& s,                                            ///< output stream
         const int nds = 0  //< which dof-set to use from vector
     );
 
     //! write node-based vector field to Gmsh postprocessing file
     void VectorFieldNodeBasedToGmsh(
-        const Teuchos::RCP<const DRT::Discretization> discret,     ///< discretization
-        const Teuchos::RCP<const Epetra_MultiVector> vectorfield,  ///< vector field to output
-        std::ostream& s                                            ///< output stream
+        const Teuchos::RCP<const Discret::Discretization> discret,  ///< discretization
+        const Teuchos::RCP<const Epetra_MultiVector> vectorfield,   ///< vector field to output
+        std::ostream& s                                             ///< output stream
     );
 
     //! write dof-based vector field to Gmsh postprocessing file
     void SurfaceVectorFieldDofBasedToGmsh(
-        const Teuchos::RCP<DRT::Discretization> discret,      ///< discretization
+        const Teuchos::RCP<Discret::Discretization> discret,  ///< discretization
         const Teuchos::RCP<const Epetra_Vector> vectorfield,  ///< vector field to output
-        std::map<int, CORE::LINALG::Matrix<3, 1>>& currpos,
+        std::map<int, Core::LinAlg::Matrix<3, 1>>& currpos,
         std::ostream& s,  ///< output stream
         const int nsd, const int numdofpernode);
 
     //! write dof-based velocity / pressure field to Gmsh postprocessing file
     //!
     void VelocityPressureFieldDofBasedToGmsh(
-        const Teuchos::RCP<DRT::Discretization> discret,      ///< discretization
+        const Teuchos::RCP<Discret::Discretization> discret,  ///< discretization
         const Teuchos::RCP<const Epetra_Vector> vectorfield,  ///< vector field to output
         const std::string field,                              ///< "velocity" or "pressure"
         std::ostream& s,                                      ///< output stream
@@ -213,15 +213,15 @@ namespace CORE::IO
 
     //! write node-based scalar field to Gmsh postprocessing file
     void ScalarFieldNodeBasedToGmsh(
-        const Teuchos::RCP<const DRT::Discretization> discret,  ///< discretization
-        const Teuchos::RCP<const Epetra_Vector> scalarfield,    ///< scalar field to output
-        std::ostream& s                                         ///< output stream
+        const Teuchos::RCP<const Discret::Discretization> discret,  ///< discretization
+        const Teuchos::RCP<const Epetra_Vector> scalarfield,        ///< scalar field to output
+        std::ostream& s                                             ///< output stream
     );
 
     //! take an array (3,numnode) and translate it to the coordinate section of a Gmsh element entry
     template <class M>
     inline void CoordinatesToStream(const M& coord,  ///< position array (3, numnode)
-        const CORE::FE::CellType distype,            ///< element shape
+        const Core::FE::CellType distype,            ///< element shape
         std::ostream& s                              ///< output stream
     )
     {
@@ -250,7 +250,7 @@ namespace CORE::IO
     //! take an array (3,numnode) and translate it to the coordinate section of a Gmsh element entry
     template <class M>
     inline void CoordinatesToStream2D(const M& coord,  ///< position array (3, numnode)
-        const CORE::FE::CellType distype,              ///< element shape
+        const Core::FE::CellType distype,              ///< element shape
         std::ostream& s)
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -279,7 +279,7 @@ namespace CORE::IO
     //! -> gives a constant value over the element; used to plot the mesh without any physical field
     inline void ScalarToStream(
         const double scalar,               ///< constant (arbitrary) value assigned to elements
-        const CORE::FE::CellType distype,  ///< element shape
+        const Core::FE::CellType distype,  ///< element shape
         std::ostream& s)
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -301,14 +301,14 @@ namespace CORE::IO
     }
 
     //! take a scalar value at a point and translate it into Gmsh postprocessing format
-    void ScalarToStream(const CORE::LINALG::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
+    void ScalarToStream(const Core::LinAlg::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
         const double scalarvalue,                                    ///< scalar value at this point
         std::ostream& s                                              ///< stream
     );
 
     //! take a scalar value at a point and translate it into Gmsh postprocessing format
-    void VectorToStream(const CORE::LINALG::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
-        const CORE::LINALG::Matrix<3, 1>& vectorvalue,               ///< vector at this point
+    void VectorToStream(const Core::LinAlg::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
+        const Core::LinAlg::Matrix<3, 1>& vectorvalue,               ///< vector at this point
         std::ostream& s                                              ///< stream
     );
 
@@ -316,7 +316,7 @@ namespace CORE::IO
     //! entry
     template <class V>
     inline void ScalarFieldToStream(const V& scalarfield,
-        const CORE::FE::CellType distype,  ///< element shape
+        const Core::FE::CellType distype,  ///< element shape
         std::ostream& s)
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -341,7 +341,7 @@ namespace CORE::IO
     //! entry
     template <class M>
     inline void VectorFieldToStream(const M& vectorfield,  ///< vector value array (3, numnode)
-        const CORE::FE::CellType distype,                  ///< element shape
+        const Core::FE::CellType distype,                  ///< element shape
         std::ostream& s)
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -372,7 +372,7 @@ namespace CORE::IO
     //! entry
     template <class M>
     inline void VectorFieldToStream2D(const M& vectorfield,  ///< vector value array (3, numnode)
-        const CORE::FE::CellType distype,                    ///< element shape
+        const Core::FE::CellType distype,                    ///< element shape
         std::ostream& s)
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -400,7 +400,7 @@ namespace CORE::IO
     //! entry
     template <class M>
     inline void TensorFieldToStream(const M& tensorfield,
-        const CORE::FE::CellType distype,  ///< element shape
+        const Core::FE::CellType distype,  ///< element shape
         std::ostream& s)
     {
       s.setf(std::ios::scientific, std::ios::floatfield);
@@ -426,38 +426,38 @@ namespace CORE::IO
       s << "};";
     }
 
-    //! take an entire CORE::Elements::Element and print it with constant scalar value at its
+    //! take an entire Core::Elements::Element and print it with constant scalar value at its
     //! initial position
     void elementAtInitialPositionToStream(
-        const double scalar, const CORE::Elements::Element* ele, std::ostream& s);
+        const double scalar, const Core::Elements::Element* ele, std::ostream& s);
 
-    //! take an entire CORE::Elements::Element and print it with constant scalar value at its
+    //! take an entire Core::Elements::Element and print it with constant scalar value at its
     //! initial position
     std::string elementAtInitialPositionToString(
-        const double scalar, const CORE::Elements::Element* ele);
+        const double scalar, const Core::Elements::Element* ele);
 
-    //! take an entire CORE::Elements::Element and print it with constant scalar value at the given
+    //! take an entire Core::Elements::Element and print it with constant scalar value at the given
     //! position
     void elementAtCurrentPositionToStream(
         const double scalar,                 ///< scalar value for the entire element
-        const CORE::Elements::Element* ele,  ///< element to print
-        const std::map<int, CORE::LINALG::Matrix<3, 1>>&
+        const Core::Elements::Element* ele,  ///< element to print
+        const std::map<int, Core::LinAlg::Matrix<3, 1>>&
             currentelepositions,  ///< nodal position array
         std::ostream& s);
 
-    //! take an entire CORE::Elements::Element and print it with constant scalar value at the given
+    //! take an entire Core::Elements::Element and print it with constant scalar value at the given
     //! position
     std::string elementAtCurrentPositionToString(
         const double scalar,                 ///< scalar value for the entire element
-        const CORE::Elements::Element* ele,  ///< element to print
-        const std::map<int, CORE::LINALG::Matrix<3, 1>>&
+        const Core::Elements::Element* ele,  ///< element to print
+        const std::map<int, Core::LinAlg::Matrix<3, 1>>&
             currentelepositions  ///< nodal position array
     );
 
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element
     //! entry
     template <class M>
-    void cellWithScalarToStream(const CORE::FE::CellType distype,  ///< element shape
+    void cellWithScalarToStream(const Core::FE::CellType distype,  ///< element shape
         const double scalar,  ///< scalar value for the entire element
         const M& xyze,        ///< position array (3, numnode)
         std::ostream& s)
@@ -472,7 +472,7 @@ namespace CORE::IO
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element
     //! entry
     template <class M>
-    std::string cellWithScalarToString(const CORE::FE::CellType distype,  ///< element shape
+    std::string cellWithScalarToString(const Core::FE::CellType distype,  ///< element shape
         const double scalar,  ///< scalar value for the entire element
         const M& xyze         ///< position array (3, numnode)
     )
@@ -485,7 +485,7 @@ namespace CORE::IO
     //! take an value array (numnode) and a position array (3,numnode) and translate it to an
     //! element section of a Gmsh postprocessing file
     template <class V, class M>
-    inline void cellWithScalarFieldToStream(const CORE::FE::CellType distype,  ///< element shape
+    inline void cellWithScalarFieldToStream(const Core::FE::CellType distype,  ///< element shape
         const V& scalarfield,  ///< scalar field in the element
         const M& xyze,         ///< position array (3, numnode)
         std::ostream& s)
@@ -501,7 +501,7 @@ namespace CORE::IO
     //! element section of a Gmsh postprocessing file
     template <class V, class M>
     inline std::string cellWithScalarFieldToString(
-        const CORE::FE::CellType distype,  ///< element shape
+        const Core::FE::CellType distype,  ///< element shape
         const V& scalarfield,              ///< scalar field in the element
         const M& xyze                      ///< position array (3, numnode)
     )
@@ -514,7 +514,7 @@ namespace CORE::IO
     //! take an value array (3,numnode) and a position array (3,numnode) and translate it to an
     //! element section of a Gmsh postprocessing file
     template <class M1, class M2>
-    inline void cellWithVectorFieldToStream(const CORE::FE::CellType distype,  ///< element shape
+    inline void cellWithVectorFieldToStream(const Core::FE::CellType distype,  ///< element shape
         const M1& vectorfield,  ///< vector field in the element (3, numnode)
         const M2& xyze,         ///< position array (3, numnode)
         std::ostream& s)
@@ -530,7 +530,7 @@ namespace CORE::IO
     //! element section of a Gmsh postprocessing file
     template <class M1, class M2>
     inline std::string cellWithVectorFieldToString(
-        const CORE::FE::CellType distype,  ///< element shape
+        const Core::FE::CellType distype,  ///< element shape
         const M1& vectorfield,             ///< vector field in the element (3, numnode)
         const M2& xyze                     ///< position array (3, numnode)
     )
@@ -543,7 +543,7 @@ namespace CORE::IO
     //! take an value array (9,numnode) and a position array (3,numnode) and translate it to an
     //! element section of a Gmsh postprocessing file
     template <class M1, class M2>
-    inline void cellWithTensorFieldToStream(const CORE::FE::CellType distype,  ///< element shape
+    inline void cellWithTensorFieldToStream(const Core::FE::CellType distype,  ///< element shape
         const M1& tensorfield,  ///< tensor field in the element (9,numnode)
         const M2& xyze,         ///< position array (3, numnode)
         std::ostream& s)
@@ -559,7 +559,7 @@ namespace CORE::IO
     //! element section of a Gmsh postprocessing file
     template <class M1, class M2>
     inline std::string cellWithTensorFieldToString(
-        const CORE::FE::CellType distype,  ///< element shape
+        const Core::FE::CellType distype,  ///< element shape
         const M1& tensorfield,             ///< tensor field in the element (9,numnode)
         const M2& xyze                     ///< position array (3, numnode)
     )
@@ -570,28 +570,28 @@ namespace CORE::IO
     }
 
     /// print a piece of text at a given position
-    std::string text3dToString(const CORE::LINALG::Matrix<3, 1>& xyz,  ///< 3d Position of text
+    std::string text3dToString(const Core::LinAlg::Matrix<3, 1>& xyz,  ///< 3d Position of text
         const std::string& text,                                       ///< text to be printed
         const int fontsize                                             ///< font size
     );
 
     //! print discretization in initial configuration (t = 0)
     void disToStream(const std::string& text, const double scalar,
-        const Teuchos::RCP<DRT::Discretization> dis, std::ostream& s);
+        const Teuchos::RCP<Discret::Discretization> dis, std::ostream& s);
 
     //! print discretization in initial configuration (t = 0)
-    std::string disToString(
-        const std::string& text, const double scalar, const Teuchos::RCP<DRT::Discretization> dis);
+    std::string disToString(const std::string& text, const double scalar,
+        const Teuchos::RCP<Discret::Discretization> dis);
 
     //! print discretization in current configuration (t > 0)
     void disToStream(const std::string& text, const double scalar,
-        const Teuchos::RCP<DRT::Discretization> dis,
-        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, std::ostream& s);
+        const Teuchos::RCP<Discret::Discretization> dis,
+        const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, std::ostream& s);
 
     //! print discretization in current configuration (t > 0)
     std::string disToString(const std::string& text, const double scalar,
-        const Teuchos::RCP<DRT::Discretization> dis,
-        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
+        const Teuchos::RCP<Discret::Discretization> dis,
+        const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions);
 
     std::string GetNewFileNameAndDeleteOldFiles(
         const std::string& filename_base, const std::string& file_name_prefix,
@@ -607,8 +607,8 @@ namespace CORE::IO
         const bool screen_out,
         const int pid = 0  ///< my processor id
     );
-  }  // namespace GMSH
-}  // namespace CORE::IO
+  }  // namespace Gmsh
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

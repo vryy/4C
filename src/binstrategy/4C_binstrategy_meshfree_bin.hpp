@@ -17,16 +17,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
-  namespace MESHFREE
+  namespace MeshFree
   {
     /*--------------------------------------------------------------------------*/
     /*!
      * \brief A meshfree bin adds the possibility to add and delete nodes
      *        from elements dynamically
      *
-     * Rather than deriving this class directly from CORE::Elements::Element, we set the base
+     * Rather than deriving this class directly from Core::Elements::Element, we set the base
      * element as a template argument in order to allow for both standard elements
      * and face elements, i.e., elements that have a parent element. In
      * particular, it allows for a clean interface to the meshfree types with
@@ -61,19 +61,19 @@ namespace DRT
        * Makes a deep copy of a meshfree bin
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
-      MeshfreeBin(const DRT::MESHFREE::MeshfreeBin<ELEMENT>& old);
+      MeshfreeBin(const Discret::MeshFree::MeshfreeBin<ELEMENT>& old);
 
       /*------------------------------------------------------------------------*/
       /*!
        * \brief Deep copy the derived class and return pointer to it
        *
        * This method is sort of a copy constructor for a class derived from
-       * CORE::Elements::Element. It allows to copy construct the derived class without
+       * Core::Elements::Element. It allows to copy construct the derived class without
        * knowing what it actually is using the base class Element.
        *
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
-      CORE::Elements::Element* Clone() const override = 0;
+      Core::Elements::Element* Clone() const override = 0;
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -99,7 +99,7 @@ namespace DRT
        * Adds entry at the end of nodeid_ and node_ pointers
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
-      virtual void AddNode(CORE::Nodes::Node* nodeptr  //!< (in): pointer to node to be added
+      virtual void AddNode(Core::Nodes::Node* nodeptr  //!< (in): pointer to node to be added
       )
       {
         ELEMENT::nodeid_.push_back(nodeptr->Id());
@@ -118,7 +118,7 @@ namespace DRT
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
       virtual void AddNode(const int gid,  //!< (in): global id of node to be added
-          CORE::Nodes::Node* nodeptr       //!< (in): pointer to node to be added
+          Core::Nodes::Node* nodeptr       //!< (in): pointer to node to be added
       )
       {
         ELEMENT::nodeid_.push_back(gid);
@@ -151,8 +151,8 @@ namespace DRT
      private:
     };  // class MeshfreeBin
 
-  }  // namespace MESHFREE
-}  // namespace DRT
+  }  // namespace MeshFree
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

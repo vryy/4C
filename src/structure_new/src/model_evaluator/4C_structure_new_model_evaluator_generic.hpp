@@ -36,40 +36,40 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     class Group;
     enum class CorrectionType : int;
-  }  // namespace NLN
+  }  // namespace Nln
 }  // namespace NOX
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
 namespace STR
 {
   class Integrator;
 
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataGlobalState;
     class BaseDataIO;
     class Base;
-  }  // namespace TIMINT
+  }  // namespace TimeInt
 
   namespace MODELEVALUATOR
   {
@@ -104,10 +104,10 @@ namespace STR
        * @param[in] dof_offset
        */
       virtual void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
-          const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
+          const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
           const Teuchos::RCP<STR::Integrator>& int_ptr,
-          const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr, const int& dof_offset);
+          const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset);
 
       //! setup class variables
       virtual void Setup() = 0;
@@ -130,7 +130,7 @@ namespace STR
        *
        * @return Enum encoding the type of model evaluator
        */
-      virtual INPAR::STR::ModelType Type() const = 0;
+      virtual Inpar::STR::ModelType Type() const = 0;
 
       /*! \brief Reset model specific variables (without jacobian)
        *
@@ -236,7 +236,7 @@ namespace STR
        * \return Boolean to indicate sucess (true) or error (false)
        */
       virtual bool assemble_jacobian(
-          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const = 0;
+          Core::LinAlg::SparseOperator& jac, const double& timefac_np) const = 0;
 
       virtual bool assemble_cheap_soc_rhs(Epetra_Vector& f, const double& timefac_np) const
       {
@@ -249,7 +249,7 @@ namespace STR
        *  \param forced_writerestart (in) : special treatment is necessary, if the restart is forced
        */
       virtual void write_restart(
-          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
+          Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const = 0;
 
       /*! \brief read model specific restart information
        *
@@ -257,11 +257,11 @@ namespace STR
        *
        *  \date 07/2016
        *  \author hiermeier */
-      virtual void read_restart(CORE::IO::DiscretizationReader& ioreader) = 0;
+      virtual void read_restart(Core::IO::DiscretizationReader& ioreader) = 0;
 
       /*! \brief Predict the values for DoFs that are defined in
        *         the respective model evaluators, e.g. condensed variables.*/
-      virtual void Predict(const INPAR::STR::PredEnum& pred_type) = 0;
+      virtual void Predict(const Inpar::STR::PredEnum& pred_type) = 0;
 
       /*! \brief Recover condensed solution variables, meant to be called by run_post_compute_x
        */
@@ -281,7 +281,7 @@ namespace STR
        *
        *  \author hiermeier \date 03/17 */
       virtual void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) = 0;
+          const NOX::Nln::Group& curr_grp) = 0;
 
       /*! \brief Executed at the end of the ::NOX::Solver::Generic::Step() (f.k.a. Iterate()) method
        *
@@ -297,10 +297,10 @@ namespace STR
        *  \author hiermeier */
       virtual void RunPreSolve(const ::NOX::Solver::Generic& solver){};
 
-      /*! \brief Executed at the end of the NOX::NLN::LinearSystem::applyJacobianInverse()
+      /*! \brief Executed at the end of the NOX::Nln::LinearSystem::applyJacobianInverse()
        *  method
        *
-       *  \note See comment in the NOX::NLN::PrePostOp::IMPLICIT::Generic class.
+       *  \note See comment in the NOX::Nln::PrePostOp::IMPLICIT::Generic class.
        *
        *  \param rhs   : read-only access to the rhs vector
        *  \param result: full access to the result vector of the linear system
@@ -309,15 +309,15 @@ namespace STR
        *
        *  \author hiermeier \date 12/17 */
       virtual void run_post_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
-          const Epetra_Vector& xold, const NOX::NLN::Group& grp)
+          const Epetra_Vector& xold, const NOX::Nln::Group& grp)
       { /* empty */
       }
 
 
-      /*! \brief Executed at the beginning of the NOX::NLN::LinearSystem::applyJacobianInverse()
+      /*! \brief Executed at the beginning of the NOX::Nln::LinearSystem::applyJacobianInverse()
        *  method
        *
-       *  \note See comment in the NOX::NLN::PrePostOp::IMPLICIT::Generic class.
+       *  \note See comment in the NOX::Nln::PrePostOp::IMPLICIT::Generic class.
        *
        *  \param rhs   : read-only access to the rhs vector
        *  \param result: full access to the result vector of the linear system
@@ -326,11 +326,11 @@ namespace STR
        *
        *  \author hiermeier \date 12/17 */
       virtual void run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
-          const Epetra_Vector& xold, const NOX::NLN::Group& grp)
+          const Epetra_Vector& xold, const NOX::Nln::Group& grp)
       { /* empty */
       }
 
-      virtual bool correct_parameters(NOX::NLN::CorrectionType type) { return true; };
+      virtual bool correct_parameters(NOX::Nln::CorrectionType type) { return true; };
 
       /// update the model state corresponding to the time/load-step
       virtual void UpdateStepState(const double& timefac_n) = 0;
@@ -339,7 +339,7 @@ namespace STR
       virtual void evaluate_jacobian_contributions_from_element_level_for_ptc(){};
       // assemble the element contributions
       virtual void assemble_jacobian_contributions_from_element_level_for_ptc(
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n){};
+          Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n){};
 
       //! Update the element by end of the time step
       virtual void UpdateStepElement() = 0;
@@ -351,7 +351,7 @@ namespace STR
 
       /*! \brief calculate the stress/strain contributions of each model evaluator
        *
-       *  \remark This function is called from STR::TIMINT::Base::prepare_output() and calculates
+       *  \remark This function is called from STR::TimeInt::Base::prepare_output() and calculates
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
        *  OutputStepState() routine, because of the const status of the named function!
@@ -363,7 +363,7 @@ namespace STR
 
       /*! \brief calculate energy contributions of each model evaluator
        *
-       *  \remark This function is called from STR::TIMINT::Base::prepare_output() and calculates
+       *  \remark This function is called from STR::TimeInt::Base::prepare_output() and calculates
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
        *  OutputStepState() routine, because of the const status of the named function!
@@ -375,7 +375,7 @@ namespace STR
 
       /*! \brief calculate optional quantity contribution of each model evaluator
        *
-       *  \remark This function is called from STR::TIMINT::Base::prepare_output() and calculates
+       *  \remark This function is called from STR::TimeInt::Base::prepare_output() and calculates
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
        *  OutputStepState() routine, because of the const status of the named function!
@@ -389,7 +389,7 @@ namespace STR
        *
        * @param iowriter discretization writer that actually writes binary output to the disk
        */
-      virtual void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const = 0;
+      virtual void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const = 0;
 
       /**
        * \brief This method is called before the runtime output method is called.
@@ -453,19 +453,19 @@ namespace STR
       const STR::MODELEVALUATOR::Data& EvalData() const;
 
       //! Returns the global state data container
-      const STR::TIMINT::BaseDataGlobalState& GState() const;
+      const STR::TimeInt::BaseDataGlobalState& GState() const;
 
       //! Returns the global input/output data container
-      const STR::TIMINT::BaseDataIO& GInOutput() const;
+      const STR::TimeInt::BaseDataIO& GInOutput() const;
 
       //! Returns the (structural) discretization
-      const DRT::Discretization& Discret() const;
+      const Discret::Discretization& Discret() const;
 
       //! Returns the underlying STR::Integrator object
       const STR::Integrator& Int() const;
 
       //! Returns the underlying STR::TIMINT object
-      const STR::TIMINT::Base& TimInt() const;
+      const STR::TimeInt::Base& TimInt() const;
       //! @}
 
      protected:
@@ -489,16 +489,16 @@ namespace STR
       Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr();
 
       //! Returns the global state data container
-      STR::TIMINT::BaseDataGlobalState& g_state();
-      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& g_state_ptr();
+      STR::TimeInt::BaseDataGlobalState& g_state();
+      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& g_state_ptr();
 
       //! Returns the global input/output data container
-      STR::TIMINT::BaseDataIO& g_in_output();
-      Teuchos::RCP<STR::TIMINT::BaseDataIO> g_in_output_ptr();
+      STR::TimeInt::BaseDataIO& g_in_output();
+      Teuchos::RCP<STR::TimeInt::BaseDataIO> g_in_output_ptr();
 
       //! Returns the (structural) discretization
-      DRT::Discretization& discret();
-      Teuchos::RCP<DRT::Discretization>& discret_ptr();
+      Discret::Discretization& discret();
+      Teuchos::RCP<Discret::Discretization>& discret_ptr();
 
       //! Returns the underlying STR::Integrator object
       STR::Integrator& integrator();
@@ -518,19 +518,19 @@ namespace STR
       Teuchos::RCP<STR::MODELEVALUATOR::Data> eval_data_ptr_;
 
       //! pointer to the global state data container
-      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! pointer to input/ouput data container
-      Teuchos::RCP<STR::TIMINT::BaseDataIO> gio_ptr_;
+      Teuchos::RCP<STR::TimeInt::BaseDataIO> gio_ptr_;
 
       //! pointer to the problem discretization
-      Teuchos::RCP<DRT::Discretization> discret_ptr_;
+      Teuchos::RCP<Discret::Discretization> discret_ptr_;
 
       //! pointer to the structural (time) integrator
       Teuchos::RCP<STR::Integrator> int_ptr_;
 
       //! pointer to the time integrator strategy object
-      Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
+      Teuchos::RCP<const STR::TimeInt::Base> timint_ptr_;
 
       /*! \brief initial dof offset
        *

@@ -16,11 +16,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-SCATRA::LevelSetTimIntStationary::LevelSetTimIntStationary(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::LevelSetTimIntStationary::LevelSetTimIntStationary(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       LevelSetAlgorithm(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntStationary(actdis, solver, sctratimintparams, extraparams, output)
@@ -36,7 +37,7 @@ SCATRA::LevelSetTimIntStationary::LevelSetTimIntStationary(Teuchos::RCP<DRT::Dis
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetTimIntStationary::Init()
+void ScaTra::LevelSetTimIntStationary::Init()
 {
   // call Init()-functions of base classes
   // note: this order is important
@@ -60,7 +61,7 @@ void SCATRA::LevelSetTimIntStationary::Init()
 /*----------------------------------------------------------------------*
  |  setup time integration                                  rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetTimIntStationary::Setup()
+void ScaTra::LevelSetTimIntStationary::Setup()
 {
   // call Init()-functions of base classes
   // note: this order is important

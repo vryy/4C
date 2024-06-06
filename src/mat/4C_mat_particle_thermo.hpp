@@ -29,15 +29,15 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
-    class ParticleMaterialThermo : virtual public CORE::MAT::PAR::Parameter
+    class ParticleMaterialThermo : virtual public Core::Mat::PAR::Parameter
     {
      public:
       //! constructor
-      ParticleMaterialThermo(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ParticleMaterialThermo(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! @name material parameters
       //@{
@@ -60,12 +60,12 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override = 0;
+      Teuchos::RCP<Core::Mat::Material> create_material() override = 0;
     };
 
   }  // namespace PAR
 
-}  // namespace MAT
+}  // namespace Mat
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

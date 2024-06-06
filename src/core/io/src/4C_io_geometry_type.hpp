@@ -12,7 +12,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace CORE::IO
+namespace Core::IO
 {
   //! Geometry reading specification
   enum GeometryType
@@ -22,7 +22,7 @@ namespace CORE::IO
     geometry_file
   };
 
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

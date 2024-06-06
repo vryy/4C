@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -29,7 +29,7 @@ namespace FLD
   namespace UTILS
   {
     /// specific MultiMapExtractor to handle the fluid field
-    class MapExtractor : public CORE::LINALG::MultiMapExtractor
+    class MapExtractor : public Core::LinAlg::MultiMapExtractor
     {
      public:
       enum
@@ -43,7 +43,7 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const DRT::Discretization& dis, bool withpressure = false,
+      void Setup(const Discret::Discretization& dis, bool withpressure = false,
           bool overlapping = false, const int nds_master = 0);
 
       /*!
@@ -61,7 +61,7 @@ namespace FLD
           const FLD::UTILS::MapExtractor& extractor);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> conditioned_element_map(const DRT::Discretization& dis) const;
+      Teuchos::RCP<std::set<int>> conditioned_element_map(const Discret::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)
@@ -73,7 +73,7 @@ namespace FLD
 
     /// specific MultiMapExtractor to handle the part of fluid with volumetric surface flow
     /// condition
-    class VolumetricFlowMapExtractor : public CORE::LINALG::MultiMapExtractor
+    class VolumetricFlowMapExtractor : public Core::LinAlg::MultiMapExtractor
     {
      public:
       enum
@@ -83,14 +83,14 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const DRT::Discretization& dis);
+      void Setup(const Discret::Discretization& dis);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(VolumetricSurfaceFlowCond, cond_vol_surf_flow)
     };
 
     /// specific MultiMapExtractor to handle the part of fluid with Krylov space projection
-    class KSPMapExtractor : public CORE::LINALG::MultiMapExtractor
+    class KSPMapExtractor : public Core::LinAlg::MultiMapExtractor
     {
      public:
       enum
@@ -100,28 +100,28 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const DRT::Discretization& dis);
+      void Setup(const Discret::Discretization& dis);
 
       /// get all element gids those nodes are touched by any condition
-      Teuchos::RCP<std::set<int>> conditioned_element_map(const DRT::Discretization& dis) const;
+      Teuchos::RCP<std::set<int>> conditioned_element_map(const Discret::Discretization& dis) const;
 
       MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(KSPCond, cond_ksp)
     };
 
     /// specific MultiMapExtractor to handle the velocity-pressure split
-    class VelPressExtractor : public CORE::LINALG::MultiMapExtractor
+    class VelPressExtractor : public Core::LinAlg::MultiMapExtractor
     {
      public:
       /// setup the whole thing
-      void Setup(const DRT::Discretization& dis);
+      void Setup(const Discret::Discretization& dis);
 
       MAP_EXTRACTOR_VECTOR_METHODS(Velocity, 0)
       MAP_EXTRACTOR_VECTOR_METHODS(Pressure, 1)
     };
 
     /// specific MultiMapExtractor to handle the fsi and ale meshtying at the same time
-    class FsiMapExtractor : public CORE::LINALG::MultiMapExtractor
+    class FsiMapExtractor : public Core::LinAlg::MultiMapExtractor
     {
      public:
       enum
@@ -131,7 +131,7 @@ namespace FLD
       };
 
       /// setup the whole thing
-      void Setup(const DRT::Discretization& dis);
+      void Setup(const Discret::Discretization& dis);
 
       void Setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
           const FLD::UTILS::FsiMapExtractor& extractor);
@@ -141,7 +141,7 @@ namespace FLD
     };
 
     /// specific MultiMapExtractor to handle the fluid field
-    class XFluidFluidMapExtractor : public CORE::LINALG::MultiMapExtractor
+    class XFluidFluidMapExtractor : public Core::LinAlg::MultiMapExtractor
     {
      public:
       enum

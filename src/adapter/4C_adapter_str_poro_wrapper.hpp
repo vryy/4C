@@ -20,22 +20,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace GLOBAL
+namespace Global
 {
   class Problem;
 }
 
-namespace POROELAST
+namespace PoroElast
 {
   class Monolithic;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class FluidPoro;
 
   /// Just wrap, do nothing new, provides methods which are not available for Base Class
-  /// ADAPTER::Field!
+  /// Adapter::Field!
   class StructurePoroWrapper : public FieldWrapper
   {
    public:
@@ -53,7 +53,7 @@ namespace ADAPTER
     }
 
     /// direct access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> discretization()
+    virtual Teuchos::RCP<Discret::Discretization> discretization()
     {
       return structure_->discretization();
     }
@@ -62,7 +62,7 @@ namespace ADAPTER
     virtual double TimIntParam() const { return structure_->TimIntParam(); }
 
     /// Access to output object
-    virtual Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter()
+    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter()
     {
       return structure_->DiscWriter();
     }
@@ -116,16 +116,16 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> combined_dbc_map();
 
     //! perform result test
-    void TestResults(GLOBAL::Problem* problem);
+    void TestResults(Global::Problem* problem);
 
     //! return poro poro_field
-    const Teuchos::RCP<POROELAST::Monolithic>& poro_field();
+    const Teuchos::RCP<PoroElast::Monolithic>& poro_field();
 
     //! return poro structure_field
     const Teuchos::RCP<FSIStructureWrapper>& structure_field();
 
     //! return poro fluid_field
-    const Teuchos::RCP<ADAPTER::FluidPoro>& fluid_field();
+    const Teuchos::RCP<Adapter::FluidPoro>& fluid_field();
 
     //! Insert FSI Condition Vector
     Teuchos::RCP<Epetra_Vector> InsertFSICondVector(Teuchos::RCP<const Epetra_Vector> cond);
@@ -136,10 +136,10 @@ namespace ADAPTER
     bool isPoro() { return (type_ == FieldWrapper::type_PoroField); }
 
    protected:
-    Teuchos::RCP<POROELAST::Monolithic> poro_;     ///< underlying poro time integration
+    Teuchos::RCP<PoroElast::Monolithic> poro_;     ///< underlying poro time integration
     Teuchos::RCP<FSIStructureWrapper> structure_;  ///< underlying structural time integration
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

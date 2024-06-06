@@ -37,32 +37,36 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 05/14 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoSh8PlastType DRT::ELEMENTS::SoSh8PlastType::instance_;
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::nsd_,
-                    DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::nsd_>>
-    DRT::ELEMENTS::SoSh8Plast::jac_refe_;
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::nsd_,
-                    DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::nsd_>>
-    DRT::ELEMENTS::SoSh8Plast::jac_curr_;
-std::pair<bool,
-    CORE::LINALG::Matrix<DRT::ELEMENTS::SoSh8Plast::num_ans * DRT::ELEMENTS::SoSh8Plast::num_sp,
-        DRT::ELEMENTS::SoSh8Plast::numdofperelement_>>
-    DRT::ELEMENTS::SoSh8Plast::B_ans_loc_;
-std::pair<bool,
-    CORE::LINALG::Matrix<DRT::ELEMENTS::SoSh8Plast::numstr_, DRT::ELEMENTS::SoSh8Plast::numstr_>>
-    DRT::ELEMENTS::SoSh8Plast::TinvT_;
+Discret::ELEMENTS::SoSh8PlastType Discret::ELEMENTS::SoSh8PlastType::instance_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::nsd_,
+                    Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::nsd_>>
+    Discret::ELEMENTS::SoSh8Plast::jac_refe_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::nsd_,
+                    Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::nsd_>>
+    Discret::ELEMENTS::SoSh8Plast::jac_curr_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::SoSh8Plast::num_ans *
+                                         Discret::ELEMENTS::SoSh8Plast::num_sp,
+                    Discret::ELEMENTS::SoSh8Plast::numdofperelement_>>
+    Discret::ELEMENTS::SoSh8Plast::B_ans_loc_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::SoSh8Plast::numstr_,
+                    Discret::ELEMENTS::SoSh8Plast::numstr_>>
+    Discret::ELEMENTS::SoSh8Plast::TinvT_;
 
 
 
-DRT::ELEMENTS::SoSh8PlastType& DRT::ELEMENTS::SoSh8PlastType::Instance() { return instance_; }
+Discret::ELEMENTS::SoSh8PlastType& Discret::ELEMENTS::SoSh8PlastType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------*
 | create the new element type (public)                     seitz 05/14 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::SoSh8PlastType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SoSh8PlastType::Create(
+    const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::SoSh8Plast(-1, -1);
+  auto* object = new Discret::ELEMENTS::SoSh8Plast(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -71,13 +75,13 @@ CORE::COMM::ParObject* DRT::ELEMENTS::SoSh8PlastType::Create(const std::vector<c
 | create the new element type (public)                     seitz 05/14 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh8PlastType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::SoSh8Plast(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::SoSh8Plast(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -87,18 +91,18 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh8PlastType::Create(
 | create the new element type (public)                     seitz 05/14 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh8PlastType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::SoSh8Plast(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::SoSh8Plast(id, owner));
   return ele;
 }
 
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 05/14 |
 *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
+int Discret::ELEMENTS::SoSh8PlastType::Initialize(Discret::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 
@@ -110,7 +114,7 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
   {
     // get the actual element
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8Plast*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8Plast*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
 
     if (!actele->nodes_rearranged_)
@@ -118,29 +122,29 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
       switch (actele->thickdir_)
       {
         // check for automatic definition of thickness direction
-        case DRT::ELEMENTS::SoSh8Plast::autoj:
+        case Discret::ELEMENTS::SoSh8Plast::autoj:
         {
           actele->thickdir_ = actele->findthickdir();
           break;
         }
         // check for enforced definition of thickness direction
-        case DRT::ELEMENTS::SoSh8Plast::globx:
+        case Discret::ELEMENTS::SoSh8Plast::globx:
         {
-          CORE::LINALG::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
+          Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(0) = 1.0;
           actele->thickdir_ = actele->enfthickdir(thickdirglo);
           break;
         }
-        case DRT::ELEMENTS::SoSh8Plast::globy:
+        case Discret::ELEMENTS::SoSh8Plast::globy:
         {
-          CORE::LINALG::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
+          Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(1) = 1.0;
           actele->thickdir_ = actele->enfthickdir(thickdirglo);
           break;
         }
-        case DRT::ELEMENTS::SoSh8Plast::globz:
+        case Discret::ELEMENTS::SoSh8Plast::globz:
         {
-          CORE::LINALG::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
+          Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(2) = 1.0;
           actele->thickdir_ = actele->enfthickdir(thickdirglo);
           break;
@@ -153,15 +157,15 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
 
       switch (actele->thickdir_)
       {
-        case DRT::ELEMENTS::SoSh8Plast::globx:
-        case DRT::ELEMENTS::SoSh8Plast::globy:
-        case DRT::ELEMENTS::SoSh8Plast::globz:
+        case Discret::ELEMENTS::SoSh8Plast::globx:
+        case Discret::ELEMENTS::SoSh8Plast::globy:
+        case Discret::ELEMENTS::SoSh8Plast::globz:
         {
           FOUR_C_THROW("This should have been replaced by auto(r|s|t)");
           break;
         }
-        case DRT::ELEMENTS::SoSh8Plast::autor:
-        case DRT::ELEMENTS::SoSh8Plast::enfor:
+        case Discret::ELEMENTS::SoSh8Plast::autor:
+        case Discret::ELEMENTS::SoSh8Plast::enfor:
         {
           // resorting of nodes,
           // such that previous local r-dir is local t-dir afterwards
@@ -177,8 +181,8 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case DRT::ELEMENTS::SoSh8Plast::autos:
-        case DRT::ELEMENTS::SoSh8Plast::enfos:
+        case Discret::ELEMENTS::SoSh8Plast::autos:
+        case Discret::ELEMENTS::SoSh8Plast::enfos:
         {
           // resorting of nodes,
           // such that previous local s-dir is local t-dir afterwards
@@ -194,8 +198,8 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case DRT::ELEMENTS::SoSh8Plast::autot:
-        case DRT::ELEMENTS::SoSh8Plast::enfot:
+        case Discret::ELEMENTS::SoSh8Plast::autot:
+        case Discret::ELEMENTS::SoSh8Plast::enfot:
         {
           // no resorting necessary
           for (int node = 0; node < 8; ++node)
@@ -206,32 +210,32 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case DRT::ELEMENTS::SoSh8Plast::undefined:
+        case Discret::ELEMENTS::SoSh8Plast::undefined:
         {
-          if (actele->eastype_ == DRT::ELEMENTS::soh8p_eassosh8)
+          if (actele->eastype_ == Discret::ELEMENTS::soh8p_eassosh8)
           {
             // here comes plan B: morph So_sh8 to So_hex8
-            actele->re_init_eas(DRT::ELEMENTS::soh8p_easmild);
+            actele->re_init_eas(Discret::ELEMENTS::soh8p_easmild);
             actele->anstype_ = SoSh8Plast::ansnone_p;
             actele->init_jacobian_mapping();
             num_morphed_so_hex8_easmild++;
           }
-          else if (actele->eastype_ == DRT::ELEMENTS::soh8p_easnone)
+          else if (actele->eastype_ == Discret::ELEMENTS::soh8p_easnone)
           {
             // here comes plan B: morph So_sh8 to So_hex8
-            actele->re_init_eas(DRT::ELEMENTS::soh8p_easnone);
+            actele->re_init_eas(Discret::ELEMENTS::soh8p_easnone);
             actele->anstype_ = SoSh8Plast::ansnone_p;
             actele->init_jacobian_mapping();
             num_morphed_so_hex8_easnone++;
           }
-          else if (actele->eastype_ == DRT::ELEMENTS::soh8p_easmild)
+          else if (actele->eastype_ == Discret::ELEMENTS::soh8p_easmild)
           {
             // this might happen in post filter (for morped sosh8->soh8)
-            actele->re_init_eas(DRT::ELEMENTS::soh8p_easmild);
+            actele->re_init_eas(Discret::ELEMENTS::soh8p_easmild);
             actele->anstype_ = SoSh8Plast::ansnone_p;
             actele->init_jacobian_mapping();
           }
-          else if (actele->eastype_ == DRT::ELEMENTS::soh8p_easnone)
+          else if (actele->eastype_ == Discret::ELEMENTS::soh8p_easnone)
           {
             // this might happen in post filter (for morped sosh8->soh8)
             actele->anstype_ = SoSh8Plast::ansnone_p;
@@ -241,7 +245,7 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
             FOUR_C_THROW("Undefined EAS type");
           break;
         }
-        case DRT::ELEMENTS::SoSh8Plast::none:
+        case Discret::ELEMENTS::SoSh8Plast::none:
           break;
         default:
           FOUR_C_THROW("no thickness direction for So_sh8");
@@ -275,7 +279,7 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8Plast*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8Plast*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
     actele->init_jacobian_mapping();
   }
@@ -286,12 +290,12 @@ int DRT::ELEMENTS::SoSh8PlastType::Initialize(DRT::Discretization& dis)
 /*---------------------------------------------------------------------*
 |                                                          seitz 05/14 |
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8PlastType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::SoSh8PlastType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
+  std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
-  defs["HEX8"] = INPUT::LineDefinition::Builder()
+  defs["HEX8"] = Input::LineDefinition::Builder()
                      .AddIntVector("HEX8", 8)
                      .AddNamedInt("MAT")
                      .AddNamedString("KINEM")
@@ -308,19 +312,19 @@ void DRT::ELEMENTS::SoSh8PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | ctor (public)                                            seitz 05/14 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoSh8Plast::SoSh8Plast(int id, int owner)
-    : SoBase(id, owner), DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>(id, owner)
+Discret::ELEMENTS::SoSh8Plast::SoSh8Plast(int id, int owner)
+    : SoBase(id, owner), Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>(id, owner)
 {
   thickdir_ = globx;
   nodes_rearranged_ = false;
   thickvec_.resize(3, 0.);
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      GLOBAL::Problem::Instance()->getParameterList();
+      Global::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+    Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;
@@ -329,8 +333,8 @@ DRT::ELEMENTS::SoSh8Plast::SoSh8Plast(int id, int owner)
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                       seitz 05/14 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoSh8Plast::SoSh8Plast(const DRT::ELEMENTS::SoSh8Plast& old)
-    : SoBase(old), DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>(old)
+Discret::ELEMENTS::SoSh8Plast::SoSh8Plast(const Discret::ELEMENTS::SoSh8Plast& old)
+    : SoBase(old), Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>(old)
 {
   return;
 }
@@ -339,25 +343,25 @@ DRT::ELEMENTS::SoSh8Plast::SoSh8Plast(const DRT::ELEMENTS::SoSh8Plast& old)
  | deep copy this instance of Solid3 and return pointer to              |
  | it (public)                                              seitz 05/14 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::SoSh8Plast::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoSh8Plast::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::SoSh8Plast(*this);
+  auto* newelement = new Discret::ELEMENTS::SoSh8Plast(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 05/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8Plast::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::SoSh8Plast::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class So3Plast Element
-  DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::Pack(data);
+  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::Pack(data);
   // thickdir
   AddtoPack(data, thickdir_);
   AddtoPack(data, thickvec_);
@@ -370,16 +374,16 @@ void DRT::ELEMENTS::SoSh8Plast::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack data (public)                                     seitz 05/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8Plast::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoSh8Plast::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>::Unpack(basedata);
+  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::Unpack(basedata);
   // thickdir
   thickdir_ = static_cast<ThicknessDirection>(ExtractInt(position, data));
   ExtractfromPack(position, data, thickvec_);
@@ -391,7 +395,7 @@ void DRT::ELEMENTS::SoSh8Plast::Unpack(const std::vector<char>& data)
   return;
 }
 
-void DRT::ELEMENTS::SoSh8Plast::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoSh8Plast::Print(std::ostream& os) const
 {
   os << "So_sh8Plast ";
   Element::Print(os);
@@ -402,8 +406,8 @@ void DRT::ELEMENTS::SoSh8Plast::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 05/14 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   std::string buffer;
   linedef->ExtractString("KINEM", buffer);
@@ -416,13 +420,13 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
   {
-    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
     // everything ok
   }
   else
     FOUR_C_THROW("Reading of SO3_PLAST element failed! KINEM unknown");
 
-  CORE::FE::GaussIntegration ip(CORE::FE::CellType::hex8, 3);
+  Core::FE::GaussIntegration ip(Core::FE::CellType::hex8, 3);
   numgpt_ = ip.NumPoints();
   xsi_.resize(numgpt_);
   wgt_.resize(numgpt_);
@@ -440,11 +444,11 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
   int material = 0;
   linedef->ExtractInt("MAT", material);
 
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
-  Teuchos::RCP<MAT::So3Material> so3mat = SolidMaterial();
+  Teuchos::RCP<Mat::So3Material> so3mat = SolidMaterial();
   so3mat->Setup(numgpt_, linedef);
-  so3mat->ValidKinematics(INPAR::STR::KinemType::nonlinearTotLag);
+  so3mat->ValidKinematics(Inpar::STR::KinemType::nonlinearTotLag);
   if (have_plastic_spin())
     plspintype_ = plspin;
   else
@@ -510,15 +514,15 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
     FOUR_C_THROW("Reading of SO_SH8 thickness direction failed");
 
   // plasticity related stuff
-  KbbInv_.resize(numgpt_, CORE::LINALG::SerialDenseMatrix(plspintype_, plspintype_, true));
-  Kbd_.resize(numgpt_, CORE::LINALG::SerialDenseMatrix(plspintype_, numdofperelement_, true));
-  fbeta_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
-  dDp_last_iter_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
-  dDp_inc_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
+  KbbInv_.resize(numgpt_, Core::LinAlg::SerialDenseMatrix(plspintype_, plspintype_, true));
+  Kbd_.resize(numgpt_, Core::LinAlg::SerialDenseMatrix(plspintype_, numdofperelement_, true));
+  fbeta_.resize(numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true));
+  dDp_last_iter_.resize(numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true));
+  dDp_inc_.resize(numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true));
 
-  Teuchos::ParameterList plparams = GLOBAL::Problem::Instance()->semi_smooth_plast_params();
-  CORE::UTILS::AddEnumClassToParameterList(
-      "CORE::ProblemType", GLOBAL::Problem::Instance()->GetProblemType(), plparams);
+  Teuchos::ParameterList plparams = Global::Problem::Instance()->semi_smooth_plast_params();
+  Core::UTILS::AddEnumClassToParameterList(
+      "Core::ProblemType", Global::Problem::Instance()->GetProblemType(), plparams);
   ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 
   if (tsi_)
@@ -534,10 +538,10 @@ bool DRT::ELEMENTS::SoSh8Plast::ReadElement(
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::findthickdir()
+Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast::findthickdir()
 {
   // update element geometry
-  CORE::LINALG::Matrix<nen_, nsd_> xrefe(false);  // material coord. of element
+  Core::LinAlg::Matrix<nen_, nsd_> xrefe(false);  // material coord. of element
   for (int i = 0; i < nen_; ++i)
   {
     xrefe(i, 0) = this->Nodes()[i]->X()[0];
@@ -550,20 +554,20 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::findthi
       -0.125, -0.125, +0.125, -0.125, -0.125, -0.125, +0.125, +0.125, -0.125, +0.125, +0.125,
       +0.125, +0.125, -0.125, +0.125, +0.125};
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
-  CORE::LINALG::Matrix<nsd_, nen_> df0(df0_vector);
+  Core::LinAlg::Matrix<nsd_, nen_> df0(df0_vector);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   // (J0_i^A) = (X^A_{,i})^T
-  CORE::LINALG::Matrix<nsd_, nsd_> jac0;
+  Core::LinAlg::Matrix<nsd_, nsd_> jac0;
   jac0.MultiplyNN(df0, xrefe);
   // compute inverse of Jacobian at element origin
   // (Jinv0_A^i) = (X^A_{,i})^{-T}
-  CORE::LINALG::Matrix<nsd_, nsd_> iJ0(jac0);
+  Core::LinAlg::Matrix<nsd_, nsd_> iJ0(jac0);
   iJ0.Invert();
 
   // separate "stretch"-part of J-mapping between parameter and global space
   // (G0^ji) = (Jinv0^j_B) (krondelta^BA) (Jinv0_A^i)
-  CORE::LINALG::Matrix<nsd_, nsd_> jac0stretch;
+  Core::LinAlg::Matrix<nsd_, nsd_> jac0stretch;
   jac0stretch.MultiplyTN(iJ0, iJ0);
   const double r_stretch = sqrt(jac0stretch(0, 0));
   const double s_stretch = sqrt(jac0stretch(1, 1));
@@ -621,11 +625,11 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::findthi
         t_stretch, max_stretch);
 
   // thickness-vector in parameter-space, has 1.0 in thickness-coord
-  CORE::LINALG::Matrix<nsd_, 1> loc_thickvec(true);
+  Core::LinAlg::Matrix<nsd_, 1> loc_thickvec(true);
   loc_thickvec(thick_index) = 1.0;
   // thickness-vector in global coord is J times local thickness-vector
   // (X^A) = (J0_i^A)^T . (xi_i)
-  CORE::LINALG::Matrix<nsd_, 1> glo_thickvec;
+  Core::LinAlg::Matrix<nsd_, 1> glo_thickvec;
   glo_thickvec.MultiplyTN(jac0, loc_thickvec);
   // return doubles of thickness-vector
   thickvec_.resize(3);
@@ -639,11 +643,11 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::findthi
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::enfthickdir(
-    CORE::LINALG::Matrix<nsd_, 1>& thickdirglo)
+Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast::enfthickdir(
+    Core::LinAlg::Matrix<nsd_, 1>& thickdirglo)
 {
   // update element geometry
-  CORE::LINALG::Matrix<nen_, nsd_> xrefe(false);  // material coord. of element
+  Core::LinAlg::Matrix<nen_, nsd_> xrefe(false);  // material coord. of element
   for (int i = 0; i < nen_; ++i)
   {
     xrefe(i, 0) = this->Nodes()[i]->X()[0];
@@ -656,16 +660,16 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::enfthic
       -0.125, +0.125, +0.125, -0.125, -0.125, +0.125, -0.125, -0.125, -0.125, +0.125, +0.125,
       -0.125, +0.125, +0.125, +0.125, +0.125, -0.125, +0.125, +0.125};
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
-  CORE::LINALG::Matrix<nsd_, nen_> df0(df0_vector);
+  Core::LinAlg::Matrix<nsd_, nen_> df0(df0_vector);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   // (J0_i^A) = (X^A_{,i})^T
-  CORE::LINALG::Matrix<nsd_, nsd_> jac0(false);
+  Core::LinAlg::Matrix<nsd_, nsd_> jac0(false);
   jac0.MultiplyNN(df0, xrefe);
 
   // compute inverse of Jacobian at element origin
   // (Jinv0_A^i) = (X^A_{,i})^{-T}
-  CORE::LINALG::Matrix<nsd_, nsd_> iJ0(jac0);
+  Core::LinAlg::Matrix<nsd_, nsd_> iJ0(jac0);
   iJ0.Invert();
 
   // make enforced global thickness direction a unit vector
@@ -674,7 +678,7 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::enfthic
 
   // pull thickness direction from global to contra-variant local
   // (dxi^i) = (Jinv0_A^i)^T . (dX^A)
-  CORE::LINALG::Matrix<nsd_, 1> thickdirlocsharp(false);
+  Core::LinAlg::Matrix<nsd_, 1> thickdirlocsharp(false);
   thickdirlocsharp.MultiplyTN(iJ0, thickdirglo);
 
   // identify parametric co-ordinate closest to enforced thickness direction
@@ -714,11 +718,11 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::enfthic
   }
 
   // thickness-vector in parameter-space, has 1.0 in thickness-coord
-  CORE::LINALG::Matrix<nsd_, 1> loc_thickvec(true);
+  Core::LinAlg::Matrix<nsd_, 1> loc_thickvec(true);
   loc_thickvec(thick_index) = 1.0;
   // thickness-vector in global coord is J times local thickness-vector
   // (X^A) = (J0_i^A)^T . (xi_i)
-  CORE::LINALG::Matrix<nsd_, 1> glo_thickvec;
+  Core::LinAlg::Matrix<nsd_, 1> glo_thickvec;
   glo_thickvec.MultiplyTN(jac0, loc_thickvec);
   // return doubles of thickness-vector
   thickvec_.resize(3);
@@ -732,8 +736,8 @@ DRT::ELEMENTS::SoSh8Plast::ThicknessDirection DRT::ELEMENTS::SoSh8Plast::enfthic
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8Plast::evaluate_t(
-    const CORE::LINALG::Matrix<nsd_, nsd_>& jac, CORE::LINALG::Matrix<numstr_, numstr_>& TinvT)
+void Discret::ELEMENTS::SoSh8Plast::evaluate_t(
+    const Core::LinAlg::Matrix<nsd_, nsd_>& jac, Core::LinAlg::Matrix<numstr_, numstr_>& TinvT)
 {
   // build T^T transformation matrix which maps
   // between global (r,s,t)-coordinates and local (x,y,z)-coords
@@ -784,7 +788,7 @@ void DRT::ELEMENTS::SoSh8Plast::evaluate_t(
   TinvT(5, 5) = jac(0, 0) * jac(2, 2) + jac(2, 0) * jac(0, 2);
 
   // now evaluate T^{-T} with solver
-  CORE::LINALG::FixedSizeSerialDenseSolver<numstr_, numstr_, 1> solve_for_inverseT;
+  Core::LinAlg::FixedSizeSerialDenseSolver<numstr_, numstr_, 1> solve_for_inverseT;
   solve_for_inverseT.SetMatrix(TinvT);
   int err2 = solve_for_inverseT.Factor();
   int err = solve_for_inverseT.Invert();
@@ -796,18 +800,18 @@ void DRT::ELEMENTS::SoSh8Plast::evaluate_t(
 /*----------------------------------------------------------------------*
  |  setup of constant ANS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8Plast::anssetup(
-    const CORE::LINALG::Matrix<nen_, nsd_>& xrefe,  // material element coords
-    const CORE::LINALG::Matrix<nen_, nsd_>& xcurr,  // current element coords
-    std::vector<CORE::LINALG::Matrix<nsd_, nen_>>**
+void Discret::ELEMENTS::SoSh8Plast::anssetup(
+    const Core::LinAlg::Matrix<nen_, nsd_>& xrefe,  // material element coords
+    const Core::LinAlg::Matrix<nen_, nsd_>& xcurr,  // current element coords
+    std::vector<Core::LinAlg::Matrix<nsd_, nen_>>**
         deriv_sp,                                            // derivs eval. at all sampling points
-    std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>& jac_sps,  // jac at all sampling points
-    std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>&
+    std::vector<Core::LinAlg::Matrix<nsd_, nsd_>>& jac_sps,  // jac at all sampling points
+    std::vector<Core::LinAlg::Matrix<nsd_, nsd_>>&
         jac_cur_sps,  // current jac at all sampling points
-    CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& B_ans_loc)  // modified B
+    Core::LinAlg::Matrix<num_ans * num_sp, numdofperelement_>& B_ans_loc)  // modified B
 {
   // static matrix object of derivs at sampling points, kept in memory
-  static std::vector<CORE::LINALG::Matrix<nsd_, nen_>> df_sp(num_sp);
+  static std::vector<Core::LinAlg::Matrix<nsd_, nen_>> df_sp(num_sp);
   static bool dfsp_eval;  // flag for re-evaluate everything
 
   if (dfsp_eval != 0)
@@ -897,7 +901,7 @@ void DRT::ELEMENTS::SoSh8Plast::anssetup(
   ** evaluated at all sampling points
   */
   // loop over each sampling point
-  CORE::LINALG::Matrix<nsd_, nsd_> jac_cur;
+  Core::LinAlg::Matrix<nsd_, nsd_> jac_cur;
   for (int sp = 0; sp < num_sp; ++sp)
   {
     /* compute the CURRENT Jacobian matrix at the sampling point:
@@ -932,23 +936,23 @@ void DRT::ELEMENTS::SoSh8Plast::anssetup(
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8Plast::re_init_eas(const DRT::ELEMENTS::So3PlastEasType EASType)
+void Discret::ELEMENTS::SoSh8Plast::re_init_eas(const Discret::ELEMENTS::So3PlastEasType EASType)
 {
-  neas_ = DRT::ELEMENTS::PlastEasTypeToNumEasV(EASType);
+  neas_ = Discret::ELEMENTS::PlastEasTypeToNumEasV(EASType);
   eastype_ = EASType;
 
   if (eastype_ != soh8p_easnone)
   {
-    KaaInv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, neas_, true));
-    Kad_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, numdofperelement_, true));
-    feas_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
-    alpha_eas_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
-    alpha_eas_last_timestep_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
+    KaaInv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, neas_, true));
+    Kad_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, numdofperelement_, true));
+    feas_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
+    alpha_eas_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
+    alpha_eas_last_timestep_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
     alpha_eas_delta_over_last_timestep_ =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
-    alpha_eas_inc_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
-    Kba_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>(
-        numgpt_, CORE::LINALG::SerialDenseMatrix(5, neas_, true)));
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
+    alpha_eas_inc_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
+    Kba_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseMatrix>(
+        numgpt_, Core::LinAlg::SerialDenseMatrix(5, neas_, true)));
   }
 
   return;
@@ -957,29 +961,30 @@ void DRT::ELEMENTS::SoSh8Plast::re_init_eas(const DRT::ELEMENTS::So3PlastEasType
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // current displacements
-    std::vector<double>& vel,                                             // current velocities
-    std::vector<double>& temp,                                            // current temperatures
-    CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
+void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
+    std::vector<double>& disp,  // current displacements
+    std::vector<double>& vel,   // current velocities
+    std::vector<double>& temp,  // current temperatures
+    Core::LinAlg::Matrix<numdofperelement_, numdofperelement_>*
         stiffmatrix,  // element stiffness matrix
-    CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>* massmatrix,  // element mass matrix
-    CORE::LINALG::Matrix<numdofperelement_, 1>* force,      // element internal force vector
-    CORE::LINALG::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
-    CORE::LINALG::Matrix<numgpt_post, numstr_>* elestrain,  // strains at GP
+    Core::LinAlg::Matrix<numdofperelement_, numdofperelement_>* massmatrix,  // element mass matrix
+    Core::LinAlg::Matrix<numdofperelement_, 1>* force,      // element internal force vector
+    Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
+    Core::LinAlg::Matrix<numgpt_post, numstr_>* elestrain,  // strains at GP
     Teuchos::ParameterList& params,                         // algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress,                  // stress output option
-    const INPAR::STR::StrainType iostrain                   // strain output option
+    const Inpar::STR::StressType iostress,                  // stress output option
+    const Inpar::STR::StrainType iostrain                   // strain output option
 )
 {
   invalid_ele_data();
-  const bool is_tangDis = str_params_interface().GetPredictorType() == INPAR::STR::pred_tangdis;
+  const bool is_tangDis = str_params_interface().GetPredictorType() == Inpar::STR::pred_tangdis;
 
   fill_position_arrays(disp, vel, temp);
 
   // get plastic hyperelastic material
-  MAT::PlasticElastHyper* plmat = nullptr;
-  if (Material()->MaterialType() == CORE::Materials::m_plelasthyper)
-    plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
+  Mat::PlasticElastHyper* plmat = nullptr;
+  if (Material()->MaterialType() == Core::Materials::m_plelasthyper)
+    plmat = dynamic_cast<Mat::PlasticElastHyper*>(Material().get());
   else
     FOUR_C_THROW("so3_ssn_plast elements only with PlasticElastHyper material");
 
@@ -990,16 +995,16 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
   }
 
   // EAS matrix block
-  CORE::LINALG::SerialDenseMatrix Kda(numdofperelement_, neas_);
+  Core::LinAlg::SerialDenseMatrix Kda(numdofperelement_, neas_);
 
   // ANS modified rows of bop in local(parameter) coords
-  CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_> B_ans_loc;
+  Core::LinAlg::Matrix<num_ans * num_sp, numdofperelement_> B_ans_loc;
   // Jacobian evaluated at all ANS sampling points
-  std::vector<CORE::LINALG::Matrix<nsd_, nsd_>> jac_sps(num_sp);
+  std::vector<Core::LinAlg::Matrix<nsd_, nsd_>> jac_sps(num_sp);
   // CURRENT Jacobian evaluated at all ANS sampling points
-  std::vector<CORE::LINALG::Matrix<nsd_, nsd_>> jac_cur_sps(num_sp);
+  std::vector<Core::LinAlg::Matrix<nsd_, nsd_>> jac_cur_sps(num_sp);
   // pointer to derivs evaluated at all sampling points
-  std::vector<CORE::LINALG::Matrix<nsd_, nen_>>* deriv_sp =
+  std::vector<Core::LinAlg::Matrix<nsd_, nen_>>* deriv_sp =
       nullptr;  // derivs eval. at all sampling points
   // evaluate all necessary variables for ANS
   anssetup(xrefe(), xcurr(), &deriv_sp, jac_sps, jac_cur_sps, set_b_ans_loc());
@@ -1011,8 +1016,8 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
   {
     invalid_gp_data();
     // shape functions (shapefunct) and their first derivatives (deriv)
-    CORE::FE::shape_function<CORE::FE::CellType::hex8>(xsi_[gp], set_shape_function());
-    CORE::FE::shape_function_deriv1<CORE::FE::CellType::hex8>(xsi_[gp], set_deriv_shape_function());
+    Core::FE::shape_function<Core::FE::CellType::hex8>(xsi_[gp], set_shape_function());
+    Core::FE::shape_function_deriv1<Core::FE::CellType::hex8>(xsi_[gp], set_deriv_shape_function());
 
     kinematics(gp);
 
@@ -1053,7 +1058,7 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      CORE::LINALG::Matrix<numstr_, numdofperelement_> cb;
+      Core::LinAlg::Matrix<numstr_, numdofperelement_> cb;
       cb.Multiply(cmat(), bop());
       stiffmatrix->MultiplyTN(detJ_w, bop(), cb, 1.0);
 
@@ -1065,7 +1070,7 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
       {
         for (int jnod = 0; jnod < nen_; ++jnod)
         {
-          CORE::LINALG::Matrix<numstr_, 1> G_ij;
+          Core::LinAlg::Matrix<numstr_, 1> G_ij;
           G_ij(0) = deriv_shape_function()(0, inod) * deriv_shape_function()(0, jnod);  // rr-dir
           G_ij(1) = deriv_shape_function()(1, inod) * deriv_shape_function()(1, jnod);  // ss-dir
           G_ij(3) = deriv_shape_function()(0, inod) * deriv_shape_function()(1, jnod) +
@@ -1102,7 +1107,7 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
             FOUR_C_THROW("Cannot build geometric stiffness matrix on your ANS-choice!");
 
           // transformation of local(parameter) space 'back' to global(material) space
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> G_ij_glob;
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> G_ij_glob;
           G_ij_glob.Multiply(tinv_t(), G_ij);
 
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
@@ -1121,43 +1126,43 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
         // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
         // integrate Kda: Kad += (M^T . cmat . B) * detJ * w(gp)
         // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
-        CORE::LINALG::SerialDenseMatrix cM(numstr_, neas_, true);  // temporary c . M
+        Core::LinAlg::SerialDenseMatrix cM(numstr_, neas_, true);  // temporary c . M
         switch (eastype_)
         {
           case soh8p_eassosh8:
-            CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
-                PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
+            Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
+                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
                 cM.values(), cmat().A(), m_eas().values());
-            CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
-                PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
-                PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
+            Core::LinAlg::DenseFunctions::multiplyTN<double,
+                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
+                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
                 1.0, *KaaInv_, detJ_w, m_eas(), cM);
-            CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
-                PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
+            Core::LinAlg::DenseFunctions::multiplyTN<double,
+                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
                 numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.A());
-            CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, numdofperelement_, numstr_,
-                PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
+            Core::LinAlg::DenseFunctions::multiplyTN<double, numdofperelement_, numstr_,
+                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
                 1.0, Kda.values(), detJ_w, cb.A(), m_eas().values());
-            CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
-                PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numstr_, 1>(
+            Core::LinAlg::DenseFunctions::multiplyTN<double,
+                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numstr_, 1>(
                 1.0, feas_->values(), detJ_w, m_eas().values(), p_k2().A());
             break;
           case soh8p_easmild:
-            CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
-                PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
+            Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
+                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
                 cM.values(), cmat().A(), m_eas().values());
-            CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
-                PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_,
-                PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
+            Core::LinAlg::DenseFunctions::multiplyTN<double,
+                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_,
+                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
                 1.0, *KaaInv_, detJ_w, m_eas(), cM);
-            CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
-                PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_,
+            Core::LinAlg::DenseFunctions::multiplyTN<double,
+                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_,
                 numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.A());
-            CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, numdofperelement_, numstr_,
-                PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
+            Core::LinAlg::DenseFunctions::multiplyTN<double, numdofperelement_, numstr_,
+                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
                 1.0, Kda.values(), detJ_w, cb.A(), m_eas().values());
-            CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
-                PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_, 1>(
+            Core::LinAlg::DenseFunctions::multiplyTN<double,
+                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_, 1>(
                 1.0, feas_->values(), detJ_w, m_eas().values(), p_k2().A());
             break;
           case soh8p_easnone:
@@ -1200,41 +1205,41 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
   // Static condensation EAS --> stiff ********************************
   if (stiffmatrix != nullptr && !is_tangDis && eastype_ != soh8p_easnone)
   {
-    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+    using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
     solve_for_inverseKaa.setMatrix(KaaInv_);
     solve_for_inverseKaa.invert();
 
-    CORE::LINALG::SerialDenseMatrix kdakaai(numdofperelement_, neas_);
+    Core::LinAlg::SerialDenseMatrix kdakaai(numdofperelement_, neas_);
     switch (eastype_)
     {
       case soh8p_eassosh8:
-        CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
-            PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas,
-            PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
+        Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
+            PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas,
+            PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
             0., kdakaai.values(), 1., Kda.values(), KaaInv_->values());
         if (stiffmatrix != nullptr)
-          CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
-              PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numdofperelement_>(
+          Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
+              PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numdofperelement_>(
               1., stiffmatrix->A(), -1., kdakaai.values(), Kad_->values());
         if (force != nullptr)
-          CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
-              PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, 1>(
+          Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
+              PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, 1>(
               1., force->A(), -1., kdakaai.values(), feas_->values());
         break;
       case soh8p_easmild:
-        CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
-            PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas,
-            PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
+        Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
+            PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas,
+            PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
             0., kdakaai.values(), 1., Kda.values(), KaaInv_->values());
         if (stiffmatrix != nullptr)
-          CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
-              PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numdofperelement_>(
+          Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
+              PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numdofperelement_>(
               1., stiffmatrix->A(), -1., kdakaai.values(), Kad_->values());
         if (force != nullptr)
-          CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
-              PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, 1>(
+          Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
+              PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
               1., force->A(), -1., kdakaai.values(), feas_->values());
         break;
       case soh8p_easnone:
@@ -1253,8 +1258,9 @@ void DRT::ELEMENTS::SoSh8Plast::nln_stiffmass(std::vector<double>& disp,  // cur
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8Plast::calculate_bop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
-    const CORE::LINALG::Matrix<nsd_, nsd_>* defgrd, const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ,
+void Discret::ELEMENTS::SoSh8Plast::calculate_bop(
+    Core::LinAlg::Matrix<numstr_, numdofperelement_>* bop,
+    const Core::LinAlg::Matrix<nsd_, nsd_>* defgrd, const Core::LinAlg::Matrix<nsd_, nen_>* N_XYZ,
     const int gp)
 {
   set_jac_refe().Multiply(deriv_shape_function(), xrefe());
@@ -1263,7 +1269,7 @@ void DRT::ELEMENTS::SoSh8Plast::calculate_bop(CORE::LINALG::Matrix<numstr_, numd
   if (gp < 0 || gp > 7) FOUR_C_THROW("invalid gp number");
 
   // set up B-Operator in local(parameter) element space including ANS
-  CORE::LINALG::Matrix<numstr_, numdofperelement_> bop_loc;
+  Core::LinAlg::Matrix<numstr_, numdofperelement_> bop_loc;
   for (int inode = 0; inode < NUMNOD_SOH8; ++inode)
   {
     for (int dim = 0; dim < NUMDIM_SOH8; ++dim)
@@ -1325,14 +1331,14 @@ void DRT::ELEMENTS::SoSh8Plast::calculate_bop(CORE::LINALG::Matrix<numstr_, numd
 }
 
 
-void DRT::ELEMENTS::SoSh8Plast::ans_strains(const int gp,
-    std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>& jac_sps,  // jac at all sampling points
-    std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>&
+void Discret::ELEMENTS::SoSh8Plast::ans_strains(const int gp,
+    std::vector<Core::LinAlg::Matrix<nsd_, nsd_>>& jac_sps,  // jac at all sampling points
+    std::vector<Core::LinAlg::Matrix<nsd_, nsd_>>&
         jac_cur_sps  // current jac at all sampling points
 )
 {
   // local GL strain vector lstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-  CORE::LINALG::Matrix<numstr_, 1> lstrain;
+  Core::LinAlg::Matrix<numstr_, 1> lstrain;
   // evaluate glstrains in local(parameter) coords
   // Err = 0.5 * (dx/dr * dx/dr^T - dX/dr * dX/dr^T)
   lstrain(0) =
@@ -1437,7 +1443,7 @@ void DRT::ELEMENTS::SoSh8Plast::ans_strains(const int gp,
     FOUR_C_THROW("Cannot build local strains based on your ANS-choice!");
 
   // transformation of local glstrains 'back' to global(material) space
-  static CORE::LINALG::Matrix<numstr_, 1> glstrain(false);
+  static Core::LinAlg::Matrix<numstr_, 1> glstrain(false);
   glstrain.Multiply(tinv_t(), lstrain);
 
   for (int i = 0; i < nsd_; ++i) set_rcg()(i, i) = 2. * glstrain(i) + 1.;

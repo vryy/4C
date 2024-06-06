@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHRecoilPressureEvaporation::SPHRecoilPressureEvaporation(
+ParticleInteraction::SPHRecoilPressureEvaporation::SPHRecoilPressureEvaporation(
     const Teuchos::ParameterList& params)
     : params_sph_(params),
       evaporatingphase_(PARTICLEENGINE::Phase1),
@@ -31,12 +31,12 @@ PARTICLEINTERACTION::SPHRecoilPressureEvaporation::SPHRecoilPressureEvaporation(
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::Init()
+void ParticleInteraction::SPHRecoilPressureEvaporation::Init()
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::Setup(
+void ParticleInteraction::SPHRecoilPressureEvaporation::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface)
 {
   // set interface to particle engine
@@ -46,7 +46,7 @@ void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::Setup(
   particlecontainerbundle_ = particleengineinterface_->get_particle_container_bundle();
 }
 
-void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::compute_recoil_pressure_contribution() const
+void ParticleInteraction::SPHRecoilPressureEvaporation::compute_recoil_pressure_contribution() const
 {
   // get container of owned particles of evaporating phase
   PARTICLEENGINE::ParticleContainer* container_i =

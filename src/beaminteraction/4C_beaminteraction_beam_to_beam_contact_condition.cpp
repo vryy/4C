@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToBeamContactCondition::BeamToBeamContactCondition(
-    const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line_1,
-    const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line_2)
+    const Teuchos::RCP<const Core::Conditions::Condition>& condition_line_1,
+    const Teuchos::RCP<const Core::Conditions::Condition>& condition_line_2)
     : BeamInteractionConditionBase(condition_line_1),
       condition_other_(condition_line_2),
       condition_contact_pairs_(),
@@ -36,7 +36,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::BeamToBeamContactCondition(
  *
  */
 void BEAMINTERACTION::BeamToBeamContactCondition::BuildIdSets(
-    const Teuchos::RCP<const DRT::Discretization>& discretization)
+    const Teuchos::RCP<const Discret::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
   BeamInteractionConditionBase::BuildIdSets(discretization);
@@ -74,7 +74,7 @@ void BEAMINTERACTION::BeamToBeamContactCondition::Clear()
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToBeamContactCondition::CreateContactPair(
-    const std::vector<CORE::Elements::Element const*>& ele_ptrs)
+    const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   // Check if the given elements are in this condition.
   if (!IdsInCondition(ele_ptrs[0]->Id(), ele_ptrs[1]->Id())) return Teuchos::null;
@@ -83,8 +83,8 @@ BEAMINTERACTION::BeamToBeamContactCondition::CreateContactPair(
   // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
   // numnodalvalues = 2: positions AND tangents ==> Hermite interpolation
 
-  const DRT::ELEMENTS::Beam3Base* beamele1 =
-      dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
+  const Discret::ELEMENTS::Beam3Base* beamele1 =
+      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
 
   const unsigned int numnodes_centerline = beamele1->NumCenterlineNodes();
   const unsigned int numnodalvalues = beamele1->hermite_centerline_interpolation() ? 2 : 1;

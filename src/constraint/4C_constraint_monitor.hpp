@@ -18,12 +18,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
 }
@@ -50,10 +50,10 @@ namespace CONSTRAINTS
     takes care of the monitor IDs.
     */
 
-    Monitor(Teuchos::RCP<DRT::Discretization> discr,  ///< discretization monitor lives on
-        const std::string& conditionname,             ///< Name of condition to creat monitor from
-        int& minID,                                   ///< minimum monitor ID so far
-        int& maxID                                    ///< maximum monitor ID so far
+    Monitor(Teuchos::RCP<Discret::Discretization> discr,  ///< discretization monitor lives on
+        const std::string& conditionname,  ///< Name of condition to creat monitor from
+        int& minID,                        ///< minimum monitor ID so far
+        int& maxID                         ///< maximum monitor ID so far
     );
 
 
@@ -82,8 +82,8 @@ namespace CONSTRAINTS
 
 
    protected:
-    Teuchos::RCP<DRT::Discretization> actdisc_;  ///< standard discretization
-    std::vector<CORE::Conditions::Condition*>
+    Teuchos::RCP<Discret::Discretization> actdisc_;  ///< standard discretization
+    std::vector<Core::Conditions::Condition*>
         moncond_;       ///< conditions, that define the monitor (all of the same kind)
     MoniType montype_;  ///< monitor type
     std::map<int, double>

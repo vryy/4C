@@ -23,18 +23,18 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class ResultTest;
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
 namespace POROFLUIDMULTIPHASE
 {
   class TimIntImpl;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   /// basic multiphase porous flow adapter
   class PoroFluidMultiphaseWrapper : public PoroFluidMultiphase
@@ -56,7 +56,7 @@ namespace ADAPTER
         ) override;
 
     /// create result test for multiphase porous fluid field
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
     /// read restart
     void read_restart(int restart) override;
@@ -68,10 +68,10 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
 
     /// access coupled system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     /// direct access to discretization
-    Teuchos::RCP<DRT::Discretization> discretization() const override;
+    Teuchos::RCP<Discret::Discretization> discretization() const override;
 
     //! apply moving mesh data
     void ApplyMeshMovement(Teuchos::RCP<const Epetra_Vector> dispnp  //!< displacement vector
@@ -135,7 +135,7 @@ namespace ADAPTER
     void prepare_time_loop() override;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const override;
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const override;
 
     //! right-hand side alias the dynamic force residual
     Teuchos::RCP<const Epetra_Vector> RHS() const override;
@@ -160,17 +160,17 @@ namespace ADAPTER
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
     void assemble_fluid_struct_coupling_mat(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs) override;
+        Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs) override;
 
     // Assemble Off-Diagonal Fluid-Scatra Coupling matrix
     void assemble_fluid_scatra_coupling_mat(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs) override;
+        Teuchos::RCP<Core::LinAlg::SparseOperator> k_pfs) override;
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
 
     // return arterial network time integrator
-    Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt() override;
+    Teuchos::RCP<Adapter::ArtNet> ArtNetTimInt() override;
 
    private:
     /// multiphase porous flow time integrator
@@ -178,7 +178,7 @@ namespace ADAPTER
 
   };  // class PoroFluidMultiphaseWrapper
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 

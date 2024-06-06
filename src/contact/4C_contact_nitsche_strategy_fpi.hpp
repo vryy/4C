@@ -41,11 +41,11 @@ namespace CONTACT
         : NitscheStrategyPoro(
               dof_row_map, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
-          weighting_(CORE::UTILS::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
+          weighting_(Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(
               params, "NITSCHE_WEIGHTING"))
     {
-      if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
-          INPAR::CONTACT::friction_none)
+      if (Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(params, "FRICTION") !=
+          Inpar::CONTACT::friction_none)
         FOUR_C_THROW("NitscheStrategyFpi: No frictional contact implemented for Nitsche FPSCI!");
     }
 
@@ -57,20 +57,20 @@ namespace CONTACT
         : NitscheStrategyPoro(data_ptr, dof_row_map, NodeRowMap, params, std::move(interface), dim,
               comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
-          weighting_(CORE::UTILS::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
+          weighting_(Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(
               params, "NITSCHE_WEIGHTING"))
     {
-      if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
-          INPAR::CONTACT::friction_none)
+      if (Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(params, "FRICTION") !=
+          Inpar::CONTACT::friction_none)
         FOUR_C_THROW("NitscheStrategyFpi: No frictional contact implemented for Nitsche FPSCI!");
     }
     //! Set Contact State and update search tree and normals
-    void set_state(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
+    void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
     //! The the contact state at local coord of Element cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
     bool check_nitsche_contact_state(CONTACT::Element* cele,
-        const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
+        const Core::LinAlg::Matrix<2, 1>& xsi,  // local coord on the ele element
         const double& full_fsi_traction,        // stressfluid + penalty
         double& gap                             // gap
     );
@@ -83,7 +83,7 @@ namespace CONTACT
     //! Nitsche normal penalty parameter
     double pen_n_;
     //! Nitsche weighting strategy
-    INPAR::CONTACT::NitscheWeighting weighting_;
+    Inpar::CONTACT::NitscheWeighting weighting_;
   };
 }  // namespace CONTACT
 FOUR_C_NAMESPACE_CLOSE

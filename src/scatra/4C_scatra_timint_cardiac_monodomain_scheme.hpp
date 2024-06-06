@@ -22,18 +22,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace SCATRA
+namespace ScaTra
 {
   class TimIntCardiacMonodomainOST : public virtual TimIntCardiacMonodomain,
                                      public virtual TimIntOneStepTheta
   {
    public:
     //! Standard Constructor
-    TimIntCardiacMonodomainOST(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    TimIntCardiacMonodomainOST(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
 
     //! setup time integration scheme
@@ -45,7 +45,7 @@ namespace SCATRA
 
     //! read restart data
     void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
    protected:
     void write_restart() const override;
@@ -64,11 +64,11 @@ namespace SCATRA
   {
    public:
     //! Standard Constructor
-    TimIntCardiacMonodomainBDF2(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    TimIntCardiacMonodomainBDF2(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
 
     //! setup time integration scheme
@@ -80,7 +80,7 @@ namespace SCATRA
 
     //! read restart data
     void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
    protected:
     void write_restart() const override;
@@ -96,11 +96,11 @@ namespace SCATRA
   {
    public:
     //! Standard Constructor
-    TimIntCardiacMonodomainGenAlpha(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    TimIntCardiacMonodomainGenAlpha(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
 
     //! Setup time integration scheme
@@ -112,7 +112,7 @@ namespace SCATRA
 
     //! read restart data
     void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
     /// add parameters specific for time-integration scheme
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
@@ -124,7 +124,7 @@ namespace SCATRA
     void calc_initial_time_derivative() override { return; };
 
   };  // class TimIntCardiacMonodomainGenAlpha
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

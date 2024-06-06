@@ -25,13 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declarations
-namespace CORE::GEO
+namespace Core::Geo
 {
   //! shortcut for a vector of BoundaryIntCells
-  typedef std::vector<CORE::GEO::BoundaryIntCell> BoundaryIntCells;
+  typedef std::vector<Core::Geo::BoundaryIntCell> BoundaryIntCells;
 
   //! shortcut for a vector of BoundaryCell pointers
-  typedef std::vector<Teuchos::RCP<CORE::GEO::BoundaryIntCell>> BoundaryIntCellPtrs;
+  typedef std::vector<Teuchos::RCP<Core::Geo::BoundaryIntCell>> BoundaryIntCellPtrs;
 
 
   //! based on this element property, one can speed up geometry algorithms
@@ -41,7 +41,7 @@ namespace CORE::GEO
     LINEAR,
     HIGHERORDER
   };
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

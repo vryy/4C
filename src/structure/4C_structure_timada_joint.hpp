@@ -25,17 +25,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
@@ -56,24 +56,24 @@ namespace STR
   {
    public:
     //! Map STR::TimInt::NameEnum to STR::TimAda::NameEnum
-    enum INPAR::STR::TimAdaKind map_name_tim_int_to_tim_ada(
-        const enum INPAR::STR::DynamicType term  //!< input enum term
+    enum Inpar::STR::TimAdaKind map_name_tim_int_to_tim_ada(
+        const enum Inpar::STR::DynamicType term  //!< input enum term
     ) const
     {
       switch (term)
       {
-        case INPAR::STR::dyna_ab2:
-          return INPAR::STR::timada_kind_ab2;
+        case Inpar::STR::dyna_ab2:
+          return Inpar::STR::timada_kind_ab2;
           break;
-        case INPAR::STR::dyna_expleuler:
-          return INPAR::STR::timada_kind_expleuler;
+        case Inpar::STR::dyna_expleuler:
+          return Inpar::STR::timada_kind_expleuler;
           break;
-        case INPAR::STR::dyna_centrdiff:
-          return INPAR::STR::timada_kind_centraldiff;
+        case Inpar::STR::dyna_centrdiff:
+          return Inpar::STR::timada_kind_centraldiff;
           break;
         default:
           FOUR_C_THROW("Cannot handle requested time integrator");
-          return INPAR::STR::timada_kind_none;
+          return Inpar::STR::timada_kind_none;
           break;
       }
     }
@@ -187,7 +187,7 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum INPAR::STR::TimAdaKind MethodName() const override
+    enum Inpar::STR::TimAdaKind MethodName() const override
     {
       return map_name_tim_int_to_tim_ada(sti_->MethodName());
     }

@@ -28,16 +28,16 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  template <CORE::FE::CellType celltype>
-  inline static constexpr int num_nodes = CORE::FE::num_nodes<celltype>;
+  template <Core::FE::CellType celltype>
+  inline static constexpr int num_nodes = Core::FE::num_nodes<celltype>;
 
-  template <CORE::FE::CellType celltype>
-  inline static constexpr int num_dim = CORE::FE::dim<celltype>;
+  template <Core::FE::CellType celltype>
+  inline static constexpr int num_dim = Core::FE::dim<celltype>;
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   inline static constexpr int num_str = num_dim<celltype>*(num_dim<celltype> + 1) / 2;
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   inline static constexpr int num_dof_per_ele = num_nodes<celltype>* num_dim<celltype>;
 
   /*!
@@ -47,9 +47,9 @@ namespace
    * @param matrix(in/out) : matrix to be inverted
    */
   template <unsigned int dim>
-  void SolveForInverseIgnoringErrors(CORE::LINALG::Matrix<dim, dim>& matrix)
+  void SolveForInverseIgnoringErrors(Core::LinAlg::Matrix<dim, dim>& matrix)
   {
-    CORE::LINALG::FixedSizeSerialDenseSolver<dim, dim, 1> solve_for_inverse;
+    Core::LinAlg::FixedSizeSerialDenseSolver<dim, dim, 1> solve_for_inverse;
     solve_for_inverse.SetMatrix(matrix);
 
     solve_for_inverse.Invert();
@@ -62,21 +62,21 @@ namespace
    * @param matrix(in/out) : matrix to be inverted
    */
   template <unsigned int dim>
-  void SolveForInverse(CORE::LINALG::Matrix<dim, dim>& matrix)
+  void SolveForInverse(Core::LinAlg::Matrix<dim, dim>& matrix)
   {
-    CORE::LINALG::FixedSizeSerialDenseSolver<dim, dim, 1> solve_for_inverse;
+    Core::LinAlg::FixedSizeSerialDenseSolver<dim, dim, 1> solve_for_inverse;
     solve_for_inverse.SetMatrix(matrix);
 
     int err_inv = solve_for_inverse.Invert();
     if (err_inv != 0) FOUR_C_THROW("Inversion of matrix failed with LAPACK error code %d", err_inv);
   }
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct CentroidTransformation
   {
     // transformation matrix T0^{-T}, which maps the matrix M from parameter space to the material
     // configuration see Andelfinger et al., EAS-elements, 1993, doi: 10.1002/nme.1620360805
-    CORE::LINALG::Matrix<num_str<celltype>, num_str<celltype>> T0invT_;
+    Core::LinAlg::Matrix<num_str<celltype>, num_str<celltype>> T0invT_;
 
     // Jacobi determinant evaluated at the element centroid
     double detJ0_;
@@ -92,13 +92,13 @@ namespace
    * @param jacobian_centroid(in) : Jacobian mapping evaluated at the element centroid
    * @return double : transformation matrix
    */
-  template <CORE::FE::CellType celltype>
-  CORE::LINALG::Matrix<num_str<celltype>, num_str<celltype>> EvaluateT0invT(
-      const DRT::ELEMENTS::JacobianMapping<celltype>& jacobian_centroid)
+  template <Core::FE::CellType celltype>
+  Core::LinAlg::Matrix<num_str<celltype>, num_str<celltype>> EvaluateT0invT(
+      const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian_centroid)
   {
     // build T0^T (based on strain-like Voigt notation: xx,yy,zz,xy,yz,xz)
     // currently only works in 3D
-    CORE::LINALG::Matrix<num_str<celltype>, num_str<celltype>> T0invT(false);
+    Core::LinAlg::Matrix<num_str<celltype>, num_str<celltype>> T0invT(false);
     T0invT(0, 0) = jacobian_centroid.jacobian_(0, 0) * jacobian_centroid.jacobian_(0, 0);
     T0invT(1, 0) = jacobian_centroid.jacobian_(1, 0) * jacobian_centroid.jacobian_(1, 0);
     T0invT(2, 0) = jacobian_centroid.jacobian_(2, 0) * jacobian_centroid.jacobian_(2, 0);
@@ -165,15 +165,15 @@ namespace
    * @return CentroidTransformation<celltype> : Jacobi determinant at the element centroid and
    * transformation matrix T0^{-T}
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   CentroidTransformation<celltype> EvaluateCentroidTransformation(
-      const DRT::ELEMENTS::ElementNodes<celltype>& nodal_coordinates)
+      const Discret::ELEMENTS::ElementNodes<celltype>& nodal_coordinates)
   {
     CentroidTransformation<celltype> centroid_transformation;
 
     // 1) compute jacobian at element centroid
-    const DRT::ELEMENTS::JacobianMapping<celltype> jacobian_mapping_centroid =
-        DRT::ELEMENTS::EvaluateJacobianMappingCentroid(nodal_coordinates);
+    const Discret::ELEMENTS::JacobianMapping<celltype> jacobian_mapping_centroid =
+        Discret::ELEMENTS::EvaluateJacobianMappingCentroid(nodal_coordinates);
 
     centroid_transformation.detJ0_ = jacobian_mapping_centroid.determinant_;
 
@@ -191,14 +191,14 @@ namespace
    * @param lm(in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    * @return double : residual displacement or displacement increment
    */
-  template <CORE::FE::CellType celltype>
-  CORE::LINALG::Matrix<num_dof_per_ele<celltype>, 1> GetDisplacementIncrement(
-      const DRT::Discretization& discretization, const std::vector<int>& lm)
+  template <Core::FE::CellType celltype>
+  Core::LinAlg::Matrix<num_dof_per_ele<celltype>, 1> GetDisplacementIncrement(
+      const Discret::Discretization& discretization, const std::vector<int>& lm)
   {
     auto residual_from_dis = discretization.GetState("residual displacement");
     std::vector<double> residual(lm.size());
-    CORE::FE::ExtractMyValues(*residual_from_dis, residual, lm);
-    CORE::LINALG::Matrix<num_dof_per_ele<celltype>, 1> displ_inc(false);
+    Core::FE::ExtractMyValues(*residual_from_dis, residual, lm);
+    Core::LinAlg::Matrix<num_dof_per_ele<celltype>, 1> displ_inc(false);
     for (int i = 0; i < num_dof_per_ele<celltype>; ++i) displ_inc(i) = residual[i];
 
     return displ_inc;
@@ -211,15 +211,15 @@ namespace
    * @param displ_inc(in) : displacement increment delta_D_{i+1}
    * @param eas_iteration_data(in) : EAS matrices and vectors from iteration i
    */
-  template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  void UpdateAlphaIncrement(const CORE::LINALG::Matrix<num_dof_per_ele<celltype>, 1>& displ_inc,
-      DRT::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data)
+  template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+  void UpdateAlphaIncrement(const Core::LinAlg::Matrix<num_dof_per_ele<celltype>, 1>& displ_inc,
+      Discret::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data)
   {
     // the enhanced strains scalar increment is computed to:
     // delta_alpha_{i+1} = - invKaa_{i} (s_{i} + Kad_{i} delta_D_{i+1})
 
     // init as enhancement vector s_{i}
-    CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> tmp(
+    Core::LinAlg::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> tmp(
         eas_iteration_data.s_);
 
     // addition of Kad_{i} delta_D_{i+1}
@@ -238,13 +238,13 @@ namespace
    * @param discretization(in) : reference to the discretization
    * @param lm(in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    */
-  template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  void UpdateAlpha(DRT::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data,
-      const DRT::Discretization& discretization, const std::vector<int>& lm,
+  template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+  void UpdateAlpha(Discret::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data,
+      const Discret::Discretization& discretization, const std::vector<int>& lm,
       const double step_length = 1.0)
   {
     // residual displacement at the previous step
-    CORE::LINALG::Matrix<num_dof_per_ele<celltype>, 1> displ_inc(false);
+    Core::LinAlg::Matrix<num_dof_per_ele<celltype>, 1> displ_inc(false);
     displ_inc = GetDisplacementIncrement<celltype>(discretization, lm);
 
     // compute the enhanced strain scalar increment delta_alpha
@@ -263,8 +263,8 @@ namespace
    * @param new_step_length (in) : new step length
    * @param old_step_length (in) : old step length
    */
-  template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  void CorrectAlpha(DRT::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data,
+  template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+  void CorrectAlpha(Discret::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data,
       const double new_step_length, const double old_step_length)
   {
     eas_iteration_data.alpha_.Update(
@@ -277,14 +277,14 @@ namespace
    *
    * @tparam celltype, eastype
    * @param xi(in) : coordinate in the parameter space
-   * @return CORE::LINALG::Matrix<num_str, num_eas> : enhanced strains shape function matrix in
+   * @return Core::LinAlg::Matrix<num_str, num_eas> : enhanced strains shape function matrix in
    * parameter space
    */
-  template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  CORE::LINALG::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
-  EvaluateEASShapeFunctionsParameterSpace(const CORE::LINALG::Matrix<num_dim<celltype>, 1>& xi)
+  template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+  Core::LinAlg::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+  EvaluateEASShapeFunctionsParameterSpace(const Core::LinAlg::Matrix<num_dim<celltype>, 1>& xi)
   {
-    CORE::LINALG::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas> M(
+    Core::LinAlg::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas> M(
         true);
 
     switch (eastype)
@@ -392,16 +392,16 @@ namespace
    * @param centroid_transformation(in) : transformation matrix T0^{-T} and Jacobi determinant at
    * element centroid
    * @param M(in) : matrix M in the parameter space
-   * @return CORE::LINALG::Matrix<num_str, num_eas> : matrix Mtilde in the material configuration
+   * @return Core::LinAlg::Matrix<num_str, num_eas> : matrix Mtilde in the material configuration
    */
-  template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  CORE::LINALG::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+  template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+  Core::LinAlg::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
   MapEASShapeFunctionsToMaterialConfig(const double detJ,
       const CentroidTransformation<celltype>& centroid_transformation,
-      const CORE::LINALG::Matrix<num_str<celltype>,
+      const Core::LinAlg::Matrix<num_str<celltype>,
           STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& M)
   {
-    CORE::LINALG::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+    Core::LinAlg::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
         Mtilde;
 
     // Mtilde = detJ0/detJ T0^{-T} M
@@ -420,17 +420,17 @@ namespace
    * @param centroid_transformation(in) : transformation matrix T0^{-T} and Jacobi determinant at
    * element centroid
    * @param xi(in) : coordinate in the parameter space
-   * @return CORE::LINALG::Matrix<num_str, num_eas> : matrix Mtilde in the material configuration
+   * @return Core::LinAlg::Matrix<num_str, num_eas> : matrix Mtilde in the material configuration
    */
-  template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  CORE::LINALG::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+  template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+  Core::LinAlg::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
   EvaluateEASShapeFunctionsMaterialConfig(const double detJ,
       const CentroidTransformation<celltype>& centroid_transformation,
-      const CORE::LINALG::Matrix<num_dim<celltype>, 1>& xi)
+      const Core::LinAlg::Matrix<num_dim<celltype>, 1>& xi)
   {
-    CORE::LINALG::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas> M(
+    Core::LinAlg::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas> M(
         EvaluateEASShapeFunctionsParameterSpace<celltype, eastype>(xi));
-    CORE::LINALG::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+    Core::LinAlg::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
         Mtilde = MapEASShapeFunctionsToMaterialConfig<celltype, eastype>(
             detJ, centroid_transformation, M);
     return Mtilde;
@@ -448,16 +448,16 @@ namespace
    * @param gl_strain(in) : Green-Lagrange strains E^{u}
    * @param Mtilde(in) : matrix Mtilde in the material configuration
    * @param alpha(in) : enhanced strain scalars
-   * @return CORE::LINALG::Matrix<num_str, 1>  : enhanced Green-Lagrange strains E^{enh}
+   * @return Core::LinAlg::Matrix<num_str, 1>  : enhanced Green-Lagrange strains E^{enh}
    */
-  template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  CORE::LINALG::Matrix<num_str<celltype>, 1> EvaluateEnhancedAssumedGLStrains(
-      const CORE::LINALG::Matrix<num_str<celltype>, 1>& gl_strain,
-      const CORE::LINALG::Matrix<num_str<celltype>,
+  template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+  Core::LinAlg::Matrix<num_str<celltype>, 1> EvaluateEnhancedAssumedGLStrains(
+      const Core::LinAlg::Matrix<num_str<celltype>, 1>& gl_strain,
+      const Core::LinAlg::Matrix<num_str<celltype>,
           STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& Mtilde,
-      const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& alpha)
+      const Core::LinAlg::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& alpha)
   {
-    CORE::LINALG::Matrix<num_str<celltype>, 1> enhanced_gl_strain(gl_strain);
+    Core::LinAlg::Matrix<num_str<celltype>, 1> enhanced_gl_strain(gl_strain);
     enhanced_gl_strain.Multiply(1.0, Mtilde, alpha, 1.0);
     return enhanced_gl_strain;
   }
@@ -469,21 +469,21 @@ namespace
    * @param displacement_based_mapping(in) : displacement-based spatial mapping
    * @param Mtilde(in) : matrix Mtilde in the material configuration
    * @param alpha(in) : enhanced strain scalars
-   * @return CORE::LINALG::Matrix<num_str, 1> : Enhanced Green-Lagrange strains E^{enh}
+   * @return Core::LinAlg::Matrix<num_str, 1> : Enhanced Green-Lagrange strains E^{enh}
    */
-  template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  CORE::LINALG::Matrix<num_str<celltype>, 1> EvaluateEnhancedAssumedGLStrains(
-      const DRT::ELEMENTS::SpatialMaterialMapping<celltype>& displacement_based_mapping,
-      const CORE::LINALG::Matrix<num_str<celltype>,
+  template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+  Core::LinAlg::Matrix<num_str<celltype>, 1> EvaluateEnhancedAssumedGLStrains(
+      const Discret::ELEMENTS::SpatialMaterialMapping<celltype>& displacement_based_mapping,
+      const Core::LinAlg::Matrix<num_str<celltype>,
           STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& Mtilde,
-      const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& alpha)
+      const Core::LinAlg::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& alpha)
   {
-    const CORE::LINALG::Matrix<num_dim<celltype>, num_dim<celltype>>
+    const Core::LinAlg::Matrix<num_dim<celltype>, num_dim<celltype>>
         displacement_based_cauchygreen =
-            DRT::ELEMENTS::EvaluateCauchyGreen<celltype>(displacement_based_mapping);
+            Discret::ELEMENTS::EvaluateCauchyGreen<celltype>(displacement_based_mapping);
 
-    const CORE::LINALG::Matrix<num_str<celltype>, 1> gl_strain =
-        DRT::ELEMENTS::EvaluateGreenLagrangeStrain(displacement_based_cauchygreen);
+    const Core::LinAlg::Matrix<num_str<celltype>, 1> gl_strain =
+        Discret::ELEMENTS::EvaluateGreenLagrangeStrain(displacement_based_cauchygreen);
 
     return EvaluateEnhancedAssumedGLStrains<celltype, eastype>(gl_strain, Mtilde, alpha);
   }
@@ -494,19 +494,19 @@ namespace
    * @tparam dim
    * @param defgrd_disp(in) : displacement-based deformation gradient F^{u}
    * @param enhanced_gl_strain(in) : enhanced Green-Lagrange strains E^{enh}
-   * @return CORE::LINALG::Matrix<dim, dim> : enhanced deformation gradient F^{enh}
+   * @return Core::LinAlg::Matrix<dim, dim> : enhanced deformation gradient F^{enh}
    */
   template <unsigned dim>
-  CORE::LINALG::Matrix<dim, dim> EvaluateConsistentDefgrd(
-      const CORE::LINALG::Matrix<dim, dim>& defgrd_disp,
-      const CORE::LINALG::Matrix<dim*(dim + 1) / 2, 1>& enhanced_gl_strain)
+  Core::LinAlg::Matrix<dim, dim> EvaluateConsistentDefgrd(
+      const Core::LinAlg::Matrix<dim, dim>& defgrd_disp,
+      const Core::LinAlg::Matrix<dim*(dim + 1) / 2, 1>& enhanced_gl_strain)
   {
-    CORE::LINALG::Matrix<dim, dim> R;       // rotation tensor
-    CORE::LINALG::Matrix<dim, dim> U_enh;   // enhanced right stretch tensor
-    CORE::LINALG::Matrix<dim, dim> U_disp;  // displacement-based right stretch tensor
-    CORE::LINALG::Matrix<dim, dim> EW;      // temporarily store eigenvalues
-    CORE::LINALG::Matrix<dim, dim> tmp;     // temporary matrix for matrix matrix matrix products
-    CORE::LINALG::Matrix<dim, dim> tmp2;    // temporary matrix for matrix matrix matrix products
+    Core::LinAlg::Matrix<dim, dim> R;       // rotation tensor
+    Core::LinAlg::Matrix<dim, dim> U_enh;   // enhanced right stretch tensor
+    Core::LinAlg::Matrix<dim, dim> U_disp;  // displacement-based right stretch tensor
+    Core::LinAlg::Matrix<dim, dim> EW;      // temporarily store eigenvalues
+    Core::LinAlg::Matrix<dim, dim> tmp;     // temporary matrix for matrix matrix matrix products
+    Core::LinAlg::Matrix<dim, dim> tmp2;    // temporary matrix for matrix matrix matrix products
 
     // calculate modified right stretch tensor
     if (dim != 3) FOUR_C_THROW("stop: this currently only works for 3D");
@@ -518,7 +518,7 @@ namespace
     U_enh(0, 2) = enhanced_gl_strain(5);
     U_enh(2, 0) = enhanced_gl_strain(5);
 
-    CORE::LINALG::SYEV(U_enh, EW, U_enh);
+    Core::LinAlg::SYEV(U_enh, EW, U_enh);
     for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
     tmp.Multiply(U_enh, EW);
     tmp2.MultiplyNT(tmp, U_enh);
@@ -527,7 +527,7 @@ namespace
     // calculate displacement-based right stretch tensor
     U_disp.MultiplyTN(defgrd_disp, defgrd_disp);
 
-    CORE::LINALG::SYEV(U_disp, EW, U_disp);
+    Core::LinAlg::SYEV(U_disp, EW, U_disp);
     for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
     tmp.Multiply(U_disp, EW);
     tmp2.MultiplyNT(tmp, U_disp);
@@ -537,7 +537,7 @@ namespace
     U_disp.Invert();
     R.Multiply(defgrd_disp, U_disp);
 
-    CORE::LINALG::Matrix<dim, dim> defgrd_enh;
+    Core::LinAlg::Matrix<dim, dim> defgrd_enh;
     defgrd_enh.Multiply(R, U_enh);
     return defgrd_enh;
   }
@@ -553,18 +553,18 @@ namespace
    * determinant)
    * @param eas_iteration_data(in/out) : EAS matrices and vectors
    */
-  template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  void IntegrateEAS(const DRT::ELEMENTS::Stress<celltype>& stress,
-      const CORE::LINALG::Matrix<num_str<celltype>,
+  template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+  void IntegrateEAS(const Discret::ELEMENTS::Stress<celltype>& stress,
+      const Core::LinAlg::Matrix<num_str<celltype>,
           STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& Mtilde,
-      const CORE::LINALG::Matrix<num_str<celltype>, num_dof_per_ele<celltype>>& Bop,
+      const Core::LinAlg::Matrix<num_str<celltype>, num_dof_per_ele<celltype>>& Bop,
       const double integration_factor,
-      DRT::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data)
+      Discret::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data)
   {
     // integrate Kaa: Kaa += (Mtilde^T . cmat . Mtilde) * detJ * w(gp)
     // IMPORTANT: We save this in invKaa_ here since after the loop over all Gauss points, we
     // invert the matrix. At this point, this is still Kaa and NOT invKaa.
-    CORE::LINALG::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas> cmatM(
+    Core::LinAlg::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas> cmatM(
         true);
     cmatM.Multiply(stress.cmat_, Mtilde);
     eas_iteration_data.invKaa_.MultiplyTN(integration_factor, Mtilde, cmatM, 1.);
@@ -586,11 +586,11 @@ namespace
    * @param s(in) : enhancement vector s
    * @param force(in/out) : internal force vector where the contribution is added to
    */
-  template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  void AddEASInternalForce(const CORE::LINALG::Matrix<num_dof_per_ele<celltype>,
+  template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+  void AddEASInternalForce(const Core::LinAlg::Matrix<num_dof_per_ele<celltype>,
                                STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& minusKdainvKaa,
-      const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& s,
-      CORE::LINALG::Matrix<num_dof_per_ele<celltype>, 1>& force_vector)
+      const Core::LinAlg::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& s,
+      Core::LinAlg::Matrix<num_dof_per_ele<celltype>, 1>& force_vector)
   {
     force_vector.MultiplyNN(1.0, minusKdainvKaa, s, 1.0);
   }
@@ -605,65 +605,66 @@ namespace
    * @param Kda(in) : EAS stiffness matrix part K_{da}
    * @param stiffness_matrix(in/out) : stiffness matrix where the local contribution is added to
    */
-  template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-  void AddEASStiffnessMatrix(const CORE::LINALG::Matrix<num_dof_per_ele<celltype>,
+  template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+  void AddEASStiffnessMatrix(const Core::LinAlg::Matrix<num_dof_per_ele<celltype>,
                                  STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& minusKdainvKaa,
-      const CORE::LINALG::Matrix<num_dof_per_ele<celltype>,
+      const Core::LinAlg::Matrix<num_dof_per_ele<celltype>,
           STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& Kda,
-      CORE::LINALG::Matrix<num_dof_per_ele<celltype>, num_dof_per_ele<celltype>>& stiffness_matrix)
+      Core::LinAlg::Matrix<num_dof_per_ele<celltype>, num_dof_per_ele<celltype>>& stiffness_matrix)
   {
     stiffness_matrix.MultiplyNT(1.0, minusKdainvKaa, Kda, 1.0);
   }
 }  // namespace
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::SolidEleCalcEas()
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::SolidEleCalcEas()
     : stiffness_matrix_integration_(
           CreateGaussIntegration<celltype>(GetGaussRuleStiffnessMatrix<celltype>())),
       mass_matrix_integration_(CreateGaussIntegration<celltype>(GetGaussRuleMassMatrix<celltype>()))
 {
 }
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Pack(CORE::COMM::PackBuffer& data) const
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Pack(
+    Core::Communication::PackBuffer& data) const
 {
-  constexpr int num_dof_per_element = CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>;
-  CORE::COMM::ParObject::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
+  constexpr int num_dof_per_element = Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>;
+  Core::Communication::ParObject::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
       data, eas_iteration_data_.alpha_inc_);
-  CORE::COMM::ParObject::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
+  Core::Communication::ParObject::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
       data, eas_iteration_data_.alpha_);
-  CORE::COMM::ParObject::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
+  Core::Communication::ParObject::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
       data, eas_iteration_data_.s_);
-  CORE::COMM::ParObject::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas,
+  Core::Communication::ParObject::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas,
       STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>(data, eas_iteration_data_.invKaa_);
-  CORE::COMM::ParObject::AddtoPack<num_dof_per_element,
+  Core::Communication::ParObject::AddtoPack<num_dof_per_element,
       STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>(data, eas_iteration_data_.Kda_);
-  CORE::COMM::ParObject::AddtoPack(data, old_step_length_);
+  Core::Communication::ParObject::AddtoPack(data, old_step_length_);
 };
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Unpack(
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.alpha_inc_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.alpha_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.s_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.invKaa_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, eas_iteration_data_.Kda_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, old_step_length_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, eas_iteration_data_.alpha_inc_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, eas_iteration_data_.alpha_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, eas_iteration_data_.s_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, eas_iteration_data_.invKaa_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, eas_iteration_data_.Kda_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, old_step_length_);
 };
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_force_stiffness_mass(
-    const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
-    const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
-    CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_force_stiffness_mass(
+    const Core::Elements::Element& ele, Mat::So3Material& solid_material,
+    const Discret::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
+    Core::LinAlg::SerialDenseMatrix* stiffness_matrix, Core::LinAlg::SerialDenseMatrix* mass_matrix)
 {
   // Create views to SerialDenseMatrices
-  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> stiff = {};
-  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> mass = {};
-  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, 1>> force = {};
+  std::optional<Core::LinAlg::Matrix<num_dof_per_ele_, num_dof_per_ele_>> stiff = {};
+  std::optional<Core::LinAlg::Matrix<num_dof_per_ele_, num_dof_per_ele_>> mass = {};
+  std::optional<Core::LinAlg::Matrix<num_dof_per_ele_, 1>> force = {};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
@@ -693,25 +694,25 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_force
   double element_mass = 0.0;
   double element_volume = 0.0;
   ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
+      [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
         const SpatialMaterialMapping<celltype> displacement_based_spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
+        Core::LinAlg::Matrix<num_str_, num_dof_per_ele_> Bop =
             EvaluateStrainGradient(jacobian_mapping, displacement_based_spatial_material_mapping);
 
-        const CORE::LINALG::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+        const Core::LinAlg::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
             Mtilde = EvaluateEASShapeFunctionsMaterialConfig<celltype, eastype>(
                 jacobian_mapping.determinant_, centroid_transformation, xi);
 
-        const CORE::LINALG::Matrix<num_str_, 1> enhanced_gl_strain =
+        const Core::LinAlg::Matrix<num_str_, 1> enhanced_gl_strain =
             EvaluateEnhancedAssumedGLStrains<celltype, eastype>(
                 displacement_based_spatial_material_mapping, Mtilde, eas_iteration_data_.alpha_);
 
-        const CORE::LINALG::Matrix<num_dim_, num_dim_> consistent_defgrd = EvaluateConsistentDefgrd(
+        const Core::LinAlg::Matrix<num_dim_, num_dim_> consistent_defgrd = EvaluateConsistentDefgrd(
             displacement_based_spatial_material_mapping.deformation_gradient_, enhanced_gl_strain);
 
         EvaluateGPCoordinatesAndAddToParameterList<celltype>(
@@ -752,7 +753,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_force
   SolveForInverseIgnoringErrors(eas_iteration_data_.invKaa_);
 
   // compute the product (- Kda Kaa^{-1}) which is later needed for force and stiffness update
-  CORE::LINALG::Matrix<num_dof_per_ele_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+  Core::LinAlg::Matrix<num_dof_per_ele_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
       minusKdainvKaa(true);
   minusKdainvKaa.MultiplyNN(-1.0, eas_iteration_data_.Kda_, eas_iteration_data_.invKaa_);
 
@@ -771,7 +772,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_force
     // integrate mass matrix
     FOUR_C_ASSERT(element_mass > 0, "It looks like the element mass is 0.0");
     ForEachGaussPoint<celltype>(nodal_coordinates, mass_matrix_integration_,
-        [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
+        [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
             const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp) {
           AddMassMatrix(shape_functions, integration_factor, element_mass / element_volume, *mass);
@@ -779,9 +780,9 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_nonlinear_force
   }
 }
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(CORE::Elements::Element& ele,
-    const DRT::Discretization& discretization, const std::vector<int>& lm,
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(Core::Elements::Element& ele,
+    const Discret::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
   STR::ELEMENTS::ParamsInterface& params_interface =
@@ -791,7 +792,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(CORE::Elements::
 
   if (params_interface.IsDefaultStep())
   {
-    params_interface.sum_into_my_previous_sol_norm(NOX::NLN::StatusTest::quantity_eas,
+    params_interface.sum_into_my_previous_sol_norm(NOX::Nln::StatusTest::quantity_eas,
         STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, &eas_iteration_data_.alpha_(0, 0),
         ele.Owner());
 
@@ -806,15 +807,16 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Recover(CORE::Elements::
   // store old step length
   old_step_length_ = step_length;
 
-  params_interface.SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
+  params_interface.SumIntoMyUpdateNorm(NOX::Nln::StatusTest::quantity_eas,
       STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, &eas_iteration_data_.alpha_inc_(0, 0),
       &eas_iteration_data_.alpha_(0, 0), step_length, ele.Owner());
 }
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Update(const CORE::Elements::Element& ele,
-    MAT::So3Material& solid_material, const DRT::Discretization& discretization,
-    const std::vector<int>& lm, Teuchos::ParameterList& params)
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Update(
+    const Core::Elements::Element& ele, Mat::So3Material& solid_material,
+    const Discret::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::ParameterList& params)
 {
   const ElementNodes<celltype> nodal_coordinates =
       EvaluateElementNodes<celltype>(ele, discretization, lm);
@@ -828,22 +830,22 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Update(const CORE::Eleme
   EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(nodal_coordinates, params);
 
   ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
+      [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const CORE::LINALG::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+        const Core::LinAlg::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
             Mtilde = EvaluateEASShapeFunctionsMaterialConfig<celltype, eastype>(
                 jacobian_mapping.determinant_, centroid_transformation, xi);
 
         const SpatialMaterialMapping<celltype> displacement_based_spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        const CORE::LINALG::Matrix<num_str_, 1> enhanced_gl_strain =
+        const Core::LinAlg::Matrix<num_str_, 1> enhanced_gl_strain =
             EvaluateEnhancedAssumedGLStrains<celltype, eastype>(
                 displacement_based_spatial_material_mapping, Mtilde, eas_iteration_data_.alpha_);
 
-        const CORE::LINALG::Matrix<num_dim_, num_dim_> consistent_defgrd = EvaluateConsistentDefgrd(
+        const Core::LinAlg::Matrix<num_dim_, num_dim_> consistent_defgrd = EvaluateConsistentDefgrd(
             displacement_based_spatial_material_mapping.deformation_gradient_, enhanced_gl_strain);
 
         EvaluateGPCoordinatesAndAddToParameterList<celltype>(
@@ -855,16 +857,16 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Update(const CORE::Eleme
   solid_material.Update();
 }
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(
-    const CORE::Elements::Element& ele, MAT::So3Material& solid_material, const StressIO& stressIO,
-    const StrainIO& strainIO, const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params)
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(
+    const Core::Elements::Element& ele, Mat::So3Material& solid_material, const StressIO& stressIO,
+    const StrainIO& strainIO, const Discret::Discretization& discretization,
+    const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
   std::vector<char>& serialized_strain_data = strainIO.mutable_data;
-  CORE::LINALG::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), num_str_);
-  CORE::LINALG::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), num_str_);
+  Core::LinAlg::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), num_str_);
+  Core::LinAlg::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), num_str_);
 
   const ElementNodes<celltype> nodal_coordinates =
       EvaluateElementNodes<celltype>(ele, discretization, lm);
@@ -875,11 +877,11 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(
   EvaluateCentroidCoordinatesAndAddToParameterList<celltype>(nodal_coordinates, params);
 
   ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
+      [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const CORE::LINALG::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+        const Core::LinAlg::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
             Mtilde = EvaluateEASShapeFunctionsMaterialConfig<celltype, eastype>(
                 jacobian_mapping.determinant_, centroid_transformation, xi);
 
@@ -887,11 +889,11 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(
         const SpatialMaterialMapping<celltype> displacement_based_spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        const CORE::LINALG::Matrix<num_str_, 1> enhanced_gl_strain =
+        const Core::LinAlg::Matrix<num_str_, 1> enhanced_gl_strain =
             EvaluateEnhancedAssumedGLStrains<celltype, eastype>(
                 displacement_based_spatial_material_mapping, Mtilde, eas_iteration_data_.alpha_);
 
-        const CORE::LINALG::Matrix<num_dim_, num_dim_> consistent_defgrd = EvaluateConsistentDefgrd(
+        const Core::LinAlg::Matrix<num_dim_, num_dim_> consistent_defgrd = EvaluateConsistentDefgrd(
             displacement_based_spatial_material_mapping.deformation_gradient_, enhanced_gl_strain);
 
         EvaluateGPCoordinatesAndAddToParameterList<celltype>(
@@ -909,10 +911,10 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::CalculateStress(
   Serialize(strain_data, serialized_strain_data);
 }
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-double DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::calculate_internal_energy(
-    const CORE::Elements::Element& ele, MAT::So3Material& solid_material,
-    const DRT::Discretization& discretization, const std::vector<int>& lm,
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+double Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::calculate_internal_energy(
+    const Core::Elements::Element& ele, Mat::So3Material& solid_material,
+    const Discret::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
   double intenergy = 0.0;
@@ -923,18 +925,18 @@ double DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::calculate_internal_ene
       EvaluateCentroidTransformation<celltype>(nodal_coordinates);
 
   ForEachGaussPoint<celltype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
+      [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const CORE::LINALG::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+        const Core::LinAlg::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
             Mtilde = EvaluateEASShapeFunctionsMaterialConfig<celltype, eastype>(
                 jacobian_mapping.determinant_, centroid_transformation, xi);
 
         const SpatialMaterialMapping<celltype> displacement_based_spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        const CORE::LINALG::Matrix<num_str_, 1> enhanced_gl_strain =
+        const Core::LinAlg::Matrix<num_str_, 1> enhanced_gl_strain =
             EvaluateEnhancedAssumedGLStrains<celltype, eastype>(
                 displacement_based_spatial_material_mapping, Mtilde, eas_iteration_data_.alpha_);
 
@@ -947,16 +949,16 @@ double DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::calculate_internal_ene
   return intenergy;
 }
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Setup(
-    MAT::So3Material& solid_material, INPUT::LineDefinition* linedef)
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::Setup(
+    Mat::So3Material& solid_material, Input::LineDefinition* linedef)
 {
   solid_material.Setup(stiffness_matrix_integration_.NumPoints(), linedef);
 }
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::material_post_setup(
-    const CORE::Elements::Element& ele, MAT::So3Material& solid_material)
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::material_post_setup(
+    const Core::Elements::Element& ele, Mat::So3Material& solid_material)
 {
   Teuchos::ParameterList params{};
 
@@ -968,9 +970,9 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::material_post_setup(
   solid_material.post_setup(params, ele.Id());
 }
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::initialize_gauss_point_data_output(
-    const CORE::Elements::Element& ele, const MAT::So3Material& solid_material,
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::initialize_gauss_point_data_output(
+    const Core::Elements::Element& ele, const Mat::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   FOUR_C_ASSERT(ele.IsParamsInterface(),
@@ -980,9 +982,9 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::initialize_gauss_point_d
       stiffness_matrix_integration_.NumPoints(), solid_material, gp_data_output_manager);
 }
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_gauss_point_data_output(
-    const CORE::Elements::Element& ele, const MAT::So3Material& solid_material,
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_gauss_point_data_output(
+    const Core::Elements::Element& ele, const Mat::So3Material& solid_material,
     STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const
 {
   FOUR_C_ASSERT(ele.IsParamsInterface(),
@@ -992,25 +994,28 @@ void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::evaluate_gauss_point_dat
       stiffness_matrix_integration_, solid_material, ele, gp_data_output_manager);
 }
 
-template <CORE::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
-void DRT::ELEMENTS::SolidEleCalcEas<celltype, eastype>::reset_to_last_converged(
-    const CORE::Elements::Element& ele, MAT::So3Material& solid_material)
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::reset_to_last_converged(
+    const Core::Elements::Element& ele, Mat::So3Material& solid_material)
 {
   solid_material.reset_step();
 }
 
 // template classes
-template class DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
+template class Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
     STR::ELEMENTS::EasType::eastype_h8_9>;
-template class DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
+template class Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
     STR::ELEMENTS::EasType::eastype_h8_21>;
 
-static_assert(DRT::ELEMENTS::IsPackable<DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
-                  STR::ELEMENTS::EasType::eastype_h8_9>*>,
-    "EAS needs to implement the method Pack(CORE::COMM::PackBuffer&) to be able to store history "
+static_assert(
+    Discret::ELEMENTS::IsPackable<Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
+        STR::ELEMENTS::EasType::eastype_h8_9>*>,
+    "EAS needs to implement the method Pack(Core::Communication::PackBuffer&) to be able to store "
+    "history "
     "data!");
-static_assert(DRT::ELEMENTS::IsUnpackable<DRT::ELEMENTS::SolidEleCalcEas<CORE::FE::CellType::hex8,
-                  STR::ELEMENTS::EasType::eastype_h8_9>*>,
+static_assert(
+    Discret::ELEMENTS::IsUnpackable<Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
+        STR::ELEMENTS::EasType::eastype_h8_9>*>,
     "EAS needs to implement the method Unpack(std::size_t, std::vector<char>&) to be able to store "
     "history data!");
 FOUR_C_NAMESPACE_CLOSE

@@ -46,7 +46,7 @@ CONTACT::InterfaceDataContainer::InterfaceDataContainer()
       friction_(false),
       non_smooth_contact_(false),
       two_half_pass_(false),
-      constr_direction_(INPAR::CONTACT::constr_vague),
+      constr_direction_(Inpar::CONTACT::constr_vague),
       activenodes_(Teuchos::null),
       activedofs_(Teuchos::null),
       inactivenodes_(Teuchos::null),
@@ -80,7 +80,7 @@ CONTACT::InterfaceDataContainer::InterfaceDataContainer()
 Teuchos::RCP<CONTACT::Interface> CONTACT::Interface::Create(const int id, const Epetra_Comm& comm,
     const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact)
 {
-  Teuchos::RCP<MORTAR::InterfaceDataContainer> interfaceData_ptr =
+  Teuchos::RCP<Mortar::InterfaceDataContainer> interfaceData_ptr =
       Teuchos::rcp(new CONTACT::InterfaceDataContainer());
   return Teuchos::rcp(
       new Interface(interfaceData_ptr, id, comm, spatialDim, icontact, selfcontact));
@@ -89,7 +89,7 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::Interface::Create(const int id, const 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::Interface::Interface(const Teuchos::RCP<CONTACT::InterfaceDataContainer>& interfaceData)
-    : MORTAR::Interface(interfaceData),
+    : Mortar::Interface(interfaceData),
       interface_data_(interfaceData),
       selfcontact_(interface_data_->IsSelfContact()),
       friction_(interface_data_->IsFriction()),
@@ -128,10 +128,10 @@ CONTACT::Interface::Interface(const Teuchos::RCP<CONTACT::InterfaceDataContainer
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::Interface::Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData,
+CONTACT::Interface::Interface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData,
     const int id, const Epetra_Comm& comm, const int spatialDim,
     const Teuchos::ParameterList& icontact, bool selfcontact)
-    : MORTAR::Interface(interfaceData, id, comm, spatialDim, icontact),
+    : Mortar::Interface(interfaceData, id, comm, spatialDim, icontact),
       interface_data_(
           Teuchos::rcp_dynamic_cast<CONTACT::InterfaceDataContainer>(interfaceData, true)),
       selfcontact_(interface_data_->IsSelfContact()),
@@ -166,32 +166,32 @@ CONTACT::Interface::Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>
       intcells_(interface_data_->IntCells())
 {
   selfcontact_ = selfcontact;
-  nonSmoothContact_ = CORE::UTILS::IntegralValue<int>(icontact, "NONSMOOTH_GEOMETRIES");
+  nonSmoothContact_ = Core::UTILS::IntegralValue<int>(icontact, "NONSMOOTH_GEOMETRIES");
   two_half_pass_ = icontact.get<bool>("Two_half_pass");
-  constr_direction_ = CORE::UTILS::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
+  constr_direction_ = Core::UTILS::IntegralValue<Inpar::CONTACT::ConstraintDirection>(
       icontact, "CONSTRAINT_DIRECTIONS");
   smpairs_ = 0;
   smintpairs_ = 0;
   intcells_ = 0;
 
   // set frictional contact status
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(icontact, "FRICTION");
-  if (ftype != INPAR::CONTACT::friction_none) friction_ = true;
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(icontact, "FRICTION");
+  if (ftype != Inpar::CONTACT::friction_none) friction_ = true;
 
   // set poro contact
-  if (icontact.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
-      icontact.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra ||
-      icontact.get<int>("PROBTYPE") == INPAR::CONTACT::fpi)
+  if (icontact.get<int>("PROBTYPE") == Inpar::CONTACT::poroelast ||
+      icontact.get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra ||
+      icontact.get<int>("PROBTYPE") == Inpar::CONTACT::fpi)
   {
     SetPoroFlag(true);
-    SetPoroType(INPAR::MORTAR::poroelast);
+    SetPoroType(Inpar::Mortar::poroelast);
   }
-  if (icontact.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra)
-    SetPoroType(INPAR::MORTAR::poroscatra);
+  if (icontact.get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra)
+    SetPoroType(Inpar::Mortar::poroscatra);
 
   // set ehl contact
-  if (icontact.get<int>("PROBTYPE") == INPAR::CONTACT::ehl) SetEhlFlag(true);
+  if (icontact.get<int>("PROBTYPE") == Inpar::CONTACT::ehl) SetEhlFlag(true);
 
   // check for redundant slave storage
   // needed for self contact but not wanted for general contact
@@ -199,7 +199,7 @@ CONTACT::Interface::Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>
   // so we only print a warning here, as it is possible to have another contact interface with a
   // different ID that does not need to be a self contact interface
   if (!(selfcontact_ or nonSmoothContact_) &&
-      interface_data_->GetExtendGhosting() == INPAR::MORTAR::ExtendGhosting::redundant_all)
+      interface_data_->GetExtendGhosting() == Inpar::Mortar::ExtendGhosting::redundant_all)
     if (Comm().MyPID() == 0)
       std::cout << "\n\nWARNING: We do not want redundant interface storage for contact where not "
                    "needed, as it is very expensive. But we need it e.g. for self contact."
@@ -218,7 +218,7 @@ CONTACT::Interface::Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>
 void CONTACT::Interface::update_master_slave_sets()
 {
   // call mortar function
-  MORTAR::Interface::update_master_slave_sets();
+  Mortar::Interface::update_master_slave_sets();
 
   //********************************************************************
   // DOFS
@@ -237,7 +237,7 @@ void CONTACT::Interface::update_master_slave_sets()
     for (int i = 0; i < Discret().NodeColMap()->NumMyElements(); ++i)
     {
       int gid = Discret().NodeColMap()->GID(i);
-      CORE::Nodes::Node* node = Discret().gNode(gid);
+      Core::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       auto* mrtrnode = dynamic_cast<Node*>(node);
       const bool isslave = mrtrnode->IsSlave();
@@ -295,14 +295,14 @@ void CONTACT::Interface::set_cn_ct_values(const int& iter)
   const double ct = interface_params().get<double>("SEMI_SMOOTH_CT");
 
   // set all nodal cn-values to the input value
-  GetCn() = CORE::LINALG::CreateVector(*SlaveRowNodes(), true);
+  GetCn() = Core::LinAlg::CreateVector(*SlaveRowNodes(), true);
   int err = GetCn()->PutScalar(cn);
   if (err != 0) FOUR_C_THROW("cn definition failed!");
 
   // set all nodal ct-values to the input value
   if (friction_)
   {
-    GetCt() = CORE::LINALG::CreateVector(*SlaveRowNodes(), true);
+    GetCt() = Core::LinAlg::CreateVector(*SlaveRowNodes(), true);
     err = GetCt()->PutScalar(ct);
     if (err != 0) FOUR_C_THROW("cn definition failed!");
   }
@@ -311,12 +311,12 @@ void CONTACT::Interface::set_cn_ct_values(const int& iter)
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %i", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     // calculate characteristic edge length:
-    CORE::Elements::Element* ele = cnode->Elements()[0];
+    Core::Elements::Element* ele = cnode->Elements()[0];
     Element* cele = dynamic_cast<Element*>(ele);
     std::array<double, 3> pos1 = {0.0, 0.0, 0.0};
     std::array<double, 3> pos2 = {0.0, 0.0, 0.0};
@@ -374,7 +374,7 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::Interface& interface)
 void CONTACT::Interface::Print(std::ostream& os) const
 {
   if (Comm().MyPID() == 0) os << "Contact ";
-  MORTAR::Interface::Print(os);
+  Mortar::Interface::Print(os);
 
   return;
 }
@@ -394,11 +394,11 @@ void CONTACT::Interface::AddNode(Teuchos::RCP<CONTACT::Node> cnode)
 void CONTACT::Interface::add_element(Teuchos::RCP<CONTACT::Element> cele)
 {
   // check for quadratic 2d slave elements to be modified
-  if (cele->IsSlave() && (cele->Shape() == CORE::FE::CellType::line3)) quadslave_ = true;
+  if (cele->IsSlave() && (cele->Shape() == Core::FE::CellType::line3)) quadslave_ = true;
 
   // check for quadratic 3d slave elements to be modified
   if (cele->IsSlave() &&
-      (cele->Shape() == CORE::FE::CellType::quad8 || cele->Shape() == CORE::FE::CellType::tri6))
+      (cele->Shape() == Core::FE::CellType::quad8 || cele->Shape() == Core::FE::CellType::tri6))
     quadslave_ = true;
 
   idiscret_->add_element(cele);
@@ -455,11 +455,11 @@ void CONTACT::Interface::fill_complete_new(const bool isFinalParallelDistributio
   /* We'd like to call idiscret_.fill_complete(true,false,false) but this will assign all nodes new
    * degrees of freedom which we don't want. We would like to use the degrees of freedom that were
    * stored in the mortar nodes. To do so, we have to create and set our own version of a
-   * MORTAR::DofSet class before we call fill_complete on the interface discretization. The
+   * Mortar::DofSet class before we call fill_complete on the interface discretization. The
    * specialized DofSet class will not assign new dofs but will assign the dofs stored in the nodes.
    */
   {
-    Teuchos::RCP<MORTAR::DofSet> mrtrdofset = Teuchos::rcp(new MORTAR::DofSet());
+    Teuchos::RCP<Mortar::DofSet> mrtrdofset = Teuchos::rcp(new Mortar::DofSet());
     Discret().ReplaceDofSet(mrtrdofset);
   }
 
@@ -508,7 +508,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
 
   switch (interface_data_->GetExtendGhosting())
   {
-    case INPAR::MORTAR::ExtendGhosting::redundant_all:
+    case Inpar::Mortar::ExtendGhosting::redundant_all:
     {
       // to ease our search algorithms we'll afford the luxury to ghost all nodes
       // on all processors. To do so, we'll take the node row map and export it to
@@ -526,7 +526,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
 
       // gather all gids of nodes redundantly
       std::vector<int> rdata;
-      CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
+      Core::LinAlg::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // build completely overlapping map of nodes (on ALL processors)
       Teuchos::RCP<Epetra_Map> newnodecolmap =
@@ -541,7 +541,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
 
       // gather all gids of elements redundantly
       rdata.resize(0);
-      CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
+      Core::LinAlg::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // build complete overlapping map of elements (on ALL processors)
       Teuchos::RCP<Epetra_Map> newelecolmap =
@@ -557,7 +557,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
 
       break;
     }
-    case INPAR::MORTAR::ExtendGhosting::redundant_master:
+    case Inpar::Mortar::ExtendGhosting::redundant_master:
     {
       // to ease our search algorithms we'll afford the luxury to ghost all master
       // nodes on all processors. To do so, we'll take the master node row map and
@@ -575,24 +575,24 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       for (int i = 0; i < noderowmap->NumMyElements(); ++i)
       {
         int gid = noderowmap->GID(i);
-        CORE::Nodes::Node* node = Discret().gNode(gid);
+        Core::Nodes::Node* node = Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
-        MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
+        Mortar::Node* mrtrnode = dynamic_cast<Mortar::Node*>(node);
         if (!mrtrnode->IsSlave()) sdata.push_back(gid);
       }
 
       // gather all master row node gids redundantly
       std::vector<int> rdata;
-      CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
+      Core::LinAlg::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // add my own slave column node ids (non-redundant, standard overlap)
       const Epetra_Map* nodecolmap = Discret().NodeColMap();
       for (int i = 0; i < nodecolmap->NumMyElements(); ++i)
       {
         int gid = nodecolmap->GID(i);
-        CORE::Nodes::Node* node = Discret().gNode(gid);
+        Core::Nodes::Node* node = Discret().gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
-        MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
+        Mortar::Node* mrtrnode = dynamic_cast<Mortar::Node*>(node);
         if (mrtrnode->IsSlave()) rdata.push_back(gid);
       }
 
@@ -608,24 +608,24 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       for (int i = 0; i < elerowmap->NumMyElements(); ++i)
       {
         int gid = elerowmap->GID(i);
-        CORE::Elements::Element* ele = Discret().gElement(gid);
+        Core::Elements::Element* ele = Discret().gElement(gid);
         if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
-        MORTAR::Element* mrtrele = dynamic_cast<MORTAR::Element*>(ele);
+        Mortar::Element* mrtrele = dynamic_cast<Mortar::Element*>(ele);
         if (!mrtrele->IsSlave()) sdata.push_back(gid);
       }
 
       // gather all gids of elements redundantly
       rdata.resize(0);
-      CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
+      Core::LinAlg::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // add my own slave column node ids (non-redundant, standard overlap)
       const Epetra_Map* elecolmap = Discret().ElementColMap();
       for (int i = 0; i < elecolmap->NumMyElements(); ++i)
       {
         int gid = elecolmap->GID(i);
-        CORE::Elements::Element* ele = Discret().gElement(gid);
+        Core::Elements::Element* ele = Discret().gElement(gid);
         if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
-        MORTAR::Element* mrtrele = dynamic_cast<MORTAR::Element*>(ele);
+        Mortar::Element* mrtrele = dynamic_cast<Mortar::Element*>(ele);
         if (mrtrele->IsSlave()) rdata.push_back(gid);
       }
 
@@ -643,12 +643,12 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
 
       break;
     }
-    case INPAR::MORTAR::ExtendGhosting::roundrobin:
+    case Inpar::Mortar::ExtendGhosting::roundrobin:
     {
       // Nothing to do in case of Round-Robin
       break;
     }
-    case INPAR::MORTAR::ExtendGhosting::binning:
+    case Inpar::Mortar::ExtendGhosting::binning:
     {
       // Extend master column map via binning
 
@@ -675,7 +675,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       const int numMasterColElements = extendedmastercolmap->NumMyElements();
       for (int lid = 0; lid < numMasterColElements; ++lid)
       {
-        CORE::Elements::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
+        Core::Elements::Element* ele = Discret().gElement(extendedmastercolmap->GID(lid));
         const int* nodeids = ele->NodeIds();
         for (int inode = 0; inode < ele->num_node(); ++inode) nodes.insert(nodeids[inode]);
       }
@@ -706,8 +706,8 @@ void CONTACT::Interface::Redistribute()
       interface_params().sublist("PARALLEL REDISTRIBUTION");
 
   // make sure we are supposed to be here
-  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
-          "PARALLEL_REDIST") == INPAR::MORTAR::ParallelRedist::redist_none)
+  if (Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") == Inpar::Mortar::ParallelRedist::redist_none)
     FOUR_C_THROW(
         "You are not supposed to be here since you did not enable PARALLEL_REDIST in the "
         "input file. ");
@@ -728,9 +728,9 @@ void CONTACT::Interface::Redistribute()
   //**********************************************************************
   // perform contact search (still with non-optimal distribution)
   Initialize();
-  if (SearchAlg() == INPAR::MORTAR::search_bfele)
+  if (SearchAlg() == Inpar::Mortar::search_bfele)
     evaluate_search_brute_force(SearchParam());
-  else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
+  else if (SearchAlg() == Inpar::Mortar::search_binarytree)
     evaluate_search_binarytree();
   else
     FOUR_C_THROW("Invalid search algorithm");
@@ -748,9 +748,9 @@ void CONTACT::Interface::Redistribute()
   for (int i = 0; i < numMySlaveColElements; ++i)
   {
     int gid = SlaveColElements()->GID(i);
-    CORE::Elements::Element* ele = Discret().gElement(gid);
+    Core::Elements::Element* ele = Discret().gElement(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
-    MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
+    Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
     mele->MoData().SearchElements().resize(0);
   }
@@ -788,7 +788,7 @@ void CONTACT::Interface::Redistribute()
   // (return value TRUE, because redistribution performed)
   if (slaveCloseRowEles->NumGlobalElements() == 0 || slaveNonCloseRowEles->NumGlobalElements() == 0)
   {
-    MORTAR::Interface::Redistribute();
+    Mortar::Interface::Redistribute();
     return;
   }
 
@@ -840,14 +840,14 @@ void CONTACT::Interface::Redistribute()
   for (int k = 0; k < numMySlaveRowNodes; ++k)
   {
     int gid = SlaveRowNodes()->GID(k);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
     // find adjacent elements first
     for (int k = 0; k < node->NumElement(); ++k)
     {
       // store adjacent nodes
-      CORE::Elements::Element* ele = node->Elements()[k];
+      Core::Elements::Element* ele = node->Elements()[k];
       int numnode = ele->num_node();
       std::vector<int> nodeids(numnode);
       for (int n = 0; n < numnode; ++n) nodeids[n] = ele->NodeIds()[n];
@@ -872,21 +872,21 @@ void CONTACT::Interface::Redistribute()
   std::vector<int> globalcns;
   std::set<int> setglobalcns;
   std::vector<int> scnids;
-  CORE::LINALG::Gather<int>(localcns, globalcns, numproc, allproc.data(), Comm());
+  Core::LinAlg::Gather<int>(localcns, globalcns, numproc, allproc.data(), Comm());
   for (int i = 0; i < (int)globalcns.size(); ++i) setglobalcns.insert(globalcns[i]);
   for (iter = setglobalcns.begin(); iter != setglobalcns.end(); ++iter) scnids.push_back(*iter);
 
   //**********************************************************************
   // call parallel redistribution
   Teuchos::RCP<const Epetra_CrsGraph> slaveCloseNodeGraph =
-      CORE::REBALANCE::BuildGraph(idiscret_, slaveCloseRowEles);
+      Core::Rebalance::BuildGraph(idiscret_, slaveCloseRowEles);
 
   Teuchos::ParameterList slaveCloseRebalanceParams;
   slaveCloseRebalanceParams.set<std::string>("num parts", std::to_string(scproc));
   slaveCloseRebalanceParams.set<std::string>("imbalance tol", std::to_string(imbalance_tol));
 
   const auto& [slaveCloseRowNodes, slaveCloseColNodes] =
-      CORE::REBALANCE::RebalanceNodeMaps(slaveCloseNodeGraph, slaveCloseRebalanceParams);
+      Core::Rebalance::RebalanceNodeMaps(slaveCloseNodeGraph, slaveCloseRebalanceParams);
   //**********************************************************************
 
   //**********************************************************************
@@ -899,21 +899,21 @@ void CONTACT::Interface::Redistribute()
   std::vector<int> globalfns;
   std::set<int> setglobalfns;
   std::vector<int> sncnids;
-  CORE::LINALG::Gather<int>(localfns, globalfns, numproc, allproc.data(), Comm());
+  Core::LinAlg::Gather<int>(localfns, globalfns, numproc, allproc.data(), Comm());
   for (int i = 0; i < (int)globalfns.size(); ++i) setglobalfns.insert(globalfns[i]);
   for (iter = setglobalfns.begin(); iter != setglobalfns.end(); ++iter) sncnids.push_back(*iter);
 
   //**********************************************************************
   // call parallel redistribution
   Teuchos::RCP<const Epetra_CrsGraph> slaveNonCloseNodeGraph =
-      CORE::REBALANCE::BuildGraph(idiscret_, slaveNonCloseRowEles);
+      Core::Rebalance::BuildGraph(idiscret_, slaveNonCloseRowEles);
 
   Teuchos::ParameterList slaveNonCloseRebalanceParams;
   slaveNonCloseRebalanceParams.set<std::string>("num parts", std::to_string(sncproc));
   slaveNonCloseRebalanceParams.set<std::string>("imbalance tol", std::to_string(imbalance_tol));
 
   const auto& [slaveNonCloseRowNodes, snccolnodes] =
-      CORE::REBALANCE::RebalanceNodeMaps(slaveNonCloseNodeGraph, slaveNonCloseRebalanceParams);
+      Core::Rebalance::RebalanceNodeMaps(slaveNonCloseNodeGraph, slaveNonCloseRebalanceParams);
   //**********************************************************************
 
   //**********************************************************************
@@ -965,7 +965,7 @@ void CONTACT::Interface::Redistribute()
 
       // check for overlap
       if (slaveCloseRowNodes->MyGID(slaveNonCloseRowNodes->GID(i)))
-        FOUR_C_THROW("CORE::LINALG::MergeMap: Result map is overlapping");
+        FOUR_C_THROW("Core::LinAlg::MergeMap: Result map is overlapping");
 
       // add new GIDs to mygids
       mygids[count] = slaveNonCloseRowNodes->GID(i);
@@ -978,7 +978,7 @@ void CONTACT::Interface::Redistribute()
   }
 
   // merge interface node row map from slave and master parts
-  Teuchos::RCP<Epetra_Map> rownodes = CORE::LINALG::MergeMap(srownodes, mrownodes, false);
+  Teuchos::RCP<Epetra_Map> rownodes = Core::LinAlg::MergeMap(srownodes, mrownodes, false);
 
   // IMPORTANT NOTE:
   // While merging from the two different slave parts of the discretization
@@ -1014,7 +1014,7 @@ void CONTACT::Interface::Redistribute()
   outgraph = Teuchos::null;
 
   // merge interface node column map from slave and master parts
-  Teuchos::RCP<Epetra_Map> colnodes = CORE::LINALG::MergeMap(scolnodes, mcolnodes, false);
+  Teuchos::RCP<Epetra_Map> colnodes = Core::LinAlg::MergeMap(scolnodes, mcolnodes, false);
 
   //**********************************************************************
   // (8) Get partitioning information into discretization
@@ -1037,7 +1037,7 @@ void CONTACT::Interface::Redistribute()
 void CONTACT::Interface::split_into_far_and_close_sets(std::vector<int>& closeele,
     std::vector<int>& noncloseele, std::vector<int>& localcns, std::vector<int>& localfns) const
 {
-  const bool performSplitting = CORE::UTILS::IntegralValue<bool>(
+  const bool performSplitting = Core::UTILS::IntegralValue<bool>(
       interface_params().sublist("PARALLEL REDISTRIBUTION"), "EXPLOIT_PROXIMITY");
 
   if (performSplitting)
@@ -1047,9 +1047,9 @@ void CONTACT::Interface::split_into_far_and_close_sets(std::vector<int>& closeel
     {
       // get element
       int gid = SlaveRowElements()->GID(i);
-      CORE::Elements::Element* ele = Discret().gElement(gid);
+      Core::Elements::Element* ele = Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
-      MORTAR::Element* cele = dynamic_cast<MORTAR::Element*>(ele);
+      Mortar::Element* cele = dynamic_cast<Mortar::Element*>(ele);
 
       // store element id and adjacent node ids
       int close = cele->MoData().NumSearchElements();
@@ -1072,9 +1072,9 @@ void CONTACT::Interface::split_into_far_and_close_sets(std::vector<int>& closeel
     {
       // get element
       int gid = SlaveRowElements()->GID(i);
-      CORE::Elements::Element* ele = Discret().gElement(gid);
+      Core::Elements::Element* ele = Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find element with gid %", gid);
-      MORTAR::Element* cele = dynamic_cast<MORTAR::Element*>(ele);
+      Mortar::Element* cele = dynamic_cast<Mortar::Element*>(ele);
 
       // store element id and adjacent node ids
       noncloseele.push_back(gid);
@@ -1092,7 +1092,7 @@ void CONTACT::Interface::collect_distribution_data(int& numColElements, int& num
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
+    Core::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* slaveElement = dynamic_cast<Element*>(ele1);
 
@@ -1127,18 +1127,18 @@ void CONTACT::Interface::CreateSearchTree()
 #endif
 
   // binary tree search
-  if (SearchAlg() == INPAR::MORTAR::search_binarytree)
+  if (SearchAlg() == Inpar::Mortar::search_binarytree)
   {
     //*****SELF CONTACT*****
     if (SelfContact())
     {
       // set state in interface to intialize all kinds of quantities
       Teuchos::RCP<Epetra_Vector> zero = Teuchos::rcp(new Epetra_Vector(*idiscret_->dof_row_map()));
-      set_state(MORTAR::state_new_displacement, *zero);
+      set_state(Mortar::state_new_displacement, *zero);
 
       // create fully overlapping map of all contact elements
       Teuchos::RCP<Epetra_Map> elefullmap =
-          CORE::LINALG::AllreduceEMap(*idiscret_->ElementRowMap());
+          Core::LinAlg::AllreduceEMap(*idiscret_->ElementRowMap());
 
       // create binary tree object for self contact search
       if (!TwoHalfPass())
@@ -1163,16 +1163,16 @@ void CONTACT::Interface::CreateSearchTree()
       Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
       switch (interface_data_->GetExtendGhosting())
       {
-        case INPAR::MORTAR::ExtendGhosting::roundrobin:
-        case INPAR::MORTAR::ExtendGhosting::binning:
+        case Inpar::Mortar::ExtendGhosting::roundrobin:
+        case Inpar::Mortar::ExtendGhosting::binning:
         {
           melefullmap = melecolmap_;
           break;
         }
-        case INPAR::MORTAR::ExtendGhosting::redundant_all:
-        case INPAR::MORTAR::ExtendGhosting::redundant_master:
+        case Inpar::Mortar::ExtendGhosting::redundant_all:
+        case Inpar::Mortar::ExtendGhosting::redundant_master:
         {
-          melefullmap = CORE::LINALG::AllreduceEMap(*melerowmap_);
+          melefullmap = Core::LinAlg::AllreduceEMap(*melerowmap_);
           break;
         }
         default:
@@ -1184,12 +1184,12 @@ void CONTACT::Interface::CreateSearchTree()
 
       {
         // get update type of binary tree
-        INPAR::MORTAR::BinaryTreeUpdateType updatetype =
-            CORE::UTILS::IntegralValue<INPAR::MORTAR::BinaryTreeUpdateType>(
+        Inpar::Mortar::BinaryTreeUpdateType updatetype =
+            Core::UTILS::IntegralValue<Inpar::Mortar::BinaryTreeUpdateType>(
                 interface_params(), "BINARYTREE_UPDATETYPE");
 
         // create binary tree object for contact search and setup tree
-        binarytree_ = Teuchos::rcp(new MORTAR::BinaryTree(Discret(), selecolmap_, melefullmap,
+        binarytree_ = Teuchos::rcp(new Mortar::BinaryTree(Discret(), selecolmap_, melefullmap,
             Dim(), SearchParam(), updatetype, SearchUseAuxPos()));
         // initialize the binary tree
         binarytree_->Init();
@@ -1213,21 +1213,21 @@ void CONTACT::Interface::CreateSearchTree()
 void CONTACT::Interface::initialize_data_container()
 {
   // call base class functionality
-  MORTAR::Interface::initialize_data_container();
+  Mortar::Interface::initialize_data_container();
 
   // ==================
   // non-smooth contact:
   // we need this master node data container to create an averaged
   // nodal normal field on the master side for the smoothed cpp
   // normal field!
-  if (CORE::UTILS::IntegralValue<int>(interface_params(), "CPP_NORMALS") || nonSmoothContact_)
+  if (Core::UTILS::IntegralValue<int>(interface_params(), "CPP_NORMALS") || nonSmoothContact_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(MasterRowNodes()));
+    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(MasterRowNodes()));
 
     for (int i = 0; i < masternodes->NumMyElements(); ++i)
     {
       int gid = masternodes->GID(i);
-      CORE::Nodes::Node* node = Discret().gNode(gid);
+      Core::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %i", gid);
       CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
       mnode->initialize_data_container();
@@ -1256,12 +1256,12 @@ void CONTACT::Interface::Initialize()
   }
 
   // init normal data in master node data container for cpp calculation
-  if (CORE::UTILS::IntegralValue<int>(interface_params(), "CPP_NORMALS"))
+  if (Core::UTILS::IntegralValue<int>(interface_params(), "CPP_NORMALS"))
   {
     for (int i = 0; i < MasterColNodes()->NumMyElements(); ++i)
     {
       int gid = MasterColNodes()->GID(i);
-      CORE::Nodes::Node* node = Discret().gNode(gid);
+      Core::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1289,7 +1289,7 @@ void CONTACT::Interface::Initialize()
   for (int i = 0; i < SlaveColNodesBound()->NumMyElements(); ++i)
   {
     int gid = SlaveColNodesBound()->GID(i);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1370,7 +1370,7 @@ void CONTACT::Interface::Initialize()
       frinode->FriData().GetMNodes().clear();
 
       // for gp slip
-      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         // reset jump deriv.
         for (int j = 0; j < (int)((frinode->FriData().GetDerivVarJump()).size()); ++j)
@@ -1410,8 +1410,8 @@ void CONTACT::Interface::Initialize()
     // (use fully overlapping column map of S+M elements)
     for (int i = 0; i < idiscret_->NumMyColElements(); ++i)
     {
-      CORE::Elements::Element* ele = idiscret_->lColElement(i);
-      MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
+      Core::Elements::Element* ele = idiscret_->lColElement(i);
+      Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
 
@@ -1427,9 +1427,9 @@ void CONTACT::Interface::Initialize()
     for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
     {
       int gid = SlaveColElements()->GID(i);
-      CORE::Elements::Element* ele = Discret().gElement(gid);
+      Core::Elements::Element* ele = Discret().gElement(gid);
       if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
-      MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(ele);
+      Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
 
       mele->MoData().SearchElements().resize(0);
 
@@ -1440,10 +1440,10 @@ void CONTACT::Interface::Initialize()
   }
 
   // clear all Nitsche data
-  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM") ==
-      INPAR::MORTAR::algorithm_gpts)
+  if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM") ==
+      Inpar::Mortar::algorithm_gpts)
     for (int e = 0; e < Discret().ElementColMap()->NumMyElements(); ++e)
-      dynamic_cast<MORTAR::Element*>(Discret().gElement(Discret().ElementColMap()->GID(e)))
+      dynamic_cast<Mortar::Element*>(Discret().gElement(Discret().ElementColMap()->GID(e)))
           ->GetNitscheContainer()
           .Clear();
 
@@ -1468,14 +1468,14 @@ void CONTACT::Interface::set_element_areas()
   // same time we initialize the element data containers for self contact.
   // This is due to the fact that self contact search is NOT parallelized.
   //**********************************************************************
-  if (SelfContact() or CORE::UTILS::IntegralValue<int>(interface_params(), "CPP_NORMALS") or
+  if (SelfContact() or Core::UTILS::IntegralValue<int>(interface_params(), "CPP_NORMALS") or
       nonSmoothContact_)
   {
     // loop over all elements to set current element length / area
     // (use fully overlapping column map)
     for (int i = 0; i < idiscret_->NumMyColElements(); ++i)
     {
-      MORTAR::Element* element = dynamic_cast<MORTAR::Element*>(idiscret_->lColElement(i));
+      Mortar::Element* element = dynamic_cast<Mortar::Element*>(idiscret_->lColElement(i));
       element->initialize_data_container();
       element->MoData().Area() = element->ComputeArea();
     }
@@ -1483,7 +1483,7 @@ void CONTACT::Interface::set_element_areas()
   else
   {
     // refer call back to base class version
-    MORTAR::Interface::set_element_areas();
+    Mortar::Interface::set_element_areas();
   }
 
   return;
@@ -1500,9 +1500,9 @@ void CONTACT::Interface::pre_evaluate(const int& step, const int& iter)
   //**********************************************************************
   // search algorithm
   //**********************************************************************
-  if (SearchAlg() == INPAR::MORTAR::search_bfele)
+  if (SearchAlg() == Inpar::Mortar::search_bfele)
     evaluate_search_brute_force(SearchParam());
-  else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
+  else if (SearchAlg() == Inpar::Mortar::search_binarytree)
     evaluate_search_binarytree();
   else
     FOUR_C_THROW("Invalid search algorithm");
@@ -1524,7 +1524,7 @@ void CONTACT::Interface::pre_evaluate(const int& step, const int& iter)
   set_cn_ct_values(iter);
 
   // cpp normals or averaged normal field?
-  if (CORE::UTILS::IntegralValue<int>(interface_params(), "CPP_NORMALS"))
+  if (Core::UTILS::IntegralValue<int>(interface_params(), "CPP_NORMALS"))
   {
     // evaluate cpp nodal normals on slave side
     evaluate_cpp_normals();
@@ -1558,14 +1558,14 @@ void CONTACT::Interface::pre_evaluate(const int& step, const int& iter)
 void CONTACT::Interface::store_nt_svalues()
 {
   // create iterators for data types
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all possibly non smooth nodes
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1654,7 +1654,7 @@ void CONTACT::Interface::store_nt_svalues()
 void CONTACT::Interface::store_lt_svalues()
 {
   // create iterators for data types
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all possibly non smooth nodes
@@ -1664,7 +1664,7 @@ void CONTACT::Interface::store_lt_svalues()
     double ssum = 0.0;
 
     int gid = SlaveRowNodes()->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1801,14 +1801,14 @@ void CONTACT::Interface::store_lt_lvalues()
   FOUR_C_THROW("store_lt_lvalues() is outdated!");
   return;
   //  // create iterators for data types
-  //  typedef CORE::GEN::Pairedvector<int,double>::const_iterator CI;
+  //  typedef Core::Gen::Pairedvector<int,double>::const_iterator CI;
   //  typedef std::map<int,double>::const_iterator          CImap;
   //
   //  // loop over all possibly non smooth nodes
   //  for(int i=0; i<SlaveRowNodes()->NumMyElements();++i)
   //  {
   //    int gid = SlaveRowNodes()->GID(i);
-  //    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+  //    Core::Nodes::Node* node = idiscret_->gNode(gid);
   //    if (!node)
   //      FOUR_C_THROW("Cannot find node with gid %",gid);
   //    Node* cnode = dynamic_cast<Node*>(node);
@@ -1936,14 +1936,14 @@ void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
 
   std::array<double, 3> oldtraction = {0.0, 0.0, 0.0};
 
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -1966,7 +1966,7 @@ void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -2012,13 +2012,13 @@ void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDltl()).size() > 0)
       {
-        CORE::GEN::Pairedvector<int, double> map = cnode->MoData().GetDltl();
+        Core::Gen::Pairedvector<int, double> map = cnode->MoData().GetDltl();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2045,7 +2045,7 @@ void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2071,13 +2071,13 @@ void CONTACT::Interface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff)
+void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
   const double penaltytan = interface_params().get<double>("PENALTYPARAMTAN");
   const double frcoeff = interface_params().get<double>("FRCOEFF");
 
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   std::array<double, 3> oldtraction = {0.0, 0.0, 0.0};
@@ -2086,7 +2086,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -2109,7 +2109,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -2119,7 +2119,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
     {
       // state
       bool stick = true;
-      CORE::GEN::Pairedvector<int, double> coefflin(100);
+      Core::Gen::Pairedvector<int, double> coefflin(100);
 
       // normal force
       std::array<double, 3> fn = {0.0, 0.0, 0.0};
@@ -2153,13 +2153,13 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
         coeff = frcoeff * maxtrac / trialnorm;
         for (int dim = 0; dim < Dim(); ++dim) ftan[dim] = coeff * ftrial[dim];
 
-        CORE::GEN::Pairedvector<int, double> fn_x(100);
-        CORE::GEN::Pairedvector<int, double> fn_y(100);
-        CORE::GEN::Pairedvector<int, double> fn_z(100);
+        Core::Gen::Pairedvector<int, double> fn_x(100);
+        Core::Gen::Pairedvector<int, double> fn_y(100);
+        Core::Gen::Pairedvector<int, double> fn_z(100);
 
-        CORE::GEN::Pairedvector<int, double> ft_x(100);
-        CORE::GEN::Pairedvector<int, double> ft_y(100);
-        CORE::GEN::Pairedvector<int, double> ft_z(100);
+        Core::Gen::Pairedvector<int, double> ft_x(100);
+        Core::Gen::Pairedvector<int, double> ft_y(100);
+        Core::Gen::Pairedvector<int, double> ft_z(100);
 
         for (CImap pp = cnode->Data().GetDerivGltl()[0].begin();
              pp != cnode->Data().GetDerivGltl()[0].end(); ++pp)
@@ -2181,7 +2181,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
              pp != cnode->Data().GetDerivJumpltl()[2].end(); ++pp)
           ft_z[pp->first] -= penaltytan * (pp->second);
 
-        CORE::GEN::Pairedvector<int, double> maxtraclin(100);
+        Core::Gen::Pairedvector<int, double> maxtraclin(100);
         for (CI pp = fn_x.begin(); pp != fn_x.end(); ++pp)
           maxtraclin[pp->first] -= 0.5 * (1.0 / maxtrac) * (pp->second) * 2.0 * fn[0] * pp->second;
         for (CI pp = fn_y.begin(); pp != fn_y.end(); ++pp)
@@ -2189,7 +2189,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
         for (CI pp = fn_z.begin(); pp != fn_z.end(); ++pp)
           maxtraclin[pp->first] -= 0.5 * (1.0 / maxtrac) * (pp->second) * 2.0 * fn[2] * pp->second;
 
-        CORE::GEN::Pairedvector<int, double> trialnormlin(100);
+        Core::Gen::Pairedvector<int, double> trialnormlin(100);
         for (CI pp = ft_x.begin(); pp != ft_x.end(); ++pp)
           trialnormlin[pp->first] -=
               0.5 * (1.0 / trialnorm) * (pp->second) * 2.0 * ftrial[0] * pp->second;
@@ -2221,7 +2221,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
         int sgid = scurr->first;
         ++scurr;
 
-        CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
+        Core::Nodes::Node* snode = idiscret_->gNode(sgid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2265,7 +2265,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
         int mgid = mcurr->first;
         ++mcurr;
 
-        CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
+        Core::Nodes::Node* mnode = idiscret_->gNode(mgid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -2303,13 +2303,13 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
         /**************************************************** D-matrix ******/
         if ((cnode->MoData().GetDltl()).size() > 0)
         {
-          CORE::GEN::Pairedvector<int, double> map = cnode->MoData().GetDltl();
+          Core::Gen::Pairedvector<int, double> map = cnode->MoData().GetDltl();
 
           for (CI p = map.begin(); p != map.end(); ++p)
           {
             // node id
             int gid3 = p->first;
-            CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+            Core::Nodes::Node* snode = idiscret_->gNode(gid3);
             if (!snode) FOUR_C_THROW("Cannot find node with gid");
             Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2337,7 +2337,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
           {
             // node id
             int gid3 = p->first;
-            CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+            Core::Nodes::Node* snode = idiscret_->gNode(gid3);
             if (!snode) FOUR_C_THROW("Cannot find node with gid");
             Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2365,13 +2365,13 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
         /**************************************************** D-matrix ******/
         if ((cnode->MoData().GetDltl()).size() > 0)
         {
-          CORE::GEN::Pairedvector<int, double> map = cnode->MoData().GetDltl();
+          Core::Gen::Pairedvector<int, double> map = cnode->MoData().GetDltl();
 
           for (CI p = map.begin(); p != map.end(); ++p)
           {
             // node id
             int gid3 = p->first;
-            CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+            Core::Nodes::Node* snode = idiscret_->gNode(gid3);
             if (!snode) FOUR_C_THROW("Cannot find node with gid");
             Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2394,13 +2394,13 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
         /**************************************************** D-matrix ******/
         if ((cnode->MoData().GetDltl()).size() > 0)
         {
-          CORE::GEN::Pairedvector<int, double> map = cnode->MoData().GetDltl();
+          Core::Gen::Pairedvector<int, double> map = cnode->MoData().GetDltl();
 
           for (CI p = map.begin(); p != map.end(); ++p)
           {
             // node id
             int gid3 = p->first;
-            CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+            Core::Nodes::Node* snode = idiscret_->gNode(gid3);
             if (!snode) FOUR_C_THROW("Cannot find node with gid");
             Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2428,7 +2428,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
           {
             // node id
             int gid3 = p->first;
-            CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+            Core::Nodes::Node* snode = idiscret_->gNode(gid3);
             if (!snode) FOUR_C_THROW("Cannot find node with gid");
             Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2455,7 +2455,7 @@ void CONTACT::Interface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMa
           {
             // node id
             int gid3 = p->first;
-            CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+            Core::Nodes::Node* snode = idiscret_->gNode(gid3);
             if (!snode) FOUR_C_THROW("Cannot find node with gid");
             Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2487,14 +2487,14 @@ void CONTACT::Interface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
   for (int j = 0; j < mnoderowmap_->NumMyElements(); ++j)
   {
     int gid = mnoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2507,13 +2507,13 @@ void CONTACT::Interface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDnts()).size() > 0)
       {
-        CORE::GEN::Pairedvector<int, double> map = cnode->MoData().GetDnts();
+        Core::Gen::Pairedvector<int, double> map = cnode->MoData().GetDnts();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2541,7 +2541,7 @@ void CONTACT::Interface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2571,14 +2571,14 @@ void CONTACT::Interface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
   for (int j = 0; j < mnoderowmap_->NumMyElements(); ++j)
   {
     int gid = mnoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2595,13 +2595,13 @@ void CONTACT::Interface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDlts()).size() > 0)
       {
-        CORE::GEN::Pairedvector<int, double> map = cnode->MoData().GetDlts();
+        Core::Gen::Pairedvector<int, double> map = cnode->MoData().GetDlts();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2629,7 +2629,7 @@ void CONTACT::Interface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff)
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2661,14 +2661,14 @@ void CONTACT::Interface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
   // D/M = sval/mval
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2679,13 +2679,13 @@ void CONTACT::Interface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDltl()).size() > 0)
       {
-        CORE::GEN::Pairedvector<int, double> map = cnode->MoData().GetDltl();
+        Core::Gen::Pairedvector<int, double> map = cnode->MoData().GetDltl();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2712,7 +2712,7 @@ void CONTACT::Interface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2736,18 +2736,18 @@ void CONTACT::Interface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff)
+void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
   for (int j = 0; j < mnoderowmap_->NumMyElements(); ++j)
   {
     int gid = mnoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2779,7 +2779,7 @@ void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
         int sgid = scurr->first;
         ++scurr;
 
-        CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
+        Core::Nodes::Node* snode = idiscret_->gNode(sgid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2823,7 +2823,7 @@ void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
         int mgid = mcurr->first;
         ++mcurr;
 
-        CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
+        Core::Nodes::Node* mnode = idiscret_->gNode(mgid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -2856,13 +2856,13 @@ void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDlts()).size() > 0)
       {
-        CORE::GEN::Pairedvector<int, double> map = cnode->MoData().GetDlts();
+        Core::Gen::Pairedvector<int, double> map = cnode->MoData().GetDlts();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2898,7 +2898,7 @@ void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -2933,18 +2933,18 @@ void CONTACT::Interface::add_lt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff)
+void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
   for (int j = 0; j < mnoderowmap_->NumMyElements(); ++j)
   {
     int gid = mnoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -2973,7 +2973,7 @@ void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
         int mgid = mcurr->first;
         ++mcurr;
 
-        CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
+        Core::Nodes::Node* mnode = idiscret_->gNode(mgid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -3006,13 +3006,13 @@ void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDnts()).size() > 0)
       {
-        CORE::GEN::Pairedvector<int, double> map = cnode->MoData().GetDnts();
+        Core::Gen::Pairedvector<int, double> map = cnode->MoData().GetDnts();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -3048,7 +3048,7 @@ void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -3083,18 +3083,18 @@ void CONTACT::Interface::add_nt_sstiffness_master(Teuchos::RCP<CORE::LINALG::Spa
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff)
+void CONTACT::Interface::AddLTLstiffness(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
   typedef std::map<int, double>::const_iterator CImap;
 
   // loop over all slave nodes
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -3120,7 +3120,7 @@ void CONTACT::Interface::AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix
         int sgid = scurr->first;
         ++scurr;
 
-        CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
+        Core::Nodes::Node* snode = idiscret_->gNode(sgid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -3164,7 +3164,7 @@ void CONTACT::Interface::AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix
         int mgid = mcurr->first;
         ++mcurr;
 
-        CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
+        Core::Nodes::Node* mnode = idiscret_->gNode(mgid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -3197,13 +3197,13 @@ void CONTACT::Interface::AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetDltl()).size() > 0)
       {
-        CORE::GEN::Pairedvector<int, double> map = cnode->MoData().GetDltl();
+        Core::Gen::Pairedvector<int, double> map = cnode->MoData().GetDltl();
 
         for (CI p = map.begin(); p != map.end(); ++p)
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -3231,7 +3231,7 @@ void CONTACT::Interface::AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix
         {
           // node id
           int gid3 = p->first;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid3);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid3);
           if (!snode) FOUR_C_THROW("Cannot find node with gid");
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -3262,15 +3262,15 @@ void CONTACT::Interface::AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix
 void CONTACT::Interface::post_evaluate(const int step, const int iter)
 {
   // decide which type of coupling should be evaluated
-  INPAR::MORTAR::AlgorithmType algo =
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+  Inpar::Mortar::AlgorithmType algo =
+      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   switch (algo)
   {
     //*********************************
     // Mortar Coupling (STS)    (2D/3D)
     //*********************************
-    case INPAR::MORTAR::algorithm_mortar:
+    case Inpar::Mortar::algorithm_mortar:
     {
       // non-smooth contact
       if (nonSmoothContact_)
@@ -3287,7 +3287,7 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
     //*********************************
     // Gauss-Point-To-Segment (GPTS)
     //*********************************
-    case INPAR::MORTAR::algorithm_gpts:
+    case Inpar::Mortar::algorithm_gpts:
     {
       // already stored
       return;
@@ -3296,7 +3296,7 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
     //*********************************
     // Line-to-Segment Coupling (3D)
     //*********************************
-    case INPAR::MORTAR::algorithm_lts:
+    case Inpar::Mortar::algorithm_lts:
     {
       // store lts into mortar data container
       store_lt_svalues();
@@ -3305,7 +3305,7 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
     //*********************************
     // Node-to-Segment Coupling (2D/3D)
     //*********************************
-    case INPAR::MORTAR::algorithm_nts:
+    case Inpar::Mortar::algorithm_nts:
     {
       // store nts into mortar data container
       store_nt_svalues();
@@ -3314,7 +3314,7 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
     //*********************************
     // line-to-line Coupling (3D)
     //*********************************
-    case INPAR::MORTAR::algorithm_ltl:
+    case Inpar::Mortar::algorithm_ltl:
     {
       return;
       break;
@@ -3322,7 +3322,7 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
     //*********************************
     // Node-to-Line Coupling (3D)
     //*********************************
-    case INPAR::MORTAR::algorithm_ntl:
+    case Inpar::Mortar::algorithm_ntl:
     {
       FOUR_C_THROW("not yet implemented!");
       break;
@@ -3330,7 +3330,7 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
     //*********************************
     // Segment-to-Line Coupling (3D)
     //*********************************
-    case INPAR::MORTAR::algorithm_stl:
+    case Inpar::Mortar::algorithm_stl:
     {
       // store lts into mortar data container
       store_lt_svalues();
@@ -3413,14 +3413,14 @@ void CONTACT::Interface::scale_terms_ltl()
 
   return;
   //  // create iterators for data types
-  //  typedef CORE::GEN::Pairedvector<int,double>::const_iterator CI;
+  //  typedef Core::Gen::Pairedvector<int,double>::const_iterator CI;
   //  typedef std::map<int,double>::const_iterator          CImap;
   //
   //  // loop over all possibly non smooth nodes
   //  for(int i=0; i<snoderowmap_->NumMyElements();++i)
   //  {
   //    int gid = snoderowmap_->GID(i);
-  //    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+  //    Core::Nodes::Node* node = idiscret_->gNode(gid);
   //    if (!node)
   //      FOUR_C_THROW("Cannot find node with gid %",gid);
   //    Node* cnode = dynamic_cast<Node*>(node);
@@ -3457,7 +3457,7 @@ void CONTACT::Interface::scale_terms_ltl()
   //    std::map<int, double> m_lts =
   //        cnode->MoData().GetMlts();
   //
-  //    CORE::GEN::Pairedvector<int, double> d_lts =
+  //    Core::Gen::Pairedvector<int, double> d_lts =
   //        cnode->MoData().GetDlts();
   //
   //    // ############################################################
@@ -3581,7 +3581,7 @@ void CONTACT::Interface::scale_terms_ltl()
   //        int sgid = scurr->first;
   //        ++scurr;
   //
-  //        CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
+  //        Core::Nodes::Node* snode = idiscret_->gNode(sgid);
   //        if (!snode) FOUR_C_THROW("Cannot find node with gid %",sgid);
   //
   //        // Mortar matrix D derivatives
@@ -3697,18 +3697,18 @@ void CONTACT::Interface::scale_terms_ltl()
  |  evaluate coupling type segment-to-segment coupl          farah 02/16|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::evaluate_sts(
-    const Epetra_Map& selecolmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+    const Epetra_Map& selecolmap, const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
-  MORTAR::Interface::evaluate_sts(selecolmap, mparams_ptr);
+  Mortar::Interface::evaluate_sts(selecolmap, mparams_ptr);
   return;
   //  // loop over all slave col elements
   //  for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   //  {
   //    int gid1 = selecolmap_->GID(i);
-  //    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
+  //    Core::Elements::Element* ele1 = idiscret_->gElement(gid1);
   //    if (!ele1)
   //      FOUR_C_THROW("Cannot find slave element with gid %", gid1);
-  //    MORTAR::Element* selement = dynamic_cast<MORTAR::Element*>(ele1);
+  //    Mortar::Element* selement = dynamic_cast<Mortar::Element*>(ele1);
   //
   //    // loop over all slave nodes of this element to check for active nodes
   //    bool eval = true;
@@ -3726,17 +3726,17 @@ void CONTACT::Interface::evaluate_sts(
   //      continue;
   //
   //    // empty vector of master element pointers
-  //    std::vector<MORTAR::Element*> melements;
+  //    std::vector<Mortar::Element*> melements;
   //
   //    // loop over the candidate master elements of sele_
   //    // use slave element's candidate list SearchElements !!!
   //    for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
   //    {
   //      int gid2 = selement->MoData().SearchElements()[j];
-  //      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
+  //      Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
   //      if (!ele2)
   //        FOUR_C_THROW("Cannot find master element with gid %", gid2);
-  //      MORTAR::Element* melement = dynamic_cast<MORTAR::Element*>(ele2);
+  //      Mortar::Element* melement = dynamic_cast<Mortar::Element*>(ele2);
   //
   //      // skip zero-sized nurbs elements (master)
   //      if (melement->ZeroSized())
@@ -3756,7 +3756,7 @@ void CONTACT::Interface::evaluate_sts(
  |  protected evaluate routine                               farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::evaluate_coupling(const Epetra_Map& selecolmap,
-    const Epetra_Map* snoderowmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+    const Epetra_Map* snoderowmap, const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   // ask if non-smooth contact is activated!
   if (nonSmoothContact_)
@@ -3794,9 +3794,9 @@ void CONTACT::Interface::evaluate_coupling(const Epetra_Map& selecolmap,
       // statement is included:
       // decide which type of coupling should be evaluated
       //********************************************************************
-      INPAR::MORTAR::AlgorithmType algo =
-          CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
-      if (algo == INPAR::MORTAR::algorithm_ltl)
+      Inpar::Mortar::AlgorithmType algo =
+          Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+      if (algo == Inpar::Mortar::algorithm_ltl)
       {
         evaluate_ltl();
         return;
@@ -3855,7 +3855,7 @@ void CONTACT::Interface::evaluate_coupling(const Epetra_Map& selecolmap,
     //********************************************************************
     // call base routine for standard mortar/nts evaluation
     //********************************************************************
-    MORTAR::Interface::evaluate_coupling(selecolmap, snoderowmap, mparams_ptr);
+    Mortar::Interface::evaluate_coupling(selecolmap, snoderowmap, mparams_ptr);
   }
 
   return;
@@ -3870,7 +3870,7 @@ void CONTACT::Interface::initialize_corner_edge()
   if (nonSmoothContact_) return;
 
   // call base function
-  MORTAR::Interface::initialize_corner_edge();
+  Mortar::Interface::initialize_corner_edge();
 
   return;
 }
@@ -3890,7 +3890,7 @@ void CONTACT::Interface::detect_non_smooth_geometries()
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -3908,7 +3908,7 @@ void CONTACT::Interface::detect_non_smooth_geometries()
 
     // build normal at node for 1. ele
     Element* sele0 = dynamic_cast<Element*>(cnode->Elements()[0]);
-    CORE::LINALG::SerialDenseMatrix elen0(6, 1);
+    Core::LinAlg::SerialDenseMatrix elen0(6, 1);
     sele0->BuildNormalAtNode(cnode->Id(), loc, elen0);
 
     // create 1. unit normal
@@ -3919,7 +3919,7 @@ void CONTACT::Interface::detect_non_smooth_geometries()
     // build normal at node for 2. ele
     loc = 0;
     Element* sele1 = dynamic_cast<Element*>(cnode->Elements()[1]);
-    CORE::LINALG::SerialDenseMatrix elen1(6, 1);
+    Core::LinAlg::SerialDenseMatrix elen1(6, 1);
     sele1->BuildNormalAtNode(cnode->Id(), loc, elen1);
 
     // create 2. unit normal
@@ -3939,8 +3939,8 @@ void CONTACT::Interface::detect_non_smooth_geometries()
   }
 
   // create maps
-  nonsmoothnodes_ = CORE::LINALG::CreateMap(nonsmoothnodegids, Comm());
-  smoothnodes_ = CORE::LINALG::CreateMap(smoothnodegids, Comm());
+  nonsmoothnodes_ = Core::LinAlg::CreateMap(nonsmoothnodegids, Comm());
+  smoothnodes_ = Core::LinAlg::CreateMap(smoothnodegids, Comm());
 
   // debug output
   std::cout << "# nonsmooth nodes: " << nonsmoothnodes_->NumGlobalElements() << std::endl;
@@ -3953,8 +3953,8 @@ void CONTACT::Interface::detect_non_smooth_geometries()
 /*----------------------------------------------------------------------*
  |  cpp to edge + Lin                                       farah 11/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORTAR::Element& mele,
-    double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltonodelin)
+double CONTACT::Interface::compute_normal_node_to_edge(Mortar::Node& snode, Mortar::Element& mele,
+    double* normal, std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin)
 {
   // define tolerance
   const double tol = 1e-8;
@@ -4000,8 +4000,8 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
     //**********************************************
     //  F CALCULATION                             //
     //**********************************************
-    CORE::LINALG::SerialDenseVector sval(nrow);
-    CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
+    Core::LinAlg::SerialDenseVector sval(nrow);
+    Core::LinAlg::SerialDenseMatrix sderiv(nrow, 1);
     mele.evaluate_shape(&xi, sval, sderiv, nrow);
 
     // tangent part
@@ -4082,8 +4082,8 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
   //   LINEARIZATION   df                       //
   //**********************************************
 
-  CORE::LINALG::SerialDenseVector sval(nrow);
-  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
+  Core::LinAlg::SerialDenseVector sval(nrow);
+  Core::LinAlg::SerialDenseMatrix sderiv(nrow, 1);
   mele.evaluate_shape(&xi, sval, sderiv, nrow);
 
   // tangent part
@@ -4130,9 +4130,9 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
   //**********************************************
   //   LINEARIZATION    f                       //
   //**********************************************
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
-  std::vector<CORE::GEN::Pairedvector<int, double>> linT(3, 100);  // added all sizes
+  std::vector<Core::Gen::Pairedvector<int, double>> linT(3, 100);  // added all sizes
 
   for (_CI p = node1->Data().GetDerivTangent()[0].begin();
        p != node1->Data().GetDerivTangent()[0].end(); ++p)
@@ -4154,12 +4154,12 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
        p != node2->Data().GetDerivTangent()[2].end(); ++p)
     linT[2][p->first] += sval[1] * p->second;
 
-  std::vector<CORE::GEN::Pairedvector<int, double>> linXsl(3, 100);  // added all sizes
+  std::vector<Core::Gen::Pairedvector<int, double>> linXsl(3, 100);  // added all sizes
   linXsl[0][snode.Dofs()[0]] += 1.0;
   linXsl[1][snode.Dofs()[1]] += 1.0;
   linXsl[2][snode.Dofs()[2]] += 1.0;
 
-  std::vector<CORE::GEN::Pairedvector<int, double>> linXm(3, 100);  // added all sizes
+  std::vector<Core::Gen::Pairedvector<int, double>> linXm(3, 100);  // added all sizes
   linXm[0][node1->Dofs()[0]] += sval[0];
   linXm[1][node1->Dofs()[1]] += sval[0];
   linXm[2][node1->Dofs()[2]] += sval[0];
@@ -4168,7 +4168,7 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
   linXm[1][node2->Dofs()[1]] += sval[1];
   linXm[2][node2->Dofs()[2]] += sval[1];
 
-  CORE::GEN::Pairedvector<int, double> linf(100);  // added all sizes
+  Core::Gen::Pairedvector<int, double> linf(100);  // added all sizes
   for (_CI p = linT[0].begin(); p != linT[0].end(); ++p)
     linf[p->first] += snode.xspatial()[0] * p->second;
   for (_CI p = linT[1].begin(); p != linT[1].end(); ++p)
@@ -4191,7 +4191,7 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
   for (_CI p = linXm[1].begin(); p != linXm[1].end(); ++p) linf[p->first] -= tangent[1] * p->second;
   for (_CI p = linXm[2].begin(); p != linXm[2].end(); ++p) linf[p->first] -= tangent[2] * p->second;
 
-  CORE::GEN::Pairedvector<int, double> linXi(100);  // added all sizes
+  Core::Gen::Pairedvector<int, double> linXi(100);  // added all sizes
   for (_CI p = linf.begin(); p != linf.end(); ++p) linXi[p->first] -= p->second / df;
 
   //**********************************************
@@ -4218,7 +4218,7 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
 
   //*******************************************
   // Lin:
-  std::vector<CORE::GEN::Pairedvector<int, double>> auxlin(3, 100);  // added all sizes
+  std::vector<Core::Gen::Pairedvector<int, double>> auxlin(3, 100);  // added all sizes
 
   // xslave
   for (int k = 0; k < 3; ++k) (auxlin[k])[snode.Dofs()[k]] += 1.0;
@@ -4245,7 +4245,7 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
   // Orientation check:
   std::array<double, 3> slavebasednormal = {0.0, 0.0, 0.0};
   int nseg = snode.NumElement();
-  CORE::Elements::Element** adjeles = snode.Elements();
+  Core::Elements::Element** adjeles = snode.Elements();
 
   // we need to store some stuff here
   //**********************************************************************
@@ -4256,8 +4256,8 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
   // elens(4,i): length of element normal
   // elens(5,i): length/area of element itself
   //**********************************************************************
-  CORE::LINALG::SerialDenseMatrix elens(6, nseg);
-  MORTAR::Element* adjmrtrele = dynamic_cast<MORTAR::Element*>(adjeles[0]);
+  Core::LinAlg::SerialDenseMatrix elens(6, nseg);
+  Mortar::Element* adjmrtrele = dynamic_cast<Mortar::Element*>(adjeles[0]);
 
   // build element normal at current node
   // (we have to pass in the index i to be able to store the
@@ -4310,22 +4310,22 @@ double CONTACT::Interface::compute_normal_node_to_edge(MORTAR::Node& snode, MORT
 /*----------------------------------------------------------------------*
  |  cpp to node + Lin                                       farah 01/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::compute_normal_node_to_node(MORTAR::Node& snode, MORTAR::Node& mnode,
-    double* normal, std::vector<CORE::GEN::Pairedvector<int, double>>& normaltonodelin)
+double CONTACT::Interface::compute_normal_node_to_node(Mortar::Node& snode, Mortar::Node& mnode,
+    double* normal, std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin)
 {
   const int dim = Dim();
 
   // distance between node and surface
   double gdist = 1e12;
   std::array<double, 3> gnormal = {0.0, 0.0, 0.0};
-  std::vector<CORE::GEN::Pairedvector<int, double>> glin(3, 1000);
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  std::vector<Core::Gen::Pairedvector<int, double>> glin(3, 1000);
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
 
   double dist = 1e12;
   std::array<double, 3> auxnormal = {0.0, 0.0, 0.0};
 
   // loop over found master nodes
-  std::vector<CORE::GEN::Pairedvector<int, double>> auxlin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> auxlin(3, 1000);
 
   // calc vector
   auxnormal[0] = snode.xspatial()[0] - mnode.xspatial()[0];
@@ -4372,7 +4372,7 @@ double CONTACT::Interface::compute_normal_node_to_node(MORTAR::Node& snode, MORT
   // Orientation check:
   std::array<double, 3> slavebasednormal = {0.0, 0.0, 0.0};
   int nseg = snode.NumElement();
-  CORE::Elements::Element** adjeles = snode.Elements();
+  Core::Elements::Element** adjeles = snode.Elements();
 
   // we need to store some stuff here
   //**********************************************************************
@@ -4383,8 +4383,8 @@ double CONTACT::Interface::compute_normal_node_to_node(MORTAR::Node& snode, MORT
   // elens(4,i): length of element normal
   // elens(5,i): length/area of element itself
   //**********************************************************************
-  CORE::LINALG::SerialDenseMatrix elens(6, nseg);
-  MORTAR::Element* adjmrtrele = dynamic_cast<MORTAR::Element*>(adjeles[0]);
+  Core::LinAlg::SerialDenseMatrix elens(6, nseg);
+  Mortar::Element* adjmrtrele = dynamic_cast<Mortar::Element*>(adjeles[0]);
 
   // build element normal at current node
   // (we have to pass in the index i to be able to store the
@@ -4445,7 +4445,7 @@ void CONTACT::Interface::evaluate_cpp_normals()
   for (int i = 0; i < MasterRowNodes()->NumMyElements(); ++i)
   {
     int gid = MasterRowNodes()->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* mrtrnode = dynamic_cast<Node*>(node);
 
@@ -4463,15 +4463,15 @@ void CONTACT::Interface::evaluate_cpp_normals()
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
-    MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
+    Mortar::Node* mrtrnode = dynamic_cast<Mortar::Node*>(node);
 
     if (mrtrnode->Owner() != Comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
 
     // vector with possible contacting master eles/nodes
-    std::vector<MORTAR::Element*> meles;
-    std::vector<MORTAR::Node*> mnodes;
+    std::vector<Mortar::Element*> meles;
+    std::vector<Mortar::Node*> mnodes;
 
     // fill vector with possibly contacting meles
     FindMEles(*mrtrnode, meles);
@@ -4488,7 +4488,7 @@ void CONTACT::Interface::evaluate_cpp_normals()
     // Here we have all found master elements for one slave node.
     // distance for cpp
     double normaltoline[3] = {0.0, 0.0, 0.0};
-    std::vector<CORE::GEN::Pairedvector<int, double>> normaltolineLin(3, 1);  // 1 dummy
+    std::vector<Core::Gen::Pairedvector<int, double>> normaltolineLin(3, 1);  // 1 dummy
 
     // Now, calculate distance between node and master line
     double dist = compute_cpp_normal(*mrtrnode, meles, normaltoline, normaltolineLin);
@@ -4518,7 +4518,7 @@ void CONTACT::Interface::evaluate_cpp_normals()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::export_master_nodal_normals()
 {
-  std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> triad;
+  std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> triad;
 
   std::map<int, std::vector<int>> n_x_key;
   std::map<int, std::vector<int>> n_y_key;
@@ -4540,21 +4540,21 @@ void CONTACT::Interface::export_master_nodal_normals()
   std::map<int, std::vector<double>> teta_y_val;
   std::map<int, std::vector<double>> teta_z_val;
 
-  CORE::GEN::Pairedvector<int, double>::iterator iter;
+  Core::Gen::Pairedvector<int, double>::iterator iter;
 
-  const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(mnoderowmap_));
+  const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::AllreduceEMap(*(mnoderowmap_));
 
   // build info on row map
   for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
   {
     int gid = mnoderowmap_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
     // fill nodal matrix
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, 3));
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, 3));
     (*loc)(0, 0) = cnode->MoData().n()[0];
     (*loc)(1, 0) = cnode->MoData().n()[1];
     (*loc)(2, 0) = cnode->MoData().n()[2];
@@ -4568,9 +4568,9 @@ void CONTACT::Interface::export_master_nodal_normals()
     triad[gid] = loc;
 
     // fill nodal derivative vectors
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
 
     for (iter = derivn[0].begin(); iter != derivn[0].end(); ++iter)
     {
@@ -4622,7 +4622,7 @@ void CONTACT::Interface::export_master_nodal_normals()
   }
 
   // communicate from master node row to column map
-  CORE::COMM::Exporter ex(*mnoderowmap_, *masternodes, Comm());
+  Core::Communication::Exporter ex(*mnoderowmap_, *masternodes, Comm());
   ex.Export(triad);
 
   ex.Export(n_x_key);
@@ -4651,7 +4651,7 @@ void CONTACT::Interface::export_master_nodal_normals()
   {
     // only do something for ghosted nodes
     int gid = masternodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     int linsize = cnode->GetLinsize() + (int)(n_x_key[gid].size());
@@ -4659,7 +4659,7 @@ void CONTACT::Interface::export_master_nodal_normals()
     if (cnode->Owner() == Comm().MyPID()) continue;
 
     // extract info
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc = triad[gid];
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
     cnode->MoData().n()[0] = (*loc)(0, 0);
     cnode->MoData().n()[1] = (*loc)(1, 0);
     cnode->MoData().n()[2] = (*loc)(2, 0);
@@ -4671,9 +4671,9 @@ void CONTACT::Interface::export_master_nodal_normals()
     cnode->Data().teta()[2] = (*loc)(2, 2);
 
     // extract derivative info
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
 
     for (int k = 0; k < (int)(derivn.size()); ++k) derivn[k].clear();
     derivn.resize(3, linsize);
@@ -4758,7 +4758,7 @@ void CONTACT::Interface::evaluate_averaged_nodal_normals()
   for (int i = 0; i < smoothnodes_->NumMyElements(); ++i)
   {
     int gid = smoothnodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* mrtrnode = dynamic_cast<Node*>(node);
 
@@ -4794,7 +4794,7 @@ void CONTACT::Interface::compute_scaling_ltl()
   std::cout << "compute_scaling_ltl" << std::endl;
 
   // define iterator for linerization
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
 
   // angle in degree
   const double minAngle = interface_params().get<double>("HYBRID_ANGLE_MIN");
@@ -4818,14 +4818,14 @@ void CONTACT::Interface::compute_scaling_ltl()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
+    Core::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* selement = dynamic_cast<Element*>(ele1);
 
     // empty vector of slave element pointers
-    std::vector<Teuchos::RCP<MORTAR::Element>> lineElementsS;
+    std::vector<Teuchos::RCP<Mortar::Element>> lineElementsS;
 
-    if (selement->Shape() == CORE::FE::CellType::quad4)
+    if (selement->Shape() == Core::FE::CellType::quad4)
     {
       for (int j = 0; j < 4; ++j)
       {
@@ -4866,8 +4866,8 @@ void CONTACT::Interface::compute_scaling_ltl()
         }
 
         // check if both nodes on edge geometry
-        bool node0Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
-        bool node1Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
+        bool node0Edge = dynamic_cast<Mortar::Node*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
+        bool node1Edge = dynamic_cast<Mortar::Node*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
         if (!node0Edge or !node1Edge) continue;
 
@@ -4887,11 +4887,11 @@ void CONTACT::Interface::compute_scaling_ltl()
           donebeforeS.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
-              j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
+              j, selement->Owner(), Core::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          std::array<CORE::Nodes::Node*, 2> nodes = {
+          std::array<Core::Nodes::Node*, 2> nodes = {
               selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes.data());
 
@@ -4910,18 +4910,18 @@ void CONTACT::Interface::compute_scaling_ltl()
     std::set<std::pair<int, int>> donebeforeM;
 
     // empty vector of slave element pointers
-    std::vector<Teuchos::RCP<MORTAR::Element>> lineElementsM;
+    std::vector<Teuchos::RCP<Mortar::Element>> lineElementsM;
 
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
     for (int k = 0; k < selement->MoData().NumSearchElements(); ++k)
     {
       int gid2 = selement->MoData().SearchElements()[k];
-      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
+      Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
-      if (melement->Shape() == CORE::FE::CellType::quad4)
+      if (melement->Shape() == Core::FE::CellType::quad4)
       {
         for (int j = 0; j < 4; ++j)
         {
@@ -4962,8 +4962,8 @@ void CONTACT::Interface::compute_scaling_ltl()
           }
 
           // check if both nodes on edge geometry
-          bool node0Edge = dynamic_cast<MORTAR::Node*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
-          bool node1Edge = dynamic_cast<MORTAR::Node*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
+          bool node0Edge = dynamic_cast<Mortar::Node*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
+          bool node1Edge = dynamic_cast<Mortar::Node*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
           if (!node0Edge or !node1Edge) continue;
 
@@ -4983,11 +4983,11 @@ void CONTACT::Interface::compute_scaling_ltl()
             donebeforeM.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
-                j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
+                j, melement->Owner(), Core::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
-            std::array<CORE::Nodes::Node*, 2> nodes = {
+            std::array<Core::Nodes::Node*, 2> nodes = {
                 melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
             lineEle->BuildNodalPointers(nodes.data());
 
@@ -5026,9 +5026,9 @@ void CONTACT::Interface::compute_scaling_ltl()
         // create empty points
         double sxi = 0.0;
         double mxi = 0.0;
-        CORE::GEN::Pairedvector<int, double> dsxi(
+        Core::Gen::Pairedvector<int, double> dsxi(
             3 * lineElementsM[m]->num_node() + 3 * lineElementsS[s]->num_node());
-        CORE::GEN::Pairedvector<int, double> dmxi(
+        Core::Gen::Pairedvector<int, double> dmxi(
             3 * lineElementsM[m]->num_node() + 3 * lineElementsS[s]->num_node());
 
         coup.LineIntersection(&sxi, &mxi, dsxi, dmxi);
@@ -5044,7 +5044,7 @@ void CONTACT::Interface::compute_scaling_ltl()
         {
           std::cout << "VALID INTERSECTION" << std::endl;
           // 2. calc current angle for this element pair
-          CORE::GEN::Pairedvector<int, double> linAngle(
+          Core::Gen::Pairedvector<int, double> linAngle(
               100 + 3 * lineElementsM[m]->num_node() + 3 * lineElementsS[s]->num_node());
           gR = coup.CalcCurrentAngle(linAngle);
 
@@ -5123,7 +5123,7 @@ void CONTACT::Interface::compute_scaling_ltl()
   //  for (int i = 0; i < smoothnodes_->NumMyElements(); ++i)
   //  {
   //    int gid = smoothnodes_->GID(i);
-  //    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+  //    Core::Nodes::Node* node = idiscret_->gNode(gid);
   //    if (!node)
   //      FOUR_C_THROW("Cannot find node with gid %", gid);
   //    Node* cnode = dynamic_cast<Node*>(node);
@@ -5140,7 +5140,7 @@ void CONTACT::Interface::compute_scaling_ltl()
   //  for (int i = 0; i < nonsmoothnodes_->NumMyElements(); ++i)
   //  {
   //    int gid = nonsmoothnodes_->GID(i);
-  //    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+  //    Core::Nodes::Node* node = idiscret_->gNode(gid);
   //    if (!node)
   //      FOUR_C_THROW("Cannot find node with gid %", gid);
   //    Node* cnode = dynamic_cast<Node*>(node);
@@ -5166,14 +5166,14 @@ void CONTACT::Interface::compute_scaling_ltl()
   //
   //    // calc smallest angle between cpp and nele
   //    double gR = 1e12;
-  //    CORE::GEN::Pairedvector<int,double> ddotcppfinal(1000);
+  //    Core::Gen::Pairedvector<int,double> ddotcppfinal(1000);
   //
   //    for (int n = 0; n<eles; ++n)
   //    {
   //      // create element normal:
   //      int loc = 0;
   //      Element* seleaux = dynamic_cast<Element*>(cnode->Elements()[n]);
-  //      CORE::LINALG::SerialDenseMatrix elens(6,1);
+  //      Core::LinAlg::SerialDenseMatrix elens(6,1);
   //      seleaux->BuildNormalAtNode(cnode->Id(),loc,elens);
   //
   //      double normalsele[3] = {0.0, 0.0, 0.0};
@@ -5194,8 +5194,8 @@ void CONTACT::Interface::compute_scaling_ltl()
   //      double fac = (-1.0/(sqrt(1.0-dotcpp*dotcpp)));
   //
   //      // init lin
-  //      CORE::GEN::Pairedvector<int,double> ddotcpp(1000);
-  //      std::vector<CORE::GEN::Pairedvector<int,double> > dnele(3,1000);
+  //      Core::Gen::Pairedvector<int,double> ddotcpp(1000);
+  //      std::vector<Core::Gen::Pairedvector<int,double> > dnele(3,1000);
   //
   //      // deriv unit normal!
   //      seleaux->DerivNormalAtNode(cnode->Id(),loc,elens,dnele);
@@ -5299,14 +5299,14 @@ void CONTACT::Interface::scale_normals()
 void CONTACT::Interface::scale_normals2_d()
 {
   // define iterator for paired vector
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
 
   //======================================================
   // loop over non smooth slave nodes
   for (int i = 0; i < nonsmoothnodes_->NumMyElements(); ++i)
   {
     int gid = nonsmoothnodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -5316,7 +5316,7 @@ void CONTACT::Interface::scale_normals2_d()
     std::array<double, 3> normalcpp = {0.0, 0.0, 0.0};
 
     // get cpp normal lin.
-    std::vector<CORE::GEN::Pairedvector<int, double>> dcppaux(3, 1000);
+    std::vector<Core::Gen::Pairedvector<int, double>> dcppaux(3, 1000);
 
     dcppaux = cnode->Data().GetDerivN();
     normalcpp[0] = cnode->MoData().n()[0];
@@ -5344,7 +5344,7 @@ void CONTACT::Interface::scale_normals2_d()
       // create element normal:
       int loc = 0;
       Element* seleaux = dynamic_cast<Element*>(cnode->Elements()[n]);
-      CORE::LINALG::SerialDenseMatrix elens(6, 1);
+      Core::LinAlg::SerialDenseMatrix elens(6, 1);
       seleaux->BuildNormalAtNode(cnode->Id(), loc, elens);
 
       std::array<double, 3> normalsele = {0.0, 0.0, 0.0};
@@ -5386,7 +5386,7 @@ void CONTACT::Interface::scale_normals2_d()
     // create element normal:
     int loc = 0;
     Element* seleaux = dynamic_cast<Element*>(cnode->Elements()[localid]);
-    CORE::LINALG::SerialDenseMatrix elens(6, 1);
+    Core::LinAlg::SerialDenseMatrix elens(6, 1);
     seleaux->BuildNormalAtNode(cnode->Id(), loc, elens);
 
     std::array<double, 3> normalsele = {0.0, 0.0, 0.0};
@@ -5400,7 +5400,7 @@ void CONTACT::Interface::scale_normals2_d()
 
 
     // deriv unit normal!
-    std::vector<CORE::GEN::Pairedvector<int, double>> dnele(3, 1000);
+    std::vector<Core::Gen::Pairedvector<int, double>> dnele(3, 1000);
     seleaux->DerivNormalAtNode(cnode->Id(), loc, elens, dnele);
 
     cnode->Data().GetDerivN()[0].clear();
@@ -5486,9 +5486,9 @@ void CONTACT::Interface::scale_normals3_d() { FOUR_C_THROW("not yet implemented!
 /*----------------------------------------------------------------------*
  |  cpp to line based on averaged nodal normal field        farah 08/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::compute_cpp_normal2_d(MORTAR::Node& mrtrnode,
-    std::vector<MORTAR::Element*> meles, double* normal,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
+double CONTACT::Interface::compute_cpp_normal2_d(Mortar::Node& mrtrnode,
+    std::vector<Mortar::Element*> meles, double* normal,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
   // define tolerance
   const double tol = 1e-8;
@@ -5497,7 +5497,7 @@ double CONTACT::Interface::compute_cpp_normal2_d(MORTAR::Node& mrtrnode,
   // distance between node and surface
   double gdist = 1e12;  // distance
   std::array<double, 3> gnormal = {0.0, 0.0, 0.0};
-  std::vector<CORE::GEN::Pairedvector<int, double>> glin(3, 1);  // 1 dummy
+  std::vector<Core::Gen::Pairedvector<int, double>> glin(3, 1);  // 1 dummy
   std::set<int> donebeforeMasterCorner;
 
   bool nodeOnNode = false;     // flag for node on node (corner on corner) setting
@@ -5546,7 +5546,7 @@ double CONTACT::Interface::compute_cpp_normal2_d(MORTAR::Node& mrtrnode,
       int linsize = 0;
       for (int i = 0; i < meles[ele]->num_node(); ++i)
       {
-        CORE::Nodes::Node* node = meles[ele]->Nodes()[i];
+        Core::Nodes::Node* node = meles[ele]->Nodes()[i];
         if (!node) FOUR_C_THROW("Cannot find master node");
         CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
         linsize += mnode->GetLinsize();
@@ -5565,7 +5565,7 @@ double CONTACT::Interface::compute_cpp_normal2_d(MORTAR::Node& mrtrnode,
           // aux variables
           double dist = 1e12;
           double auxnormal[3] = {0.0, 0.0, 0.0};
-          std::vector<CORE::GEN::Pairedvector<int, double>> auxlin(
+          std::vector<Core::Gen::Pairedvector<int, double>> auxlin(
               3, linsize + 1 + meles[ele]->num_node());
 
           // compute distance between corners
@@ -5611,7 +5611,7 @@ double CONTACT::Interface::compute_cpp_normal2_d(MORTAR::Node& mrtrnode,
     int linsize = 0;
     for (int i = 0; i < meles[ele]->num_node(); ++i)
     {
-      CORE::Nodes::Node* node = meles[ele]->Nodes()[i];
+      Core::Nodes::Node* node = meles[ele]->Nodes()[i];
       if (!node) FOUR_C_THROW("Cannot find master node");
       CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
       linsize += mnode->GetLinsize();
@@ -5622,28 +5622,28 @@ double CONTACT::Interface::compute_cpp_normal2_d(MORTAR::Node& mrtrnode,
     double xi[2] = {0.0, 0.0};
     double dist = 1e12;
     double auxnormal[3] = {0.0, 0.0, 0.0};
-    std::vector<CORE::GEN::Pairedvector<int, double>> auxlin(
+    std::vector<Core::Gen::Pairedvector<int, double>> auxlin(
         3, linsize + 1 + meles[ele]->num_node());
 
     // check for nonsmooth mele
     if (cornerele and !nodeOnNode)
     {
       // perform CPP to find normals based on element normals
-      MORTAR::Projector::Impl(*meles[ele])
+      Mortar::Projector::Impl(*meles[ele])
           ->project_s_node_by_m_normal_lin(mrtrnode, *meles[ele], xi, auxnormal, dist, auxlin);
     }
     // compute normal with averaged nodal normal field from master surface
     else
     {
       // perform CPP to find normals based on averaged nodal normal field
-      MORTAR::Projector::Impl(*meles[ele])
+      Mortar::Projector::Impl(*meles[ele])
           ->project_s_node_by_m_nodal_normal_lin(
               mrtrnode, *meles[ele], xi, auxnormal, dist, auxlin);
     }
 
     // check if found parameter space coordinate is within element domain
-    if (meles[ele]->Shape() == CORE::FE::CellType::line2 or
-        meles[ele]->Shape() == CORE::FE::CellType::line3)
+    if (meles[ele]->Shape() == Core::FE::CellType::line2 or
+        meles[ele]->Shape() == Core::FE::CellType::line3)
     {
       if (-1.0 - tol > xi[0] or xi[0] > 1.0 + tol) continue;
     }
@@ -5686,9 +5686,9 @@ double CONTACT::Interface::compute_cpp_normal2_d(MORTAR::Node& mrtrnode,
 /*----------------------------------------------------------------------*
  |  cpp to line based on averaged nodal normal field        farah 08/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
-    std::vector<MORTAR::Element*> meles, double* normal,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
+double CONTACT::Interface::compute_cpp_normal3_d(Mortar::Node& mrtrnode,
+    std::vector<Mortar::Element*> meles, double* normal,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
   // define tolerance
   const double tol = 1e-8;
@@ -5698,7 +5698,7 @@ double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
   const double validAngle = 5.0;
   double gdist = 1e12;  // distance
   std::array<double, 3> gnormal = {0.0, 0.0, 0.0};
-  std::vector<CORE::GEN::Pairedvector<int, double>> glin(3, 1);  // 1 dummy
+  std::vector<Core::Gen::Pairedvector<int, double>> glin(3, 1);  // 1 dummy
 
   //******************************************************
   //             CALC TRAJECTORY
@@ -5741,10 +5741,10 @@ double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
     double xi[2] = {0.0, 0.0};
     double dist = 1e12;
     double auxnormal[3] = {0.0, 0.0, 0.0};
-    std::vector<CORE::GEN::Pairedvector<int, double>> auxlin(3, 1000);
+    std::vector<Core::Gen::Pairedvector<int, double>> auxlin(3, 1000);
 
     // perform CPP to find normals
-    bool success = MORTAR::Projector::Impl(*meles[ele])
+    bool success = Mortar::Projector::Impl(*meles[ele])
                        ->project_s_node_by_m_nodal_normal_lin(
                            mrtrnode, *meles[ele], xi, auxnormal, dist, auxlin);
 
@@ -5752,15 +5752,15 @@ double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
     if (!success) continue;
 
     // check if found parameter space coordinate is within element domain
-    if (meles[ele]->Shape() == CORE::FE::CellType::quad4 or
-        meles[ele]->Shape() == CORE::FE::CellType::quad8 or
-        meles[ele]->Shape() == CORE::FE::CellType::quad9)
+    if (meles[ele]->Shape() == Core::FE::CellType::quad4 or
+        meles[ele]->Shape() == Core::FE::CellType::quad8 or
+        meles[ele]->Shape() == Core::FE::CellType::quad9)
     {
       if (-1.0 - tol > xi[0] or xi[0] > 1.0 + tol or -1.0 - tol > xi[1] or xi[1] > 1.0 + tol)
         continue;
     }
-    else if (meles[ele]->Shape() == CORE::FE::CellType::tri3 or
-             meles[ele]->Shape() == CORE::FE::CellType::tri6)
+    else if (meles[ele]->Shape() == Core::FE::CellType::tri3 or
+             meles[ele]->Shape() == Core::FE::CellType::tri6)
     {
       if (xi[0] < 0.0 - tol or xi[1] < 0.0 - tol or xi[0] > 1.0 + tol or xi[1] > 1.0 + tol or
           xi[0] + xi[1] > 1.0 + 2 * tol)
@@ -5810,7 +5810,7 @@ double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
         int nodeIds[2] = {0, 0};
         int nodeLIds[2] = {0, 0};
 
-        if (meles[ele]->Shape() == CORE::FE::CellType::quad4)
+        if (meles[ele]->Shape() == Core::FE::CellType::quad4)
         {
           if (j == 0)
           {
@@ -5850,9 +5850,9 @@ double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
 
         // check if both nodes on edge geometry
         bool node0Edge =
-            dynamic_cast<MORTAR::Node*>(meles[ele]->Nodes()[nodeLIds[0]])->IsOnCornerEdge();
+            dynamic_cast<Mortar::Node*>(meles[ele]->Nodes()[nodeLIds[0]])->IsOnCornerEdge();
         bool node1Edge =
-            dynamic_cast<MORTAR::Node*>(meles[ele]->Nodes()[nodeLIds[1]])->IsOnCornerEdge();
+            dynamic_cast<Mortar::Node*>(meles[ele]->Nodes()[nodeLIds[1]])->IsOnCornerEdge();
 
         if (!node0Edge or !node1Edge) continue;
 
@@ -5872,11 +5872,11 @@ double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
-              j, meles[ele]->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
+              j, meles[ele]->Owner(), Core::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          CORE::Nodes::Node* nodes[2] = {
+          Core::Nodes::Node* nodes[2] = {
               meles[ele]->Nodes()[nodeLIds[0]], meles[ele]->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes);
 
@@ -5887,7 +5887,7 @@ double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
 
           double dist = 1e12;
           double auxnormal[3] = {0.0, 0.0, 0.0};
-          std::vector<CORE::GEN::Pairedvector<int, double>> auxlin(
+          std::vector<Core::Gen::Pairedvector<int, double>> auxlin(
               3, 100 + 1 + meles[ele]->num_node());
 
           // compute distance between node and edge
@@ -5933,7 +5933,7 @@ double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
       int linsize = 0;
       for (int i = 0; i < meles[ele]->num_node(); ++i)
       {
-        CORE::Nodes::Node* node = meles[ele]->Nodes()[i];
+        Core::Nodes::Node* node = meles[ele]->Nodes()[i];
         if (!node) FOUR_C_THROW("Cannot find master node");
         CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
         linsize += mnode->GetLinsize();
@@ -5951,7 +5951,7 @@ double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
 
           double dist = 1e12;
           double auxnormal[3] = {0.0, 0.0, 0.0};
-          std::vector<CORE::GEN::Pairedvector<int, double>> auxlin(
+          std::vector<Core::Gen::Pairedvector<int, double>> auxlin(
               3, linsize + 1 + meles[ele]->num_node());
 
           // compute distance between corners
@@ -6000,9 +6000,9 @@ double CONTACT::Interface::compute_cpp_normal3_d(MORTAR::Node& mrtrnode,
 /*----------------------------------------------------------------------*
  |  cpp to line based on averaged nodal normal field        farah 05/16 |
  *----------------------------------------------------------------------*/
-double CONTACT::Interface::compute_cpp_normal(MORTAR::Node& mrtrnode,
-    std::vector<MORTAR::Element*> meles, double* normal,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
+double CONTACT::Interface::compute_cpp_normal(Mortar::Node& mrtrnode,
+    std::vector<Mortar::Element*> meles, double* normal,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
   // define distance
   double gdist = 1e12;
@@ -6042,8 +6042,8 @@ double CONTACT::Interface::compute_cpp_normal(MORTAR::Node& mrtrnode,
 /*----------------------------------------------------------------------*
  |  set cpp normal                                           farah 01/16|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::set_cpp_normal(MORTAR::Node& snode, double* normal,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& normallin)
+void CONTACT::Interface::set_cpp_normal(Mortar::Node& snode, double* normal,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normallin)
 {
   Node& cnode = dynamic_cast<Node&>(snode);
 
@@ -6117,7 +6117,7 @@ void CONTACT::Interface::set_cpp_normal(MORTAR::Node& snode, double* normal,
 
 
   //------------------------------------------------------------------
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
 
   for (CI p = normallin[0].begin(); p != normallin[0].end(); ++p)
     (cnode.Data().GetDerivN()[0])[p->first] -= (p->second);
@@ -6129,13 +6129,13 @@ void CONTACT::Interface::set_cpp_normal(MORTAR::Node& snode, double* normal,
   // normalize directional derivative
   // (length differs for weighted/unweighted case bot not the procedure!)
   // (be careful with reference / copy of derivative maps!)
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
-  CORE::GEN::Pairedvector<int, double>& derivnx = cnode.Data().GetDerivN()[0];
-  CORE::GEN::Pairedvector<int, double>& derivny = cnode.Data().GetDerivN()[1];
-  CORE::GEN::Pairedvector<int, double>& derivnz = cnode.Data().GetDerivN()[2];
-  CORE::GEN::Pairedvector<int, double> cderivnx = cnode.Data().GetDerivN()[0];
-  CORE::GEN::Pairedvector<int, double> cderivny = cnode.Data().GetDerivN()[1];
-  CORE::GEN::Pairedvector<int, double> cderivnz = cnode.Data().GetDerivN()[2];
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
+  Core::Gen::Pairedvector<int, double>& derivnx = cnode.Data().GetDerivN()[0];
+  Core::Gen::Pairedvector<int, double>& derivny = cnode.Data().GetDerivN()[1];
+  Core::Gen::Pairedvector<int, double>& derivnz = cnode.Data().GetDerivN()[2];
+  Core::Gen::Pairedvector<int, double> cderivnx = cnode.Data().GetDerivN()[0];
+  Core::Gen::Pairedvector<int, double> cderivny = cnode.Data().GetDerivN()[1];
+  Core::Gen::Pairedvector<int, double> cderivnz = cnode.Data().GetDerivN()[2];
   const double nxnx = cnode.MoData().n()[0] * cnode.MoData().n()[0];
   const double nxny = cnode.MoData().n()[0] * cnode.MoData().n()[1];
   const double nxnz = cnode.MoData().n()[0] * cnode.MoData().n()[2];
@@ -6208,8 +6208,8 @@ void CONTACT::Interface::set_cpp_normal(MORTAR::Node& snode, double* normal,
     // use definitions for txi from BuildAveragedNormal()
     if (abs(cnode.MoData().n()[0]) > 1.0e-6 || abs(cnode.MoData().n()[1]) > 1.0e-6)
     {
-      CORE::GEN::Pairedvector<int, double>& derivtxix = cnode.Data().GetDerivTxi()[0];
-      CORE::GEN::Pairedvector<int, double>& derivtxiy = cnode.Data().GetDerivTxi()[1];
+      Core::Gen::Pairedvector<int, double>& derivtxix = cnode.Data().GetDerivTxi()[0];
+      Core::Gen::Pairedvector<int, double>& derivtxiy = cnode.Data().GetDerivTxi()[1];
 
       for (CI p = derivny.begin(); p != derivny.end(); ++p) derivtxix[p->first] -= (p->second);
 
@@ -6217,8 +6217,8 @@ void CONTACT::Interface::set_cpp_normal(MORTAR::Node& snode, double* normal,
     }
     else
     {
-      CORE::GEN::Pairedvector<int, double>& derivtxiy = cnode.Data().GetDerivTxi()[1];
-      CORE::GEN::Pairedvector<int, double>& derivtxiz = cnode.Data().GetDerivTxi()[2];
+      Core::Gen::Pairedvector<int, double>& derivtxiy = cnode.Data().GetDerivTxi()[1];
+      Core::Gen::Pairedvector<int, double>& derivtxiz = cnode.Data().GetDerivTxi()[2];
 
       for (CI p = derivnz.begin(); p != derivnz.end(); ++p) derivtxiy[p->first] -= (p->second);
 
@@ -6229,13 +6229,13 @@ void CONTACT::Interface::set_cpp_normal(MORTAR::Node& snode, double* normal,
 
     // normalize txi directional derivative
     // (identical to normalization of normal derivative)
-    typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
-    CORE::GEN::Pairedvector<int, double>& derivtxix = cnode.Data().GetDerivTxi()[0];
-    CORE::GEN::Pairedvector<int, double>& derivtxiy = cnode.Data().GetDerivTxi()[1];
-    CORE::GEN::Pairedvector<int, double>& derivtxiz = cnode.Data().GetDerivTxi()[2];
-    CORE::GEN::Pairedvector<int, double> cderivtxix = cnode.Data().GetDerivTxi()[0];
-    CORE::GEN::Pairedvector<int, double> cderivtxiy = cnode.Data().GetDerivTxi()[1];
-    CORE::GEN::Pairedvector<int, double> cderivtxiz = cnode.Data().GetDerivTxi()[2];
+    typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
+    Core::Gen::Pairedvector<int, double>& derivtxix = cnode.Data().GetDerivTxi()[0];
+    Core::Gen::Pairedvector<int, double>& derivtxiy = cnode.Data().GetDerivTxi()[1];
+    Core::Gen::Pairedvector<int, double>& derivtxiz = cnode.Data().GetDerivTxi()[2];
+    Core::Gen::Pairedvector<int, double> cderivtxix = cnode.Data().GetDerivTxi()[0];
+    Core::Gen::Pairedvector<int, double> cderivtxiy = cnode.Data().GetDerivTxi()[1];
+    Core::Gen::Pairedvector<int, double> cderivtxiz = cnode.Data().GetDerivTxi()[2];
     const double txtx = cnode.Data().txi()[0] * cnode.Data().txi()[0];
     const double txty = cnode.Data().txi()[0] * cnode.Data().txi()[1];
     const double txtz = cnode.Data().txi()[0] * cnode.Data().txi()[2];
@@ -6297,9 +6297,9 @@ void CONTACT::Interface::set_cpp_normal(MORTAR::Node& snode, double* normal,
 
     // get normalized tangent derivative teta
     // use corkscrew rule from BuildAveragedNormal()
-    CORE::GEN::Pairedvector<int, double>& derivtetax = cnode.Data().GetDerivTeta()[0];
-    CORE::GEN::Pairedvector<int, double>& derivtetay = cnode.Data().GetDerivTeta()[1];
-    CORE::GEN::Pairedvector<int, double>& derivtetaz = cnode.Data().GetDerivTeta()[2];
+    Core::Gen::Pairedvector<int, double>& derivtetax = cnode.Data().GetDerivTeta()[0];
+    Core::Gen::Pairedvector<int, double>& derivtetay = cnode.Data().GetDerivTeta()[1];
+    Core::Gen::Pairedvector<int, double>& derivtetaz = cnode.Data().GetDerivTeta()[2];
 
     for (CI p = derivnx.begin(); p != derivnx.end(); ++p)
     {
@@ -6415,7 +6415,7 @@ void CONTACT::Interface::set_cpp_normal(MORTAR::Node& snode, double* normal,
 void CONTACT::Interface::export_nodal_normals() const
 {
   // create empty data objects
-  std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> triad;
+  std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> triad;
 
   std::map<int, std::vector<int>> n_x_key;
   std::map<int, std::vector<int>> n_y_key;
@@ -6438,19 +6438,19 @@ void CONTACT::Interface::export_nodal_normals() const
   std::map<int, std::vector<double>> teta_z_val;
 
   std::map<int, double>::iterator iter;
-  CORE::GEN::Pairedvector<int, double>::iterator _iter;
+  Core::Gen::Pairedvector<int, double>::iterator _iter;
 
   // build info on row map
   for (int i = 0; i < snoderowmapbound_->NumMyElements(); ++i)
   {
     int gid = snoderowmapbound_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     // fill nodal matrix
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, 3));
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, 3));
     (*loc)(0, 0) = cnode->MoData().n()[0];
     (*loc)(1, 0) = cnode->MoData().n()[1];
     (*loc)(2, 0) = cnode->MoData().n()[2];
@@ -6464,9 +6464,9 @@ void CONTACT::Interface::export_nodal_normals() const
     triad[gid] = loc;
 
     // fill nodal derivative vectors
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
 
     for (_iter = derivn[0].begin(); _iter != derivn[0].end(); ++_iter)
     {
@@ -6519,7 +6519,7 @@ void CONTACT::Interface::export_nodal_normals() const
 
 
   // communicate from slave node row to column map
-  CORE::COMM::Exporter& ex = interface_data_->Exporter();
+  Core::Communication::Exporter& ex = interface_data_->Exporter();
 
   ex.Export(triad);
 
@@ -6551,13 +6551,13 @@ void CONTACT::Interface::export_nodal_normals() const
     int gid = snodecolmapbound_->GID(i);
     if (snoderowmapbound_->MyGID(gid)) continue;
 
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     int linsize = cnode->GetLinsize() + (int)(n_x_key[gid].size());
 
     // extract info
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc = triad[gid];
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
     cnode->MoData().n()[0] = (*loc)(0, 0);
     cnode->MoData().n()[1] = (*loc)(1, 0);
     cnode->MoData().n()[2] = (*loc)(2, 0);
@@ -6569,9 +6569,9 @@ void CONTACT::Interface::export_nodal_normals() const
     cnode->Data().teta()[2] = (*loc)(2, 2);
 
     // extract derivative info
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivtxi = cnode->Data().GetDerivTxi();
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivteta = cnode->Data().GetDerivTeta();
 
     for (int k = 0; k < (int)(derivn.size()); ++k) derivn[k].clear();
     derivn.resize(3, linsize);
@@ -6638,7 +6638,7 @@ void CONTACT::Interface::export_nodal_normals() const
       for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
       {
         int gid = snodecolmapbound_->GID(i);
-        CORE::Nodes::Node* node = idiscret_->gNode(gid);
+        Core::Nodes::Node* node = idiscret_->gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %",gid);
         Node* cnode = dynamic_cast<Node*>(node);
 
@@ -6705,9 +6705,9 @@ bool CONTACT::Interface::evaluate_search_binarytree()
     for (int i = 0; i < SlaveColNodesBound()->NumMyElements(); ++i)
     {
       int gid = SlaveColNodesBound()->GID(i);
-      CORE::Nodes::Node* node = Discret().gNode(gid);
+      Core::Nodes::Node* node = Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %i", gid);
-      MORTAR::Node* mnode = dynamic_cast<MORTAR::Node*>(node);
+      Mortar::Node* mnode = dynamic_cast<Mortar::Node*>(node);
 
       // initialize container if not yet initialized before
       mnode->initialize_data_container();
@@ -6721,7 +6721,7 @@ bool CONTACT::Interface::evaluate_search_binarytree()
   else
   {
     // call mortar routine
-    MORTAR::Interface::evaluate_search_binarytree();
+    Mortar::Interface::evaluate_search_binarytree();
   }
 
   return true;
@@ -6739,7 +6739,7 @@ void CONTACT::Interface::evaluate_stl()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
+    Core::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* selement = dynamic_cast<Element*>(ele1);
 
@@ -6750,11 +6750,11 @@ void CONTACT::Interface::evaluate_stl()
     for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
     {
       int gid2 = selement->MoData().SearchElements()[j];
-      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
+      Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
-      if (melement->Shape() == CORE::FE::CellType::quad4)
+      if (melement->Shape() == Core::FE::CellType::quad4)
       {
         for (int j = 0; j < 4; ++j)
         {
@@ -6810,11 +6810,11 @@ void CONTACT::Interface::evaluate_stl()
             donebefore.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
-                j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
+                j, melement->Owner(), Core::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
-            std::array<CORE::Nodes::Node*, 2> nodes = {
+            std::array<Core::Nodes::Node*, 2> nodes = {
                 melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
             lineEle->BuildNodalPointers(nodes.data());
 
@@ -6858,7 +6858,7 @@ void CONTACT::Interface::EvaluateNTSMaster()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
+    Core::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* selement = dynamic_cast<Element*>(ele1);
 
@@ -6870,7 +6870,7 @@ void CONTACT::Interface::EvaluateNTSMaster()
     for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
     {
       int gid2 = selement->MoData().SearchElements()[j];
-      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
+      Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
@@ -6879,15 +6879,15 @@ void CONTACT::Interface::EvaluateNTSMaster()
 
       for (int n = 0; n < (int)melement->num_node(); ++n)
       {
-        MORTAR::Node* cnode = dynamic_cast<MORTAR::Node*>(melement->Nodes()[n]);
+        Mortar::Node* cnode = dynamic_cast<Mortar::Node*>(melement->Nodes()[n]);
 
         std::set<int>::iterator iter = donebefore.find(cnode->Id());
 
         // if not evaluated before
         if (iter == donebefore.end())
         {
-          std::vector<MORTAR::Element*> dummy;
-          MORTAR::Element* sele = dynamic_cast<MORTAR::Element*>(selement);
+          std::vector<Mortar::Element*> dummy;
+          Mortar::Element* sele = dynamic_cast<Mortar::Element*>(selement);
           dummy.push_back(sele);
 
           // call interpolation functions
@@ -6918,31 +6918,31 @@ void CONTACT::Interface::EvaluateLTSMaster()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
+    Core::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* selement = dynamic_cast<Element*>(ele1);
 
     // ele check
-    if (selement->Shape() != CORE::FE::CellType::quad4 and
-        selement->Shape() != CORE::FE::CellType::tri3)
+    if (selement->Shape() != Core::FE::CellType::quad4 and
+        selement->Shape() != Core::FE::CellType::tri3)
       FOUR_C_THROW("LTS algorithm only for tri3/quad4!");
 
     // empty vector of master element pointers
-    std::vector<Teuchos::RCP<MORTAR::Element>> lineElements;
+    std::vector<Teuchos::RCP<Mortar::Element>> lineElements;
     std::vector<Element*> meleElements;
 
     // compute slave normal
     double slaveN[3] = {0.0, 0.0, 0.0};
     double loccenter[2] = {0.0, 0.0};
 
-    CORE::FE::CellType dt = selement->Shape();
-    if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
+    Core::FE::CellType dt = selement->Shape();
+    if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
     {
       loccenter[0] = 1.0 / 3.0;
       loccenter[1] = 1.0 / 3.0;
     }
-    else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
-             dt == CORE::FE::CellType::quad9)
+    else if (dt == Core::FE::CellType::quad4 || dt == Core::FE::CellType::quad8 ||
+             dt == Core::FE::CellType::quad9)
     {
       loccenter[0] = 0.0;
       loccenter[1] = 0.0;
@@ -6958,7 +6958,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
     for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
     {
       int gid2 = selement->MoData().SearchElements()[j];
-      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
+      Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
@@ -6967,14 +6967,14 @@ void CONTACT::Interface::EvaluateLTSMaster()
       double masterN[3] = {0.0, 0.0, 0.0};
       double loccenterM[2] = {0.0, 0.0};
 
-      CORE::FE::CellType dt = melement->Shape();
-      if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
+      Core::FE::CellType dt = melement->Shape();
+      if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
       {
         loccenterM[0] = 1.0 / 3.0;
         loccenterM[1] = 1.0 / 3.0;
       }
-      else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
-               dt == CORE::FE::CellType::quad9)
+      else if (dt == Core::FE::CellType::quad4 || dt == Core::FE::CellType::quad8 ||
+               dt == Core::FE::CellType::quad9)
       {
         loccenterM[0] = 0.0;
         loccenterM[1] = 0.0;
@@ -7008,7 +7008,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
         int nodeIds[2] = {0, 0};
         int nodeLIds[2] = {0, 0};
 
-        if (meleElements[m]->Shape() == CORE::FE::CellType::quad4)
+        if (meleElements[m]->Shape() == Core::FE::CellType::quad4)
         {
           if (j == 0)
           {
@@ -7045,7 +7045,7 @@ void CONTACT::Interface::EvaluateLTSMaster()
           else
             FOUR_C_THROW("loop counter and edge number do not match!");
         }
-        else if (meleElements[m]->Shape() == CORE::FE::CellType::tri3)
+        else if (meleElements[m]->Shape() == Core::FE::CellType::tri3)
         {
           if (j == 0)
           {
@@ -7077,9 +7077,9 @@ void CONTACT::Interface::EvaluateLTSMaster()
 
         // check if both nodes on edge geometry
         bool node0Edge =
-            dynamic_cast<MORTAR::Node*>(meleElements[m]->Nodes()[nodeLIds[0]])->IsOnEdge();
+            dynamic_cast<Mortar::Node*>(meleElements[m]->Nodes()[nodeLIds[0]])->IsOnEdge();
         bool node1Edge =
-            dynamic_cast<MORTAR::Node*>(meleElements[m]->Nodes()[nodeLIds[1]])->IsOnEdge();
+            dynamic_cast<Mortar::Node*>(meleElements[m]->Nodes()[nodeLIds[1]])->IsOnEdge();
 
         if (nonSmoothContact_ and (!node0Edge or !node1Edge)) continue;
 
@@ -7099,11 +7099,11 @@ void CONTACT::Interface::EvaluateLTSMaster()
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
-              j, meleElements[m]->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
+              j, meleElements[m]->Owner(), Core::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          std::array<CORE::Nodes::Node*, 2> nodes = {
+          std::array<Core::Nodes::Node*, 2> nodes = {
               meleElements[m]->Nodes()[nodeLIds[0]], meleElements[m]->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes.data());
 
@@ -7144,31 +7144,31 @@ void CONTACT::Interface::evaluate_lts()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
+    Core::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* selement = dynamic_cast<Element*>(ele1);
 
     // ele check
-    if (selement->Shape() != CORE::FE::CellType::quad4 and
-        selement->Shape() != CORE::FE::CellType::tri3)
+    if (selement->Shape() != Core::FE::CellType::quad4 and
+        selement->Shape() != Core::FE::CellType::tri3)
       FOUR_C_THROW("LTS algorithm only for tri3/quad4!");
 
     // empty vector of master element pointers
-    std::vector<Teuchos::RCP<MORTAR::Element>> lineElements;
+    std::vector<Teuchos::RCP<Mortar::Element>> lineElements;
     std::vector<Element*> meleElements;
 
     // compute slave normal
     double slaveN[3] = {0.0, 0.0, 0.0};
     double loccenter[2] = {0.0, 0.0};
 
-    CORE::FE::CellType dt = selement->Shape();
-    if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
+    Core::FE::CellType dt = selement->Shape();
+    if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
     {
       loccenter[0] = 1.0 / 3.0;
       loccenter[1] = 1.0 / 3.0;
     }
-    else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
-             dt == CORE::FE::CellType::quad9)
+    else if (dt == Core::FE::CellType::quad4 || dt == Core::FE::CellType::quad8 ||
+             dt == Core::FE::CellType::quad9)
     {
       loccenter[0] = 0.0;
       loccenter[1] = 0.0;
@@ -7184,7 +7184,7 @@ void CONTACT::Interface::evaluate_lts()
     for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
     {
       int gid2 = selement->MoData().SearchElements()[j];
-      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
+      Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
@@ -7193,14 +7193,14 @@ void CONTACT::Interface::evaluate_lts()
       double masterN[3] = {0.0, 0.0, 0.0};
       double loccenterM[2] = {0.0, 0.0};
 
-      CORE::FE::CellType dt = melement->Shape();
-      if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
+      Core::FE::CellType dt = melement->Shape();
+      if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
       {
         loccenterM[0] = 1.0 / 3.0;
         loccenterM[1] = 1.0 / 3.0;
       }
-      else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
-               dt == CORE::FE::CellType::quad9)
+      else if (dt == Core::FE::CellType::quad4 || dt == Core::FE::CellType::quad8 ||
+               dt == Core::FE::CellType::quad9)
       {
         loccenterM[0] = 0.0;
         loccenterM[1] = 0.0;
@@ -7232,7 +7232,7 @@ void CONTACT::Interface::evaluate_lts()
       int nodeIds[2] = {0, 0};
       int nodeLIds[2] = {0, 0};
 
-      if (selement->Shape() == CORE::FE::CellType::quad4)
+      if (selement->Shape() == Core::FE::CellType::quad4)
       {
         if (j == 0)
         {
@@ -7269,7 +7269,7 @@ void CONTACT::Interface::evaluate_lts()
         else
           FOUR_C_THROW("loop counter and edge number do not match!");
       }
-      else if (selement->Shape() == CORE::FE::CellType::tri3)
+      else if (selement->Shape() == Core::FE::CellType::tri3)
       {
         if (j == 0)
         {
@@ -7300,8 +7300,8 @@ void CONTACT::Interface::evaluate_lts()
       }
 
       // check if both nodes on edge geometry
-      bool node0Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
-      bool node1Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
+      bool node0Edge = dynamic_cast<Mortar::Node*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
+      bool node1Edge = dynamic_cast<Mortar::Node*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
       if (nonSmoothContact_ and (!node0Edge or !node1Edge)) continue;
 
@@ -7321,11 +7321,11 @@ void CONTACT::Interface::evaluate_lts()
         donebefore.insert(actIDstw);
 
         // create line ele:
-        Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
-            j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+        Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
+            j, selement->Owner(), Core::FE::CellType::line2, 2, nodeIds, false));
 
         // get nodes
-        std::array<CORE::Nodes::Node*, 2> nodes = {
+        std::array<Core::Nodes::Node*, 2> nodes = {
             selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
         lineEle->BuildNodalPointers(nodes.data());
 
@@ -7368,14 +7368,14 @@ void CONTACT::Interface::evaluate_ltl()
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
+    Core::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     Element* selement = dynamic_cast<Element*>(ele1);
 
     // empty vector of slave element pointers
-    std::vector<Teuchos::RCP<MORTAR::Element>> lineElementsS;
+    std::vector<Teuchos::RCP<Mortar::Element>> lineElementsS;
 
-    if (selement->Shape() == CORE::FE::CellType::quad4)
+    if (selement->Shape() == Core::FE::CellType::quad4)
     {
       for (int j = 0; j < 4; ++j)
       {
@@ -7416,8 +7416,8 @@ void CONTACT::Interface::evaluate_ltl()
         }
 
         // check if both nodes on edge geometry
-        bool node0Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
-        bool node1Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
+        bool node0Edge = dynamic_cast<Mortar::Node*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
+        bool node1Edge = dynamic_cast<Mortar::Node*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
         if (!node0Edge or !node1Edge) continue;
 
@@ -7437,11 +7437,11 @@ void CONTACT::Interface::evaluate_ltl()
           donebeforeS.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
-              j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
+              j, selement->Owner(), Core::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          std::array<CORE::Nodes::Node*, 2> nodes = {
+          std::array<Core::Nodes::Node*, 2> nodes = {
               selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes.data());
 
@@ -7453,7 +7453,7 @@ void CONTACT::Interface::evaluate_ltl()
         }
       }  // end edge loop
     }
-    else if (selement->Shape() == CORE::FE::CellType::tri3)
+    else if (selement->Shape() == Core::FE::CellType::tri3)
     {
       for (int j = 0; j < 3; ++j)
       {
@@ -7486,8 +7486,8 @@ void CONTACT::Interface::evaluate_ltl()
         }
 
         // check if both nodes on edge geometry
-        bool node0Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
-        bool node1Edge = dynamic_cast<MORTAR::Node*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
+        bool node0Edge = dynamic_cast<Mortar::Node*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
+        bool node1Edge = dynamic_cast<Mortar::Node*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
         if (!node0Edge or !node1Edge) continue;
 
@@ -7507,11 +7507,11 @@ void CONTACT::Interface::evaluate_ltl()
           donebeforeS.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
-              j, selement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
+              j, selement->Owner(), Core::FE::CellType::line2, 2, nodeIds, false));
 
           // get nodes
-          std::array<CORE::Nodes::Node*, 2> nodes = {
+          std::array<Core::Nodes::Node*, 2> nodes = {
               selement->Nodes()[nodeLIds[0]], selement->Nodes()[nodeLIds[1]]};
           lineEle->BuildNodalPointers(nodes.data());
 
@@ -7530,18 +7530,18 @@ void CONTACT::Interface::evaluate_ltl()
     std::set<std::pair<int, int>> donebeforeM;
 
     // empty vector of slave element pointers
-    std::vector<Teuchos::RCP<MORTAR::Element>> lineElementsM;
+    std::vector<Teuchos::RCP<Mortar::Element>> lineElementsM;
 
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
     for (int k = 0; k < selement->MoData().NumSearchElements(); ++k)
     {
       int gid2 = selement->MoData().SearchElements()[k];
-      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
+      Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       Element* melement = dynamic_cast<Element*>(ele2);
 
-      if (melement->Shape() == CORE::FE::CellType::quad4)
+      if (melement->Shape() == Core::FE::CellType::quad4)
       {
         for (int j = 0; j < 4; ++j)
         {
@@ -7582,8 +7582,8 @@ void CONTACT::Interface::evaluate_ltl()
           }
 
           // check if both nodes on edge geometry
-          bool node0Edge = dynamic_cast<MORTAR::Node*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
-          bool node1Edge = dynamic_cast<MORTAR::Node*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
+          bool node0Edge = dynamic_cast<Mortar::Node*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
+          bool node1Edge = dynamic_cast<Mortar::Node*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
           if (!node0Edge or !node1Edge) continue;
 
@@ -7603,11 +7603,11 @@ void CONTACT::Interface::evaluate_ltl()
             donebeforeM.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
-                j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
+                j, melement->Owner(), Core::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
-            std::array<CORE::Nodes::Node*, 2> nodes = {
+            std::array<Core::Nodes::Node*, 2> nodes = {
                 melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
             lineEle->BuildNodalPointers(nodes.data());
 
@@ -7619,7 +7619,7 @@ void CONTACT::Interface::evaluate_ltl()
           }
         }  // end edge loop
       }
-      else if (melement->Shape() == CORE::FE::CellType::tri3)
+      else if (melement->Shape() == Core::FE::CellType::tri3)
       {
         for (int j = 0; j < 3; ++j)
         {
@@ -7652,8 +7652,8 @@ void CONTACT::Interface::evaluate_ltl()
           }
 
           // check if both nodes on edge geometry
-          bool node0Edge = dynamic_cast<MORTAR::Node*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
-          bool node1Edge = dynamic_cast<MORTAR::Node*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
+          bool node0Edge = dynamic_cast<Mortar::Node*>(melement->Nodes()[nodeLIds[0]])->IsOnEdge();
+          bool node1Edge = dynamic_cast<Mortar::Node*>(melement->Nodes()[nodeLIds[1]])->IsOnEdge();
 
           if (!node0Edge or !node1Edge) continue;
 
@@ -7673,11 +7673,11 @@ void CONTACT::Interface::evaluate_ltl()
             donebeforeM.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<MORTAR::Element> lineEle = Teuchos::rcp(new MORTAR::Element(
-                j, melement->Owner(), CORE::FE::CellType::line2, 2, nodeIds, false));
+            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
+                j, melement->Owner(), Core::FE::CellType::line2, 2, nodeIds, false));
 
             // get nodes
-            std::array<CORE::Nodes::Node*, 2> nodes = {
+            std::array<Core::Nodes::Node*, 2> nodes = {
                 melement->Nodes()[nodeLIds[0]], melement->Nodes()[nodeLIds[1]]};
             lineEle->BuildNodalPointers(nodes.data());
 
@@ -7727,16 +7727,16 @@ void CONTACT::Interface::evaluate_nts()
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
-    MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(node);
+    Mortar::Node* mrtrnode = dynamic_cast<Mortar::Node*>(node);
 
     if (!mrtrnode->IsOnCorner() and nonSmoothContact_) continue;
 
     if (mrtrnode->Owner() != Comm().MyPID()) FOUR_C_THROW("Node ownership inconsistency!");
 
     // vector with possible contacting master eles
-    std::vector<MORTAR::Element*> meles;
+    std::vector<Mortar::Element*> meles;
 
     // fill vector with possibly contacting meles
     FindMEles(*mrtrnode, meles);
@@ -7755,8 +7755,8 @@ void CONTACT::Interface::evaluate_nts()
 /*----------------------------------------------------------------------*
  |  Integrate matrix M and gap g on slave/master overlaps     popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::MortarCoupling(MORTAR::Element* sele, std::vector<MORTAR::Element*> mele,
-    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+bool CONTACT::Interface::MortarCoupling(Mortar::Element* sele, std::vector<Mortar::Element*> mele,
+    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   // do stuff before the actual coupling is going to be evaluated
   pre_mortar_coupling(sele, mele, mparams_ptr);
@@ -7835,7 +7835,7 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
   // create correct integration limits
   double sxia[2] = {0.0, 0.0};
   double sxib[2] = {0.0, 0.0};
-  if (sele.Shape() == CORE::FE::CellType::tri3 || sele.Shape() == CORE::FE::CellType::tri6)
+  if (sele.Shape() == Core::FE::CellType::tri3 || sele.Shape() == Core::FE::CellType::tri6)
   {
     // parameter space is [0,1] for triangles
     sxib[0] = 1.0;
@@ -7854,20 +7854,20 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
   if (Dim() == 3 && sele.IsQuad())
   {
     // get LM interpolation and testing type
-    INPAR::MORTAR::LagMultQuad lmtype =
-        CORE::UTILS::IntegralValue<INPAR::MORTAR::LagMultQuad>(interface_params(), "LM_QUAD");
+    Inpar::Mortar::LagMultQuad lmtype =
+        Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(interface_params(), "LM_QUAD");
 
     // build linear integration elements from quadratic CElements
-    std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
+    std::vector<Teuchos::RCP<Mortar::IntElement>> sauxelements(0);
     split_int_elements(sele, sauxelements);
 
     // different options for mortar integration
-    if (lmtype == INPAR::MORTAR::lagmult_quad || lmtype == INPAR::MORTAR::lagmult_lin)
+    if (lmtype == Inpar::Mortar::lagmult_quad || lmtype == Inpar::Mortar::lagmult_lin)
     {
       // do the element integration of kappa and store into gap
       int nrow = sele.num_node();
-      Teuchos::RCP<CORE::LINALG::SerialDenseVector> gseg =
-          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(nrow));
+      Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg =
+          Teuchos::rcp(new Core::LinAlg::SerialDenseVector(nrow));
 
       // create a CONTACT integrator instance with correct num_gp and Dim
       CONTACT::Integrator integrator(imortar_, sele.Shape(), Comm());
@@ -7877,15 +7877,15 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
       integrator.AssembleG(Comm(), sele, *gseg);
     }
 
-    else if (lmtype == INPAR::MORTAR::lagmult_pwlin)
+    else if (lmtype == Inpar::Mortar::lagmult_pwlin)
     {
       // integrate each int element seperately
       for (int i = 0; i < (int)sauxelements.size(); ++i)
       {
         // do the int element integration of kappa and store into gap
         int nrow = sauxelements[i]->num_node();
-        Teuchos::RCP<CORE::LINALG::SerialDenseVector> gseg =
-            Teuchos::rcp(new CORE::LINALG::SerialDenseVector(nrow));
+        Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg =
+            Teuchos::rcp(new Core::LinAlg::SerialDenseVector(nrow));
 
         // create a CONTACT integrator instance with correct num_gp and Dim
         CONTACT::Integrator integrator(imortar_, sauxelements[i]->Shape(), Comm());
@@ -7907,8 +7907,8 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
   {
     // do the element integration of kappa and store into gap
     int nrow = sele.num_node();
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> gseg =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(nrow));
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(nrow));
 
     // create a CONTACT integrator instance with correct num_gp and Dim
     CONTACT::Integrator integrator(imortar_, sele.Shape(), Comm());
@@ -7925,8 +7925,8 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
  |  Evaluate relative movement (jump) of a slave node     gitterle 10/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
-    const Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrixmod,
-    const Teuchos::RCP<CORE::LINALG::SparseMatrix> doldmod)
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrixmod,
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix> doldmod)
 {
   if (friction_ == false)
     FOUR_C_THROW("Error in Interface::EvaluateRelMov(): Only evaluated for frictional contact");
@@ -7938,7 +7938,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
     double cn = GetCnRef()[GetCnRef().Map().LID(cnode->Id())];
@@ -7965,27 +7965,27 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
     // this value isn't needed.
     bool activeinfuture = false;
 
-    if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-            interface_params(), "STRATEGY") == INPAR::CONTACT::solution_penalty ||
-        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-            interface_params(), "STRATEGY") == INPAR::CONTACT::solution_multiscale)
+    if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+            interface_params(), "STRATEGY") == Inpar::CONTACT::solution_penalty ||
+        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+            interface_params(), "STRATEGY") == Inpar::CONTACT::solution_multiscale)
     {
       if (-gap >= 0) activeinfuture = true;
     }
-    else if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-                 interface_params(), "STRATEGY") == INPAR::CONTACT::solution_lagmult and
-             CORE::UTILS::IntegralValue<int>(interface_params(), "SEMI_SMOOTH_NEWTON") != 1)
+    else if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+                 interface_params(), "STRATEGY") == Inpar::CONTACT::solution_lagmult and
+             Core::UTILS::IntegralValue<int>(interface_params(), "SEMI_SMOOTH_NEWTON") != 1)
     {
       if (-gap >= 0) activeinfuture = true;
     }
-    else if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-                 interface_params(), "STRATEGY") == INPAR::CONTACT::solution_lagmult and
-             CORE::UTILS::IntegralValue<int>(interface_params(), "SEMI_SMOOTH_NEWTON") == 1)
+    else if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+                 interface_params(), "STRATEGY") == Inpar::CONTACT::solution_lagmult and
+             Core::UTILS::IntegralValue<int>(interface_params(), "SEMI_SMOOTH_NEWTON") == 1)
     {
       if ((nz - cn * gap > 0) or cnode->Active()) activeinfuture = true;
     }
-    else if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-                 interface_params(), "STRATEGY") == INPAR::CONTACT::solution_uzawa)
+    else if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+                 interface_params(), "STRATEGY") == Inpar::CONTACT::solution_uzawa)
     {
       if (lmuzawan - kappa * pp * gap >= 0) activeinfuture = true;
     }
@@ -7994,8 +7994,8 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
 
     if (activeinfuture == true)
     {
-      CORE::GEN::Pairedvector<int, double>& dmap = cnode->MoData().GetD();
-      CORE::GEN::Pairedvector<int, double>& dmapold = cnode->FriData().GetDOld();
+      Core::Gen::Pairedvector<int, double>& dmap = cnode->MoData().GetD();
+      Core::Gen::Pairedvector<int, double>& dmapold = cnode->FriData().GetDOld();
 
       std::set<int> snodes = cnode->FriData().GetSNodes();
 
@@ -8009,7 +8009,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       for (scurr = snodes.begin(); scurr != snodes.end(); scurr++)
       {
         int gid = *scurr;
-        CORE::Nodes::Node* snode = idiscret_->gNode(gid);
+        Core::Nodes::Node* snode = idiscret_->gNode(gid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -8051,7 +8051,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
       {
         int gid = *mcurr;
-        CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
+        Core::Nodes::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -8084,7 +8084,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
         for (scurr = snodes.begin(); scurr != snodes.end(); scurr++)
         {
           int gid = *scurr;
-          CORE::Nodes::Node* snode = idiscret_->gNode(gid);
+          Core::Nodes::Node* snode = idiscret_->gNode(gid);
           if (!snode) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -8158,7 +8158,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
       {
         int gid = *mcurr;
-        CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
+        Core::Nodes::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -8182,7 +8182,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       for (dscurr = ddmap.begin(); dscurr != ddmap.end(); ++dscurr)
       {
         int gid = dscurr->first;
-        CORE::Nodes::Node* snode = idiscret_->gNode(gid);
+        Core::Nodes::Node* snode = idiscret_->gNode(gid);
         if (!snode) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -8213,7 +8213,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       for (dmcurr = dmmap.begin(); dmcurr != dmmap.end(); ++dmcurr)
       {
         int gid = dmcurr->first;
-        CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
+        Core::Nodes::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* cmnode = dynamic_cast<Node*>(mnode);
         double* mxi = cmnode->xspatial();
@@ -8235,7 +8235,7 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
         }
       }
 
-      if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         for (int j = 0; j < Dim(); j++)
           if (cnode->DbcDofs()[j] == true)
           {
@@ -8253,10 +8253,10 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vector>& vec,
     std::map<int, std::vector<double>>& mynormals,
-    std::map<int, std::vector<CORE::GEN::Pairedvector<int, double>>>& dmynormals,
+    std::map<int, std::vector<Core::Gen::Pairedvector<int, double>>>& dmynormals,
     std::map<int, double>& mygap, std::map<int, std::map<int, double>>& dmygap)
 {
-  set_state(MORTAR::state_new_displacement, *vec);
+  set_state(Mortar::state_new_displacement, *vec);
   Initialize();
 
   // interface needs to be complete
@@ -8277,7 +8277,7 @@ void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vecto
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
     int gid1 = selecolmap_->GID(i);
-    CORE::Elements::Element* ele1 = idiscret_->gElement(gid1);
+    Core::Elements::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
     CONTACT::Element* selement = dynamic_cast<CONTACT::Element*>(ele1);
 
@@ -8298,7 +8298,7 @@ void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vecto
     for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
     {
       int gid2 = selement->MoData().SearchElements()[j];
-      CORE::Elements::Element* ele2 = idiscret_->gElement(gid2);
+      Core::Elements::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find master element with gid %", gid2);
       CONTACT::Element* melement = dynamic_cast<CONTACT::Element*>(ele2);
 
@@ -8330,15 +8330,15 @@ void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vecto
         temp[kk] = mynode->MoData().n()[kk];
       }
       mynormals.insert(std::pair<int, std::vector<double>>(gid, temp));
-      dmynormals.insert(std::pair<int, std::vector<CORE::GEN::Pairedvector<int, double>>>(
+      dmynormals.insert(std::pair<int, std::vector<Core::Gen::Pairedvector<int, double>>>(
           gid, mynode->Data().GetDerivN()));
 
       //**************************************************************
       double sxi[2] = {0.0, 0.0};
 
-      if (selement->Shape() == CORE::FE::CellType::quad4 or
-          selement->Shape() == CORE::FE::CellType::quad8 or
-          selement->Shape() == CORE::FE::CellType::quad9)
+      if (selement->Shape() == Core::FE::CellType::quad4 or
+          selement->Shape() == Core::FE::CellType::quad8 or
+          selement->Shape() == Core::FE::CellType::quad9)
       {
         // TODO (pfaller): switch case
         if (snodes == 0)
@@ -8389,8 +8389,8 @@ void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vecto
         else
           FOUR_C_THROW("ERORR: wrong node LID");
       }
-      else if (selement->Shape() == CORE::FE::CellType::tri3 or
-               selement->Shape() == CORE::FE::CellType::tri6)
+      else if (selement->Shape() == Core::FE::CellType::tri3 or
+               selement->Shape() == Core::FE::CellType::tri6)
       {
         if (snodes == 0)
         {
@@ -8444,16 +8444,16 @@ void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vecto
         double mxi[2] = {0.0, 0.0};
         double projalpha = 0.0;
         bool is_projected =
-            MORTAR::Projector::Impl(*selement, *melements[nummaster])
+            Mortar::Projector::Impl(*selement, *melements[nummaster])
                 ->ProjectGaussPoint3D(*selement, sxi, *melements[nummaster], mxi, projalpha);
 
         bool is_on_mele = true;
 
         // check GP projection
-        CORE::FE::CellType dt = melements[nummaster]->Shape();
+        Core::FE::CellType dt = melements[nummaster]->Shape();
         const double tol = 1e-8;
-        if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
-            dt == CORE::FE::CellType::quad9)
+        if (dt == Core::FE::CellType::quad4 || dt == Core::FE::CellType::quad8 ||
+            dt == Core::FE::CellType::quad9)
         {
           if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol ||
               mxi[1] > 1.0 + tol)
@@ -8478,8 +8478,8 @@ void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vecto
 
           int ndof = 3;
           int ncol = melements[nummaster]->num_node();
-          CORE::LINALG::SerialDenseVector mval(ncol);
-          CORE::LINALG::SerialDenseMatrix mderiv(ncol, 2);
+          Core::LinAlg::SerialDenseVector mval(ncol);
+          Core::LinAlg::SerialDenseMatrix mderiv(ncol, 2);
           melements[nummaster]->evaluate_shape(mxi, mval, mderiv, ncol, false);
 
           //          int linsize    = mynode->GetLinsize();
@@ -8488,8 +8488,8 @@ void CONTACT::Interface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vecto
           //**************************************************************
 
           // evalute the GP slave coordinate derivatives --> no entries
-          std::vector<CORE::GEN::Pairedvector<int, double>> dsxi(2, 0);
-          std::vector<CORE::GEN::Pairedvector<int, double>> dmxi(2, 4 * linsize + ncol * ndof);
+          std::vector<Core::Gen::Pairedvector<int, double>> dsxi(2, 0);
+          std::vector<Core::Gen::Pairedvector<int, double>> dmxi(2, 4 * linsize + ncol * ndof);
 
           (*interpolator)
               .DerivXiGP3D(*selement, *melements[nummaster], sxi, mxi, dsxi, dmxi, projalpha);
@@ -8539,7 +8539,7 @@ void CONTACT::Interface::EvaluateTangentNorm(double& cnormtan)
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -8548,7 +8548,7 @@ void CONTACT::Interface::EvaluateTangentNorm(double& cnormtan)
     const int dim = cnode->NumDof();
 
     // tangential plane
-    CORE::LINALG::SerialDenseMatrix tanplane(dim, dim);
+    Core::LinAlg::SerialDenseMatrix tanplane(dim, dim);
     if (dim == 3)
     {
       tanplane(0, 0) = 1 - (n[0] * n[0]);
@@ -8574,15 +8574,15 @@ void CONTACT::Interface::EvaluateTangentNorm(double& cnormtan)
       FOUR_C_THROW("Error in AssembleTangentForces: Unknown dimension.");
 
     // jump vector
-    CORE::LINALG::SerialDenseMatrix jumpvec(dim, 1);
+    Core::LinAlg::SerialDenseMatrix jumpvec(dim, 1);
     for (int i = 0; i < dim; i++) jumpvec(i, 0) = cnode->FriData().jump()[i];
 
     // evaluate jump in tangential direction
-    CORE::LINALG::SerialDenseMatrix jumptan(dim, 1);
-    CORE::LINALG::multiply(jumptan, tanplane, jumpvec);
+    Core::LinAlg::SerialDenseMatrix jumptan(dim, 1);
+    Core::LinAlg::multiply(jumptan, tanplane, jumpvec);
 
     // force vector
-    CORE::LINALG::SerialDenseMatrix forcevec(dim, 1);
+    Core::LinAlg::SerialDenseMatrix forcevec(dim, 1);
     for (int i = 0; i < dim; i++) forcevec(i, 0) = cnode->MoData().lm()[i];
 
     // evaluate force in normal direction
@@ -8626,8 +8626,8 @@ void CONTACT::Interface::EvaluateTangentNorm(double& cnormtan)
 bool CONTACT::Interface::update_active_set_semi_smooth()
 {
   // get input parameter ftype
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // this is the complementarity parameter we use for the decision.
   // it might be scaled with a mesh-size dependent factor
@@ -8641,7 +8641,7 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
   for (int j = 0; j < SlaveRowNodes()->NumMyElements(); ++j)
   {
     int gid = SlaveRowNodes()->GID(j);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
     Node* cnode = dynamic_cast<Node*>(node);
@@ -8675,14 +8675,14 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
         tz[0] += frinode->Data().txi()[i] * frinode->MoData().lm()[i];
         if (Dim() == 3) tz[1] += frinode->Data().teta()[i] * frinode->MoData().lm()[i];
 
-        if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == false)
+        if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == false)
         {
           tjump[0] += frinode->Data().txi()[i] * frinode->FriData().jump()[i];
           if (Dim() == 3) tjump[1] += frinode->Data().teta()[i] * frinode->FriData().jump()[i];
         }
       }
 
-      if (CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
+      if (Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR") == true)
       {
         tjump[0] = frinode->FriData().jump_var()[0];
         if (Dim() == 3) tjump[1] = frinode->FriData().jump_var()[1];
@@ -8698,8 +8698,8 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
 
     // adhesion
     double adhbound = 0.0;
-    if (CORE::UTILS::IntegralValue<INPAR::CONTACT::AdhesionType>(interface_params(), "ADHESION") ==
-        INPAR::CONTACT::adhesion_bound)
+    if (Core::UTILS::IntegralValue<Inpar::CONTACT::AdhesionType>(interface_params(), "ADHESION") ==
+        Inpar::CONTACT::adhesion_bound)
       adhbound = interface_params().get<double>("ADHESION_BOUND");
 
     // check nodes of inactive set *************************************
@@ -8744,7 +8744,7 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
       else
       {
         // friction tresca
-        if (ftype == INPAR::CONTACT::friction_tresca)
+        if (ftype == Inpar::CONTACT::friction_tresca)
         {
           FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
@@ -8780,7 +8780,7 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
         }  // if (fytpe=="tresca")
 
         // friction coulomb
-        if (ftype == INPAR::CONTACT::friction_coulomb)
+        if (ftype == Inpar::CONTACT::friction_coulomb)
         {
           FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
@@ -8788,7 +8788,7 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
           double frcoeff = frinode->FrCoeff(interface_params().get<double>("FRCOEFF"));
           double frbound;
           static const bool regularization =
-              CORE::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
+              Core::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
           if (!regularization)
             frbound = frcoeff * (nz - cn * wgap);
           else
@@ -8830,7 +8830,7 @@ bool CONTACT::Interface::update_active_set_semi_smooth()
               localcheck = false;
             }
           }
-        }  // if (ftype == INPAR::CONTACT::friction_coulomb)
+        }  // if (ftype == Inpar::CONTACT::friction_coulomb)
       }    // if (nz - cn*wgap <= 0)
     }      // if (cnode->Active()==false)
   }        // loop over all slave nodes
@@ -8882,7 +8882,7 @@ bool CONTACT::Interface::BuildActiveSet(bool init)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     const int numdof = cnode->NumDof();
@@ -8902,7 +8902,7 @@ bool CONTACT::Interface::BuildActiveSet(bool init)
     {
       // flag for initialization of init active nodes with nodal gaps
       bool initcontactbygap =
-          CORE::UTILS::IntegralValue<int>(interface_params(), "INITCONTACTBYGAP");
+          Core::UTILS::IntegralValue<int>(interface_params(), "INITCONTACTBYGAP");
       // value
       double initcontactval = interface_params().get<double>("INITCONTACTGAPVALUE");
 
@@ -8937,9 +8937,9 @@ bool CONTACT::Interface::BuildActiveSet(bool init)
               // In the next step the tangential part of the Lagrange multiplier vector will be set
            to zero. Hence,
               // we treat these nodes as frictionless nodes! (see AssembleLinSlip)
-              INPAR::CONTACT::FrictionType ftype =
-                  CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(),"FRICTION");
-              if (ftype == INPAR::CONTACT::friction_coulomb)
+              Inpar::CONTACT::FrictionType ftype =
+                  Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(),"FRICTION");
+              if (ftype == Inpar::CONTACT::friction_coulomb)
               {
               dynamic_cast<FriNode*>(cnode)->FriData().InconInit() = true;
               myslipnodegids.push_back(cnode->Id());
@@ -8995,16 +8995,16 @@ bool CONTACT::Interface::BuildActiveSet(bool init)
   }
 
   // create active node map and active dof map
-  activenodes_ = CORE::LINALG::CreateMap(mynodegids, Comm());
-  activedofs_ = CORE::LINALG::CreateMap(mydofgids, Comm());
-  inactivenodes_ = CORE::LINALG::CreateMap(mynodegidsInactive, Comm());
-  inactivedofs_ = CORE::LINALG::CreateMap(mydofgidsInactive, Comm());
+  activenodes_ = Core::LinAlg::CreateMap(mynodegids, Comm());
+  activedofs_ = Core::LinAlg::CreateMap(mydofgids, Comm());
+  inactivenodes_ = Core::LinAlg::CreateMap(mynodegidsInactive, Comm());
+  inactivedofs_ = Core::LinAlg::CreateMap(mydofgidsInactive, Comm());
 
   if (friction_)
   {
     // create slip node map and slip dof map
-    slipnodes_ = CORE::LINALG::CreateMap(myslipnodegids, Comm());
-    slipdofs_ = CORE::LINALG::CreateMap(myslipdofgids, Comm());
+    slipnodes_ = Core::LinAlg::CreateMap(myslipnodegids, Comm());
+    slipdofs_ = Core::LinAlg::CreateMap(myslipdofgids, Comm());
   }
 
   // split active dofs and slip dofs
@@ -9049,7 +9049,7 @@ bool CONTACT::Interface::SplitActiveDofs()
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     const int numdof = cnode->NumDof();
@@ -9115,7 +9115,7 @@ bool CONTACT::Interface::SplitActiveDofs()
   for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
   {
     int gid = slipnodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     const int numdof = cnode->NumDof();
@@ -9143,8 +9143,8 @@ bool CONTACT::Interface::SplitActiveDofs()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Interface::GetForceOfNode(CORE::LINALG::Matrix<3, 1>& nodal_force,
-    const Epetra_Vector& force, const CORE::Nodes::Node& node) const
+void CONTACT::Interface::GetForceOfNode(Core::LinAlg::Matrix<3, 1>& nodal_force,
+    const Epetra_Vector& force, const Core::Nodes::Node& node) const
 {
   std::vector<int> dofs;
   idiscret_->Dof(&node, dofs);
@@ -9170,7 +9170,7 @@ void CONTACT::Interface::GetForceOfNode(CORE::LINALG::Matrix<3, 1>& nodal_force,
  |  Calculate angular interface moments                  hiermeier 08/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::EvalResultantMoment(const Epetra_Vector& fs, const Epetra_Vector& fm,
-    CORE::LINALG::SerialDenseMatrix* conservation_data_ptr) const
+    Core::LinAlg::SerialDenseMatrix* conservation_data_ptr) const
 {
   double lresMoSl[3] = {0.0, 0.0, 0.0};  // local slave moment
   double gresMoSl[3] = {0.0, 0.0, 0.0};  // global slave moment
@@ -9186,7 +9186,7 @@ void CONTACT::Interface::EvalResultantMoment(const Epetra_Vector& fs, const Epet
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  CORE::LINALG::Matrix<3, 1> nforce(true);
+  Core::LinAlg::Matrix<3, 1> nforce(true);
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
@@ -9255,7 +9255,7 @@ void CONTACT::Interface::EvalResultantMoment(const Epetra_Vector& fs, const Epet
 
   if (conservation_data_ptr)
   {
-    CORE::LINALG::SerialDenseMatrix& conservation_data = *conservation_data_ptr;
+    Core::LinAlg::SerialDenseMatrix& conservation_data = *conservation_data_ptr;
     conservation_data.putScalar(0.0);
     if (conservation_data.numRows() < 18) FOUR_C_THROW("conservation_data length is too short!");
 
@@ -9283,35 +9283,35 @@ const CONTACT::Interface& CONTACT::Interface::get_ma_sharing_ref_interface() con
 /*----------------------------------------------------------------------*
  | Store nodal quant. to old ones (last conv. time step)  gitterle 02/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::StoreToOld(MORTAR::StrategyBase::QuantityType type)
+void CONTACT::Interface::StoreToOld(Mortar::StrategyBase::QuantityType type)
 {
   // loop over all slave row nodes on the current interface
   for (int j = 0; j < SlaveColNodes()->NumMyElements(); ++j)
   {
     int gid = SlaveColNodes()->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
     switch (type)
     {
-      case MORTAR::StrategyBase::dm:
+      case Mortar::StrategyBase::dm:
       {
         // store D and M entries
         dynamic_cast<FriNode*>(node)->StoreDMOld();
         break;
       }
-      case MORTAR::StrategyBase::pentrac:
+      case Mortar::StrategyBase::pentrac:
       {
         // store penalty tractions to old ones
         dynamic_cast<FriNode*>(node)->StoreTracOld();
         break;
       }
-      case MORTAR::StrategyBase::n_old:
+      case Mortar::StrategyBase::n_old:
       {
         dynamic_cast<Node*>(node)->StoreOldNormal();
         break;
       }
-      case MORTAR::StrategyBase::activeold:
+      case Mortar::StrategyBase::activeold:
       {
         dynamic_cast<Node*>(node)->Data().ActiveOld() = dynamic_cast<Node*>(node)->Active();
         break;
@@ -9359,7 +9359,7 @@ void CONTACT::Interface::update_self_contact_lag_mult_set(
 void CONTACT::Interface::set_node_initially_active(CONTACT::Node& cnode) const
 {
   static const bool init_contact_by_gap =
-      CORE::UTILS::IntegralValue<int>(interface_params(), "INITCONTACTBYGAP");
+      Core::UTILS::IntegralValue<int>(interface_params(), "INITCONTACTBYGAP");
 
   const bool node_init_active = cnode.IsInitActive();
 
@@ -9401,7 +9401,8 @@ void CONTACT::Interface::set_condition_specific_parameters()
   {
     // read interface parameters and set them to the scatra boundary parameter class
     auto& s2icouplinglist = interface_params().sublist("ContactS2ICoupling", true);
-    DRT::ELEMENTS::ScaTraEleParameterBoundary::Instance("scatra")->SetParameters(s2icouplinglist);
+    Discret::ELEMENTS::ScaTraEleParameterBoundary::Instance("scatra")->SetParameters(
+        s2icouplinglist);
   }
 }
 
@@ -9426,7 +9427,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   }
 
   // Get the discretization writer and get ready for writing
-  RCP<CORE::IO::DiscretizationWriter> writer = idiscret_->Writer();
+  RCP<Core::IO::DiscretizationWriter> writer = idiscret_->Writer();
 
   // Get output for this time step started
   {
@@ -9441,18 +9442,18 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   /* Write interface displacement
    *
    * The interface displacement has been handed in via the parameter list outParams.
-   * Grab it from there, then use CORE::LINALG::Export() to extract the interface
+   * Grab it from there, then use Core::LinAlg::Export() to extract the interface
    * portion from the global displacement vector. Finally, write the interface
    * portion using this interfaces' discretization writer.
    */
   {
     // Get full displacement vector and extract interface displacement
     RCP<const Epetra_Vector> disp = outputParams.get<RCP<const Epetra_Vector>>("displacement");
-    RCP<Epetra_Vector> iDisp = CORE::LINALG::CreateVector(*idiscret_->dof_row_map());
-    CORE::LINALG::Export(*disp, *iDisp);
+    RCP<Epetra_Vector> iDisp = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
+    Core::LinAlg::Export(*disp, *iDisp);
 
     // Write the interface displacement field
-    writer->WriteVector("displacement", iDisp, CORE::IO::VectorType::dofvector);
+    writer->WriteVector("displacement", iDisp, Core::IO::VectorType::dofvector);
   }
 
   // Write Lagrange multiplier field
@@ -9460,11 +9461,11 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     // Get full Lagrange multiplier vector and extract values of this interface
     RCP<const Epetra_Vector> lagMult =
         outputParams.get<RCP<const Epetra_Vector>>("interface traction");
-    RCP<Epetra_Vector> iLagMult = CORE::LINALG::CreateVector(*idiscret_->dof_row_map());
-    CORE::LINALG::Export(*lagMult, *iLagMult);
+    RCP<Epetra_Vector> iLagMult = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
+    Core::LinAlg::Export(*lagMult, *iLagMult);
 
     // Write this interface's Lagrange multiplier field
-    writer->WriteVector("interfacetraction", iLagMult, CORE::IO::VectorType::dofvector);
+    writer->WriteVector("interfacetraction", iLagMult, Core::IO::VectorType::dofvector);
   }
 
   // Write normal contact stress
@@ -9472,11 +9473,11 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     // Get values from parameter list and export to interface dof_row_map
     RCP<const Epetra_Vector> normalStresses =
         outputParams.get<RCP<const Epetra_Vector>>("norcontactstress");
-    RCP<Epetra_Vector> iNormalStresses = CORE::LINALG::CreateVector(*idiscret_->dof_row_map());
-    CORE::LINALG::Export(*normalStresses, *iNormalStresses);
+    RCP<Epetra_Vector> iNormalStresses = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
+    Core::LinAlg::Export(*normalStresses, *iNormalStresses);
 
     // Write this interface's normal contact stress field
-    writer->WriteVector("norcontactstress", iNormalStresses, CORE::IO::VectorType::dofvector);
+    writer->WriteVector("norcontactstress", iNormalStresses, Core::IO::VectorType::dofvector);
   }
 
   // Write tangential contact stress
@@ -9484,11 +9485,11 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     // Get values from parameter list and export to interface dof_row_map
     RCP<const Epetra_Vector> tangentialStresses =
         outputParams.get<RCP<const Epetra_Vector>>("tancontactstress");
-    RCP<Epetra_Vector> iTangentialStresses = CORE::LINALG::CreateVector(*idiscret_->dof_row_map());
-    CORE::LINALG::Export(*tangentialStresses, *iTangentialStresses);
+    RCP<Epetra_Vector> iTangentialStresses = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
+    Core::LinAlg::Export(*tangentialStresses, *iTangentialStresses);
 
     // Write this interface's normal contact stress field
-    writer->WriteVector("tancontactstress", iTangentialStresses, CORE::IO::VectorType::dofvector);
+    writer->WriteVector("tancontactstress", iTangentialStresses, Core::IO::VectorType::dofvector);
   }
 
   // Write nodal forces of slave side
@@ -9496,11 +9497,11 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     // Get nodal forces
     RCP<const Epetra_Vector> slaveforces =
         outputParams.get<RCP<const Epetra_Vector>>("slave forces");
-    RCP<Epetra_Vector> forces = CORE::LINALG::CreateVector(*idiscret_->dof_row_map());
-    CORE::LINALG::Export(*slaveforces, *forces);
+    RCP<Epetra_Vector> forces = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
+    Core::LinAlg::Export(*slaveforces, *forces);
 
     // Write to output
-    writer->WriteVector("slaveforces", forces, CORE::IO::VectorType::dofvector);
+    writer->WriteVector("slaveforces", forces, Core::IO::VectorType::dofvector);
   }
 
   // Write nodal forces of master side
@@ -9508,11 +9509,11 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     // Get nodal forces
     RCP<const Epetra_Vector> masterforces =
         outputParams.get<RCP<const Epetra_Vector>>("master forces");
-    RCP<Epetra_Vector> forces = CORE::LINALG::CreateVector(*idiscret_->dof_row_map());
-    CORE::LINALG::Export(*masterforces, *forces);
+    RCP<Epetra_Vector> forces = Core::LinAlg::CreateVector(*idiscret_->dof_row_map());
+    Core::LinAlg::Export(*masterforces, *forces);
 
     // Write to output
-    writer->WriteVector("masterforces", forces, CORE::IO::VectorType::dofvector);
+    writer->WriteVector("masterforces", forces, Core::IO::VectorType::dofvector);
   }
 
 
@@ -9521,11 +9522,11 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     RCP<Epetra_Vector> masterVec = Teuchos::rcp(new Epetra_Vector(*mnoderowmap_));
     masterVec->PutScalar(1.0);
 
-    RCP<const Epetra_Map> nodeRowMap = CORE::LINALG::MergeMap(snoderowmap_, mnoderowmap_, false);
-    RCP<Epetra_Vector> masterSlaveVec = CORE::LINALG::CreateVector(*nodeRowMap, true);
-    CORE::LINALG::Export(*masterVec, *masterSlaveVec);
+    RCP<const Epetra_Map> nodeRowMap = Core::LinAlg::MergeMap(snoderowmap_, mnoderowmap_, false);
+    RCP<Epetra_Vector> masterSlaveVec = Core::LinAlg::CreateVector(*nodeRowMap, true);
+    Core::LinAlg::Export(*masterVec, *masterSlaveVec);
 
-    writer->WriteVector("slavemasternodes", masterSlaveVec, CORE::IO::VectorType::nodevector);
+    writer->WriteVector("slavemasternodes", masterSlaveVec, Core::IO::VectorType::nodevector);
   }
 
   // Write active set
@@ -9539,15 +9540,15 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
       RCP<Epetra_Vector> slipset = Teuchos::rcp(new Epetra_Vector(*slipnodes_));
       slipset->PutScalar(1.0);
       RCP<Epetra_Vector> slipsetexp = Teuchos::rcp(new Epetra_Vector(*activenodes_));
-      CORE::LINALG::Export(*slipset, *slipsetexp);
+      Core::LinAlg::Export(*slipset, *slipsetexp);
       activeset->Update(1.0, *slipsetexp, 1.0);
     }
 
     // export to interface node row map
     RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*(idiscret_->NodeRowMap())));
-    CORE::LINALG::Export(*activeset, *activesetexp);
+    Core::LinAlg::Export(*activeset, *activesetexp);
 
-    writer->WriteVector("activeset", activesetexp, CORE::IO::VectorType::nodevector);
+    writer->WriteVector("activeset", activesetexp, Core::IO::VectorType::nodevector);
   }
 
   // Elements: element-based vector with '0' at slave elements and '1' at master elements
@@ -9555,22 +9556,22 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     RCP<Epetra_Vector> masterVec = Teuchos::rcp(new Epetra_Vector(*melerowmap_));
     masterVec->PutScalar(1.0);
 
-    RCP<const Epetra_Map> eleRowMap = CORE::LINALG::MergeMap(selerowmap_, melerowmap_, false);
-    RCP<Epetra_Vector> masterSlaveVec = CORE::LINALG::CreateVector(*eleRowMap, true);
-    CORE::LINALG::Export(*masterVec, *masterSlaveVec);
+    RCP<const Epetra_Map> eleRowMap = Core::LinAlg::MergeMap(selerowmap_, melerowmap_, false);
+    RCP<Epetra_Vector> masterSlaveVec = Core::LinAlg::CreateVector(*eleRowMap, true);
+    Core::LinAlg::Export(*masterVec, *masterSlaveVec);
 
-    writer->WriteVector("slavemasterelements", masterSlaveVec, CORE::IO::VectorType::elementvector);
+    writer->WriteVector("slavemasterelements", masterSlaveVec, Core::IO::VectorType::elementvector);
   }
 
   // Write element owners
   {
-    RCP<const Epetra_Map> eleRowMap = CORE::LINALG::MergeMap(selerowmap_, melerowmap_, false);
-    RCP<Epetra_Vector> owner = CORE::LINALG::CreateVector(*eleRowMap);
+    RCP<const Epetra_Map> eleRowMap = Core::LinAlg::MergeMap(selerowmap_, melerowmap_, false);
+    RCP<Epetra_Vector> owner = Core::LinAlg::CreateVector(*eleRowMap);
 
     for (int i = 0; i < idiscret_->ElementRowMap()->NumMyElements(); ++i)
       (*owner)[i] = idiscret_->lRowElement(i)->Owner();
 
-    writer->WriteVector("Owner", owner, CORE::IO::VectorType::elementvector);
+    writer->WriteVector("Owner", owner, Core::IO::VectorType::elementvector);
   }
 }
 

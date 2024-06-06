@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace Discret
 {
   class ResultTest;
 }
@@ -34,7 +34,7 @@ namespace FLD
   }
 }  // namespace FLD
 
-namespace ADAPTER
+namespace Adapter
 {
   class Fluid;
 
@@ -56,9 +56,9 @@ namespace ADAPTER
     //! @name Misc
 
     /// direct access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> discretization() = 0;
+    virtual Teuchos::RCP<Discret::Discretization> discretization() = 0;
 
-    virtual const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() = 0;
+    virtual const Teuchos::RCP<Adapter::Fluid>& fluid_field() = 0;
 
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const = 0;
@@ -105,7 +105,7 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Vector> idisp, double dt) = 0;
 
     /// get the linear solver object used for this field
-    // virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
+    // virtual Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() = 0;
 
     //@}
 
@@ -134,7 +134,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> integrate_interface_shape() = 0;
 
     /// create result test for encapulated fluid algorithm
-    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
   };
 
 
@@ -155,7 +155,7 @@ namespace ADAPTER
     /// fluid field solver
     Teuchos::RCP<FluidMovingBoundary> fluid_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

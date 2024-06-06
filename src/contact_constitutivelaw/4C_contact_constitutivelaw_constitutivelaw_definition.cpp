@@ -27,22 +27,22 @@ FOUR_C_NAMESPACE_OPEN
 /*======================================================================*/
 /*======================================================================*/
 CONTACT::CONSTITUTIVELAW::LawDefinition::LawDefinition(
-    std::string name, std::string description, INPAR::CONTACT::ConstitutiveLawType type)
+    std::string name, std::string description, Inpar::CONTACT::ConstitutiveLawType type)
     : coconstlawname_(name), description_(description), coconstlawtype_(type)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LawDefinition::AddComponent(Teuchos::RCP<INPUT::LineComponent> c)
+void CONTACT::CONSTITUTIVELAW::LawDefinition::AddComponent(Teuchos::RCP<Input::LineComponent> c)
 {
   inputline_.push_back(c);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& problem,
-    CORE::IO::DatFileReader& reader, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle)
+void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const Global::Problem& problem,
+    Core::IO::DatFileReader& reader, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle)
 {
   std::string name = "--CONTACT CONSTITUTIVE LAWS";
   std::vector<const char*> section = reader.Section(name);
@@ -60,7 +60,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& proble
       condline->seekp(0, condline->end);
       *condline << " ";
 
-      CORE::IO::LineParser parser("While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
+      Core::IO::LineParser parser("While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
 
       parser.Consume(*condline, "LAW");
       const int id = parser.Read<int>(*condline);
@@ -100,7 +100,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const GLOBAL::Problem& proble
 
 
 std::ostream& CONTACT::CONSTITUTIVELAW::LawDefinition::Print(
-    std::ostream& stream, const DRT::Discretization* dis)
+    std::ostream& stream, const Discret::Discretization* dis)
 {
   // a string holding the comment indicating symbols for DAT input file
   const std::string comment = "//";

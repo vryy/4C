@@ -31,10 +31,10 @@ FOUR_C_NAMESPACE_OPEN
 void levelset_dyn(int restart)
 {
   // define abbreviation
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // access the scatra discretization
-  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
 
   // access the communicator
   const Epetra_Comm& comm = scatradis->Comm();
@@ -50,9 +50,9 @@ void levelset_dyn(int restart)
   const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
 
   // check velocity field
-  const INPAR::SCATRA::VelocityField veltype =
-      CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
-  if (veltype != INPAR::SCATRA::velocity_function)
+  const Inpar::ScaTra::VelocityField veltype =
+      Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
+  if (veltype != Inpar::ScaTra::velocity_function)
     FOUR_C_THROW(
         "Other velocity fields than a field given by a function not yet supported for level-set "
         "problems");
@@ -65,14 +65,14 @@ void levelset_dyn(int restart)
         "Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
   // create instance of scalar transport basis algorithm (empty fluid discretization)
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatrabase =
-      Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+  Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatrabase =
+      Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
           levelsetcontrol, scatradyn, problem->SolverParams(linsolvernumber)));
 
   // add proxy of velocity related degrees of freedom to scatra discretization
-  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
-          GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
+  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+          Global::Problem::Instance()->NDim() + 1, 0, 0, true));
   if (scatradis->AddDofSet(dofsetaux) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
   scatrabase->ScaTraField()->set_number_of_dof_set_velocity(1);
@@ -95,7 +95,7 @@ void levelset_dyn(int restart)
   scatrabase->Setup();
 
   // get pointer to time integrator
-  Teuchos::RCP<SCATRA::ScaTraTimIntImpl> levelsetalgo = scatrabase->ScaTraField();
+  Teuchos::RCP<ScaTra::ScaTraTimIntImpl> levelsetalgo = scatrabase->ScaTraField();
 
   // read the restart information, set vectors and variables
   if (restart) levelsetalgo->read_restart(restart);
@@ -108,7 +108,7 @@ void levelset_dyn(int restart)
   //       evaluate the velocity function and curve.
   // bool true allows for setting old convective velocity required for particle coupling
   // old particle framework removed -> todo: requires clean up
-  Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(levelsetalgo)->set_velocity_field(true);
+  Teuchos::rcp_dynamic_cast<ScaTra::LevelSetAlgorithm>(levelsetalgo)->set_velocity_field(true);
 
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("LEVEL SET:  + time loop");
@@ -120,7 +120,7 @@ void levelset_dyn(int restart)
   Teuchos::TimeMonitor::summarize();
 
   // perform result test if required
-  Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(levelsetalgo)->TestResults();
+  Teuchos::rcp_dynamic_cast<ScaTra::LevelSetAlgorithm>(levelsetalgo)->TestResults();
 
   return;
 

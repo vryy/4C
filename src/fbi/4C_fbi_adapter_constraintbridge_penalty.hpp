@@ -25,12 +25,12 @@ namespace BEAMINTERACTION
   class BeamToFluidMeshtyingVtkOutputWriter;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class SparseOperator;
-}  // namespace CORE::LINALG
-namespace ADAPTER
+}  // namespace Core::LinAlg
+namespace Adapter
 {
   /**
    *   \brief Implementation connecting the penalty constraint enforcement technique with a
@@ -49,7 +49,7 @@ namespace ADAPTER
      * \brief Initializes all members of the class     *
      */
     void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying) override;
+        Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix, bool fluidmeshtying) override;
 
     /**
      * \brief Computes the coupling matrices
@@ -60,8 +60,8 @@ namespace ADAPTER
      *
      */
 
-    void Evaluate(Teuchos::RCP<const DRT::Discretization> discretization1,
-        Teuchos::RCP<const DRT::Discretization> discretization2,
+    void Evaluate(Teuchos::RCP<const Discret::Discretization> discretization1,
+        Teuchos::RCP<const Discret::Discretization> discretization2,
         Teuchos::RCP<const Epetra_Vector> fluid_vel,
         Teuchos::RCP<const Epetra_Vector> beam_vel) override;
 
@@ -71,16 +71,16 @@ namespace ADAPTER
     void PrepareFluidSolve() override { set_weak_dirichlet_flag(); };
 
     /// Matrix containing only structure side contributions \f$C_{ss}\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCss() const override { return css_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetCss() const override { return css_; };
 
     /// Matrix containing only fluid side contributions \f$C_{ff}\f$
-    Teuchos::RCP<const CORE::LINALG::SparseOperator> GetCff() const override { return cff_; };
+    Teuchos::RCP<const Core::LinAlg::SparseOperator> GetCff() const override { return cff_; };
 
     /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCfs() const override { return cfs_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetCfs() const override { return cfs_; };
 
     /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCsf() const override { return csf_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetCsf() const override { return csf_; };
 
     /// Negative RHS coupling contribution for the fluid partition \f$f_f\f$
     Teuchos::RCP<const Epetra_FEVector> get_fluid_coupling_residual() const override
@@ -95,7 +95,7 @@ namespace ADAPTER
     };
 
    protected:
-    /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
+    /** \brief You will have to use the Adapter::ConstraintEnforcerFactory
      *
      */
     FBIConstraintBridgePenalty()
@@ -128,16 +128,16 @@ namespace ADAPTER
 
    private:
     /// Coupling matrix containing only structure side contributions \f$C_ss\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> css_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> css_;
 
     /// Coupling matrix containing only fluid side contributions \f$C_ff\f$
-    Teuchos::RCP<CORE::LINALG::SparseOperator> cff_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> cff_;
 
     /// Coupling matrix containing mixed fluid side contributions \f$C_fs\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> cfs_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> cfs_;
 
     /// Coupling matrix containing mixed structure side contributions \f$C_sf\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> csf_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> csf_;
 
     /// Force vector acting on the fluid side \f$f_f\f$
     Teuchos::RCP<Epetra_FEVector> ff_;
@@ -153,7 +153,7 @@ namespace ADAPTER
     /// penalty parameter
     bool structure_scaled_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

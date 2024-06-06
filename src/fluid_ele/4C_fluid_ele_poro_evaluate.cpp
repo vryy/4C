@@ -19,19 +19,19 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void DRT::ELEMENTS::FluidPoroEleType::pre_evaluate(DRT::Discretization& dis,
-    Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+void Discret::ELEMENTS::FluidPoroEleType::pre_evaluate(Discret::Discretization& dis,
+    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const auto action = CORE::UTILS::GetAsEnum<FLD::Action>(p, "action");
+  const auto action = Core::UTILS::GetAsEnum<FLD::Action>(p, "action");
 
   // poro specific actions
   if (action == FLD::set_poro_parameter)
   {
-    DRT::ELEMENTS::FluidEleParameterPoro* fldpara =
-        DRT::ELEMENTS::FluidEleParameterPoro::Instance();
+    Discret::ELEMENTS::FluidEleParameterPoro* fldpara =
+        Discret::ELEMENTS::FluidEleParameterPoro::Instance();
     fldpara->set_element_poro_parameter(p, dis.Comm().MyPID());
   }
   else
@@ -42,26 +42,26 @@ void DRT::ELEMENTS::FluidPoroEleType::pre_evaluate(DRT::Discretization& dis,
   }
 }
 
-int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const auto act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const auto act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   // get material
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
   // switch between different physical types as used below
   std::string impltype = "poro";
-  switch (params.get<int>("Physical Type", INPAR::FLUID::physicaltype_undefined))
+  switch (params.get<int>("Physical Type", Inpar::FLUID::physicaltype_undefined))
   {
-    case INPAR::FLUID::poro:
+    case Inpar::FLUID::poro:
       impltype = "poro";
       break;
-    case INPAR::FLUID::poro_p1:
+    case Inpar::FLUID::poro_p1:
       impltype = "poro_p1";
       break;
     default:
@@ -77,7 +77,7 @@ int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
     //-----------------------------------------------------------------------
     case FLD::calc_fluid_systemmat_and_residual:
     {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
+      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
           ->Evaluate(
               this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
@@ -88,7 +88,7 @@ int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
     //-----------------------------------------------------------------------
     case FLD::calc_porousflow_fluid_coupling:
     {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
+      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
           ->Evaluate(this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2,
               elevec3, true);
     }
@@ -100,9 +100,9 @@ int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
     //-----------------------------------------------------------------------
     case FLD::calc_poroscatra_mono_odblock:
     {
-      switch (params.get<int>("Physical Type", INPAR::FLUID::physicaltype_undefined))
+      switch (params.get<int>("Physical Type", Inpar::FLUID::physicaltype_undefined))
       {
-        case INPAR::FLUID::poro:
+        case Inpar::FLUID::poro:
         {
           // no coupling
           return 0;
@@ -116,7 +116,7 @@ int DRT::ELEMENTS::FluidPoro::Evaluate(Teuchos::ParameterList& params,
     break;
     case FLD::calc_volume:
     {
-      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
+      return Discret::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)
           ->EvaluateService(
               this, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
     }

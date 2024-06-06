@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* forward declarations */
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
 }
@@ -48,7 +48,7 @@ namespace NOX
   {
     /// This class enables the structural time integration #STR::TimIntImpl to use
     /// #NOX as non-linear solution technique while preserving the user-defined
-    /// linear algebraic solver #CORE::LINALG::Solver.
+    /// linear algebraic solver #Core::LinAlg::Solver.
     ///
     /// \author bborn
     /// \date 04/09
@@ -74,7 +74,7 @@ namespace NOX
               iJac,  ///< NOX interface to Jacobian, i.e. #STR::TimIntImpl
           const Teuchos::RCP<Epetra_Operator>& J,  ///< the Jacobian or stiffness matrix
           const ::NOX::Epetra::Vector& cloneVector,
-          Teuchos::RCP<CORE::LINALG::Solver>
+          Teuchos::RCP<Core::LinAlg::Solver>
               structure_solver,  ///< (used-defined) linear algebraic solver
           const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject = Teuchos::null);
 
@@ -177,7 +177,7 @@ namespace NOX
       int callcount_;
 
       /// linear algebraic solver
-      Teuchos::RCP<CORE::LINALG::Solver> structureSolver_;
+      Teuchos::RCP<Core::LinAlg::Solver> structureSolver_;
 
       Teuchos::Time timer_;
       mutable double timeApplyJacbianInverse_;

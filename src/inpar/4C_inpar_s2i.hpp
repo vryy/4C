@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR::S2I
+namespace Inpar::S2I
 {
   //! type of interface side
   enum InterfaceSides
@@ -97,8 +97,8 @@ namespace INPAR::S2I
 
   //! set valid conditions for scatra-scatra interface coupling
   void SetValidConditions(
-      std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
-}  // namespace INPAR::S2I
+      std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
+}  // namespace Inpar::S2I
 
 FOUR_C_NAMESPACE_CLOSE
 

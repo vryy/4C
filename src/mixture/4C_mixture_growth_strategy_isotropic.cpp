@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::IsotropicGrowthStrategy::IsotropicGrowthStrategy(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : MIXTURE::PAR::MixtureGrowthStrategy(matdata)
 {
 }
@@ -25,7 +25,7 @@ MIXTURE::PAR::IsotropicGrowthStrategy::create_growth_strategy()
 }
 
 void MIXTURE::IsotropicGrowthStrategy::evaluate_inverse_growth_deformation_gradient(
-    CORE::LINALG::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
+    Core::LinAlg::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
   iFgM.Clear();
@@ -38,10 +38,10 @@ void MIXTURE::IsotropicGrowthStrategy::evaluate_inverse_growth_deformation_gradi
 
 void MIXTURE::IsotropicGrowthStrategy::evaluate_growth_stress_cmat(
     const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
-    const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
-    const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
-    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-    CORE::LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID) const
+    const Core::LinAlg::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
+    const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+    Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+    Core::LinAlg::Matrix<6, 6>& cmat, const int gp, const int eleGID) const
 {
   S_stress.Clear();
   cmat.Clear();

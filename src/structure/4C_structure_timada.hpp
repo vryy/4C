@@ -24,17 +24,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
@@ -63,21 +63,21 @@ namespace STR
   {
    public:
     //! Provide the name as std::string
-    static std::string MapKindEnumToString(const enum INPAR::STR::TimAdaKind term  //!< the enum
+    static std::string MapKindEnumToString(const enum Inpar::STR::TimAdaKind term  //!< the enum
     )
     {
       switch (term)
       {
-        case INPAR::STR::timada_kind_zienxie:
+        case Inpar::STR::timada_kind_zienxie:
           return "ZienkiewiczXie";
           break;
-        case INPAR::STR::timada_kind_ab2:
+        case Inpar::STR::timada_kind_ab2:
           return "AdamsBashforth2";
           break;
-        case INPAR::STR::timada_kind_expleuler:
+        case Inpar::STR::timada_kind_expleuler:
           return "ExplicitEuler";
           break;
-        case INPAR::STR::timada_kind_centraldiff:
+        case Inpar::STR::timada_kind_centraldiff:
           return "CentralDifference";
           break;
         default:
@@ -274,7 +274,7 @@ namespace STR
     //@{
 
     //! Provide the name
-    virtual enum INPAR::STR::TimAdaKind MethodName() const = 0;
+    virtual enum Inpar::STR::TimAdaKind MethodName() const = 0;
 
     //! Provide the name as std::string
     std::string MethodTitle() const { return MapKindEnumToString(MethodName()); }
@@ -315,10 +315,10 @@ namespace STR
     //! @name General purpose algorithm members
     //@{
     Teuchos::RCP<TimInt> sti_;                             //!< marching time integrator
-    Teuchos::RCP<DRT::Discretization> discret_;            //!< attached discretisation
+    Teuchos::RCP<Discret::Discretization> discret_;        //!< attached discretisation
     int myrank_;                                           //!< processor ID
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;            //!< linear algebraic solver
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;  //!< binary output
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;            //!< linear algebraic solver
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;  //!< binary output
     //@}
 
     //! @name Plain time integration constants
@@ -342,7 +342,7 @@ namespace STR
                                            //!< of current step size relative to last converged one
     double sizeratioscale_;                //!< safety factor, should be lower than 1.0
     enum CtrlEnum errctrl_;                //!< type of control, see #CtrlEnum
-    enum INPAR::STR::VectorNorm errnorm_;  //!< norm for local error vector
+    enum Inpar::STR::VectorNorm errnorm_;  //!< norm for local error vector
     double errtol_;                        //!< target local error tolerance
     int errorder_;                         //!< order of local error indication
     int adaptstepmax_;  //!< maximally permitted trials to find tolerable step size

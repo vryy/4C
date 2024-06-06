@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-namespace CORE::COMM
+namespace Core::Communication
 {
   namespace
   {
@@ -63,11 +63,11 @@ namespace CORE::COMM
 
     std::unique_ptr<ParObjectPreRegister> ParObjectPreRegister::instance_;
   }  // namespace
-}  // namespace CORE::COMM
+}  // namespace Core::Communication
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::COMM::ParObjectType::ParObjectType() : objectid_(0)
+Core::Communication::ParObjectType::ParObjectType() : objectid_(0)
 {
   ParObjectPreRegister::Instance()->Register(this);
 }
@@ -75,11 +75,11 @@ CORE::COMM::ParObjectType::ParObjectType() : objectid_(0)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::COMM::ParObjectType::UniqueParObjectId()
+int Core::Communication::ParObjectType::UniqueParObjectId()
 {
   if (objectid_ == 0)
   {
-    CORE::COMM::ParObjectFactory::Instance().do_register(this);
+    Core::Communication::ParObjectFactory::Instance().do_register(this);
   }
   return objectid_;
 }
@@ -87,15 +87,15 @@ int CORE::COMM::ParObjectType::UniqueParObjectId()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::COMM::ParObjectFactory& CORE::COMM::ParObjectFactory::Instance()
+Core::Communication::ParObjectFactory& Core::Communication::ParObjectFactory::Instance()
 {
-  static std::unique_ptr<CORE::COMM::ParObjectFactory> instance;
+  static std::unique_ptr<Core::Communication::ParObjectFactory> instance;
   if (instance == nullptr)
   {
     // Create on demand. This is required since the instance will be accessed
     // by ParObjectType constructors. ParObjectType are singletons as
     // well. The singleton creation order is undefined.
-    instance = std::unique_ptr<CORE::COMM::ParObjectFactory>(new ParObjectFactory);
+    instance = std::unique_ptr<Core::Communication::ParObjectFactory>(new ParObjectFactory);
   }
   return *instance;
 }
@@ -103,7 +103,8 @@ CORE::COMM::ParObjectFactory& CORE::COMM::ParObjectFactory::Instance()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::COMM::ParObject* CORE::COMM::ParObjectFactory::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Core::Communication::ParObjectFactory::Create(
+    const std::vector<char>& data)
 {
   finalize_registration();
 
@@ -115,7 +116,8 @@ CORE::COMM::ParObject* CORE::COMM::ParObjectFactory::Create(const std::vector<ch
   std::map<int, ParObjectType*>::iterator i = type_map_.find(type);
   if (i == type_map_.end())
   {
-    FOUR_C_THROW("object id %d undefined. Have you extended CORE::COMM::ParObjectList()?", type);
+    FOUR_C_THROW(
+        "object id %d undefined. Have you extended Core::Communication::ParObjectList()?", type);
   }
 
   ParObject* o = i->second->Create(data);
@@ -131,11 +133,11 @@ CORE::COMM::ParObject* CORE::COMM::ParObjectFactory::Create(const std::vector<ch
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> CORE::COMM::ParObjectFactory::Create(
+Teuchos::RCP<Core::Elements::Element> Core::Communication::ParObjectFactory::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   finalize_registration();
-  std::map<std::string, CORE::Elements::ElementType*>::iterator c = element_cache_.find(eletype);
+  std::map<std::string, Core::Elements::ElementType*>::iterator c = element_cache_.find(eletype);
   if (c != element_cache_.end())
   {
     return c->second->Create(eletype, eledistype, id, owner);
@@ -146,10 +148,10 @@ Teuchos::RCP<CORE::Elements::Element> CORE::COMM::ParObjectFactory::Create(
   for (std::map<int, ParObjectType*>::iterator i = type_map_.begin(); i != type_map_.end(); ++i)
   {
     ParObjectType* pot = i->second;
-    CORE::Elements::ElementType* eot = dynamic_cast<CORE::Elements::ElementType*>(pot);
+    Core::Elements::ElementType* eot = dynamic_cast<Core::Elements::ElementType*>(pot);
     if (eot != nullptr)
     {
-      Teuchos::RCP<CORE::Elements::Element> ele = eot->Create(eletype, eledistype, id, owner);
+      Teuchos::RCP<Core::Elements::Element> ele = eot->Create(eletype, eledistype, id, owner);
       if (ele != Teuchos::null)
       {
         element_cache_[eletype] = eot;
@@ -165,7 +167,7 @@ Teuchos::RCP<CORE::Elements::Element> CORE::COMM::ParObjectFactory::Create(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::ParObjectFactory::do_register(ParObjectType* object_type)
+void Core::Communication::ParObjectFactory::do_register(ParObjectType* object_type)
 {
   std::string name = object_type->Name();
   const unsigned char* str = reinterpret_cast<const unsigned char*>(name.c_str());
@@ -201,12 +203,15 @@ void CORE::COMM::ParObjectFactory::do_register(ParObjectType* object_type)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::ParObjectFactory::finalize_registration() { ParObjectPreRegister::Finalize(); }
+void Core::Communication::ParObjectFactory::finalize_registration()
+{
+  ParObjectPreRegister::Finalize();
+}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::ParObjectFactory::initialize_elements(DRT::Discretization& dis)
+void Core::Communication::ParObjectFactory::initialize_elements(Discret::Discretization& dis)
 {
   finalize_registration();
 
@@ -225,16 +230,16 @@ void CORE::COMM::ParObjectFactory::initialize_elements(DRT::Discretization& dis)
   localtypeids.reserve(ids.size());
   localtypeids.assign(ids.begin(), ids.end());
 
-  CORE::LINALG::AllreduceVector(localtypeids, globaltypeids, dis.Comm());
+  Core::LinAlg::AllreduceVector(localtypeids, globaltypeids, dis.Comm());
 
-  std::set<CORE::Elements::ElementType*>& ae = active_elements_[&dis];
+  std::set<Core::Elements::ElementType*>& ae = active_elements_[&dis];
 
   // This is element specific code. Thus we need a down cast.
 
   for (std::vector<int>::iterator i = globaltypeids.begin(); i != globaltypeids.end(); ++i)
   {
     ParObjectType* pot = type_map_[*i];
-    CORE::Elements::ElementType* eot = dynamic_cast<CORE::Elements::ElementType*>(pot);
+    Core::Elements::ElementType* eot = dynamic_cast<Core::Elements::ElementType*>(pot);
     if (eot != nullptr)
     {
       ae.insert(eot);
@@ -251,17 +256,17 @@ void CORE::COMM::ParObjectFactory::initialize_elements(DRT::Discretization& dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::ParObjectFactory::pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+void Core::Communication::ParObjectFactory::pre_evaluate(Discret::Discretization& dis,
+    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   finalize_registration();
 
-  std::set<CORE::Elements::ElementType*>& ae = active_elements_[&dis];
+  std::set<Core::Elements::ElementType*>& ae = active_elements_[&dis];
 
-  for (std::set<CORE::Elements::ElementType*>::iterator i = ae.begin(); i != ae.end(); ++i)
+  for (std::set<Core::Elements::ElementType*>::iterator i = ae.begin(); i != ae.end(); ++i)
   {
     (*i)->pre_evaluate(
         dis, p, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
@@ -271,8 +276,8 @@ void CORE::COMM::ParObjectFactory::pre_evaluate(DRT::Discretization& dis, Teucho
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::COMM::ParObjectFactory::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Core::Communication::ParObjectFactory::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   finalize_registration();
 
@@ -283,7 +288,7 @@ void CORE::COMM::ParObjectFactory::setup_element_definition(
   for (std::map<int, ParObjectType*>::iterator i = type_map_.begin(); i != type_map_.end(); ++i)
   {
     ParObjectType* pot = i->second;
-    CORE::Elements::ElementType* eot = dynamic_cast<CORE::Elements::ElementType*>(pot);
+    Core::Elements::ElementType* eot = dynamic_cast<Core::Elements::ElementType*>(pot);
     if (eot != nullptr)
     {
       eot->setup_element_definition(definitions);

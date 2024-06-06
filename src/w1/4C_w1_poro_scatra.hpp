@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -30,10 +30,10 @@ namespace DRT
     \brief A C++ version of a 2 dimensional solid element with modifications for porous media
 
     */
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class Wall1PoroScatra : public Wall1Poro<distype>
     {
-      typedef DRT::ELEMENTS::Wall1Poro<distype> my;
+      typedef Discret::ELEMENTS::Wall1Poro<distype> my;
 
      public:
       //@}
@@ -63,7 +63,7 @@ namespace DRT
       The Clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -76,29 +76,33 @@ namespace DRT
         int parobjectid(-1);
         switch (distype)
         {
-          case CORE::FE::CellType::tri3:
+          case Core::FE::CellType::tri3:
           {
-            parobjectid = DRT::ELEMENTS::WallTri3PoroScatraType::Instance().UniqueParObjectId();
+            parobjectid = Discret::ELEMENTS::WallTri3PoroScatraType::Instance().UniqueParObjectId();
             break;
           }
-          case CORE::FE::CellType::quad4:
+          case Core::FE::CellType::quad4:
           {
-            parobjectid = DRT::ELEMENTS::WallQuad4PoroScatraType::Instance().UniqueParObjectId();
+            parobjectid =
+                Discret::ELEMENTS::WallQuad4PoroScatraType::Instance().UniqueParObjectId();
             break;
           }
-          case CORE::FE::CellType::quad9:
+          case Core::FE::CellType::quad9:
           {
-            parobjectid = DRT::ELEMENTS::WallQuad9PoroScatraType::Instance().UniqueParObjectId();
+            parobjectid =
+                Discret::ELEMENTS::WallQuad9PoroScatraType::Instance().UniqueParObjectId();
             break;
           }
-          case CORE::FE::CellType::nurbs4:
+          case Core::FE::CellType::nurbs4:
           {
-            parobjectid = DRT::ELEMENTS::WallNurbs4PoroScatraType::Instance().UniqueParObjectId();
+            parobjectid =
+                Discret::ELEMENTS::WallNurbs4PoroScatraType::Instance().UniqueParObjectId();
             break;
           }
-          case CORE::FE::CellType::nurbs9:
+          case Core::FE::CellType::nurbs9:
           {
-            parobjectid = DRT::ELEMENTS::WallNurbs9PoroScatraType::Instance().UniqueParObjectId();
+            parobjectid =
+                Discret::ELEMENTS::WallNurbs9PoroScatraType::Instance().UniqueParObjectId();
             break;
           }
           default:
@@ -115,7 +119,7 @@ namespace DRT
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -134,30 +138,30 @@ namespace DRT
       /*!
       \brief Return elementtype instance
       */
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         switch (distype)
         {
-          case CORE::FE::CellType::tri3:
-            return DRT::ELEMENTS::WallTri3PoroScatraType::Instance();
+          case Core::FE::CellType::tri3:
+            return Discret::ELEMENTS::WallTri3PoroScatraType::Instance();
             break;
-          case CORE::FE::CellType::quad4:
-            return DRT::ELEMENTS::WallQuad4PoroScatraType::Instance();
+          case Core::FE::CellType::quad4:
+            return Discret::ELEMENTS::WallQuad4PoroScatraType::Instance();
             break;
-          case CORE::FE::CellType::quad9:
-            return DRT::ELEMENTS::WallQuad9PoroScatraType::Instance();
+          case Core::FE::CellType::quad9:
+            return Discret::ELEMENTS::WallQuad9PoroScatraType::Instance();
             break;
-          case CORE::FE::CellType::nurbs4:
-            return DRT::ELEMENTS::WallNurbs4PoroScatraType::Instance();
+          case Core::FE::CellType::nurbs4:
+            return Discret::ELEMENTS::WallNurbs4PoroScatraType::Instance();
             break;
-          case CORE::FE::CellType::nurbs9:
-            return DRT::ELEMENTS::WallNurbs9PoroScatraType::Instance();
+          case Core::FE::CellType::nurbs9:
+            return Discret::ELEMENTS::WallNurbs9PoroScatraType::Instance();
             break;
           default:
             FOUR_C_THROW("unknown element type");
             break;
         }
-        return DRT::ELEMENTS::WallQuad4PoroScatraType::Instance();
+        return Discret::ELEMENTS::WallQuad4PoroScatraType::Instance();
       };
 
       //@}
@@ -168,7 +172,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -176,11 +180,11 @@ namespace DRT
       /*!
       \brief Return the SCATRA ImplType
       */
-      const INPAR::SCATRA::ImplType& ImplType() const { return impltype_; };
+      const Inpar::ScaTra::ImplType& ImplType() const { return impltype_; };
 
      private:
       //! implementation type (physics)
-      INPAR::SCATRA::ImplType impltype_;
+      Inpar::ScaTra::ImplType impltype_;
       //@}
 
      protected:
@@ -190,7 +194,7 @@ namespace DRT
     };  // class Wall1_Poro_Scatra
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

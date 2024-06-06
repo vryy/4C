@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHOpenBoundaryBase::SPHOpenBoundaryBase(const Teuchos::ParameterList& params)
+ParticleInteraction::SPHOpenBoundaryBase::SPHOpenBoundaryBase(const Teuchos::ParameterList& params)
     : params_sph_(params),
       prescribedstatefunctid_(-1),
       fluidphase_(PARTICLEENGINE::Phase1),
@@ -37,17 +37,17 @@ PARTICLEINTERACTION::SPHOpenBoundaryBase::SPHOpenBoundaryBase(const Teuchos::Par
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHOpenBoundaryBase::Init()
+void ParticleInteraction::SPHOpenBoundaryBase::Init()
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::SPHOpenBoundaryBase::Setup(
+void ParticleInteraction::SPHOpenBoundaryBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+    const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
+    const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+    const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle,
+    const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -74,7 +74,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryBase::Setup(
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 }
 
-void PARTICLEINTERACTION::SPHOpenBoundaryBase::check_open_boundary_phase_change(
+void ParticleInteraction::SPHOpenBoundaryBase::check_open_boundary_phase_change(
     const double maxinteractiondistance)
 {
   // determine size of vectors indexed by particle types
@@ -199,14 +199,14 @@ void PARTICLEINTERACTION::SPHOpenBoundaryBase::check_open_boundary_phase_change(
   particleengineinterface_->hand_over_particles_to_be_inserted(particlestoinsert);
 }
 
-PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::SPHOpenBoundaryDirichlet(
+ParticleInteraction::SPHOpenBoundaryDirichlet::SPHOpenBoundaryDirichlet(
     const Teuchos::ParameterList& params)
     : SPHOpenBoundaryBase::SPHOpenBoundaryBase(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::Init()
+void ParticleInteraction::SPHOpenBoundaryDirichlet::Init()
 {
   // call base class init
   SPHOpenBoundaryBase::Init();
@@ -253,12 +253,12 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::Init()
   openboundaryphase_ = PARTICLEENGINE::DirichletPhase;
 }
 
-void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::Setup(
+void ParticleInteraction::SPHOpenBoundaryDirichlet::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+    const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
+    const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+    const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle,
+    const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // call base class setup
   SPHOpenBoundaryBase::Setup(
@@ -273,7 +273,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::Setup(
   }
 }
 
-void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::prescribe_open_boundary_states(
+void ParticleInteraction::SPHOpenBoundaryDirichlet::prescribe_open_boundary_states(
     const double& evaltime)
 {
   // get container of owned particles of open boundary phase
@@ -288,7 +288,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::prescribe_open_boundary_stat
 
   // get reference to function
   const auto& function =
-      GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+      Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
           prescribedstatefunctid_ - 1);
 
   // safety check
@@ -307,18 +307,18 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::prescribe_open_boundary_stat
   }
 }
 
-void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::interpolate_open_boundary_states()
+void ParticleInteraction::SPHOpenBoundaryDirichlet::interpolate_open_boundary_states()
 {
   // get container of owned particles of open boundary phase
   PARTICLEENGINE::ParticleContainer* container_k =
       particlecontainerbundle_->get_specific_container(openboundaryphase_, PARTICLEENGINE::Owned);
 
   // get material for current particle type
-  const MAT::PAR::ParticleMaterialBase* material_k =
+  const Mat::PAR::ParticleMaterialBase* material_k =
       particlematerial_->get_ptr_to_particle_mat_parameter(openboundaryphase_);
 
   // get equation of state for current particle type
-  const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_k =
+  const ParticleInteraction::SPHEquationOfStateBase* equationofstate_k =
       equationofstatebundle_->get_ptr_to_specific_equation_of_state(openboundaryphase_);
 
   // get number of particles stored in container
@@ -403,14 +403,14 @@ void PARTICLEINTERACTION::SPHOpenBoundaryDirichlet::interpolate_open_boundary_st
   particleengineinterface_->refresh_particles_of_specific_states_and_types(statestorefresh_);
 }
 
-PARTICLEINTERACTION::SPHOpenBoundaryNeumann::SPHOpenBoundaryNeumann(
+ParticleInteraction::SPHOpenBoundaryNeumann::SPHOpenBoundaryNeumann(
     const Teuchos::ParameterList& params)
     : SPHOpenBoundaryBase::SPHOpenBoundaryBase(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::Init()
+void ParticleInteraction::SPHOpenBoundaryNeumann::Init()
 {
   // call base class init
   SPHOpenBoundaryBase::Init();
@@ -454,12 +454,12 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::Init()
   openboundaryphase_ = PARTICLEENGINE::NeumannPhase;
 }
 
-void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::Setup(
+void ParticleInteraction::SPHOpenBoundaryNeumann::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+    const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
+    const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+    const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle,
+    const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // call base class setup
   SPHOpenBoundaryBase::Setup(
@@ -473,7 +473,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::Setup(
   }
 }
 
-void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::prescribe_open_boundary_states(
+void ParticleInteraction::SPHOpenBoundaryNeumann::prescribe_open_boundary_states(
     const double& evaltime)
 {
   // get container of owned particles of open boundary phase
@@ -481,11 +481,11 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::prescribe_open_boundary_states
       particlecontainerbundle_->get_specific_container(openboundaryphase_, PARTICLEENGINE::Owned);
 
   // get material for current particle type
-  const MAT::PAR::ParticleMaterialBase* material_i =
+  const Mat::PAR::ParticleMaterialBase* material_i =
       particlematerial_->get_ptr_to_particle_mat_parameter(openboundaryphase_);
 
   // get equation of state for current particle type
-  const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_i =
+  const ParticleInteraction::SPHEquationOfStateBase* equationofstate_i =
       equationofstatebundle_->get_ptr_to_specific_equation_of_state(openboundaryphase_);
 
   // get number of particles stored in container
@@ -498,7 +498,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::prescribe_open_boundary_states
   {
     // get reference to function
     const auto& function =
-        GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
             prescribedstatefunctid_ - 1);
 
     // safety check
@@ -534,7 +534,7 @@ void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::prescribe_open_boundary_states
   }
 }
 
-void PARTICLEINTERACTION::SPHOpenBoundaryNeumann::interpolate_open_boundary_states()
+void ParticleInteraction::SPHOpenBoundaryNeumann::interpolate_open_boundary_states()
 {
   // nothing to do
 }

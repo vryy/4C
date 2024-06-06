@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace PASI
+namespace PaSI
 {
   namespace UTILS
   {
@@ -42,7 +42,7 @@ namespace PASI
 
   }  // namespace UTILS
 
-}  // namespace PASI
+}  // namespace PaSI
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

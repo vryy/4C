@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::LubricationLaw::LubricationLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::LubricationLaw::LubricationLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata)
 {
   return;
@@ -23,8 +23,8 @@ MAT::PAR::LubricationLaw::LubricationLaw(Teuchos::RCP<CORE::MAT::PAR::Material> 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::LubricationLawConstant::LubricationLawConstant(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::LubricationLawConstant::LubricationLawConstant(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : LubricationLaw(matdata), viscosity_(matdata->Get<double>("VISCOSITY"))
 {
   return;
@@ -32,14 +32,14 @@ MAT::PAR::LubricationLawConstant::LubricationLawConstant(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationLawConstant::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::LubricationLawConstant::create_material()
 {
   return Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::PAR::LubricationLawConstant::ComputeViscosity(const double& press, double& viscosity)
+void Mat::PAR::LubricationLawConstant::ComputeViscosity(const double& press, double& viscosity)
 {
   viscosity = viscosity_;
   return;
@@ -47,7 +47,7 @@ void MAT::PAR::LubricationLawConstant::ComputeViscosity(const double& press, dou
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::PAR::LubricationLawConstant::constitutive_derivatives(
+void Mat::PAR::LubricationLawConstant::constitutive_derivatives(
     const double& press, const double& viscosity, double& dviscosity_dp)
 {
   dviscosity_dp = 0.0;
@@ -60,7 +60,7 @@ void MAT::PAR::LubricationLawConstant::constitutive_derivatives(
  *---------------------------------------------------------------------*/
 
 // Standard Constructor
-MAT::PAR::LubricationLawBarus::LubricationLawBarus(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::LubricationLawBarus::LubricationLawBarus(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : LubricationLaw(matdata),
       ABSViscosity_(matdata->Get<double>("ABSViscosity")),
       PreVisCoeff_(matdata->Get<double>("PreVisCoeff"))
@@ -69,13 +69,13 @@ MAT::PAR::LubricationLawBarus::LubricationLawBarus(Teuchos::RCP<CORE::MAT::PAR::
 }
 
 // Create material instance of matching type with my parameters
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationLawBarus::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::LubricationLawBarus::create_material()
 {
   return Teuchos::null;
 }
 
 // Calculate the current viscosity
-void MAT::PAR::LubricationLawBarus::ComputeViscosity(const double& press, double& viscosity)
+void Mat::PAR::LubricationLawBarus::ComputeViscosity(const double& press, double& viscosity)
 {
   viscosity = ABSViscosity_ * (std::exp(PreVisCoeff_ * press));
 
@@ -83,7 +83,7 @@ void MAT::PAR::LubricationLawBarus::ComputeViscosity(const double& press, double
 }
 
 // Evaluate constitutive relation for viscosity and compute derivatives
-void MAT::PAR::LubricationLawBarus::constitutive_derivatives(
+void Mat::PAR::LubricationLawBarus::constitutive_derivatives(
     const double& press, const double& viscosity, double& dviscosity_dp)
 {
   dviscosity_dp = viscosity * PreVisCoeff_;
@@ -96,8 +96,8 @@ void MAT::PAR::LubricationLawBarus::constitutive_derivatives(
  *---------------------------------------------------------------------*/
 
 // Standard Constructor
-MAT::PAR::LubricationLawRoeland::LubricationLawRoeland(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::LubricationLawRoeland::LubricationLawRoeland(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : LubricationLaw(matdata),
       ABSViscosity_(matdata->Get<double>("ABSViscosity")),
       PreVisCoeff_(matdata->Get<double>("PreVisCoeff")),
@@ -109,13 +109,13 @@ MAT::PAR::LubricationLawRoeland::LubricationLawRoeland(
 }
 
 // Create material instance of matching type with my parameters
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::LubricationLawRoeland::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::LubricationLawRoeland::create_material()
 {
   return Teuchos::null;
 }
 
 // Calculate the current viscosity
-void MAT::PAR::LubricationLawRoeland::ComputeViscosity(const double& press, double& viscosity)
+void Mat::PAR::LubricationLawRoeland::ComputeViscosity(const double& press, double& viscosity)
 {
   // double z = (PreVisCoeff_ * RefPress_) / (log ( ABSViscosity_ / RefVisc_ ));
 
@@ -126,7 +126,7 @@ void MAT::PAR::LubricationLawRoeland::ComputeViscosity(const double& press, doub
 }
 
 // Evaluate constitutive relation for viscosity and compute derivatives
-void MAT::PAR::LubricationLawRoeland::constitutive_derivatives(
+void Mat::PAR::LubricationLawRoeland::constitutive_derivatives(
     const double& press, const double& viscosity, double& dviscosity_dp)
 {
   // double z = (PreVisCoeff_ * RefPress_ ) / (log ( ABSViscosity_ / RefVisc_ ));

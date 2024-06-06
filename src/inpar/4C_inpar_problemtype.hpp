@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR
+namespace Inpar
 {
   namespace PROBLEMTYPE
   {
@@ -29,14 +29,14 @@ namespace INPAR
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
     /// create map of problem name and problem type enum
-    std::map<std::string, CORE::ProblemType> StringToProblemTypeMap();
+    std::map<std::string, Core::ProblemType> StringToProblemTypeMap();
 
     /// return problem type enum for a given problem name
-    CORE::ProblemType StringToProblemType(std::string name);
+    Core::ProblemType StringToProblemType(std::string name);
 
 
   }  // namespace PROBLEMTYPE
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

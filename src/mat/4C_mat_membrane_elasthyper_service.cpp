@@ -15,15 +15,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  void MembraneElastHyperEvaluateInvariantDerivatives(const CORE::LINALG::Matrix<3, 1>& prinv,
-      CORE::LINALG::Matrix<2, 1>& dPI, CORE::LINALG::Matrix<3, 1>& ddPII, int gp, int eleGID,
-      const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
+  void MembraneElastHyperEvaluateInvariantDerivatives(const Core::LinAlg::Matrix<3, 1>& prinv,
+      Core::LinAlg::Matrix<2, 1>& dPI, Core::LinAlg::Matrix<3, 1>& ddPII, int gp, int eleGID,
+      const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
       const SummandProperties& properties)
   {
-    CORE::LINALG::Matrix<3, 1> dPI_full(true);
-    CORE::LINALG::Matrix<6, 1> ddPII_full(true);
+    Core::LinAlg::Matrix<3, 1> dPI_full(true);
+    Core::LinAlg::Matrix<6, 1> ddPII_full(true);
 
     // REMARK: since incompressibility (J=1) is assumed principal and modified invariants are equal
     // no transformation between principal and modified invariants needed below
@@ -60,9 +60,9 @@ namespace MAT
     ddPII(2) = ddPII_full(5);
   }
 
-  void MembraneElastHyperCalculateGammaDelta(CORE::LINALG::Matrix<3, 1>& gamma,
-      CORE::LINALG::Matrix<8, 1>& delta, const CORE::LINALG::Matrix<3, 1>& prinv,
-      const CORE::LINALG::Matrix<2, 1>& dPI, const CORE::LINALG::Matrix<3, 1>& ddPII,
+  void MembraneElastHyperCalculateGammaDelta(Core::LinAlg::Matrix<3, 1>& gamma,
+      Core::LinAlg::Matrix<8, 1>& delta, const Core::LinAlg::Matrix<3, 1>& prinv,
+      const Core::LinAlg::Matrix<2, 1>& dPI, const Core::LinAlg::Matrix<3, 1>& ddPII,
       const double rcg33)
   {
     // according to Fakhreddine2011 equation (11)
@@ -85,13 +85,13 @@ namespace MAT
     delta(6) = -2.0 * gamma(2);
     delta(7) = 2.0 * gamma(1);
   }
-}  // namespace MAT
+}  // namespace Mat
 
-void MAT::MembraneElastHyperEvaluateIsotropicStressCmat(
-    const CORE::LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
-    const CORE::LINALG::Matrix<3, 3>& Q_trafo, CORE::LINALG::Matrix<3, 1>& stress,
-    CORE::LINALG::Matrix<3, 3>& cmat, int gp, int eleGID,
-    const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
+void Mat::MembraneElastHyperEvaluateIsotropicStressCmat(
+    const Core::LinAlg::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
+    const Core::LinAlg::Matrix<3, 3>& Q_trafo, Core::LinAlg::Matrix<3, 1>& stress,
+    Core::LinAlg::Matrix<3, 3>& cmat, int gp, int eleGID,
+    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties)
 {
   // blank resulting quantities
@@ -99,11 +99,11 @@ void MAT::MembraneElastHyperEvaluateIsotropicStressCmat(
   cmat.Clear();
 
   // kinematic quantities and identity tensors
-  CORE::LINALG::Matrix<3, 1> id2(true);
-  CORE::LINALG::Matrix<3, 3> id4sharp(true);
-  CORE::LINALG::Matrix<3, 1> rcg(true);
+  Core::LinAlg::Matrix<3, 1> id2(true);
+  Core::LinAlg::Matrix<3, 3> id4sharp(true);
+  Core::LinAlg::Matrix<3, 1> rcg(true);
   double rcg33;
-  CORE::LINALG::Matrix<3, 1> icg(true);
+  Core::LinAlg::Matrix<3, 1> icg(true);
   MembraneElastHyperEvaluateKinQuant(cauchygreen, id2, id4sharp, rcg, rcg33, icg);
 
   // evaluate isotropic 2nd Piola-Kirchhoff stress and constitutive tensor
@@ -112,9 +112,9 @@ void MAT::MembraneElastHyperEvaluateIsotropicStressCmat(
 }
 
 
-void MAT::MembraneElastHyperEvaluateKinQuant(const CORE::LINALG::Matrix<3, 3>& cauchygreen,
-    CORE::LINALG::Matrix<3, 1>& id2, CORE::LINALG::Matrix<3, 3>& id4sharp,
-    CORE::LINALG::Matrix<3, 1>& rcg, double& rcg33, CORE::LINALG::Matrix<3, 1>& icg)
+void Mat::MembraneElastHyperEvaluateKinQuant(const Core::LinAlg::Matrix<3, 3>& cauchygreen,
+    Core::LinAlg::Matrix<3, 1>& id2, Core::LinAlg::Matrix<3, 3>& id4sharp,
+    Core::LinAlg::Matrix<3, 1>& rcg, double& rcg33, Core::LinAlg::Matrix<3, 1>& icg)
 {
   // build Cartesian identity 2-tensor I_{AB}
   for (int i = 0; i < 2; i++) id2(i) = 1.0;
@@ -143,26 +143,26 @@ void MAT::MembraneElastHyperEvaluateKinQuant(const CORE::LINALG::Matrix<3, 3>& c
   icg(2) = -rcg(2) * rcg33;
 }
 
-void MAT::MembraneElastHyperEvaluateIsotropicStressCmat(CORE::LINALG::Matrix<3, 1>& stress_iso,
-    CORE::LINALG::Matrix<3, 3>& cmat_iso, const CORE::LINALG::Matrix<3, 1>& id2,
-    const CORE::LINALG::Matrix<3, 3>& id4sharp, const CORE::LINALG::Matrix<3, 1>& rcg,
-    const double& rcg33, const CORE::LINALG::Matrix<3, 1>& icg, int gp, int eleGID,
-    const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
+void Mat::MembraneElastHyperEvaluateIsotropicStressCmat(Core::LinAlg::Matrix<3, 1>& stress_iso,
+    Core::LinAlg::Matrix<3, 3>& cmat_iso, const Core::LinAlg::Matrix<3, 1>& id2,
+    const Core::LinAlg::Matrix<3, 3>& id4sharp, const Core::LinAlg::Matrix<3, 1>& rcg,
+    const double& rcg33, const Core::LinAlg::Matrix<3, 1>& icg, int gp, int eleGID,
+    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties)
 {
   // principal isotropic invariants
-  CORE::LINALG::Matrix<3, 1> prinv_iso(true);
+  Core::LinAlg::Matrix<3, 1> prinv_iso(true);
   MembraneElastHyperInvariantsPrincipal(prinv_iso, rcg, rcg33);
 
   // 1st and 2nd derivative of the isotropic strain energy function
-  CORE::LINALG::Matrix<2, 1> dPI_iso(true);
-  CORE::LINALG::Matrix<3, 1> ddPII_iso(true);
+  Core::LinAlg::Matrix<2, 1> dPI_iso(true);
+  Core::LinAlg::Matrix<3, 1> ddPII_iso(true);
   MembraneElastHyperEvaluateInvariantDerivatives(
       prinv_iso, dPI_iso, ddPII_iso, gp, eleGID, potsum, properties);
 
   // stress and constitutive tensor factors according to Fakhreddine2011 equation (11,15)
-  CORE::LINALG::Matrix<3, 1> gamma_iso(true);
-  CORE::LINALG::Matrix<8, 1> delta_iso(true);
+  Core::LinAlg::Matrix<3, 1> gamma_iso(true);
+  Core::LinAlg::Matrix<8, 1> delta_iso(true);
   MembraneElastHyperCalculateGammaDelta(gamma_iso, delta_iso, prinv_iso, dPI_iso, ddPII_iso, rcg33);
 
   // isotropic 2nd Piola Kirchhoff stress
@@ -200,8 +200,8 @@ void MAT::MembraneElastHyperEvaluateIsotropicStressCmat(CORE::LINALG::Matrix<3, 
   cmat_iso.Update(delta_iso(7), id4sharp, 1.0);
 }
 
-void MAT::MembraneElastHyperInvariantsPrincipal(
-    CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& rcg, const double& rcg33)
+void Mat::MembraneElastHyperInvariantsPrincipal(
+    Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& rcg, const double& rcg33)
 {
   prinv(0) = rcg(0) + rcg(1) + rcg33;
   prinv(1) =

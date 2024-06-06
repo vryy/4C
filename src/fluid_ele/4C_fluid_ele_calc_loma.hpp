@@ -20,14 +20,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class FluidEleCalcLoma : public FluidEleCalc<distype>
     {
-      typedef DRT::ELEMENTS::FluidEleCalc<distype> my;
+      typedef Discret::ELEMENTS::FluidEleCalc<distype> my;
 
       using my::nen_;
       using my::nsd_;
@@ -35,25 +35,26 @@ namespace DRT
      public:
       /// Singleton access method
       static FluidEleCalcLoma<distype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
-      int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int Evaluate(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points for porous flow
-      virtual int evaluate_od(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const CORE::FE::GaussIntegration& intpoints);
+      virtual int evaluate_od(Discret::ELEMENTS::Fluid* ele,
+          Discret::Discretization& discretization, const std::vector<int>& lm,
+          Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra,
+          const Core::FE::GaussIntegration& intpoints);
 
      private:
       /// private Constructor since we are a Singleton.
@@ -67,22 +68,22 @@ namespace DRT
           way the element evaluation is independent of the specific mesh storage.
        */
       int evaluate_od(Teuchos::ParameterList& params,
-          const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
-          const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
-          CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nen_>& elemat1,
-          const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
-          const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epream,
-          const CORE::LINALG::Matrix<nen_, 1>& escaaf,
-          const CORE::LINALG::Matrix<nsd_, nen_>& emhist,
-          const CORE::LINALG::Matrix<nsd_, nen_>& eaccam,
-          const CORE::LINALG::Matrix<nen_, 1>& escadtam,
-          const CORE::LINALG::Matrix<nen_, 1>& escabofoaf,
-          const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
-          const CORE::LINALG::Matrix<nen_, 1>& escaam,
-          const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
-          const CORE::LINALG::Matrix<nsd_, nen_>& egridv, Teuchos::RCP<CORE::MAT::Material> mat,
+          const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
+          const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
+          Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nen_>& elemat1,
+          const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,
+          const Core::LinAlg::Matrix<nen_, 1>& epreaf, const Core::LinAlg::Matrix<nen_, 1>& epream,
+          const Core::LinAlg::Matrix<nen_, 1>& escaaf,
+          const Core::LinAlg::Matrix<nsd_, nen_>& emhist,
+          const Core::LinAlg::Matrix<nsd_, nen_>& eaccam,
+          const Core::LinAlg::Matrix<nen_, 1>& escadtam,
+          const Core::LinAlg::Matrix<nen_, 1>& escabofoaf,
+          const Core::LinAlg::Matrix<nsd_, nen_>& eveln,
+          const Core::LinAlg::Matrix<nen_, 1>& escaam,
+          const Core::LinAlg::Matrix<nsd_, nen_>& edispnp,
+          const Core::LinAlg::Matrix<nsd_, nen_>& egridv, Teuchos::RCP<Core::Mat::Material> mat,
           bool isale, double CsDeltaSq, double CiDeltaSq,
-          const CORE::FE::GaussIntegration& intpoints);
+          const Core::FE::GaussIntegration& intpoints);
 
       /*!
           \brief calculate element matrix for off-diagonal matrix block for monolithic
@@ -109,25 +110,25 @@ namespace DRT
           \param intpoints        (i) Gaussian integration points
 
        */
-      void sysmat_od(const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
-          const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
-          const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
-          const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
-          const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epream,
-          const CORE::LINALG::Matrix<nsd_, nen_>& eaccam,
-          const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>& escaam,
-          const CORE::LINALG::Matrix<nen_, 1>& escadtam,
-          const CORE::LINALG::Matrix<nen_, 1>& escabofoaf,
-          const CORE::LINALG::Matrix<nsd_, nen_>& emhist,
-          const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
-          const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
-          CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nen_>& estif, const double thermpressaf,
+      void sysmat_od(const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
+          const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
+          const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,
+          const Core::LinAlg::Matrix<nsd_, nen_>& eveln,
+          const Core::LinAlg::Matrix<nen_, 1>& epreaf, const Core::LinAlg::Matrix<nen_, 1>& epream,
+          const Core::LinAlg::Matrix<nsd_, nen_>& eaccam,
+          const Core::LinAlg::Matrix<nen_, 1>& escaaf, const Core::LinAlg::Matrix<nen_, 1>& escaam,
+          const Core::LinAlg::Matrix<nen_, 1>& escadtam,
+          const Core::LinAlg::Matrix<nen_, 1>& escabofoaf,
+          const Core::LinAlg::Matrix<nsd_, nen_>& emhist,
+          const Core::LinAlg::Matrix<nsd_, nen_>& edispnp,
+          const Core::LinAlg::Matrix<nsd_, nen_>& egridv,
+          Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nen_>& estif, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-          Teuchos::RCP<const CORE::MAT::Material> material, double& Cs_delta_sq,
-          double& Ci_delta_sq, bool isale, const CORE::FE::GaussIntegration& intpoints);
+          Teuchos::RCP<const Core::Mat::Material> material, double& Cs_delta_sq,
+          double& Ci_delta_sq, bool isale, const Core::FE::GaussIntegration& intpoints);
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

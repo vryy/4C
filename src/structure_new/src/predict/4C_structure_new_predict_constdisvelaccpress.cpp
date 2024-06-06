@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::PREDICT::ConstDisVelAccPress::ConstDisVelAccPress()
+STR::Predict::ConstDisVelAccPress::ConstDisVelAccPress()
 {
   // empty
 }
@@ -32,12 +32,12 @@ STR::PREDICT::ConstDisVelAccPress::ConstDisVelAccPress()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::ConstDisVelAccPress::Setup()
+void STR::Predict::ConstDisVelAccPress::Setup()
 {
   check_init();
 
   // fallback predictor
-  tangdis_ptr_ = STR::PREDICT::BuildPredictor(INPAR::STR::pred_tangdis);
+  tangdis_ptr_ = STR::Predict::BuildPredictor(Inpar::STR::pred_tangdis);
   tangdis_ptr_->Init(
       GetType(), impl_int_ptr(), dbc_ptr(), global_state_ptr(), io_data_ptr(), nox_params_ptr());
   tangdis_ptr_->Setup();
@@ -48,7 +48,7 @@ void STR::PREDICT::ConstDisVelAccPress::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
+void STR::Predict::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
 
@@ -59,24 +59,24 @@ void STR::PREDICT::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
   bool ok = true;
   switch (GetType())
   {
-    case INPAR::STR::pred_constdis:
-    case INPAR::STR::pred_constdispres:
+    case Inpar::STR::pred_constdis:
+    case Inpar::STR::pred_constdispres:
     {
       impl_int().predict_const_dis_consist_vel_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
-    case INPAR::STR::pred_constvel:
+    case Inpar::STR::pred_constvel:
     {
       ok = impl_int().predict_const_vel_consist_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
-    case INPAR::STR::pred_constacc:
+    case Inpar::STR::pred_constacc:
     {
       ok = impl_int().PredictConstAcc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
-    case INPAR::STR::pred_constdisvelacc:
-    case INPAR::STR::pred_constdisvelaccpres:
+    case Inpar::STR::pred_constdisvelacc:
+    case Inpar::STR::pred_constdisvelaccpres:
     {
       disnp_ptr->Update(1.0, *global_state().GetDisN(), 0.0);
       velnp_ptr->Update(1.0, *global_state().GetVelN(), 0.0);

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace ALE
   {
@@ -63,11 +63,11 @@ namespace INPAR
 
     /// Defines ale specific conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace ALE
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

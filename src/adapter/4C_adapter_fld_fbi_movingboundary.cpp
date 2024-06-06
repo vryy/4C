@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FBIFluidMB::FBIFluidMB(const Teuchos::ParameterList& prbdyn, std::string condname)
+Adapter::FBIFluidMB::FBIFluidMB(const Teuchos::ParameterList& prbdyn, std::string condname)
 {
   fluidadapter_ =
       Teuchos::rcp(new FluidBaseAlgorithm(
-                       prbdyn, GLOBAL::Problem::Instance()->FluidDynamicParams(), "fluid", false))
+                       prbdyn, Global::Problem::Instance()->FluidDynamicParams(), "fluid", false))
           ->fluid_field();
   // make sure
-  if (Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(fluid_field(), true) == Teuchos::null)
+  if (Teuchos::rcp_dynamic_cast<Adapter::FluidFBI>(fluid_field(), true) == Teuchos::null)
     FOUR_C_THROW("Failed to create the correct underlying fluid adapter");
 
   return;
@@ -37,7 +37,7 @@ ADAPTER::FBIFluidMB::FBIFluidMB(const Teuchos::ParameterList& prbdyn, std::strin
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FBIFluidMB::discretization()
+Teuchos::RCP<Discret::Discretization> Adapter::FBIFluidMB::discretization()
 {
   return fluid_field()->discretization();
 }
@@ -45,7 +45,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FBIFluidMB::discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::MapExtractor> const& ADAPTER::FBIFluidMB::Interface() const
+Teuchos::RCP<FLD::UTILS::MapExtractor> const& Adapter::FBIFluidMB::Interface() const
 {
   return fluidadapter_->Interface();
 }
@@ -53,22 +53,22 @@ Teuchos::RCP<FLD::UTILS::MapExtractor> const& ADAPTER::FBIFluidMB::Interface() c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIFluidMB::prepare_time_step() { fluid_field()->prepare_time_step(); }
+void Adapter::FBIFluidMB::prepare_time_step() { fluid_field()->prepare_time_step(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIFluidMB::Update() { fluid_field()->Update(); }
+void Adapter::FBIFluidMB::Update() { fluid_field()->Update(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIFluidMB::Output() { fluid_field()->StatisticsAndOutput(); }
+void Adapter::FBIFluidMB::Output() { fluid_field()->StatisticsAndOutput(); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ADAPTER::FBIFluidMB::read_restart(int step)
+double Adapter::FBIFluidMB::read_restart(int step)
 {
   fluid_field()->read_restart(step);
   return fluid_field()->Time();
@@ -77,7 +77,7 @@ double ADAPTER::FBIFluidMB::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIFluidMB::nonlinear_solve(
+void Adapter::FBIFluidMB::nonlinear_solve(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
 {
   fluid_field()->Solve();
@@ -86,7 +86,7 @@ void ADAPTER::FBIFluidMB::nonlinear_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::RelaxationSolve(
+Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::RelaxationSolve(
     Teuchos::RCP<Epetra_Vector> idisp, double dt)
 {
   FOUR_C_THROW("RelaxationSolve not yet implemented");
@@ -96,7 +96,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::RelaxationSolve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::extract_interface_forces()
+Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::extract_interface_forces()
 {
   return fluid_field()->extract_interface_forces();
 }
@@ -104,7 +104,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::extract_interface_forces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::extract_interface_velnp()
+Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::extract_interface_velnp()
 {
   return fluid_field()->extract_interface_velnp();
 }
@@ -112,7 +112,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::extract_interface_velnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::extract_interface_veln()
+Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::extract_interface_veln()
 {
   return fluid_field()->extract_interface_veln();
 }
@@ -120,7 +120,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::extract_interface_veln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::integrate_interface_shape()
+Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::integrate_interface_shape()
 {
   // Actually we do not need this here, because this will be handled in the coupling.
   return fluid_field()->integrate_interface_shape();
@@ -129,7 +129,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIFluidMB::integrate_interface_shape()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::FBIFluidMB::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> Adapter::FBIFluidMB::CreateFieldTest()
 {
   return fluid_field()->CreateFieldTest();
 }
@@ -137,15 +137,15 @@ Teuchos::RCP<CORE::UTILS::ResultTest> ADAPTER::FBIFluidMB::CreateFieldTest()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void ADAPTER::FBIFluidMB::set_coupling_contributions(
-    Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix)
+void Adapter::FBIFluidMB::set_coupling_contributions(
+    Teuchos::RCP<const Core::LinAlg::SparseOperator> matrix)
 {
-  Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(fluid_field(), true)
+  Teuchos::rcp_dynamic_cast<Adapter::FluidFBI>(fluid_field(), true)
       ->set_coupling_contributions(matrix);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIFluidMB::apply_interface_values(
+void Adapter::FBIFluidMB::apply_interface_values(
     Teuchos::RCP<Epetra_Vector> iforce, Teuchos::RCP<Epetra_Vector> ivel)
 {
   fluid_field()->add_contribution_to_external_loads(iforce);
@@ -153,25 +153,25 @@ void ADAPTER::FBIFluidMB::apply_interface_values(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /// Get velocity at timestep n+1
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FBIFluidMB::Velnp() { return fluid_field()->Velnp(); }
+Teuchos::RCP<const Epetra_Vector> Adapter::FBIFluidMB::Velnp() { return fluid_field()->Velnp(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int ADAPTER::FBIFluidMB::Itemax() const { return fluidadapter_->Itemax(); }
+int Adapter::FBIFluidMB::Itemax() const { return fluidadapter_->Itemax(); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /// set the maximum number of iterations for the fluid field
-void ADAPTER::FBIFluidMB::SetItemax(int itemax) { fluid_field()->SetItemax(itemax); }
+void Adapter::FBIFluidMB::SetItemax(int itemax) { fluid_field()->SetItemax(itemax); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIFluidMB::ResetExternalForces()
+void Adapter::FBIFluidMB::ResetExternalForces()
 {
-  Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(fluid_field(), true)->ResetExternalForces();
+  Teuchos::rcp_dynamic_cast<Adapter::FluidFBI>(fluid_field(), true)->ResetExternalForces();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const FLD::Meshtying> ADAPTER::FBIFluidMB::GetMeshtying()
+Teuchos::RCP<const FLD::Meshtying> Adapter::FBIFluidMB::GetMeshtying()
 {
-  return Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(fluid_field(), true)->GetMeshtying();
+  return Teuchos::rcp_dynamic_cast<Adapter::FluidFBI>(fluid_field(), true)->GetMeshtying();
 }
 
 FOUR_C_NAMESPACE_CLOSE

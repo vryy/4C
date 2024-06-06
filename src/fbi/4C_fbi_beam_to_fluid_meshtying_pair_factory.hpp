@@ -20,7 +20,7 @@ approach
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -57,7 +57,7 @@ namespace FBI
      * \return Beam contact pair
      */
     static Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreatePair(
-        std::vector<CORE::Elements::Element const*> const& ele_ptrs,
+        std::vector<Core::Elements::Element const*> const& ele_ptrs,
         const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr);
   };
 }  // namespace FBI

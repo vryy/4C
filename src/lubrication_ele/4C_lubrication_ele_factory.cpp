@@ -19,92 +19,92 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  |                                                     (public) wirtz 10/15 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::LubricationEleInterface* DRT::ELEMENTS::LubricationFactory::ProvideImpl(
-    CORE::FE::CellType distype, const std::string& disname)
+Discret::ELEMENTS::LubricationEleInterface* Discret::ELEMENTS::LubricationFactory::ProvideImpl(
+    Core::FE::CellType distype, const std::string& disname)
 {
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  static const int ndim = GLOBAL::Problem::Instance()->NDim();
+  static const int ndim = Global::Problem::Instance()->NDim();
 
   switch (distype)
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
       if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::quad4, 2>(disname);
+        return define_problem_type<Core::FE::CellType::quad4, 2>(disname);
       else if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::quad4, 3>(disname);
+        return define_problem_type<Core::FE::CellType::quad4, 3>(disname);
       else
         FOUR_C_THROW("invalid problem dimension for quad4 lubrication element!");
       break;
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
       if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::quad8, 2>(disname);
+        return define_problem_type<Core::FE::CellType::quad8, 2>(disname);
       else if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::quad8, 3>(disname);
+        return define_problem_type<Core::FE::CellType::quad8, 3>(disname);
       else
         FOUR_C_THROW("invalid problem dimension for quad8 lubrication element!");
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
       if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::quad9, 2>(disname);
+        return define_problem_type<Core::FE::CellType::quad9, 2>(disname);
       else if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::quad9, 3>(disname);
+        return define_problem_type<Core::FE::CellType::quad9, 3>(disname);
       else
         FOUR_C_THROW("invalid problem dimension for quad9 lubrication element!");
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
       if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::tri3, 2>(disname);
+        return define_problem_type<Core::FE::CellType::tri3, 2>(disname);
       else if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::tri3, 3>(disname);
+        return define_problem_type<Core::FE::CellType::tri3, 3>(disname);
       else
         FOUR_C_THROW("invalid problem dimension for tri3 lubrication element!");
       break;
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
       if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::tri6, 2>(disname);
+        return define_problem_type<Core::FE::CellType::tri6, 2>(disname);
       else if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::tri6, 3>(disname);
+        return define_problem_type<Core::FE::CellType::tri6, 3>(disname);
       else
         FOUR_C_THROW("invalid problem dimension for tri6 lubrication element!");
       break;
     }
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
       if (ndim == 1)
-        return define_problem_type<CORE::FE::CellType::line2, 1>(disname);
+        return define_problem_type<Core::FE::CellType::line2, 1>(disname);
       else if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::line2, 2>(disname);
+        return define_problem_type<Core::FE::CellType::line2, 2>(disname);
       else if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::line2, 3>(disname);
+        return define_problem_type<Core::FE::CellType::line2, 3>(disname);
       else
         FOUR_C_THROW("invalid problem dimension for line2 lubrication element!");
       break;
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
       if (ndim == 1)
-        return define_problem_type<CORE::FE::CellType::line3, 1>(disname);
+        return define_problem_type<Core::FE::CellType::line3, 1>(disname);
       else if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::line3, 2>(disname);
+        return define_problem_type<Core::FE::CellType::line3, 2>(disname);
       else if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::line3, 3>(disname);
+        return define_problem_type<Core::FE::CellType::line3, 3>(disname);
       else
         FOUR_C_THROW("invalid problem dimension for line3 lubrication element!");
       break;
     }
     default:
       FOUR_C_THROW("Element shape %s not activated. Just do it.",
-          CORE::FE::CellTypeToString(distype).c_str());
+          Core::FE::CellTypeToString(distype).c_str());
       break;
   }
   return nullptr;
@@ -113,11 +113,11 @@ DRT::ELEMENTS::LubricationEleInterface* DRT::ELEMENTS::LubricationFactory::Provi
 /*--------------------------------------------------------------------------*
  |                                                     (public) wirtz 10/15 |
  *--------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::LubricationEleInterface* DRT::ELEMENTS::LubricationFactory::define_problem_type(
-    const std::string& disname)
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::LubricationEleInterface*
+Discret::ELEMENTS::LubricationFactory::define_problem_type(const std::string& disname)
 {
-  return DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(disname);
+  return Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(disname);
 }
 
 FOUR_C_NAMESPACE_CLOSE

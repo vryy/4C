@@ -18,13 +18,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class PoroFluidMultiphaseWrapper;
   class Structure;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -32,7 +32,7 @@ namespace DRT
 namespace POROMULTIPHASE
 {
   //! Base class of all solid-scatra algorithms
-  class PoroMultiPhaseBase : public ADAPTER::AlgorithmBase, public ADAPTER::PoroMultiPhase
+  class PoroMultiPhaseBase : public Adapter::AlgorithmBase, public Adapter::PoroMultiPhase
   {
    public:
     /// create using a Epetra_Comm
@@ -81,13 +81,13 @@ namespace POROMULTIPHASE
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
 
     /// system matrix of coupled artery porofluid problem
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const;
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::Structure>& structure_field() override { return structure_; }
+    const Teuchos::RCP<Adapter::Structure>& structure_field() override { return structure_; }
 
     //! access to fluid field
-    const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& fluid_field() override
+    const Teuchos::RCP<Adapter::PoroFluidMultiphaseWrapper>& fluid_field() override
     {
       return fluid_;
     }
@@ -142,7 +142,7 @@ namespace POROMULTIPHASE
     };
 
     //! build the block null spaces
-    void build_block_null_spaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) override
+    void build_block_null_spaces(Teuchos::RCP<Core::LinAlg::Solver>& solver) override
     {
       FOUR_C_THROW("build_block_null_spaces() only available for monolithic schemes!");
       return;
@@ -150,7 +150,7 @@ namespace POROMULTIPHASE
 
     //! build the block null spaces
     void build_artery_block_null_space(
-        Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum) override
+        Teuchos::RCP<Core::LinAlg::Solver>& solver, const int& arteryblocknum) override
     {
       FOUR_C_THROW("build_artery_block_null_space() only available for monolithic schemes!");
       return;
@@ -188,14 +188,14 @@ namespace POROMULTIPHASE
     };
 
     //! get extractor
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const override
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> Extractor() const override
     {
       FOUR_C_THROW("Extractor() only available for monolithic schemes!");
       return Teuchos::null;
     };
 
     //! get monolithic block system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() const override
     {
       FOUR_C_THROW("BlockSystemMatrix() only available for monolithic schemes!");
       return Teuchos::null;
@@ -209,10 +209,10 @@ namespace POROMULTIPHASE
     void set_velocity_fields(Teuchos::RCP<const Epetra_Vector> vel);
 
     /// underlying structure of the PoroMultiPhase problem
-    Teuchos::RCP<ADAPTER::Structure> structure_;
+    Teuchos::RCP<Adapter::Structure> structure_;
 
     /// underlying fluid problem of the PoroMultiPhase problem
-    Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper> fluid_;
+    Teuchos::RCP<Adapter::PoroFluidMultiphaseWrapper> fluid_;
 
    protected:
     /// a zero vector of full length of structure dofs

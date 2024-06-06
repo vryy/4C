@@ -27,7 +27,7 @@ be set in problem specific parameter lists derived from this class.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -36,7 +36,7 @@ namespace DRT
      public:
       //! Singleton access method
       static FluidEleParameterIntFace* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       virtual ~FluidEleParameterIntFace() = default;
 
@@ -85,7 +85,7 @@ namespace DRT
       };
 
       //! set the EOS pattern for the assembly of the current face
-      void set_face_eos_gp_pattern(const INPAR::FLUID::EosGpPattern face_eos_gp_pattern)
+      void set_face_eos_gp_pattern(const Inpar::FLUID::EosGpPattern face_eos_gp_pattern)
       {
         face_eos_gp_pattern_ = face_eos_gp_pattern;
       };
@@ -102,7 +102,7 @@ namespace DRT
       //! specific fluid xfem (ghost-penalty) parameters are set for the face and return if
       //! stabilization for current face is required
       bool set_face_specific_fluid_xfem_parameter(
-          const INPAR::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
+          const Inpar::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params           ///< parameter list
       );
 
@@ -124,7 +124,7 @@ namespace DRT
 
       //! Flag for physical type of the fluid flow (incompressible, loma, varying_density,
       //! Boussinesq, poro)
-      INPAR::FLUID::PhysicalType PhysicalType() const { return physicaltype_; };
+      Inpar::FLUID::PhysicalType PhysicalType() const { return physicaltype_; };
 
       //! Return function number of Oseen advective field
       int OseenFieldFuncNo() const { return oseenfieldfuncno_; };
@@ -136,19 +136,19 @@ namespace DRT
 
       /// parameter for edge-based (EOS,CIP) stabilizations
       //! Flag to (de)activate pressure stabilization
-      INPAR::FLUID::EosPres EOS_Pres() const { return EOS_pres_; };
+      Inpar::FLUID::EosPres EOS_Pres() const { return EOS_pres_; };
       //! Flag to (de)activate convective streamline stabilization
-      INPAR::FLUID::EosConvStream EOS_Conv_Stream() const { return EOS_conv_stream_; };
+      Inpar::FLUID::EosConvStream EOS_Conv_Stream() const { return EOS_conv_stream_; };
       //! Flag to (de)activate convective crosswind stabilization
-      INPAR::FLUID::EosConvCross EOS_Conv_Cross() const { return EOS_conv_cross_; };
+      Inpar::FLUID::EosConvCross EOS_Conv_Cross() const { return EOS_conv_cross_; };
       //! Flag to (de)activate divergence stabilization
-      INPAR::FLUID::EosDiv EOS_Div() const { return EOS_div_; };
+      Inpar::FLUID::EosDiv EOS_Div() const { return EOS_div_; };
       //! Flag to define element length
-      INPAR::FLUID::EosElementLength EOS_element_length() const { return EOS_element_length_; };
+      Inpar::FLUID::EosElementLength EOS_element_length() const { return EOS_element_length_; };
       //! Flag to define tau for edge-based stabilization
-      INPAR::FLUID::EosTauType EOS_WhichTau() const { return EOS_whichtau_actual_; };
+      Inpar::FLUID::EosTauType EOS_WhichTau() const { return EOS_whichtau_actual_; };
 
-      bool Is_EOS_Pres() const { return EOS_pres_ != INPAR::FLUID::EOS_PRES_none; };
+      bool Is_EOS_Pres() const { return EOS_pres_ != Inpar::FLUID::EOS_PRES_none; };
       //! Flag to (de)activate convective streamline stabilization
       bool Is_Conv_Stream() const { return EOS_conv_stream_; };
       //! Flag to (de)activate convective crosswind stabilization
@@ -218,7 +218,7 @@ namespace DRT
       bool Face_GP_u_p_2nd() { return is_face_GP_u_p_2nd_; };
 
       //! get the EOS pattern for the assembly of the current face
-      INPAR::FLUID::EosGpPattern Face_EOS_GP_Pattern() { return face_eos_gp_pattern_; };
+      Inpar::FLUID::EosGpPattern Face_EOS_GP_Pattern() { return face_eos_gp_pattern_; };
 
       //! get flag if step is a ghost-penalty reconstruction step for xfluid time integration
       bool is_ghost_penalty_reconstruction() { return is_ghost_penalty_reconstruction_step_; };
@@ -237,10 +237,10 @@ namespace DRT
 
       //! Flag for physical type of the fluid flow (incompressible, loma, varying_density,
       //! Boussinesq, Poro)
-      INPAR::FLUID::PhysicalType physicaltype_;
+      Inpar::FLUID::PhysicalType physicaltype_;
 
       //! Which stabilization type
-      INPAR::FLUID::StabType stabtype_;
+      Inpar::FLUID::StabType stabtype_;
 
       //! function number for advective velocity for Oseen problems
       int oseenfieldfuncno_;
@@ -252,24 +252,24 @@ namespace DRT
       /*----------------------------------------------------*/
 
       //! which EOS pressure stabilization
-      INPAR::FLUID::EosPres EOS_pres_;
+      Inpar::FLUID::EosPres EOS_pres_;
 
       //! which EOS convective streamline stabilization
-      INPAR::FLUID::EosConvStream EOS_conv_stream_;
+      Inpar::FLUID::EosConvStream EOS_conv_stream_;
 
       //! which EOS convective crosswind stabilization
-      INPAR::FLUID::EosConvCross EOS_conv_cross_;
+      Inpar::FLUID::EosConvCross EOS_conv_cross_;
 
       //! which EOS divergence stabilization
-      INPAR::FLUID::EosDiv EOS_div_;
+      Inpar::FLUID::EosDiv EOS_div_;
 
 
       //! which EOS stabilization parameter definition
-      INPAR::FLUID::EosTauType EOS_whichtau_;
-      INPAR::FLUID::EosTauType EOS_whichtau_actual_;
+      Inpar::FLUID::EosTauType EOS_whichtau_;
+      Inpar::FLUID::EosTauType EOS_whichtau_actual_;
 
       //! which EOS characteristic element length definition
-      INPAR::FLUID::EosElementLength EOS_element_length_;
+      Inpar::FLUID::EosElementLength EOS_element_length_;
 
       //! flag to active special least-squares condition for pseudo 2D examples where pressure level
       //! is determined via Krylov-projection
@@ -327,7 +327,7 @@ namespace DRT
       //! @name Combined EOS/Ghost-Penalty parameters, individually set for each face
       /*----------------------------------------------------*/
 
-      INPAR::FLUID::EosGpPattern face_eos_gp_pattern_;
+      Inpar::FLUID::EosGpPattern face_eos_gp_pattern_;
 
       /*----------------------------------------------------*/
       //! @name Flag for ghost-penalty reconstruction steps
@@ -339,11 +339,11 @@ namespace DRT
 
      private:
       //! access time-integration parameters
-      DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
+      Discret::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

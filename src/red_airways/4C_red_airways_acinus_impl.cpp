@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Internal implementation of RedAcinus element. Methods implemented here
-       are called by acinus_evaluate.cpp by DRT::ELEMENTS::RedAcinus::Evaluate()
+       are called by acinus_evaluate.cpp by Discret::ELEMENTS::RedAcinus::Evaluate()
        with the corresponding action.
 
 
@@ -35,17 +35,17 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAcinusImplInterface* DRT::ELEMENTS::RedAcinusImplInterface::Impl(
-    DRT::ELEMENTS::RedAcinus* red_acinus)
+Discret::ELEMENTS::RedAcinusImplInterface* Discret::ELEMENTS::RedAcinusImplInterface::Impl(
+    Discret::ELEMENTS::RedAcinus* red_acinus)
 {
   switch (red_acinus->Shape())
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      static AcinusImpl<CORE::FE::CellType::line2>* acinus;
+      static AcinusImpl<Core::FE::CellType::line2>* acinus;
       if (acinus == nullptr)
       {
-        acinus = new AcinusImpl<CORE::FE::CellType::line2>;
+        acinus = new AcinusImpl<Core::FE::CellType::line2>;
       }
       return acinus;
     }
@@ -61,8 +61,8 @@ DRT::ELEMENTS::RedAcinusImplInterface* DRT::ELEMENTS::RedAcinusImplInterface::Im
 /*----------------------------------------------------------------------*
   | constructor (public)                                    ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::AcinusImpl<distype>::AcinusImpl()
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::AcinusImpl<distype>::AcinusImpl()
 {
 }
 
@@ -85,27 +85,27 @@ DRT::ELEMENTS::AcinusImpl<distype>::AcinusImpl()
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-template <CORE::FE::CellType distype>
-void Sysmat(DRT::ELEMENTS::RedAcinus* ele, CORE::LINALG::SerialDenseVector& epnp,
-    CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
-    CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
-    Teuchos::RCP<const CORE::MAT::Material> material, DRT::REDAIRWAYS::ElemParams& params,
+template <Core::FE::CellType distype>
+void Sysmat(Discret::ELEMENTS::RedAcinus* ele, Core::LinAlg::SerialDenseVector& epnp,
+    Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
+    Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
+    Teuchos::RCP<const Core::Mat::Material> material, Discret::ReducedLung::ElemParams& params,
     double time, double dt)
 {
   const auto acinus_params = ele->GetAcinusParams();
 
   // Decide which acinus material should be used
-  if ((material->MaterialType() == CORE::Materials::m_0d_maxwell_acinus_neohookean) ||
-      (material->MaterialType() == CORE::Materials::m_0d_maxwell_acinus_exponential) ||
-      (material->MaterialType() == CORE::Materials::m_0d_maxwell_acinus_doubleexponential) ||
-      (material->MaterialType() == CORE::Materials::m_0d_maxwell_acinus_ogden))
+  if ((material->MaterialType() == Core::Materials::m_0d_maxwell_acinus_neohookean) ||
+      (material->MaterialType() == Core::Materials::m_0d_maxwell_acinus_exponential) ||
+      (material->MaterialType() == Core::Materials::m_0d_maxwell_acinus_doubleexponential) ||
+      (material->MaterialType() == Core::Materials::m_0d_maxwell_acinus_ogden))
   {
     const double VolAcinus = acinus_params.volume_relaxed;
     const double volAlvDuct = acinus_params.alveolar_duct_volume;
     const auto NumOfAcini = double(floor(VolAcinus / volAlvDuct));
 
-    const Teuchos::RCP<MAT::Maxwell0dAcinus> acinus_mat =
-        Teuchos::rcp_dynamic_cast<MAT::Maxwell0dAcinus>(ele->Material());
+    const Teuchos::RCP<Mat::Maxwell0dAcinus> acinus_mat =
+        Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(ele->Material());
 
     // Evaluate material law for acinus
     acinus_mat->Evaluate(epnp, epn, epnm, sysmat, rhs, params, NumOfAcini, volAlvDuct, time, dt);
@@ -121,18 +121,19 @@ void Sysmat(DRT::ELEMENTS::RedAcinus* ele, CORE::LINALG::SerialDenseVector& epnp
 /*----------------------------------------------------------------------*
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<CORE::MAT::Material> mat)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
 {
   const int elemVecdim = elevec1_epetra.length();
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // Get control parameters for time integration
   // get time-step size
@@ -156,24 +157,24 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  CORE::FE::ExtractMyValues(*pn, mypn, lm);
+  Core::FE::ExtractMyValues(*pn, mypn, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
-  CORE::FE::ExtractMyValues(*pnm, mypnm, lm);
+  Core::FE::ExtractMyValues(*pnm, mypnm, lm);
 
   // Extract local values from the global vectors
   std::vector<double> myial(lm.size());
-  CORE::FE::ExtractMyValues(*ial, myial, lm);
+  Core::FE::ExtractMyValues(*ial, myial, lm);
 
   // Create objects for element arrays
-  CORE::LINALG::SerialDenseVector epnp(elemVecdim);
-  CORE::LINALG::SerialDenseVector epn(elemVecdim);
-  CORE::LINALG::SerialDenseVector epnm(elemVecdim);
+  Core::LinAlg::SerialDenseVector epnp(elemVecdim);
+  Core::LinAlg::SerialDenseVector epn(elemVecdim);
+  Core::LinAlg::SerialDenseVector epnm(elemVecdim);
   for (int i = 0; i < elemVecdim; ++i)
   {
     // Split area and volumetric flow rate, insert into element arrays
@@ -190,7 +191,7 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
   e_acin_e_vn = (*evaluation_data.acinar_vn)[ele->LID()];
 
   // Get the volumetric flow rate from the previous time step
-  DRT::REDAIRWAYS::ElemParams elem_params;
+  Discret::ReducedLung::ElemParams elem_params;
   elem_params.qout_np = (*evaluation_data.qout_np)[ele->LID()];
   elem_params.qout_n = (*evaluation_data.qout_n)[ele->LID()];
   elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->LID()];
@@ -223,14 +224,15 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<const CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<const Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
   const auto acinus_params = ele->GetAcinusParams();
 
   std::vector<int> lmstride;
@@ -279,14 +281,15 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
  |  Evaluate the values of the degrees of freedom           ismail 01/10|
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // Get total time
   const double time = evaluation_data.time;
@@ -300,10 +303,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // Create objects for element arrays
-  CORE::LINALG::SerialDenseVector epnp(numnode);
+  Core::LinAlg::SerialDenseVector epnp(numnode);
 
   // Get all values at the last computed time step
   for (int i = 0; i < numnode; ++i)
@@ -327,7 +330,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
         double BCin = 0.0;
         if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
         {
-          CORE::Conditions::Condition* condition =
+          Core::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().Get<std::string>("boundarycond"));
@@ -341,8 +344,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           double curvefac = 1.0;
           if ((*curve)[0] >= 0)
           {
-            curvefac = GLOBAL::Problem::Instance()
-                           ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
+            curvefac = Global::Problem::Instance()
+                           ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
                            .Evaluate(time);
             BCin = (*vals)[0] * curvefac;
           }
@@ -362,8 +365,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           double functionfac = 0.0;
           if (functnum > 0)
           {
-            functionfac = GLOBAL::Problem::Instance()
-                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            functionfac = Global::Problem::Instance()
+                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
           }
 
@@ -372,8 +375,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           double curve2fac = 1.0;
           if (curve) curve2num = (*curve)[1];
           if (curve2num >= 0)
-            curve2fac = GLOBAL::Problem::Instance()
-                            ->FunctionById<CORE::UTILS::FunctionOfTime>(curve2num)
+            curve2fac = Global::Problem::Instance()
+                            ->FunctionById<Core::UTILS::FunctionOfTime>(curve2num)
                             .Evaluate(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
@@ -393,7 +396,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
          **/
         else if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
         {
-          const CORE::Conditions::Condition* condition =
+          const Core::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
 
           Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
@@ -460,7 +463,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
          **/
         else if (ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond"))
         {
-          CORE::Conditions::Condition* condition =
+          Core::Conditions::Condition* condition =
               ele->Nodes()[i]->GetCondition("RedAcinusVentilatorCond");
           // Get the type of prescribed bc
           Bc = (condition->parameters().Get<std::string>("phase1"));
@@ -483,8 +486,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           // Read in the value of the applied BC
           if ((*curve)[phase_number] >= 0)
           {
-            curvefac = GLOBAL::Problem::Instance()
-                           ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[phase_number])
+            curvefac = Global::Problem::Instance()
+                           ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[phase_number])
                            .Evaluate(time);
             BCin = (*vals)[phase_number] * curvefac;
           }
@@ -514,7 +517,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
         {
           if (Bc == "VolumeDependentPleuralPressure")
           {
-            CORE::Conditions::Condition* pplCond =
+            Core::Conditions::Condition* pplCond =
                 ele->Nodes()[i]->GetCondition("RedAirwayVolDependentPleuralPressureCond");
             double Pp_np = 0.0;
             if (pplCond)
@@ -526,8 +529,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
               // Read in the value of the applied BC
               if ((*curve)[0] >= 0)
               {
-                curvefac = GLOBAL::Problem::Instance()
-                               ->FunctionById<CORE::UTILS::FunctionOfTime>((*curve)[0])
+                curvefac = Global::Problem::Instance()
+                               ->FunctionById<Core::UTILS::FunctionOfTime>((*curve)[0])
                                .Evaluate(time);
               }
 
@@ -540,8 +543,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
               double RV = pplCond->parameters().Get<double>("RV");
               double TLC = pplCond->parameters().Get<double>("TLC");
 
-              DRT::REDAIRWAYS::EvaluationData& evaluation_data =
-                  DRT::REDAIRWAYS::EvaluationData::get();
+              Discret::ReducedLung::EvaluationData& evaluation_data =
+                  Discret::ReducedLung::EvaluationData::get();
 
               // Safety check: in case of polynomial TLC is not used
               if (((ppl_Type == "Linear_Polynomial") or (ppl_Type == "Nonlinear_Polynomial")) and
@@ -607,7 +610,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
             BCin += Pp_np;
           }
 
-          DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+          Discret::ReducedLung::EvaluationData& evaluation_data =
+              Discret::ReducedLung::EvaluationData::get();
 
           // Set pressure at node i
           int gid;
@@ -660,7 +664,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
             exit(1);
           }
 
-          DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+          Discret::ReducedLung::EvaluationData& evaluation_data =
+              Discret::ReducedLung::EvaluationData::get();
 
           // Set pressure=0.0 at node i
           int gid;
@@ -685,15 +690,16 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
  |  Calculate flowrate at current iteration step and the    ismail 01/10|
  |  correponding acinus volume via dV = 0.5*(qnp+qn)*dt                 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 
 {
   const int elemVecdim = lm.size();
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
   const auto acinus_params = ele->GetAcinusParams();
 
   // Get control parameters for time integration
@@ -716,20 +722,20 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
 
   // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypn(lm.size());
-  CORE::FE::ExtractMyValues(*pn, mypn, lm);
+  Core::FE::ExtractMyValues(*pn, mypn, lm);
 
   // Extract local values from the global vectors
   std::vector<double> mypnm(lm.size());
-  CORE::FE::ExtractMyValues(*pnm, mypnm, lm);
+  Core::FE::ExtractMyValues(*pnm, mypnm, lm);
 
   // Create objects for element arrays
-  CORE::LINALG::SerialDenseVector epnp(elemVecdim);
-  CORE::LINALG::SerialDenseVector epn(elemVecdim);
-  CORE::LINALG::SerialDenseVector epnm(elemVecdim);
+  Core::LinAlg::SerialDenseVector epnp(elemVecdim);
+  Core::LinAlg::SerialDenseVector epn(elemVecdim);
+  Core::LinAlg::SerialDenseVector epnm(elemVecdim);
   for (int i = 0; i < elemVecdim; ++i)
   {
     // Split area and volumetric flow rate, insert into element arrays
@@ -749,7 +755,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   }
 
   // Get the volumetric flow rate from the previous time step
-  DRT::REDAIRWAYS::ElemParams elem_params;
+  Discret::ReducedLung::ElemParams elem_params;
   elem_params.qout_np = (*evaluation_data.qout_np)[ele->LID()];
   elem_params.qout_n = (*evaluation_data.qout_n)[ele->LID()];
   elem_params.qout_nm = (*evaluation_data.qout_nm)[ele->LID()];
@@ -760,8 +766,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   elem_params.acin_vnp = e_acin_vnp;
   elem_params.acin_vn = e_acin_vn;
 
-  CORE::LINALG::SerialDenseMatrix sysmat(elemVecdim, elemVecdim, true);
-  CORE::LINALG::SerialDenseVector rhs(elemVecdim);
+  Core::LinAlg::SerialDenseMatrix sysmat(elemVecdim, elemVecdim, true);
+  Core::LinAlg::SerialDenseVector rhs(elemVecdim);
 
   // Call routine for calculating element matrix and right hand side
   Sysmat<distype>(ele, epnp, epn, epnm, sysmat, rhs, material, elem_params, time, dt);
@@ -792,13 +798,14 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
  |  Calculate element volume                                ismail 07/13|
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 
 {
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // Get acinus size
   double evolnp = (*evaluation_data.elemVolumenp)[ele->LID()];
@@ -818,10 +825,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcElemVolume(RedAcinus* ele,
  |  Get the coupled the values on the coupling interface    ismail 07/10|
  |  of the 3D/reduced-D problem                                         |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
@@ -834,10 +841,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
-  CORE::FE::ExtractMyValues(*pnp, mypnp, lm);
+  Core::FE::ExtractMyValues(*pnp, mypnp, lm);
 
   // create objects for element arrays
-  CORE::LINALG::SerialDenseVector epnp(numnode);
+  Core::LinAlg::SerialDenseVector epnp(numnode);
 
   // get all values at the last computed time step
   for (int i = 0; i < numnode; ++i)
@@ -855,7 +862,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
     {
       if (ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
       {
-        const CORE::Conditions::Condition* condition =
+        const Core::Conditions::Condition* condition =
             ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
         Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
             params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
@@ -948,13 +955,14 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
  |  calculate the amount of fluid mixing inside a           ismail 02/13|
  |  junction                                                            |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::get_junction_volume_mix(RedAcinus* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AcinusImpl<distype>::get_junction_volume_mix(RedAcinus* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Core::LinAlg::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
   const auto acinus_params = ele->GetAcinusParams();
 
   // get the element qout
@@ -987,22 +995,23 @@ void DRT::ELEMENTS::AcinusImpl<distype>::get_junction_volume_mix(RedAcinus* ele,
  |  calculate the scalar transport                          ismail 02/13|
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::update_scatra(RedAcinus* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AcinusImpl<distype>::update_scatra(RedAcinus* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
   Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // get flowrate
   double qin = (*evaluation_data.qin_np)[ele->LID()];
 
   // extract local values from the global vectors
   std::vector<double> mydscatra(lm.size());
-  CORE::FE::ExtractMyValues(*dscatranp, mydscatra, lm);
+  Core::FE::ExtractMyValues(*dscatranp, mydscatra, lm);
 
   //--------------------------------------------------------------------
   // if vel>=0 then node(2) is analytically evaluated;
@@ -1022,28 +1031,29 @@ void DRT::ELEMENTS::AcinusImpl<distype>::update_scatra(RedAcinus* ele,
 }  // update_scatra
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
   Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
   Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.GetState("dscatranp");
   Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.GetState("junctionVolumeInMix");
 
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
 
   // extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  CORE::FE::ExtractMyValues(*scatranp, myscatranp, lm);
+  Core::FE::ExtractMyValues(*scatranp, myscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> mydscatranp(lm.size());
-  CORE::FE::ExtractMyValues(*dscatranp, mydscatranp, lm);
+  Core::FE::ExtractMyValues(*dscatranp, mydscatranp, lm);
 
   // extract local values from the global vectors
   std::vector<double> myvolmix(lm.size());
-  CORE::FE::ExtractMyValues(*volumeMix, myvolmix, lm);
+  Core::FE::ExtractMyValues(*volumeMix, myvolmix, lm);
 
   // get flowrate
   double qin = (*evaluation_data.qin_np)[ele->LID()];
@@ -1068,15 +1078,16 @@ void DRT::ELEMENTS::AcinusImpl<distype>::UpdateElem12Scatra(RedAcinus* ele,
  |  calculate essential nodal values                        ismail 06/13|
  |                                                                      |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::AcinusImpl<distype>::eval_nodal_essential_values(RedAcinus* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& nodal_surface, CORE::LINALG::SerialDenseVector& nodal_volume,
-    CORE::LINALG::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
-    Teuchos::RCP<CORE::MAT::Material> material)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::AcinusImpl<distype>::eval_nodal_essential_values(RedAcinus* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Core::LinAlg::SerialDenseVector& nodal_surface, Core::LinAlg::SerialDenseVector& nodal_volume,
+    Core::LinAlg::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
+    Teuchos::RCP<Core::Mat::Material> material)
 {
   // Get all general state vectors: flow, pressure,
-  DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
+  Discret::ReducedLung::EvaluationData& evaluation_data =
+      Discret::ReducedLung::EvaluationData::get();
   const auto acinus_params = ele->GetAcinusParams();
 
   Teuchos::RCP<const Epetra_Vector> scatranp = discretization.GetState("scatranp");
@@ -1084,7 +1095,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::eval_nodal_essential_values(RedAcinus* 
   // Extract scatra values
   // Extract local values from the global vectors
   std::vector<double> myscatranp(lm.size());
-  CORE::FE::ExtractMyValues(*scatranp, myscatranp, lm);
+  Core::FE::ExtractMyValues(*scatranp, myscatranp, lm);
 
   // Find the volume of an acinus
   // Get the current acinar volume

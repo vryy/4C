@@ -22,16 +22,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class MapExtractor;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace DRT
+namespace Discret
 {
-  namespace NURBS
+  namespace Nurbs
   {
     /*!
     \brief A class to manage a nurbs discretization in parallel
@@ -42,7 +42,7 @@ namespace DRT
     derived from the node class and are hence managed by the original discretisation
 
     */
-    class NurbsDiscretization : public DRT::Discretization
+    class NurbsDiscretization : public Discret::Discretization
     {
      public:
       /*!
@@ -70,7 +70,7 @@ namespace DRT
       \author gammi
 
       */
-      virtual void SetKnotVector(Teuchos::RCP<DRT::NURBS::Knotvector> knots);
+      virtual void SetKnotVector(Teuchos::RCP<Discret::Nurbs::Knotvector> knots);
 
       /*!
       \brief get a pointer to the knotvector from the discretization
@@ -80,8 +80,8 @@ namespace DRT
       \author gammi
 
       */
-      Teuchos::RCP<DRT::NURBS::Knotvector> GetKnotVector();
-      Teuchos::RCP<const DRT::NURBS::Knotvector> GetKnotVector() const;
+      Teuchos::RCP<Discret::Nurbs::Knotvector> GetKnotVector();
+      Teuchos::RCP<const Discret::Nurbs::Knotvector> GetKnotVector() const;
 
       /*!
       \brief return number of knots in each direction
@@ -146,7 +146,7 @@ namespace DRT
       NurbsDiscretization operator=(const NurbsDiscretization& old) = delete;
 
       //! don't want copy constructor
-      NurbsDiscretization(const DRT::NURBS::NurbsDiscretization& old) = delete;
+      NurbsDiscretization(const Discret::Nurbs::NurbsDiscretization& old) = delete;
 
       /*!
       \brief The knot vector
@@ -155,14 +155,14 @@ namespace DRT
       dimensions u,v   : nurbs surface (n x m)
       dimensions u,v,w : nurbs volume  (n x m x l)
       */
-      Teuchos::RCP<DRT::NURBS::Knotvector> knots_;
+      Teuchos::RCP<Discret::Nurbs::Knotvector> knots_;
 
     };  // class NurbsDiscretization
-  }     // namespace NURBS
+  }     // namespace Nurbs
 
   namespace UTILS
   {
-    class DbcNurbs : public DRT::UTILS::Dbc
+    class DbcNurbs : public Discret::UTILS::Dbc
     {
       using Dbc::do_dirichlet_condition;
 
@@ -183,8 +183,8 @@ namespace DRT
        *      start to build and solve the least squares problem
        *
        *  \author hiermeier, vuong \date 01/17 */
-      void evaluate(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret, double time,
+      void evaluate(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
@@ -200,9 +200,10 @@ namespace DRT
        * Dirichlet boundary conditions
        *
        * \author vuong */
-      void do_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret, const CORE::Conditions::Condition& cond, double time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
+      void do_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+          const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
      private:
@@ -220,12 +221,12 @@ namespace DRT
       \param elerhs       element right hand side to be filled
 
       */
-      template <CORE::FE::CellType distype>
-      void fill_matrix_and_rhs_for_ls_dirichlet_boundary(Teuchos::RCP<CORE::Elements::Element> ele,
-          const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
+      template <Core::FE::CellType distype>
+      void fill_matrix_and_rhs_for_ls_dirichlet_boundary(Teuchos::RCP<Core::Elements::Element> ele,
+          const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
-          const double time, CORE::LINALG::SerialDenseMatrix& elemass,
-          std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const;
+          const double time, Core::LinAlg::SerialDenseMatrix& elemass,
+          std::vector<Core::LinAlg::SerialDenseVector>& elerhs) const;
 
       /*!
       \brief Fill mass matrix and rhs vector for evaluation of least squares dirichlet on a domain
@@ -241,16 +242,16 @@ namespace DRT
       \param elerhs       element right hand side to be filled
 
       */
-      template <CORE::FE::CellType distype>
-      void fill_matrix_and_rhs_for_ls_dirichlet_domain(Teuchos::RCP<CORE::Elements::Element> ele,
-          const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
+      template <Core::FE::CellType distype>
+      void fill_matrix_and_rhs_for_ls_dirichlet_domain(Teuchos::RCP<Core::Elements::Element> ele,
+          const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
-          const double time, CORE::LINALG::SerialDenseMatrix& elemass,
-          std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const;
+          const double time, Core::LinAlg::SerialDenseMatrix& elemass,
+          std::vector<Core::LinAlg::SerialDenseVector>& elerhs) const;
 
     };  // class DbcNurbs
   }     // namespace UTILS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

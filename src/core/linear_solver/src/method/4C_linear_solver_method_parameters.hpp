@@ -19,12 +19,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINEAR_SOLVER
+namespace Core::LinearSolver
 {
   class Parameters
   {
@@ -37,7 +37,7 @@ namespace CORE::LINEAR_SOLVER
       into the solver parameter list.
     */
     static void compute_solver_parameters(
-        DRT::Discretization& dis, Teuchos::ParameterList& solverlist);
+        Discret::Discretization& dis, Teuchos::ParameterList& solverlist);
 
     /*!
      * \brief Fix the nullspace to match a new given map
@@ -69,7 +69,7 @@ namespace CORE::LINEAR_SOLVER
         const Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>>& row_map,
         Teuchos::ParameterList& list);
   };
-}  // namespace CORE::LINEAR_SOLVER
+}  // namespace Core::LinearSolver
 
 FOUR_C_NAMESPACE_CLOSE
 

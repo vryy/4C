@@ -16,13 +16,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Artery::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::Artery::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   int ngp;
   linedef->ExtractInt("GP", ngp);
@@ -30,34 +30,34 @@ bool DRT::ELEMENTS::Artery::ReadElement(
   switch (ngp)
   {
     case 1:
-      gaussrule_ = CORE::FE::GaussRule1D::line_1point;
+      gaussrule_ = Core::FE::GaussRule1D::line_1point;
       break;
     case 2:
-      gaussrule_ = CORE::FE::GaussRule1D::line_2point;
+      gaussrule_ = Core::FE::GaussRule1D::line_2point;
       break;
     case 3:
-      gaussrule_ = CORE::FE::GaussRule1D::line_3point;
+      gaussrule_ = Core::FE::GaussRule1D::line_3point;
       break;
     case 4:
-      gaussrule_ = CORE::FE::GaussRule1D::line_4point;
+      gaussrule_ = Core::FE::GaussRule1D::line_4point;
       break;
     case 5:
-      gaussrule_ = CORE::FE::GaussRule1D::line_5point;
+      gaussrule_ = Core::FE::GaussRule1D::line_5point;
       break;
     case 6:
-      gaussrule_ = CORE::FE::GaussRule1D::line_6point;
+      gaussrule_ = Core::FE::GaussRule1D::line_6point;
       break;
     case 7:
-      gaussrule_ = CORE::FE::GaussRule1D::line_7point;
+      gaussrule_ = Core::FE::GaussRule1D::line_7point;
       break;
     case 8:
-      gaussrule_ = CORE::FE::GaussRule1D::line_8point;
+      gaussrule_ = Core::FE::GaussRule1D::line_8point;
       break;
     case 9:
-      gaussrule_ = CORE::FE::GaussRule1D::line_9point;
+      gaussrule_ = Core::FE::GaussRule1D::line_9point;
       break;
     case 10:
-      gaussrule_ = CORE::FE::GaussRule1D::line_10point;
+      gaussrule_ = Core::FE::GaussRule1D::line_10point;
       break;
     default:
       FOUR_C_THROW("Reading of ART element failed: Gaussrule for line not supported!\n");
@@ -68,11 +68,11 @@ bool DRT::ELEMENTS::Artery::ReadElement(
   linedef->ExtractString("TYPE", impltype);
 
   if (impltype == "Undefined")
-    impltype_ = INPAR::ARTDYN::impltype_undefined;
+    impltype_ = Inpar::ArtDyn::impltype_undefined;
   else if (impltype == "LinExp")
-    impltype_ = INPAR::ARTDYN::impltype_lin_exp;
+    impltype_ = Inpar::ArtDyn::impltype_lin_exp;
   else if (impltype == "PressureBased")
-    impltype_ = INPAR::ARTDYN::impltype_pressure_based;
+    impltype_ = Inpar::ArtDyn::impltype_pressure_based;
   else
     FOUR_C_THROW("Invalid implementation type for ARTERY elements!");
 
@@ -88,13 +88,13 @@ bool DRT::ELEMENTS::Artery::ReadElement(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Artery::SetDiamInMaterial(const double diam)
+void Discret::ELEMENTS::Artery::SetDiamInMaterial(const double diam)
 {
   // now the element knows its material, and we can use it to set the diameter
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
-  if (mat->MaterialType() == CORE::Materials::m_cnst_art)
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
+  if (mat->MaterialType() == Core::Materials::m_cnst_art)
   {
-    MAT::Cnst1dArt* arterymat = dynamic_cast<MAT::Cnst1dArt*>(mat.get());
+    Mat::Cnst1dArt* arterymat = dynamic_cast<Mat::Cnst1dArt*>(mat.get());
     arterymat->SetDiam(diam);
     arterymat->SetDiamInitial(diam);
   }

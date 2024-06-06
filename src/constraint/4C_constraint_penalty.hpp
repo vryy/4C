@@ -37,8 +37,8 @@ namespace CONSTRAINTS
     */
 
     ConstraintPenalty(
-        Teuchos::RCP<DRT::Discretization> discr,  ///< discretization constraint lives on
-        const std::string& conditionname          ///< Name of condition to create constraints from
+        Teuchos::RCP<Discret::Discretization> discr,  ///< discretization constraint lives on
+        const std::string& conditionname  ///< Name of condition to create constraints from
     );
 
 
@@ -64,10 +64,10 @@ namespace CONSTRAINTS
     void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
         Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by
@@ -104,10 +104,10 @@ namespace CONSTRAINTS
     void evaluate_constraint(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
         Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by

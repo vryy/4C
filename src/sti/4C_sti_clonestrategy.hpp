@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -59,15 +59,15 @@ namespace STI
 
     //! decide whether element should be cloned or not, and if so, determine type of cloned element
     bool determine_ele_type(
-        CORE::Elements::Element* actele,   //! current element on source discretization
+        Core::Elements::Element* actele,   //! current element on source discretization
         const bool ismyele,                //! ownership flag
         std::vector<std::string>& eletype  //! vector storing types of cloned elements
     );
 
     //! provide cloned element with element specific data
-    void set_element_data(Teuchos::RCP<CORE::Elements::Element>
+    void set_element_data(Teuchos::RCP<Core::Elements::Element>
                               newele,     //! current cloned element on target discretization
-        CORE::Elements::Element* oldele,  //! current element on source discretization
+        Core::Elements::Element* oldele,  //! current element on source discretization
         const int matid,                  //! material of cloned element
         const bool isnurbs                //! nurbs flag
     );

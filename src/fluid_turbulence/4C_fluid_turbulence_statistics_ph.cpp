@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------
 // constructor
 //----------------------------------------------------------------------
-FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretization> actdis,
+FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<Discret::Discretization> actdis,
     Teuchos::ParameterList& params, const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {
@@ -44,12 +44,12 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
-  squaredvelnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  squaredvelnp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
-  toggleu_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  togglev_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  togglew_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  togglep_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  toggleu_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  togglev_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  togglew_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  togglep_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   //----------------------------------------------------------------------
   // create sets of coordinates
@@ -66,7 +66,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
 
   for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
   {
-    CORE::Nodes::Node* node = discret_->lRowNode(i);
+    Core::Nodes::Node* node = discret_->lRowNode(i);
 
     if (node->X()[1] < 85.008 + 2e-9 && node->X()[1] > 85.008 - 2e-9)
       x1avcoords.insert(node->X()[0]);
@@ -85,18 +85,18 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
     std::vector<char> rblock;
 
     // create an exporter for point to point communication
-    CORE::COMM::Exporter exporter(discret_->Comm());
+    Core::Communication::Exporter exporter(discret_->Comm());
 
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)
     {
-      CORE::COMM::PackBuffer data;
+      Core::Communication::PackBuffer data;
 
       data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator x1line = x1avcoords.begin();
            x1line != x1avcoords.end(); ++x1line)
       {
-        CORE::COMM::ParObject::AddtoPack(data, *x1line);
+        Core::Communication::ParObject::AddtoPack(data, *x1line);
       }
       std::swap(sblock, data());
 
@@ -139,7 +139,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
         while (index < rblock.size())
         {
           double onecoord;
-          CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
+          Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
           x1avcoords.insert(onecoord);
         }
       }
@@ -148,18 +148,18 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
     // second, communicate coordinates in x2-direction
     for (int np = 0; np < numprocs; ++np)
     {
-      CORE::COMM::PackBuffer data;
+      Core::Communication::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
            x2line != x2avcoords.end(); ++x2line)
       {
-        CORE::COMM::ParObject::AddtoPack(data, *x2line);
+        Core::Communication::ParObject::AddtoPack(data, *x2line);
       }
       data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator x2line = x2avcoords.begin();
            x2line != x2avcoords.end(); ++x2line)
       {
-        CORE::COMM::ParObject::AddtoPack(data, *x2line);
+        Core::Communication::ParObject::AddtoPack(data, *x2line);
       }
       std::swap(sblock, data());
 
@@ -202,7 +202,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
         while (index < rblock.size())
         {
           double onecoord;
-          CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
+          Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
           x2avcoords.insert(onecoord);
         }
       }
@@ -303,7 +303,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
 
     for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
     {
-      CORE::Nodes::Node* node = discret_->lRowNode(i);
+      Core::Nodes::Node* node = discret_->lRowNode(i);
       if (node->X()[2] < +2e-9 && node->X()[2] > -2e-9 &&
           node->X()[0] < x1statlocations_(x1stat, 0) + 2e-9 &&
           node->X()[0] > x1statlocations_(x1stat, 0) - 2e-9)
@@ -323,17 +323,17 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      CORE::COMM::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->Comm());
 
       // first, communicate coordinates in x1-direction
       for (int np = 0; np < numprocs; ++np)
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x2 = x2statlocat.begin();
              x2 != x2statlocat.end(); ++x2)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *x2);
+          Core::Communication::ParObject::AddtoPack(data, *x2);
         }
 
         data.StartPacking();
@@ -341,7 +341,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
         for (std::set<double, LineSortCriterion>::iterator x2 = x2statlocat.begin();
              x2 != x2statlocat.end(); ++x2)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *x2);
+          Core::Communication::ParObject::AddtoPack(data, *x2);
         }
 
         std::swap(sblock, data());
@@ -381,7 +381,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
           while (index < rblock.size())
           {
             double onecoord;
-            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
+            Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
             x2statlocat.insert(onecoord);
           }
         }
@@ -406,50 +406,50 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
   //----------------------------------------------------------------------
 
   // x1-direction
-  x1sump_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x1sump_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x1sump_->reshape(numx1statlocations_, 2);
 
-  x1sumu_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x1sumu_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x1sumu_->reshape(numx1statlocations_, 1);
 
-  x1sumf_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x1sumf_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x1sumf_->reshape(numx1statlocations_, 3);
 
 
   // x2-direction
   // first-order moments
-  x2sumu_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumu_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x2sumu_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x2sumv_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x2sumw_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sump_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sump_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x2sump_->reshape(numx1statlocations_, numx2coor_);
 
   // second-order moments
-  x2sumsqu_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumsqu_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x2sumsqu_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumsqv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x2sumsqv_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumsqw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x2sumsqw_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqp_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumsqp_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x2sumsqp_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumuv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumuv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x2sumuv_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumuw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumuw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x2sumuw_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumvw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumvw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   x2sumvw_->reshape(numx1statlocations_, numx2coor_);
 
   // set number of samples to zero
@@ -529,7 +529,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        CORE::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->lRowNode(nn);
         // this is the wall node
         if (node->X()[0] < (x1cwall + 2e-9) and node->X()[0] > (x1cwall - 2e-9) and
             node->X()[1] < (x2cwall + 2e-9) and node->X()[1] > (x2cwall - 2e-9))
@@ -574,7 +574,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        CORE::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->lRowNode(nn);
         // this is the wall node
         if (node->X()[0] < (x1cwall + 2e-9) and node->X()[0] > (x1cwall - 2e-9) and
             node->X()[1] < (x2cwall_plw + 2e-9) and node->X()[1] > (x2cwall_plw - 2e-9))
@@ -619,7 +619,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        CORE::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->lRowNode(nn);
         // this is the wall node
         if (node->X()[0] < (x1cwall + 2e-9) and node->X()[0] > (x1cwall - 2e-9) and
             node->X()[1] < (x2cwall_puw + 2e-9) and node->X()[1] > (x2cwall_puw - 2e-9))
@@ -676,7 +676,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      CORE::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->lRowNode(nn);
       // this is the wall node
       if (node->X()[0] < (x1cwall + 2e-9) and node->X()[0] > (x1cwall - 2e-9) and
           node->X()[1] < (x2cwall + 2e-9) and node->X()[1] > (x2cwall - 2e-9))
@@ -745,7 +745,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(
 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
-        CORE::Nodes::Node* node = discret_->lRowNode(nn);
+        Core::Nodes::Node* node = discret_->lRowNode(nn);
 
         // this is the node
         if (node->X()[0] < x1statlocations_(x1nodnum, 0) + 2e-5 &&

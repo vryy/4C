@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods for namespace DRT
+\brief A collection of helper methods for namespace Discret
 
 \level 0
 
@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::ExtractMyValues(
+void Core::FE::ExtractMyValues(
     const Epetra_Vector& global, std::vector<double>& local, const std::vector<int>& lm)
 {
   const size_t ldim = lm.size();
@@ -43,8 +43,8 @@ void CORE::FE::ExtractMyValues(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::ExtractMyValues(
-    const Epetra_Vector& global, CORE::LINALG::SerialDenseVector& local, const std::vector<int>& lm)
+void Core::FE::ExtractMyValues(
+    const Epetra_Vector& global, Core::LinAlg::SerialDenseVector& local, const std::vector<int>& lm)
 {
   const size_t ldim = lm.size();
   local.size(ldim);
@@ -61,7 +61,7 @@ void CORE::FE::ExtractMyValues(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::ExtractMyValues(
+void Core::FE::ExtractMyValues(
     const Epetra_MultiVector& global, std::vector<double>& local, const std::vector<int>& lm)
 {
   const int numcol = global.NumVectors();
@@ -90,7 +90,7 @@ void CORE::FE::ExtractMyValues(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,
+void Core::FE::ExtractMyNodeBasedValues(const Core::Elements::Element* ele,
     std::vector<double>& local, const Epetra_MultiVector& global)
 {
   const int numnode = ele->num_node();
@@ -118,8 +118,8 @@ void CORE::FE::ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,
-    CORE::LINALG::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
+void Core::FE::ExtractMyNodeBasedValues(const Core::Elements::Element* ele,
+    Core::LinAlg::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
     const int nsd)
 {
   if (global == Teuchos::null) FOUR_C_THROW("received a TEUCHOS::null pointer");
@@ -149,8 +149,8 @@ void CORE::FE::ExtractMyNodeBasedValues(const CORE::Elements::Element* ele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::ExtractMyNodeBasedValues(const CORE::Nodes::Node* node,
-    CORE::LINALG::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
+void Core::FE::ExtractMyNodeBasedValues(const Core::Nodes::Node* node,
+    Core::LinAlg::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
     const int nsd)
 {
   if (global == Teuchos::null) FOUR_C_THROW("received a TEUCHOS::null pointer");

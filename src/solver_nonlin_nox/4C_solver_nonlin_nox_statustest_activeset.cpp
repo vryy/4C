@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::StatusTest::ActiveSet::ActiveSet(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype, const int& max_cycle_size)
+NOX::Nln::StatusTest::ActiveSet::ActiveSet(
+    const enum NOX::Nln::StatusTest::QuantityType& qtype, const int& max_cycle_size)
     : qtype_(qtype),
       status_(::NOX::StatusTest::Unevaluated),
       max_cycle_size_(max_cycle_size),
@@ -37,13 +37,13 @@ NOX::NLN::StatusTest::ActiveSet::ActiveSet(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::NLN::StatusTest::ActiveSet::checkStatus(
+::NOX::StatusTest::StatusType NOX::Nln::StatusTest::ActiveSet::checkStatus(
     const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType)
 {
   // clear the cycling maps at the beginning of a new time step
   if (problem.getNumIterations() == 0) cycling_maps_.clear();
 
-  if (checkType == ::NOX::StatusTest::None || qtype_ == NOX::NLN::StatusTest::quantity_plasticity)
+  if (checkType == ::NOX::StatusTest::None || qtype_ == NOX::Nln::StatusTest::quantity_plasticity)
   {
     status_ = ::NOX::StatusTest::Unevaluated;
     activesetsize_ = 0;
@@ -60,9 +60,9 @@ NOX::NLN::StatusTest::ActiveSet::ActiveSet(
     else
     {
       // try to cast the nox group
-      const NOX::NLN::CONSTRAINT::Group* cnlngrp =
-          dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
-      if (cnlngrp == nullptr) FOUR_C_THROW("NOX::NLN::CONSTRAINT::Group cast failed");
+      const NOX::Nln::CONSTRAINT::Group* cnlngrp =
+          dynamic_cast<const NOX::Nln::CONSTRAINT::Group*>(&grp);
+      if (cnlngrp == nullptr) FOUR_C_THROW("NOX::Nln::CONSTRAINT::Group cast failed");
 
       // do the actual active set check
       status_ = cnlngrp->GetActiveSetInfo(qtype_, activesetsize_);
@@ -102,11 +102,11 @@ NOX::NLN::StatusTest::ActiveSet::ActiveSet(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::NLN::StatusTest::ActiveSet::getStatus() const { return status_; }
+::NOX::StatusTest::StatusType NOX::Nln::StatusTest::ActiveSet::getStatus() const { return status_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::NLN::StatusTest::ActiveSet::print(std::ostream& stream, int indent) const
+std::ostream& NOX::Nln::StatusTest::ActiveSet::print(std::ostream& stream, int indent) const
 {
   std::string indent_string;
   indent_string.assign(indent, ' ');

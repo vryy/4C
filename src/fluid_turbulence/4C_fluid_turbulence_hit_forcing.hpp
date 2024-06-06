@@ -23,7 +23,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -42,7 +42,7 @@ namespace FLD
 
     virtual ~ForcingInterface() = default;
     //! initialize with initial spectrum
-    virtual void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type) = 0;
+    virtual void SetInitialSpectrum(Inpar::FLUID::InitialField init_field_type) = 0;
 
     //! turn on forcing
     virtual void ActivateForcing(const bool activate) = 0;
@@ -64,7 +64,7 @@ namespace FLD
     HomIsoTurbForcing(FluidImplicitTimeInt& timeint);
 
     //! initialize with initial spectrum
-    void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type) override;
+    void SetInitialSpectrum(Inpar::FLUID::InitialField init_field_type) override;
 
     //! turn on forcing
     void ActivateForcing(const bool activate) override;
@@ -90,10 +90,10 @@ namespace FLD
     };
 
     //! type of forcing
-    INPAR::FLUID::ForcingType forcing_type_;
+    Inpar::FLUID::ForcingType forcing_type_;
 
     //! fluid discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! state vector of volume force to be computed
     Teuchos::RCP<Epetra_Vector> forcing_;
@@ -141,7 +141,7 @@ namespace FLD
     bool activate_;
 
     //! linear compensation factor
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> force_fac_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> force_fac_;
 
     //! fixed power input
     double Pin_;
@@ -150,7 +150,7 @@ namespace FLD
     double E_kf_;
 
     //! fixed power input factor
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> fixed_power_fac_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> fixed_power_fac_;
 
     //! interpolation function
     static double interpolate(
@@ -170,7 +170,7 @@ namespace FLD
     HomIsoTurbForcingHDG(FluidImplicitTimeInt& timeint);
 
     //! initialize with initial spectrum
-    void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type) override;
+    void SetInitialSpectrum(Inpar::FLUID::InitialField init_field_type) override;
 
     //! calculate power input
     void CalculateForcing(const int step) override;
@@ -189,7 +189,7 @@ namespace FLD
     PeriodicHillForcing(FluidImplicitTimeInt& timeint);
 
     //! initialize with initial spectrum
-    void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type) override { return; }
+    void SetInitialSpectrum(Inpar::FLUID::InitialField init_field_type) override { return; }
 
     //! turn on forcing
     void ActivateForcing(const bool activate) override { return; }
@@ -206,7 +206,7 @@ namespace FLD
 
    private:
     //! fluid discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! state vector of volume force to be computed
     Teuchos::RCP<Epetra_Vector> forcing_;

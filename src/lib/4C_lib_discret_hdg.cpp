@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::DiscretizationHDG::DiscretizationHDG(
+Discret::DiscretizationHDG::DiscretizationHDG(
     const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
     : DiscretizationFaces(name, comm, n_dim)
 {
@@ -33,7 +33,7 @@ DRT::DiscretizationHDG::DiscretizationHDG(
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                     kronbichler 12/13|
  *----------------------------------------------------------------------*/
-int DRT::DiscretizationHDG::fill_complete(
+int Discret::DiscretizationHDG::fill_complete(
     bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
 {
   // call FillComleteFaces of base class with create_faces set to true
@@ -41,9 +41,9 @@ int DRT::DiscretizationHDG::fill_complete(
 
   // get the correct face orientation from the owner. since the elements in general do not allow
   // packing, extract the node ids, communicate them, and change the node ids in the element
-  CORE::COMM::Exporter nodeexporter(*facerowmap_, *facecolmap_, Comm());
+  Core::Communication::Exporter nodeexporter(*facerowmap_, *facecolmap_, Comm());
   std::map<int, std::vector<int>> nodeIds, trafoMap;
-  for (std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>::const_iterator f = faces_.begin();
+  for (std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::const_iterator f = faces_.begin();
        f != faces_.end(); ++f)
   {
     std::vector<int> ids(f->second->num_node());
@@ -55,7 +55,7 @@ int DRT::DiscretizationHDG::fill_complete(
   nodeexporter.Export(nodeIds);
   nodeexporter.Export(trafoMap);
 
-  for (std::map<int, Teuchos::RCP<CORE::Elements::FaceElement>>::iterator f = faces_.begin();
+  for (std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::iterator f = faces_.begin();
        f != faces_.end(); ++f)
   {
     if (f->second->Owner() == Comm().MyPID()) continue;
@@ -65,10 +65,10 @@ int DRT::DiscretizationHDG::fill_complete(
     f->second->set_local_trafo_map(trafoMap[f->first]);
 
     // refresh node pointers if they have been set up
-    CORE::Nodes::Node** oldnodes = f->second->Nodes();
+    Core::Nodes::Node** oldnodes = f->second->Nodes();
     if (oldnodes != nullptr)
     {
-      std::vector<CORE::Nodes::Node*> nodes(ids.size(), nullptr);
+      std::vector<Core::Nodes::Node*> nodes(ids.size(), nullptr);
 
       for (unsigned int i = 0; i < ids.size(); ++i)
       {
@@ -89,7 +89,7 @@ int DRT::DiscretizationHDG::fill_complete(
     const int* nodeIds = f->second->NodeIds();
 
     std::vector<std::vector<int>> faceNodeOrder =
-        CORE::FE::getEleNodeNumberingFaces(f->second->ParentMasterElement()->Shape());
+        Core::FE::getEleNodeNumberingFaces(f->second->ParentMasterElement()->Shape());
 
     bool exchangeMasterAndSlave = false;
     for (int i = 0; i < f->second->num_node(); ++i)
@@ -101,7 +101,7 @@ int DRT::DiscretizationHDG::fill_complete(
     }
     if (exchangeMasterAndSlave)
     {
-      CORE::Elements::Element* faceMaster = f->second->ParentMasterElement();
+      Core::Elements::Element* faceMaster = f->second->ParentMasterElement();
       const int faceMasterNo = f->second->FaceMasterNumber();
       // new master element might be nullptr on MPI computations
       f->second->set_parent_master_element(f->second->ParentSlaveElement(),
@@ -121,11 +121,11 @@ int DRT::DiscretizationHDG::fill_complete(
       if (this->NumDofSets() == 1)
       {
         int ndof_ele = this->NumMyRowElements() > 0
-                           ? dynamic_cast<CORE::Elements::DgElement*>(this->lRowElement(0))
+                           ? dynamic_cast<Core::Elements::DgElement*>(this->lRowElement(0))
                                  ->num_dof_per_element_auxiliary()
                            : 0;
-        Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofset_ele =
-            Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(0, ndof_ele, 0, false));
+        Teuchos::RCP<Core::DOFSets::DofSetInterface> dofset_ele =
+            Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, ndof_ele, 0, false));
 
         this->AddDofSet(dofset_ele);
       }
@@ -134,11 +134,11 @@ int DRT::DiscretizationHDG::fill_complete(
       if (this->NumDofSets() == 2)
       {
         int ndof_node = this->NumMyRowElements() > 0
-                            ? dynamic_cast<CORE::Elements::DgElement*>(this->lRowElement(0))
+                            ? dynamic_cast<Core::Elements::DgElement*>(this->lRowElement(0))
                                   ->num_dof_per_node_auxiliary()
                             : 0;
-        Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofset_node =
-            Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));
+        Teuchos::RCP<Core::DOFSets::DofSetInterface> dofset_node =
+            Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));
 
         this->AddDofSet(dofset_node);
       }
@@ -151,9 +151,9 @@ int DRT::DiscretizationHDG::fill_complete(
 /*----------------------------------------------------------------------*
  | assign_global_i_ds                                        schoeder 06/14|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
-    const std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>& elementmap,
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& finalelements)
+void Discret::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
+    const std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>>& elementmap,
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& finalelements)
 {
   // The point here is to make sure the element gid are the same on any
   // parallel distribution of the elements. Thus we allreduce thing to
@@ -167,7 +167,7 @@ void DRT::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
   // pack elements on all processors
 
   int size = 0;
-  std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>::const_iterator elemsiter;
+  std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>>::const_iterator elemsiter;
   for (elemsiter = elementmap.begin(); elemsiter != elementmap.end(); ++elemsiter)
   {
     size += elemsiter->first.size() + 2;
@@ -186,7 +186,7 @@ void DRT::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
 
   int mysize = sendblock.size();
   comm.SumAll(&mysize, &size, 1);
-  int mypos = CORE::LINALG::FindMyPos(sendblock.size(), comm);
+  int mypos = Core::LinAlg::FindMyPos(sendblock.size(), comm);
 
   std::vector<int> send(size);
   std::fill(send.begin(), send.end(), 0);
@@ -261,7 +261,7 @@ void DRT::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
     index += esize;
 
     // set gid to my elements
-    std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>::const_iterator iter =
+    std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>>::const_iterator iter =
         elementmap.find(element);
     if (iter != elementmap.end())
     {
@@ -276,7 +276,7 @@ void DRT::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis)
+std::ostream& operator<<(std::ostream& os, const Discret::DiscretizationHDG& dis)
 {
   // print standard discretization info
   dis.Print(os);
@@ -287,15 +287,15 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis)
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::read_dirichlet_condition(
-    const CORE::UTILS::FunctionManager& function_manager, const DRT::Discretization& discret,
-    const CORE::Conditions::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
+void Discret::UTILS::DbcHDG::read_dirichlet_condition(
+    const Core::UTILS::FunctionManager& function_manager, const Discret::Discretization& discret,
+    const Core::Conditions::Condition& cond, double time, Discret::UTILS::Dbc::DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see BuildDbc())
-  const DRT::DiscretizationFaces& face_discret =
-      static_cast<const DRT::DiscretizationFaces&>(discret);
+  const Discret::DiscretizationFaces& face_discret =
+      static_cast<const Discret::DiscretizationFaces&>(discret);
 
   read_dirichlet_condition(
       function_manager, face_discret, cond, time, info, dbcgids, hierarchical_order);
@@ -303,14 +303,15 @@ void DRT::UTILS::DbcHDG::read_dirichlet_condition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::read_dirichlet_condition(
-    const CORE::UTILS::FunctionManager& function_manager, const DRT::DiscretizationFaces& discret,
-    const CORE::Conditions::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
-    const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
+void Discret::UTILS::DbcHDG::read_dirichlet_condition(
+    const Core::UTILS::FunctionManager& function_manager,
+    const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
+    double time, Discret::UTILS::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+    int hierarchical_order) const
 
 {
   // call to corresponding method in base class; safety checks inside
-  DRT::UTILS::Dbc::read_dirichlet_condition(
+  Discret::UTILS::Dbc::read_dirichlet_condition(
       function_manager, discret, cond, time, info, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
@@ -327,8 +328,8 @@ void DRT::UTILS::DbcHDG::read_dirichlet_condition(
     // loop over all faces
     for (int i = 0; i < discret.NumMyRowFaces(); ++i)
     {
-      const CORE::Elements::FaceElement* faceele =
-          dynamic_cast<const CORE::Elements::FaceElement*>(discret.lRowFace(i));
+      const Core::Elements::FaceElement* faceele =
+          dynamic_cast<const Core::Elements::FaceElement*>(discret.lRowFace(i));
       const unsigned int dofperface =
           faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
       const unsigned int dofpercomponent =
@@ -336,7 +337,7 @@ void DRT::UTILS::DbcHDG::read_dirichlet_condition(
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff.size() <= component || onoff[component] == 0 ||
-          GLOBAL::Problem::Instance(0)->GetProblemType() != CORE::ProblemType::fluid)
+          Global::Problem::Instance(0)->GetProblemType() != Core::ProblemType::fluid)
         pressureDone = true;
       if (!pressureDone)
       {
@@ -407,29 +408,30 @@ void DRT::UTILS::DbcHDG::read_dirichlet_condition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::do_dirichlet_condition(
-    const CORE::UTILS::FunctionManager& function_manager, const DRT::Discretization& discret,
-    const CORE::Conditions::Condition& cond, double time,
+void Discret::UTILS::DbcHDG::do_dirichlet_condition(
+    const Core::UTILS::FunctionManager& function_manager, const Discret::Discretization& discret,
+    const Core::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see BuildDbc())
-  const DRT::DiscretizationFaces& face_discret =
-      static_cast<const DRT::DiscretizationFaces&>(discret);
+  const Discret::DiscretizationFaces& face_discret =
+      static_cast<const Discret::DiscretizationFaces&>(discret);
 
   do_dirichlet_condition(function_manager, face_discret, cond, time, systemvectors, toggle);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::do_dirichlet_condition(
-    const CORE::UTILS::FunctionManager& function_manager, const DRT::DiscretizationFaces& discret,
-    const CORE::Conditions::Condition& cond, double time,
-    const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle) const
+void Discret::UTILS::DbcHDG::do_dirichlet_condition(
+    const Core::UTILS::FunctionManager& function_manager,
+    const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
+    double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+    const Epetra_IntVector& toggle) const
 {
   // call corresponding method from base class; safety checks inside
-  DRT::UTILS::Dbc::do_dirichlet_condition(
+  Discret::UTILS::Dbc::do_dirichlet_condition(
       function_manager, discret, cond, time, systemvectors, toggle, nullptr);
 
   // say good bye if there are no face elements
@@ -467,16 +469,16 @@ void DRT::UTILS::DbcHDG::do_dirichlet_condition(
   // do we have faces?
   if (discret.NumMyRowFaces() > 0)
   {
-    CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
-    CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
-    CORE::Elements::Element::LocationArray dummy(1);
+    Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
+    Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
+    Core::Elements::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
-    if (GLOBAL::Problem::Instance(0)->GetProblemType() == CORE::ProblemType::elemag or
-        GLOBAL::Problem::Instance(0)->GetProblemType() == CORE::ProblemType::scatra)
+    if (Global::Problem::Instance(0)->GetProblemType() == Core::ProblemType::elemag or
+        Global::Problem::Instance(0)->GetProblemType() == Core::ProblemType::scatra)
     {
       initParams.set("hdg_action", true);
-      CORE::UTILS::AddEnumClassToParameterList<DRT::HDGAction>(
-          "action", DRT::HDGAction::project_dirich_field, initParams);
+      Core::UTILS::AddEnumClassToParameterList<Discret::HDGAction>(
+          "action", Discret::HDGAction::project_dirich_field, initParams);
     }
 
     // TODO: Introduce a general action type that is
@@ -496,8 +498,8 @@ void DRT::UTILS::DbcHDG::do_dirichlet_condition(
     // loop over all faces
     for (int i = 0; i < discret.NumMyRowFaces(); ++i)
     {
-      const CORE::Elements::FaceElement* faceele =
-          dynamic_cast<const CORE::Elements::FaceElement*>(discret.lRowFace(i));
+      const Core::Elements::FaceElement* faceele =
+          dynamic_cast<const Core::Elements::FaceElement*>(discret.lRowFace(i));
       const unsigned int dofperface =
           faceele->ParentMasterElement()->num_dof_per_face(faceele->FaceMasterNumber());
       const unsigned int dofpercomponent =
@@ -505,7 +507,7 @@ void DRT::UTILS::DbcHDG::do_dirichlet_condition(
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff->size() <= component || (*onoff)[component] == 0 ||
-          GLOBAL::Problem::Instance(0)->GetProblemType() != CORE::ProblemType::fluid)
+          Global::Problem::Instance(0)->GetProblemType() != Core::ProblemType::fluid)
         pressureDone = true;
       if (!pressureDone)
       {
@@ -550,7 +552,8 @@ void DRT::UTILS::DbcHDG::do_dirichlet_condition(
       if (do_evaluate)
       {
         // cast the const qualifier away, thus the Evaluate routine can be called.
-        DRT::DiscretizationFaces& non_const_dis = const_cast<DRT::DiscretizationFaces&>(discret);
+        Discret::DiscretizationFaces& non_const_dis =
+            const_cast<Discret::DiscretizationFaces&>(discret);
         faceele->ParentMasterElement()->Evaluate(
             initParams, non_const_dis, dummy, elemat1, elemat2, elevec1, elevec2, elevec3);
       }

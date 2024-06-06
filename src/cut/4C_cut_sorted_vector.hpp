@@ -45,9 +45,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     /// sorted vector that emulates a set (and is supposed to be much more efficient)
     template <class K, bool bNoDuplicates = true, class Pr = std::less<K>,
@@ -317,8 +317,8 @@ namespace CORE::GEO
       Cont vec_;
     };
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

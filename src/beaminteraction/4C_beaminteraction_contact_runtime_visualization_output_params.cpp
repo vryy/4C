@@ -21,9 +21,9 @@ BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::
     BeamContactRuntimeVisualizationOutputParams(const double restart_time)
     : isinit_(false),
       issetup_(false),
-      visualization_parameters_(CORE::IO::VisualizationParametersFactory(
-          GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-          *GLOBAL::Problem::Instance()->OutputControlFile(), restart_time)),
+      visualization_parameters_(Core::IO::VisualizationParametersFactory(
+          Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+          *Global::Problem::Instance()->OutputControlFile(), restart_time)),
       output_interval_steps_(-1),
       output_every_iteration_(false),
       output_forces_(false),
@@ -50,24 +50,24 @@ void BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams::Setup()
 
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_contact_visualization_output_paramslist =
-      GLOBAL::Problem::Instance()->beam_contact_params().sublist("RUNTIME VTK OUTPUT");
+      Global::Problem::Instance()->beam_contact_params().sublist("RUNTIME VTK OUTPUT");
 
   /****************************************************************************/
   // get and check required parameters
   /****************************************************************************/
   output_interval_steps_ = beam_contact_visualization_output_paramslist.get<int>("INTERVAL_STEPS");
 
-  output_every_iteration_ = (bool)CORE::UTILS::IntegralValue<int>(
+  output_every_iteration_ = (bool)Core::UTILS::IntegralValue<int>(
       beam_contact_visualization_output_paramslist, "EVERY_ITERATION");
   visualization_parameters_.every_iteration_ = output_every_iteration_;
 
   /****************************************************************************/
-  output_forces_ = (bool)CORE::UTILS::IntegralValue<int>(
+  output_forces_ = (bool)Core::UTILS::IntegralValue<int>(
       beam_contact_visualization_output_paramslist, "CONTACT_FORCES");
 
   /****************************************************************************/
   output_gaps_ =
-      (bool)CORE::UTILS::IntegralValue<int>(beam_contact_visualization_output_paramslist, "GAPS");
+      (bool)Core::UTILS::IntegralValue<int>(beam_contact_visualization_output_paramslist, "GAPS");
 
 
   issetup_ = true;

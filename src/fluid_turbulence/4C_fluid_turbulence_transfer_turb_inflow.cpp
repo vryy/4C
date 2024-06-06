@@ -32,13 +32,13 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps)
+    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
     : dis_(dis), dbcmaps_(dbcmaps), curve_(-1), numveldof_(3)
 {
   active_ = false;
 
   // vector of pointers to all node clouds i.e. conditions to couple
-  std::vector<CORE::Conditions::Condition*> nodecloudstocouple;
+  std::vector<Core::Conditions::Condition*> nodecloudstocouple;
 
   // get surfaces to couple
   dis_->GetCondition("TransferTurbulentInflow", nodecloudstocouple);
@@ -61,7 +61,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
 
     // loop all conditions and check whether they are of master or slave
     // type
-    for (std::vector<CORE::Conditions::Condition*>::iterator cond = nodecloudstocouple.begin();
+    for (std::vector<Core::Conditions::Condition*>::iterator cond = nodecloudstocouple.begin();
          cond != nodecloudstocouple.end(); ++cond)
     {
       // get id, direction info and toggle
@@ -166,7 +166,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     }
 
     // build processor local octree
-    auto nodematchingoctree = CORE::COUPLING::NodeMatchingOctree();
+    auto nodematchingoctree = Core::COUPLING::NodeMatchingOctree();
     nodematchingoctree.Init(*dis_, masternodeids, maxnodeperleaf, tol);
     nodematchingoctree.Setup();
 
@@ -214,7 +214,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       if (time >= 0.0)
       {
         curvefac =
-            GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curve_).Evaluate(
+            Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve_).Evaluate(
                 time);
       }
       else
@@ -239,7 +239,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       {
         mymasters.push_back(gid);
 
-        CORE::Nodes::Node* master = dis_->gNode(gid);
+        Core::Nodes::Node* master = dis_->gNode(gid);
 
         std::vector<int> masterdofs = dis_->Dof(master);
 
@@ -257,7 +257,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
     }
 
     // create an exporter for point to point comunication
-    CORE::COMM::Exporter exporter(dis_->Comm());
+    Core::Communication::Exporter exporter(dis_->Comm());
 
     // necessary variables
     MPI_Request request;
@@ -291,7 +291,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
         set_values_available_on_this_proc(mymasters, mymasters_vel, velnp);
 
         // Pack info into block to send
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         pack_local_master_values(mymasters, mymasters_vel, data);
         data.StartPacking();
         pack_local_master_values(mymasters, mymasters_vel, data);
@@ -315,7 +315,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::get_data(
-    int& id, int& direction, ToggleType& type, const CORE::Conditions::Condition* cond)
+    int& id, int& direction, ToggleType& type, const Core::Conditions::Condition* cond)
 {
   id = cond->parameters().Get<int>("id");
 
@@ -373,7 +373,7 @@ void FLD::TransferTurbulentInflowCondition::get_data(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::receive_block(
-    std::vector<char>& rblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
+    std::vector<char>& rblock, Core::Communication::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
   int numproc = dis_->Comm().NumProc();
@@ -420,7 +420,7 @@ void FLD::TransferTurbulentInflowCondition::receive_block(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::send_block(
-    std::vector<char>& sblock, CORE::COMM::Exporter& exporter, MPI_Request& request)
+    std::vector<char>& sblock, Core::Communication::Exporter& exporter, MPI_Request& request)
 {
   // get number of processors and the current processors id
   int numproc = dis_->Comm().NumProc();
@@ -473,14 +473,14 @@ void FLD::TransferTurbulentInflowCondition::unpack_local_master_values(std::vect
 
   // extract size
   int size = 0;
-  CORE::COMM::ParObject::ExtractfromPack(position, rblock, size);
+  Core::Communication::ParObject::ExtractfromPack(position, rblock, size);
 
   // extract master ids
   for (int i = 0; i < size; ++i)
   {
     int id;
 
-    CORE::COMM::ParObject::ExtractfromPack(position, rblock, id);
+    Core::Communication::ParObject::ExtractfromPack(position, rblock, id);
     mymasters.push_back(id);
 
     std::map<int, std::vector<int>>::iterator iter = midtosid_.find(id);
@@ -500,12 +500,12 @@ void FLD::TransferTurbulentInflowCondition::unpack_local_master_values(std::vect
   {
     int slavesize;
 
-    CORE::COMM::ParObject::ExtractfromPack(position, rblock, slavesize);
+    Core::Communication::ParObject::ExtractfromPack(position, rblock, slavesize);
 
     for (int ll = 0; ll < slavesize; ++ll)
     {
       int sid;
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, sid);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, sid);
 
       std::map<int, std::vector<int>>::iterator iter = midtosid_.find(mymasters[rr]);
 
@@ -533,7 +533,7 @@ void FLD::TransferTurbulentInflowCondition::unpack_local_master_values(std::vect
     {
       double value;
 
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, value);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, value);
 
       (mymasters_vel[mm]).push_back(value);
     }
@@ -556,7 +556,7 @@ void FLD::TransferTurbulentInflowCondition::unpack_local_master_values(std::vect
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::pack_local_master_values(std::vector<int>& mymasters,
-    std::vector<std::vector<double>>& mymasters_vel, CORE::COMM::PackBuffer& sblock)
+    std::vector<std::vector<double>>& mymasters_vel, Core::Communication::PackBuffer& sblock)
 {
   int size = mymasters.size();
 
@@ -574,12 +574,12 @@ void FLD::TransferTurbulentInflowCondition::pack_local_master_values(std::vector
   }
 
   // add size  to sendblock
-  CORE::COMM::ParObject::AddtoPack(sblock, size);
+  Core::Communication::ParObject::AddtoPack(sblock, size);
 
   // add master ids
   for (int rr = 0; rr < size; ++rr)
   {
-    CORE::COMM::ParObject::AddtoPack(sblock, mymasters[rr]);
+    Core::Communication::ParObject::AddtoPack(sblock, mymasters[rr]);
   }
 
   // add slave ids
@@ -597,10 +597,10 @@ void FLD::TransferTurbulentInflowCondition::pack_local_master_values(std::vector
 
       int slavesize = (int)slaves.size();
 
-      CORE::COMM::ParObject::AddtoPack(sblock, slavesize);
+      Core::Communication::ParObject::AddtoPack(sblock, slavesize);
       for (int ll = 0; ll < slavesize; ++ll)
       {
-        CORE::COMM::ParObject::AddtoPack(sblock, slaves[ll]);
+        Core::Communication::ParObject::AddtoPack(sblock, slaves[ll]);
       }
     }
   }
@@ -610,7 +610,7 @@ void FLD::TransferTurbulentInflowCondition::pack_local_master_values(std::vector
   {
     for (int rr = 0; rr < size; ++rr)
     {
-      CORE::COMM::ParObject::AddtoPack(sblock, (mymasters_vel[mm])[rr]);
+      Core::Communication::ParObject::AddtoPack(sblock, (mymasters_vel[mm])[rr]);
     }
   }
 
@@ -646,7 +646,7 @@ void FLD::TransferTurbulentInflowCondition::set_values_available_on_this_proc(
         // is this slave id on this proc?
         if (dis_->NodeRowMap()->MyGID(*sid))
         {
-          CORE::Nodes::Node* slave = dis_->gNode(*sid);
+          Core::Nodes::Node* slave = dis_->gNode(*sid);
 
           // get dofs
           std::vector<int> slavedofs = dis_->Dof(slave);
@@ -695,7 +695,7 @@ void FLD::TransferTurbulentInflowCondition::set_values_available_on_this_proc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowConditionXW::TransferTurbulentInflowConditionXW(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps)
+    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
     : TransferTurbulentInflowCondition(dis, dbcmaps)
 {
   numveldof_ = 6;
@@ -730,7 +730,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       if (time >= 0.0)
       {
         curvefac =
-            GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curve_).Evaluate(
+            Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve_).Evaluate(
                 time);
       }
       else
@@ -755,7 +755,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       {
         mymasters.push_back(gid);
 
-        CORE::Nodes::Node* master = dis_->gNode(gid);
+        Core::Nodes::Node* master = dis_->gNode(gid);
 
         std::vector<int> masterdofs = dis_->Dof(master);
 
@@ -789,7 +789,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
     }
 
     // create an exporter for point to point comunication
-    CORE::COMM::Exporter exporter(dis_->Comm());
+    Core::Communication::Exporter exporter(dis_->Comm());
 
     // necessary variables
     MPI_Request request;
@@ -823,7 +823,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
         set_values_available_on_this_proc(mymasters, mymasters_vel, velnp);
 
         // Pack info into block to send
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         pack_local_master_values(mymasters, mymasters_vel, data);
         data.StartPacking();
         pack_local_master_values(mymasters, mymasters_vel, data);
@@ -865,7 +865,7 @@ void FLD::TransferTurbulentInflowConditionXW::set_values_available_on_this_proc(
         // is this slave id on this proc?
         if (dis_->NodeRowMap()->MyGID(*sid))
         {
-          CORE::Nodes::Node* slave = dis_->gNode(*sid);
+          Core::Nodes::Node* slave = dis_->gNode(*sid);
 
           // get dofs
           std::vector<int> slavedofs = dis_->Dof(slave);
@@ -930,7 +930,7 @@ void FLD::TransferTurbulentInflowConditionXW::set_values_available_on_this_proc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowConditionNodal::TransferTurbulentInflowConditionNodal(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps)
+    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
     : TransferTurbulentInflowCondition(dis, dbcmaps)
 {
   numveldof_ = 1;
@@ -964,7 +964,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
       {
         mymasters.push_back(gid);
 
-        CORE::Nodes::Node* master = dis_->gNode(gid);
+        Core::Nodes::Node* master = dis_->gNode(gid);
 
         std::vector<int> masterdofs = dis_->Dof(master);
 
@@ -979,7 +979,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
     }
 
     // create an exporter for point to point comunication
-    CORE::COMM::Exporter exporter(dis_->Comm());
+    Core::Communication::Exporter exporter(dis_->Comm());
 
     // necessary variables
     MPI_Request request;
@@ -1013,7 +1013,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
         set_values_available_on_this_proc(mymasters, mymasters_vec, outvec);
 
         // Pack info into block to send
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         pack_local_master_values(mymasters, mymasters_vec, data);
         data.StartPacking();
         pack_local_master_values(mymasters, mymasters_vec, data);

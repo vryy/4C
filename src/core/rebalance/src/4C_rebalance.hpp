@@ -10,7 +10,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::REBALANCE
+namespace Core::Rebalance
 {
 
   enum class RebalanceType

@@ -20,7 +20,7 @@ Local electroneutrality is dismissed, which enables formation of Space-Charge-La
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -29,7 +29,7 @@ namespace MAT
     class Scl : public ElchSingleMat
     {
      public:
-      Scl(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Scl(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -72,19 +72,19 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
     };
 
   }  // namespace PAR
 
-  class SclType : public CORE::COMM::ParObjectType
+  class SclType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "SclType"; }
 
     static SclType& Instance() { return instance_; }
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static SclType instance_;
@@ -99,7 +99,7 @@ namespace MAT
     Scl();
 
     /// construct the material object given material parameters
-    explicit Scl(MAT::PAR::Scl* params);
+    explicit Scl(Mat::PAR::Scl* params);
 
     //! @name Packing and Unpacking
 
@@ -121,7 +121,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -140,10 +140,10 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override { return CORE::Materials::m_scl; }
+    Core::Materials::MaterialType MaterialType() const override { return Core::Materials::m_scl; }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new Scl(*this));
     }
@@ -190,12 +190,12 @@ namespace MAT
     const std::vector<double>& trans_nr_params() const { return params_->transnr_; }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// my material parameters
-    MAT::PAR::Scl* params_;
+    Mat::PAR::Scl* params_;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

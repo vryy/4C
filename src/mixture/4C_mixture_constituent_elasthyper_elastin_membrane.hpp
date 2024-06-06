@@ -20,15 +20,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   class Anisotropy;
-  namespace ELASTIC
+  namespace Elastic
   {
     class StructuralTensorStrategyBase;
     class IsoNeoHooke;
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 namespace MIXTURE
 {
@@ -40,7 +40,7 @@ namespace MIXTURE
    * The anisotropy extension provides the structural tensor of the plane of the membrane, which is
    * orthogonal to the radial direction
    */
-  class ElastinMembraneAnisotropyExtension : public MAT::FiberAnisotropyExtension<1>
+  class ElastinMembraneAnisotropyExtension : public Mat::FiberAnisotropyExtension<1>
   {
    public:
     /*!
@@ -49,7 +49,7 @@ namespace MIXTURE
      * \param structuralTensorStrategy Structural tensor strategy to compute the structural tensors
      */
     explicit ElastinMembraneAnisotropyExtension(
-        const Teuchos::RCP<MAT::ELASTIC::StructuralTensorStrategyBase>& structuralTensorStrategy);
+        const Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>& structuralTensorStrategy);
 
     /*!
      * \brief This method will be called when all global data is initialized. Here we need to create
@@ -61,14 +61,14 @@ namespace MIXTURE
      * \brief Returns the structural tensor of the membrane plane at the Gauss point
      *
      * \param gp (in) : Gauss point
-     * \return const CORE::LINALG::Matrix<3, 3>& Reference to the structural tensor of the membrane
+     * \return const Core::LinAlg::Matrix<3, 3>& Reference to the structural tensor of the membrane
      * plane
      */
-    const CORE::LINALG::Matrix<3, 3>& get_orthogonal_structural_tensor(int gp);
+    const Core::LinAlg::Matrix<3, 3>& get_orthogonal_structural_tensor(int gp);
 
    private:
     /// Holder of the internal structural tensors
-    std::vector<CORE::LINALG::Matrix<3, 3>> orthogonal_structural_tensor_;
+    std::vector<Core::LinAlg::Matrix<3, 3>> orthogonal_structural_tensor_;
   };
 
   namespace PAR
@@ -84,7 +84,7 @@ namespace MIXTURE
        * \param ref_mass_fraction reference mass fraction
        */
       explicit MixtureConstituentElastHyperElastinMembrane(
-          const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+          const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
@@ -106,7 +106,7 @@ namespace MIXTURE
    * \brief Constituent for any hyperelastic material
    *
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
-   * be paired with the MAT::Mixture material and a MIXTURE::MixtureRule.
+   * be paired with the Mat::Mixture material and a MIXTURE::MixtureRule.
    */
   class MixtureConstituentElastHyperElastinMembrane
       : public MIXTURE::MixtureConstituentElastHyperBase,
@@ -122,7 +122,7 @@ namespace MIXTURE
         MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane* params, int id);
 
     /// Returns the material type enum
-    CORE::Materials::MaterialType MaterialType() const override;
+    Core::Materials::MaterialType MaterialType() const override;
 
     /*!
      * \brief Pack data into a char vector from this class
@@ -133,7 +133,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    void PackConstituent(CORE::COMM::PackBuffer& data) const override;
+    void PackConstituent(Core::Communication::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -153,7 +153,7 @@ namespace MIXTURE
      *
      * \param anisotropy Reference to the global anisotropy manager
      */
-    void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
+    void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
     /*!
      * Initialize the constituent with the parameters of the input line
@@ -161,7 +161,7 @@ namespace MIXTURE
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) Parameter list for exchange of parameters
      */
-    void ReadElement(int numgp, INPUT::LineDefinition* linedef) override;
+    void ReadElement(int numgp, Input::LineDefinition* linedef) override;
 
 
     /*!
@@ -174,7 +174,7 @@ namespace MIXTURE
      * @param gp Gauss point
      * @param eleGID Global element identifier
      */
-    void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
+    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
     /*!
@@ -204,9 +204,9 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+        Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
     /*!
      * \brief Evaluation of the constituent with an inelastic, external part.
@@ -219,9 +219,9 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
-        const CORE::LINALG::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+    void EvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
+        const Core::LinAlg::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp,
         int eleGID) override;
 
     /*!
@@ -233,7 +233,7 @@ namespace MIXTURE
      * \param eleGID Global element id
      */
     void evaluate_membrane_stress(
-        CORE::LINALG::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID) override;
+        Core::LinAlg::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
    protected:
     /*!
@@ -247,9 +247,9 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void evaluate_stress_c_mat_membrane(const CORE::LINALG::Matrix<3, 3>& F,
-        const CORE::LINALG::Matrix<3, 3>& iFin, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+    void evaluate_stress_c_mat_membrane(const Core::LinAlg::Matrix<3, 3>& F,
+        const Core::LinAlg::Matrix<3, 3>& iFin, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp,
         int eleGID) const;
 
     /*!
@@ -262,8 +262,8 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void evaluate_structural_tensors_in_grown_configuration(CORE::LINALG::Matrix<3, 3>& Aradgr,
-        CORE::LINALG::Matrix<3, 3>& Aorthgr, const CORE::LINALG::Matrix<3, 3>& iFin, int gp,
+    void evaluate_structural_tensors_in_grown_configuration(Core::LinAlg::Matrix<3, 3>& Aradgr,
+        Core::LinAlg::Matrix<3, 3>& Aorthgr, const Core::LinAlg::Matrix<3, 3>& iFin, int gp,
         int eleGID) const;
 
     /*!
@@ -278,9 +278,9 @@ namespace MIXTURE
      *
      * \param Ce (in) : Elastic Cauchy-Green deformation tensor
      */
-    static void evaluate_aorthgr_ce_aorthgr_arad(CORE::LINALG::Matrix<3, 3>& AorthgrCeAorthgrArad,
-        const CORE::LINALG::Matrix<3, 3>& Aradgr, const CORE::LINALG::Matrix<3, 3>& Aorthgr,
-        const CORE::LINALG::Matrix<3, 3>& Ce);
+    static void evaluate_aorthgr_ce_aorthgr_arad(Core::LinAlg::Matrix<3, 3>& AorthgrCeAorthgrArad,
+        const Core::LinAlg::Matrix<3, 3>& Aradgr, const Core::LinAlg::Matrix<3, 3>& Aorthgr,
+        const Core::LinAlg::Matrix<3, 3>& Ce);
 
     /*!
      * \brief Evaluate the matrix product \[
@@ -292,8 +292,8 @@ namespace MIXTURE
      * \param Aorthgr (in) : Structural tensor of the membrane plane direction in grown
      * configuration
      */
-    static void evaluatei_fin_aorthgri_fin_t(CORE::LINALG::Matrix<3, 3>& iFinAorthgriFinT,
-        const CORE::LINALG::Matrix<3, 3>& iFin, const CORE::LINALG::Matrix<3, 3>& Aorthgr);
+    static void evaluatei_fin_aorthgri_fin_t(Core::LinAlg::Matrix<3, 3>& iFinAorthgriFinT,
+        const Core::LinAlg::Matrix<3, 3>& iFin, const Core::LinAlg::Matrix<3, 3>& Aorthgr);
 
     /*!
      * \brief Evaluates the prioduct \[
@@ -307,9 +307,9 @@ namespace MIXTURE
      * \param Aorthgr Structural tensor of the membrane plane direction in grown configuration
      */
     static void evaluatei_fin_t_aorthgr_ti_xt_aorthgri_fin(
-        CORE::LINALG::Matrix<3, 3>& iFinTAorthgrTiXTAorthgriFin,
-        const CORE::LINALG::Matrix<3, 3>& AorthgrCeAorthgrArad,
-        const CORE::LINALG::Matrix<3, 3>& iFin, const CORE::LINALG::Matrix<3, 3>& Aorthgr);
+        Core::LinAlg::Matrix<3, 3>& iFinTAorthgrTiXTAorthgriFin,
+        const Core::LinAlg::Matrix<3, 3>& AorthgrCeAorthgrArad,
+        const Core::LinAlg::Matrix<3, 3>& iFin, const Core::LinAlg::Matrix<3, 3>& Aorthgr);
 
    private:
     /// my material parameters
@@ -322,7 +322,7 @@ namespace MIXTURE
     std::vector<double> mue_frac_;
 
     /// map to membrane materials/potential summands (only IsoNeoHooke is possible)
-    std::vector<Teuchos::RCP<MAT::ELASTIC::IsoNeoHooke>> potsum_membrane_;
+    std::vector<Teuchos::RCP<Mat::Elastic::IsoNeoHooke>> potsum_membrane_;
 
     /// Anisotropy extension holding the structural tensor of the anisotropy
     ElastinMembraneAnisotropyExtension anisotropy_extension_;

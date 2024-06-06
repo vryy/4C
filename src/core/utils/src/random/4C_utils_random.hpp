@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   /*!
   \brief handles random numbers
@@ -60,7 +60,7 @@ namespace CORE::UTILS
     std::normal_distribution<double> norm_dist_{};
     //@}
   };
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

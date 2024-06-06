@@ -25,13 +25,13 @@ transport
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
   /*--------------------------------------------------------------*
    | constructor                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
   HomIsoTurbInitialScalarField::HomIsoTurbInitialScalarField(
-      ScaTraTimIntImpl& timeint, const INPAR::SCATRA::InitialField initfield)
+      ScaTraTimIntImpl& timeint, const Inpar::ScaTra::InitialField initfield)
       : discret_(timeint.discret_), phinp_(timeint.phinp_), phin_(timeint.phin_), type_(initfield)
   {
     // determine number of modes
@@ -91,7 +91,7 @@ namespace SCATRA
     // loop all nodes and store x1-coordinate
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
-      CORE::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->lRowNode(inode);
       if ((node->X()[1] < 2e-9 && node->X()[1] > -2e-9) and
           (node->X()[2] < 2e-9 && node->X()[2] > -2e-9))
         coords.insert(node->X()[0]);
@@ -106,23 +106,23 @@ namespace SCATRA
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      CORE::COMM::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->Comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *x1line);
+          Core::Communication::ParObject::AddtoPack(data, *x1line);
         }
         data.StartPacking();
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *x1line);
+          Core::Communication::ParObject::AddtoPack(data, *x1line);
         }
         std::swap(sblock, data());
 
@@ -164,7 +164,7 @@ namespace SCATRA
           while (index < rblock.size())
           {
             double onecoord;
-            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
+            Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
             coords.insert(onecoord);
           }
         }
@@ -259,7 +259,7 @@ namespace SCATRA
               // scalar field in physical space
               if (discret_->Comm().MyPID() == 0)
               {
-                CORE::UTILS::Random* random = GLOBAL::Problem::Instance()->Random();
+                Core::UTILS::Random* random = Global::Problem::Instance()->Random();
                 // set range [0;1] (default: [-1;1])
                 //              random->SetRandRange(0.0,1.0);
                 //              random_theta = random->Uni();
@@ -403,10 +403,10 @@ namespace SCATRA
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
       // get node
-      CORE::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->lRowNode(inode);
 
       // get coordinates
-      CORE::LINALG::Matrix<3, 1> xyz(true);
+      Core::LinAlg::Matrix<3, 1> xyz(true);
       for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
       // get global ids of all dofs of the node
@@ -465,14 +465,14 @@ namespace SCATRA
     // remark: k > 0 here
     double energy = 0.0;
 
-    if (type_ == INPAR::SCATRA::initialfield_forced_hit_low_Sc)
+    if (type_ == Inpar::ScaTra::initialfield_forced_hit_low_Sc)
     {
       if (k > 2.0)
         energy = 0.1 * pow(2.0, 5.0 / 3.0) * pow(k, -5.0 / 3.0);
       else
         energy = 0.1 * 1.0;
     }
-    else if (type_ == INPAR::SCATRA::initialfield_forced_hit_high_Sc)
+    else if (type_ == Inpar::ScaTra::initialfield_forced_hit_high_Sc)
     {
       if (k > 2.0)
         energy = 0.1 * 2.0 * pow(k, -1.0);
@@ -486,6 +486,6 @@ namespace SCATRA
   }
 
 
-};  // namespace SCATRA
+};  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE

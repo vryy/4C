@@ -19,15 +19,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   class Anisotropy;
-  namespace ELASTIC
+  namespace Elastic
   {
     class StructuralTensorStrategyBase;
     class IsoNeoHooke;
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 namespace MIXTURE
 {
@@ -45,7 +45,7 @@ namespace MIXTURE
        * \param ref_mass_fraction reference mass fraction
        */
       explicit MixtureConstituentElastHyperDamage(
-          const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+          const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
@@ -61,7 +61,7 @@ namespace MIXTURE
    * \brief Constituent for any hyperelastic material
    *
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
-   * be paired with the MAT::Mixture material and a MIXTURE::MixtureRule.
+   * be paired with the Mat::Mixture material and a MIXTURE::MixtureRule.
    */
   class MixtureConstituentElastHyperDamage : public MIXTURE::MixtureConstituentElastHyperBase
   {
@@ -75,7 +75,7 @@ namespace MIXTURE
         MIXTURE::PAR::MixtureConstituentElastHyperDamage* params, int id);
 
     /// Returns the material type enum
-    CORE::Materials::MaterialType MaterialType() const override;
+    Core::Materials::MaterialType MaterialType() const override;
 
     /*!
      * \brief Pack data into a char vector from this class
@@ -86,7 +86,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    void PackConstituent(CORE::COMM::PackBuffer& data) const override;
+    void PackConstituent(Core::Communication::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -107,7 +107,7 @@ namespace MIXTURE
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) Parameter list for exchange of parameters
      */
-    void ReadElement(int numgp, INPUT::LineDefinition* linedef) override;
+    void ReadElement(int numgp, Input::LineDefinition* linedef) override;
 
 
     /*!
@@ -120,7 +120,7 @@ namespace MIXTURE
      * @param gp Gauss point
      * @param eleGID Global element identifier
      */
-    void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
+    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
     double GetGrowthScalar(int gp) const override;
@@ -137,9 +137,9 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+        Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
     /*!
      * \brief Evaluation of the constituent with an inelastic, external part.
@@ -152,9 +152,9 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
-        const CORE::LINALG::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+    void EvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
+        const Core::LinAlg::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp,
         int eleGID) override;
 
    private:

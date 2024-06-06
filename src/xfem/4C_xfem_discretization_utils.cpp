@@ -24,9 +24,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> dis,
+void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<Discret::Discretization> dis,
     const std::string& disname, bool elements, bool elecol, bool nodes, bool nodecol, bool faces,
-    bool facecol, std::ostream& s, std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos)
+    bool facecol, std::ostream& s, std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos)
 {
   if (elements)
   {
@@ -37,11 +37,11 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       s << " col e->Id() \" {\n";
       for (int i = 0; i < dis->NumMyColElements(); ++i)
       {
-        const CORE::Elements::Element* actele = dis->lColElement(i);
+        const Core::Elements::Element* actele = dis->lColElement(i);
         if (curr_pos == nullptr)
-          CORE::IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
+          Core::IO::Gmsh::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
         else
-          CORE::IO::GMSH::elementAtCurrentPositionToStream(
+          Core::IO::Gmsh::elementAtCurrentPositionToStream(
               double(actele->Id()), actele, *curr_pos, s);
       };
     }
@@ -50,11 +50,11 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       s << " row e->Id() \" {\n";
       for (int i = 0; i < dis->NumMyRowElements(); ++i)
       {
-        const CORE::Elements::Element* actele = dis->lRowElement(i);
+        const Core::Elements::Element* actele = dis->lRowElement(i);
         if (curr_pos == nullptr)
-          CORE::IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
+          Core::IO::Gmsh::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
         else
-          CORE::IO::GMSH::elementAtCurrentPositionToStream(
+          Core::IO::Gmsh::elementAtCurrentPositionToStream(
               double(actele->Id()), actele, *curr_pos, s);
       };
     }
@@ -69,24 +69,24 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       s << " col n->Id() \" {\n";
       for (int i = 0; i < dis->NumMyColNodes(); ++i)
       {
-        const CORE::Nodes::Node* actnode = dis->lColNode(i);
-        CORE::LINALG::Matrix<3, 1> pos(true);
+        const Core::Nodes::Node* actnode = dis->lColNode(i);
+        Core::LinAlg::Matrix<3, 1> pos(true);
 
         if (curr_pos != nullptr)
         {
-          const CORE::LINALG::Matrix<3, 1>& curr_x = curr_pos->find(actnode->Id())->second;
+          const Core::LinAlg::Matrix<3, 1>& curr_x = curr_pos->find(actnode->Id())->second;
           pos(0) = curr_x(0);
           pos(1) = curr_x(1);
           pos(2) = curr_x(2);
         }
         else
         {
-          const CORE::LINALG::Matrix<3, 1> x(actnode->X().data());
+          const Core::LinAlg::Matrix<3, 1> x(actnode->X().data());
           pos(0) = x(0);
           pos(1) = x(1);
           pos(2) = x(2);
         }
-        CORE::IO::GMSH::cellWithScalarToStream(CORE::FE::CellType::point1, actnode->Id(), pos, s);
+        Core::IO::Gmsh::cellWithScalarToStream(Core::FE::CellType::point1, actnode->Id(), pos, s);
       }
     }
     else
@@ -94,24 +94,24 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       s << " row n->Id() \" {\n";
       for (int i = 0; i < dis->NumMyRowNodes(); ++i)
       {
-        const CORE::Nodes::Node* actnode = dis->lRowNode(i);
-        CORE::LINALG::Matrix<3, 1> pos(true);
+        const Core::Nodes::Node* actnode = dis->lRowNode(i);
+        Core::LinAlg::Matrix<3, 1> pos(true);
 
         if (curr_pos != nullptr)
         {
-          const CORE::LINALG::Matrix<3, 1>& curr_x = curr_pos->find(actnode->Id())->second;
+          const Core::LinAlg::Matrix<3, 1>& curr_x = curr_pos->find(actnode->Id())->second;
           pos(0) = curr_x(0);
           pos(1) = curr_x(1);
           pos(2) = curr_x(2);
         }
         else
         {
-          const CORE::LINALG::Matrix<3, 1> x(actnode->X().data());
+          const Core::LinAlg::Matrix<3, 1> x(actnode->X().data());
           pos(0) = x(0);
           pos(1) = x(1);
           pos(2) = x(2);
         }
-        CORE::IO::GMSH::cellWithScalarToStream(CORE::FE::CellType::point1, actnode->Id(), pos, s);
+        Core::IO::Gmsh::cellWithScalarToStream(Core::FE::CellType::point1, actnode->Id(), pos, s);
       }
     }
     s << "};\n";
@@ -120,10 +120,10 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
   if (faces)
   {
     // cast to DiscretizationXFEM
-    Teuchos::RCP<DRT::DiscretizationFaces> xdis =
-        Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(dis, true);
+    Teuchos::RCP<Discret::DiscretizationFaces> xdis =
+        Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(dis, true);
     if (xdis == Teuchos::null)
-      FOUR_C_THROW("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
+      FOUR_C_THROW("Failed to cast Discret::Discretization to Discret::DiscretizationFaces.");
 
     s << "View \" " << disname;
 
@@ -134,11 +134,11 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         s << " col f->Id() \" {\n";
         for (int i = 0; i < xdis->NumMyColFaces(); ++i)
         {
-          const CORE::Elements::Element* actele = xdis->lColFace(i);
+          const Core::Elements::Element* actele = xdis->lColFace(i);
           if (curr_pos == nullptr)
-            CORE::IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
+            Core::IO::Gmsh::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
           else
-            CORE::IO::GMSH::elementAtCurrentPositionToStream(
+            Core::IO::Gmsh::elementAtCurrentPositionToStream(
                 double(actele->Id()), actele, *curr_pos, s);
         };
       }
@@ -147,11 +147,11 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         s << " row f->Id() \" {\n";
         for (int i = 0; i < xdis->NumMyRowFaces(); ++i)
         {
-          const CORE::Elements::Element* actele = xdis->lRowFace(i);
+          const Core::Elements::Element* actele = xdis->lRowFace(i);
           if (curr_pos == nullptr)
-            CORE::IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
+            Core::IO::Gmsh::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
           else
-            CORE::IO::GMSH::elementAtCurrentPositionToStream(
+            Core::IO::Gmsh::elementAtCurrentPositionToStream(
                 double(actele->Id()), actele, *curr_pos, s);
         };
       }
@@ -163,7 +163,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
-    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<DRT::Discretization> dis,
+    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Discret::Discretization> dis,
     int numdof) const
 {
   Teuchos::RCP<XFEM::DiscretizationXFEM> xdis =
@@ -189,8 +189,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
   int nodeindexrange =
       noderowmap->MaxAllGID() - noderowmap->MinAllGID() + 1;  // if id's are not continuous numbered
   int maxNumMyReservedDofsperNode = (xgen_params.get<int>("MAX_NUM_DOFSETS")) * numdof;
-  Teuchos::RCP<CORE::Dofsets::FixedSizeDofSet> maxdofset =
-      Teuchos::rcp(new CORE::Dofsets::FixedSizeDofSet(maxNumMyReservedDofsperNode, nodeindexrange));
+  Teuchos::RCP<Core::DOFSets::FixedSizeDofSet> maxdofset =
+      Teuchos::rcp(new Core::DOFSets::FixedSizeDofSet(maxNumMyReservedDofsperNode, nodeindexrange));
 
   const int fluid_nds = 0;
   xdis->ReplaceDofSet(fluid_nds, maxdofset, true);  // fluid dofset has nds = 0
@@ -208,8 +208,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
-    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<DRT::Discretization> embedded_dis, const std::string& embedded_cond_name,
+    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Discret::Discretization> dis,
+    Teuchos::RCP<Discret::Discretization> embedded_dis, const std::string& embedded_cond_name,
     int numdof) const
 {
   if (!embedded_dis->Filled()) embedded_dis->fill_complete();
@@ -219,7 +219,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
   if (!xdis->Filled()) xdis->fill_complete();
 
   // get fluid mesh conditions: hereby we specify standalone embedded discretizations
-  std::vector<CORE::Conditions::Condition*> conditions;
+  std::vector<Core::Conditions::Condition*> conditions;
   xdis->GetCondition(embedded_cond_name, conditions);
 
   std::vector<std::string> conditions_to_copy;
@@ -229,8 +229,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 
   setup_xfem_discretization(xgen_params, xdis, numdof);
 
-  CORE::REBALANCE::UTILS::print_parallel_distribution(*dis);
-  CORE::REBALANCE::UTILS::print_parallel_distribution(*embedded_dis);
+  Core::Rebalance::UTILS::print_parallel_distribution(*dis);
+  Core::Rebalance::UTILS::print_parallel_distribution(*embedded_dis);
 
   return;
 }
@@ -238,9 +238,9 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
-    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<DRT::Discretization> src_dis,
-    Teuchos::RCP<DRT::Discretization> target_dis,
-    const std::vector<CORE::Conditions::Condition*>& boundary_conds) const
+    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Discret::Discretization> src_dis,
+    Teuchos::RCP<Discret::Discretization> target_dis,
+    const std::vector<Core::Conditions::Condition*>& boundary_conds) const
 {
   if (!target_dis->Filled()) target_dis->fill_complete();
 
@@ -248,7 +248,7 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 
   // get the number of DoF's per node
   int gid_node = src_dis->NodeRowMap()->MinMyGID();
-  CORE::Nodes::Node* node_ptr = src_dis->gNode(gid_node);
+  Core::Nodes::Node* node_ptr = src_dis->gNode(gid_node);
   int num_dof_per_node = src_dis->NumDof(node_ptr);
 
   std::vector<std::string> conditions_to_copy;
@@ -262,8 +262,8 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
   if (!Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(target_dis).is_null())
     setup_xfem_discretization(xgen_params, target_dis, num_dof_per_node);
 
-  CORE::REBALANCE::UTILS::print_parallel_distribution(*src_dis);
-  CORE::REBALANCE::UTILS::print_parallel_distribution(*target_dis);
+  Core::Rebalance::UTILS::print_parallel_distribution(*src_dis);
+  Core::Rebalance::UTILS::print_parallel_distribution(*target_dis);
 
   return num_dof_per_node;
 }
@@ -272,21 +272,22 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
-    Teuchos::RCP<DRT::Discretization> sourcedis, Teuchos::RCP<DRT::Discretization> targetdis,
-    std::vector<CORE::Conditions::Condition*>& conditions,
+    Teuchos::RCP<Discret::Discretization> sourcedis,
+    Teuchos::RCP<Discret::Discretization> targetdis,
+    std::vector<Core::Conditions::Condition*>& conditions,
     const std::vector<std::string>& conditions_to_copy) const
 {
   // row node map (id -> pointer)
-  std::map<int, CORE::Nodes::Node*> sourcenodes;
+  std::map<int, Core::Nodes::Node*> sourcenodes;
 
   // column node map
-  std::map<int, CORE::Nodes::Node*> sourcegnodes;
+  std::map<int, Core::Nodes::Node*> sourcegnodes;
 
   // element map
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>> sourceelements;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>> sourceelements;
 
   // find conditioned nodes (owned and ghosted) and elements
-  CORE::Conditions::FindConditionObjects(
+  Core::Conditions::FindConditionObjects(
       *sourcedis, sourcenodes, sourcegnodes, sourceelements, conditions);
 
   split_discretization(
@@ -296,10 +297,11 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
-    Teuchos::RCP<DRT::Discretization> sourcedis, Teuchos::RCP<DRT::Discretization> targetdis,
-    const std::map<int, CORE::Nodes::Node*>& sourcenodes,
-    const std::map<int, CORE::Nodes::Node*>& sourcegnodes,
-    const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& sourceelements,
+    Teuchos::RCP<Discret::Discretization> sourcedis,
+    Teuchos::RCP<Discret::Discretization> targetdis,
+    const std::map<int, Core::Nodes::Node*>& sourcenodes,
+    const std::map<int, Core::Nodes::Node*>& sourcegnodes,
+    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& sourceelements,
     const std::vector<std::string>& conditions_to_copy) const
 {
   if (!sourcedis->Filled()) FOUR_C_THROW("sourcedis is not filled");
@@ -309,7 +311,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
   const int numothernodecol = sourcedis->NumMyColNodes();
 
   // add the conditioned elements
-  for (std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator sourceele_iter =
+  for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator sourceele_iter =
            sourceelements.begin();
        sourceele_iter != sourceelements.end(); ++sourceele_iter)
   {
@@ -331,14 +333,14 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
   // ------------------------------------------------------------------------
   // add conditioned nodes and fill the id vectors
   // ------------------------------------------------------------------------
-  for (std::map<int, CORE::Nodes::Node*>::const_iterator sourcegnode_iter = sourcegnodes.begin();
+  for (std::map<int, Core::Nodes::Node*>::const_iterator sourcegnode_iter = sourcegnodes.begin();
        sourcegnode_iter != sourcegnodes.end(); ++sourcegnode_iter)
   {
     const int nid = sourcegnode_iter->first;
     if (sourcegnode_iter->second->Owner() == myrank)
     {
-      Teuchos::RCP<CORE::Nodes::Node> sourcegnode =
-          Teuchos::rcp(new CORE::Nodes::Node(nid, sourcegnode_iter->second->X(), myrank));
+      Teuchos::RCP<Core::Nodes::Node> sourcegnode =
+          Teuchos::rcp(new Core::Nodes::Node(nid, sourcegnode_iter->second->X(), myrank));
       targetdis->AddNode(sourcegnode);
       condnoderowset.insert(nid);
       targetnoderowvec.push_back(nid);
@@ -353,11 +355,11 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
   for (std::vector<std::string>::const_iterator conditername = conditions_to_copy.begin();
        conditername != conditions_to_copy.end(); ++conditername)
   {
-    std::vector<CORE::Conditions::Condition*> conds;
+    std::vector<Core::Conditions::Condition*> conds;
     sourcedis->GetCondition(*conditername, conds);
     for (unsigned i = 0; i < conds.size(); ++i)
     {
-      Teuchos::RCP<CORE::Conditions::Condition> cond_to_copy =
+      Teuchos::RCP<Core::Conditions::Condition> cond_to_copy =
           split_condition(conds[i], targetnodecolvec, targetdis->Comm());
       if (not cond_to_copy.is_null()) targetdis->SetCondition(*conditername, cond_to_copy);
     }
@@ -374,7 +376,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     int source_ele_gid = sourcedis->ElementColMap()->GID(j);
     // continue, if we are going to delete this element
     if (sourceelements.find(source_ele_gid) != sourceelements.end()) continue;
-    CORE::Elements::Element* source_ele = sourcedis->gElement(source_ele_gid);
+    Core::Elements::Element* source_ele = sourcedis->gElement(source_ele_gid);
     const int* nid = source_ele->NodeIds();
     for (unsigned i = 0; i < static_cast<unsigned>(source_ele->num_node()); ++i)
     {
@@ -411,7 +413,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     if (not sourcedis->DeleteNode(*it)) FOUR_C_THROW("Node %d could not be deleted!", *it);
 
   // delete conditioned elements from source discretization
-  for (std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator sourceele_iter =
+  for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator sourceele_iter =
            sourceelements.begin();
        sourceele_iter != sourceelements.end(); ++sourceele_iter)
   {
@@ -426,9 +428,9 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
   for (std::vector<std::string>::const_iterator conditername = src_conditions.begin();
        conditername != src_conditions.end(); ++conditername)
   {
-    std::vector<CORE::Conditions::Condition*> conds;
+    std::vector<Core::Conditions::Condition*> conds;
     sourcedis->GetCondition(*conditername, conds);
-    std::vector<Teuchos::RCP<CORE::Conditions::Condition>> src_conds(conds.size(), Teuchos::null);
+    std::vector<Teuchos::RCP<Core::Conditions::Condition>> src_conds(conds.size(), Teuchos::null);
     for (unsigned i = 0; i < conds.size(); ++i)
       src_conds[i] = split_condition(conds[i], othernodecolvec, sourcedis->Comm());
     sourcedis->ReplaceConditions(*conditername, src_conds);
@@ -442,7 +444,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(Teuchos::RCP<DRT::Discretization> dis,
+void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(Teuchos::RCP<Discret::Discretization> dis,
     std::vector<int>& noderowvec, std::vector<int>& nodecolvec) const
 {
   dis->CheckFilledGlobally();
@@ -457,11 +459,11 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(Teuchos::RCP<DRT::Disc
   if (!dis->Filled()) dis->Redistribute(*noderowmap, *nodecolmap);
 
   Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::rcp(new Epetra_Map(*dis->ElementRowMap()));
-  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = CORE::REBALANCE::BuildGraph(dis, elerowmap);
+  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = Core::Rebalance::BuildGraph(dis, elerowmap);
 
   Teuchos::ParameterList rebalanceParams;
   rebalanceParams.set("num parts", std::to_string(comm->NumProc()));
-  std::tie(noderowmap, nodecolmap) = CORE::REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
+  std::tie(noderowmap, nodecolmap) = Core::Rebalance::RebalanceNodeMaps(nodegraph, rebalanceParams);
 
   auto const& [roweles, coleles] = dis->build_element_row_column(*noderowmap, *nodecolmap);
 
@@ -477,47 +479,47 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(Teuchos::RCP<DRT::Disc
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_condition(
-    const Teuchos::RCP<DRT::Discretization>& sourcedis,
-    const Teuchos::RCP<DRT::Discretization>& targetdis,
-    const std::vector<CORE::Conditions::Condition*>& boundary_conds,
+    const Teuchos::RCP<Discret::Discretization>& sourcedis,
+    const Teuchos::RCP<Discret::Discretization>& targetdis,
+    const std::vector<Core::Conditions::Condition*>& boundary_conds,
     const std::vector<std::string>& conditions_to_copy) const
 {
   if (not sourcedis->Filled()) FOUR_C_THROW("sourcedis is not filled");
   const int myrank = targetdis->Comm().MyPID();
 
   // element map
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>> src_cond_elements;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>> src_cond_elements;
 
   // find conditioned nodes (owned and ghosted) and elements
-  CORE::Conditions::FindConditionObjects(src_cond_elements, boundary_conds);
+  Core::Conditions::FindConditionObjects(src_cond_elements, boundary_conds);
 
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>>::const_iterator cit;
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>> src_elements;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator cit;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>> src_elements;
   // row node map (id -> pointer)
-  std::map<int, CORE::Nodes::Node*> src_my_gnodes;
+  std::map<int, Core::Nodes::Node*> src_my_gnodes;
   std::vector<int> condnoderowvec;
   // column node map
-  std::map<int, CORE::Nodes::Node*> src_gnodes;
+  std::map<int, Core::Nodes::Node*> src_gnodes;
   std::vector<int> condnodecolvec;
   // find all parent elements
   for (cit = src_cond_elements.begin(); cit != src_cond_elements.end(); ++cit)
   {
-    CORE::Elements::FaceElement* src_face_element =
-        dynamic_cast<CORE::Elements::FaceElement*>(cit->second.get());
+    Core::Elements::FaceElement* src_face_element =
+        dynamic_cast<Core::Elements::FaceElement*>(cit->second.get());
     if (src_face_element == nullptr)
-      FOUR_C_THROW("Dynamic cast failed! The src element %d is no CORE::Elements::FaceElement!",
+      FOUR_C_THROW("Dynamic cast failed! The src element %d is no Core::Elements::FaceElement!",
           cit->second->Id());
     // get the parent element
-    CORE::Elements::Element* src_ele = src_face_element->parent_element();
+    Core::Elements::Element* src_ele = src_face_element->parent_element();
     int src_ele_gid = src_face_element->ParentElementId();
-    src_elements[src_ele_gid] = Teuchos::rcp<CORE::Elements::Element>(src_ele, false);
+    src_elements[src_ele_gid] = Teuchos::rcp<Core::Elements::Element>(src_ele, false);
     const int* n = src_ele->NodeIds();
     for (unsigned i = 0; i < static_cast<unsigned>(src_ele->num_node()); ++i)
     {
       const int gid = n[i];
       if (sourcedis->HaveGlobalNode(gid))
       {
-        CORE::Nodes::Node* node = sourcedis->gNode(gid);
+        Core::Nodes::Node* node = sourcedis->gNode(gid);
         src_gnodes[gid] = node;
 
         if (node->Owner() == myrank) src_my_gnodes[gid] = node;
@@ -534,8 +536,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Conditions::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::split_condition(
-    const CORE::Conditions::Condition* src_cond, const std::vector<int>& nodecolvec,
+Teuchos::RCP<Core::Conditions::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::split_condition(
+    const Core::Conditions::Condition* src_cond, const std::vector<int>& nodecolvec,
     const Epetra_Comm& comm) const
 {
   const std::vector<int>* cond_node_gids = src_cond->GetNodes();

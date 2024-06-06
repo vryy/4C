@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE
+namespace Core::FE
 {
   // forward declarations
   struct IntegrationPoints1D;
@@ -82,7 +82,7 @@ namespace CORE::FE
    * @return GaussRule1D / GaussRule2D / GaussRule3D depending on the dimension of the
    * discretization
    */
-  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_hex<distype>, int> = 0>
+  template <Core::FE::CellType distype, std::enable_if_t<FE::is_hex<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -114,7 +114,7 @@ namespace CORE::FE
     }
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_nurbs<distype>, int> = 0>
+  template <Core::FE::CellType distype, std::enable_if_t<FE::is_nurbs<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -126,7 +126,7 @@ namespace CORE::FE
     }
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_tet<distype>, int> = 0>
+  template <Core::FE::CellType distype, std::enable_if_t<FE::is_tet<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -147,7 +147,7 @@ namespace CORE::FE
     }
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_wedge<distype>, int> = 0>
+  template <Core::FE::CellType distype, std::enable_if_t<FE::is_wedge<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -163,7 +163,7 @@ namespace CORE::FE
     }
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_pyramid<distype>, int> = 0>
+  template <Core::FE::CellType distype, std::enable_if_t<FE::is_pyramid<distype>, int> = 0>
   GaussRule3D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -382,7 +382,7 @@ namespace CORE::FE
   };
 
 
-  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_quad<distype>, int> = 0>
+  template <Core::FE::CellType distype, std::enable_if_t<FE::is_quad<distype>, int> = 0>
   GaussRule2D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -418,7 +418,7 @@ namespace CORE::FE
     }
   }
 
-  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_tri<distype>, int> = 0>
+  template <Core::FE::CellType distype, std::enable_if_t<FE::is_tri<distype>, int> = 0>
   GaussRule2D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -480,7 +480,7 @@ namespace CORE::FE
     line_lobatto14point   ///< degree of precision: 25 (closed)
   };
 
-  template <CORE::FE::CellType distype, std::enable_if_t<FE::is_line<distype>, int> = 0>
+  template <Core::FE::CellType distype, std::enable_if_t<FE::is_line<distype>, int> = 0>
   GaussRule1D NumGaussPointsToGaussRule(unsigned numgp)
   {
     switch (numgp)
@@ -582,7 +582,7 @@ namespace CORE::FE
 
    private:
     static constexpr int max_nquad = 1000;  ///< size of c array
-    CORE::FE::GaussRule3D intrule_;         ///< associated integration rule name
+    Core::FE::GaussRule3D intrule_;         ///< associated integration rule name
    public:
     int nquad;                 ///< number of gausspoints
     double qxg[max_nquad][3];  ///< coordinates
@@ -598,7 +598,7 @@ namespace CORE::FE
     [[nodiscard]] int NumPoints() const { return nquad; }
 
     /// get used integration rule
-    CORE::FE::GaussRule3D GetIntRule() const { return intrule_; };
+    Core::FE::GaussRule3D GetIntRule() const { return intrule_; };
   };
 
   /*!
@@ -619,7 +619,7 @@ namespace CORE::FE
 
    private:
     static constexpr int max_nquad = 1024;  ///< size of c array
-    CORE::FE::GaussRule2D intrule_;         ///< associated integration rule name
+    Core::FE::GaussRule2D intrule_;         ///< associated integration rule name
    public:
     int nquad;                 ///< number of gausspoints
     double qxg[max_nquad][2];  ///< coordinates
@@ -635,7 +635,7 @@ namespace CORE::FE
     [[nodiscard]] int NumPoints() const { return nquad; }
 
     /// get used integration rule
-    CORE::FE::GaussRule2D GetIntRule() const { return intrule_; };
+    Core::FE::GaussRule2D GetIntRule() const { return intrule_; };
   };
 
   /*!
@@ -655,7 +655,7 @@ namespace CORE::FE
 
    private:
     static constexpr int max_nquad = 50;  ///< size of c array
-    CORE::FE::GaussRule1D intrule_;       ///< associated integration rule name
+    Core::FE::GaussRule1D intrule_;       ///< associated integration rule name
    public:
     int nquad;                 ///< number of integration points
     double qxg[max_nquad][1];  ///< coordinates
@@ -671,7 +671,7 @@ namespace CORE::FE
     [[nodiscard]] int NumPoints() const { return nquad; }
 
     /// get used integration rule
-    CORE::FE::GaussRule1D GetIntRule() const { return intrule_; };
+    Core::FE::GaussRule1D GetIntRule() const { return intrule_; };
   };
 
 
@@ -685,19 +685,19 @@ namespace CORE::FE
     template <>
     struct DimToIntegrationPoints<1>
     {
-      using type = CORE::FE::IntegrationPoints1D;
+      using type = Core::FE::IntegrationPoints1D;
     };
 
     template <>
     struct DimToIntegrationPoints<2>
     {
-      using type = CORE::FE::IntegrationPoints2D;
+      using type = Core::FE::IntegrationPoints2D;
     };
 
     template <>
     struct DimToIntegrationPoints<3>
     {
-      using type = CORE::FE::IntegrationPoints3D;
+      using type = Core::FE::IntegrationPoints3D;
     };
   }  // namespace DETAIL
 
@@ -808,7 +808,7 @@ namespace CORE::FE
   };
 
 
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

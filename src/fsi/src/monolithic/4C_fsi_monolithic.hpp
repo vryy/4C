@@ -26,25 +26,25 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class AleFsiWrapper;
   class Coupling;
   class FluidFSI;
   class FSIStructureWrapper;
   class StructureFSITimIntAda;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace DRT
+namespace Discret
 {
   namespace UTILS
   {
     template <typename>
     class TimIntMStep;
   }
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
@@ -61,11 +61,11 @@ namespace FSI
   }  // namespace UTILS
 }  // namespace FSI
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class MapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace NOX
 {
@@ -76,7 +76,7 @@ namespace NOX
   }  // namespace FSI
 }  // namespace NOX
 
-namespace TIMESTEPPING
+namespace TimeStepping
 {
   template <typename>
   class TimIntMStep;
@@ -103,7 +103,7 @@ namespace FSI
     defines the dof number ordering of the Discretizations... Don't get
     confused. Just always list structure, fluid, ale. In that order.
    */
-  class MonolithicBase : public ADAPTER::AlgorithmBase
+  class MonolithicBase : public Adapter::AlgorithmBase
   {
    public:
     /// create using a Epetra_Comm
@@ -115,15 +115,15 @@ namespace FSI
 
     //! create time integrator for structure field
     virtual void create_structure_time_integrator(
-        const Teuchos::ParameterList& timeparams,    ///< time integration parameters
-        Teuchos::RCP<DRT::Discretization> structdis  ///< discretization of structure field
+        const Teuchos::ParameterList& timeparams,        ///< time integration parameters
+        Teuchos::RCP<Discret::Discretization> structdis  ///< discretization of structure field
     );
 
     //! create time integrators for fluid and ale field
     virtual void create_fluid_and_ale_time_integrator(
-        const Teuchos::ParameterList& timeparams,    ///< time integration parameters
-        Teuchos::RCP<DRT::Discretization> fluiddis,  ///< discretization of fluid field
-        Teuchos::RCP<DRT::Discretization> aledis     ///< discretization of ALE field
+        const Teuchos::ParameterList& timeparams,        ///< time integration parameters
+        Teuchos::RCP<Discret::Discretization> fluiddis,  ///< discretization of fluid field
+        Teuchos::RCP<Discret::Discretization> aledis     ///< discretization of ALE field
     );
 
     //! @name Time loop building blocks
@@ -147,13 +147,13 @@ namespace FSI
     };
 
     /// access to structural field
-    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& structure_field() { return structure_; }
+    const Teuchos::RCP<Adapter::FSIStructureWrapper>& structure_field() { return structure_; }
 
     /// access to fluid field
-    const Teuchos::RCP<ADAPTER::FluidFSI>& fluid_field() { return fluid_; }
+    const Teuchos::RCP<Adapter::FluidFSI>& fluid_field() { return fluid_; }
 
     /// access to ale field
-    const Teuchos::RCP<ADAPTER::AleFsiWrapper>& ale_field() { return ale_; }
+    const Teuchos::RCP<Adapter::AleFsiWrapper>& ale_field() { return ale_; }
 
     //@}
 
@@ -174,13 +174,13 @@ namespace FSI
     virtual void prepare_time_step_fields();
 
     /// underlying structure of the FSI problem
-    Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure_;
+    Teuchos::RCP<Adapter::FSIStructureWrapper> structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP<ADAPTER::FluidFSI> fluid_;
+    Teuchos::RCP<Adapter::FluidFSI> fluid_;
 
     /// underlying ale of the FSI problem
-    Teuchos::RCP<ADAPTER::AleFsiWrapper> ale_;
+    Teuchos::RCP<Adapter::AleFsiWrapper> ale_;
 
     //! @name Transfer helpers
 
@@ -213,15 +213,15 @@ namespace FSI
 
     //! @name Coupling objects
 
-    CORE::ADAPTER::Coupling& structure_fluid_coupling() { return *coupsf_; }
-    CORE::ADAPTER::Coupling& structure_ale_coupling() { return *coupsa_; }
-    CORE::ADAPTER::Coupling& fluid_ale_coupling() { return *coupfa_; }
-    CORE::ADAPTER::Coupling& interface_fluid_ale_coupling() { return *icoupfa_; }
+    Core::Adapter::Coupling& structure_fluid_coupling() { return *coupsf_; }
+    Core::Adapter::Coupling& structure_ale_coupling() { return *coupsa_; }
+    Core::Adapter::Coupling& fluid_ale_coupling() { return *coupfa_; }
+    Core::Adapter::Coupling& interface_fluid_ale_coupling() { return *icoupfa_; }
 
-    const CORE::ADAPTER::Coupling& structure_fluid_coupling() const { return *coupsf_; }
-    const CORE::ADAPTER::Coupling& structure_ale_coupling() const { return *coupsa_; }
-    const CORE::ADAPTER::Coupling& fluid_ale_coupling() const { return *coupfa_; }
-    const CORE::ADAPTER::Coupling& interface_fluid_ale_coupling() const { return *icoupfa_; }
+    const Core::Adapter::Coupling& structure_fluid_coupling() const { return *coupsf_; }
+    const Core::Adapter::Coupling& structure_ale_coupling() const { return *coupsa_; }
+    const Core::Adapter::Coupling& fluid_ale_coupling() const { return *coupfa_; }
+    const Core::Adapter::Coupling& interface_fluid_ale_coupling() const { return *icoupfa_; }
 
     //@}
 
@@ -251,7 +251,7 @@ namespace FSI
     //@{
 
     /// verbosity level of FSI algorithm
-    const INPAR::FSI::Verbosity verbosity_;
+    const Inpar::FSI::Verbosity verbosity_;
 
     //@}
 
@@ -260,16 +260,16 @@ namespace FSI
     //@{
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsf_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupsf_;
 
     /// coupling of structure and ale at the interface
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsa_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupsa_;
 
     /// coupling of fluid and ale in the entire fluid volume
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupfa_;
 
     /// coupling of fluid and ale at the interface
-    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> icoupfa_;
 
     //@}
   };
@@ -408,7 +408,7 @@ namespace FSI
      *  the partitioner for the fluid or/and structure field.
      */
     virtual void redistribute_domain_decomposition(
-        const INPAR::FSI::Redistribute domain,  ///< type of redistribution algorithm
+        const Inpar::FSI::Redistribute domain,  ///< type of redistribution algorithm
         const FSI_COUPLING coupling,            ///< coupling algorithm
         const double inputWeight1,              ///< weight for graph
         const double inputWeight2,              ///< weight for graph
@@ -528,7 +528,7 @@ namespace FSI
     void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps of single fields
-    const CORE::LINALG::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
+    const Core::LinAlg::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
 
     //@}
 
@@ -556,7 +556,7 @@ namespace FSI
     //!
     //! CondMap()   = Dirichlet DOFs
     //! OtherMap()  = DOFs without Dirichlet boundary condition
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! Create initial guess for monolithic solution vector from data of the single fields
     virtual void initial_guess(Teuchos::RCP<Epetra_Vector> initial_guess);
@@ -899,9 +899,9 @@ namespace FSI
      *  by the length of #avgweights_.
      *
      *  The algorithm's marching time step size is still the one from
-     *  ADAPTER::AlgorithmBase.
+     *  Adapter::AlgorithmBase.
      */
-    Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>> dt_;
+    Teuchos::RCP<TimeStepping::TimIntMStep<double>> dt_;
 
     int adaptstep_;  ///< current number of adaption steps, i.e. repetitions of this time step
 
@@ -964,7 +964,7 @@ namespace FSI
     //@}
 
     /// dof row map splitted in (field) blocks
-    CORE::LINALG::MultiMapExtractor blockrowdofmap_;
+    Core::LinAlg::MultiMapExtractor blockrowdofmap_;
 
     //! @name Some NOX related stuff
     //@{
@@ -1029,7 +1029,7 @@ namespace FSI
     void setup_system_matrix() override { setup_system_matrix(*SystemMatrix()); }
 
     /// setup composed system matrix from field solvers
-    virtual void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
+    virtual void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) = 0;
 
     //@}
 
@@ -1054,18 +1054,18 @@ namespace FSI
      *  This affects only the main diagonal blocks, not the off-diagonal
      *  coupling blocks.
      */
-    virtual void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
+    virtual void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
     virtual void unscale_solution(
-        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
     {
     }
 
     //@}
 
     /// the composed system matrix
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
 
     //! Create #lambda_ and #lambdaold_
@@ -1099,7 +1099,7 @@ namespace FSI
      *  the partitioner for the fluid or/and structure field.
      */
     void redistribute_domain_decomposition(
-        const INPAR::FSI::Redistribute domain,  ///< redistribute structure or fluid
+        const Inpar::FSI::Redistribute domain,  ///< redistribute structure or fluid
         const FSI_COUPLING coupling,            ///< coupling algorithm
         const double inputWeight1,              ///< weight for graph
         const double inputWeight2,              ///< weight for graph
@@ -1118,21 +1118,21 @@ namespace FSI
      */
     virtual void create_node_owner_relationship(std::map<int, int>* nodeOwner,
         std::map<int, std::list<int>>* inverseNodeOwner,
-        std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
-        std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
-        Teuchos::RCP<DRT::Discretization> structuredis,  ///< structure discretization
-        Teuchos::RCP<DRT::Discretization> fluiddis,      ///< fluid discretization
-        const INPAR::FSI::Redistribute domain) = 0;
+        std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
+        std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
+        Teuchos::RCP<Discret::Discretization> structuredis,  ///< structure discretization
+        Teuchos::RCP<Discret::Discretization> fluiddis,      ///< fluid discretization
+        const Inpar::FSI::Redistribute domain) = 0;
 
     /*! \brief Find neighboring node of the opposing field for each node at the interface
      *
      * The relation is saved in the map \c fluidToStructureMap as fluidnode -- structurenode and
      * in the map \c structureToFluidMap as structurenode -- fluidnode.
      */
-    virtual void create_interface_mapping(Teuchos::RCP<DRT::Discretization> structuredis,
-        Teuchos::RCP<DRT::Discretization> fluiddis,
-        std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
-        std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
+    virtual void create_interface_mapping(Teuchos::RCP<Discret::Discretization> structuredis,
+        Teuchos::RCP<Discret::Discretization> fluiddis,
+        std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
+        std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
         std::map<int, std::vector<int>>& fluidToStructureMap,
         std::map<int, std::vector<int>>& structureToFluidMap){};
 
@@ -1153,8 +1153,8 @@ namespace FSI
         std::map<int, std::vector<int>>& insertedEdges,
         std::map<int, std::vector<int>>& fluidToStructureMap,
         std::map<int, std::vector<int>>& structureToFluidMap,
-        Teuchos::RCP<DRT::Discretization> structuredis,  ///< structure discretization
-        Teuchos::RCP<DRT::Discretization> fluiddis);     ///< fluid discretization);
+        Teuchos::RCP<Discret::Discretization> structuredis,  ///< structure discretization
+        Teuchos::RCP<Discret::Discretization> fluiddis);     ///< fluid discretization);
 
     /*! \brief Build weighted graph to influence distribution made by ZOLTAN
      *
@@ -1250,9 +1250,9 @@ namespace FSI
      *              and owner id of node
      */
     virtual void find_node_related_to_dof(
-        std::map<int, CORE::Nodes::Node*>* nodes,          ///< map of nodes with their global ids
-        int gdofid,                                        ///<  global id of dof
-        Teuchos::RCP<DRT::Discretization> discretization,  ///< discretization
+        std::map<int, Core::Nodes::Node*>* nodes,  ///< map of nodes with their global ids
+        int gdofid,                                ///<  global id of dof
+        Teuchos::RCP<Discret::Discretization> discretization,  ///< discretization
         int* re  ///< pointer to array with global id of node related to gdofid and owner id of node
     );
 
@@ -1272,7 +1272,7 @@ namespace FSI
 
     /// create the composed system matrix
     void create_system_matrix(
-        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat, bool structuresplit);
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat, bool structuresplit);
 
     /// setup solver for global block system
     Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(

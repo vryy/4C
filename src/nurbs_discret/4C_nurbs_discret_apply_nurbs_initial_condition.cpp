@@ -72,14 +72,14 @@ namespace
   \date 04/09
   */
 
-  void apply_nurbs_initial_condition_solve(DRT::Discretization& dis, CORE::LINALG::Solver& solver,
-      const CORE::UTILS::FunctionOfSpaceTime& start_function,
+  void apply_nurbs_initial_condition_solve(Discret::Discretization& dis,
+      Core::LinAlg::Solver& solver, const Core::UTILS::FunctionOfSpaceTime& start_function,
       Teuchos::RCP<Epetra_Vector> initialvals)
   {
     // try to cast dis to a nurbs discretisation --- if possible, proceed
     // with setting initial conditions. Otherwise return.
-    DRT::NURBS::NurbsDiscretization* nurbsdis =
-        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&dis);
+    Discret::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&dis);
 
     if (nurbsdis == nullptr)
     {
@@ -87,7 +87,7 @@ namespace
     }
 
     // get the knotvector from nurbs discretisation
-    Teuchos::RCP<DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
+    Teuchos::RCP<Discret::Nurbs::Knotvector> knots = nurbsdis->GetKnotVector();
 
     // get the processor ID from the communicator
     const int myrank = dis.Comm().MyPID();
@@ -109,13 +109,13 @@ namespace
     // -------------------------------------------------------------------
     // create empty mass matrix
     // -------------------------------------------------------------------
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 108, false, true));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix =
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 108, false, true));
 
     // -------------------------------------------------------------------
     // create empty right hand side vector
     // -------------------------------------------------------------------
-    Teuchos::RCP<Epetra_Vector> rhs = CORE::LINALG::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*dofrowmap, true);
 
     // -------------------------------------------------------------------
     // call elements to calculate massmatrix and righthandside
@@ -130,8 +130,8 @@ namespace
       bool assemblevec = rhs != Teuchos::null;
 
       // define element matrices and vectors
-      CORE::LINALG::SerialDenseMatrix elemass;
-      CORE::LINALG::SerialDenseVector elerhs;
+      Core::LinAlg::SerialDenseMatrix elemass;
+      Core::LinAlg::SerialDenseVector elerhs;
 
       std::vector<int> lm;
       std::vector<int> lmowner;
@@ -153,7 +153,7 @@ namespace
           fflush(nullptr);
         }
 
-        CORE::Elements::Element* actele = nurbsdis->lColElement(i);
+        Core::Elements::Element* actele = nurbsdis->lColElement(i);
 
         // get element location vector, dirichlet flags and ownerships
         lm.clear();
@@ -182,17 +182,17 @@ namespace
         {
           int spacedim = -1;
 
-          const CORE::FE::CellType distype = actele->Shape();
+          const Core::FE::CellType distype = actele->Shape();
           switch (distype)
           {
-            case CORE::FE::CellType::nurbs4:
-            case CORE::FE::CellType::nurbs9:
+            case Core::FE::CellType::nurbs4:
+            case Core::FE::CellType::nurbs9:
             {
               spacedim = 2;
               break;
             }
-            case CORE::FE::CellType::nurbs8:
-            case CORE::FE::CellType::nurbs27:
+            case Core::FE::CellType::nurbs8:
+            case Core::FE::CellType::nurbs27:
             {
               spacedim = 3;
               break;
@@ -209,8 +209,8 @@ namespace
           const int dofblock = eledim / iel;
 
           // get node coordinates of element
-          CORE::LINALG::SerialDenseMatrix xyze(spacedim, iel);
-          CORE::Nodes::Node** nodes = actele->Nodes();
+          Core::LinAlg::SerialDenseMatrix xyze(spacedim, iel);
+          Core::Nodes::Node** nodes = actele->Nodes();
           for (int inode = 0; inode < iel; inode++)
           {
             const auto& x = nodes[inode]->X();
@@ -221,17 +221,18 @@ namespace
           }
 
           // aquire weights from nodes
-          CORE::LINALG::SerialDenseVector weights(iel);
+          Core::LinAlg::SerialDenseVector weights(iel);
 
           for (int inode = 0; inode < iel; ++inode)
           {
-            DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+            Discret::Nurbs::ControlPoint* cp =
+                dynamic_cast<Discret::Nurbs::ControlPoint*>(nodes[inode]);
 
             weights(inode) = cp->W();
           }
 
           // access elements knot span
-          std::vector<CORE::LINALG::SerialDenseVector> eleknots(spacedim);
+          std::vector<Core::LinAlg::SerialDenseVector> eleknots(spacedim);
 
           bool zero_size = false;
           zero_size = knots->GetEleKnots(eleknots, actele->Id());
@@ -242,13 +243,13 @@ namespace
             continue;
           }
 
-          CORE::LINALG::SerialDenseVector funct(iel);
-          CORE::LINALG::SerialDenseMatrix xjm(spacedim, spacedim);
-          CORE::LINALG::SerialDenseMatrix deriv(spacedim, iel);
-          CORE::LINALG::SerialDenseVector gp(spacedim);
-          CORE::LINALG::SerialDenseVector position(
+          Core::LinAlg::SerialDenseVector funct(iel);
+          Core::LinAlg::SerialDenseMatrix xjm(spacedim, spacedim);
+          Core::LinAlg::SerialDenseMatrix deriv(spacedim, iel);
+          Core::LinAlg::SerialDenseVector gp(spacedim);
+          Core::LinAlg::SerialDenseVector position(
               3);  // always three-dimensional coordinates for function evaluation!
-          CORE::LINALG::SerialDenseVector initialval(dofblock);
+          Core::LinAlg::SerialDenseVector initialval(dofblock);
 
           // depending on the spatial dimension, we need a different
           // integration scheme
@@ -257,7 +258,7 @@ namespace
             case 2:
             {
               // gaussian points
-              const CORE::FE::IntegrationPoints2D intpoints(CORE::FE::GaussRule2D::quad_9point);
+              const Core::FE::IntegrationPoints2D intpoints(Core::FE::GaussRule2D::quad_9point);
 
               for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
               {
@@ -267,7 +268,7 @@ namespace
                   gp(rr) = intpoints.qxg[iquad][rr];
                 }
 
-                CORE::FE::NURBS::nurbs_get_2D_funct_deriv(
+                Core::FE::Nurbs::nurbs_get_2D_funct_deriv(
                     funct, deriv, gp, eleknots, weights, distype);
 
                 // get transposed Jacobian matrix and determinant
@@ -378,7 +379,7 @@ namespace
             case 3:
             {
               // gaussian points
-              const CORE::FE::IntegrationPoints3D intpoints(CORE::FE::GaussRule3D::hex_27point);
+              const Core::FE::IntegrationPoints3D intpoints(Core::FE::GaussRule3D::hex_27point);
 
               for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
               {
@@ -388,7 +389,7 @@ namespace
                   gp(rr) = intpoints.qxg[iquad][rr];
                 }
 
-                CORE::FE::NURBS::nurbs_get_3D_funct_deriv(
+                Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
                     funct, deriv, gp, eleknots, weights, distype);
 
                 // get transposed Jacobian matrix and determinant
@@ -508,7 +509,7 @@ namespace
 
         int eid = actele->Id();
         if (assemblemat) massmatrix->Assemble(eid, elemass, lm, lmowner);
-        if (assemblevec) CORE::LINALG::Assemble(*rhs, elerhs, lm, lmowner);
+        if (assemblevec) Core::LinAlg::Assemble(*rhs, elerhs, lm, lmowner);
       }  // for (int i=0; i<numcolele; ++i)
     }
 
@@ -531,7 +532,7 @@ namespace
     // always refactor and reset the matrix before a single new solver call
 
     initialvals->PutScalar(0.0);
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;
     solver.Solve(massmatrix->EpetraOperator(), initialvals, rhs, solver_params);
@@ -556,13 +557,14 @@ namespace
    of a separate solver!
 */
 /*----------------------------------------------------------------------*/
-void DRT::NURBS::apply_nurbs_initial_condition(DRT::Discretization& dis,
+void Discret::Nurbs::apply_nurbs_initial_condition(Discret::Discretization& dis,
     const Teuchos::ParameterList& solverparams,
-    const CORE::UTILS::FunctionOfSpaceTime& start_function, Teuchos::RCP<Epetra_Vector> initialvals)
+    const Core::UTILS::FunctionOfSpaceTime& start_function, Teuchos::RCP<Epetra_Vector> initialvals)
 {
   // try to cast dis to a nurbs discretisation --- if possible, proceed
   // with setting initial conditions. Otherwise return.
-  DRT::NURBS::NurbsDiscretization* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&dis);
+  Discret::Nurbs::NurbsDiscretization* nurbsdis =
+      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&dis);
 
   if (nurbsdis == nullptr)
   {
@@ -576,8 +578,8 @@ void DRT::NURBS::apply_nurbs_initial_condition(DRT::Discretization& dis,
   const double newtol = 1.0e-11;
   p.set("AZTOL", newtol);
 
-  Teuchos::RCP<CORE::LINALG::Solver> lssolver =
-      Teuchos::rcp(new CORE::LINALG::Solver(p, dis.Comm()));
+  Teuchos::RCP<Core::LinAlg::Solver> lssolver =
+      Teuchos::rcp(new Core::LinAlg::Solver(p, dis.Comm()));
   dis.compute_null_space_if_necessary(lssolver->Params());
 
   // get the processor ID from the communicator

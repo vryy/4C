@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
   /*!
    * \brief Interface of a Cylinder Coordinate System Provider
@@ -33,26 +33,26 @@ namespace MAT
      *
      * \return unit vector pointing in radial direction
      */
-    virtual const CORE::LINALG::Matrix<3, 1>& GetRad() const = 0;
+    virtual const Core::LinAlg::Matrix<3, 1>& GetRad() const = 0;
 
     /*!
      * \brief Returns a reference to the unit vector pointing in axial direction
      *
-     * \return const CORE::LINALG::Matrix<3, 1>& Reference to the unit vector pointing in axial
+     * \return const Core::LinAlg::Matrix<3, 1>& Reference to the unit vector pointing in axial
      * direction
      */
-    virtual const CORE::LINALG::Matrix<3, 1>& GetAxi() const = 0;
+    virtual const Core::LinAlg::Matrix<3, 1>& GetAxi() const = 0;
 
     /*!
      * \brief Returns a reference to the unit vector pointing in circumferential direction
      *
-     * \return const CORE::LINALG::Matrix<3, 1>& Reference to the unit vector pointing in
+     * \return const Core::LinAlg::Matrix<3, 1>& Reference to the unit vector pointing in
      * circumferential direction
      */
-    virtual const CORE::LINALG::Matrix<3, 1>& GetCir() const = 0;
+    virtual const Core::LinAlg::Matrix<3, 1>& GetCir() const = 0;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

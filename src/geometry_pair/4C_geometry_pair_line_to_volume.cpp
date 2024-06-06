@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  */
 template <typename scalar_type, typename line, typename volume>
 GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::GeometryPairLineToVolume(
-    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
+    const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data)
     : GeometryPair(element1, element2), line_to_3d_evaluation_data_(line_to_3d_evaluation_data)
 {
@@ -44,9 +44,9 @@ GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::GeometryPairL
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::ProjectPointToOther(
-    const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+    const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
     const ElementData<volume, scalar_type>& element_data_volume,
-    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const
+    Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const
 {
   GEOMETRYPAIR::ProjectPointToVolume<scalar_type, volume>(
       point, element_data_volume, xi, projection_result);
@@ -61,7 +61,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<volume, scalar_type>& element_data_volume,
     const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
-    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const
+    Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const
 {
   // Check the input parameters.
   {
@@ -77,21 +77,21 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
 
   // Initialize data structures
   // Point on line.
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_line;
-  CORE::LINALG::Matrix<3, 1, scalar_type> dr_line;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_line;
+  Core::LinAlg::Matrix<3, 1, scalar_type> dr_line;
 
   // Point on volume.
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_volume;
-  CORE::LINALG::Matrix<3, 3, scalar_type> dr_volume;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_volume;
+  Core::LinAlg::Matrix<3, 3, scalar_type> dr_volume;
 
   // Residuum.
-  CORE::LINALG::Matrix<4, 1, scalar_type> residuum;
-  CORE::LINALG::Matrix<4, 1, scalar_type> delta_xi;
+  Core::LinAlg::Matrix<4, 1, scalar_type> residuum;
+  Core::LinAlg::Matrix<4, 1, scalar_type> delta_xi;
   // Initialize the increment with a value that will not pass the first convergence check.
-  delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
+  delta_xi.PutScalar(10 * Constants::projection_xi_eta_tol);
 
   // Jacobian / inverse.
-  CORE::LINALG::Matrix<4, 4, scalar_type> J_J_inv;
+  Core::LinAlg::Matrix<4, 4, scalar_type> J_J_inv;
 
   // Reset the projection result flag.
   projection_result = ProjectionResult::projection_not_found;
@@ -99,7 +99,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
   {
     // Local Newton iteration.
     unsigned int counter = 0;
-    while (counter < CONSTANTS::local_newton_iter_max)
+    while (counter < Constants::local_newton_iter_max)
     {
       // Get the point coordinates on the line and volume.
       EvaluatePosition<line>(eta, element_data_line, r_line);
@@ -128,8 +128,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
       }
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
-          delta_xi.Norm2() < CONSTANTS::projection_xi_eta_tol)
+      if (residuum.Norm2() < Constants::local_newton_res_tol &&
+          delta_xi.Norm2() < Constants::projection_xi_eta_tol)
       {
         // Check if the parameter coordinates are valid.
         if (ValidParameter1D(eta) && ValidParameter3D<volume>(xi))
@@ -140,7 +140,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
+      if (residuum.Norm2() > Constants::local_newton_res_max) break;
 
       // Get the positional derivatives.
       EvaluatePositionDerivative1<line>(eta, element_data_line, dr_line);
@@ -157,8 +157,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
       }
 
       // Solve the linearized system.
-      if (CORE::LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
-              J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
+      if (Core::LinAlg::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+              J_J_inv, residuum, delta_xi, Constants::local_newton_det_tol))
       {
         // Set the new parameter coordinates.
         eta -= delta_xi(3);
@@ -182,7 +182,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<volume, scalar_type>& element_data_volume,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-    const scalar_type& eta_start, const CORE::LINALG::Matrix<3, 1, scalar_type>& xi_start) const
+    const scalar_type& eta_start, const Core::LinAlg::Matrix<3, 1, scalar_type>& xi_start) const
 {
   // Get number of faces for this volume and create a vector with the indices of the faces, so all
   // surfaces of the volume can be checked for an intersection with the line.
@@ -212,7 +212,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
 
   // Create variables.
   scalar_type eta;
-  CORE::LINALG::Matrix<3, 1, scalar_type> xi;
+  Core::LinAlg::Matrix<3, 1, scalar_type> xi;
   ProjectionResult intersection_found;
 
   // Try to intersect the beam with each face.
@@ -238,23 +238,23 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
  *
  */
 template <typename scalar_type, typename volume>
-void GEOMETRYPAIR::ProjectPointToVolume(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+void GEOMETRYPAIR::ProjectPointToVolume(const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
     const ElementData<volume, scalar_type>& element_data_volume,
-    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result)
+    Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result)
 {
   // Point on volume.
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_volume;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_volume;
 
   // Jacobian / inverse.
-  CORE::LINALG::Matrix<3, 3, scalar_type> J_J_inv;
+  Core::LinAlg::Matrix<3, 3, scalar_type> J_J_inv;
 
   // Increment of xi.
-  CORE::LINALG::Matrix<3, 1, scalar_type> delta_xi;
+  Core::LinAlg::Matrix<3, 1, scalar_type> delta_xi;
   // Initialize the increment with a value that will not pass the first convergence check.
-  delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
+  delta_xi.PutScalar(10 * Constants::projection_xi_eta_tol);
 
   // Residuum.
-  CORE::LINALG::Matrix<3, 1, scalar_type> residuum;
+  Core::LinAlg::Matrix<3, 1, scalar_type> residuum;
 
   // Reset the projection result flag.
   projection_result = ProjectionResult::projection_not_found;
@@ -262,7 +262,7 @@ void GEOMETRYPAIR::ProjectPointToVolume(const CORE::LINALG::Matrix<3, 1, scalar_
   // Local Newton iteration.
   {
     unsigned int counter = 0;
-    while (counter < CONSTANTS::local_newton_iter_max)
+    while (counter < Constants::local_newton_iter_max)
     {
       // Get the point coordinates on the volume.
       GEOMETRYPAIR::EvaluatePosition<volume>(xi, element_data_volume, r_volume);
@@ -272,8 +272,8 @@ void GEOMETRYPAIR::ProjectPointToVolume(const CORE::LINALG::Matrix<3, 1, scalar_
       residuum -= point;
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < CONSTANTS::local_newton_res_tol &&
-          delta_xi.Norm2() < CONSTANTS::projection_xi_eta_tol)
+      if (residuum.Norm2() < Constants::local_newton_res_tol &&
+          delta_xi.Norm2() < Constants::projection_xi_eta_tol)
       {
         if (ValidParameter3D<volume>(xi))
           projection_result = ProjectionResult::projection_found_valid;
@@ -283,14 +283,14 @@ void GEOMETRYPAIR::ProjectPointToVolume(const CORE::LINALG::Matrix<3, 1, scalar_
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (residuum.Norm2() > CONSTANTS::local_newton_res_max) break;
+      if (residuum.Norm2() > Constants::local_newton_res_max) break;
 
       // Get the jacobian.
       GEOMETRYPAIR::EvaluatePositionDerivative1<volume>(xi, element_data_volume, J_J_inv);
 
       // Solve the linearized system.
-      if (CORE::LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
-              J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
+      if (Core::LinAlg::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+              J_J_inv, residuum, delta_xi, Constants::local_newton_det_tol))
       {
         // Set the new parameter coordinates.
         xi -= delta_xi;

@@ -29,7 +29,7 @@ FPSI::FpsiBase::FpsiBase(const Epetra_Comm& comm, const Teuchos::ParameterList& 
  *----------------------------------------------------------------------*/
 void FPSI::FpsiBase::redistribute_interface()
 {
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
@@ -51,7 +51,7 @@ void FPSI::FpsiBase::redistribute_interface()
         "fpsi_coupling", *Fluid_PoroFluid_InterfaceMap);
 
     // Material pointers need to be reset after redistribution.
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(
+    PoroElast::UTILS::SetMaterialPointersMatchingGrid(
         problem->GetDis("structure"), problem->GetDis("porofluid"));
   }
 

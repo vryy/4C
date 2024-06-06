@@ -20,10 +20,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-FLD::TimIntPoro::TimIntPoro(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+FLD::TimIntPoro::TimIntPoro(const Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid)
 {
 }
@@ -69,8 +69,8 @@ void FLD::TimIntPoro::assemble_mat_and_rhs()
 
 void FLD::TimIntPoro::read_restart(int step)
 {
-  CORE::IO::DiscretizationReader reader(
-      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader reader(
+      discret_, Global::Problem::Instance()->InputControlFile(), step);
   reader.ReadVector(gridv_, "gridv");
 }
 
@@ -101,13 +101,13 @@ void FLD::TimIntPoro::set_element_custom_parameter()
 }
 
 void FLD::TimIntPoro::set_initial_porosity_field(
-    const INPAR::POROELAST::InitialField init, const int startfuncno)
+    const Inpar::PoroElast::InitialField init, const int startfuncno)
 {
   std::cout << "FLD::TimIntPoro::set_initial_porosity_field()" << std::endl;
 
   switch (init)
   {
-    case INPAR::POROELAST::initfield_field_by_function:
+    case Inpar::PoroElast::initfield_field_by_function:
     {
       const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
@@ -115,13 +115,13 @@ void FLD::TimIntPoro::set_initial_porosity_field(
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+        Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(lnode);
 
         int numdofs = nodedofset.size();
-        double initialval = GLOBAL::Problem::Instance()
-                                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+        double initialval = Global::Problem::Instance()
+                                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                 .Evaluate(lnode->X().data(), time_, 0);
 
         // check whether there are invalid values of porosity
@@ -155,7 +155,7 @@ void FLD::TimIntPoro::update_iter_incrementally(
   {
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    Teuchos::RCP<Epetra_Vector> aux = CORE::LINALG::CreateVector(*(discret_->dof_row_map(0)), true);
+    Teuchos::RCP<Epetra_Vector> aux = Core::LinAlg::CreateVector(*(discret_->dof_row_map(0)), true);
 
     // only one step theta
     // new end-point accelerations
@@ -204,7 +204,7 @@ void FLD::TimIntPoro::PoroIntUpdate()
   sysmat_->UnComplete();
 
   std::string condname = "PoroPartInt";
-  std::vector<CORE::Conditions::Condition*> poroPartInt;
+  std::vector<Core::Conditions::Condition*> poroPartInt;
   discret_->GetCondition(condname, poroPartInt);
   if (poroPartInt.size())
   {
@@ -214,7 +214,7 @@ void FLD::TimIntPoro::PoroIntUpdate()
     eleparams.set<int>("action", FLD::poro_boundary);
     eleparams.set("total time", time_);
     eleparams.set("delta time", dta_);
-    eleparams.set<POROELAST::Coupltype>("coupling", POROELAST::fluidfluid);
+    eleparams.set<PoroElast::Coupltype>("coupling", PoroElast::fluidfluid);
     eleparams.set<int>("Physical Type", physicaltype_);
 
     discret_->ClearState();
@@ -228,7 +228,7 @@ void FLD::TimIntPoro::PoroIntUpdate()
   }
 
   condname = "PoroPresInt";
-  std::vector<CORE::Conditions::Condition*> poroPresInt;
+  std::vector<Core::Conditions::Condition*> poroPresInt;
   discret_->GetCondition(condname, poroPresInt);
   if (poroPresInt.size())
   {
@@ -236,7 +236,7 @@ void FLD::TimIntPoro::PoroIntUpdate()
 
     // set action for elements
     eleparams.set<int>("action", FLD::poro_prescoupl);
-    eleparams.set<POROELAST::Coupltype>("coupling", POROELAST::fluidfluid);
+    eleparams.set<PoroElast::Coupltype>("coupling", PoroElast::fluidfluid);
     eleparams.set<int>("Physical Type", physicaltype_);
 
     discret_->ClearState();

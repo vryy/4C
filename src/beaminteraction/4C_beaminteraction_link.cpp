@@ -31,7 +31,7 @@ BEAMINTERACTION::BeamLink::BeamLink()
       id_(-1),
       bspotpos1_(true),
       bspotpos2_(true),
-      linkertype_(INPAR::BEAMINTERACTION::linkertype_arbitrary),
+      linkertype_(Inpar::BEAMINTERACTION::linkertype_arbitrary),
       timelinkwasset_(-1.0),
       reflength_(-1.0)
 {
@@ -58,9 +58,9 @@ BEAMINTERACTION::BeamLink::BeamLink(const BEAMINTERACTION::BeamLink& old)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLink::Init(const int id, const std::vector<std::pair<int, int>>& eleids,
-    const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,
-    const std::vector<CORE::LINALG::Matrix<3, 3>>& inittriad,
-    INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
+    const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
+    const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
+    Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
 {
   issetup_ = false;
 
@@ -93,9 +93,9 @@ void BEAMINTERACTION::BeamLink::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::Pack(CORE::COMM::PackBuffer& data) const
+void BEAMINTERACTION::BeamLink::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -130,12 +130,12 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // isinit_
-  isinit_ = CORE::COMM::ParObject::ExtractInt(position, data);
+  isinit_ = Core::Communication::ParObject::ExtractInt(position, data);
   // issetup
-  issetup_ = CORE::COMM::ParObject::ExtractInt(position, data);
+  issetup_ = Core::Communication::ParObject::ExtractInt(position, data);
   // id_
   ExtractfromPack(position, data, id_);
 
@@ -146,7 +146,7 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
   // bspotpos2
   ExtractfromPack(position, data, bspotpos2_);
   // linkertype
-  linkertype_ = static_cast<INPAR::BEAMINTERACTION::CrosslinkerType>(ExtractInt(position, data));
+  linkertype_ = static_cast<Inpar::BEAMINTERACTION::CrosslinkerType>(ExtractInt(position, data));
   // timelinkwasset
   ExtractfromPack(position, data, timelinkwasset_);
   // reflength
@@ -160,8 +160,8 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::ResetState(std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
-    std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad)
+void BEAMINTERACTION::BeamLink::ResetState(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+    std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
   check_init_setup();
 

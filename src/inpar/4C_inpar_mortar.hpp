@@ -21,9 +21,9 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace MORTAR
+  namespace Mortar
   {
     /// Type of employed set of Lagrange multiplier shape functions
     /// (this enum represents the input file parameter LM_SHAPEFCN)
@@ -149,11 +149,11 @@ namespace INPAR
 
     /// set specific mortar conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
-  }  // namespace MORTAR
+  }  // namespace Mortar
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

@@ -31,7 +31,7 @@ void BEAMINTERACTION::BeamToSphereContactParams::Init()
 
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_to_sphere_contact_params_list =
-      GLOBAL::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT");
+      Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT");
 
   penalty_parameter_ = beam_to_sphere_contact_params_list.get<double>("PENALTY_PARAMETER");
 

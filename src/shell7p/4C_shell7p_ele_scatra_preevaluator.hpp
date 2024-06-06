@@ -17,14 +17,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
-}  // namespace DRT
+}  // namespace Discret
 
 
-namespace DRT::ELEMENTS::SHELL
+namespace Discret::ELEMENTS::Shell
 {
   /*!
    * \brief Preevaluate anything that needs to be done before the standard Evaluate
@@ -36,8 +36,9 @@ namespace DRT::ELEMENTS::SHELL
    * @param discretization (in) : Reference to the discretization
    * @param dof_index_array (in) : The location array of the owned dofs
    */
-  void PreEvaluateScatraByElement(CORE::Elements::Element& ele, Teuchos::ParameterList& params,
-      DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& dof_index_array);
+  void PreEvaluateScatraByElement(Core::Elements::Element& ele, Teuchos::ParameterList& params,
+      Discret::Discretization& discretization,
+      Core::Elements::Element::LocationArray& dof_index_array);
 
   /*!
    * @brief Preevaluate anything that needs to be done before the standard Evaluate of the element
@@ -50,11 +51,12 @@ namespace DRT::ELEMENTS::SHELL
    * @param discretization (in) : Reference to the discretization
    * @param dof_index_array (in) : The location array of the owned dofs
    */
-  template <CORE::FE::CellType distype>
-  void PreEvaluateScatra(CORE::Elements::Element& ele, Teuchos::ParameterList& params,
-      DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& dof_index_array);
+  template <Core::FE::CellType distype>
+  void PreEvaluateScatra(Core::Elements::Element& ele, Teuchos::ParameterList& params,
+      Discret::Discretization& discretization,
+      Core::Elements::Element::LocationArray& dof_index_array);
 
-}  // namespace DRT::ELEMENTS::SHELL
+}  // namespace Discret::ELEMENTS::Shell
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -34,11 +34,11 @@ namespace DRT
       virtual ~PoroFluidMultiPhaseFactory() = default;
       //! ProvideImpl
       static PoroFluidMultiPhaseEleInterface* ProvideImpl(
-          CORE::FE::CellType distype, const int numdofpernode, const std::string& disname);
+          Core::FE::CellType distype, const int numdofpernode, const std::string& disname);
 
      private:
       //! define PoroFluidMultiPhaseEle instances dependent on problem
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       static PoroFluidMultiPhaseEleInterface* define_problem_type(
           const int numdofpernode, const std::string& disname);
 
@@ -47,7 +47,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 
 

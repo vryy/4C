@@ -46,10 +46,10 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 XFEM::MeshCoupling::MeshCoupling(
-    Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<DRT::Discretization>&
+    Teuchos::RCP<Discret::Discretization>&
         cond_dis,               ///< discretization from which the cutter discretization is derived
     const int coupling_id,      ///< id of composite of coupling conditions
     const double time,          ///< time
@@ -113,8 +113,8 @@ void XFEM::MeshCoupling::create_cutter_dis_from_condition(std::string suffix)
 
   //--------------------------------
   // create the new cutter discretization form the conditioned coupling discretization
-  Teuchos::RCP<CORE::FE::DiscretizationCreatorBase> discreator =
-      Teuchos::rcp(new CORE::FE::DiscretizationCreatorBase());
+  Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discreator =
+      Teuchos::rcp(new Core::FE::DiscretizationCreatorBase());
   cutter_dis_ = discreator->create_matching_discretization_from_condition(
       *cond_dis_,      ///< discretization with condition
       cond_name_,      ///< name of the condition, by which the derived discretization is identified
@@ -133,13 +133,13 @@ void XFEM::MeshCoupling::create_cutter_dis_from_condition(std::string suffix)
 
   // for parallel jobs we have to call TransparentDofSet with additional flag true
   bool parallel = cond_dis_->Comm().NumProc() > 1;
-  Teuchos::RCP<CORE::Dofsets::DofSet> newdofset =
-      Teuchos::rcp(new CORE::Dofsets::TransparentIndependentDofSet(cond_dis_, parallel));
+  Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
+      Teuchos::rcp(new Core::DOFSets::TransparentIndependentDofSet(cond_dis_, parallel));
 
   cutter_dis_->ReplaceDofSet(newdofset);  // do not call this with true!!
 
   // create node and element distribution with elements and nodes ghosted on all processors
-  CORE::REBALANCE::GhostDiscretizationOnAllProcs(cutter_dis_);
+  Core::Rebalance::GhostDiscretizationOnAllProcs(cutter_dis_);
   cutter_dis_->fill_complete();
 }
 
@@ -148,7 +148,7 @@ void XFEM::MeshCoupling::create_cutter_dis_from_condition(std::string suffix)
 void XFEM::MeshCoupling::gmsh_output_discretization(std::ostream& gmshfilecontent)
 {
   // compute the current boundary position
-  std::map<int, CORE::LINALG::Matrix<3, 1>> currinterfacepositions;
+  std::map<int, Core::LinAlg::Matrix<3, 1>> currinterfacepositions;
 
   // output of cutting discretization
   XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
@@ -166,9 +166,9 @@ void XFEM::MeshCoupling::prepare_cutter_output()
 
   if (!mark_geometry_)  // Do not write for marked geometry!
   {
-    cutter_dis_->SetWriter(Teuchos::rcp(new CORE::IO::DiscretizationWriter(cutter_dis_,
-        GLOBAL::Problem::Instance()->OutputControlFile(),
-        GLOBAL::Problem::Instance()->spatial_approximation_type())));
+    cutter_dis_->SetWriter(Teuchos::rcp(new Core::IO::DiscretizationWriter(cutter_dis_,
+        Global::Problem::Instance()->OutputControlFile(),
+        Global::Problem::Instance()->spatial_approximation_type())));
     cutter_output_ = cutter_dis_->Writer();
     cutter_output_->WriteMesh(0, 0.0);
   }
@@ -201,13 +201,13 @@ void XFEM::MeshCoupling::init_state_vectors()
 
   const Epetra_Map* cutterdofrowmap = cutter_dis_->dof_row_map();
 
-  ivelnp_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
-  iveln_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
-  ivelnm_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
+  ivelnp_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
+  iveln_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
+  ivelnm_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
 
-  idispnp_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
-  idispn_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
-  idispnpi_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
+  idispnp_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
+  idispn_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
+  idispnpi_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
 }
 
 /*--------------------------------------------------------------------------*
@@ -273,8 +273,8 @@ Teuchos::RCP<const Epetra_Vector> XFEM::MeshCoupling::GetCutterDispCol()
 {
   // export cut-discretization mesh displacements
   Teuchos::RCP<Epetra_Vector> idispcol =
-      CORE::LINALG::CreateVector(*cutter_dis_->DofColMap(), true);
-  CORE::LINALG::Export(*idispnp_, *idispcol);
+      Core::LinAlg::CreateVector(*cutter_dis_->DofColMap(), true);
+  Core::LinAlg::Export(*idispnp_, *idispcol);
 
   return idispcol;
 }
@@ -291,10 +291,10 @@ void XFEM::MeshCoupling::get_coupling_ele_location_vector(const int sid, std::ve
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 XFEM::MeshVolCoupling::MeshVolCoupling(
-    Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<DRT::Discretization>&
+    Teuchos::RCP<Discret::Discretization>&
         cond_dis,              ///< discretization from which cutter discretization can be derived
     const int coupling_id,     ///< id of composite of coupling conditions
     const double time,         ///< time
@@ -303,7 +303,7 @@ XFEM::MeshVolCoupling::MeshVolCoupling(
     )
     : MeshCoupling(bg_dis, cond_name, cond_dis, coupling_id, time, step, suffix),
       init_volcoupling_(false),
-      trace_estimate_eigenvalue_update_(INPAR::XFEM::Eigenvalue_update_every_iter),
+      trace_estimate_eigenvalue_update_(Inpar::XFEM::Eigenvalue_update_every_iter),
       reset_step_(-1)
 {
 }
@@ -316,7 +316,7 @@ void XFEM::MeshVolCoupling::Init()
   XFEM::MeshCoupling::Init();
 
   // do additional redistributino of embedded discretization and create an auxiliary dis
-  if (get_averaging_strategy() != INPAR::XFEM::Xfluid_Sided)
+  if (get_averaging_strategy() != Inpar::XFEM::Xfluid_Sided)
   {
     // Initialize Volume Coupling
     Init_VolCoupling();
@@ -327,8 +327,8 @@ void XFEM::MeshVolCoupling::Init()
     ele_to_max_eigenvalue_ = Teuchos::rcp(new std::map<int, double>());
 
     trace_estimate_eigenvalue_update_ =
-        CORE::UTILS::IntegralValue<INPAR::XFEM::TraceEstimateEigenvalueUpdate>(
-            GLOBAL::Problem::Instance()->XFluidDynamicParams().sublist("STABILIZATION"),
+        Core::UTILS::IntegralValue<Inpar::XFEM::TraceEstimateEigenvalueUpdate>(
+            Global::Problem::Instance()->XFluidDynamicParams().sublist("STABILIZATION"),
             "UPDATE_EIGENVALUE_TRACE_ESTIMATE");
   }
 }
@@ -352,7 +352,7 @@ void XFEM::MeshVolCoupling::get_coupling_ele_location_vector(
     const int sid, std::vector<int>& patchlm)
 {
   std::vector<int> patchlmstride, patchlmowner;  // dummy
-  CORE::Elements::Element* coupl_ele = GetCouplingElement(sid);
+  Core::Elements::Element* coupl_ele = GetCouplingElement(sid);
   coupl_ele->LocationVector(*coupl_dis_, patchlm, patchlmowner, patchlmstride);
   return;
 }
@@ -377,10 +377,10 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
 
     // node from coupling discretization (is on this proc, as cutter_dis nodes are
     // a subset!)
-    const CORE::Nodes::Node* cond_node = cond_dis_->gNode(cond_node_gid);
+    const Core::Nodes::Node* cond_node = cond_dis_->gNode(cond_node_gid);
 
     // get associated elements
-    const CORE::Elements::Element* const* cond_eles = cond_node->Elements();
+    const Core::Elements::Element* const* cond_eles = cond_node->Elements();
     const int num_cond_ele = cond_node->NumElement();
 
     // loop over associated elements
@@ -417,8 +417,8 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
 
   // create the final column maps
   {
-    CORE::LINALG::GatherAll(full_ele_nodes_col, cond_dis_->Comm());
-    CORE::LINALG::GatherAll(full_eles_col, cond_dis_->Comm());
+    Core::LinAlg::GatherAll(full_ele_nodes_col, cond_dis_->Comm());
+    Core::LinAlg::GatherAll(full_eles_col, cond_dis_->Comm());
 
     std::vector<int> full_nodes(full_ele_nodes_col.begin(), full_ele_nodes_col.end());
     std::vector<int> full_eles(full_eles_col.begin(), full_eles_col.end());
@@ -439,11 +439,11 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
   {
     for (int fele_lid = 0; fele_lid < cutter_dis_->NumMyColElements(); fele_lid++)
     {
-      CORE::Elements::FaceElement* fele = dynamic_cast<CORE::Elements::FaceElement*>(
+      Core::Elements::FaceElement* fele = dynamic_cast<Core::Elements::FaceElement*>(
           cutter_dis_->gElement(cutter_dis_->ElementColMap()->GID(fele_lid)));
       if (!fele) FOUR_C_THROW("Cast to FaceElement failed!");
 
-      CORE::Elements::Element* ele = cond_dis_->gElement(fele->ParentElementId());
+      Core::Elements::Element* ele = cond_dis_->gElement(fele->ParentElementId());
       if (!ele) FOUR_C_THROW("Couldn't get Parent Element!");
 
       fele->set_parent_master_element(ele, fele->FaceParentNumber());
@@ -454,7 +454,7 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 double XFEM::MeshVolCoupling::get_estimate_nitsche_trace_max_eigenvalue(
-    CORE::Elements::Element* ele)
+    Core::Elements::Element* ele)
 {
   if (ele_to_max_eigenvalue_->find(ele->Id()) == ele_to_max_eigenvalue_->end())
     estimate_nitsche_trace_max_eigenvalue(ele);
@@ -468,12 +468,12 @@ void XFEM::MeshVolCoupling::reset_evaluated_trace_estimates()
 {
   switch (trace_estimate_eigenvalue_update_)
   {
-    case INPAR::XFEM::Eigenvalue_update_every_iter:
+    case Inpar::XFEM::Eigenvalue_update_every_iter:
     {
       ele_to_max_eigenvalue_->clear();
       break;
     }
-    case INPAR::XFEM::Eigenvalue_update_every_timestep:
+    case Inpar::XFEM::Eigenvalue_update_every_timestep:
     {
       if (reset_step_ < step_)
       {
@@ -482,7 +482,7 @@ void XFEM::MeshVolCoupling::reset_evaluated_trace_estimates()
       }
       break;
     }
-    case INPAR::XFEM::Eigenvalue_update_once:
+    case Inpar::XFEM::Eigenvalue_update_once:
     {
       break;
     }
@@ -500,13 +500,13 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
 {
   std::string aux_coup_disname("auxiliary_coupling_");
   aux_coup_disname += cond_dis_->Name();
-  aux_coup_dis_ = Teuchos::rcp(new DRT::Discretization(aux_coup_disname,
-      Teuchos::rcp(cond_dis_->Comm().Clone()), GLOBAL::Problem::Instance()->NDim()));
+  aux_coup_dis_ = Teuchos::rcp(new Discret::Discretization(aux_coup_disname,
+      Teuchos::rcp(cond_dis_->Comm().Clone()), Global::Problem::Instance()->NDim()));
 
   // make the condition known to the auxiliary discretization
   // we use the same nodal ids and therefore we can just copy the conditions
   // get the set of ids of all xfem nodes
-  std::vector<CORE::Conditions::Condition*> xfemcnd;
+  std::vector<Core::Conditions::Condition*> xfemcnd;
   cond_dis_->GetCondition(cond_name_, xfemcnd);
 
   std::set<int> xfemnodeset;
@@ -526,7 +526,7 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
   // loop all column elements and label all row nodes next to a xfem node
   for (int i = 0; i < cond_dis_->NumMyColElements(); ++i)
   {
-    CORE::Elements::Element* actele = cond_dis_->lColElement(i);
+    Core::Elements::Element* actele = cond_dis_->lColElement(i);
 
     // get the node ids of this element
     const int numnode = actele->num_node();
@@ -561,7 +561,7 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
     // add the element to the discretization
     if (cond_dis_->ElementRowMap()->MyGID(actele->Id()))
     {
-      Teuchos::RCP<CORE::Elements::Element> bndele = Teuchos::rcp(actele->Clone());
+      Teuchos::RCP<Core::Elements::Element> bndele = Teuchos::rcp(actele->Clone());
       aux_coup_dis_->add_element(bndele);
     }
   }  // end loop over column elements
@@ -569,8 +569,8 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
   // all row nodes next to a xfem node are now added to the auxiliary discretization
   for (std::set<int>::iterator id = adjacent_row.begin(); id != adjacent_row.end(); ++id)
   {
-    CORE::Nodes::Node* actnode = cond_dis_->gNode(*id);
-    Teuchos::RCP<CORE::Nodes::Node> bndnode = Teuchos::rcp(actnode->Clone());
+    Core::Nodes::Node* actnode = cond_dis_->gNode(*id);
+    Teuchos::RCP<Core::Nodes::Node> bndnode = Teuchos::rcp(actnode->Clone());
     aux_coup_dis_->AddNode(bndnode);
   }
 
@@ -595,8 +595,8 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
     aux_coup_dis_->Redistribute(*newnoderowmap, *newnodecolmap, false, false, false);
 
     // make auxiliary discretization have the same dofs as the coupling discretization
-    Teuchos::RCP<CORE::Dofsets::DofSet> newdofset =
-        Teuchos::rcp(new CORE::Dofsets::TransparentIndependentDofSet(cond_dis_, true));
+    Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
+        Teuchos::rcp(new Core::DOFSets::TransparentIndependentDofSet(cond_dis_, true));
     aux_coup_dis_->ReplaceDofSet(newdofset,
         false);  // do not call this with true (no replacement in static dofsets intended)
     aux_coup_dis_->fill_complete(true, true, true);
@@ -605,10 +605,10 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
 
 //! constructor
 XFEM::MeshCouplingBC::MeshCouplingBC(
-    Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<DRT::Discretization>&
+    Teuchos::RCP<Discret::Discretization>&
         cond_dis,           ///< discretization from which cutter discretization can be derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -639,12 +639,12 @@ bool XFEM::MeshCouplingBC::HasMovingInterface()
   // get the first local col(!) node
   if (cutter_dis_->NumMyColNodes() == 0) FOUR_C_THROW("no col node on proc %i", myrank_);
 
-  CORE::Nodes::Node* lnode = cutter_dis_->lColNode(0);
+  Core::Nodes::Node* lnode = cutter_dis_->lColNode(0);
 
-  std::vector<CORE::Conditions::Condition*> mycond;
+  std::vector<Core::Conditions::Condition*> mycond;
   lnode->GetCondition("XFEMSurfDisplacement", mycond);
 
-  CORE::Conditions::Condition* cond = mycond[0];
+  Core::Conditions::Condition* cond = mycond[0];
 
   const std::string& evaltype = cond->parameters().Get<std::string>("evaltype");
 
@@ -660,18 +660,18 @@ void XFEM::MeshCouplingBC::evaluate_condition(Teuchos::RCP<Epetra_Vector> ivec,
   for (int lnodeid = 0; lnodeid < cutter_dis_->NumMyRowNodes(); lnodeid++)
   {
     // get the processor local node
-    CORE::Nodes::Node* lnode = cutter_dis_->lRowNode(lnodeid);
+    Core::Nodes::Node* lnode = cutter_dis_->lRowNode(lnodeid);
     // the set of degrees of freedom associated with the node
     const std::vector<int> nodedofset = cutter_dis_->Dof(lnode);
 
     const int numdof = nodedofset.size();
 
     if (numdof == 0) FOUR_C_THROW("node has no dofs");
-    std::vector<CORE::Conditions::Condition*> mycond;
+    std::vector<Core::Conditions::Condition*> mycond;
     lnode->GetCondition(condname, mycond);
 
     // filter out the ones with right coupling id
-    std::vector<CORE::Conditions::Condition*> mycond_by_coupid;
+    std::vector<Core::Conditions::Condition*> mycond_by_coupid;
 
     for (auto* cond : mycond)
     {
@@ -690,7 +690,7 @@ void XFEM::MeshCouplingBC::evaluate_condition(Teuchos::RCP<Epetra_Vector> ivec,
 
     if (numconds == 0) FOUR_C_THROW("no condition available!");
 
-    CORE::Conditions::Condition* cond = mycond_by_coupid[numconds - 1];  // take the last condition
+    Core::Conditions::Condition* cond = mycond_by_coupid[numconds - 1];  // take the last condition
 
     // initial value for all nodal dofs to zero
     std::vector<double> final_values(numdof, 0.0);
@@ -716,7 +716,7 @@ void XFEM::MeshCouplingBC::evaluate_condition(Teuchos::RCP<Epetra_Vector> ivec,
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingBC::evaluate_interface_velocity(std::vector<double>& final_values,
-    CORE::Nodes::Node* node, CORE::Conditions::Condition* cond, const double time, const double dt)
+    Core::Nodes::Node* node, Core::Conditions::Condition* cond, const double time, const double dt)
 {
   const std::string* evaltype = &cond->parameters().Get<std::string>("evaltype");
 
@@ -758,7 +758,7 @@ void XFEM::MeshCouplingBC::evaluate_interface_velocity(std::vector<double>& fina
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingBC::evaluate_interface_displacement(std::vector<double>& final_values,
-    CORE::Nodes::Node* node, CORE::Conditions::Condition* cond, const double time)
+    Core::Nodes::Node* node, Core::Conditions::Condition* cond, const double time)
 {
   const std::string& evaltype = cond->parameters().Get<std::string>("evaltype");
 
@@ -786,7 +786,7 @@ void XFEM::MeshCouplingBC::evaluate_interface_displacement(std::vector<double>& 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingBC::compute_interface_velocity_from_displacement(
-    std::vector<double>& final_values, CORE::Nodes::Node* node, const double dt,
+    std::vector<double>& final_values, Core::Nodes::Node* node, const double dt,
     const std::string* evaltype)
 {
   if (dt < 1e-14) FOUR_C_THROW("zero or negative time step size not allowed!!!");
@@ -823,7 +823,7 @@ void XFEM::MeshCouplingBC::compute_interface_velocity_from_displacement(
 }
 
 void XFEM::MeshCouplingBC::evaluate_implementation(std::vector<double>& final_values,
-    const double* x, CORE::Conditions::Condition* cond, const double time,
+    const double* x, Core::Conditions::Condition* cond, const double time,
     const std::string& function_name)
 {
   const int numdof = final_values.size();
@@ -868,19 +868,19 @@ void XFEM::MeshCouplingBC::evaluate_implementation(std::vector<double>& final_va
 
 
   // rotation with constant angle velocity around point
-  CORE::LINALG::Matrix<3, 1> center(true);
+  Core::LinAlg::Matrix<3, 1> center(true);
 
   center(0) = 0.0;
   center(1) = 0.0;
   center(2) = 0.0;
 
-  CORE::LINALG::Matrix<3, 1> diff(true);
+  Core::LinAlg::Matrix<3, 1> diff(true);
   diff(0) = x[0] - center(0);
   diff(1) = x[1] - center(1);
   diff(2) = x[2] - center(2);
 
   // rotation matrix
-  CORE::LINALG::Matrix<3, 3> rot(true);
+  Core::LinAlg::Matrix<3, 3> rot(true);
 
   rot(0, 0) = cos(arg);
   rot(0, 1) = -sin(arg);
@@ -896,8 +896,8 @@ void XFEM::MeshCouplingBC::evaluate_implementation(std::vector<double>& final_va
   //
   //          rot.Scale(r);
 
-  CORE::LINALG::Matrix<3, 1> x_new(true);
-  CORE::LINALG::Matrix<3, 1> rotated(true);
+  Core::LinAlg::Matrix<3, 1> x_new(true);
+  Core::LinAlg::Matrix<3, 1> rotated(true);
 
   rotated.Multiply(rot, diff);
 
@@ -916,7 +916,7 @@ void XFEM::MeshCouplingBC::evaluate_implementation(std::vector<double>& final_va
 void XFEM::MeshCouplingBC::set_interface_displacement()
 {
   if (myrank_ == 0)
-    CORE::IO::cout << "\t set interface displacement, time " << time_ << CORE::IO::endl;
+    Core::IO::cout << "\t set interface displacement, time " << time_ << Core::IO::endl;
 
   std::string condname = "XFEMSurfDisplacement";
 
@@ -928,7 +928,7 @@ void XFEM::MeshCouplingBC::set_interface_displacement()
  *----------------------------------------------------------------------*/
 void XFEM::MeshCouplingBC::set_interface_velocity()
 {
-  if (myrank_ == 0) CORE::IO::cout << "\t set interface velocity, time " << time_ << CORE::IO::endl;
+  if (myrank_ == 0) Core::IO::cout << "\t set interface velocity, time " << time_ << Core::IO::endl;
 
   evaluate_condition(ivelnp_, cond_name_, time_, dt_);
 }
@@ -938,10 +938,10 @@ void XFEM::MeshCouplingBC::set_interface_velocity()
  *--------------------------------------------------------------------------*/
 //! constructor
 XFEM::MeshCouplingWeakDirichlet::MeshCouplingWeakDirichlet(
-    Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<DRT::Discretization>&
+    Teuchos::RCP<Discret::Discretization>&
         cond_dis,           ///< discretization from which cutter discretization can be derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -969,9 +969,9 @@ void XFEM::MeshCouplingWeakDirichlet::do_condition_specific_setup()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingWeakDirichlet::evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
-    CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-    const CORE::Conditions::Condition* cond)
+void XFEM::MeshCouplingWeakDirichlet::evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
+    Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+    const Core::Conditions::Condition* cond)
 {
   // evaluate interface velocity (given by weak Dirichlet condition)
   evaluate_dirichlet_function(ivel, x, cond, time_);
@@ -983,8 +983,8 @@ void XFEM::MeshCouplingWeakDirichlet::evaluate_coupling_conditions(CORE::LINALG:
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingWeakDirichlet::evaluate_coupling_conditions_old_state(
-    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
-    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
+    Core::LinAlg::Matrix<3, 1>& ivel, Core::LinAlg::Matrix<3, 1>& itraction,
+    const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   // evaluate interface velocity (given by weak Dirichlet condition)
   evaluate_dirichlet_function(ivel, x, cond, time_ - dt_);
@@ -1009,16 +1009,16 @@ void XFEM::MeshCouplingWeakDirichlet::PrepareSolve()
 void XFEM::MeshCouplingWeakDirichlet::setup_configuration_map()
 {
   // Configuration of Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
 
   // Configuration of Adjount Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Adj_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Adj_Col] = std::pair<bool, double>(true, 1.0);
 
   // Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
 
   return;
 }
@@ -1031,19 +1031,19 @@ void XFEM::MeshCouplingWeakDirichlet::update_configuration_map_gp(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    CORE::Elements::Element* ele,   //< Element
-    CORE::Elements::Element* bele,  //< Boundary Element
+    double& full_stab, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond,
+    Core::Elements::Element* ele,   //< Element
+    Core::Elements::Element* bele,  //< Boundary Element
     double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+    Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   // Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
+  configuration_map_[Inpar::XFEM::F_Pen_Row].second = full_stab;
 
   return;
 }
@@ -1057,11 +1057,11 @@ void XFEM::MeshCouplingNeumann::do_condition_specific_setup()
 
   // Check if Inflow Stabilisation is active
   if (!cutterele_conds_.size()) FOUR_C_THROW("cutterele_conds_.size = 0!");
-  CORE::Conditions::Condition* cond = (cutterele_conds_[0]).second;
+  Core::Conditions::Condition* cond = (cutterele_conds_[0]).second;
   auto inflow_stab = cond->parameters().Get<bool>("InflowStab");
   for (auto& cutterele_cond : cutterele_conds_)
   {
-    CORE::Conditions::Condition* cond = cutterele_cond.second;
+    Core::Conditions::Condition* cond = cutterele_cond.second;
     auto this_inflow = cond->parameters().Get<bool>("InflowStab");
     if (inflow_stab != this_inflow)
       FOUR_C_THROW(
@@ -1084,8 +1084,8 @@ void XFEM::MeshCouplingNeumann::setup_configuration_map()
   if (inflow_stab_)
   {
     // Configuration of Penalty Terms
-    configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::F_Adj_Col] =
+    configuration_map_[Inpar::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Adj_Col] =
         std::pair<bool, double>(true, 1.0);  //<-- IMPORTANT!: used for the constraint scaling
   }
 }
@@ -1098,14 +1098,14 @@ void XFEM::MeshCouplingNeumann::update_configuration_map_gp(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    CORE::Elements::Element* ele,   //< Element
-    CORE::Elements::Element* bele,  //< Boundary Element
+    double& full_stab, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond,
+    Core::Elements::Element* ele,   //< Element
+    Core::Elements::Element* bele,  //< Boundary Element
     double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+    Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
@@ -1115,20 +1115,20 @@ void XFEM::MeshCouplingNeumann::update_configuration_map_gp(
     double veln = normal.Dot(vel_m);  // as the normal is the structural body, inflow is positive
     if (veln < 0)
     {
-      configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(true, -density_m * veln);
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF1] =
+      configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(true, -density_m * veln);
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF1] =
           std::pair<bool, double>(true, -density_m * normal(0));
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF2] =
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF2] =
           std::pair<bool, double>(true, -density_m * normal(1));
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF3] =
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF3] =
           std::pair<bool, double>(true, -density_m * normal(2));
     }
     else
     {
-      configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(false, 0);
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF1] = std::pair<bool, double>(false, 0);
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF2] = std::pair<bool, double>(false, 0);
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF3] = std::pair<bool, double>(false, 0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(false, 0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF1] = std::pair<bool, double>(false, 0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF2] = std::pair<bool, double>(false, 0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF3] = std::pair<bool, double>(false, 0);
     }
   }
 
@@ -1137,9 +1137,9 @@ void XFEM::MeshCouplingNeumann::update_configuration_map_gp(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingNeumann::evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
-    CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-    const CORE::Conditions::Condition* cond)
+void XFEM::MeshCouplingNeumann::evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
+    Core::LinAlg::Matrix<3, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+    const Core::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
   ivel.Clear();
@@ -1150,9 +1150,9 @@ void XFEM::MeshCouplingNeumann::evaluate_coupling_conditions(CORE::LINALG::Matri
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingNeumann::evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
-    CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
-    const CORE::Conditions::Condition* cond)
+void XFEM::MeshCouplingNeumann::evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
+    Core::LinAlg::Matrix<6, 1>& itraction, const Core::LinAlg::Matrix<3, 1>& x,
+    const Core::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
   ivel.Clear();
@@ -1164,8 +1164,8 @@ void XFEM::MeshCouplingNeumann::evaluate_coupling_conditions(CORE::LINALG::Matri
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingNeumann::evaluate_coupling_conditions_old_state(
-    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
-    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
+    Core::LinAlg::Matrix<3, 1>& ivel, Core::LinAlg::Matrix<3, 1>& itraction,
+    const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   // no interface velocity to be evaluated
   ivel.Clear();
@@ -1186,10 +1186,10 @@ void XFEM::MeshCouplingNeumann::PrepareSolve()
  *--------------------------------------------------------------------------*/
 //! constructor
 XFEM::MeshCouplingNavierSlip::MeshCouplingNavierSlip(
-    Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<DRT::Discretization>&
+    Teuchos::RCP<Discret::Discretization>&
         cond_dis,           ///< discretization from which cutter discretization can be derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -1221,7 +1221,7 @@ void XFEM::MeshCouplingNavierSlip::do_condition_specific_setup()
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingNavierSlip::set_interface_velocity()
 {
-  if (myrank_ == 0) CORE::IO::cout << "\t set interface velocity, time " << time_ << CORE::IO::endl;
+  if (myrank_ == 0) Core::IO::cout << "\t set interface velocity, time " << time_ << Core::IO::endl;
 
   //  evaluate_condition( ivelnp_, cond_name_, time_, dt_);
   evaluate_condition(ivelnp_, "XFEMRobinDirichletSurf", time_, dt_);
@@ -1230,10 +1230,10 @@ void XFEM::MeshCouplingNavierSlip::set_interface_velocity()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions(CORE::LINALG::Matrix<3, 1>& ivel,
-    CORE::LINALG::Matrix<3, 1>& itraction, CORE::LINALG::Matrix<3, 3>& proj_matrix,
-    const CORE::LINALG::Matrix<3, 1>& x, const CORE::LINALG::Matrix<3, 1>& normal,
-    const CORE::Conditions::Condition* cond, const bool& eval_dirich_at_gp,
+void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions(Core::LinAlg::Matrix<3, 1>& ivel,
+    Core::LinAlg::Matrix<3, 1>& itraction, Core::LinAlg::Matrix<3, 3>& proj_matrix,
+    const Core::LinAlg::Matrix<3, 1>& x, const Core::LinAlg::Matrix<3, 1>& normal,
+    const Core::Conditions::Condition* cond, const bool& eval_dirich_at_gp,
     double& kappa_m,  ///< fluid sided weighting
     double& visc_m,   ///< fluid sided weighting
     double& visc_s    ///< slave sided dynamic viscosity
@@ -1285,7 +1285,7 @@ void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions(CORE::LINALG::Ma
           itraction, x, conditionsmap_robin_neumann_.find(robin_id_dirch)->second, time_);
 
       double sl_visc_fac = sliplength / (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
-      CORE::LINALG::Matrix<3, 1> tmp_itraction(true);
+      Core::LinAlg::Matrix<3, 1> tmp_itraction(true);
       tmp_itraction.MultiplyTN(proj_matrix, itraction);
       // Project this into tangential direction!!!
 
@@ -1297,7 +1297,7 @@ void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions(CORE::LINALG::Ma
 
   if (force_tangvel_map_.find(cond->Id())->second)
   {
-    CORE::LINALG::Matrix<3, 1> tmp_ivel(true);
+    Core::LinAlg::Matrix<3, 1> tmp_ivel(true);
     tmp_ivel.MultiplyTN(proj_matrix, ivel);  // apply Projection matrix from the right. (u_0 * P^t)
     ivel.Update(1.0, tmp_ivel, 0.0);
   }
@@ -1321,12 +1321,12 @@ void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions(CORE::LINALG::Ma
 }
 
 void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions_old_state(
-    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
-    const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
+    Core::LinAlg::Matrix<3, 1>& ivel, Core::LinAlg::Matrix<3, 1>& itraction,
+    const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   // TODO: Add parameters as in call above!!!
   //  //Create normal projection matrix.
-  //  CORE::LINALG::Matrix<3,3> eye(true);
+  //  Core::LinAlg::Matrix<3,3> eye(true);
   //  for(unsigned int i =0; i<3; ++i)
   //    eye(i,i)=1;
   //  for(unsigned int i =0; i<3; ++i)
@@ -1358,12 +1358,12 @@ void XFEM::MeshCouplingNavierSlip::PrepareSolve()
 
   //  // set the initial interface velocity and possible initialization function
   //  set_interface_velocity();
-  if (myrank_ == 0) CORE::IO::cout << "\t set interface velocity, time " << time_ << CORE::IO::endl;
+  if (myrank_ == 0) Core::IO::cout << "\t set interface velocity, time " << time_ << Core::IO::endl;
   evaluate_condition(ivelnp_, "XFEMRobinDirichletSurf", time_, dt_);
 }
 
 void XFEM::MeshCouplingNavierSlip::GetSlipCoefficient(
-    double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
+    double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   // Extract correct slip length - bool pair for this condition ID.
   std::pair<double, bool>& tmp_pair = sliplength_map_.find(cond->Id())->second;
@@ -1375,10 +1375,10 @@ void XFEM::MeshCouplingNavierSlip::GetSlipCoefficient(
 }
 
 void XFEM::MeshCouplingNavierSlip::create_robin_id_map(
-    const std::vector<CORE::Conditions::Condition*>& conditions_NS,
-    const std::vector<CORE::Conditions::Condition*>& conditions_robin,
+    const std::vector<Core::Conditions::Condition*>& conditions_NS,
+    const std::vector<Core::Conditions::Condition*>& conditions_robin,
     const std::string& robin_id_name,
-    std::map<int, CORE::Conditions::Condition*>& conditionsmap_robin)
+    std::map<int, Core::Conditions::Condition*>& conditionsmap_robin)
 {
   // Loop over all Navier Slip conditions
   for (unsigned i = 0; i < conditions_NS.size(); ++i)
@@ -1389,7 +1389,7 @@ void XFEM::MeshCouplingNavierSlip::create_robin_id_map(
     // Is this robin id active? I.e. is it not 0 or negative?
     if (!(tmp_robin_id < 0))
     {
-      std::vector<CORE::Conditions::Condition*> mynewcond;
+      std::vector<Core::Conditions::Condition*> mynewcond;
       get_condition_by_robin_id(conditions_robin, tmp_robin_id, mynewcond);
 
       // The robin id should be unique. I.e. For one Coupling ID only a robin id can only exist
@@ -1422,10 +1422,10 @@ void XFEM::MeshCouplingNavierSlip::set_condition_specific_parameters()
   // Build necessary maps to limit getting integers and strings on Gausspoint level.
 
   // Get conditions based on cutter discretization.
-  std::vector<CORE::Conditions::Condition*> conditions_dirich;
+  std::vector<Core::Conditions::Condition*> conditions_dirich;
   cutter_dis_->GetCondition("XFEMRobinDirichletSurf", conditions_dirich);
 
-  std::vector<CORE::Conditions::Condition*> conditions_neumann;
+  std::vector<Core::Conditions::Condition*> conditions_neumann;
   cutter_dis_->GetCondition("XFEMRobinNeumannSurf", conditions_neumann);
 
   if (conditions_neumann.size())
@@ -1445,7 +1445,7 @@ void XFEM::MeshCouplingNavierSlip::set_condition_specific_parameters()
               << std::endl;
   }
 
-  std::vector<CORE::Conditions::Condition*> conditions_NS;
+  std::vector<Core::Conditions::Condition*> conditions_NS;
   cutter_dis_->GetCondition(cond_name_, conditions_NS);
 
   // Establishes unique connection between Navier Slip section and Robin Dirichlet Neumann sections
@@ -1492,8 +1492,8 @@ void XFEM::MeshCouplingNavierSlip::set_condition_specific_parameters()
 }
 
 void XFEM::MeshCouplingNavierSlip::get_condition_by_robin_id(
-    const std::vector<CORE::Conditions::Condition*>& mycond, const int coupling_id,
-    std::vector<CORE::Conditions::Condition*>& mynewcond)
+    const std::vector<Core::Conditions::Condition*>& mycond, const int coupling_id,
+    std::vector<Core::Conditions::Condition*>& mynewcond)
 {
   mynewcond.clear();
 
@@ -1511,23 +1511,23 @@ void XFEM::MeshCouplingNavierSlip::get_condition_by_robin_id(
 void XFEM::MeshCouplingNavierSlip::setup_configuration_map()
 {
   // Configuration of Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Con_t_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Con_t_Col] = std::pair<bool, double>(true, 1.0);
 
   // Configuration of Adjount Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
 
   // Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
 }
 
 /*--------------------------------------------------------------------------*
@@ -1538,14 +1538,14 @@ void XFEM::MeshCouplingNavierSlip::update_configuration_map_gp(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    CORE::Elements::Element* ele,   //< Element
-    CORE::Elements::Element* bele,  //< Boundary Element
+    double& full_stab, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond,
+    Core::Elements::Element* ele,   //< Element
+    Core::Elements::Element* bele,  //< Boundary Element
     double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+    Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
@@ -1561,34 +1561,34 @@ void XFEM::MeshCouplingNavierSlip::update_configuration_map_gp(
     double stabadj = 0.0;
     XFEM::UTILS::GetNavierSlipStabilizationParameters(
         visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
-    configuration_map_[INPAR::XFEM::F_Con_t_Row] =
+    configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
+    configuration_map_[Inpar::XFEM::F_Con_t_Row] =
         std::pair<bool, double>(true, -stabnit);  //+sign for penalty!
-    configuration_map_[INPAR::XFEM::F_Con_t_Col] =
+    configuration_map_[Inpar::XFEM::F_Con_t_Col] =
         std::pair<bool, double>(true, sliplength / dynvisc);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
-    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
+    configuration_map_[Inpar::XFEM::F_Adj_t_Row].second = stabadj;
+    configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
   }
   else
   {
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = visc_stab_tang;
-    configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool, double>(false, 0.0);
-    configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool, double>(false, 0.0);
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = 1.0;
-    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(false, 0.0);
+    configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = visc_stab_tang;
+    configuration_map_[Inpar::XFEM::F_Con_t_Row] = std::pair<bool, double>(false, 0.0);
+    configuration_map_[Inpar::XFEM::F_Con_t_Col] = std::pair<bool, double>(false, 0.0);
+    configuration_map_[Inpar::XFEM::F_Adj_t_Row].second = 1.0;
+    configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(false, 0.0);
   }
 
   // Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_n_Row].second =
+  configuration_map_[Inpar::XFEM::F_Pen_n_Row].second =
       visc_stab_tang;  // full_stab <-- to keep results!
 }
 
 //! constructor
 XFEM::MeshCouplingFSI::MeshCouplingFSI(
-    Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<DRT::Discretization>&
+    Teuchos::RCP<Discret::Discretization>&
         cond_dis,           ///< discretization from which cutter discretization can be derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -1596,7 +1596,7 @@ XFEM::MeshCouplingFSI::MeshCouplingFSI(
     )
     : MeshVolCoupling(bg_dis, cond_name, cond_dis, coupling_id, time, step),
       timefac_(-1.0),
-      interfacelaw_(INPAR::XFEM::noslip)
+      interfacelaw_(Inpar::XFEM::noslip)
 {
 }
 
@@ -1611,8 +1611,8 @@ void XFEM::MeshCouplingFSI::init_state_vectors()
   const Epetra_Map* cutterdofrowmap = cutter_dis_->dof_row_map();
   const Epetra_Map* cutterdofcolmap = cutter_dis_->DofColMap();
 
-  itrueresidual_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
-  iforcecol_ = CORE::LINALG::CreateVector(*cutterdofcolmap, true);
+  itrueresidual_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
+  iforcecol_ = Core::LinAlg::CreateVector(*cutterdofcolmap, true);
 }
 
 
@@ -1645,19 +1645,19 @@ void XFEM::MeshCouplingFSI::zero_state_vectors_fsi()
 // -------------------------------------------------------------------
 void XFEM::MeshCouplingFSI::read_restart(const int step)
 {
-  if (myrank_) CORE::IO::cout << "read_restart for boundary discretization " << CORE::IO::endl;
+  if (myrank_) Core::IO::cout << "read_restart for boundary discretization " << Core::IO::endl;
 
   //-------- boundary discretization
-  CORE::IO::DiscretizationReader boundaryreader(
-      cutter_dis_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader boundaryreader(
+      cutter_dis_, Global::Problem::Instance()->InputControlFile(), step);
 
   const double time = boundaryreader.ReadDouble("time");
   //  const int    step = boundaryreader.ReadInt("step");
 
   if (myrank_ == 0)
   {
-    CORE::IO::cout << "time: " << time << CORE::IO::endl;
-    CORE::IO::cout << "step: " << step << CORE::IO::endl;
+    Core::IO::cout << "time: " << time << Core::IO::endl;
+    Core::IO::cout << "step: " << step << Core::IO::endl;
   }
 
   boundaryreader.ReadVector(iveln_, "iveln_res");
@@ -1681,7 +1681,7 @@ void XFEM::MeshCouplingFSI::read_restart(const int step)
 }
 
 void XFEM::MeshCouplingFSI::GetSlipCoefficient(
-    double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond)
+    double& slipcoeff, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond)
 {
   // Extract correct slip length - bool pair for this condition ID.
   std::pair<double, bool>& tmp_pair = sliplength_map_.find(cond->Id())->second;
@@ -1701,11 +1701,11 @@ void XFEM::MeshCouplingFSI::GmshOutput(const std::string& filename_base, const i
   filename_base_fsi << filename_base << "_force";
 
   // compute the current boundary position
-  std::map<int, CORE::LINALG::Matrix<3, 1>> currinterfacepositions;
+  std::map<int, Core::LinAlg::Matrix<3, 1>> currinterfacepositions;
   XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
 
 
-  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
       filename_base_fsi.str(), cutter_dis_->Writer()->Output()->FileName(), step, gmsh_step_diff,
       gmsh_debug_out_screen, myrank_);
 
@@ -1716,7 +1716,7 @@ void XFEM::MeshCouplingFSI::GmshOutput(const std::string& filename_base, const i
     gmshfilecontent << "View \" "
                     << "iforce \" {" << std::endl;
     // draw vector field 'force' for every node
-    CORE::IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
         cutter_dis_, itrueresidual_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -1726,7 +1726,7 @@ void XFEM::MeshCouplingFSI::GmshOutput(const std::string& filename_base, const i
     gmshfilecontent << "View \" "
                     << "idispnp \" {" << std::endl;
     // draw vector field 'idispnp' for every node
-    CORE::IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
         cutter_dis_, idispnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -1736,7 +1736,7 @@ void XFEM::MeshCouplingFSI::GmshOutput(const std::string& filename_base, const i
     gmshfilecontent << "View \" "
                     << "ivelnp \" {" << std::endl;
     // draw vector field 'ivelnp' for every node
-    CORE::IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
         cutter_dis_, ivelnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -1752,11 +1752,11 @@ void XFEM::MeshCouplingFSI::gmsh_output_discretization(std::ostream& gmshfilecon
   XFEM::MeshCoupling::gmsh_output_discretization(gmshfilecontent);
 
   // compute the current solid and boundary position
-  std::map<int, CORE::LINALG::Matrix<3, 1>> currsolidpositions;
+  std::map<int, Core::LinAlg::Matrix<3, 1>> currsolidpositions;
 
   // write dis with zero solid displacements here!
   Teuchos::RCP<Epetra_Vector> solid_dispnp =
-      CORE::LINALG::CreateVector(*cond_dis_->dof_row_map(), true);
+      Core::LinAlg::CreateVector(*cond_dis_->dof_row_map(), true);
 
   XFEM::UTILS::extract_node_vectors(cond_dis_, currsolidpositions, solid_dispnp);
 
@@ -1789,7 +1789,7 @@ void XFEM::MeshCouplingFSI::Output(const int step, const double time, const bool
 
 void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
 {
-  std::vector<CORE::Conditions::Condition*> conditions_XFSI;
+  std::vector<Core::Conditions::Condition*> conditions_XFSI;
   cutter_dis_->GetCondition(cond_name_, conditions_XFSI);
 
   // Create maps for easy extraction at gausspoint level
@@ -1807,8 +1807,8 @@ void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
              .second)
       FOUR_C_THROW("ID already existing! For sliplength_map_.");
 
-    INPAR::XFEM::InterfaceLaw interfacelaw =
-        static_cast<INPAR::XFEM::InterfaceLaw>(cond->parameters().Get<int>("INTLAW"));
+    Inpar::XFEM::InterfaceLaw interfacelaw =
+        static_cast<Inpar::XFEM::InterfaceLaw>(cond->parameters().Get<int>("INTLAW"));
     if (i != conditions_XFSI.begin())
     {
       if (interfacelaw_ != interfacelaw)
@@ -1821,17 +1821,17 @@ void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
     i++;
   }
 
-  if (interfacelaw_ == INPAR::XFEM::navierslip_contact)  // compute h
+  if (interfacelaw_ == Inpar::XFEM::navierslip_contact)  // compute h
   {
     double hmax = 0.0;
     for (int ele = 0; ele < bg_dis_->NumMyRowElements(); ++ele)
     {
-      CORE::Elements::Element* fluid_ele = bg_dis_->lRowElement(ele);
-      if (fluid_ele->Shape() == CORE::FE::CellType::hex8)
+      Core::Elements::Element* fluid_ele = bg_dis_->lRowElement(ele);
+      if (fluid_ele->Shape() == Core::FE::CellType::hex8)
       {
-        CORE::LINALG::Matrix<3, 8> xyze(true);
-        CORE::GEO::fillInitialPositionArray(fluid_ele, xyze);
-        double vol = XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::hex8>(xyze);
+        Core::LinAlg::Matrix<3, 8> xyze(true);
+        Core::Geo::fillInitialPositionArray(fluid_ele, xyze);
+        double vol = XFEM::UTILS::EvalElementVolume<Core::FE::CellType::hex8>(xyze);
         hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
       }
       else
@@ -1845,28 +1845,28 @@ void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
   std::cout << "==| XFEM::MeshCouplingFSI: Applied interface law is";
   switch (interfacelaw_)
   {
-    case INPAR::XFEM::noslip:
+    case Inpar::XFEM::noslip:
     {
       std::cout << " no-slip! |==" << std::endl;
       break;
     }
-    case INPAR::XFEM::noslip_splitpen:
+    case Inpar::XFEM::noslip_splitpen:
     {
       std::cout << " no-slip with splitted normal and tangential penalty contribution! |=="
                 << std::endl;
       break;
     }
-    case INPAR::XFEM::slip:
+    case Inpar::XFEM::slip:
     {
       std::cout << " slip! |==" << std::endl;
       break;
     }
-    case INPAR::XFEM::navierslip:
+    case Inpar::XFEM::navierslip:
     {
       std::cout << " Navier-slip! |==" << std::endl;
       break;
     }
-    case INPAR::XFEM::navierslip_contact:
+    case Inpar::XFEM::navierslip_contact:
     {
       std::cout << " Navier-slip with Nitsche contact! |==" << std::endl;
       break;
@@ -1888,17 +1888,17 @@ void XFEM::MeshCouplingFSI::LiftDrag(const int step, const double time) const
   // get forces on all procs
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<const Epetra_Vector> iforcecol =
-      CORE::REBALANCE::GetColVersionOfRowVector(cutter_dis_, itrueresidual_);
+      Core::Rebalance::GetColVersionOfRowVector(cutter_dis_, itrueresidual_);
 
   if (myrank_ == 0)
   {
     // compute force components
     const int nsd = 3;
     const Epetra_Map* dofcolmap = cutter_dis_->DofColMap();
-    CORE::LINALG::Matrix<3, 1> c(true);
+    Core::LinAlg::Matrix<3, 1> c(true);
     for (int inode = 0; inode < cutter_dis_->NumMyColNodes(); ++inode)
     {
-      const CORE::Nodes::Node* node = cutter_dis_->lColNode(inode);
+      const Core::Nodes::Node* node = cutter_dis_->lColNode(inode);
       const std::vector<int> dof = cutter_dis_->Dof(node);
       for (int isd = 0; isd < nsd; ++isd)
       {
@@ -1918,7 +1918,7 @@ void XFEM::MeshCouplingFSI::LiftDrag(const int step, const double time) const
       << std::right << std::setw(16) << std::scientific << c(2);
 
     std::ofstream f;
-    const std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileName() +
+    const std::string fname = Global::Problem::Instance()->OutputControlFile()->FileName() +
                               ".liftdrag." + cond_name_ + ".txt";
     if (step <= 1)
     {
@@ -1941,143 +1941,143 @@ void XFEM::MeshCouplingFSI::LiftDrag(const int step, const double time) const
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFSI::setup_configuration_map()
 {
-  if (get_averaging_strategy() == INPAR::XFEM::Xfluid_Sided)
+  if (get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided)
   {
-    if (GetInterfaceLaw() == INPAR::XFEM::slip)
+    if (GetInterfaceLaw() == Inpar::XFEM::slip)
     {
       // Configuration of Consistency Terms
-      configuration_map_[INPAR::XFEM::F_Con_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Con_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Con_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Con_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Con_n_Row] = std::pair<bool, double>(true, 1.0);
 
       // Configuration of Adjount Consistency Terms
-      configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
 
       // Configuration of Penalty Terms
-      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
     }
-    else if (GetInterfaceLaw() == INPAR::XFEM::noslip ||
-             GetInterfaceLaw() == INPAR::XFEM::noslip_splitpen)
+    else if (GetInterfaceLaw() == Inpar::XFEM::noslip ||
+             GetInterfaceLaw() == Inpar::XFEM::noslip_splitpen)
     {
       // Configuration of Consistency Terms
-      configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
 
       // Configuration of Adjount Consistency Terms
-      configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Adj_Col] = std::pair<bool, double>(true, 1.0);
 
-      if (GetInterfaceLaw() == INPAR::XFEM::noslip)
+      if (GetInterfaceLaw() == Inpar::XFEM::noslip)
       {
         // Configuration of Penalty Terms
-        configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::X_Pen_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::X_Pen_Col] = std::pair<bool, double>(true, 1.0);
       }
       else
       {
         // Configuration of Penalty Terms
-        configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::F_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::X_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
 
         // to guarantee correct scaling, terms are not evaluted
-        configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool, double>(false, 1.0);
-        configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool, double>(false, 1.0);
-        configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool, double>(false, 1.0);
-        configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool, double>(false, 1.0);
-        configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool, double>(false, 1.0);
-        configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool, double>(false, 1.0);
+        configuration_map_[Inpar::XFEM::F_Pen_Col] = std::pair<bool, double>(false, 1.0);
+        configuration_map_[Inpar::XFEM::X_Pen_Col] = std::pair<bool, double>(false, 1.0);
+        configuration_map_[Inpar::XFEM::F_Adj_n_Col] = std::pair<bool, double>(false, 1.0);
+        configuration_map_[Inpar::XFEM::X_Adj_n_Col] = std::pair<bool, double>(false, 1.0);
+        configuration_map_[Inpar::XFEM::F_Adj_t_Col] = std::pair<bool, double>(false, 1.0);
+        configuration_map_[Inpar::XFEM::X_Adj_t_Col] = std::pair<bool, double>(false, 1.0);
       }
     }
-    else if (GetInterfaceLaw() == INPAR::XFEM::navierslip ||
-             GetInterfaceLaw() == INPAR::XFEM::navierslip_contact)
+    else if (GetInterfaceLaw() == Inpar::XFEM::navierslip ||
+             GetInterfaceLaw() == Inpar::XFEM::navierslip_contact)
     {
       // Configuration of Consistency Terms
-      configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Con_t_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Con_t_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Con_t_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Con_t_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Con_t_Row] = std::pair<bool, double>(true, 1.0);
 
       // Configuration of Adjount Consistency Terms
-      configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
 
       // Configuration of Penalty Terms
-      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
     }
     else
       FOUR_C_THROW("Intlaw not available!");
   }
-  else if (get_averaging_strategy() == INPAR::XFEM::Embedded_Sided)
+  else if (get_averaging_strategy() == Inpar::XFEM::Embedded_Sided)
   {
-    if (GetInterfaceLaw() == INPAR::XFEM::slip)
+    if (GetInterfaceLaw() == Inpar::XFEM::slip)
     {
       // Configuration of Consistency Terms
-      configuration_map_[INPAR::XFEM::F_Con_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::XS_Con_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Con_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::XS_Con_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Con_n_Row] = std::pair<bool, double>(true, 1.0);
 
       // Configuration of Adjount Consistency Terms
-      configuration_map_[INPAR::XFEM::XS_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::XS_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
 
       // Configuration of Penalty Terms
-      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
     }
-    else if (GetInterfaceLaw() == INPAR::XFEM::noslip)
+    else if (GetInterfaceLaw() == Inpar::XFEM::noslip)
     {
       // Configuration of Consistency Terms
-      configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::XS_Con_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::XS_Con_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
 
       // Configuration of Adjount Consistency Terms
-      configuration_map_[INPAR::XFEM::XS_Adj_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::XS_Adj_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Adj_Col] = std::pair<bool, double>(true, 1.0);
 
       // Configuration of Penalty Terms
-      configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_Col] = std::pair<bool, double>(true, 1.0);
     }
     else
       FOUR_C_THROW("Intlaw not available!");
   }
-  else if (get_averaging_strategy() == INPAR::XFEM::invalid)
+  else if (get_averaging_strategy() == Inpar::XFEM::invalid)
     FOUR_C_THROW("XFEM::MeshCouplingFSI: Averaging Strategy not set!");
   else
     FOUR_C_THROW(
@@ -2093,47 +2093,47 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp(double& kappa_m,  //< fl
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    CORE::Elements::Element* ele,   //< Element
-    CORE::Elements::Element* bele,  //< Boundary Element
+    double& full_stab, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond,
+    Core::Elements::Element* ele,   //< Element
+    Core::Elements::Element* bele,  //< Boundary Element
     double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+    Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if ((kappa_m != 1 && get_averaging_strategy() == INPAR::XFEM::Xfluid_Sided) ||
-      (kappa_m != 0 && get_averaging_strategy() == INPAR::XFEM::Embedded_Sided))
+  if ((kappa_m != 1 && get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided) ||
+      (kappa_m != 0 && get_averaging_strategy() == Inpar::XFEM::Embedded_Sided))
     FOUR_C_THROW("XFEM::MeshCouplingFSI::update_configuration_map_gp: kappa_m == %f", kappa_m);
 #endif
 
-  if (get_averaging_strategy() == INPAR::XFEM::Xfluid_Sided)
+  if (get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided)
   {
-    if (GetInterfaceLaw() == INPAR::XFEM::slip)
+    if (GetInterfaceLaw() == Inpar::XFEM::slip)
     {
       // Configuration of Penalty Terms
-      // configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
+      // configuration_map_[Inpar::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
     }
-    else if (GetInterfaceLaw() == INPAR::XFEM::noslip)
+    else if (GetInterfaceLaw() == Inpar::XFEM::noslip)
     {
-      // configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
-      configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool, double>(true, full_stab);
+      // configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row].second = full_stab;
+      configuration_map_[Inpar::XFEM::X_Pen_Row] = std::pair<bool, double>(true, full_stab);
     }
-    else if (GetInterfaceLaw() == INPAR::XFEM::noslip_splitpen)
+    else if (GetInterfaceLaw() == Inpar::XFEM::noslip_splitpen)
     {
-      // configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
-      configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = visc_stab_tang;
-      configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, visc_stab_tang);
+      // configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Row].second = full_stab;
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
+      configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = visc_stab_tang;
+      configuration_map_[Inpar::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, visc_stab_tang);
     }
-    else if (GetInterfaceLaw() == INPAR::XFEM::navierslip)
+    else if (GetInterfaceLaw() == Inpar::XFEM::navierslip)
     {
       double sliplength = 0.0;
       GetSlipCoefficient(sliplength, x, cond);
@@ -2146,24 +2146,24 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp(double& kappa_m,  //< fl
       XFEM::UTILS::GetNavierSlipStabilizationParameters(
           visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
 
-      configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
-      configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = stabnit;
-      configuration_map_[INPAR::XFEM::F_Con_t_Col] =
+      configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
+      configuration_map_[Inpar::XFEM::X_Pen_t_Row].second = stabnit;
+      configuration_map_[Inpar::XFEM::F_Con_t_Col] =
           std::pair<bool, double>(true, sliplength / dynvisc);
-      configuration_map_[INPAR::XFEM::F_Con_t_Row] =
+      configuration_map_[Inpar::XFEM::F_Con_t_Row] =
           std::pair<bool, double>(true, -stabnit);  //+sign for penalty!
-      configuration_map_[INPAR::XFEM::X_Con_t_Row] =
+      configuration_map_[Inpar::XFEM::X_Con_t_Row] =
           std::pair<bool, double>(true, -stabnit);  //+sign for penalty!
-      configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
-      configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
+      configuration_map_[Inpar::XFEM::F_Adj_t_Row].second = stabadj;
+      configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
 
       // Configuration of Penalty Terms
-      configuration_map_[INPAR::XFEM::F_Pen_n_Row].second =
+      configuration_map_[Inpar::XFEM::F_Pen_n_Row].second =
           full_stab;  // full_stab <-- to keep results!
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row].second =
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row].second =
           full_stab;  // full_stab <-- to keep results!
     }
-    else if (GetInterfaceLaw() == INPAR::XFEM::navierslip_contact)
+    else if (GetInterfaceLaw() == Inpar::XFEM::navierslip_contact)
     {
       update_configuration_map_gp_contact(kappa_m, visc_m, visc_s, density_m, visc_stab_tang,
           full_stab, x, cond, ele, bele, funct, derxy, rst_slave, normal, vel_m, fulltraction);
@@ -2171,21 +2171,21 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp(double& kappa_m,  //< fl
     else
       FOUR_C_THROW("Intlaw not available!");
   }
-  else if (get_averaging_strategy() == INPAR::XFEM::Embedded_Sided)
+  else if (get_averaging_strategy() == Inpar::XFEM::Embedded_Sided)
   {
-    if (GetInterfaceLaw() == INPAR::XFEM::slip)
+    if (GetInterfaceLaw() == Inpar::XFEM::slip)
     {
-      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, visc_stab_tang);
-      // configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, visc_stab_tang);
-      // configuration_map_[INPAR::XFEM::XS_Adj_n_Row] = std::pair<bool,double>(true,-1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, visc_stab_tang);
+      // configuration_map_[Inpar::XFEM::X_Con_n_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, visc_stab_tang);
+      // configuration_map_[Inpar::XFEM::XS_Adj_n_Row] = std::pair<bool,double>(true,-1.0);
     }
-    else if (GetInterfaceLaw() == INPAR::XFEM::noslip)
+    else if (GetInterfaceLaw() == Inpar::XFEM::noslip)
     {
-      configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(true, visc_stab_tang);
-      // configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool, double>(true, visc_stab_tang);
-      // configuration_map_[INPAR::XFEM::XS_Adj_Row] = std::pair<bool,double>(true,-1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(true, visc_stab_tang);
+      // configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_Row] = std::pair<bool, double>(true, visc_stab_tang);
+      // configuration_map_[Inpar::XFEM::XS_Adj_Row] = std::pair<bool,double>(true,-1.0);
     }
     else
       FOUR_C_THROW("Intlaw not available!");
@@ -2202,14 +2202,14 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp_contact(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    CORE::Elements::Element* ele,   //< Element
-    CORE::Elements::Element* bele,  //< Boundary Element
+    double& full_stab, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond,
+    Core::Elements::Element* ele,   //< Element
+    Core::Elements::Element* bele,  //< Boundary Element
     double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+    Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
@@ -2223,7 +2223,7 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp_contact(
   static const int MIN_h = 0;  // distance from contact zone at which full-slip is prescribed
   static const double scaling = 1. / (MAX_h - MIN_h);
 
-  CORE::LINALG::Matrix<2, 1> xsi(rst_slave.A(), true);  // 3-->2
+  Core::LinAlg::Matrix<2, 1> xsi(rst_slave.A(), true);  // 3-->2
   bool pure_fsi = true;                                 // do we integrate only fsi
   double gap =
       MAX_h * h_scaling_;  // initialize with large value as this should be the default value ...
@@ -2267,46 +2267,46 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp_contact(
   if (pure_fsi)  // standard FSI with gernal Navier-slip --> Case I
   {
     xf_c_comm_->Inc_GP(3);
-    configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, stabnit);
-    configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, stabnit);
-    configuration_map_[INPAR::XFEM::F_Con_t_Col] =
+    configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, stabnit);
+    configuration_map_[Inpar::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, stabnit);
+    configuration_map_[Inpar::XFEM::F_Con_t_Col] =
         std::pair<bool, double>(true, sliplength / dynvisc);
-    configuration_map_[INPAR::XFEM::F_Con_t_Row] =
+    configuration_map_[Inpar::XFEM::F_Con_t_Row] =
         std::pair<bool, double>(true, -stabnit);  //+sign for penalty!
-    configuration_map_[INPAR::XFEM::X_Con_t_Row] =
+    configuration_map_[Inpar::XFEM::X_Con_t_Row] =
         std::pair<bool, double>(true, -stabnit);  //+sign for penalty!
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, stabadj);
-    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
+    configuration_map_[Inpar::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, stabadj);
+    configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
 
     // Configuration of Penalty Terms
-    configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
-    configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
+    configuration_map_[Inpar::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
+    configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
   }
   else  // we evaluate only the fluid terms here --> Case III (see Remark 5) -> the fluid terms, the
         // solid contributions are added in the contact part
   {
     xf_c_comm_->Inc_GP(4);
-    configuration_map_[INPAR::XFEM::X_Con_Row] =
+    configuration_map_[Inpar::XFEM::X_Con_Row] =
         std::pair<bool, double>(false, 0.0);  // no solid consistency
-    configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, stabnit);
-    configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, stabnit);
-    configuration_map_[INPAR::XFEM::F_Con_t_Col] =
+    configuration_map_[Inpar::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, stabnit);
+    configuration_map_[Inpar::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, stabnit);
+    configuration_map_[Inpar::XFEM::F_Con_t_Col] =
         std::pair<bool, double>(true, sliplength / dynvisc);
-    configuration_map_[INPAR::XFEM::F_Con_t_Row] =
+    configuration_map_[Inpar::XFEM::F_Con_t_Row] =
         std::pair<bool, double>(true, -stabnit);  //+sign for penalty!
     if (sliplength > 1e-40)                       // this is basically the no-slip case ...
-      configuration_map_[INPAR::XFEM::X_Con_t_Row] = std::pair<bool, double>(
+      configuration_map_[Inpar::XFEM::X_Con_t_Row] = std::pair<bool, double>(
           true, -stabnit + dynvisc / sliplength);  //+sign for penalty!+tangcons
     else                                           // avoid to evaluate this term ...
-      configuration_map_[INPAR::XFEM::X_Con_t_Row] =
+      configuration_map_[Inpar::XFEM::X_Con_t_Row] =
           std::pair<bool, double>(false, 0);  //+sign for penalty!+tancons
-    configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, stabadj);
-    configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
+    configuration_map_[Inpar::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, stabadj);
+    configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(true, sliplength);
 
     // Configuration of Penalty Terms
-    configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
-    configuration_map_[INPAR::XFEM::X_Pen_n_Row] =
+    configuration_map_[Inpar::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
+    configuration_map_[Inpar::XFEM::X_Pen_n_Row] =
         std::pair<bool, double>(false, 0.0);  // no normal penalty
   }
 }
@@ -2315,41 +2315,42 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp_contact(
  * Evaluate the Structural Cauchy Stress Matrix and it's linearization with respect to the
  *displacements
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(CORE::Elements::Element* coupl_ele,
-    CORE::LINALG::Matrix<3, 1>& rst_slave, std::vector<double>& eledisp,
-    const CORE::LINALG::Matrix<3, 1>& normal,
-    std::vector<CORE::LINALG::SerialDenseMatrix>& solid_stress)
+void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(Core::Elements::Element* coupl_ele,
+    Core::LinAlg::Matrix<3, 1>& rst_slave, std::vector<double>& eledisp,
+    const Core::LinAlg::Matrix<3, 1>& normal,
+    std::vector<Core::LinAlg::SerialDenseMatrix>& solid_stress)
 {
-  if (get_averaging_strategy() == INPAR::XFEM::Xfluid_Sided) return;
+  if (get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided) return;
 
-  FOUR_C_THROW_UNLESS(coupl_ele->Shape() == CORE::FE::CellType::hex8,
+  FOUR_C_THROW_UNLESS(coupl_ele->Shape() == Core::FE::CellType::hex8,
       "XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress is currently only implemented for "
       "hex8 elements");
 
 
   auto evaluate_cauchy_n_dir_and_derivatives = std::invoke(
-      [&]() -> std::function<void(const CORE::LINALG::Matrix<NUMDIM_SOH8, 1>&, double&,
-                CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&)>
+      [&]() -> std::function<void(const Core::LinAlg::Matrix<NUMDIM_SOH8, 1>&, double&,
+                Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&)>
       {
-        if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(coupl_ele); solid_ele != nullptr)
+        if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::SoBase*>(coupl_ele);
+            solid_ele != nullptr)
         {
-          return [&, solid_ele](const CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& dir,
-                     double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix& d_cauchy_d_d,
-                     CORE::LINALG::SerialDenseMatrix& d2_cauchy_d_d2)
+          return [&, solid_ele](const Core::LinAlg::Matrix<NUMDIM_SOH8, 1>& dir,
+                     double& cauchy_n_dir, Core::LinAlg::SerialDenseMatrix& d_cauchy_d_d,
+                     Core::LinAlg::SerialDenseMatrix& d2_cauchy_d_d2)
           {
             solid_ele->get_cauchy_n_dir_and_derivatives_at_xi(rst_slave, eledisp, normal, dir,
                 cauchy_n_dir, &d_cauchy_d_d, &d2_cauchy_d_d2, nullptr, nullptr, nullptr, nullptr,
                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
           };
         }
-        else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(coupl_ele);
+        else if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::Solid*>(coupl_ele);
                  solid_ele != nullptr)
         {
-          return [&, solid_ele](const CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& dir,
-                     double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix& d_cauchy_d_d,
-                     CORE::LINALG::SerialDenseMatrix& d2_cauchy_d_d2)
+          return [&, solid_ele](const Core::LinAlg::Matrix<NUMDIM_SOH8, 1>& dir,
+                     double& cauchy_n_dir, Core::LinAlg::SerialDenseMatrix& d_cauchy_d_d,
+                     Core::LinAlg::SerialDenseMatrix& d2_cauchy_d_d2)
           {
-            DRT::ELEMENTS::CauchyNDirLinearizations<3> linearizations{};
+            Discret::ELEMENTS::CauchyNDirLinearizations<3> linearizations{};
             linearizations.d_cauchyndir_dd = &d_cauchy_d_d;
             linearizations.d2_cauchyndir_dd2 = &d2_cauchy_d_d2;
 
@@ -2365,22 +2366,22 @@ void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(CORE::Elements::El
 
   solid_stress.resize(5);  // traction,dtdd,d2dddx,d2dddy,d2dddz
   solid_stress[0].reshape(NUMDIM_SOH8, 1);
-  CORE::LINALG::Matrix<NUMDIM_SOH8, 1> traction(solid_stress[0].values(), true);
+  Core::LinAlg::Matrix<NUMDIM_SOH8, 1> traction(solid_stress[0].values(), true);
 
   solid_stress[1].reshape(NUMDOF_SOH8, NUMDIM_SOH8);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> dtraction_dd_l(solid_stress[1].values(), true);
+  Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> dtraction_dd_l(solid_stress[1].values(), true);
 
   traction.Clear();
 
-  static CORE::LINALG::SerialDenseMatrix dtraction_dd_i;
+  static Core::LinAlg::SerialDenseMatrix dtraction_dd_i;
   for (int i = 0; i < NUMDIM_SOH8; ++i)
   {
-    CORE::LINALG::Matrix<NUMDIM_SOH8, 1> ei(true);
+    Core::LinAlg::Matrix<NUMDIM_SOH8, 1> ei(true);
     ei(i, 0) = 1.;
 
     evaluate_cauchy_n_dir_and_derivatives(ei, traction(i, 0), dtraction_dd_i, solid_stress[2 + i]);
 
-    CORE::LINALG::Matrix<NUMDOF_SOH8, 1> dtraction_dd_i_l(dtraction_dd_i.values(), true);
+    Core::LinAlg::Matrix<NUMDOF_SOH8, 1> dtraction_dd_i_l(dtraction_dd_i.values(), true);
     for (int col = 0; col < NUMDOF_SOH8; ++col) dtraction_dd_l(col, i) = dtraction_dd_i_l(col, 0);
   }
 
@@ -2397,11 +2398,11 @@ void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(CORE::Elements::El
  * get stress tangent of the slave solid
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFSI::get_stress_tangent_slave(
-    CORE::Elements::Element* coup_ele,  ///< solid ele
+    Core::Elements::Element* coup_ele,  ///< solid ele
     double& e_s)                        ///< stress tangent slavesided
 {
-  //  if (coup_ele->Material()->MaterialType() == CORE::Materials::m_elasthyper)
-  //    e_s = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(coup_ele->Material())->GetYoung();
+  //  if (coup_ele->Material()->MaterialType() == Core::Materials::m_elasthyper)
+  //    e_s = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(coup_ele->Material())->GetYoung();
   //  else
   //    FOUR_C_THROW("get_coupling_specific_average_weights: Slave Material not a Elasthyper
   //    material?");
@@ -2415,16 +2416,16 @@ void XFEM::MeshCouplingFSI::get_stress_tangent_slave(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFSI::estimate_nitsche_trace_max_eigenvalue(CORE::Elements::Element* ele)
+void XFEM::MeshCouplingFSI::estimate_nitsche_trace_max_eigenvalue(Core::Elements::Element* ele)
 {
-  DRT::ELEMENTS::StructuralSurface* solidfaceele =
-      dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(ele);
+  Discret::ELEMENTS::StructuralSurface* solidfaceele =
+      dynamic_cast<Discret::ELEMENTS::StructuralSurface*>(ele);
   FOUR_C_ASSERT(solidfaceele != nullptr, "Cast to StructuralSurface failed!");
 
   solidfaceele->set_parent_master_element(
       coupl_dis_->gElement(solidfaceele->ParentElementId()), solidfaceele->FaceParentNumber());
 
-  CORE::Elements::Element::LocationArray la(1);
+  Core::Elements::Element::LocationArray la(1);
   solidfaceele->parent_element()->LocationVector(*coupl_dis_, la, false);
 
   // extract eledisp here
@@ -2433,7 +2434,7 @@ void XFEM::MeshCouplingFSI::estimate_nitsche_trace_max_eigenvalue(CORE::Elements
   Teuchos::RCP<const Epetra_Vector> dispnp = coupl_dis_->GetState("dispnp");
   if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
-  CORE::FE::ExtractMyValues(*dispnp, eledisp, la[0].lm_);
+  Core::FE::ExtractMyValues(*dispnp, eledisp, la[0].lm_);
   (*ele_to_max_eigenvalue_)[ele->Id()] =
       solidfaceele->estimate_nitsche_trace_max_eigenvalue_combined(
           eledisp);  // this is (E/h) ...basically :-)
@@ -2448,14 +2449,14 @@ void XFEM::MeshCouplingFSI::PrepareSolve()
   XFEM::MeshCoupling::PrepareSolve();
 
   // Estimate Nitsche Trace Max Eigenvalue
-  if (get_averaging_strategy() != INPAR::XFEM::Xfluid_Sided) reset_evaluated_trace_estimates();
+  if (get_averaging_strategy() != Inpar::XFEM::Xfluid_Sided) reset_evaluated_trace_estimates();
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFSI::RegisterSideProc(int sid)
 {
-  if (GetInterfaceLaw() == INPAR::XFEM::navierslip_contact)
+  if (GetInterfaceLaw() == Inpar::XFEM::navierslip_contact)
     Get_Contact_Comm()->RegisterSideProc(sid);
   return;
 }
@@ -2463,21 +2464,21 @@ void XFEM::MeshCouplingFSI::RegisterSideProc(int sid)
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-bool XFEM::MeshCouplingFSI::initialize_fluid_state(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
-    Teuchos::RCP<DRT::Discretization> fluiddis,
+bool XFEM::MeshCouplingFSI::initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
+    Teuchos::RCP<Discret::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
 {
-  if (GetInterfaceLaw() == INPAR::XFEM::navierslip_contact)
+  if (GetInterfaceLaw() == Inpar::XFEM::navierslip_contact)
     Get_Contact_Comm()->initialize_fluid_state(cutwizard, fluiddis, condition_manager, fluidparams);
-  return (GetInterfaceLaw() == INPAR::XFEM::navierslip_contact);
+  return (GetInterfaceLaw() == Inpar::XFEM::navierslip_contact);
 }
 
 XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
-    Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<DRT::Discretization>&
+    Teuchos::RCP<Discret::Discretization>&
         cond_dis,           ///< discretization from which cutter discretization can be derived,
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -2495,17 +2496,17 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
  * doesn't matter if you have the same material on both sides ...
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFluidFluid::get_interface_slave_material(
-    CORE::Elements::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat)
+    Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat)
 {
-  XFEM::UTILS::get_volume_cell_material(actele, mat, CORE::GEO::CUT::Point::outside);
+  XFEM::UTILS::get_volume_cell_material(actele, mat, Core::Geo::Cut::Point::outside);
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFluidFluid::redistribute_for_error_calculation()
 {
-  if (get_averaging_strategy() == INPAR::XFEM::Embedded_Sided ||
-      get_averaging_strategy() == INPAR::XFEM::Mean)
+  if (get_averaging_strategy() == Inpar::XFEM::Embedded_Sided ||
+      get_averaging_strategy() == Inpar::XFEM::Mean)
     return;
 
   // Initialize Volume Coupling
@@ -2517,46 +2518,46 @@ void XFEM::MeshCouplingFluidFluid::redistribute_for_error_calculation()
 void XFEM::MeshCouplingFluidFluid::setup_configuration_map()
 {
   // Configuration of Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
 
   // Configuration of Adjount Consistency Terms
-  configuration_map_[INPAR::XFEM::F_Adj_Col] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::X_Adj_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Adj_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::X_Adj_Col] = std::pair<bool, double>(true, 1.0);
 
   // Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::X_Pen_Row] = std::pair<bool, double>(true, 1.0);
-  configuration_map_[INPAR::XFEM::X_Pen_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::X_Pen_Row] = std::pair<bool, double>(true, 1.0);
+  configuration_map_[Inpar::XFEM::X_Pen_Col] = std::pair<bool, double>(true, 1.0);
 
-  if (get_averaging_strategy() == INPAR::XFEM::Xfluid_Sided)
+  if (get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided)
   {
     // Configuration of Consistency Terms
-    configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
 
     // Configuration of Adjount Consistency Terms
-    configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::F_Adj_Row] = std::pair<bool, double>(true, 1.0);
   }
-  else if (get_averaging_strategy() == INPAR::XFEM::Embedded_Sided)
+  else if (get_averaging_strategy() == Inpar::XFEM::Embedded_Sided)
   {
     // Configuration of Consistency Terms
-    configuration_map_[INPAR::XFEM::XF_Con_Col] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::XF_Con_Col] = std::pair<bool, double>(true, 1.0);
 
     // Configuration of Adjount Consistency Terms
-    configuration_map_[INPAR::XFEM::XF_Adj_Row] = std::pair<bool, double>(true, 1.0);
+    configuration_map_[Inpar::XFEM::XF_Adj_Row] = std::pair<bool, double>(true, 1.0);
   }
-  else if (get_averaging_strategy() == INPAR::XFEM::Mean)
+  else if (get_averaging_strategy() == Inpar::XFEM::Mean)
   {
     // Configuration of Consistency Terms
-    configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool, double>(true, 0.5);
-    configuration_map_[INPAR::XFEM::XF_Con_Col] = std::pair<bool, double>(true, 0.5);
+    configuration_map_[Inpar::XFEM::F_Con_Col] = std::pair<bool, double>(true, 0.5);
+    configuration_map_[Inpar::XFEM::XF_Con_Col] = std::pair<bool, double>(true, 0.5);
 
     // Configuration of Adjount Consistency Terms
-    configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool, double>(true, 0.5);
-    configuration_map_[INPAR::XFEM::XF_Adj_Row] = std::pair<bool, double>(true, 0.5);
+    configuration_map_[Inpar::XFEM::F_Adj_Row] = std::pair<bool, double>(true, 0.5);
+    configuration_map_[Inpar::XFEM::XF_Adj_Row] = std::pair<bool, double>(true, 0.5);
   }
-  else if (get_averaging_strategy() == INPAR::XFEM::invalid)
+  else if (get_averaging_strategy() == Inpar::XFEM::invalid)
     FOUR_C_THROW("XFEM::MeshCouplingFluidFluid: Averaging Strategy not set!");
   else
     FOUR_C_THROW("XFEM::MeshCouplingFluidFluid: You want to initialize another strategy?");
@@ -2572,28 +2573,28 @@ void XFEM::MeshCouplingFluidFluid::update_configuration_map_gp(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    CORE::Elements::Element* ele,   //< Element
-    CORE::Elements::Element* bele,  //< Boundary Element
+    double& full_stab, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond,
+    Core::Elements::Element* ele,   //< Element
+    Core::Elements::Element* bele,  //< Boundary Element
     double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+    Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (!(get_averaging_strategy() == INPAR::XFEM::Xfluid_Sided ||
-          get_averaging_strategy() == INPAR::XFEM::Embedded_Sided ||
-          get_averaging_strategy() == INPAR::XFEM::Mean))
+  if (!(get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided ||
+          get_averaging_strategy() == Inpar::XFEM::Embedded_Sided ||
+          get_averaging_strategy() == Inpar::XFEM::Mean))
     FOUR_C_THROW(
         "XFEM::MeshCouplingFluidFluid::update_configuration_map_gp: Does your Averaging strategy "
         "change the weighing during the simulation or between gausspoints?");
 #endif
   // Configuration of Penalty Terms
-  configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
-  configuration_map_[INPAR::XFEM::X_Pen_Row].second = full_stab;
+  configuration_map_[Inpar::XFEM::F_Pen_Row].second = full_stab;
+  configuration_map_[Inpar::XFEM::X_Pen_Row].second = full_stab;
   return;
 }
 
@@ -2601,13 +2602,13 @@ void XFEM::MeshCouplingFluidFluid::update_configuration_map_gp(
  * get viscosity of the slave fluid
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFluidFluid::GetViscositySlave(
-    CORE::Elements::Element* coup_ele,  ///< xfluid ele
+    Core::Elements::Element* coup_ele,  ///< xfluid ele
     double& visc_s)                     ///< viscosity slavesided
 {
-  Teuchos::RCP<CORE::MAT::Material> mat_s;
-  XFEM::UTILS::get_volume_cell_material(coup_ele, mat_s, CORE::GEO::CUT::Point::outside);
-  if (mat_s->MaterialType() == CORE::Materials::m_fluid)
-    visc_s = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(mat_s)->Viscosity();
+  Teuchos::RCP<Core::Mat::Material> mat_s;
+  XFEM::UTILS::get_volume_cell_material(coup_ele, mat_s, Core::Geo::Cut::Point::outside);
+  if (mat_s->MaterialType() == Core::Materials::m_fluid)
+    visc_s = Teuchos::rcp_dynamic_cast<Mat::NewtonianFluid>(mat_s)->Viscosity();
   else
     FOUR_C_THROW("get_coupling_specific_average_weights: Slave Material not a fluid material?");
 
@@ -2617,21 +2618,22 @@ void XFEM::MeshCouplingFluidFluid::GetViscositySlave(
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFluidFluid::estimate_nitsche_trace_max_eigenvalue(
-    CORE::Elements::Element* ele)
+    Core::Elements::Element* ele)
 {
   Teuchos::ParameterList params;
-  CORE::Elements::Element::LocationArray la(1);
+  Core::Elements::Element::LocationArray la(1);
   params.set<Teuchos::RCP<std::map<int, double>>>(
       "trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue_);
-  CORE::LINALG::SerialDenseMatrix dummyelemat;
-  CORE::LINALG::SerialDenseVector dummyelevec;
-  CORE::Elements::FaceElement* faceele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
+  Core::LinAlg::SerialDenseMatrix dummyelemat;
+  Core::LinAlg::SerialDenseVector dummyelevec;
+  Core::Elements::FaceElement* faceele = dynamic_cast<Core::Elements::FaceElement*>(ele);
   if (!faceele) FOUR_C_THROW("Cast to faceele failed!");  // todo change to FOUR_C_ASSERT
 
   faceele->LocationVector(*coupl_dis_, la, false);
 
-  DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(faceele)->estimate_nitsche_trace_max_eigenvalue(
-      faceele, params, *coupl_dis_, la[0].lm_, dummyelemat, dummyelevec);
+  Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(faceele)
+      ->estimate_nitsche_trace_max_eigenvalue(
+          faceele, params, *coupl_dis_, la[0].lm_, dummyelemat, dummyelevec);
 
   return;
 }
@@ -2643,19 +2645,19 @@ void XFEM::MeshCouplingFluidFluid::read_restart(const int step)
 {
   // copy from FSI!
 
-  if (myrank_) CORE::IO::cout << "read_restart for boundary discretization " << CORE::IO::endl;
+  if (myrank_) Core::IO::cout << "read_restart for boundary discretization " << Core::IO::endl;
 
   //-------- boundary discretization
-  CORE::IO::DiscretizationReader boundaryreader(
-      cutter_dis_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader boundaryreader(
+      cutter_dis_, Global::Problem::Instance()->InputControlFile(), step);
 
   const double time = boundaryreader.ReadDouble("time");
   //  const int    step = boundaryreader.ReadInt("step");
 
   if (myrank_ == 0)
   {
-    CORE::IO::cout << "time: " << time << CORE::IO::endl;
-    CORE::IO::cout << "step: " << step << CORE::IO::endl;
+    Core::IO::cout << "time: " << time << Core::IO::endl;
+    Core::IO::cout << "step: " << step << Core::IO::endl;
   }
 
   boundaryreader.ReadVector(iveln_, "iveln_res");

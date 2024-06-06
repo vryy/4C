@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Solver::Factory::Factory()
+NOX::Nln::Solver::Factory::Factory()
 {
   // empty constructor
 
@@ -34,11 +34,11 @@ NOX::NLN::Solver::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Solver::Generic> NOX::NLN::Solver::Factory::BuildSolver(
+Teuchos::RCP<::NOX::Solver::Generic> NOX::Nln::Solver::Factory::BuildSolver(
     const Teuchos::RCP<::NOX::Abstract::Group>& grp,
     const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
-    const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
-    const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData)
+    const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,
+    const Teuchos::RCP<NOX::Nln::GlobalData>& nlnGlobalData)
 {
   Teuchos::RCP<::NOX::Solver::Generic> solver;
   Teuchos::RCP<Teuchos::ParameterList> params = nlnGlobalData->get_nln_parameter_list_ptr();
@@ -48,16 +48,16 @@ Teuchos::RCP<::NOX::Solver::Generic> NOX::NLN::Solver::Factory::BuildSolver(
   if ((method == "Newton") or (method == "Line Search Based"))
   {
     solver =
-        Teuchos::rcp(new NOX::NLN::Solver::LineSearchBased(grp, outerTests, innerTests, params));
+        Teuchos::rcp(new NOX::Nln::Solver::LineSearchBased(grp, outerTests, innerTests, params));
   }
   else if (method == "Pseudo Transient")
   {
     solver =
-        Teuchos::rcp(new NOX::NLN::Solver::PseudoTransient(grp, outerTests, innerTests, params));
+        Teuchos::rcp(new NOX::Nln::Solver::PseudoTransient(grp, outerTests, innerTests, params));
   }
   else if (method == "Single Step")
   {
-    solver = Teuchos::rcp(new NOX::NLN::Solver::SingleStep(grp, innerTests, params));
+    solver = Teuchos::rcp(new NOX::Nln::Solver::SingleStep(grp, innerTests, params));
   }
   else if (not nlnGlobalData->GetIsConstrained())
   {
@@ -67,7 +67,7 @@ Teuchos::RCP<::NOX::Solver::Generic> NOX::NLN::Solver::Factory::BuildSolver(
   else
   {
     std::ostringstream msg;
-    msg << "Error - NOX::NLN::Solver::Factory::buildSolver() - The \"Nonlinear Solver\" parameter\n"
+    msg << "Error - NOX::Nln::Solver::Factory::buildSolver() - The \"Nonlinear Solver\" parameter\n"
         << "\"" << method
         << "\" is not a valid solver option for CONSTRAINED optimization problems.\n"
         << "Please fix your parameter list!\n";
@@ -79,11 +79,11 @@ Teuchos::RCP<::NOX::Solver::Generic> NOX::NLN::Solver::Factory::BuildSolver(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Solver::Generic> NOX::NLN::Solver::BuildSolver(
+Teuchos::RCP<::NOX::Solver::Generic> NOX::Nln::Solver::BuildSolver(
     const Teuchos::RCP<::NOX::Abstract::Group>& grp,
     const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
-    const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
-    const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData)
+    const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,
+    const Teuchos::RCP<NOX::Nln::GlobalData>& nlnGlobalData)
 {
   Factory factory;
   return factory.BuildSolver(grp, outerTests, innerTests, nlnGlobalData);

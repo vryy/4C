@@ -18,26 +18,26 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class ArtNet;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
-namespace CORE::LINALG
+}  // namespace Discret
+namespace Core::LinAlg
 {
   class Solver;
 }
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace ART
+namespace Arteries
 {
   //! \brief implementation of special clone strategy for automatic generation
   //!        of scatra discretization from a given artery discretization
@@ -52,12 +52,12 @@ namespace ART
    protected:
     /// determine element type string and whether element is copied or not
     bool determine_ele_type(
-        CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+        Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
     //! provide cloned element with element specific data (material etc.)
-    void set_element_data(Teuchos::RCP<CORE::Elements::Element>
+    void set_element_data(Teuchos::RCP<Core::Elements::Element>
                               newele,     //! current cloned element on target discretization
-        CORE::Elements::Element* oldele,  //! current element on source discretization
+        Core::Elements::Element* oldele,  //! current element on source discretization
         const int matid,                  //! material of cloned element
         const bool isnurbs                //! nurbs flag
     );
@@ -71,20 +71,20 @@ namespace ART
   namespace UTILS
   {
     // create algorithm depending on time integration scheme
-    Teuchos::RCP<ADAPTER::ArtNet> CreateAlgorithm(INPAR::ARTDYN::TimeIntegrationScheme timintscheme,
-        Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
+    Teuchos::RCP<Adapter::ArtNet> CreateAlgorithm(Inpar::ArtDyn::TimeIntegrationScheme timintscheme,
+        Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     //! exchange material pointers of discretizations
     void assign_material_pointers(
         const std::string& artery_disname, const std::string& scatra_disname);
 
     //! set material pointers
-    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const DRT::Discretization> sourcedis,
-        Teuchos::RCP<const DRT::Discretization> targetdis);
+    void SetMaterialPointersMatchingGrid(Teuchos::RCP<const Discret::Discretization> sourcedis,
+        Teuchos::RCP<const Discret::Discretization> targetdis);
   }  // namespace UTILS
-}  // namespace ART
+}  // namespace Arteries
 
 
 

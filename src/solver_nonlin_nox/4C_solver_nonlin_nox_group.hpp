@@ -30,14 +30,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace Solver
     {
@@ -67,7 +67,7 @@ namespace NOX
 
       /*! \brief Copy constructor. If type is DeepCopy, takes ownership of
         valid shared linear system. */
-      Group(const NOX::NLN::Group& source, ::NOX::CopyType type = ::NOX::DeepCopy);
+      Group(const NOX::Nln::Group& source, ::NOX::CopyType type = ::NOX::DeepCopy);
 
       /// assign operator
       ::NOX::Abstract::Group& operator=(const ::NOX::Abstract::Group& source) override;
@@ -77,7 +77,7 @@ namespace NOX
           ::NOX::CopyType type = ::NOX::DeepCopy) const override;
 
       //! compute/update the current state variables
-      void computeX(const NOX::NLN::Group& grp, const ::NOX::Epetra::Vector& d, double step);
+      void computeX(const NOX::Nln::Group& grp, const ::NOX::Epetra::Vector& d, double step);
       void computeX(const ::NOX::Abstract::Group& grp, const ::NOX::Abstract::Vector& d,
           double step) override;
 
@@ -116,7 +116,7 @@ namespace NOX
       /// compute the correction system of equations (e.g. in case of a second order correction
       /// step)
       ::NOX::Abstract::Group::ReturnType compute_correction_system(
-          const enum NOX::NLN::CorrectionType type);
+          const enum NOX::Nln::CorrectionType type);
 
       //! set right hand side
       ::NOX::Abstract::Group::ReturnType setF(Teuchos::RCP<::NOX::Epetra::Vector> Fptr);
@@ -141,25 +141,25 @@ namespace NOX
       /// are the eigenvalues valid?
       virtual bool isEigenvalues() const;
 
-      inline NOX::NLN::CorrectionType GetCorrectionType() const { return corr_type_; }
+      inline NOX::Nln::CorrectionType GetCorrectionType() const { return corr_type_; }
 
       /// @name access the eigenvalue data
       /// @{
 
-      const CORE::LINALG::SerialDenseVector& get_jacobian_real_eigenvalues() const;
-      const CORE::LINALG::SerialDenseVector& get_jacobian_imaginary_eigenvalues() const;
+      const Core::LinAlg::SerialDenseVector& get_jacobian_real_eigenvalues() const;
+      const Core::LinAlg::SerialDenseVector& get_jacobian_imaginary_eigenvalues() const;
       double get_jacobian_max_real_eigenvalue() const;
       double get_jacobian_min_real_eigenvalue() const;
 
       /// @}
 
       //! returns the nox_nln_interface_required pointer
-      Teuchos::RCP<const NOX::NLN::Interface::Required> get_nln_req_interface_ptr() const;
+      Teuchos::RCP<const NOX::Nln::Interface::Required> get_nln_req_interface_ptr() const;
 
       //! returns the primary rhs norms
       virtual Teuchos::RCP<const std::vector<double>> GetRHSNorms(
           const std::vector<::NOX::Abstract::Vector::NormType>& type,
-          const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
+          const std::vector<NOX::Nln::StatusTest::QuantityType>& chQ,
           Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale =
               Teuchos::null) const;
 
@@ -167,7 +167,7 @@ namespace NOX
       virtual Teuchos::RCP<std::vector<double>> get_solution_update_rms(
           const ::NOX::Abstract::Vector& xOld, const std::vector<double>& aTol,
           const std::vector<double>& rTol,
-          const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
+          const std::vector<NOX::Nln::StatusTest::QuantityType>& chQ,
           const std::vector<bool>& disable_implicit_weighting) const;
 
       double GetTrialUpdateNorm(const ::NOX::Abstract::Vector& dir,
@@ -232,15 +232,15 @@ namespace NOX
       //! @{
       //! adjust the pseudo time step length for the ptc nln solver
       void adjust_pseudo_time_step(double& delta, const double& stepSize,
-          const ::NOX::Abstract::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver);
+          const ::NOX::Abstract::Vector& dir, const NOX::Nln::Solver::PseudoTransient& ptcsolver);
       void adjust_pseudo_time_step(double& delta, const double& stepSize,
-          const ::NOX::Epetra::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver);
+          const ::NOX::Epetra::Vector& dir, const NOX::Nln::Solver::PseudoTransient& ptcsolver);
 
       //! get the lumped mass matrix
       Teuchos::RCP<const Epetra_Vector> get_lumped_mass_matrix_ptr() const;
 
       // Get element based scaling operator
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> get_contributions_from_element_level();
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> get_contributions_from_element_level();
       //! @}
 
       //! @name XFEM related methods
@@ -256,9 +256,9 @@ namespace NOX
 
       //! compute contributions to a linear model
       virtual double get_linearized_model_terms(const ::NOX::Abstract::Vector& dir,
-          enum NOX::NLN::MeritFunction::MeritFctName mf_type,
-          enum NOX::NLN::MeritFunction::LinOrder linorder,
-          enum NOX::NLN::MeritFunction::LinType lintype) const;
+          enum NOX::Nln::MeritFunction::MeritFctName mf_type,
+          enum NOX::Nln::MeritFunction::LinOrder linorder,
+          enum NOX::Nln::MeritFunction::LinType lintype) const;
 
       /// return the DOF map of the solution vector
       const Epetra_BlockMap& getDofMap() const;
@@ -274,7 +274,7 @@ namespace NOX
 
       /// compute the condition number of the Jacobian matrix (serial mode)
       ::NOX::Abstract::Group::ReturnType compute_serial_jacobian_condition_number(
-          const NOX::NLN::LinSystem::ConditionNumber condnum_type, bool printOutput);
+          const NOX::Nln::LinSystem::ConditionNumber condnum_type, bool printOutput);
 
       /// compute the eigenvalues of the Jacobian matrix (serial mode)
       ::NOX::Abstract::Group::ReturnType compute_serial_jacobian_eigenvalues(bool printOutput);
@@ -303,10 +303,10 @@ namespace NOX
       bool skipUpdateX_;
 
       /// correction system type
-      NOX::NLN::CorrectionType corr_type_;
+      NOX::Nln::CorrectionType corr_type_;
 
-      //! pointer to an user defined wrapped NOX::NLN::Abstract::PrePostOperator object.
-      Teuchos::RCP<NOX::NLN::GROUP::PrePostOperator> prePostOperatorPtr_;
+      //! pointer to an user defined wrapped NOX::Nln::Abstract::PrePostOperator object.
+      Teuchos::RCP<NOX::Nln::GROUP::PrePostOperator> prePostOperatorPtr_;
 
      private:
       /// container for eigenvalue info
@@ -316,10 +316,10 @@ namespace NOX
         Eigenvalues& operator=(const Eigenvalues& src);
 
         /// real part of the eigenvalues
-        CORE::LINALG::SerialDenseVector realpart_;
+        Core::LinAlg::SerialDenseVector realpart_;
 
         /// imaginary part of the eigenvalues
-        CORE::LINALG::SerialDenseVector imaginarypart_;
+        Core::LinAlg::SerialDenseVector imaginarypart_;
 
         /// maximal real part
         double real_max_ = 0.0;
@@ -334,7 +334,7 @@ namespace NOX
       /// instance of the Eigenvalue container
       Eigenvalues ev_;
     };  // class Group
-  }     // namespace NLN
+  }     // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

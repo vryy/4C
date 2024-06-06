@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   /*!
    * \brief Default anisotropy extension
@@ -62,12 +62,12 @@ namespace MAT
      * \param fiber_ids List of ids of the fibers
      */
     DefaultAnisotropyExtension(int init_mode, double gamma, bool adapt_angle,
-        const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& stucturalTensorStrategy,
+        const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& stucturalTensorStrategy,
         std::array<int, numfib> fiber_ids);
 
     ///@name Packing and Unpacking
     /// @{
-    void PackAnisotropy(CORE::COMM::PackBuffer& data) const override;
+    void PackAnisotropy(Core::Communication::PackBuffer& data) const override;
 
     void UnpackAnisotropy(
         const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -98,15 +98,15 @@ namespace MAT
      * \param locsys local coordinate system
      * \param defgrd deformation gradient
      */
-    void SetFiberVecs(double newgamma, const CORE::LINALG::Matrix<3, 3>& locsys,
-        const CORE::LINALG::Matrix<3, 3>& defgrd);
+    void SetFiberVecs(double newgamma, const Core::LinAlg::Matrix<3, 3>& locsys,
+        const Core::LinAlg::Matrix<3, 3>& defgrd);
 
     /*!
      * \brief Set the new element fibers directly
      *
      * \param fibervec unit vector pointing in fiber direction
      */
-    void SetFiberVecs(const CORE::LINALG::Matrix<3, 1>& fibervec);
+    void SetFiberVecs(const Core::LinAlg::Matrix<3, 1>& fibervec);
 
     /*!
      * \brief Status of fiber initialization
@@ -145,7 +145,7 @@ namespace MAT
     /// Flag that shows the initialization state of the fibers
     bool initialized_ = false;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

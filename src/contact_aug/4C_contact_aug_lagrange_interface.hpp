@@ -19,11 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
-    namespace LAGRANGE
+    namespace Lagrange
     {
-      class Interface : public CONTACT::AUG::Interface
+      class Interface : public CONTACT::Aug::Interface
       {
        public:
         /** \brief Alternative constructor
@@ -35,10 +35,10 @@ namespace CONTACT
          *                          data container object
          *
          *  \author hiermeier \date 03/17 */
-        Interface(const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& idata_ptr);
+        Interface(const Teuchos::RCP<CONTACT::Aug::InterfaceDataContainer>& idata_ptr);
 
         /// constructor
-        Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr,
+        Interface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr,
             const int id, const Epetra_Comm& comm, const int dim,
             const Teuchos::ParameterList& icontact, const bool selfcontact);
 
@@ -50,11 +50,11 @@ namespace CONTACT
          *
          *  \author hiermeier \date 03/17 */
         void assemble_dgg_lin_matrix(
-            CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override{};
+            Core::LinAlg::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override{};
 
       };  // class Interface
-    }     // namespace LAGRANGE
-  }       // namespace AUG
+    }     // namespace Lagrange
+  }       // namespace Aug
 }  // namespace CONTACT
 
 

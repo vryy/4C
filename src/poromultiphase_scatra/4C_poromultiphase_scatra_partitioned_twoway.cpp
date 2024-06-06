@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PoroMultiPhaseScaTraPartitionedTwoWay(
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::PoroMultiPhaseScaTraPartitionedTwoWay(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseScaTraPartitioned(comm, globaltimeparams),
       scaincnp_(Teuchos::null),
@@ -38,7 +38,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PoroMultiPhaseScaTr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
     const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
@@ -47,7 +47,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
     int ndsporofluid_scatra, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // call base class
-  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitioned::Init(globaltimeparams, algoparams,
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitioned::Init(globaltimeparams, algoparams,
       poroparams, structparams, fluidparams, scatraparams, struct_disname, fluid_disname,
       scatra_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra,
       nearbyelepairs);
@@ -56,7 +56,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
   itmax_ = algoparams.get<int>("ITEMAX");
   ittol_ = algoparams.sublist("PARTITIONED").get<double>("CONVTOL");
 
-  artery_coupling_active_ = CORE::UTILS::IntegralValue<int>(algoparams, "ARTERY_COUPLING");
+  artery_coupling_active_ = Core::UTILS::IntegralValue<int>(algoparams, "ARTERY_COUPLING");
 
   // initialize increment vectors
   scaincnp_ = Teuchos::rcp(
@@ -73,21 +73,21 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSystem()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSystem()
 {
   poro_field()->SetupSystem();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSolver()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSolver()
 {
   poro_field()->SetupSolver();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::do_poro_step()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::do_poro_step()
 {
   // Newton-Raphson iteration
   poro_field()->TimeStep();
@@ -95,7 +95,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::do_poro_step()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::do_scatra_step()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::do_scatra_step()
 {
   if (Comm().MyPID() == 0)
   {
@@ -115,7 +115,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::do_scatra_step
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::print_header_partitioned()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::print_header_partitioned()
 {
   if (Comm().MyPID() == 0)
   {
@@ -136,7 +136,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::print_header_p
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::iter_update_states()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::iter_update_states()
 {
   // store scalar from first solution for convergence check (like in
   // elch_algorithm: use current values)
@@ -155,7 +155,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::iter_update_st
 /*----------------------------------------------------------------------*
  | convergence check for both fields (scatra & poro) (copied from tsi)
  *----------------------------------------------------------------------*/
-bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_check(int itnum)
+bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_check(int itnum)
 {
   // convergence check based on the scalar increment
   bool stopnonliniter = false;
@@ -285,7 +285,7 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::convergence_ch
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::
     PoroMultiPhaseScaTraPartitionedTwoWayNested(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseScaTraPartitionedTwoWay(comm, globaltimeparams)
@@ -294,7 +294,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Init(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::Init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
     const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
@@ -303,7 +303,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Init(
     int ndsporofluid_scatra, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // call base class
-  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(globaltimeparams, algoparams,
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::Init(globaltimeparams, algoparams,
       poroparams, structparams, fluidparams, scatraparams, struct_disname, fluid_disname,
       scatra_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra,
       nearbyelepairs);
@@ -311,7 +311,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Solve()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested::Solve()
 {
   int itnum = 0;
   bool stopnonliniter = false;
@@ -345,7 +345,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWayNested::Solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential::
     PoroMultiPhaseScaTraPartitionedTwoWaySequential(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseScaTraPartitionedTwoWay(comm, globaltimeparams)
@@ -354,7 +354,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Init(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
     const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
@@ -363,7 +363,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Init
     int ndsporofluid_scatra, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // call base class
-  POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(globaltimeparams, algoparams,
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::Init(globaltimeparams, algoparams,
       poroparams, structparams, fluidparams, scatraparams, struct_disname, fluid_disname,
       scatra_disname, isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra,
       nearbyelepairs);
@@ -371,7 +371,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Init
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solve()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential::Solve()
 {
   int itnum = 0;
   bool stopnonliniter = false;

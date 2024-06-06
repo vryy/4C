@@ -19,13 +19,13 @@ fluid-beam interaction).
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class FSIStructureWrapper;
   class FluidMovingBoundary;
 
-}  // namespace ADAPTER
-namespace CORE::GEO
+}  // namespace Adapter
+namespace Core::Geo
 {
   class SearchTree;
 }
@@ -35,12 +35,12 @@ namespace FBI
   class FBIGeometryCoupler;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class SparseMatrix;
-}  // namespace CORE::LINALG
-namespace ADAPTER
+}  // namespace Core::LinAlg
+namespace Adapter
 {
   class ConstraintEnforcerFactory;
 
@@ -64,20 +64,20 @@ namespace ADAPTER
      *\param[in] structure wrapper for the structure solver
      *\param[in] fluid moving boundary wrapper for the fluid solver
      */
-    void Setup(Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure,
-        Teuchos::RCP<ADAPTER::FluidMovingBoundary> fluid) override;
+    void Setup(Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
+        Teuchos::RCP<Adapter::FluidMovingBoundary> fluid) override;
 
     /// Handle fbi specific output
     void Output(double time, int step) override;
 
    protected:
-    /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
+    /** \brief You will have to use the Adapter::ConstraintEnforcerFactory
      *
      * \param[in] bridge an object managing the pair contributins
      * \param[in] geometrycoupler an object managing the search, parallel communication, ect.
      */
 
-    FBIPenaltyConstraintenforcer(Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge,
+    FBIPenaltyConstraintenforcer(Teuchos::RCP<Adapter::FBIConstraintBridge> bridge,
         Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler)
         : FBIConstraintenforcer(bridge, geometrycoupler){};
 
@@ -87,7 +87,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the structure system matrix
      */
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> assemble_structure_coupling_matrix()
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> assemble_structure_coupling_matrix()
         const override;
 
     /**
@@ -95,7 +95,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the fluid system matrix
      */
-    Teuchos::RCP<const CORE::LINALG::SparseOperator> assemble_fluid_coupling_matrix()
+    Teuchos::RCP<const Core::LinAlg::SparseOperator> assemble_fluid_coupling_matrix()
         const override;
 
     /**
@@ -121,7 +121,7 @@ namespace ADAPTER
    private:
     FBIPenaltyConstraintenforcer() = delete;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

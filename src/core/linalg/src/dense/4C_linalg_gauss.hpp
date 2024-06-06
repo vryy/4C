@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
     \brief computes a Gaussian elimination for a linear system of equations
@@ -29,9 +29,9 @@ namespace CORE::LINALG
     \return determinant of system matrix
   */
   template <bool do_piv, unsigned dim, typename valtype>
-  valtype gaussElimination(CORE::LINALG::Matrix<dim, dim, valtype>& A,  ///< (in)    : system matrix
-      CORE::LINALG::Matrix<dim, 1, valtype>& b,  ///< (in)    : right-hand-side
-      CORE::LINALG::Matrix<dim, 1, valtype>& x   ///< (out)   : solution vector
+  valtype gaussElimination(Core::LinAlg::Matrix<dim, dim, valtype>& A,  ///< (in)    : system matrix
+      Core::LinAlg::Matrix<dim, 1, valtype>& b,  ///< (in)    : right-hand-side
+      Core::LinAlg::Matrix<dim, 1, valtype>& x   ///< (out)   : solution vector
   );
 
 
@@ -42,13 +42,13 @@ namespace CORE::LINALG
     \return determinant of system matrix
   */
   template <unsigned dim>
-  double scaledGaussElimination(CORE::LINALG::Matrix<dim, dim>& A,  ///< (in)    : system matrix
-      CORE::LINALG::Matrix<dim, 1>& b,                              ///< (in)    : right-hand-side
-      CORE::LINALG::Matrix<dim, 1>& x                               ///< (out)   : solution vector
+  double scaledGaussElimination(Core::LinAlg::Matrix<dim, dim>& A,  ///< (in)    : system matrix
+      Core::LinAlg::Matrix<dim, 1>& b,                              ///< (in)    : right-hand-side
+      Core::LinAlg::Matrix<dim, 1>& x                               ///< (out)   : solution vector
   );
 
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

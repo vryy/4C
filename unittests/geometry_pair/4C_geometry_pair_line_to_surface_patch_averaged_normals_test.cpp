@@ -37,7 +37,7 @@ namespace
     {
       Teuchos::RCP<Epetra_SerialComm> comm =
           Teuchos::rcp<Epetra_SerialComm>(new Epetra_SerialComm());
-      discret_ = Teuchos::rcp(new DRT::Discretization("unit_test", comm, 3));
+      discret_ = Teuchos::rcp(new Discret::Discretization("unit_test", comm, 3));
     }
 
     /**
@@ -59,7 +59,7 @@ namespace
     }
 
     //! Pointer to the discretization object that holds the geometry for the tests.
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
   };
 
   /**
@@ -159,17 +159,17 @@ namespace
       for (unsigned int i_dof = 0; i_dof < 3 * surface::n_nodes_; i_dof++)
       {
         EXPECT_NEAR(
-            CORE::FADUTILS::CastToDouble(face_element->GetFaceElementData().nodal_normals_(i_dof)),
+            Core::FADUtils::CastToDouble(face_element->GetFaceElementData().nodal_normals_(i_dof)),
             current_normals[i_dof], eps);
         for (unsigned int i_der = 0; i_der < face_element->GetPatchGID().size(); i_der++)
         {
           EXPECT_NEAR(
-              CORE::FADUTILS::CastToDouble(
+              Core::FADUtils::CastToDouble(
                   face_element->GetFaceElementData().nodal_normals_(i_dof).dx(dof_offset + i_der)),
               current_normals_derivative[i_dof][i_der], eps);
           for (unsigned int i_der_2 = 0; i_der_2 < face_element->GetPatchGID().size(); i_der_2++)
           {
-            EXPECT_NEAR(CORE::FADUTILS::CastToDouble(face_element->GetFaceElementData()
+            EXPECT_NEAR(Core::FADUtils::CastToDouble(face_element->GetFaceElementData()
                                                          .nodal_normals_(i_dof)
                                                          .dx(dof_offset + i_der)
                                                          .dx(dof_offset + i_der_2)),
@@ -179,21 +179,21 @@ namespace
       }
 
       // Check an surface position on the element.
-      CORE::LINALG::Matrix<3, 1, double> xi;
+      Core::LinAlg::Matrix<3, 1, double> xi;
       xi(0) = 0.2;
       xi(1) = -0.8;
       xi(2) = 0.69;
-      CORE::LINALG::Matrix<3, 1, scalar_type> r;
+      Core::LinAlg::Matrix<3, 1, scalar_type> r;
       GEOMETRYPAIR::EvaluateSurfacePosition<surface>(xi, face_element->GetFaceElementData(), r);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       {
-        EXPECT_NEAR(CORE::FADUTILS::CastToDouble(r(i_dim)), position[i_dim], eps);
+        EXPECT_NEAR(Core::FADUtils::CastToDouble(r(i_dim)), position[i_dim], eps);
         for (unsigned int i_der = 0; i_der < face_element->GetPatchGID().size(); i_der++)
         {
-          EXPECT_NEAR(CORE::FADUTILS::CastToDouble(r(i_dim).dx(dof_offset + i_der)),
+          EXPECT_NEAR(Core::FADUtils::CastToDouble(r(i_dim).dx(dof_offset + i_der)),
               position_derivative[i_dim][i_der], eps);
           for (unsigned int i_der_2 = 0; i_der_2 < face_element->GetPatchGID().size(); i_der_2++)
-            EXPECT_NEAR(CORE::FADUTILS::CastToDouble(
+            EXPECT_NEAR(Core::FADUtils::CastToDouble(
                             r(i_dim).dx(dof_offset + i_der).dx(dof_offset + i_der_2)),
                 position_derivative_2[i_dim][i_der][i_der_2], eps);
         }

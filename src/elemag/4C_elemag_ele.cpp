@@ -24,79 +24,82 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::ElemagType DRT::ELEMENTS::ElemagType::instance_;
-DRT::ELEMENTS::ElemagBoundaryType DRT::ELEMENTS::ElemagBoundaryType::instance_;
-DRT::ELEMENTS::ElemagIntFaceType DRT::ELEMENTS::ElemagIntFaceType::instance_;
+Discret::ELEMENTS::ElemagType Discret::ELEMENTS::ElemagType::instance_;
+Discret::ELEMENTS::ElemagBoundaryType Discret::ELEMENTS::ElemagBoundaryType::instance_;
+Discret::ELEMENTS::ElemagIntFaceType Discret::ELEMENTS::ElemagIntFaceType::instance_;
 
-DRT::ELEMENTS::ElemagType& DRT::ELEMENTS::ElemagType::Instance() { return instance_; }
+Discret::ELEMENTS::ElemagType& Discret::ELEMENTS::ElemagType::Instance() { return instance_; }
 
-DRT::ELEMENTS::ElemagBoundaryType& DRT::ELEMENTS::ElemagBoundaryType::Instance()
+Discret::ELEMENTS::ElemagBoundaryType& Discret::ELEMENTS::ElemagBoundaryType::Instance()
 {
   return instance_;
 }
 
-DRT::ELEMENTS::ElemagIntFaceType& DRT::ELEMENTS::ElemagIntFaceType::Instance() { return instance_; }
-
-
-CORE::COMM::ParObject* DRT::ELEMENTS::ElemagType::Create(const std::vector<char>& data)
+Discret::ELEMENTS::ElemagIntFaceType& Discret::ELEMENTS::ElemagIntFaceType::Instance()
 {
-  DRT::ELEMENTS::Elemag* object = new DRT::ELEMENTS::Elemag(-1, -1);
+  return instance_;
+}
+
+
+Core::Communication::ParObject* Discret::ELEMENTS::ElemagType::Create(const std::vector<char>& data)
+{
+  Discret::ELEMENTS::Elemag* object = new Discret::ELEMENTS::Elemag(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ELECTROMAGNETIC")
   {
-    return Teuchos::rcp(new DRT::ELEMENTS::Elemag(id, owner));
+    return Teuchos::rcp(new Discret::ELEMENTS::Elemag(id, owner));
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagType::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::Elemag(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::Elemag(id, owner));
 }
 
 
-void DRT::ELEMENTS::ElemagType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::ElemagType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  nv = CORE::FE::getDimension(dwele->Shape()) - 1;
+  nv = Core::FE::getDimension(dwele->Shape()) - 1;
   dimns = nv;
   numdf = dimns;
   return;
 }
 
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ElemagType::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::ElemagType::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  CORE::LINALG::SerialDenseMatrix nullspace;
+  Core::LinAlg::SerialDenseMatrix nullspace;
   FOUR_C_THROW("method ComputeNullSpace not implemented right now!");
   return nullspace;
 }
 
 
-void DRT::ELEMENTS::ElemagType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::ElemagType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["ELECTROMAGNETIC"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["ELECTROMAGNETIC"];
 
   // 3D elements
-  defs["HEX8"] = INPUT::LineDefinition::Builder()
+  defs["HEX8"] = Input::LineDefinition::Builder()
                      .AddIntVector("HEX8", 8)
                      .AddNamedInt("MAT")
                      .AddNamedInt("DEG")
                      .AddNamedInt("SPC")
                      .Build();
 
-  defs["TET4"] = INPUT::LineDefinition::Builder()
+  defs["TET4"] = Input::LineDefinition::Builder()
                      .AddIntVector("TET4", 4)
                      .AddNamedInt("MAT")
                      .AddNamedInt("DEG")
@@ -104,21 +107,21 @@ void DRT::ELEMENTS::ElemagType::setup_element_definition(
                      .Build();
 
   // 2D elements
-  defs["QUAD4"] = INPUT::LineDefinition::Builder()
+  defs["QUAD4"] = Input::LineDefinition::Builder()
                       .AddIntVector("QUAD4", 4)
                       .AddNamedInt("MAT")
                       .AddNamedInt("DEG")
                       .AddNamedInt("SPC")
                       .Build();
 
-  defs["QUAD9"] = INPUT::LineDefinition::Builder()
+  defs["QUAD9"] = Input::LineDefinition::Builder()
                       .AddIntVector("QUAD9", 9)
                       .AddNamedInt("MAT")
                       .AddNamedInt("DEG")
                       .AddNamedInt("SPC")
                       .Build();
 
-  defs["TRI3"] = INPUT::LineDefinition::Builder()
+  defs["TRI3"] = Input::LineDefinition::Builder()
                      .AddIntVector("TRI3", 3)
                      .AddNamedInt("MAT")
                      .AddNamedInt("DEG")
@@ -131,18 +134,18 @@ void DRT::ELEMENTS::ElemagType::setup_element_definition(
  |  ctor (public)                                       berardocco 02/18|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Elemag::Elemag(int id, int owner)
-    : CORE::Elements::Element(id, owner), degree_(1), completepol_(true)
+Discret::ELEMENTS::Elemag::Elemag(int id, int owner)
+    : Core::Elements::Element(id, owner), degree_(1), completepol_(true)
 {
-  distype_ = CORE::FE::CellType::dis_none;
+  distype_ = Core::FE::CellType::dis_none;
 }
 
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                  berardocco 02/18|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Elemag::Elemag(const DRT::ELEMENTS::Elemag& old)
-    : CORE::Elements::Element(old),
+Discret::ELEMENTS::Elemag::Elemag(const Discret::ELEMENTS::Elemag& old)
+    : Core::Elements::Element(old),
       distype_(old.distype_),
       degree_(old.degree_),
       completepol_(old.completepol_)
@@ -154,9 +157,9 @@ DRT::ELEMENTS::Elemag::Elemag(const DRT::ELEMENTS::Elemag& old)
  |  Deep copy this instance of Elemag and return pointer to it (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Elemag::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Elemag::Clone() const
 {
-  DRT::ELEMENTS::Elemag* newelement = new DRT::ELEMENTS::Elemag(*this);
+  Discret::ELEMENTS::Elemag* newelement = new Discret::ELEMENTS::Elemag(*this);
   return newelement;
 }
 
@@ -165,9 +168,9 @@ CORE::Elements::Element* DRT::ELEMENTS::Elemag::Clone() const
  |  Pack data                                                  (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Elemag::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Elemag::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -191,11 +194,11 @@ void DRT::ELEMENTS::Elemag::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -203,7 +206,7 @@ void DRT::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // distype
-  distype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  distype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
   int val = 0;
   ExtractfromPack(position, data, val);
   FOUR_C_ASSERT(val >= 0 && val < 255, "Degree out of range");
@@ -221,7 +224,7 @@ void DRT::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                         berardocco 02/18|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Elemag::Print(std::ostream& os) const
+void Discret::ELEMENTS::Elemag::Print(std::ostream& os) const
 {
   os << "Elemag ";
   Element::Print(os);
@@ -229,13 +232,13 @@ void DRT::ELEMENTS::Elemag::Print(std::ostream& os) const
 }
 
 
-bool DRT::ELEMENTS::Elemag::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::Elemag::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
   int degree;
   linedef->ExtractInt("DEG", degree);
   degree_ = degree;
@@ -245,7 +248,7 @@ bool DRT::ELEMENTS::Elemag::ReadElement(
 
   // set discretization type (setOptimalgaussrule is pushed into element
   // routine)
-  SetDisType(CORE::FE::StringToCellType(distype));
+  SetDisType(Core::FE::StringToCellType(distype));
 
   return true;
 }
@@ -254,33 +257,33 @@ bool DRT::ELEMENTS::Elemag::ReadElement(
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)           berardocco 02/18|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Elemag::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Elemag::Lines()
 {
-  return CORE::COMM::GetElementLines<ElemagBoundary, Elemag>(*this);
+  return Core::Communication::GetElementLines<ElemagBoundary, Elemag>(*this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                     berardocco 02/18|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Elemag::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Elemag::Surfaces()
 {
-  return CORE::COMM::GetElementSurfaces<ElemagBoundary, Elemag>(*this);
+  return Core::Communication::GetElementSurfaces<ElemagBoundary, Elemag>(*this);
 }
 
 /*----------------------------------------------------------------------*
  |  get face element (public)                           berardocco 02/18|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Elemag::CreateFaceElement(
-    CORE::Elements::Element* parent_slave, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Elemag::CreateFaceElement(
+    Core::Elements::Element* parent_slave, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
     const int lsurface_master, const int lsurface_slave, const std::vector<int>& localtrafomap)
 {
   // dynamic cast for slave parent element
-  DRT::ELEMENTS::Elemag* slave_pele = dynamic_cast<DRT::ELEMENTS::Elemag*>(parent_slave);
+  Discret::ELEMENTS::Elemag* slave_pele = dynamic_cast<Discret::ELEMENTS::Elemag*>(parent_slave);
 
   // insert both parent elements
-  return CORE::COMM::ElementIntFaceFactory<ElemagIntFace, Elemag>(-1, -1, nnode, nodeids, nodes,
-      this, slave_pele, lsurface_master, lsurface_slave, localtrafomap);
+  return Core::Communication::ElementIntFaceFactory<ElemagIntFace, Elemag>(-1, -1, nnode, nodeids,
+      nodes, this, slave_pele, lsurface_master, lsurface_slave, localtrafomap);
 }
 
 //=======================================================================
@@ -295,7 +298,7 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Elemag::CreateFaceElement(
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagBoundaryType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagBoundaryType::Create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -306,9 +309,9 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagBoundaryType::Create(
  |  ctor (public)                                      berardocco 02/18 |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagBoundary::ElemagBoundary(int id, int owner, int nnode, const int* nodeids,
-    CORE::Nodes::Node** nodes, DRT::ELEMENTS::Elemag* parent, const int lsurface)
-    : CORE::Elements::FaceElement(id, owner)
+Discret::ELEMENTS::ElemagBoundary::ElemagBoundary(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Discret::ELEMENTS::Elemag* parent, const int lsurface)
+    : Core::Elements::FaceElement(id, owner)
 {
   set_parent_master_element(parent, lsurface);
   SetNodeIds(nnode, nodeids);
@@ -320,8 +323,8 @@ DRT::ELEMENTS::ElemagBoundary::ElemagBoundary(int id, int owner, int nnode, cons
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                 berardocco 02/18 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagBoundary::ElemagBoundary(const DRT::ELEMENTS::ElemagBoundary& old)
-    : CORE::Elements::FaceElement(old)
+Discret::ELEMENTS::ElemagBoundary::ElemagBoundary(const Discret::ELEMENTS::ElemagBoundary& old)
+    : Core::Elements::FaceElement(old)
 {
   return;
 }
@@ -331,9 +334,9 @@ DRT::ELEMENTS::ElemagBoundary::ElemagBoundary(const DRT::ELEMENTS::ElemagBoundar
  |  Deep copy this instance return pointer to it               (public) |
  |                                                     berardocco 02/18 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::ElemagBoundary::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::ElemagBoundary::Clone() const
 {
-  DRT::ELEMENTS::ElemagBoundary* newelement = new DRT::ELEMENTS::ElemagBoundary(*this);
+  Discret::ELEMENTS::ElemagBoundary* newelement = new Discret::ELEMENTS::ElemagBoundary(*this);
   return newelement;
 }
 
@@ -342,9 +345,9 @@ CORE::Elements::Element* DRT::ELEMENTS::ElemagBoundary::Clone() const
  |                                                             (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::ElemagBoundary::Shape() const
+Core::FE::CellType Discret::ELEMENTS::ElemagBoundary::Shape() const
 {
-  return CORE::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
+  return Core::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
 }
 
 
@@ -352,9 +355,9 @@ CORE::FE::CellType DRT::ELEMENTS::ElemagBoundary::Shape() const
  |  Pack data                                                  (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagBoundary::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::ElemagBoundary::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -374,11 +377,11 @@ void DRT::ELEMENTS::ElemagBoundary::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -386,7 +389,7 @@ void DRT::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // distype
-  // distype_ = static_cast<CORE::FE::CellType>( ExtractInt(position,data) );
+  // distype_ = static_cast<Core::FE::CellType>( ExtractInt(position,data) );
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -399,7 +402,7 @@ void DRT::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                        berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::ElemagBoundary::Print(std::ostream& os) const
 {
   os << "ElemagBoundary ";
   Element::Print(os);
@@ -410,7 +413,7 @@ void DRT::ELEMENTS::ElemagBoundary::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       berardocco 02/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagBoundary::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagBoundary::Lines()
 {
   FOUR_C_THROW("Lines of ElemagBoundary not implemented");
 }
@@ -419,7 +422,7 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagBoundary
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       berardocco 02/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagBoundary::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagBoundary::Surfaces()
 {
   FOUR_C_THROW("Surfaces of ElemagBoundary not implemented");
 }
@@ -428,13 +431,13 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagBoundary
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                      berardocco 02/18 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ElemagBoundary::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::ElemagBoundary::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->Evaluate(
+  Discret::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->Evaluate(
       this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
   return 0;
 }
@@ -443,10 +446,10 @@ int DRT::ELEMENTS::ElemagBoundary::Evaluate(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition berardocco 02/18 |
  *-----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ElemagBoundary::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::ElemagBoundary::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("dummy function called");
   return 0;
@@ -455,7 +458,7 @@ int DRT::ELEMENTS::ElemagBoundary::evaluate_neumann(Teuchos::ParameterList& para
 /*------------------------------------------------------------------------*
  |  Get degrees of freedom used by this element (public) berardocco 02/18 |
  *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagBoundary::LocationVector(const Discretization& dis, LocationArray& la,
+void Discret::ELEMENTS::ElemagBoundary::LocationVector(const Discretization& dis, LocationArray& la,
     bool doDirichlet, const std::string& condstring, Teuchos::ParameterList& params) const
 {
   // we have to do it this way, just as for weak Dirichlet conditions
@@ -475,7 +478,7 @@ void DRT::ELEMENTS::ElemagBoundary::LocationVector(const Discretization& dis, Lo
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagIntFaceType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagIntFaceType::Create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -485,13 +488,13 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::ElemagIntFaceType::Create(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                       berardocco 02/18|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(int id,  // element id
-    int owner,                             // owner (= owner of parent element with smallest gid)
-    int nnode,                             // number of nodes
-    const int* nodeids,                    // node ids
-    CORE::Nodes::Node** nodes,             // nodes of surface
-    DRT::ELEMENTS::Elemag* parent_master,  // master parent element
-    DRT::ELEMENTS::Elemag* parent_slave,   // slave parent element
+Discret::ELEMENTS::ElemagIntFace::ElemagIntFace(int id,  // element id
+    int owner,                  // owner (= owner of parent element with smallest gid)
+    int nnode,                  // number of nodes
+    const int* nodeids,         // node ids
+    Core::Nodes::Node** nodes,  // nodes of surface
+    Discret::ELEMENTS::Elemag* parent_master,  // master parent element
+    Discret::ELEMENTS::Elemag* parent_slave,   // slave parent element
     const int lsurface_master,  // local surface index with respect to master parent element
     const int lsurface_slave,   // local surface index with respect to slave parent element
     const std::vector<int>
@@ -499,7 +502,7 @@ DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(int id,  // element id
                        // face w.r.t the master parent element's face's coordinate system and the
                        // slave element's face's coordinate system
     )
-    : CORE::Elements::FaceElement(id, owner)
+    : Core::Elements::FaceElement(id, owner)
 {
   set_parent_master_element(parent_master, lsurface_master);
   set_parent_slave_element(parent_slave, lsurface_slave);
@@ -519,8 +522,8 @@ DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(int id,  // element id
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                  berardocco 02/18|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(const DRT::ELEMENTS::ElemagIntFace& old)
-    : CORE::Elements::FaceElement(old), degree_(old.degree_)
+Discret::ELEMENTS::ElemagIntFace::ElemagIntFace(const Discret::ELEMENTS::ElemagIntFace& old)
+    : Core::Elements::FaceElement(old), degree_(old.degree_)
 {
   return;
 }
@@ -529,9 +532,9 @@ DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(const DRT::ELEMENTS::ElemagIntFace& 
  |  Deep copy this instance return pointer to it               (public) |
  |                                                      berardocco 02/18|
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::ElemagIntFace::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::ElemagIntFace::Clone() const
 {
-  DRT::ELEMENTS::ElemagIntFace* newelement = new DRT::ELEMENTS::ElemagIntFace(*this);
+  Discret::ELEMENTS::ElemagIntFace* newelement = new Discret::ELEMENTS::ElemagIntFace(*this);
   return newelement;
 }
 
@@ -539,17 +542,17 @@ CORE::Elements::Element* DRT::ELEMENTS::ElemagIntFace::Clone() const
  |                                                             (public) |
  |                                                     berardocco 02/18 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::ElemagIntFace::Shape() const
+Core::FE::CellType Discret::ELEMENTS::ElemagIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
-  return CORE::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
+  return Core::FE::getShapeOfBoundaryElement(num_node(), ParentMasterElement()->Shape());
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                     berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagIntFace::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::ElemagIntFace::Pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this ElemagIntFace element does not support communication");
   return;
@@ -559,7 +562,7 @@ void DRT::ELEMENTS::ElemagIntFace::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                     berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagIntFace::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::ElemagIntFace::Unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this ElemagIntFace element does not support communication");
   return;
@@ -570,19 +573,19 @@ void DRT::ELEMENTS::ElemagIntFace::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  create the patch location vector (public)          berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
-    DRT::Discretization& discretization,     // discretization
-    std::vector<int>& nds_master,            // nodal dofset w.r.t master parent element
-    std::vector<int>& nds_slave,             // nodal dofset w.r.t slave parent element
-    std::vector<int>& patchlm,               // local map for gdof ids for patch of elements
-    std::vector<int>& master_lm,             // local map for gdof ids for master element
-    std::vector<int>& slave_lm,              // local map for gdof ids for slave element
-    std::vector<int>& face_lm,               // local map for gdof ids for face element
-    std::vector<int>& lm_masterToPatch,      // local map between lm_master and lm_patch
-    std::vector<int>& lm_slaveToPatch,       // local map between lm_slave and lm_patch
-    std::vector<int>& lm_faceToPatch,        // local map between lm_face and lm_patch
-    std::vector<int>& lm_masterNodeToPatch,  // local map between master nodes and nodes in patch
-    std::vector<int>& lm_slaveNodeToPatch    // local map between slave nodes and nodes in patch
+void Discret::ELEMENTS::ElemagIntFace::PatchLocationVector(
+    Discret::Discretization& discretization,  // discretization
+    std::vector<int>& nds_master,             // nodal dofset w.r.t master parent element
+    std::vector<int>& nds_slave,              // nodal dofset w.r.t slave parent element
+    std::vector<int>& patchlm,                // local map for gdof ids for patch of elements
+    std::vector<int>& master_lm,              // local map for gdof ids for master element
+    std::vector<int>& slave_lm,               // local map for gdof ids for slave element
+    std::vector<int>& face_lm,                // local map for gdof ids for face element
+    std::vector<int>& lm_masterToPatch,       // local map between lm_master and lm_patch
+    std::vector<int>& lm_slaveToPatch,        // local map between lm_slave and lm_patch
+    std::vector<int>& lm_faceToPatch,         // local map between lm_face and lm_patch
+    std::vector<int>& lm_masterNodeToPatch,   // local map between master nodes and nodes in patch
+    std::vector<int>& lm_slaveNodeToPatch     // local map between slave nodes and nodes in patch
 )
 {
   // create one patch location vector containing all dofs of master, slave and
@@ -590,7 +593,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int m_numnode = ParentMasterElement()->num_node();
-  CORE::Nodes::Node** m_nodes = ParentMasterElement()->Nodes();
+  Core::Nodes::Node** m_nodes = ParentMasterElement()->Nodes();
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
@@ -599,7 +602,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int s_numnode = ParentSlaveElement()->num_node();
-  CORE::Nodes::Node** s_nodes = ParentSlaveElement()->Nodes();
+  Core::Nodes::Node** s_nodes = ParentSlaveElement()->Nodes();
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
@@ -608,7 +611,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
 
   //-----------------------------------------------------------------------
   const int f_numnode = num_node();
-  CORE::Nodes::Node** f_nodes = Nodes();
+  Core::Nodes::Node** f_nodes = Nodes();
 
   //-----------------------------------------------------------------------
   // create the patch local map and additional local maps between elements lm and patch lm
@@ -639,7 +642,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
   // fill patch lm with master's nodes
   for (int k = 0; k < m_numnode; ++k)
   {
-    CORE::Nodes::Node* node = m_nodes[k];
+    Core::Nodes::Node* node = m_nodes[k];
     std::vector<int> dof = discretization.Dof(dofset, node);
 
     // get maximum of numdof per node with the help of master and/or slave element (returns 4 in 3D
@@ -675,7 +678,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
 
   for (int k = 0; k < s_numnode; ++k)
   {
-    CORE::Nodes::Node* node = s_nodes[k];
+    Core::Nodes::Node* node = s_nodes[k];
 
     // slave node already contained?
     std::map<int, int>::iterator m_offset;
@@ -735,7 +738,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
   // extract face's lm from patch_lm
   for (int k = 0; k < f_numnode; ++k)
   {
-    CORE::Nodes::Node* node = f_nodes[k];
+    Core::Nodes::Node* node = f_nodes[k];
 
     // face node must be contained
     std::map<int, int>::iterator m_offset;
@@ -769,7 +772,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
 /*----------------------------------------------------------------------*
  |  print this element (public)                        berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ElemagIntFace::Print(std::ostream& os) const
+void Discret::ELEMENTS::ElemagIntFace::Print(std::ostream& os) const
 {
   os << "ElemagIntFace ";
   Element::Print(os);
@@ -779,7 +782,7 @@ void DRT::ELEMENTS::ElemagIntFace::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       berardocco 02/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagIntFace::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagIntFace::Lines()
 {
   FOUR_C_THROW("Lines of ElemagIntFace not implemented");
 }
@@ -787,7 +790,7 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagIntFace:
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       berardocco 02/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagIntFace::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::ElemagIntFace::Surfaces()
 {
   FOUR_C_THROW("Surfaces of ElemagIntFace not implemented");
 }
@@ -795,16 +798,16 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::ElemagIntFace:
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                      berardocco 02/18 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ElemagIntFace::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::ElemagIntFace::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
-  // REMARK: this line ensures that the static DRT::ELEMENTS::ElemagIntFaceImplInterface::Impl is
-  // created
+  // REMARK: this line ensures that the static Discret::ELEMENTS::ElemagIntFaceImplInterface::Impl
+  // is created
   //         this line avoids linker errors
-  // DRT::ELEMENTS::ElemagIntFaceImplInterface::Impl(this);
+  // Discret::ELEMENTS::ElemagIntFaceImplInterface::Impl(this);
 
   FOUR_C_THROW("not available");
 
@@ -815,10 +818,10 @@ int DRT::ELEMENTS::ElemagIntFace::Evaluate(Teuchos::ParameterList& params,
 /*------------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition  berardocco 02/18 |
  *------------------------------------------------------------------------*/
-int DRT::ELEMENTS::ElemagIntFace::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::ElemagIntFace::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("not available");
 

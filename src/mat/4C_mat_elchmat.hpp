@@ -20,20 +20,20 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for list of materials
-    class ElchMat : public CORE::MAT::PAR::Parameter
+    class ElchMat : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      ElchMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ElchMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -42,11 +42,11 @@ namespace MAT
       const std::vector<int>& PhaseIds() const { return phaseids_; }
 
       /// provide access to phases by its ID
-      Teuchos::RCP<CORE::MAT::Material> PhaseById(const int id) const
+      Teuchos::RCP<Core::Mat::Material> PhaseById(const int id) const
       {
         if (not local_)
         {
-          std::map<int, Teuchos::RCP<CORE::MAT::Material>>::const_iterator m = mat_.find(id);
+          std::map<int, Teuchos::RCP<Core::Mat::Material>>::const_iterator m = mat_.find(id);
 
           if (m == mat_.end())
           {
@@ -79,7 +79,7 @@ namespace MAT
 
      private:
       /// map to materials (only used for local_==true)
-      std::map<int, Teuchos::RCP<CORE::MAT::Material>> mat_;
+      std::map<int, Teuchos::RCP<Core::Mat::Material>> mat_;
 
       //@}
 
@@ -87,14 +87,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ElchMatType : public CORE::COMM::ParObjectType
+  class ElchMatType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ElchMatType"; }
 
     static ElchMatType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ElchMatType instance_;
@@ -102,14 +102,14 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
-  class ElchMat : public CORE::MAT::Material
+  class ElchMat : public Core::Mat::Material
   {
    public:
     /// construct empty material object
     ElchMat();
 
     /// construct the material object given material parameters
-    explicit ElchMat(MAT::PAR::ElchMat* params);
+    explicit ElchMat(Mat::PAR::ElchMat* params);
 
     //! @name Packing and Unpacking
 
@@ -131,7 +131,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -150,13 +150,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_elchmat;
+      return Core::Materials::m_elchmat;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ElchMat(*this));
     }
@@ -183,11 +183,11 @@ namespace MAT
     }
 
     /// provide access to material by its ID
-    Teuchos::RCP<CORE::MAT::Material> PhaseById(const int id) const
+    Teuchos::RCP<Core::Mat::Material> PhaseById(const int id) const
     {
       if (params_->local_)
       {
-        std::map<int, Teuchos::RCP<CORE::MAT::Material>>::const_iterator m = mat_.find(id);
+        std::map<int, Teuchos::RCP<Core::Mat::Material>>::const_iterator m = mat_.find(id);
         if (m == mat_.end())
         {
           FOUR_C_THROW("Material %d could not be found", id);
@@ -201,7 +201,7 @@ namespace MAT
     }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// setup of material map
@@ -211,13 +211,13 @@ namespace MAT
     void clear();
 
     /// my material parameters
-    MAT::PAR::ElchMat* params_;
+    Mat::PAR::ElchMat* params_;
 
     /// map to materials
-    std::map<int, Teuchos::RCP<CORE::MAT::Material>> mat_;
+    std::map<int, Teuchos::RCP<Core::Mat::Material>> mat_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

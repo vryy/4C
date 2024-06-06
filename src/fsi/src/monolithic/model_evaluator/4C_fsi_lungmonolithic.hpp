@@ -29,12 +29,12 @@ namespace CONSTRAINTS
   class ConstraintDofSet;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class BlockSparseMatrixBase;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
 }
@@ -64,7 +64,7 @@ namespace FSI
     void GeneralSetup();
 
     /// setup composed system matrix from field solvers
-    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override = 0;
+    void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override = 0;
 
     //@}
 
@@ -77,23 +77,23 @@ namespace FSI
     void initial_guess(Teuchos::RCP<Epetra_Vector> ig) override = 0;
 
     /// the composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override;
 
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
+    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
 
     /// undo infnorm scaling from scaled solution
     void unscale_solution(
-        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
+        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
 
     //@}
 
     /// Update everything
     void update() override;
 
-    CORE::ADAPTER::Coupling& structure_ale_outflow_coupling() { return *coupsaout_; }
+    Core::Adapter::Coupling& structure_ale_outflow_coupling() { return *coupsaout_; }
 
     void read_restart(int step) override;
 
@@ -137,10 +137,11 @@ namespace FSI
      */
     void create_node_owner_relationship(std::map<int, int>* nodeOwner,
         std::map<int, std::list<int>>* inverseNodeOwner,
-        std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
-        std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
-        Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
-        const INPAR::FSI::Redistribute domain) override
+        std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
+        std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
+        Teuchos::RCP<Discret::Discretization> structuredis,
+        Teuchos::RCP<Discret::Discretization> fluiddis,
+        const Inpar::FSI::Redistribute domain) override
     {
       FOUR_C_THROW("Not implemented, yet.");
     }
@@ -197,16 +198,16 @@ namespace FSI
     int writerestartevery_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> icoupfa_;
 
     /// additional coupling of structure and ale fields at airway outflow
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupsaout_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupsaout_;
 
     /// additional coupling of structure and ale/fluid fields at airway outflow
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfsout_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupfsout_;
 
     /// fluid and ale coupling at airway outflow
-    Teuchos::RCP<CORE::ADAPTER::Coupling> coupfaout_;
+    Teuchos::RCP<Core::Adapter::Coupling> coupfaout_;
 
     ///@}
 
@@ -253,19 +254,19 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector>
         dVstruct_;  ///< current change in structure volumes (for output purposes only)
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
         AddStructConstrMatrix_;  ///< matrix containing all structure constraint related stuff
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
         AddFluidShapeDerivMatrix_;  ///< additional constraint portion on block (1,2)
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         FluidConstrMatrix_;  ///< rectangular fluid matrix associated with constraints K_fl
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         ConstrFluidMatrix_;  ///< rectangular fluid matrix associated with constraints K_lf
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
         AleConstrMatrix_;  ///< rectangular ale matrix associated with constraints K_al
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
         ConstrAleMatrix_;  ///< rectangular ale matrix associated with constraints K_la
 
     Teuchos::RCP<Epetra_Vector> AddStructRHS_;  ///< additional constraint portion on structural rhs
@@ -277,7 +278,7 @@ namespace FSI
     //@}
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
+    Inpar::FSI::LinearBlockSolver linearsolverstrategy_;
 
     /// output of changes in volumes in text file
     std::ofstream outfluiddvol_;

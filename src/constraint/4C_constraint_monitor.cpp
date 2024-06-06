@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<DRT::Discretization> discr,
+CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<Discret::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : actdisc_(discr)
 {
@@ -110,20 +110,20 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
     // Get ConditionID of current condition if defined and write value in parameterlist
     const int condID = cond->parameters().Get<int>("ConditionID");
     const int offsetID = params.get("OffsetID", 0);
-    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // define element matrices and vectors
-    CORE::LINALG::SerialDenseMatrix elematrix1;
-    CORE::LINALG::SerialDenseMatrix elematrix2;
-    CORE::LINALG::SerialDenseVector elevector1;
-    CORE::LINALG::SerialDenseVector elevector2;
-    CORE::LINALG::SerialDenseVector elevector3;
+    Core::LinAlg::SerialDenseMatrix elematrix1;
+    Core::LinAlg::SerialDenseMatrix elematrix2;
+    Core::LinAlg::SerialDenseVector elevector1;
+    Core::LinAlg::SerialDenseVector elevector2;
+    Core::LinAlg::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond->Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -146,7 +146,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
       std::vector<int> constrowner;
       constrlm.push_back(condID - offsetID);
       constrowner.push_back(curr->second->Owner());
-      CORE::LINALG::Assemble(*systemvector, elevector3, constrlm, constrowner);
+      Core::LinAlg::Assemble(*systemvector, elevector3, constrlm, constrowner);
     }
   }
 }

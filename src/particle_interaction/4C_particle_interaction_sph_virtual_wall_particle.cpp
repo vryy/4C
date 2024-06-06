@@ -29,14 +29,14 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHVirtualWallParticle::SPHVirtualWallParticle(
+ParticleInteraction::SPHVirtualWallParticle::SPHVirtualWallParticle(
     const Teuchos::ParameterList& params)
     : params_sph_(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHVirtualWallParticle::Init()
+void ParticleInteraction::SPHVirtualWallParticle::Init()
 {
   // init with potential fluid particle types
   allfluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::DirichletPhase,
@@ -44,11 +44,11 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::Init()
   intfluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::NeumannPhase};
 }
 
-void PARTICLEINTERACTION::SPHVirtualWallParticle::Setup(
+void ParticleInteraction::SPHVirtualWallParticle::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+    const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
+    const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -81,11 +81,11 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::Setup(
       intfluidtypes_.erase(type_i);
 }
 
-void PARTICLEINTERACTION::SPHVirtualWallParticle::init_relative_positions_of_virtual_particles(
+void ParticleInteraction::SPHVirtualWallParticle::init_relative_positions_of_virtual_particles(
     const double maxinteractiondistance)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHVirtualWallParticle::init_relative_positions_of_virtual_particles");
+      "ParticleInteraction::SPHVirtualWallParticle::init_relative_positions_of_virtual_particles");
 
   // clear relative positions of virtual particles
   virtualparticles_.clear();
@@ -120,11 +120,11 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::init_relative_positions_of_vir
   }
 }
 
-void PARTICLEINTERACTION::SPHVirtualWallParticle::init_states_at_wall_contact_points(
+void ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_points(
     std::vector<double>& gravity)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHVirtualWallParticle::init_states_at_wall_contact_points");
+      "ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_points");
 
   // get wall data state container
   std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
@@ -169,19 +169,19 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::init_states_at_wall_contact_po
     const double* rad_j = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
 
     // get pointer to column wall element
-    CORE::Elements::Element* ele = particlewallpair.ele_;
+    Core::Elements::Element* ele = particlewallpair.ele_;
 
     // number of nodes of wall element
     const int numnodes = ele->num_node();
 
     // shape functions and location vector of wall element
-    CORE::LINALG::SerialDenseVector funct(numnodes);
+    Core::LinAlg::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
     if (walldatastate->GetVelCol() != Teuchos::null or walldatastate->GetAccCol() != Teuchos::null)
     {
       // evaluate shape functions of element at wall contact point
-      CORE::FE::shape_function_2D(
+      Core::FE::shape_function_2D(
           funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
 
       // get location vector of wall element
@@ -199,7 +199,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::init_states_at_wall_contact_po
     {
       // get nodal accelerations
       std::vector<double> nodal_acc(numnodes * 3);
-      CORE::FE::ExtractMyValues(*walldatastate->GetAccCol(), nodal_acc, lmele);
+      Core::FE::ExtractMyValues(*walldatastate->GetAccCol(), nodal_acc, lmele);
 
       // determine acceleration of wall contact point j
       for (int node = 0; node < numnodes; ++node)

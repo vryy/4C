@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::ShapeFunctionType sft>
-std::map<std::string, std::string> ELEMAG::UTILS::ScatraCloneStrategy<sft>::conditions_to_copy()
+template <Core::FE::ShapeFunctionType sft>
+std::map<std::string, std::string> EleMag::UTILS::ScatraCloneStrategy<sft>::conditions_to_copy()
     const
 {
   return {{"Dirichlet", "Dirichlet"}};
@@ -33,39 +33,39 @@ std::map<std::string, std::string> ELEMAG::UTILS::ScatraCloneStrategy<sft>::cond
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::ShapeFunctionType sft>
-void ELEMAG::UTILS::ScatraCloneStrategy<sft>::check_material_type(const int matid)
+template <Core::FE::ShapeFunctionType sft>
+void EleMag::UTILS::ScatraCloneStrategy<sft>::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  CORE::Materials::MaterialType mtype =
-      GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type();
-  if (mtype != CORE::Materials::m_scatra)
+  Core::Materials::MaterialType mtype =
+      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+  if (mtype != Core::Materials::m_scatra)
     FOUR_C_THROW("Material with ID %d is not admissible for TRANSP elements", matid);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::ShapeFunctionType sft>
-void ELEMAG::UTILS::ScatraCloneStrategy<sft>::set_element_data(
-    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+template <Core::FE::ShapeFunctionType sft>
+void EleMag::UTILS::ScatraCloneStrategy<sft>::set_element_data(
+    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
     const bool nurbsdis)
 {
-  auto Transport = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
+  auto Transport = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
   if (Transport != nullptr)
   {
     Transport->SetDisType(oldele->Shape());
-    Transport->SetMaterial(0, MAT::Factory(matid));
-    if (sft == CORE::FE::ShapeFunctionType::hdg)
+    Transport->SetMaterial(0, Mat::Factory(matid));
+    if (sft == Core::FE::ShapeFunctionType::hdg)
     {
-      auto scatraele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(Transport);
-      scatraele->SetImplType(INPAR::SCATRA::impltype_std_hdg);
+      auto scatraele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(Transport);
+      scatraele->SetImplType(Inpar::ScaTra::impltype_std_hdg);
       scatraele->SetDegree(oldele->Degree());
       scatraele->set_complete_polynomial_space(false);
     }
     else
     {
-      Transport->SetImplType(INPAR::SCATRA::impltype_std);
+      Transport->SetImplType(Inpar::ScaTra::impltype_std);
     }
   }
   else
@@ -76,14 +76,14 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::set_element_data(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::ShapeFunctionType sft>
-bool ELEMAG::UTILS::ScatraCloneStrategy<sft>::determine_ele_type(
-    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+template <Core::FE::ShapeFunctionType sft>
+bool EleMag::UTILS::ScatraCloneStrategy<sft>::determine_ele_type(
+    Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // Clone it now.
   if (ismyele)
   {
-    sft == CORE::FE::ShapeFunctionType::hdg ? eletype.push_back("TRANSPHDG")
+    sft == Core::FE::ShapeFunctionType::hdg ? eletype.push_back("TRANSPHDG")
                                             : eletype.push_back("TRANSP");
   }
 
@@ -91,6 +91,6 @@ bool ELEMAG::UTILS::ScatraCloneStrategy<sft>::determine_ele_type(
 }
 
 // template classes
-template class ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::polynomial>;
-template class ELEMAG::UTILS::ScatraCloneStrategy<CORE::FE::ShapeFunctionType::hdg>;
+template class EleMag::UTILS::ScatraCloneStrategy<Core::FE::ShapeFunctionType::polynomial>;
+template class EleMag::UTILS::ScatraCloneStrategy<Core::FE::ShapeFunctionType::hdg>;
 FOUR_C_NAMESPACE_CLOSE

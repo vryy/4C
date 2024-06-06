@@ -19,18 +19,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
-  namespace NURBS
+  namespace Nurbs
   {
-    class KnotvectorObjectType : public CORE::COMM::ParObjectType
+    class KnotvectorObjectType : public Core::Communication::ParObjectType
     {
      public:
       std::string Name() const override { return "KnotvectorObjectType"; }
 
       static KnotvectorObjectType& Instance() { return instance_; };
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
      private:
       static KnotvectorObjectType instance_;
@@ -48,7 +48,7 @@ namespace DRT
     ParObject is implemented to be able to write the knotvector to disc for I/O.
 
     */
-    class Knotvector : public CORE::COMM::ParObject
+    class Knotvector : public Core::Communication::ParObject
     {
      public:
       //! @name Construction, destruction and copying
@@ -73,7 +73,7 @@ namespace DRT
 
       \param old const Knotvector (i)
       */
-      Knotvector(const DRT::NURBS::Knotvector& old);
+      Knotvector(const Discret::Nurbs::Knotvector& old);
 
       //! @}
 
@@ -230,7 +230,7 @@ namespace DRT
         \endverbatim
 
       */
-      bool GetEleKnots(std::vector<CORE::LINALG::SerialDenseVector>& eleknots, int gid) const;
+      bool GetEleKnots(std::vector<Core::LinAlg::SerialDenseVector>& eleknots, int gid) const;
 
 
 
@@ -253,8 +253,8 @@ namespace DRT
       Zero sized elements are simply to be skipped during
       integration
       */
-      bool get_boundary_ele_and_parent_knots(std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
-          std::vector<CORE::LINALG::SerialDenseVector>& surfknots, double& normalfac, int pgid,
+      bool get_boundary_ele_and_parent_knots(std::vector<Core::LinAlg::SerialDenseVector>& eleknots,
+          std::vector<Core::LinAlg::SerialDenseVector>& surfknots, double& normalfac, int pgid,
           const int surfaceid) const;
 
 
@@ -314,7 +314,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this class
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -505,9 +505,9 @@ namespace DRT
       //! @}
     };
 
-  }  // namespace NURBS
+  }  // namespace Nurbs
 
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

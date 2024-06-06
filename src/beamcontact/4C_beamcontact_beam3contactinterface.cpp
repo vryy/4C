@@ -19,14 +19,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Impl(
-    const int numnodes, const int numnodalvalues, const DRT::Discretization& pdiscret,
-    const DRT::Discretization& cdiscret, const std::map<int, int>& dofoffsetmap,
-    CORE::Elements::Element* element1, CORE::Elements::Element* element2,
+    const int numnodes, const int numnodalvalues, const Discret::Discretization& pdiscret,
+    const Discret::Discretization& cdiscret, const std::map<int, int>& dofoffsetmap,
+    Core::Elements::Element* element1, Core::Elements::Element* element2,
     Teuchos::ParameterList& beamcontactparams)
 {
   // Decide, if beam contact with subsegment creation (beam3contact) or pure element based beam
   // contact (beam3contactnew) should be applied
-  bool beamssegcon = CORE::UTILS::IntegralValue<int>(beamcontactparams, "BEAMS_SEGCON");
+  bool beamssegcon = Core::UTILS::IntegralValue<int>(beamcontactparams, "BEAMS_SEGCON");
 
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
 

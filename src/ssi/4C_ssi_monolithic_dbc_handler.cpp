@@ -23,10 +23,10 @@ FOUR_C_NAMESPACE_OPEN
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 SSI::DBCHandlerBase::DBCHandlerBase(const bool is_scatra_manifold,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure)
+    Teuchos::RCP<Adapter::SSIStructureWrapper> structure)
     : is_scatra_manifold_(is_scatra_manifold),
       scatra_(std::move(scatra)),
       scatra_manifold_(std::move(scatra_manifold)),
@@ -38,10 +38,10 @@ SSI::DBCHandlerBase::DBCHandlerBase(const bool is_scatra_manifold,
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 SSI::DBCHandlerSparse::DBCHandlerSparse(const bool is_scatra_manifold,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure)
+    Teuchos::RCP<Adapter::SSIStructureWrapper> structure)
     : DBCHandlerBase(is_scatra_manifold, scatra, scatra_manifold, ssi_maps, structure)
 {
 }
@@ -49,10 +49,10 @@ SSI::DBCHandlerSparse::DBCHandlerSparse(const bool is_scatra_manifold,
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 SSI::DBCHandlerBlock::DBCHandlerBlock(const bool is_scatra_manifold,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure)
+    Teuchos::RCP<Adapter::SSIStructureWrapper> structure)
     : DBCHandlerBase(is_scatra_manifold, scatra, scatra_manifold, ssi_maps, structure),
       position_structure_(ssi_maps()->GetBlockPositions(SSI::Subproblem::structure).at(0))
 {
@@ -71,7 +71,7 @@ void SSI::DBCHandlerBase::ApplyDBCToRHS(Teuchos::RCP<Epetra_Vector> rhs)
 
   if (locsysmanager_structure != Teuchos::null)
     locsysmanager_structure->RotateGlobalToLocal(rhs_struct);
-  CORE::LINALG::apply_dirichlet_to_system(
+  Core::LinAlg::apply_dirichlet_to_system(
       *rhs_struct, *zeros_struct, *structure_field()->GetDBCMapExtractor()->CondMap());
   if (locsysmanager_structure != Teuchos::null)
     locsysmanager_structure->RotateLocalToGlobal(rhs_struct);
@@ -82,7 +82,7 @@ void SSI::DBCHandlerBase::ApplyDBCToRHS(Teuchos::RCP<Epetra_Vector> rhs)
   // apply Dirichlet boundary conditions to the scatra part of the right hand side
   const auto zeros_scatra =
       Teuchos::rcp(new Epetra_Vector(*sca_tra_field()->DirichMaps()->CondMap()));
-  CORE::LINALG::apply_dirichlet_to_system(
+  Core::LinAlg::apply_dirichlet_to_system(
       *rhs, *zeros_scatra, *sca_tra_field()->DirichMaps()->CondMap());
 
   // apply Dirichlet boundary conditions to the scatra manifold part of the right hand side
@@ -90,7 +90,7 @@ void SSI::DBCHandlerBase::ApplyDBCToRHS(Teuchos::RCP<Epetra_Vector> rhs)
   {
     const auto zeros_scatramanifold =
         Teuchos::rcp(new Epetra_Vector(*sca_tra_manifold_field()->DirichMaps()->CondMap()));
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *rhs, *zeros_scatramanifold, *sca_tra_manifold_field()->DirichMaps()->CondMap());
   }
 }
@@ -98,7 +98,7 @@ void SSI::DBCHandlerBase::ApplyDBCToRHS(Teuchos::RCP<Epetra_Vector> rhs)
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::DBCHandlerBase::apply_dbc_to_system_matrix(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix)
 {
   // apply the scalar transport Dirichlet boundary conditions to the global system matrix
   system_matrix->ApplyDirichlet(*sca_tra_field()->DirichMaps()->CondMap(), true);
@@ -115,7 +115,7 @@ void SSI::DBCHandlerBase::apply_dbc_to_system_matrix(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::DBCHandlerBase::apply_structure_dbc_to_system_matrix(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix)
 {
   // locsys manager of structure
   const auto& locsysmanager_structure = structure_field()->LocsysManager();
@@ -133,20 +133,20 @@ void SSI::DBCHandlerBase::apply_structure_dbc_to_system_matrix(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::DBCHandlerSparse::apply_structure_dbc_with_loc_sys_rotation_to_system_matrix(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix,
     const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
-    Teuchos::RCP<const CORE::Conditions::LocsysManager> locsysmanager_structure)
+    Teuchos::RCP<const Core::Conditions::LocsysManager> locsysmanager_structure)
 
 {
-  auto systemmatrix_sparse = CORE::LINALG::CastToSparseMatrixAndCheckSuccess(system_matrix);
+  auto systemmatrix_sparse = Core::LinAlg::CastToSparseMatrixAndCheckSuccess(system_matrix);
 
   // structure dof row map
   const auto& dofrowmap_structure = structure_field()->dof_row_map();
 
   // extract structure rows of global system matrix
   const auto systemmatrix_structure =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap_structure, 27, false, true));
-  CORE::LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix_sparse, *dofrowmap_structure,
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap_structure, 27, false, true));
+  Core::LinAlg::MatrixLogicalSplitAndTransform()(*systemmatrix_sparse, *dofrowmap_structure,
       system_matrix->DomainMap(), 1.0, nullptr, nullptr, *systemmatrix_structure);
   systemmatrix_structure->Complete(system_matrix->DomainMap(), *dofrowmap_structure);
 
@@ -163,11 +163,11 @@ void SSI::DBCHandlerSparse::apply_structure_dbc_with_loc_sys_rotation_to_system_
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::DBCHandlerBlock::apply_structure_dbc_with_loc_sys_rotation_to_system_matrix(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix,
     const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
-    Teuchos::RCP<const CORE::Conditions::LocsysManager> locsysmanager_structure)
+    Teuchos::RCP<const Core::Conditions::LocsysManager> locsysmanager_structure)
 {
-  auto systemmatrix_block = CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(system_matrix);
+  auto systemmatrix_block = Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(system_matrix);
 
   // apply structure Dirichlet conditions
   for (int iblock = 0; iblock < systemmatrix_block->Cols(); ++iblock)
@@ -185,22 +185,22 @@ void SSI::DBCHandlerBlock::apply_structure_dbc_with_loc_sys_rotation_to_system_m
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 Teuchos::RCP<SSI::DBCHandlerBase> SSI::BuildDBCHandler(const bool is_scatra_manifold,
-    CORE::LINALG::MatrixType matrixtype_ssi, Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
+    Core::LinAlg::MatrixType matrixtype_ssi, Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure)
+    Teuchos::RCP<Adapter::SSIStructureWrapper> structure)
 {
   Teuchos::RCP<SSI::DBCHandlerBase> dbc_handler = Teuchos::null;
 
   switch (matrixtype_ssi)
   {
-    case CORE::LINALG::MatrixType::block_field:
+    case Core::LinAlg::MatrixType::block_field:
     {
       dbc_handler = Teuchos::rcp(new SSI::DBCHandlerBlock(
           is_scatra_manifold, scatra, scatra_manifold, ssi_maps, structure));
       break;
     }
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       dbc_handler = Teuchos::rcp(new SSI::DBCHandlerSparse(
           is_scatra_manifold, scatra, scatra_manifold, ssi_maps, structure));

@@ -22,17 +22,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPUT
+namespace Input
 {
   class LineDefinition;
-}  // namespace INPUT
+}  // namespace Input
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DatFileReader;
 }
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   /*!
     \brief Base class of all field test classes
@@ -59,7 +59,7 @@ namespace CORE::UTILS
     virtual ~ResultTest() = default;
 
     /// perform element value test
-    virtual void TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count);
+    virtual void TestElement(Input::LineDefinition& res, int& nerr, int& test_count);
 
     /*!
      * @brief  perform nodal value test
@@ -68,7 +68,7 @@ namespace CORE::UTILS
      * @param[in] nerr        number of failed result tests
      * @param[in] test_count  number of result tests
      */
-    virtual void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count);
+    virtual void test_node(Input::LineDefinition& res, int& nerr, int& test_count);
 
     /*!
      * @brief  perform nodal value test on a geometry. The operation can be e.g., sum, max and min
@@ -77,12 +77,12 @@ namespace CORE::UTILS
      * @param[in] nerr        number of failed result tests
      * @param[in] test_count  number of result tests
      */
-    virtual void test_node_on_geometry(INPUT::LineDefinition& res, int& nerr, int& test_count,
+    virtual void test_node_on_geometry(Input::LineDefinition& res, int& nerr, int& test_count,
         const std::vector<std::vector<std::vector<int>>>& nodeset);
 
     /// perform special case test
     virtual void TestSpecial(
-        INPUT::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count);
+        Input::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count);
 
     /*!
      * @brief  perform special case test
@@ -91,10 +91,10 @@ namespace CORE::UTILS
      * @param[in] nerr        number of failed result tests
      * @param[in] test_count  number of result tests
      */
-    virtual void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count);
+    virtual void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count);
 
     /// tell whether this field test matches to a given line
-    virtual bool Match(INPUT::LineDefinition& res);
+    virtual bool Match(Input::LineDefinition& res);
 
    protected:
     //! compare a calculated value with the expected one
@@ -103,7 +103,7 @@ namespace CORE::UTILS
     //! Node/element based results have to be compared at a specific node/element.
     //! Special results are not attached to a specific node/element, but to the
     //! overall algorithm.
-    virtual int compare_values(double actresult, std::string type, INPUT::LineDefinition& res);
+    virtual int compare_values(double actresult, std::string type, Input::LineDefinition& res);
 
    private:
     /// specific name of a field test
@@ -130,7 +130,7 @@ namespace CORE::UTILS
     void TestAll(const Epetra_Comm& comm);
 
     /// Store the parsed @p results.
-    void SetParsedLines(std::vector<INPUT::LineDefinition> results);
+    void SetParsedLines(std::vector<Input::LineDefinition> results);
 
     /// Store the node set
     void set_node_set(const std::vector<std::vector<std::vector<int>>>& nodeset);
@@ -143,13 +143,13 @@ namespace CORE::UTILS
     std::vector<Teuchos::RCP<ResultTest>> fieldtest_;
 
     /// expected results
-    std::vector<INPUT::LineDefinition> results_;
+    std::vector<Input::LineDefinition> results_;
 
     /// node set for values extraction
     std::vector<std::vector<std::vector<int>>> nodeset_;
   };
 
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

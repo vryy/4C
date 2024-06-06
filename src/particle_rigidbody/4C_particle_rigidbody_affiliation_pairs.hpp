@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
 }
@@ -40,7 +40,7 @@ namespace PARTICLEENGINE
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLERIGIDBODY
+namespace ParticleRigidBody
 {
   /*!
    * \brief affiliation pair handler for rigid bodies
@@ -91,7 +91,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] reader discretization reader
      */
-    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<Core::IO::DiscretizationReader> reader);
 
     /*!
      * \brief get reference to affiliation pair data
@@ -172,7 +172,7 @@ namespace PARTICLERIGIDBODY
     //! affiliation pair data relating rigid particles to rigid bodies
     std::unordered_map<int, int> affiliationdata_;
   };
-}  // namespace PARTICLERIGIDBODY
+}  // namespace ParticleRigidBody
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

@@ -19,16 +19,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  class ConstraintMixtureHistoryType : public CORE::COMM::ParObjectType
+  class ConstraintMixtureHistoryType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ConstraintMixtureHistoryType"; }
 
     static ConstraintMixtureHistoryType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ConstraintMixtureHistoryType instance_;
@@ -36,7 +36,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for history of constraint mixture material
-  class ConstraintMixtureHistory : public CORE::COMM::ParObject
+  class ConstraintMixtureHistory : public Core::Communication::ParObject
   {
     friend class ConstraintMixture;
 
@@ -49,7 +49,7 @@ namespace MAT
     {
       return ConstraintMixtureHistoryType::Instance().UniqueParObjectId();
     }
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
     void Unpack(const std::vector<char>& data) override;
     //@}
 
@@ -72,15 +72,15 @@ namespace MAT
       *dt = dt_;
     };
     /// set stretches
-    void set_stretches(int gp, CORE::LINALG::Matrix<4, 1> stretches);
+    void set_stretches(int gp, Core::LinAlg::Matrix<4, 1> stretches);
     /// get stretches
-    void get_stretches(int gp, CORE::LINALG::Matrix<4, 1>* stretches);
+    void get_stretches(int gp, Core::LinAlg::Matrix<4, 1>* stretches);
     /// set mass production rates
-    void set_mass(int gp, CORE::LINALG::Matrix<4, 1> massprod);
+    void set_mass(int gp, Core::LinAlg::Matrix<4, 1> massprod);
     /// set mass production rate of single fiber
     void set_mass(int gp, double massprod, int idfiber);
     /// get mass production rates
-    void get_mass(int gp, CORE::LINALG::Matrix<4, 1>* massprod);
+    void get_mass(int gp, Core::LinAlg::Matrix<4, 1>* massprod);
     /// set vardegrad
     void set_var_degrad(int gp, int idfiber, double vardegrad);
     /// get vardegrad
@@ -123,7 +123,7 @@ namespace MAT
     Teuchos::RCP<std::vector<double>> vardegrad4_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

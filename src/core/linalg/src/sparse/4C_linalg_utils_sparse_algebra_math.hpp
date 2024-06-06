@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of algebraic mathematical methods for namespace CORE::LINALG
+\brief A collection of algebraic mathematical methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -24,15 +24,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
-   \brief Make CORE::LINALG::SerialDenseMatrix symmetric by averaging upper and lower traingular
+   \brief Make Core::LinAlg::SerialDenseMatrix symmetric by averaging upper and lower traingular
    indices
 
    \param A (in/out): Matrix to be symmetrised
    */
-  void SymmetriseMatrix(CORE::LINALG::SerialDenseMatrix& A);
+  void SymmetriseMatrix(Core::LinAlg::SerialDenseMatrix& A);
 
   /*!
    \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
@@ -94,11 +94,11 @@ namespace CORE::LINALG
   inline void Add(const Teuchos::RCP<Epetra_CrsMatrix> A, const bool transposeA,
       const double scalarA, Teuchos::RCP<Epetra_CrsMatrix> B, const double scalarB)
   {
-    CORE::LINALG::Add(*A, transposeA, scalarA, *B, scalarB);
+    Core::LinAlg::Add(*A, transposeA, scalarA, *B, scalarB);
   }
 
   /*!
-   \brief Add a (transposed) Epetra_CrsMatrix to a CORE::LINALG::SparseMatrix: B = B*scalarB +
+   \brief Add a (transposed) Epetra_CrsMatrix to a Core::LinAlg::SparseMatrix: B = B*scalarB +
    A(^T)*scalarA
 
    Add one matrix to another.
@@ -122,7 +122,7 @@ namespace CORE::LINALG
    \param scalarB    (in)     : scaling factor for B
    */
   void Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
-      CORE::LINALG::SparseMatrixBase& B, const double scalarB);
+      Core::LinAlg::SparseMatrixBase& B, const double scalarB);
 
   /*!
    \brief Compute transposed matrix of an Epetra_CrsMatrix explicitly
@@ -145,7 +145,7 @@ namespace CORE::LINALG
    */
   inline Teuchos::RCP<Epetra_CrsMatrix> Transpose(const Teuchos::RCP<Epetra_CrsMatrix> A)
   {
-    return CORE::LINALG::Transpose(*A);
+    return Core::LinAlg::Transpose(*A);
   }
 
   /*!
@@ -236,7 +236,7 @@ namespace CORE::LINALG
 
   /// Returns a dim x dim identity matrix
   template <unsigned int dim>
-  void IdentityMatrix(CORE::LINALG::Matrix<dim, dim>& identity_matrix)
+  void IdentityMatrix(Core::LinAlg::Matrix<dim, dim>& identity_matrix)
   {
     for (unsigned int i = 0; i < dim; i++)
     {
@@ -252,7 +252,7 @@ namespace CORE::LINALG
     return;
   }
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

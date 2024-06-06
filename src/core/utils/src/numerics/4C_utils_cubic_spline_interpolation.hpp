@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   /**
    * @brief Cubic spline interpolation based on two input vectors \f$ \vec{x}, \vec{y} \f$
@@ -104,7 +104,7 @@ namespace CORE::UTILS
      * boundary conditions, i.e. that the second derivative equals zero at the boundary
      */
     void build_matrix_and_rhs(
-        const int N, CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& b) const;
+        const int N, Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& b) const;
 
     /*!
      * @brief Calculates the coefficient vectors
@@ -119,7 +119,7 @@ namespace CORE::UTILS
      * @param[in] c  solution vector of linear system that defines the polynomial coefficients of
      *               the cubic spline interpolation, i.e. coefficient vector #c_
      */
-    void setup_internal_vectors(const CORE::LINALG::SerialDenseVector& c);
+    void setup_internal_vectors(const Core::LinAlg::SerialDenseVector& c);
 
     /*!
      * @brief solves linear system \f$ \boldsymbol{A} \vec{c} = \vec{b} \f$
@@ -128,8 +128,8 @@ namespace CORE::UTILS
      * @param[out] c solution vector, equals coefficient vector #c_
      * @param[in]  b right-hand side vector
      */
-    void solve_linear_system(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& c,
-        CORE::LINALG::SerialDenseVector& b) const;
+    void solve_linear_system(Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& c,
+        Core::LinAlg::SerialDenseVector& b) const;
 
     //! zeroth-order coefficients for cubic spline interpolation
     std::vector<double> a_;
@@ -146,7 +146,7 @@ namespace CORE::UTILS
     //! sampling points for cubic spline interpolation
     std::vector<double> x_;
   };
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

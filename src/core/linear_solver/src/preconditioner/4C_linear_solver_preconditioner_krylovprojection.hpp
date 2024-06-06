@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINEAR_SOLVER
+namespace Core::LinearSolver
 {
   /// krylov projection for undefined pressure value in incompressible fluids
   /*!
@@ -32,7 +32,7 @@ namespace CORE::LINEAR_SOLVER
   {
    public:
     KrylovProjectionPreconditioner(Teuchos::RCP<PreconditionerTypeBase> preconditioner,
-        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
+        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
 
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
         Epetra_MultiVector* b) override;
@@ -44,15 +44,15 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<PreconditionerTypeBase> preconditioner_;
 
     /// Peter's projector object that does the actual work
-    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;
+    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;
 
     /// linear operator that calls a "real" preconditioning operator and does
     /// a projection afterwards.
-    Teuchos::RCP<CORE::LINALG::LinalgProjectedOperator> a_;
+    Teuchos::RCP<Core::LinAlg::LinalgProjectedOperator> a_;
 
     Teuchos::RCP<Epetra_Operator> p_;
   };
-}  // namespace CORE::LINEAR_SOLVER
+}  // namespace Core::LinearSolver
 
 FOUR_C_NAMESPACE_CLOSE
 

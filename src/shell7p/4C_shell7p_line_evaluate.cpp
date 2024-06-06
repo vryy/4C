@@ -16,10 +16,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-int DRT::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // set the interface ptr in the parent element
   parent_element()->set_params_interface_ptr(params);
@@ -28,7 +28,7 @@ int DRT::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& params,
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
   std::vector<double> displacements(dof_index_array.size());
-  CORE::FE::ExtractMyValues(*disp, displacements, dof_index_array);
+  Core::FE::ExtractMyValues(*disp, displacements, dof_index_array);
 
   // get values and switches from the condition
   const auto* onoff = &condition.parameters().Get<std::vector<int>>("onoff");
@@ -59,22 +59,22 @@ int DRT::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& params,
 
   // element geometry update - currently only material configuration
   const int numnode = num_node();
-  CORE::LINALG::SerialDenseMatrix x(numnode, num_dim_);
+  Core::LinAlg::SerialDenseMatrix x(numnode, num_dim_);
   material_configuration(x);
 
   // integration parameters
-  const CORE::FE::IntegrationPoints1D intpoints(CORE::FE::GaussRule1D::line_2point);
-  CORE::LINALG::SerialDenseVector shape_functions(numnode);
-  CORE::LINALG::SerialDenseMatrix derivatives(1, numnode);
-  const CORE::FE::CellType shape = Shape();
+  const Core::FE::IntegrationPoints1D intpoints(Core::FE::GaussRule1D::line_2point);
+  Core::LinAlg::SerialDenseVector shape_functions(numnode);
+  Core::LinAlg::SerialDenseMatrix derivatives(1, numnode);
+  const Core::FE::CellType shape = Shape();
 
   // integration
   for (int gp = 0; gp < intpoints.NumPoints(); ++gp)
   {
     // get shape functions and derivatives of element surface
     const double e = intpoints.qxg[gp][0];
-    CORE::FE::shape_function_1D(shape_functions, e, shape);
-    CORE::FE::shape_function_1D_deriv1(derivatives, e, shape);
+    Core::FE::shape_function_1D(shape_functions, e, shape);
+    Core::FE::shape_function_1D_deriv1(derivatives, e, shape);
 
     // covariant basis vectors and metric of shell body
     // g1,g2,g3 stored in Jacobian matrix  = (g1,g2,g3)
@@ -94,7 +94,7 @@ int DRT::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& params,
         if (functnum > 0)
         {
           // calculate reference position of gaussian point
-          CORE::LINALG::SerialDenseMatrix gp_coord(1, num_dim_);
+          Core::LinAlg::SerialDenseMatrix gp_coord(1, num_dim_);
           gp_coord.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, shape_functions, x, 0.0);
 
           // write coordinates in another datatype
@@ -103,8 +103,8 @@ int DRT::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& params,
           const double* coordgpref = gp_coord2;  // needed for function evaluation
 
           // evaluate function at current gauss point
-          functfac = GLOBAL::Problem::Instance()
-                         ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+          functfac = Global::Problem::Instance()
+                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                          .Evaluate(coordgpref, time, i);
         }
 
@@ -122,11 +122,11 @@ int DRT::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& params,
 }
 
 
-void DRT::ELEMENTS::Shell7pLine::line_integration(double& dL,
-    const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& derivatives)
+void Discret::ELEMENTS::Shell7pLine::line_integration(double& dL,
+    const Core::LinAlg::SerialDenseMatrix& x, const Core::LinAlg::SerialDenseMatrix& derivatives)
 {
   // compute dXYZ / drs
-  CORE::LINALG::SerialDenseMatrix dxyzdrs(1, num_dim_);
+  Core::LinAlg::SerialDenseMatrix dxyzdrs(1, num_dim_);
   dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, derivatives, x, 0.0);
   dL = 0.0;
 

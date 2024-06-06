@@ -22,36 +22,36 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 namespace CONTACT
 {
   class Interface;
   class AbstractStrategy;
-  namespace AUG
+  namespace Aug
   {
     typedef std::map<int, double> plain_double_map;
     typedef std::map<int, plain_double_map> plain_map_map;
 
     typedef std::vector<Teuchos::RCP<CONTACT::AbstractStrategy>> plain_strategy_set;
     typedef std::vector<Teuchos::RCP<CONTACT::Interface>> plain_interface_set;
-    typedef std::vector<Teuchos::RCP<CORE::LINALG::Solver>> plain_lin_solver_set;
+    typedef std::vector<Teuchos::RCP<Core::LinAlg::Solver>> plain_lin_solver_set;
     typedef std::vector<plain_interface_set> plain_interface_sets;
-    typedef std::vector<FourC::INPAR::CONTACT::SolvingStrategy> plain_strattype_set;
+    typedef std::vector<FourC::Inpar::CONTACT::SolvingStrategy> plain_strattype_set;
 
 #if defined(INSERT_AND_SORT)
-    typedef CORE::GEN::Pairedvector<int, double, GEN::insert_and_sort_policy<int, double>>
+    typedef Core::Gen::Pairedvector<int, double, Gen::insert_and_sort_policy<int, double>>
         Deriv1stMap;
-    typedef CORE::GEN::pairedmatrix<int, double, GEN::insert_and_sort_policy<int, double>>
+    typedef Core::Gen::pairedmatrix<int, double, Gen::insert_and_sort_policy<int, double>>
         Deriv2ndMap;
 #elif defined(QUICK_INSERT)
-    typedef CORE::GEN::quick_pairedvector<int, double> Deriv1stMap;
-    typedef CORE::GEN::quick_pairedmatrix<int, double> Deriv2ndMap;
+    typedef Core::Gen::quick_pairedvector<int, double> Deriv1stMap;
+    typedef Core::Gen::quick_pairedmatrix<int, double> Deriv2ndMap;
 #else
-    typedef GEN::default_pairedvector<int, double> Deriv1stMap;
-    typedef GEN::default_pairedmatrix<int, double> Deriv2ndMap;
+    typedef Gen::default_pairedvector<int, double> Deriv1stMap;
+    typedef Gen::default_pairedmatrix<int, double> Deriv2ndMap;
 #endif
 
     typedef std::vector<Deriv1stMap> Deriv1stVecMap;
@@ -75,7 +75,7 @@ namespace CONTACT
  *  \author hiermeier \date 04/17 */
 #define CONTACT_FUNC_NAME contact_func_name(__PRETTY_FUNCTION__)
 
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 FOUR_C_NAMESPACE_CLOSE

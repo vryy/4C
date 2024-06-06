@@ -31,18 +31,19 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  * Constructor
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::LubricationEleCalc(const std::string& disname)
-    : lubricationpara_(
-          DRT::ELEMENTS::LubricationEleParameter::Instance(disname)),  // standard parameter list
-      eprenp_(true),                                                   // initialized to zero
-      xsi_(true),                                                      // initialized to zero
-      xyze_(true),                                                     // initialized to zero
-      funct_(true),                                                    // initialized to zero
-      deriv_(true),                                                    // initialized to zero
-      derxy_(true),                                                    // initialized to zero
-      xjm_(true),                                                      // initialized to zero
-      xij_(true),                                                      // initialized to zero
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::LubricationEleCalc(
+    const std::string& disname)
+    : lubricationpara_(Discret::ELEMENTS::LubricationEleParameter::Instance(
+          disname)),  // standard parameter list
+      eprenp_(true),  // initialized to zero
+      xsi_(true),     // initialized to zero
+      xyze_(true),    // initialized to zero
+      funct_(true),   // initialized to zero
+      deriv_(true),   // initialized to zero
+      derxy_(true),   // initialized to zero
+      xjm_(true),     // initialized to zero
+      xij_(true),     // initialized to zero
       eheinp_(true),
       eheidotnp_(true),
       edispnp_(true),
@@ -71,32 +72,32 @@ DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::LubricationEleCalc(const st
 /*----------------------------------------------------------------------*
  | singleton access method                                  wirtz 10/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::LubricationEleCalc<distype, probdim>*
-DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(const std::string& disname)
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::LubricationEleCalc<distype, probdim>*
+Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const std::string& disname)
       {
         return std::unique_ptr<LubricationEleCalc<distype, probdim>>(
             new LubricationEleCalc<distype, probdim>(disname));
       });
 
-  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  * Action type: Evaluate                                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Evaluate(CORE::Elements::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::Evaluate(Core::Elements::Element* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   //--------------------------------------------------------------------------------
   // preparations for element
@@ -124,15 +125,15 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Evaluate(CORE::Elements
  * of the residual wrt. the discrete film height (only used for monolithic
  * EHL problems)
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateEHLMon(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateEHLMon(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   //--------------------------------------------------------------------------------
   // preparations for element
@@ -162,9 +163,9 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateEHLMon(
 /*----------------------------------------------------------------------*
  | setup element evaluation                                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::SetupCalc(
-    CORE::Elements::Element* ele, DRT::Discretization& discretization)
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::SetupCalc(
+    Core::Elements::Element* ele, Discret::Discretization& discretization)
 {
   // get element coordinates
   read_element_coordinates(ele);
@@ -180,12 +181,12 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::SetupCalc(
 /*----------------------------------------------------------------------*
  | read element coordinates                                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::read_element_coordinates(
-    const CORE::Elements::Element* ele)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::read_element_coordinates(
+    const Core::Elements::Element* ele)
 {
   // Directly copy the coordinates since in 3D the transformation is just the identity
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze_);
 
   return;
 }  // LubricationEleCalc::read_element_coordinates
@@ -193,10 +194,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::read_element_coordinat
 /*----------------------------------------------------------------------*
  | extract element based or nodal values
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_node_values(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_node_values(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // 1. Extract the average tangential velocity
 
@@ -216,7 +217,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_no
       lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
   // extract local vel from global state vector
-  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*vel, eAvTangVel_, lmvel);
+  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*vel, eAvTangVel_, lmvel);
 
   if (lubricationpara_->ModifiedReynolds())
   {
@@ -234,7 +235,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_no
         lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
     // extract local vel from global state vector
-    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*velrel, eRelTangVel_, lmvel);
+    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*velrel, eRelTangVel_, lmvel);
   }
 
   // 2. In case of ale, extract the displacements of the element nodes and update the nodal
@@ -258,7 +259,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_no
         lmdisp[inode * nsd_ + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
+    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     xyze_ += edispnp_;
@@ -282,7 +283,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_no
       lmheight[inode * nsd_ + idim] = la[ndsheight].lm_[inode * numheightdofpernode + idim];
 
   // extract local height from global state vector
-  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*height, eheinp_, la[ndsheight].lm_);
+  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*height, eheinp_, la[ndsheight].lm_);
 
   // 3.1. Extract the film height time derivative at the element node
   if (lubricationpara_->AddSqz())
@@ -304,7 +305,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_no
             la[ndsheightdot].lm_[inode * numheightdotdofpernode + idim];
 
     // extract local height from global state vector
-    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(
+    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(
         *heightdot, eheidotnp_, la[ndsheightdot].lm_);
   }
   // 4. Extract the pressure field at the element nodes
@@ -317,7 +318,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_no
   const std::vector<int>& lm = la[0].lm_;
 
   // extract the local values at the element nodes
-  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
+  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
   return;
 }
@@ -325,11 +326,11 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_and_no
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 wirtz 10/15 |
 *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::sysmat(
-    CORE::Elements::Element* ele,           ///< the element whose matrix is calculated
-    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
-    CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::sysmat(
+    Core::Elements::Element* ele,           ///< the element whose matrix is calculated
+    Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
+    Core::LinAlg::SerialDenseVector& erhs   ///< element rhs to calculate
 )
 {
   //----------------------------------------------------------------------
@@ -350,7 +351,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::sysmat(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       LUBRICATION::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -369,7 +370,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::sysmat(
     calc_height_dot_at_int_point(heightdotint);
 
     // calculate average surface velocity of the contacting bodies at Integration point
-    CORE::LINALG::Matrix<nsd_, 1> avrvel(true);  // average surface velocity, initialized to zero
+    Core::LinAlg::Matrix<nsd_, 1> avrvel(true);  // average surface velocity, initialized to zero
     calc_avr_vel_at_int_point(avrvel);
 
     //----------------------------------------------------------------------
@@ -388,12 +389,12 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::sysmat(
       if (lubricationpara_->PureLub())
         FOUR_C_THROW("pure lubrication is not implemented for modified Reynolds equation");
       // calculate relative surface velocity of the contacting bodies at Integration point
-      CORE::LINALG::Matrix<nsd_, 1> relvel(true);  // relative surface velocity, initialized to zero
+      Core::LinAlg::Matrix<nsd_, 1> relvel(true);  // relative surface velocity, initialized to zero
       calc_rel_vel_at_int_point(relvel);
 
       // calculate pressure flow factor at Integration point
-      // CORE::LINALG::Matrix<nsd_, 1> pflowfac(true);  // Pressure flow factor, initialized to zero
-      // CORE::LINALG::Matrix<nsd_, 1> pflowfacderiv(true);
+      // Core::LinAlg::Matrix<nsd_, 1> pflowfac(true);  // Pressure flow factor, initialized to zero
+      // Core::LinAlg::Matrix<nsd_, 1> pflowfacderiv(true);
       calc_p_flow_fac_at_int_point(pflowfac_, pflowfacderiv_, heightint);
 
       // calculate shear flow factor at Integration point
@@ -439,10 +440,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::sysmat(
   }  // end loop Gauss points
 }
 
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::matrixfor_ehl_mon(
-    CORE::Elements::Element* ele,  ///< the element whose matrix is calculated
-    CORE::LINALG::SerialDenseMatrix& ematheight, CORE::LINALG::SerialDenseMatrix& ematvel)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::matrixfor_ehl_mon(
+    Core::Elements::Element* ele,  ///< the element whose matrix is calculated
+    Core::LinAlg::SerialDenseMatrix& ematheight, Core::LinAlg::SerialDenseMatrix& ematvel)
 {
   //----------------------------------------------------------------------
   // get material parameters (evaluation at element center)
@@ -462,7 +463,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::matrixfor_ehl_mon(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       LUBRICATION::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -477,7 +478,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::matrixfor_ehl_mon(
     calc_height_at_int_point(heightint);
 
     // calculate average surface velocity of the contacting bodies at Integration point
-    CORE::LINALG::Matrix<nsd_, 1> avrvel(true);  // average surface velocity, initialized to zero
+    Core::LinAlg::Matrix<nsd_, 1> avrvel(true);  // average surface velocity, initialized to zero
     calc_avr_vel_at_int_point(avrvel);
 
     //----------------------------------------------------------------------
@@ -485,7 +486,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::matrixfor_ehl_mon(
     //----------------------------------------------------------------------
     get_material_params(ele, densn, densnp, densam, visc, dvisc, iquad);
 
-    const CORE::LINALG::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
+    const Core::LinAlg::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
     const double roughness = lubricationpara_->RoughnessDeviation();
     // std::cout << "roughness is equal to check::" << roughness << std::endl;
 
@@ -493,7 +494,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::matrixfor_ehl_mon(
     {
       // FOUR_C_THROW("we should not be here");
       // calculate relative surface velocity of the contacting bodies at Integration point
-      CORE::LINALG::Matrix<nsd_, 1> relvel(true);  // relative surface velocity, initialized to zero
+      Core::LinAlg::Matrix<nsd_, 1> relvel(true);  // relative surface velocity, initialized to zero
       calc_rel_vel_at_int_point(relvel);
 
       // calculate pressure flow factor at Integration point
@@ -619,8 +620,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::matrixfor_ehl_mon(
 /*------------------------------------------------------------------------------*
  | set internal variables                                           wirtz 10/15 |
  *------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::set_internal_variables_for_mat_and_rhs()
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype,
+    probdim>::set_internal_variables_for_mat_and_rhs()
 {
   lubricationvarmanager_->set_internal_variables(funct_, derxy_, eprenp_);
   return;
@@ -629,9 +631,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::set_internal_variables
 /*------------------------------------------------------------------------------*
  | set internal variables (pressure flow factor)                   Faraji 02/19 |
  *------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_p_flow_fac_at_int_point(
-    CORE::LINALG::Matrix<nsd_, 1>& pflowfac, CORE::LINALG::Matrix<nsd_, 1>& pflowfacderiv,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_p_flow_fac_at_int_point(
+    Core::LinAlg::Matrix<nsd_, 1>& pflowfac, Core::LinAlg::Matrix<nsd_, 1>& pflowfacderiv,
     const double heightint)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
@@ -650,8 +652,8 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_p_flow_fac_at_int
 /*------------------------------------------------------------------------------*
  | set internal variables  (shear flow factor)                     Faraji 02/19 |
  *------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_s_flow_fac_at_int_point(
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_s_flow_fac_at_int_point(
     double& sflowfac, double& sflowfacderiv, const double heightint)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
@@ -668,9 +670,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_s_flow_fac_at_int
 /*----------------------------------------------------------------------*
  |  get the material constants  (private)                     wirtz 10/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_material_params(
-    const CORE::Elements::Element* ele,  //!< the element we are dealing with
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::get_material_params(
+    const Core::Elements::Element* ele,  //!< the element we are dealing with
     double& densn,                       //!< density at t_(n)
     double& densnp,                      //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,                      //!< density at t_(n+alpha_M)
@@ -680,7 +682,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_material_params(
 )
 {
   // get the material
-  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = ele->Material();
 
   materials(material, densn, densnp, densam, visc, dvisc, iquad);
 
@@ -690,9 +692,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_material_params(
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                   wirtz 10/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::materials(
-    const Teuchos::RCP<CORE::MAT::Material> material,  //!< pointer to current material
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::materials(
+    const Teuchos::RCP<Core::Mat::Material> material,  //!< pointer to current material
     double& densn,                                     //!< density at t_(n)
     double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,                                    //!< density at t_(n+alpha_M)
@@ -704,7 +706,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::materials(
 {
   switch (material->MaterialType())
   {
-    case CORE::Materials::m_lubrication:
+    case Core::Materials::m_lubrication:
       mat_lubrication(material, densn, densnp, densam, visc, dvisc, iquad);
       break;
     default:
@@ -717,9 +719,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::materials(
 /*----------------------------------------------------------------------*
  |  Material Lubrication                                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::mat_lubrication(
-    const Teuchos::RCP<CORE::MAT::Material> material,  //!< pointer to current material
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::mat_lubrication(
+    const Teuchos::RCP<Core::Mat::Material> material,  //!< pointer to current material
     double& densn,                                     //!< density at t_(n)
     double& densnp,                                    //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,                                    //!< density at t_(n+alpha_M)
@@ -728,8 +730,8 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::mat_lubrication(
     const int iquad                                    //!< id of current gauss point (default = -1)
 )
 {
-  const Teuchos::RCP<MAT::LubricationMat>& actmat =
-      Teuchos::rcp_dynamic_cast<MAT::LubricationMat>(material);
+  const Teuchos::RCP<Mat::LubricationMat>& actmat =
+      Teuchos::rcp_dynamic_cast<Mat::LubricationMat>(material);
   // get constant viscosity
 
   // double pressure = 0.0;
@@ -748,8 +750,8 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::mat_lubrication(
 /*------------------------------------------------------------------- *
  |  calculate linearization of the Laplacian (weak form)
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_form(
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_form(
     double& val,   //!< value of linearization of weak laplacian
     const int vi,  //!< node index for the weighting function
     const int ui   //!< node index for the shape function
@@ -766,12 +768,12 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_for
 /*------------------------------------------------------------------- *
  |  calculate linearization of the Laplacian (weak form)
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_form(
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_form(
     double& val,   //!< value of linearization of weak laplacian
     const int vi,  //!< node index for the weighting function
     const int ui,  //!< node index for the shape function
-    const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
+    const Core::LinAlg::Matrix<nsd_, 1> pflowfac)
 {
   // FOUR_C_THROW("we should not be here");
   val = 0.0;
@@ -786,10 +788,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_for
 /*------------------------------------------------------------------- *
  |  calculate the Laplacian (weak form)
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_form_rhs(
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_form_rhs(
     double& val,                                   //!< value of weak laplacian
-    const CORE::LINALG::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
+    const Core::LinAlg::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
     const int vi                                   //!< node index for the weighting function
 )
 {
@@ -804,12 +806,12 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_for
 /*------------------------------------------------------------------- *
  |  calculate the Laplacian (weak form)
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_form_rhs(
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_form_rhs(
     double& val,                                   //!< value of weak laplacian
-    const CORE::LINALG::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
+    const Core::LinAlg::Matrix<nsd_, 1>& gradpre,  //!< pressure gradient at gauss point
     const int vi,                                  //!< node index for the weighting function
-    const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
+    const Core::LinAlg::Matrix<nsd_, 1> pflowfac)
 {
   // FOUR_C_THROW("we should not be here");
   val = 0.0;
@@ -823,9 +825,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::get_laplacian_weak_for
 /*------------------------------------------------------------------- *
  |  calculation of Poiseuille element matrix
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_mat_psl(
-    CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_mat_psl(
+    Core::LinAlg::SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
     const double height)
 {
   // Poiseuille term
@@ -845,16 +847,16 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_mat_psl(
 /*-----------------------------------------------------------------*
  | contribution of pressure dependent viscosity                    |
  *-----------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_mat_psl_vis(
-    CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_mat_psl_vis(
+    Core::LinAlg::SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
     const double height, const double dviscosity_dp)
 {
   // Poiseuille term (pressure dependent viscosity)
 
   const double fac_pslvisc =
       timefacfac * (1 / (12 * viscosity * viscosity)) * height * height * height * dviscosity_dp;
-  const CORE::LINALG::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
+  const Core::LinAlg::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
 
   for (int vi = 0; vi < nen_; ++vi)
   {
@@ -873,10 +875,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_mat_psl_vis(
 /*------------------------------------------------------------------- *
  |  calculation of Poiseuille element matrix           Faraji  02/19  |
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_mat_psl(
-    CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
-    const double height, const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_mat_psl(
+    Core::LinAlg::SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
+    const double height, const Core::LinAlg::Matrix<nsd_, 1> pflowfac)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
     FOUR_C_THROW("There is no pressure flow factor in classical reynolds Equ.");
@@ -898,15 +900,15 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_mat_psl(
 /*------------------------------------------------------------------- *
  |  calculation of Poiseuille rhs matrix
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_psl(
-    CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double viscosity,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_psl(
+    Core::LinAlg::SerialDenseVector& erhs, const double rhsfac, const double viscosity,
     const double height)
 {
   // Poiseuille rhs term
   const double fac_rhs_psl = rhsfac * (1 / (12 * viscosity)) * height * height * height;
 
-  const CORE::LINALG::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
+  const Core::LinAlg::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
 
   for (int vi = 0; vi < nen_; ++vi)
   {
@@ -920,17 +922,17 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_psl(
 /*------------------------------------------------------------------- *
  |  calculation of Poiseuille rhs matrix              Faraji   02/19  |
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_psl(
-    CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double viscosity,
-    const double height, const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_psl(
+    Core::LinAlg::SerialDenseVector& erhs, const double rhsfac, const double viscosity,
+    const double height, const Core::LinAlg::Matrix<nsd_, 1> pflowfac)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
     FOUR_C_THROW("There is no pressure flow factor in classical reynolds Equ.");
   // Poiseuille rhs term
   const double fac_rhs_psl = rhsfac * (1 / (12 * viscosity)) * height * height * height;
 
-  const CORE::LINALG::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
+  const Core::LinAlg::Matrix<nsd_, 1>& gradpre = lubricationvarmanager_->GradPre();
 
   for (int vi = 0; vi < nen_; ++vi)
   {
@@ -944,10 +946,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_psl(
 /*------------------------------------------------------------------- *
  |  calculation of Wedge rhs matrix
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_wdg(
-    CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double height,
-    const CORE::LINALG::Matrix<nsd_, 1> velocity)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_wdg(
+    Core::LinAlg::SerialDenseVector& erhs, const double rhsfac, const double height,
+    const Core::LinAlg::Matrix<nsd_, 1> velocity)
 {
   // Wedge rhs term
   const double fac_rhs_wdg = rhsfac * height;
@@ -968,9 +970,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_wdg(
 /*------------------------------------------------------------------- *
  |  calculation of Squeeze rhs matrix                         Faraji  |
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_sqz(
-    CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double heightdot)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_sqz(
+    Core::LinAlg::SerialDenseVector& erhs, const double rhsfac, const double heightdot)
 {
   if (!lubricationpara_->AddSqz()) FOUR_C_THROW("You chosed NOT to add the squeeze term! WATCHOUT");
   // Squeeze rhs term
@@ -986,10 +988,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_sqz(
 /*------------------------------------------------------------------- *
  |  calculation of shear rhs matrix                     Faraji 02/19  |
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_shear(
-    CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
-    const CORE::LINALG::Matrix<nsd_, 1> velocity, const double sflowfac)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_shear(
+    Core::LinAlg::SerialDenseVector& erhs, const double rhsfac,
+    const Core::LinAlg::Matrix<nsd_, 1> velocity, const double sflowfac)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
     FOUR_C_THROW("There is no shear term in classical reynolds Equ.");
@@ -1013,9 +1015,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rhs_shear(
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at int. point   wirtz 10/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::eval_shape_func_and_derivs_at_int_point(
-    const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints,  ///< integration points
+template <Core::FE::CellType distype, int probdim>
+double
+Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::eval_shape_func_and_derivs_at_int_point(
+    const Core::FE::IntPointsAndWeights<nsd_ele_>& intpoints,  ///< integration points
     const int iquad                                            ///< id of current Gauss point
 )
 {
@@ -1042,17 +1045,17 @@ double DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::eval_shape_func_and_
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives in parameter space wirtz 10/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-double
-DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::eval_shape_func_and_derivs_in_parameter_space()
+template <Core::FE::CellType distype, int probdim>
+double Discret::ELEMENTS::LubricationEleCalc<distype,
+    probdim>::eval_shape_func_and_derivs_in_parameter_space()
 {
   double det = 0.0;
 
   if (nsd_ == nsd_ele_)  // standard case
   {
     // shape functions and their first derivatives
-    CORE::FE::shape_function<distype>(xsi_, funct_);
-    CORE::FE::shape_function_deriv1<distype>(xsi_, deriv_);
+    Core::FE::shape_function<distype>(xsi_, funct_);
+    Core::FE::shape_function_deriv1<distype>(xsi_, deriv_);
 
 
     // compute Jacobian matrix and determinant
@@ -1078,20 +1081,20 @@ DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::eval_shape_func_and_derivs_
   }
   else  // element dimension is smaller than problem dimension -> mannifold
   {
-    static CORE::LINALG::Matrix<nsd_ele_, nen_> deriv_red;
+    static Core::LinAlg::Matrix<nsd_ele_, nen_> deriv_red;
 
     // shape functions and their first derivatives
-    CORE::FE::shape_function<distype>(xsi_, funct_);
-    CORE::FE::shape_function_deriv1<distype>(xsi_, deriv_red);
+    Core::FE::shape_function<distype>(xsi_, funct_);
+    Core::FE::shape_function_deriv1<distype>(xsi_, deriv_red);
 
     //! metric tensor at integration point
-    static CORE::LINALG::Matrix<nsd_ele_, nsd_ele_> metrictensor;
-    static CORE::LINALG::Matrix<nsd_, 1> normalvec;
+    static Core::LinAlg::Matrix<nsd_ele_, nsd_ele_> metrictensor;
+    static Core::LinAlg::Matrix<nsd_, 1> normalvec;
 
     // the metric tensor and the area of an infinitesimal surface/line element
     // optional: get unit normal at integration point as well
     const bool throw_error_if_negative_determinant(true);
-    CORE::FE::ComputeMetricTensorForBoundaryEle<distype, nsd_>(
+    Core::FE::ComputeMetricTensorForBoundaryEle<distype, nsd_>(
         xyze_, deriv_red, metrictensor, det, throw_error_if_negative_determinant, &normalvec);
 
     if (det < 1E-16)
@@ -1099,7 +1102,7 @@ DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::eval_shape_func_and_derivs_
 
     // transform the derivatives and Jacobians to the higher dimensional coordinates(problem
     // dimension)
-    static CORE::LINALG::Matrix<nsd_ele_, nsd_> xjm_red;
+    static Core::LinAlg::Matrix<nsd_ele_, nsd_> xjm_red;
     xjm_red.MultiplyNT(deriv_red, xyze_);
 
     for (int i = 0; i < nsd_; i++)
@@ -1142,8 +1145,8 @@ DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::eval_shape_func_and_derivs_
 /*-----------------------------------------------------------------------*
   |  get the lubrication height interpolated at the Int Point
   *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_height_at_int_point(
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_height_at_int_point(
     double& heightint  //!< lubrication height at Int point
 )
 {
@@ -1160,8 +1163,8 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_height_at_int_poi
 /*-----------------------------------------------------------------------*
   |  get the lubrication heightDot interpolated at the Int Point    Faraji|
   *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_height_dot_at_int_point(
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_height_dot_at_int_point(
     double& heightdotint  //!< lubrication heightDot at Int point
 )
 {
@@ -1180,9 +1183,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_height_dot_at_int
   |  get the average velocity of the contacting bodies interpolated at   |
   |  the Int Point
   *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_avr_vel_at_int_point(
-    CORE::LINALG::Matrix<nsd_, 1>& avrvel  //!< average surface velocity at Int point
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_avr_vel_at_int_point(
+    Core::LinAlg::Matrix<nsd_, 1>& avrvel  //!< average surface velocity at Int point
 )
 {
   // interpolate the velocities at the integration point
@@ -1195,9 +1198,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_avr_vel_at_int_po
   |  get the relative velocity of the contacting bodies interpolated at   |
   |  the Int Point
   *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rel_vel_at_int_point(
-    CORE::LINALG::Matrix<nsd_, 1>& relvel  //!< relative surface velocity at Int point
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rel_vel_at_int_point(
+    Core::LinAlg::Matrix<nsd_, 1>& relvel  //!< relative surface velocity at Int point
 )
 {
   // interpolate the velocities at the integration point
@@ -1209,21 +1212,21 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rel_vel_at_int_po
 /*----------------------------------------------------------------------*
  | evaluate service routine                                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateService(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateService(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // setup
   if (SetupCalc(ele, discretization) == -1) return 0;
 
   // check for the action parameter
-  const LUBRICATION::Action action = CORE::UTILS::GetAsEnum<LUBRICATION::Action>(params, "action");
+  const LUBRICATION::Action action = Core::UTILS::GetAsEnum<LUBRICATION::Action>(params, "action");
 
   // evaluate action
   evaluate_action(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
@@ -1235,15 +1238,15 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateService(
 /*----------------------------------------------------------------------*
  | evaluate action                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, const LUBRICATION::Action& action,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, const LUBRICATION::Action& action,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   //(for now) only first dof set considered
   const std::vector<int>& lm = la[0].lm_;
@@ -1258,7 +1261,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(
       // need current solution
       Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
       if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
       cal_error_compared_to_analyt_solution(ele, params, elevec1_epetra);
 
@@ -1274,7 +1277,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(
       // -> extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
       if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
       // calculate pressures and domain integral
       calculate_pressures(ele, elevec1_epetra, inverting);
@@ -1295,12 +1298,12 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(
 /*----------------------------------------------------------------------*
   |  calculate error compared to analytical solution        wirtz 10/15 |
   *---------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared_to_analyt_solution(
-    const CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    CORE::LINALG::SerialDenseVector& errors)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared_to_analyt_solution(
+    const Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Core::LinAlg::SerialDenseVector& errors)
 {
-  if (CORE::UTILS::GetAsEnum<LUBRICATION::Action>(params, "action") != LUBRICATION::calc_error)
+  if (Core::UTILS::GetAsEnum<LUBRICATION::Action>(params, "action") != LUBRICATION::calc_error)
     FOUR_C_THROW("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------
@@ -1309,14 +1312,14 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared_to_
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       LUBRICATION::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const INPAR::LUBRICATION::CalcError errortype =
-      CORE::UTILS::GetAsEnum<INPAR::LUBRICATION::CalcError>(params, "calcerrorflag");
+  const Inpar::LUBRICATION::CalcError errortype =
+      Core::UTILS::GetAsEnum<Inpar::LUBRICATION::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
-    case INPAR::LUBRICATION::calcerror_byfunction:
+    case Inpar::LUBRICATION::calcerror_byfunction:
     {
       const int errorfunctno = params.get<int>("error function number");
 
@@ -1324,9 +1327,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared_to_
       double pre_exact(0.0);
       double deltapre(0.0);
       //! spatial gradient of current pressure value
-      CORE::LINALG::Matrix<nsd_, 1> gradpre(true);
-      CORE::LINALG::Matrix<nsd_, 1> gradpre_exact(true);
-      CORE::LINALG::Matrix<nsd_, 1> deltagradpre(true);
+      Core::LinAlg::Matrix<nsd_, 1> gradpre(true);
+      Core::LinAlg::Matrix<nsd_, 1> gradpre_exact(true);
+      Core::LinAlg::Matrix<nsd_, 1> deltagradpre(true);
 
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
@@ -1335,7 +1338,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared_to_
 
         // get coordinates at integration point
         // gp reference coordinates
-        CORE::LINALG::Matrix<nsd_, 1> xyzint(true);
+        Core::LinAlg::Matrix<nsd_, 1> xyzint(true);
         xyzint.Multiply(xyze_, funct_);
 
         // function evaluation requires a 3D position vector!!
@@ -1348,13 +1351,13 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared_to_
         // spatial gradient of current pressure value
         gradpre.Multiply(derxy_, eprenp_);
 
-        pre_exact = GLOBAL::Problem::Instance()
-                        ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+        pre_exact = Global::Problem::Instance()
+                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                         .Evaluate(position, t, 0);
 
         std::vector<double> gradpre_exact_vec =
-            GLOBAL::Problem::Instance()
-                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+            Global::Problem::Instance()
+                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                 .evaluate_spatial_derivative(position, t, 0);
 
         if (gradpre_exact_vec.size())
@@ -1408,18 +1411,18 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared_to_
   }  // switch(errortype)
 
   return;
-}  // DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::cal_error_compared_to_analyt_solution
+}  // Discret::ELEMENTS::LubricationEleCalc<distype,probdim>::cal_error_compared_to_analyt_solution
 
 /*---------------------------------------------------------------------*
 |  calculate pressure(s) and domain integral               wirtz 10/15 |
 *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calculate_pressures(
-    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& pressures,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calculate_pressures(
+    const Core::Elements::Element* ele, Core::LinAlg::SerialDenseVector& pressures,
     const bool inverting)
 {
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       LUBRICATION::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
@@ -1459,23 +1462,23 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::calculate_pressures(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::line2, 1>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::line3, 1>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::line3, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::line3, 3>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::line2, 1>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::line3, 1>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::line3, 2>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::line3, 3>;
 
 // 2D elements
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::tri3, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::tri6, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::tri6, 3>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::quad4, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::quad8, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::quad9, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<CORE::FE::CellType::quad9, 3>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::tri3, 2>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::tri6, 2>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::tri6, 3>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::quad4, 2>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::quad8, 2>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::quad9, 2>;
+template class Discret::ELEMENTS::LubricationEleCalc<Core::FE::CellType::quad9, 3>;
 
 FOUR_C_NAMESPACE_CLOSE

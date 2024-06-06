@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-MAT::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMaterialParams(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMaterialParams(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : BeamReissnerElastHyperMaterialParams(matdata),
       yield_stress_n_(matdata->Get<double>("YIELDN")),
       yield_stress_m_(matdata->Get<double>("YIELDM")),
@@ -58,13 +58,13 @@ MAT::PAR::BeamReissnerElastPlasticMaterialParams::BeamReissnerElastPlasticMateri
 }
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material>
-MAT::PAR::BeamReissnerElastPlasticMaterialParams::create_material()
+Teuchos::RCP<Core::Mat::Material>
+Mat::PAR::BeamReissnerElastPlasticMaterialParams::create_material()
 {
   /* all the different parameter sets (Reissner/Kirchhoff/..., 'classic'/'by modes') are used to
    * parameterize the same constitutive relations based on a hyperelastic stored energy function
    * formulated for cross-section resultants which are implemented in BeamElastHyperMaterial */
-  Teuchos::RCP<CORE::MAT::Material> matobject;
+  Teuchos::RCP<Core::Mat::Material> matobject;
 
   if (Uses_FAD())
   {
@@ -73,17 +73,18 @@ MAT::PAR::BeamReissnerElastPlasticMaterialParams::create_material()
         "differentiation!");
   }
   else
-    matobject = Teuchos::rcp(new MAT::BeamPlasticMaterial<double>(this));
+    matobject = Teuchos::rcp(new Mat::BeamPlasticMaterial<double>(this));
   return matobject;
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-CORE::COMM::ParObject* MAT::BeamElastPlasticMaterialType<T>::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::BeamElastPlasticMaterialType<T>::Create(
+    const std::vector<char>& data)
 {
   // create material from packed data
-  MAT::BeamPlasticMaterial<T>* matobject = new MAT::BeamPlasticMaterial<T>();
+  Mat::BeamPlasticMaterial<T>* matobject = new Mat::BeamPlasticMaterial<T>();
   matobject->Unpack(data);
   return matobject;
 }
@@ -91,14 +92,14 @@ CORE::COMM::ParObject* MAT::BeamElastPlasticMaterialType<T>::Create(const std::v
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-MAT::BeamElastPlasticMaterialType<T> MAT::BeamElastPlasticMaterialType<T>::instance_;
+Mat::BeamElastPlasticMaterialType<T> Mat::BeamElastPlasticMaterialType<T>::instance_;
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-MAT::BeamPlasticMaterial<T>::BeamPlasticMaterial(
-    MAT::PAR::BeamReissnerElastPlasticMaterialParams* params)
-    : MAT::BeamElastHyperMaterial<T>(params)
+Mat::BeamPlasticMaterial<T>::BeamPlasticMaterial(
+    Mat::PAR::BeamReissnerElastPlasticMaterialParams* params)
+    : Mat::BeamElastHyperMaterial<T>(params)
 {
   // empty constructor
 }
@@ -107,7 +108,7 @@ MAT::BeamPlasticMaterial<T>::BeamPlasticMaterial(
  *-----------------------------------------------------------------------------------------------*/
 
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::Setup(int numgp_force, int numgp_moment)
+void Mat::BeamPlasticMaterial<T>::Setup(int numgp_force, int numgp_moment)
 {
   c_n_eff_.resize(numgp_force);
   c_m_eff_.resize(numgp_moment);
@@ -131,29 +132,29 @@ void MAT::BeamPlasticMaterial<T>::Setup(int numgp_force, int numgp_moment)
 
   for (int gp = 0; gp < numgp_force; gp++)
   {
-    c_n_eff_[gp] = CORE::LINALG::Matrix<3, 3, T>(true);
-    gammaplastconv_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
-    gammaplastnew_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
+    c_n_eff_[gp] = Core::LinAlg::Matrix<3, 3, T>(true);
+    gammaplastconv_[gp] = Core::LinAlg::Matrix<3, 1, T>(true);
+    gammaplastnew_[gp] = Core::LinAlg::Matrix<3, 1, T>(true);
     gammaplastaccum_[gp] = 0;
     effyieldstress_n_[gp] = 0;
     delta_kappaplast_[gp] = 0;
-    delta_gammaplast_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
-    deltastress_n_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
+    delta_gammaplast_[gp] = Core::LinAlg::Matrix<3, 1, T>(true);
+    deltastress_n_[gp] = Core::LinAlg::Matrix<3, 1, T>(true);
     stress_n_[gp] = 0;
   }
 
   for (int gp = 0; gp < numgp_moment; gp++)
   {
-    c_m_eff_[gp] = CORE::LINALG::Matrix<3, 3, T>(true);
-    kappaplastconv_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
-    kappaplastnew_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
+    c_m_eff_[gp] = Core::LinAlg::Matrix<3, 3, T>(true);
+    kappaplastconv_[gp] = Core::LinAlg::Matrix<3, 1, T>(true);
+    kappaplastnew_[gp] = Core::LinAlg::Matrix<3, 1, T>(true);
     kappaplastaccum_[gp] = 0;
     effyieldstress_m_[gp] = 0;
     normstress_m_[gp] = 0;
     deltastress_m_[gp] = 0;
-    kappaelast_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
-    kappaelastflow_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
-    elastic_curvature_[gp] = CORE::LINALG::Matrix<3, 1, T>(true);
+    kappaelast_[gp] = Core::LinAlg::Matrix<3, 1, T>(true);
+    kappaelastflow_[gp] = Core::LinAlg::Matrix<3, 1, T>(true);
+    elastic_curvature_[gp] = Core::LinAlg::Matrix<3, 1, T>(true);
   }
 
   numgp_force_ = numgp_force;
@@ -163,9 +164,9 @@ void MAT::BeamPlasticMaterial<T>::Setup(int numgp_force, int numgp_moment)
  *-----------------------------------------------------------------------------------------------*/
 // Pack data
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::BeamPlasticMaterial<T>::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -192,11 +193,11 @@ void MAT::BeamPlasticMaterial<T>::Pack(CORE::COMM::PackBuffer& data) const
  *-----------------------------------------------------------------------------------------------*/
 // Unpack data
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
+void Mat::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   int matid;
   this->ExtractfromPack(position, data, matid);
@@ -211,16 +212,16 @@ void MAT::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
 
   this->set_parameter(nullptr);
 
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
 
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
 
 
-      this->set_parameter(static_cast<MAT::PAR::BeamReissnerElastPlasticMaterialParams*>(mat));
+      this->set_parameter(static_cast<Mat::PAR::BeamReissnerElastPlasticMaterialParams*>(mat));
     }
 
   if (position != data.size())
@@ -230,9 +231,9 @@ void MAT::BeamPlasticMaterial<T>::Unpack(const std::vector<char>& data)
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::evaluate_force_contributions_to_stress(
-    CORE::LINALG::Matrix<3, 1, T>& stressN, const CORE::LINALG::Matrix<3, 3, T>& CN,
-    const CORE::LINALG::Matrix<3, 1, T>& Gamma, const unsigned int gp)
+void Mat::BeamPlasticMaterial<T>::evaluate_force_contributions_to_stress(
+    Core::LinAlg::Matrix<3, 1, T>& stressN, const Core::LinAlg::Matrix<3, 3, T>& CN,
+    const Core::LinAlg::Matrix<3, 1, T>& Gamma, const unsigned int gp)
 {
   //*************Begin: Plasticity of strains in axial direction
 
@@ -240,12 +241,12 @@ void MAT::BeamPlasticMaterial<T>::evaluate_force_contributions_to_stress(
   if (this->Params().GetYieldStressN() < 0.0)
   {
     // compute material stresses by multiplying strains with constitutive matrix
-    MAT::BeamElastHyperMaterial<T>::evaluate_force_contributions_to_stress(stressN, CN, Gamma, gp);
+    Mat::BeamElastHyperMaterial<T>::evaluate_force_contributions_to_stress(stressN, CN, Gamma, gp);
   }
   else
   {
     // material elastic strain
-    CORE::LINALG::Matrix<3, 1, T> Gammaelast(true);
+    Core::LinAlg::Matrix<3, 1, T> Gammaelast(true);
 
     // compute elastic strain
     for (int i = 0; i < 3; i++)
@@ -263,7 +264,7 @@ void MAT::BeamPlasticMaterial<T>::evaluate_force_contributions_to_stress(
 
       delta_gammaplast_[gp](0) =
           ((CN(0, 0) - c_n_eff_[gp](0, 0)) / CN(0, 0) * deltastress_n_[gp](0) / CN(0, 0)) *
-          CORE::FADUTILS::Signum(stressN(0));
+          Core::FADUtils::Signum(stressN(0));
 
       gammaplastnew_[gp](0) = gammaplastconv_[gp](0) + delta_gammaplast_[gp](0);
 
@@ -283,9 +284,9 @@ void MAT::BeamPlasticMaterial<T>::evaluate_force_contributions_to_stress(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::evaluate_moment_contributions_to_stress(
-    CORE::LINALG::Matrix<3, 1, T>& stressM, const CORE::LINALG::Matrix<3, 3, T>& CM,
-    const CORE::LINALG::Matrix<3, 1, T>& Cur, const unsigned int gp)
+void Mat::BeamPlasticMaterial<T>::evaluate_moment_contributions_to_stress(
+    Core::LinAlg::Matrix<3, 1, T>& stressM, const Core::LinAlg::Matrix<3, 3, T>& CM,
+    const Core::LinAlg::Matrix<3, 1, T>& Cur, const unsigned int gp)
 {
   //*************Begin: Plasticity of curvatures
 
@@ -293,12 +294,12 @@ void MAT::BeamPlasticMaterial<T>::evaluate_moment_contributions_to_stress(
   if (this->Params().GetYieldStressM() < 0.0)
   {
     // compute material stresses by multiplying curvature with constitutive matrix
-    MAT::BeamElastHyperMaterial<T>::evaluate_moment_contributions_to_stress(stressM, CM, Cur, gp);
+    Mat::BeamElastHyperMaterial<T>::evaluate_moment_contributions_to_stress(stressM, CM, Cur, gp);
   }
   else
   {
     //! copy of material curvature K (but first entry is 0 if torsional plasticity is turned off)
-    CORE::LINALG::Matrix<3, 1, T> kappa{true};
+    Core::LinAlg::Matrix<3, 1, T> kappa{true};
 
     // If torsional plasticity is turned on, use full curvature vector for plasticity,
     // else, continue with reduced curvature vector (first entry is zero)
@@ -367,10 +368,10 @@ void MAT::BeamPlasticMaterial<T>::evaluate_moment_contributions_to_stress(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::compute_constitutive_parameter(
-    CORE::LINALG::Matrix<3, 3, T>& C_N, CORE::LINALG::Matrix<3, 3, T>& C_M)
+void Mat::BeamPlasticMaterial<T>::compute_constitutive_parameter(
+    Core::LinAlg::Matrix<3, 3, T>& C_N, Core::LinAlg::Matrix<3, 3, T>& C_M)
 {
-  MAT::BeamElastHyperMaterial<T>::compute_constitutive_parameter(C_N, C_M);
+  Mat::BeamElastHyperMaterial<T>::compute_constitutive_parameter(C_N, C_M);
 
   for (unsigned int gp = 0; gp < numgp_force_; gp++)
   {
@@ -398,7 +399,7 @@ void MAT::BeamPlasticMaterial<T>::compute_constitutive_parameter(
  *-----------------------------------------------------------------------------------------------*/
 
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::Update()
+void Mat::BeamPlasticMaterial<T>::Update()
 {
   for (unsigned int gp = 0; gp < numgp_force_; gp++)
   {
@@ -432,7 +433,7 @@ void MAT::BeamPlasticMaterial<T>::Update()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::Reset()
+void Mat::BeamPlasticMaterial<T>::Reset()
 {
   gammaplastnew_ = gammaplastconv_;
   kappaplastnew_ = kappaplastconv_;
@@ -440,8 +441,8 @@ void MAT::BeamPlasticMaterial<T>::Reset()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::get_constitutive_matrix_of_forces_material_frame(
-    CORE::LINALG::Matrix<3, 3, T>& C_N) const
+void Mat::BeamPlasticMaterial<T>::get_constitutive_matrix_of_forces_material_frame(
+    Core::LinAlg::Matrix<3, 3, T>& C_N) const
 {
   // defining material constitutive matrix CN between Gamma and N
   // according to Jelenic 1999, section 2.4
@@ -455,8 +456,8 @@ void MAT::BeamPlasticMaterial<T>::get_constitutive_matrix_of_forces_material_fra
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::get_constitutive_matrix_of_moments_material_frame(
-    CORE::LINALG::Matrix<3, 3, T>& C_M) const
+void Mat::BeamPlasticMaterial<T>::get_constitutive_matrix_of_moments_material_frame(
+    Core::LinAlg::Matrix<3, 3, T>& C_M) const
 {
   // defining material constitutive matrix CM between curvature and moment
   // according to Jelenic 1999, section 2.4
@@ -470,14 +471,14 @@ void MAT::BeamPlasticMaterial<T>::get_constitutive_matrix_of_moments_material_fr
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-double MAT::BeamPlasticMaterial<T>::get_translational_mass_inertia_factor() const
+double Mat::BeamPlasticMaterial<T>::get_translational_mass_inertia_factor() const
 {
   return this->Params().get_translational_mass_inertia();
 }
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-double MAT::BeamPlasticMaterial<T>::get_interaction_radius() const
+double Mat::BeamPlasticMaterial<T>::get_interaction_radius() const
 {
   return this->Params().get_interaction_radius();
 }
@@ -486,8 +487,8 @@ double MAT::BeamPlasticMaterial<T>::get_interaction_radius() const
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::get_hardening_constitutive_matrix_of_forces_material_frame(
-    CORE::LINALG::Matrix<3, 3, T>& CN_eff) const
+void Mat::BeamPlasticMaterial<T>::get_hardening_constitutive_matrix_of_forces_material_frame(
+    Core::LinAlg::Matrix<3, 3, T>& CN_eff) const
 {
   CN_eff.Clear();
 
@@ -499,8 +500,8 @@ void MAT::BeamPlasticMaterial<T>::get_hardening_constitutive_matrix_of_forces_ma
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::get_hardening_constitutive_matrix_of_moments_material_frame(
-    CORE::LINALG::Matrix<3, 3, T>& CM_eff) const
+void Mat::BeamPlasticMaterial<T>::get_hardening_constitutive_matrix_of_moments_material_frame(
+    Core::LinAlg::Matrix<3, 3, T>& CM_eff) const
 {
   CM_eff.Clear();
   if (this->Params().get_torsion_plasticity())
@@ -514,7 +515,7 @@ void MAT::BeamPlasticMaterial<T>::get_hardening_constitutive_matrix_of_moments_m
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::get_effective_yield_stress_n(
+void Mat::BeamPlasticMaterial<T>::get_effective_yield_stress_n(
     T& eff_yieldN, T init_yieldN, T CN_0, T CN_eff_0, const unsigned int gp) const
 {
   eff_yieldN = init_yieldN + (CN_0 * CN_eff_0) / (CN_0 - CN_eff_0) * gammaplastaccum_[gp];
@@ -524,7 +525,7 @@ void MAT::BeamPlasticMaterial<T>::get_effective_yield_stress_n(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::get_effective_yield_stress_m(
+void Mat::BeamPlasticMaterial<T>::get_effective_yield_stress_m(
     T& eff_yieldM, T init_yieldM, T CM_1, T CM_eff_1, const unsigned int gp) const
 {
   eff_yieldM = init_yieldM + (CM_1 * CM_eff_1) / (CM_1 - CM_eff_1) * kappaplastaccum_[gp];
@@ -533,14 +534,14 @@ void MAT::BeamPlasticMaterial<T>::get_effective_yield_stress_m(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::get_stiffness_matrix_of_moments(
-    CORE::LINALG::Matrix<3, 3, T>& stiffM, const CORE::LINALG::Matrix<3, 3, T>& C_M, const int gp)
+void Mat::BeamPlasticMaterial<T>::get_stiffness_matrix_of_moments(
+    Core::LinAlg::Matrix<3, 3, T>& stiffM, const Core::LinAlg::Matrix<3, 3, T>& C_M, const int gp)
 {
   /* compute spatial stresses and constitutive matrix from material ones according to Jelenic
    * 1999, page 148, paragraph between (2.22) and (2.23) and Romero 2004, (3.10)*/
 
   if (this->Params().GetYieldStressM() < 0 || normstress_m_[gp] + 10e-10 < effyieldstress_m_[gp])
-    MAT::BeamElastHyperMaterial<T>::get_stiffness_matrix_of_moments(stiffM, C_M, gp);
+    Mat::BeamElastHyperMaterial<T>::get_stiffness_matrix_of_moments(stiffM, C_M, gp);
   else
   {
     // Compute stiffness matrix for plastic regime:
@@ -598,8 +599,8 @@ void MAT::BeamPlasticMaterial<T>::get_stiffness_matrix_of_moments(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamPlasticMaterial<T>::get_stiffness_matrix_of_forces(
-    CORE::LINALG::Matrix<3, 3, T>& stiffN, const CORE::LINALG::Matrix<3, 3, T>& C_N, const int gp)
+void Mat::BeamPlasticMaterial<T>::get_stiffness_matrix_of_forces(
+    Core::LinAlg::Matrix<3, 3, T>& stiffN, const Core::LinAlg::Matrix<3, 3, T>& C_N, const int gp)
 {
   if (this->Params().GetYieldStressN() < 0.0 || stress_n_[gp] < effyieldstress_n_[gp])
   {
@@ -613,8 +614,8 @@ void MAT::BeamPlasticMaterial<T>::get_stiffness_matrix_of_forces(
 
 
 // explicit template instantiations
-template class MAT::BeamPlasticMaterial<double>;
+template class Mat::BeamPlasticMaterial<double>;
 
-template class MAT::BeamElastPlasticMaterialType<double>;
+template class Mat::BeamElastPlasticMaterialType<double>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                           hoermann 09/15 |
  *----------------------------------------------------------------------*/
-SCATRA::HDGResultTest::HDGResultTest(const Teuchos::RCP<ScaTraTimIntImpl> timint)
+ScaTra::HDGResultTest::HDGResultTest(const Teuchos::RCP<ScaTraTimIntImpl> timint)
     : ScaTraResultTest::ScaTraResultTest(timint),
       scatratiminthdg_(Teuchos::rcp_dynamic_cast<const TimIntHDG>(timint))
 
@@ -30,9 +30,9 @@ SCATRA::HDGResultTest::HDGResultTest(const Teuchos::RCP<ScaTraTimIntImpl> timint
 /*----------------------------------------------------------------------*
  | get nodal result to be tested                         hoermann 09/15 |
  *----------------------------------------------------------------------*/
-double SCATRA::HDGResultTest::result_node(
+double ScaTra::HDGResultTest::result_node(
     const std::string quantity,  //! name of quantity to be tested
-    CORE::Nodes::Node* node      //! node carrying the result to be tested
+    Core::Nodes::Node* node      //! node carrying the result to be tested
 ) const
 {
   // initialize variable for result
@@ -57,6 +57,6 @@ double SCATRA::HDGResultTest::result_node(
     FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
-}  // SCATRA::HDGResultTest::ResultNode
+}  // ScaTra::HDGResultTest::ResultNode
 
 FOUR_C_NAMESPACE_CLOSE

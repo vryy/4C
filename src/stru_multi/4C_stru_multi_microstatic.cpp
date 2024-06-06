@@ -39,13 +39,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)|
  *----------------------------------------------------------------------*/
-STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
+MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     : microdisnum_(microdisnum), V0_(V0)
 {
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  discret_ = GLOBAL::Problem::Instance(microdisnum_)->GetDis("structure");
+  discret_ = Global::Problem::Instance(microdisnum_)->GetDis("structure");
 
   // set degrees of freedom in the discretization
   if (!discret_->Filled()) discret_->fill_complete();
@@ -58,12 +58,12 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // while other parameters (like output options, convergence checks)
   // can be used individually from the microscale input file
   const Teuchos::ParameterList& sdyn_micro =
-      GLOBAL::Problem::Instance(microdisnum_)->structural_dynamic_params();
+      Global::Problem::Instance(microdisnum_)->structural_dynamic_params();
   const Teuchos::ParameterList& sdyn_macro =
-      GLOBAL::Problem::Instance()->structural_dynamic_params();
+      Global::Problem::Instance()->structural_dynamic_params();
 
   // i/o options should be read from the corresponding micro-file
-  const Teuchos::ParameterList& ioflags = GLOBAL::Problem::Instance(microdisnum_)->IOParams();
+  const Teuchos::ParameterList& ioflags = Global::Problem::Instance(microdisnum_)->IOParams();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -76,19 +76,19 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
-      GLOBAL::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), discret_->Comm()));
+  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(
+      Global::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), discret_->Comm()));
   discret_->compute_null_space_if_necessary(solver_->Params());
 
-  INPAR::STR::PredEnum pred =
-      CORE::UTILS::IntegralValue<INPAR::STR::PredEnum>(sdyn_micro, "PREDICT");
+  Inpar::STR::PredEnum pred =
+      Core::UTILS::IntegralValue<Inpar::STR::PredEnum>(sdyn_micro, "PREDICT");
   pred_ = pred;
   combdisifres_ =
-      CORE::UTILS::IntegralValue<INPAR::STR::BinaryOp>(sdyn_micro, "NORMCOMBI_RESFDISP");
-  normtypedisi_ = CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdyn_micro, "NORM_DISP");
-  normtypefres_ = CORE::UTILS::IntegralValue<INPAR::STR::ConvNorm>(sdyn_micro, "NORM_RESF");
-  INPAR::STR::VectorNorm iternorm =
-      CORE::UTILS::IntegralValue<INPAR::STR::VectorNorm>(sdyn_micro, "ITERNORM");
+      Core::UTILS::IntegralValue<Inpar::STR::BinaryOp>(sdyn_micro, "NORMCOMBI_RESFDISP");
+  normtypedisi_ = Core::UTILS::IntegralValue<Inpar::STR::ConvNorm>(sdyn_micro, "NORM_DISP");
+  normtypefres_ = Core::UTILS::IntegralValue<Inpar::STR::ConvNorm>(sdyn_micro, "NORM_RESF");
+  Inpar::STR::VectorNorm iternorm =
+      Core::UTILS::IntegralValue<Inpar::STR::VectorNorm>(sdyn_micro, "ITERNORM");
   iternorm_ = iternorm;
 
   dt_ = sdyn_macro.get<double>("TIMESTEP");
@@ -108,23 +108,23 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   printscreen_ = (ioflags.get<int>("STDOUTEVRY"));
 
 
-  restart_ = GLOBAL::Problem::Instance()->Restart();
+  restart_ = Global::Problem::Instance()->Restart();
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
-  iodisp_ = CORE::UTILS::IntegralValue<int>(ioflags, "STRUCT_DISP");
+  iodisp_ = Core::UTILS::IntegralValue<int>(ioflags, "STRUCT_DISP");
   resevrydisp_ = sdyn_micro.get<int>("RESULTSEVRY");
-  INPAR::STR::StressType iostress =
-      CORE::UTILS::IntegralValue<INPAR::STR::StressType>(ioflags, "STRUCT_STRESS");
+  Inpar::STR::StressType iostress =
+      Core::UTILS::IntegralValue<Inpar::STR::StressType>(ioflags, "STRUCT_STRESS");
   iostress_ = iostress;
   resevrystrs_ = sdyn_micro.get<int>("RESULTSEVRY");
-  INPAR::STR::StrainType iostrain =
-      CORE::UTILS::IntegralValue<INPAR::STR::StrainType>(ioflags, "STRUCT_STRAIN");
+  Inpar::STR::StrainType iostrain =
+      Core::UTILS::IntegralValue<Inpar::STR::StrainType>(ioflags, "STRUCT_STRAIN");
   iostrain_ = iostrain;
-  INPAR::STR::StrainType ioplstrain =
-      CORE::UTILS::IntegralValue<INPAR::STR::StrainType>(ioflags, "STRUCT_PLASTIC_STRAIN");
+  Inpar::STR::StrainType ioplstrain =
+      Core::UTILS::IntegralValue<Inpar::STR::StrainType>(ioflags, "STRUCT_PLASTIC_STRAIN");
   ioplstrain_ = ioplstrain;
-  iosurfactant_ = CORE::UTILS::IntegralValue<int>(ioflags, "STRUCT_SURFACTANT");
+  iosurfactant_ = Core::UTILS::IntegralValue<int>(ioflags, "STRUCT_SURFACTANT");
 
-  isadapttol_ = (CORE::UTILS::IntegralValue<int>(sdyn_micro, "ADAPTCONV") == 1);
+  isadapttol_ = (Core::UTILS::IntegralValue<int>(sdyn_micro, "ADAPTCONV") == 1);
   adaptolbetter_ = sdyn_micro.get<double>("ADAPTCONV_BETTER");
 
   // broadcast important data that must be consistent on macro and micro scale (master and
@@ -144,51 +144,51 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // -------------------------------------------------------------------
   // create empty matrices
   // -------------------------------------------------------------------
-  stiff_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 81, true, true));
+  stiff_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 81, true, true));
 
   // -------------------------------------------------------------------
   // create empty vectors
   // -------------------------------------------------------------------
   // a zero vector of full length
-  zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
   // vector of full length; for each component
   //                /  1   i-th DOF is supported, ie Dirichlet BC
   //    vector_i =  <
   //                \  0   i-th DOF is free
-  dirichtoggle_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  dirichtoggle_ = Core::LinAlg::CreateVector(*dofrowmap, true);
   // opposite of dirichtoggle vector, ie for each component
   //                /  0   i-th DOF is supported, ie Dirichlet BC
   //    vector_i =  <
   //                \  1   i-th DOF is free
-  invtoggle_ = CORE::LINALG::CreateVector(*dofrowmap, false);
+  invtoggle_ = Core::LinAlg::CreateVector(*dofrowmap, false);
 
   // displacements D_{n+1} at new time
-  disn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  disn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // displacements D_{n+1} at old time
-  dis_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  dis_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
-  disi_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  disi_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // internal force vector F_int
-  fintn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  fintn_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // dynamic force residual
   // also known as out-of-balance-force
-  fresn_ = CORE::LINALG::CreateVector(*dofrowmap, false);
+  fresn_ = Core::LinAlg::CreateVector(*dofrowmap, false);
 
   // -------------------------------------------------------------------
   // create "empty" EAS history map
   //
   // -------------------------------------------------------------------
   {
-    lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
-    oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
-    oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
-    oldKaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
-    oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+    lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+    oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+    oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+    oldKaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+    oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
   }
 
   // -------------------------------------------------------------------
@@ -215,11 +215,11 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // microscale simulations are due to the MicroBoundary condition
   // (and not Dirichlet BC)
 
-  STRUMULTI::MicroStatic::DetermineToggle();
-  STRUMULTI::MicroStatic::SetUpHomogenization();
+  MultiScale::MicroStatic::DetermineToggle();
+  MultiScale::MicroStatic::SetUpHomogenization();
 
   // reaction force vector at different times
-  freactn_ = CORE::LINALG::CreateVector(*pdof_, true);
+  freactn_ = Core::LinAlg::CreateVector(*pdof_, true);
 
   //----------------------- compute an inverse of the dirichtoggle vector
   invtoggle_->PutScalar(1.0);
@@ -270,14 +270,14 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
     FOUR_C_THROW("Density determined from homogenization procedure equals zero!");
 
   return;
-}  // STRUMULTI::MicroStatic::MicroStatic
+}  // MultiScale::MicroStatic::MicroStatic
 
 
-void STRUMULTI::MicroStatic::Predictor(CORE::LINALG::Matrix<3, 3>* defgrd)
+void MultiScale::MicroStatic::Predictor(Core::LinAlg::Matrix<3, 3>* defgrd)
 {
-  if (pred_ == INPAR::STR::pred_constdis)
+  if (pred_ == Inpar::STR::pred_constdis)
     PredictConstDis(defgrd);
-  else if (pred_ == INPAR::STR::pred_tangdis)
+  else if (pred_ == Inpar::STR::pred_tangdis)
     PredictTangDis(defgrd);
   else
     FOUR_C_THROW("requested predictor not implemented on the micro-scale");
@@ -288,7 +288,7 @@ void STRUMULTI::MicroStatic::Predictor(CORE::LINALG::Matrix<3, 3>* defgrd)
 /*----------------------------------------------------------------------*
  |  do predictor step (public)                               mwgee 03/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd)
+void MultiScale::MicroStatic::PredictConstDis(Core::LinAlg::Matrix<3, 3>* defgrd)
 {
   // apply new displacements at DBCs -> this has to be done with the
   // mid-displacements since the given macroscopic deformation
@@ -352,16 +352,16 @@ void STRUMULTI::MicroStatic::PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   normfres_ = STR::calculate_vector_norm(iternorm_, fresn_);
 
   return;
-}  // STRUMULTI::MicroStatic::Predictor()
+}  // MultiScale::MicroStatic::Predictor()
 
 
 /*----------------------------------------------------------------------*
  |  do predictor step (public)                                  lw 01/09|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
+void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
 {
   // for displacement increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = CORE::LINALG::CreateVector(*(discret_->dof_row_map()), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
 
   // copy last converged displacements
   dbcinc->Update(1.0, *disn_, 0.0);
@@ -419,7 +419,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   {
     // linear reactions
     Teuchos::RCP<Epetra_Vector> freact =
-        CORE::LINALG::CreateVector(*(discret_->dof_row_map()), true);
+        Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
     stiff_->Multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -435,12 +435,12 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);
   stiff_->Complete();
-  CORE::LINALG::apply_dirichlet_to_system(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
+  Core::LinAlg::apply_dirichlet_to_system(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
   solver_->Reset();
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   solver_->Solve(stiff_->EpetraMatrix(), disi_, fresn_, solver_params);
@@ -518,7 +518,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::FullNewton()
+void MultiScale::MicroStatic::FullNewton()
 {
   //=================================================== equilibrium loop
   numiter_ = 0;
@@ -526,7 +526,7 @@ void STRUMULTI::MicroStatic::FullNewton()
   // if TangDis-Predictor is employed, the number of iterations needs
   // to be increased by one, since it involves already one solution of
   // the non-linear system!
-  if (pred_ == INPAR::STR::pred_tangdis) numiter_++;
+  if (pred_ == Inpar::STR::pred_tangdis) numiter_++;
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces (needed for relative convergence
@@ -541,11 +541,11 @@ void STRUMULTI::MicroStatic::FullNewton()
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
 
-    CORE::LINALG::apply_dirichlet_to_system(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
+    Core::LinAlg::apply_dirichlet_to_system(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     if (isadapttol_ && numiter_)
     {
       solver_params.nonlin_tolerance = tolfres_;
@@ -620,15 +620,15 @@ void STRUMULTI::MicroStatic::FullNewton()
   }
 
   return;
-}  // STRUMULTI::MicroStatic::FullNewton()
+}  // MultiScale::MicroStatic::FullNewton()
 
 
 /*----------------------------------------------------------------------*
  |  "prepare" output (public)                                   ly 09/11|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::prepare_output()
+void MultiScale::MicroStatic::prepare_output()
 {
-  if (resevrystrs_ and !(stepn_ % resevrystrs_) and iostress_ != INPAR::STR::stress_none)
+  if (resevrystrs_ and !(stepn_ % resevrystrs_) and iostress_ != Inpar::STR::stress_none)
   {
     // create the parameters for the discretization
     Teuchos::ParameterList p;
@@ -657,7 +657,7 @@ void STRUMULTI::MicroStatic::prepare_output()
 /*----------------------------------------------------------------------*
  |  write output (public)                                       lw 02/08|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::Output(Teuchos::RCP<CORE::IO::DiscretizationWriter> output,
+void MultiScale::MicroStatic::Output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
     const double time, const int step, const double dt)
 {
   bool isdatawritten = false;
@@ -670,20 +670,20 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<CORE::IO::DiscretizationWriter>
     output->WriteVector("displacement", dis_);
     isdatawritten = true;
 
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> emptyalpha =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(1, 1));
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> emptyalpha =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(1, 1));
 
-    CORE::COMM::PackBuffer data;
+    Core::Communication::PackBuffer data;
 
     for (int i = 0; i < discret_->ElementColMap()->NumMyElements(); ++i)
     {
       if ((*lastalpha_)[i] != Teuchos::null)
       {
-        CORE::COMM::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
+        Core::Communication::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
       }
       else
       {
-        CORE::COMM::ParObject::AddtoPack(data, *emptyalpha);
+        Core::Communication::ParObject::AddtoPack(data, *emptyalpha);
       }
     }
     data.StartPacking();
@@ -691,11 +691,11 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<CORE::IO::DiscretizationWriter>
     {
       if ((*lastalpha_)[i] != Teuchos::null)
       {
-        CORE::COMM::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
+        Core::Communication::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
       }
       else
       {
-        CORE::COMM::ParObject::AddtoPack(data, *emptyalpha);
+        Core::Communication::ParObject::AddtoPack(data, *emptyalpha);
       }
     }
     output->WriteVector("alpha", data(), *discret_->ElementColMap());
@@ -710,7 +710,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<CORE::IO::DiscretizationWriter>
   }
 
   //------------------------------------- stress/strain output
-  if (resevrystrs_ and !(step % resevrystrs_) and iostress_ != INPAR::STR::stress_none)
+  if (resevrystrs_ and !(step % resevrystrs_) and iostress_ != Inpar::STR::stress_none)
   {
     if (!isdatawritten) output->NewStep(step, time);
     isdatawritten = true;
@@ -720,13 +720,13 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<CORE::IO::DiscretizationWriter>
 
     switch (iostress_)
     {
-      case INPAR::STR::stress_cauchy:
+      case Inpar::STR::stress_cauchy:
         output->WriteVector("gauss_cauchy_stresses_xyz", *stress_, *discret_->ElementRowMap());
         break;
-      case INPAR::STR::stress_2pk:
+      case Inpar::STR::stress_2pk:
         output->WriteVector("gauss_2PK_stresses_xyz", *stress_, *discret_->ElementRowMap());
         break;
-      case INPAR::STR::stress_none:
+      case Inpar::STR::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not supported");
@@ -735,13 +735,13 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<CORE::IO::DiscretizationWriter>
 
     switch (iostrain_)
     {
-      case INPAR::STR::strain_ea:
+      case Inpar::STR::strain_ea:
         output->WriteVector("gauss_EA_strains_xyz", *strain_, *discret_->ElementRowMap());
         break;
-      case INPAR::STR::strain_gl:
+      case Inpar::STR::strain_gl:
         output->WriteVector("gauss_GL_strains_xyz", *strain_, *discret_->ElementRowMap());
         break;
-      case INPAR::STR::strain_none:
+      case Inpar::STR::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain type not supported");
@@ -750,32 +750,32 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<CORE::IO::DiscretizationWriter>
 
     switch (ioplstrain_)
     {
-      case INPAR::STR::strain_ea:
+      case Inpar::STR::strain_ea:
         output->WriteVector("gauss_pl_EA_strains_xyz", *plstrain_, *discret_->ElementRowMap());
         break;
-      case INPAR::STR::strain_gl:
+      case Inpar::STR::strain_gl:
         output->WriteVector("gauss_pl_GL_strains_xyz", *plstrain_, *discret_->ElementRowMap());
         break;
-      case INPAR::STR::strain_none:
+      case Inpar::STR::strain_none:
         break;
       default:
         FOUR_C_THROW("requested plastic strain type not supported");
         break;
     }
   }
-}  // STRUMULTI::MicroStatic::Output()
+}  // MultiScale::MicroStatic::Output()
 
 
 /*----------------------------------------------------------------------*
  |  read restart (public)                                       lw 03/08|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::read_restart(int step, Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
+void MultiScale::MicroStatic::read_restart(int step, Teuchos::RCP<Epetra_Vector> dis,
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
     std::string name)
 {
-  Teuchos::RCP<CORE::IO::InputControl> inputcontrol =
-      Teuchos::rcp(new CORE::IO::InputControl(name, true));
-  CORE::IO::DiscretizationReader reader(discret_, inputcontrol, step);
+  Teuchos::RCP<Core::IO::InputControl> inputcontrol =
+      Teuchos::rcp(new Core::IO::InputControl(name, true));
+  Core::IO::DiscretizationReader reader(discret_, inputcontrol, step);
   double time = reader.ReadDouble("time");
   int rstep = reader.ReadInt("step");
   if (rstep != step) FOUR_C_THROW("Time step on file not equal to given step");
@@ -796,10 +796,10 @@ void STRUMULTI::MicroStatic::read_restart(int step, Teuchos::RCP<Epetra_Vector> 
 }
 
 
-void STRUMULTI::MicroStatic::EvaluateMicroBC(
-    CORE::LINALG::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp)
+void MultiScale::MicroStatic::EvaluateMicroBC(
+    Core::LinAlg::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp)
 {
-  std::vector<CORE::Conditions::Condition*> conds;
+  std::vector<Core::Conditions::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
   for (auto& cond : conds)
   {
@@ -809,7 +809,7 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
     {
       // do only nodes in my row map
       if (!discret_->NodeRowMap()->MyGID(nodeid)) continue;
-      CORE::Nodes::Node* actnode = discret_->gNode(nodeid);
+      Core::Nodes::Node* actnode = discret_->gNode(nodeid);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", nodeid);
 
       // nodal coordinates
@@ -818,8 +818,8 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
       // boundary displacements are prescribed via the macroscopic
       // deformation gradient
       double disp_prescribed[3];
-      CORE::LINALG::Matrix<3, 3> Du(defgrd->A(), false);
-      CORE::LINALG::Matrix<3, 3> I(true);
+      Core::LinAlg::Matrix<3, 3> Du(defgrd->A(), false);
+      Core::LinAlg::Matrix<3, 3> I(true);
       I(0, 0) = -1.0;
       I(1, 1) = -1.0;
       I(2, 2) = -1.0;
@@ -851,14 +851,14 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
   }
 }
 
-void STRUMULTI::MicroStatic::set_state(Teuchos::RCP<Epetra_Vector> dis,
+void MultiScale::MicroStatic::set_state(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<std::vector<char>> stress,
     Teuchos::RCP<std::vector<char>> strain, Teuchos::RCP<std::vector<char>> plstrain,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKaainv,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKda)
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldalpha,
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldfeas,
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKaainv,
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKda)
 {
   dis_ = dis;
   disn_ = disn;
@@ -875,7 +875,7 @@ void STRUMULTI::MicroStatic::set_state(Teuchos::RCP<Epetra_Vector> dis,
   oldKda_ = oldKda;
 }
 
-void STRUMULTI::MicroStatic::set_time(
+void MultiScale::MicroStatic::set_time(
     const double time, const double timen, const double dt, const int step, const int stepn)
 {
   time_ = time;
@@ -885,23 +885,23 @@ void STRUMULTI::MicroStatic::set_time(
   stepn_ = stepn;
 }
 
-// Teuchos::RCP<Epetra_Vector> STRUMULTI::MicroStatic::ReturnNewDism() { return Teuchos::rcp(new
+// Teuchos::RCP<Epetra_Vector> MultiScale::MicroStatic::ReturnNewDism() { return Teuchos::rcp(new
 // Epetra_Vector(*dism_)); }
 
-void STRUMULTI::MicroStatic::ClearState()
+void MultiScale::MicroStatic::ClearState()
 {
   dis_ = Teuchos::null;
   disn_ = Teuchos::null;
 }
 
-void STRUMULTI::MicroStatic::SetEASData()
+void MultiScale::MicroStatic::SetEASData()
 {
   for (int lid = 0; lid < discret_->ElementRowMap()->NumMyElements(); ++lid)
   {
-    CORE::Elements::Element* actele = discret_->lRowElement(lid);
+    Core::Elements::Element* actele = discret_->lRowElement(lid);
 
-    if (actele->ElementType() == DRT::ELEMENTS::SoHex8Type::Instance() or
-        actele->ElementType() == DRT::ELEMENTS::SoShw6Type::Instance())
+    if (actele->ElementType() == Discret::ELEMENTS::SoHex8Type::Instance() or
+        actele->ElementType() == Discret::ELEMENTS::SoShw6Type::Instance())
     {
       // create the parameters for the discretization
       Teuchos::ParameterList p;
@@ -913,11 +913,11 @@ void STRUMULTI::MicroStatic::SetEASData()
       p.set("oldKaainv", oldKaainv_);
       p.set("oldKda", oldKda_);
 
-      CORE::LINALG::SerialDenseMatrix elematrix1;
-      CORE::LINALG::SerialDenseMatrix elematrix2;
-      CORE::LINALG::SerialDenseVector elevector1;
-      CORE::LINALG::SerialDenseVector elevector2;
-      CORE::LINALG::SerialDenseVector elevector3;
+      Core::LinAlg::SerialDenseMatrix elematrix1;
+      Core::LinAlg::SerialDenseMatrix elematrix2;
+      Core::LinAlg::SerialDenseVector elevector1;
+      Core::LinAlg::SerialDenseVector elevector2;
+      Core::LinAlg::SerialDenseVector elevector3;
       std::vector<int> lm;
 
       actele->Evaluate(
@@ -928,8 +928,8 @@ void STRUMULTI::MicroStatic::SetEASData()
 
 
 
-void STRUMULTI::MicroStatic::static_homogenization(CORE::LINALG::Matrix<6, 1>* stress,
-    CORE::LINALG::Matrix<6, 6>* cmat, CORE::LINALG::Matrix<3, 3>* defgrd, const bool mod_newton,
+void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* stress,
+    Core::LinAlg::Matrix<6, 6>* cmat, Core::LinAlg::Matrix<3, 3>* defgrd, const bool mod_newton,
     bool& build_stiff)
 {
   // determine macroscopic parameters via averaging (homogenization) of
@@ -962,7 +962,7 @@ void STRUMULTI::MicroStatic::static_homogenization(CORE::LINALG::Matrix<6, 1>* s
 
   freactn_->Scale(-1.0);
 
-  CORE::LINALG::Matrix<3, 3> P(true);
+  Core::LinAlg::Matrix<3, 3> P(true);
 
   for (int i = 0; i < 3; ++i)
   {
@@ -982,7 +982,7 @@ void STRUMULTI::MicroStatic::static_homogenization(CORE::LINALG::Matrix<6, 1>* s
 
   // determine inverse of deformation gradient
 
-  CORE::LINALG::Matrix<3, 3> F_inv(defgrd->A(), false);
+  Core::LinAlg::Matrix<3, 3> F_inv(defgrd->A(), false);
   F_inv.Invert();
 
   // convert to second Piola-Kirchhoff stresses and store them in
@@ -1015,7 +1015,7 @@ void STRUMULTI::MicroStatic::static_homogenization(CORE::LINALG::Matrix<6, 1>* s
     Epetra_MultiVector cmatpf(D_->Map(), 9);
 
     // make a copy
-    stiff_dirich_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*stiff_));
+    stiff_dirich_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*stiff_));
 
     stiff_->ApplyDirichlet(*dirichtoggle_);
 
@@ -1027,14 +1027,14 @@ void STRUMULTI::MicroStatic::static_homogenization(CORE::LINALG::Matrix<6, 1>* s
 
     // get solver parameter list of linear solver
     const Teuchos::ParameterList& solverparams =
-        GLOBAL::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber);
+        Global::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber);
 
     const auto solvertype =
-        Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
+        Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
     // create solver
-    Teuchos::RCP<CORE::LINALG::Solver> solver =
-        Teuchos::rcp(new CORE::LINALG::Solver(solverparams, discret_->Comm()));
+    Teuchos::RCP<Core::LinAlg::Solver> solver =
+        Teuchos::rcp(new Core::LinAlg::Solver(solverparams, discret_->Comm()));
 
     // prescribe rigid body modes
     discret_->compute_null_space_if_necessary(solver->Params());
@@ -1044,21 +1044,21 @@ void STRUMULTI::MicroStatic::static_homogenization(CORE::LINALG::Matrix<6, 1>* s
 
     switch (solvertype)
     {
-      case CORE::LINEAR_SOLVER::SolverType::belos:
+      case Core::LinearSolver::SolverType::belos:
       {
         // solve for 9 rhs at the same time --> thanks to Belos
-        CORE::LINALG::SolverParams solver_params;
+        Core::LinAlg::SolverParams solver_params;
         solver_params.refactor = true;
         solver_params.reset = true;
         solver->Solve(stiff_->EpetraOperator(), iterinc, rhs_, solver_params);
         break;
       }
-      case CORE::LINEAR_SOLVER::SolverType::superlu:
+      case Core::LinearSolver::SolverType::superlu:
       {
         // solve for 9 rhs iteratively
         for (int i = 0; i < rhs_->NumVectors(); i++)
         {
-          CORE::LINALG::SolverParams solver_params;
+          Core::LinAlg::SolverParams solver_params;
           solver_params.refactor = true;
           solver_params.reset = true;
           solver->Solve(stiff_->EpetraOperator(), Teuchos::rcp(((*iterinc)(i)), false),
@@ -1129,22 +1129,22 @@ void STRUMULTI::MicroStatic::static_homogenization(CORE::LINALG::Matrix<6, 1>* s
 }
 
 
-void STRUMULTI::stop_np_multiscale()
+void MultiScale::stop_np_multiscale()
 {
-  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
   int task[2] = {9, 0};
   subcomm->Broadcast(task, 2, 0);
 }
 
 
-void STRUMULTI::MicroStaticParObject::Pack(CORE::COMM::PackBuffer& data) const
+void MultiScale::MicroStaticParObject::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   AddtoPack(data, UniqueParObjectId());
 
-  const auto* micro_data = STRUMULTI::MicroStaticParObject::get_micro_static_data_ptr();
+  const auto* micro_data = MultiScale::MicroStaticParObject::get_micro_static_data_ptr();
   AddtoPack(data, micro_data->gp_);
   AddtoPack(data, micro_data->eleowner_);
   AddtoPack(data, micro_data->microdisnum_);
@@ -1154,13 +1154,13 @@ void STRUMULTI::MicroStaticParObject::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, micro_data->cmat_);
 }
 
-void STRUMULTI::MicroStaticParObject::Unpack(const std::vector<char>& data)
+void MultiScale::MicroStaticParObject::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  STRUMULTI::MicroStaticParObject::MicroStaticData micro_data{};
+  MultiScale::MicroStaticParObject::MicroStaticData micro_data{};
   ExtractfromPack(position, data, micro_data.gp_);
   ExtractfromPack(position, data, micro_data.eleowner_);
   ExtractfromPack(position, data, micro_data.microdisnum_);
@@ -1174,11 +1174,12 @@ void STRUMULTI::MicroStaticParObject::Unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
-STRUMULTI::MicroStaticParObjectType STRUMULTI::MicroStaticParObjectType::instance_;
+MultiScale::MicroStaticParObjectType MultiScale::MicroStaticParObjectType::instance_;
 
-CORE::COMM::ParObject* STRUMULTI::MicroStaticParObjectType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* MultiScale::MicroStaticParObjectType::Create(
+    const std::vector<char>& data)
 {
-  auto* micro = new STRUMULTI::MicroStaticParObject();
+  auto* micro = new MultiScale::MicroStaticParObject();
   micro->Unpack(data);
   return micro;
 }

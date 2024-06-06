@@ -25,29 +25,29 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterElch* DRT::ELEMENTS::ScaTraEleParameterElch::Instance(
+Discret::ELEMENTS::ScaTraEleParameterElch* Discret::ELEMENTS::ScaTraEleParameterElch::Instance(
     const std::string& disname  //!< name of discretization
 )
 {
   static auto singleton_map =
-      CORE::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
+      Core::UTILS::MakeSingletonMap<std::string>([](const std::string& disname)
           { return std::unique_ptr<ScaTraEleParameterElch>(new ScaTraEleParameterElch(disname)); });
 
-  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 02/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(
+Discret::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(
     const std::string& disname  //!< name of discretization
     )
     : boundaryfluxcoupling_(true),
-      equpot_(INPAR::ELCH::equpot_undefined),
+      equpot_(Inpar::ElCh::equpot_undefined),
       faraday_(0.0),
       gas_constant_(0.0),
-      epsilon_(INPAR::ELCH::epsilon_const),
+      epsilon_(Inpar::ElCh::epsilon_const),
       frt_(0.0),
       temperature_(0.0)
 {
@@ -57,15 +57,15 @@ DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterElch::SetParameters(Teuchos::ParameterList& parameters)
+void Discret::ELEMENTS::ScaTraEleParameterElch::SetParameters(Teuchos::ParameterList& parameters)
 {
   // coupling of lithium-ion flux density and electric current density at Dirichlet and Neumann
   // boundaries
   boundaryfluxcoupling_ = parameters.get<bool>("boundaryfluxcoupling");
 
   // type of closing equation for electric potential
-  equpot_ = CORE::UTILS::GetAsEnum<INPAR::ELCH::EquPot>(parameters, "equpot");
-  if (equpot_ == INPAR::ELCH::equpot_undefined)
+  equpot_ = Core::UTILS::GetAsEnum<Inpar::ElCh::EquPot>(parameters, "equpot");
+  if (equpot_ == Inpar::ElCh::equpot_undefined)
     FOUR_C_THROW("Invalid type of closing equation for electric potential!");
 
   // get parameters

@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO::DatFileUtils
+namespace Core::IO::DatFileUtils
 {
 
   /**
@@ -28,7 +28,7 @@ namespace CORE::IO::DatFileUtils
    * Print all @p possible_lines into a dat file section with given @p header.
    */
   void print_section(std::ostream& out, const std::string& header,
-      const std::vector<INPUT::LineDefinition>& possible_lines);
+      const std::vector<Input::LineDefinition>& possible_lines);
 
   /**
    * Read all lines in a @p section of @p reader that match the @p possible_lines.
@@ -37,8 +37,8 @@ namespace CORE::IO::DatFileUtils
    *
    * @see read_matching_lines_in_section()
    */
-  std::vector<INPUT::LineDefinition> read_all_lines_in_section(CORE::IO::DatFileReader& reader,
-      const std::string& section, const std::vector<INPUT::LineDefinition>& possible_lines);
+  std::vector<Input::LineDefinition> read_all_lines_in_section(Core::IO::DatFileReader& reader,
+      const std::string& section, const std::vector<Input::LineDefinition>& possible_lines);
 
 
   /**
@@ -49,11 +49,11 @@ namespace CORE::IO::DatFileUtils
    *
    * @see read_all_lines_in_section()
    */
-  std::pair<std::vector<INPUT::LineDefinition>, std::vector<std::string>>
-  read_matching_lines_in_section(CORE::IO::DatFileReader& reader, const std::string& section,
-      const std::vector<INPUT::LineDefinition>& possible_lines);
+  std::pair<std::vector<Input::LineDefinition>, std::vector<std::string>>
+  read_matching_lines_in_section(Core::IO::DatFileReader& reader, const std::string& section,
+      const std::vector<Input::LineDefinition>& possible_lines);
 
-}  // namespace CORE::IO::DatFileUtils
+}  // namespace Core::IO::DatFileUtils
 
 
 FOUR_C_NAMESPACE_CLOSE

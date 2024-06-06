@@ -24,9 +24,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Dofsets::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
-    Teuchos::RCP<DofSetInterface> sourcedofset, Teuchos::RCP<const DRT::Discretization> sourcedis,
-    const std::string& couplingcond, const std::set<int> condids)
+Core::DOFSets::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
+    Teuchos::RCP<DofSetInterface> sourcedofset,
+    Teuchos::RCP<const Discret::Discretization> sourcedis, const std::string& couplingcond,
+    const std::set<int> condids)
     : DofSetBase(),
       sourcedofset_(sourcedofset),
       targetlidtosourcegidmapping_(Teuchos::null),
@@ -43,15 +44,15 @@ CORE::Dofsets::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Dofsets::DofSetDefinedMappingWrapper::~DofSetDefinedMappingWrapper()
+Core::DOFSets::DofSetDefinedMappingWrapper::~DofSetDefinedMappingWrapper()
 {
   if (sourcedofset_ != Teuchos::null) sourcedofset_->Unregister(this);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
-    const DRT::Discretization& dis, const unsigned dspos, const int start)
+int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
+    const Discret::Discretization& dis, const unsigned dspos, const int start)
 {
   if (sourcedofset_ == Teuchos::null)
     FOUR_C_THROW("No source dof set assigned to mapping dof set!");
@@ -59,19 +60,19 @@ int CORE::Dofsets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
     FOUR_C_THROW("No source discretization assigned to mapping dof set!");
 
   // get condition which defines the coupling on target discretization
-  std::vector<CORE::Conditions::Condition*> conds;
+  std::vector<Core::Conditions::Condition*> conds;
   dis.GetCondition(couplingcond_, conds);
 
   // get condition which defines the coupling on source discretization
-  std::vector<CORE::Conditions::Condition*> conds_source;
+  std::vector<Core::Conditions::Condition*> conds_source;
   sourcedis_->GetCondition(couplingcond_, conds_source);
 
   // get the respective nodes which are in the condition
   const bool use_coupling_id = condids_.size() != 1;
   std::map<int, Teuchos::RCP<std::vector<int>>> nodes;
-  CORE::Conditions::FindConditionedNodes(dis, conds, nodes, use_coupling_id);
+  Core::Conditions::FindConditionedNodes(dis, conds, nodes, use_coupling_id);
   std::map<int, Teuchos::RCP<std::vector<int>>> nodes_source;
-  CORE::Conditions::FindConditionedNodes(*sourcedis_, conds_source, nodes_source, use_coupling_id);
+  Core::Conditions::FindConditionedNodes(*sourcedis_, conds_source, nodes_source, use_coupling_id);
 
   // map that will be filled with coupled nodes
   // mapping: target node gid to (source node gid, distance)
@@ -95,7 +96,7 @@ int CORE::Dofsets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
     if (iter_target != nodes.end()) targetnodes = *iter_target->second;
 
     // initialize search tree for search
-    CORE::COUPLING::NodeMatchingOctree nodematchingtree;
+    Core::COUPLING::NodeMatchingOctree nodematchingtree;
     nodematchingtree.Init(dis, targetnodes, 150, 1e-08);
     nodematchingtree.Setup();
 
@@ -169,7 +170,7 @@ int CORE::Dofsets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   targetlidtosourcegidmapping_->PutValue(-1);
 
   // export to column map
-  CORE::LINALG::Export(*permsourcenodevec, *targetlidtosourcegidmapping_);
+  Core::LinAlg::Export(*permsourcenodevec, *targetlidtosourcegidmapping_);
 
   // filled.
   filled_ = true;
@@ -182,7 +183,7 @@ int CORE::Dofsets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::DofSetDefinedMappingWrapper::Reset()
+void Core::DOFSets::DofSetDefinedMappingWrapper::Reset()
 {
   targetlidtosourcegidmapping_ = Teuchos::null;
   filled_ = false;
@@ -193,7 +194,7 @@ void CORE::Dofsets::DofSetDefinedMappingWrapper::Reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::DofSetDefinedMappingWrapper::Disconnect(DofSetInterface* dofset)
+void Core::DOFSets::DofSetDefinedMappingWrapper::Disconnect(DofSetInterface* dofset)
 {
   if (dofset == sourcedofset_.get())
   {
@@ -209,7 +210,7 @@ void CORE::Dofsets::DofSetDefinedMappingWrapper::Disconnect(DofSetInterface* dof
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const CORE::Nodes::Node* CORE::Dofsets::DofSetDefinedMappingWrapper::get_source_node(
+const Core::Nodes::Node* Core::DOFSets::DofSetDefinedMappingWrapper::get_source_node(
     int targetLid) const
 {
   // check

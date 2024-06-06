@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Cardiovascular0DResultTest::Cardiovascular0DResultTest(
-    UTILS::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<DRT::Discretization> discr)
-    : CORE::UTILS::ResultTest("CARDIOVASCULAR0D"),
+    UTILS::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<Discret::Discretization> discr)
+    : Core::UTILS::ResultTest("CARDIOVASCULAR0D"),
       actdisc_(discr),
       cardvasc0d_dof_(
           cardvasc0dman
@@ -43,7 +43,7 @@ Cardiovascular0DResultTest::Cardiovascular0DResultTest(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Cardiovascular0DResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void Cardiovascular0DResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   std::string quantity;
   res.ExtractString("QUANTITY", quantity);

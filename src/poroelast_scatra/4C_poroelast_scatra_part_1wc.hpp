@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace POROELASTSCATRA
+namespace PoroElastScaTra
 {
   class PoroScatraPart1WC : public PoroScatraPart
   {
@@ -79,7 +79,7 @@ namespace POROELASTSCATRA
     //! read and set fields needed for restart
     void read_restart(int restart) override;
   };
-}  // namespace POROELASTSCATRA
+}  // namespace PoroElastScaTra
 
 
 FOUR_C_NAMESPACE_CLOSE

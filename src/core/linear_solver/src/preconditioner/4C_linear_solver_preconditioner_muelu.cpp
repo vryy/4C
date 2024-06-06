@@ -52,7 +52,7 @@ using NO = Node;
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::MueLuPreconditioner::MueLuPreconditioner(Teuchos::ParameterList& muelulist)
+Core::LinearSolver::MueLuPreconditioner::MueLuPreconditioner(Teuchos::ParameterList& muelulist)
     : muelulist_(muelulist)
 {
   P_ = Teuchos::null;
@@ -62,7 +62,7 @@ CORE::LINEAR_SOLVER::MueLuPreconditioner::MueLuPreconditioner(Teuchos::Parameter
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
+void Core::LinearSolver::MueLuPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   // check whether A is a Epetra_CrsMatrix i.e. no block matrix
@@ -97,7 +97,7 @@ void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
           mueluA->getRowMap();
       Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> nullspace;
       nullspace =
-          CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(rowMap, muelulist_);
+          Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(rowMap, muelulist_);
 
       mueluOp->SetFixedBlockSize(numdf);
 
@@ -164,7 +164,7 @@ void CORE::LINEAR_SOLVER::MueLuPreconditioner::Setup(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::MueLuFluidBlockPreconditioner(
+Core::LinearSolver::MueLuFluidBlockPreconditioner::MueLuFluidBlockPreconditioner(
     Teuchos::ParameterList& muelulist)
     : MueLuPreconditioner(muelulist)
 {
@@ -172,7 +172,7 @@ CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::MueLuFluidBlockPreconditione
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::Setup(
+void Core::LinearSolver::MueLuFluidBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
@@ -182,8 +182,8 @@ void CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::Setup(
   int np = 0;     // number of pressure dofs
   int numdf = 0;  // dofs per node
 
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
-      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
+      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
   if (A == Teuchos::null) FOUR_C_THROW("Matrix is not a BlockSparseMatrix");
 
   // store operator
@@ -300,7 +300,7 @@ void CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::Setup(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::MueLuTsiBlockPreconditioner(
+Core::LinearSolver::MueLuTsiBlockPreconditioner::MueLuTsiBlockPreconditioner(
     Teuchos::ParameterList& muelulist)
     : MueLuPreconditioner(muelulist)
 {
@@ -308,13 +308,13 @@ CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::MueLuTsiBlockPreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
+void Core::LinearSolver::MueLuTsiBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
 
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
-      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
+      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
   if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
   Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
@@ -385,7 +385,7 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
         FOUR_C_THROW("Error: PDE equations of solid or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
-          CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
+          Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(
               solidmap, muelulist_.sublist("Inverse1"));
 
       int thermoDimns = thermoList.get<int>("null space: dimension", -1);
@@ -393,7 +393,7 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
         FOUR_C_THROW("Error: PDE equations of solid or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
-          CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
+          Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(
               thermomap, muelulist_.sublist("Inverse2"));
 
       MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
@@ -420,7 +420,7 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner(
+Core::LinearSolver::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner(
     Teuchos::ParameterList& muelulist)
     : MueLuPreconditioner(muelulist)
 {
@@ -428,15 +428,15 @@ CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
+void Core::LinearSolver::MueLuContactSpPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
 
   // Check whether input matrix is an actual blocked operator
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
-      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
+      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
   if (A == Teuchos::null) FOUR_C_THROW("Matrix is not a BlockSparseMatrix");
 
   // store blocked operator
@@ -474,7 +474,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
 
   if (epSlaveDofMap.is_null())
     FOUR_C_THROW(
-        "CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner: "
+        "Core::LinearSolver::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner: "
         "Interface contact map is not available!");
 
   ///////////////////////////////////////////////////////////////////////
@@ -643,7 +643,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 = Teuchos::null;
     {
       // Extract pre-computed nullspace for block (0,0) from 4C's ML parameter list
-      nullspace11 = CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
+      nullspace11 = Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(
           stridedRangeMapPrimal, contactList);
 
       // Compute default nullspace for block (1,1)
@@ -705,7 +705,7 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::MueLuBeamSolidBlockPreconditioner(
+Core::LinearSolver::MueLuBeamSolidBlockPreconditioner::MueLuBeamSolidBlockPreconditioner(
     Teuchos::ParameterList& muelulist)
     : MueLuPreconditioner(muelulist)
 {
@@ -713,7 +713,7 @@ CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::MueLuBeamSolidBlockPreco
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
+void Core::LinearSolver::MueLuBeamSolidBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
@@ -739,9 +739,9 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
       beamList.get<Teuchos::RCP<Epetra_Map>>("null space: map", Teuchos::null);
   if (beamDofRowmap == Teuchos::null) FOUR_C_THROW("Beam row map is zero!");
 
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>> Ablock =
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> Ablock =
       Teuchos::null;
-  CORE::LINALG::SplitMatrix2x2(A, Ablock, solidDofRowmap, beamDofRowmap);
+  Core::LinAlg::SplitMatrix2x2(A, Ablock, solidDofRowmap, beamDofRowmap);
 
   ///////////////////////////////////////////////////////////////////////
   // Here the actual construction of the preconditioner starts
@@ -812,15 +812,14 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
         FOUR_C_THROW("Error: PDE equations of solid or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
-          CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
-              solidmap, solidList);
+          Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(solidmap, solidList);
 
       int beamDimns = beamList.get<int>("null space: dimension", -1);
       if (beamDimns == -1 || beamDofs == -1)
         FOUR_C_THROW("Error: PDE equations of beam or null space dimension wrong.");
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
-          CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(beammap, beamList);
+          Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(beammap, beamList);
 
       MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
           xmlFileName, *(bOp->getRangeMap()->getComm()));
@@ -845,7 +844,7 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::MueLuFsiBlockPreconditioner(
+Core::LinearSolver::MueLuFsiBlockPreconditioner::MueLuFsiBlockPreconditioner(
     Teuchos::ParameterList& muelulist)
     : MueLuPreconditioner(muelulist)
 {
@@ -853,7 +852,7 @@ CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::MueLuFsiBlockPreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
+void Core::LinearSolver::MueLuFsiBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
@@ -861,8 +860,8 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
   if (create)
   {
     // check wheter input matrix is an actual blocked operator
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
-        Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
+        Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
     if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
     // split matrix into components
@@ -991,7 +990,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
       FOUR_C_THROW("Error: PDE equations of solid or null space dimension wrong.");
 
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 =
-        CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
+        Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(
             solidmap, muelulist_.sublist("Inverse1"));
 
     const int fluidDimns = fluidList.get<int>("null space: dimension", -1);
@@ -999,7 +998,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
       FOUR_C_THROW("Error: PDE equations of fluid or null space dimension wrong.");
 
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 =
-        CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
+        Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(
             fluidmap, muelulist_.sublist("Inverse2"));
 
     const int aleDimns = aleList.get<int>("null space: dimension", -1);
@@ -1007,7 +1006,7 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
       FOUR_C_THROW("Error: PDE equations of ale or null space dimension wrong.");
 
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace33 =
-        CORE::LINEAR_SOLVER::Parameters::extract_nullspace_from_parameterlist(
+        Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(
             alemap, muelulist_.sublist("Inverse3"));
 
     MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(

@@ -16,61 +16,62 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::NURBS::Wall1NurbsType DRT::ELEMENTS::NURBS::Wall1NurbsType::instance_;
+Discret::ELEMENTS::Nurbs::Wall1NurbsType Discret::ELEMENTS::Nurbs::Wall1NurbsType::instance_;
 
-DRT::ELEMENTS::NURBS::Wall1NurbsType& DRT::ELEMENTS::NURBS::Wall1NurbsType::Instance()
+Discret::ELEMENTS::Nurbs::Wall1NurbsType& Discret::ELEMENTS::Nurbs::Wall1NurbsType::Instance()
 {
   return instance_;
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::Wall1NurbsType::Create(
+    const std::vector<char>& data)
 {
-  DRT::ELEMENTS::NURBS::Wall1Nurbs* object = new DRT::ELEMENTS::NURBS::Wall1Nurbs(-1, -1);
+  Discret::ELEMENTS::Nurbs::Wall1Nurbs* object = new Discret::ELEMENTS::Nurbs::Wall1Nurbs(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Wall1NurbsType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLNURBS")
   {
     if (eledistype == "NURBS4" || eledistype == "NURBS9")
     {
-      return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id, owner));
+      return Teuchos::rcp(new Discret::ELEMENTS::Nurbs::Wall1Nurbs(id, owner));
     }
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Wall1NurbsType::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Wall1Nurbs(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::Nurbs::Wall1Nurbs(id, owner));
 }
 
-void DRT::ELEMENTS::NURBS::Wall1NurbsType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::Nurbs::Wall1NurbsType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 2;
   dimns = 3;
   nv = 2;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Nurbs::Wall1NurbsType::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::NURBS::Wall1NurbsType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::Nurbs::Wall1NurbsType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["WALLNURBS"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["WALLNURBS"];
 
-  defs["NURBS4"] = INPUT::LineDefinition::Builder()
+  defs["NURBS4"] = Input::LineDefinition::Builder()
                        .AddIntVector("NURBS4", 4)
                        .AddNamedInt("MAT")
                        .AddNamedString("KINEM")
@@ -80,7 +81,7 @@ void DRT::ELEMENTS::NURBS::Wall1NurbsType::setup_element_definition(
                        .AddNamedIntVector("GP", 2)
                        .Build();
 
-  defs["NURBS9"] = INPUT::LineDefinition::Builder()
+  defs["NURBS9"] = Input::LineDefinition::Builder()
                        .AddIntVector("NURBS9", 9)
                        .AddNamedInt("MAT")
                        .AddNamedString("KINEM")
@@ -96,8 +97,8 @@ void DRT::ELEMENTS::NURBS::Wall1NurbsType::setup_element_definition(
  |  ctor (public)                                            gammi 02/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(int id, int owner)
-    : DRT::ELEMENTS::Wall1::Wall1(id, owner)
+Discret::ELEMENTS::Nurbs::Wall1Nurbs::Wall1Nurbs(int id, int owner)
+    : Discret::ELEMENTS::Wall1::Wall1(id, owner)
 {
   SetNurbsElement() = true;
   return;
@@ -107,8 +108,8 @@ DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(int id, int owner)
  |  copy-ctor (public)                                       gammi 02/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(const DRT::ELEMENTS::NURBS::Wall1Nurbs& old)
-    : DRT::ELEMENTS::Wall1::Wall1(old)
+Discret::ELEMENTS::Nurbs::Wall1Nurbs::Wall1Nurbs(const Discret::ELEMENTS::Nurbs::Wall1Nurbs& old)
+    : Discret::ELEMENTS::Wall1::Wall1(old)
 {
   SetNurbsElement() = true;
   return;
@@ -120,9 +121,10 @@ DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(const DRT::ELEMENTS::NURBS::Wall1Nu
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
  |                                                          gammi 05/09|
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::NURBS::Wall1Nurbs::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Nurbs::Wall1Nurbs::Clone() const
 {
-  DRT::ELEMENTS::NURBS::Wall1Nurbs* newelement = new DRT::ELEMENTS::NURBS::Wall1Nurbs(*this);
+  Discret::ELEMENTS::Nurbs::Wall1Nurbs* newelement =
+      new Discret::ELEMENTS::Nurbs::Wall1Nurbs(*this);
   return newelement;
 }
 
@@ -130,7 +132,7 @@ CORE::Elements::Element* DRT::ELEMENTS::NURBS::Wall1Nurbs::Clone() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 02/09|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::Wall1Nurbs::Print(std::ostream& os) const
+void Discret::ELEMENTS::Nurbs::Wall1Nurbs::Print(std::ostream& os) const
 {
   os << "Wall1Nurbs ";
   Element::Print(os);
@@ -142,14 +144,14 @@ void DRT::ELEMENTS::NURBS::Wall1Nurbs::Print(std::ostream& os) const
  |                                                             (public) |
  |                                                          gammi 02/09 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Nurbs::Wall1Nurbs::Shape() const
 {
   switch (num_node())
   {
     case 4:
-      return CORE::FE::CellType::nurbs4;
+      return Core::FE::CellType::nurbs4;
     case 9:
-      return CORE::FE::CellType::nurbs9;
+      return Core::FE::CellType::nurbs9;
     default:
       FOUR_C_THROW("unexpected number of nodes %d", num_node());
   }
@@ -158,15 +160,16 @@ CORE::FE::CellType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 05/09|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Nurbs::Wall1Nurbs::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1>(CORE::COMM::buildLines, *this);
+  return Core::Communication::ElementBoundaryFactory<Wall1Line, Wall1>(
+      Core::Communication::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          gammi 05/09|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::NURBS::Wall1Nurbs::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Nurbs::Wall1Nurbs::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

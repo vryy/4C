@@ -16,9 +16,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ScatraMatMultiPoro
+  namespace ScaTraMatMultiPoro
   {
     /*--------------------------------------------------------------------------*/
     /*!
@@ -44,7 +44,7 @@ namespace MAT
       SpeciesType species_type; /*!< species type */
     };
 
-  }  // namespace ScatraMatMultiPoro
+  }  // namespace ScaTraMatMultiPoro
 
 
   namespace PAR
@@ -55,10 +55,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      ScatraMatMultiPoroFluid(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ScatraMatMultiPoroFluid(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// ID of fluid phase the scalar is associated with
       const int phaseID_;
@@ -80,10 +80,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      ScatraMatMultiPoroVolFrac(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ScatraMatMultiPoroVolFrac(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// ID of fluid phase the scalar is associated with
       const int phaseID_;
@@ -99,10 +99,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      ScatraMatMultiPoroSolid(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ScatraMatMultiPoroSolid(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// delta used for modelling dependency of diffusivity on
       /// (saturation*porosity)^delta
@@ -118,10 +118,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      ScatraMatMultiPoroTemperature(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ScatraMatMultiPoroTemperature(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       const int numfluidphases_;
       const int numvolfrac_;
@@ -146,7 +146,7 @@ namespace MAT
 
     static ScatraMatMultiPoroFluidType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroFluidType instance_;
@@ -159,7 +159,7 @@ namespace MAT
 
     static ScatraMatMultiPoroVolFracType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroVolFracType instance_;
@@ -172,7 +172,7 @@ namespace MAT
 
     static ScatraMatMultiPoroSolidType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroSolidType instance_;
@@ -184,7 +184,7 @@ namespace MAT
 
     static ScatraMatMultiPoroTemperatureType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroTemperatureType instance_;
@@ -198,7 +198,7 @@ namespace MAT
     ScatraMatMultiPoroFluid();
 
     /// construct the material object given material parameters
-    explicit ScatraMatMultiPoroFluid(MAT::PAR::ScatraMatMultiPoroFluid* params);
+    explicit ScatraMatMultiPoroFluid(Mat::PAR::ScatraMatMultiPoroFluid* params);
 
     //! @name Packing and Unpacking
 
@@ -223,7 +223,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -242,19 +242,19 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_scatra_multiporo_fluid;
+      return Core::Materials::m_scatra_multiporo_fluid;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraMatMultiPoroFluid(*this));
     }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return phase ID
     virtual int PhaseID() const { return params_->phaseID_; }
@@ -273,7 +273,7 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::ScatraMatMultiPoroFluid* params_;
+    Mat::PAR::ScatraMatMultiPoroFluid* params_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -285,7 +285,7 @@ namespace MAT
     ScatraMatMultiPoroVolFrac();
 
     /// construct the material object given material parameters
-    explicit ScatraMatMultiPoroVolFrac(MAT::PAR::ScatraMatMultiPoroVolFrac* params);
+    explicit ScatraMatMultiPoroVolFrac(Mat::PAR::ScatraMatMultiPoroVolFrac* params);
 
     //! @name Packing and Unpacking
 
@@ -310,7 +310,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -329,19 +329,19 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_scatra_multiporo_volfrac;
+      return Core::Materials::m_scatra_multiporo_volfrac;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraMatMultiPoroVolFrac(*this));
     }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return phase ID
     virtual int PhaseID() const { return params_->phaseID_; }
@@ -357,7 +357,7 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::ScatraMatMultiPoroVolFrac* params_;
+    Mat::PAR::ScatraMatMultiPoroVolFrac* params_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -369,7 +369,7 @@ namespace MAT
     ScatraMatMultiPoroSolid();
 
     /// construct the material object given material parameters
-    explicit ScatraMatMultiPoroSolid(MAT::PAR::ScatraMatMultiPoroSolid* params);
+    explicit ScatraMatMultiPoroSolid(Mat::PAR::ScatraMatMultiPoroSolid* params);
 
     //! @name Packing and Unpacking
 
@@ -394,7 +394,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -413,26 +413,26 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_scatra_multiporo_solid;
+      return Core::Materials::m_scatra_multiporo_solid;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraMatMultiPoroSolid(*this));
     }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return delta
     virtual double Delta() const { return params_->delta_; }
 
    private:
     /// my material parameters
-    MAT::PAR::ScatraMatMultiPoroSolid* params_;
+    Mat::PAR::ScatraMatMultiPoroSolid* params_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -444,7 +444,7 @@ namespace MAT
     ScatraMatMultiPoroTemperature();
 
     /// construct the material object given material parameters
-    explicit ScatraMatMultiPoroTemperature(MAT::PAR::ScatraMatMultiPoroTemperature* params);
+    explicit ScatraMatMultiPoroTemperature(Mat::PAR::ScatraMatMultiPoroTemperature* params);
 
     //! @name Packing and Unpacking
 
@@ -469,7 +469,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -488,19 +488,19 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_scatra_multiporo_temperature;
+      return Core::Materials::m_scatra_multiporo_temperature;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraMatMultiPoroTemperature(*this));
     }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     std::vector<double> CP_Fluid() const { return params_->cp_fluid_; }
     double CP_Fluid(int phase) const { return params_->cp_fluid_[phase]; }
@@ -516,10 +516,10 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::ScatraMatMultiPoroTemperature* params_;
+    Mat::PAR::ScatraMatMultiPoroTemperature* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 

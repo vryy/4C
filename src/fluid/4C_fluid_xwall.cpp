@@ -40,8 +40,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 04/14 |
  *----------------------------------------------------------------------*/
-FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
-    Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
+FLD::XWall::XWall(Teuchos::RCP<Discret::Discretization> dis, int nsd,
+    Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
     Teuchos::RCP<FLD::UTILS::StressManager> wssmanager)
     : discret_(dis), params_(params), mystressmanager_(wssmanager), iter_(0)
 {
@@ -55,10 +55,10 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
 
   // some exclusions and safety checks:
   if (nsd != 3) FOUR_C_THROW("Only 3D problems considered in xwall modelling!");
-  if (CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
-          INPAR::FLUID::timeint_afgenalpha &&
-      CORE::UTILS::GetAsEnum<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
-          INPAR::FLUID::timeint_npgenalpha)
+  if (Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
+          Inpar::FLUID::timeint_afgenalpha &&
+      Core::UTILS::GetAsEnum<Inpar::FLUID::TimeIntegrationScheme>(*params_, "time int algo") !=
+          Inpar::FLUID::timeint_npgenalpha)
     FOUR_C_THROW(
         "Use Af-Genalpha for time integration in combination with xwall wall modeling. There would "
         "be additional updates necessary otherwise");
@@ -69,9 +69,9 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
   std::string tauwtype = params_->sublist("WALL MODEL").get<std::string>("Tauw_Type", "constant");
 
   if (tauwtype == "constant")
-    tauwtype_ = INPAR::FLUID::constant;
+    tauwtype_ = Inpar::FLUID::constant;
   else if (tauwtype == "between_steps")
-    tauwtype_ = INPAR::FLUID::between_steps;
+    tauwtype_ = Inpar::FLUID::between_steps;
   else
     FOUR_C_THROW("unknown Tauw_Type");
 
@@ -79,11 +79,11 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
       params_->sublist("WALL MODEL").get<std::string>("Tauw_Calc_Type", "residual");
 
   if (tauwcalctype == "residual")
-    tauwcalctype_ = INPAR::FLUID::residual;
+    tauwcalctype_ = Inpar::FLUID::residual;
   else if (tauwcalctype == "gradient")
-    tauwcalctype_ = INPAR::FLUID::gradient;
+    tauwcalctype_ = Inpar::FLUID::gradient;
   else if (tauwcalctype == "gradient_to_residual")
-    tauwcalctype_ = INPAR::FLUID::gradient_to_residual;
+    tauwcalctype_ = Inpar::FLUID::gradient_to_residual;
   else
     FOUR_C_THROW("unknown Tauw_Calc_Type");
 
@@ -99,11 +99,11 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
   gp_par_ = params_->sublist("WALL MODEL").get<int>("GP_Wall_Parallel");
 
   // compute initial pressure
-  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
+  int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_fluid);
   if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
-  const CORE::MAT::PAR::Parameter* mat =
-      GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-  const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+  const Core::Mat::PAR::Parameter* mat =
+      Global::Problem::Instance()->Materials()->ParameterById(id);
+  const Mat::PAR::NewtonianFluid* actmat = static_cast<const Mat::PAR::NewtonianFluid*>(mat);
   dens_ = actmat->density_;
   visc_ = actmat->viscosity_ / dens_;  // here I want to have the kinematic viscosity
 
@@ -121,30 +121,30 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
       params_->sublist("WALL MODEL").get<std::string>("Blending_Type", "none");
 
   if (blendingtype == "none")
-    blendingtype_ = INPAR::FLUID::none;
+    blendingtype_ = Inpar::FLUID::none;
   else if (blendingtype == "ramp_function")
-    blendingtype_ = INPAR::FLUID::ramp_function;
+    blendingtype_ = Inpar::FLUID::ramp_function;
   else
     FOUR_C_THROW("unknown Blending_Type");
 
   inctauwnorm_ = 0.0;
 
   const int mlsmooth =
-      (GLOBAL::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER");
+      (Global::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER");
   if (mlsmooth != -1)
     smooth_res_aggregation_ = true;
   else
     smooth_res_aggregation_ = false;
 
   switch_step_ = params_->sublist("WALL MODEL").get<int>("Switch_Step");
-  if (tauwcalctype_ == INPAR::FLUID::gradient_to_residual && switch_step_ < 2)
+  if (tauwcalctype_ == Inpar::FLUID::gradient_to_residual && switch_step_ < 2)
     FOUR_C_THROW("provide reasonable Switch_Step if you want to use gradient_to_residual");
 
-  if (smooth_res_aggregation_ && tauwcalctype_ == INPAR::FLUID::gradient)
+  if (smooth_res_aggregation_ && tauwcalctype_ == Inpar::FLUID::gradient)
     FOUR_C_THROW(
         "smoothing of tauw works only for residual-based tauw, as the residual is smoothed");
 
-  fix_residual_on_inflow_ = CORE::UTILS::IntegralValue<int>(
+  fix_residual_on_inflow_ = Core::UTILS::IntegralValue<int>(
       params_->sublist("WALL MODEL"), "Treat_Tauw_on_Dirichlet_Inflow");
 
   // output:
@@ -166,7 +166,7 @@ FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
     std::cout << "Blending method:              " << blendingtype << std::endl;
     std::cout << "Smooth tau_w:                 " << smooth_res_aggregation_ << std::endl;
     std::cout << "Solver for tau_w smoothing:   "
-              << (GLOBAL::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER")
+              << (Global::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER")
               << std::endl;
     std::cout << "Solver for projection:        "
               << params_->sublist("WALL MODEL").get<int>("PROJECTION_SOLVER") << std::endl;
@@ -256,7 +256,7 @@ void FLD::XWall::setup()
   tauw_->PutScalar(constant_tauw_);
 
   wdistxwdis_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->NodeColMap()), true));
-  CORE::LINALG::Export(*walldist_, *wdistxwdis_);
+  Core::LinAlg::Export(*walldist_, *wdistxwdis_);
 
   tauwxwdis_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->NodeColMap()), true));
   inctauwxwdis_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->NodeColMap()), true));
@@ -295,16 +295,17 @@ void FLD::XWall::init_x_wall_maps()
     for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
     {
       int xwallgid = discret_->NodeRowMap()->GID(i);
-      CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
+      Core::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
       bool enriched = false;
 
       // check if one of the surrounding elements is xwall element
-      CORE::Elements::Element** surrele = xwallnode->Elements();
+      Core::Elements::Element** surrele = xwallnode->Elements();
       for (int k = 0; k < xwallnode->NumElement(); ++k)
       {
-        DRT::ELEMENTS::FluidXWall* xwallele = dynamic_cast<DRT::ELEMENTS::FluidXWall*>(surrele[k]);
+        Discret::ELEMENTS::FluidXWall* xwallele =
+            dynamic_cast<Discret::ELEMENTS::FluidXWall*>(surrele[k]);
 
         if (xwallele) enriched = true;
       }
@@ -317,7 +318,7 @@ void FLD::XWall::init_x_wall_maps()
   }
 
   // get Dirichlet conditions
-  std::vector<CORE::Conditions::Condition*> dircond;
+  std::vector<Core::Conditions::Condition*> dircond;
   discret_->GetCondition("FluidStressCalc", dircond);
 
   if (not dircond.empty())
@@ -365,7 +366,7 @@ void FLD::XWall::init_wall_dist()
   if (myrank_ == 0) std::cout << "- calculate wall distance...                            ";
 
   tauwcouplingmattrans_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*xwallrownodemap_, 2, false, false));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*xwallrownodemap_, 2, false, false));
   wdist_ = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeColMap()), true));
   walldist_ = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_, true));
 
@@ -374,28 +375,28 @@ void FLD::XWall::init_wall_dist()
 
   // this is very expensive in terms of memory
   // we will delete it as soon as we are ready here
-  Teuchos::RCP<DRT::Discretization> commondis = Teuchos::rcp(new DRT::Discretization(
-      (std::string) "Commondis", newcomm, GLOBAL::Problem::Instance()->NDim()));
+  Teuchos::RCP<Discret::Discretization> commondis = Teuchos::rcp(new Discret::Discretization(
+      (std::string) "Commondis", newcomm, Global::Problem::Instance()->NDim()));
 
   // loop over all column nodes of underlying problem discret and add
   for (int i = 0; i < (discret_->NodeColMap())->NumMyElements(); ++i)
   {
-    CORE::Nodes::Node* node = discret_->lColNode(i);
+    Core::Nodes::Node* node = discret_->lColNode(i);
     if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
-    Teuchos::RCP<CORE::Nodes::Node> newnode = Teuchos::rcp(node->Clone());
+    Teuchos::RCP<Core::Nodes::Node> newnode = Teuchos::rcp(node->Clone());
     commondis->AddNode(newnode);
   }
   // loop over all column elements of underlying problem discret and add
   for (int i = 0; i < (discret_->ElementColMap())->NumMyElements(); ++i)
   {
-    CORE::Elements::Element* node = discret_->lColElement(i);
+    Core::Elements::Element* node = discret_->lColElement(i);
     if (!node) FOUR_C_THROW("Cannot find ele with lid %", i);
-    Teuchos::RCP<CORE::Elements::Element> newnode = Teuchos::rcp(node->Clone());
+    Teuchos::RCP<Core::Elements::Element> newnode = Teuchos::rcp(node->Clone());
     commondis->add_element(newnode);
   }
 
   Teuchos::RCP<Epetra_Map> testrednodecolmap =
-      CORE::LINALG::AllreduceEMap(*(discret_->NodeRowMap()));
+      Core::LinAlg::AllreduceEMap(*(discret_->NodeRowMap()));
   commondis->ExportColumnNodes(*testrednodecolmap);
 
   // do not assign any dofs to save memory
@@ -407,14 +408,15 @@ void FLD::XWall::init_wall_dist()
   for (int i = 0; i < (commondis->NodeColMap())->NumMyElements(); ++i)
   {
     int gid = commondis->NodeColMap()->GID(i);
-    CORE::Nodes::Node* xwallnode = commondis->lColNode(i);
+    Core::Nodes::Node* xwallnode = commondis->lColNode(i);
     if (!xwallnode) FOUR_C_THROW("Cannot find node with lid %", i);
     int enriched = 0;
 
-    CORE::Elements::Element** surrele = xwallnode->Elements();
+    Core::Elements::Element** surrele = xwallnode->Elements();
     for (int k = 0; k < xwallnode->NumElement(); ++k)
     {
-      DRT::ELEMENTS::FluidXWall* xwallele = dynamic_cast<DRT::ELEMENTS::FluidXWall*>(surrele[k]);
+      Discret::ELEMENTS::FluidXWall* xwallele =
+          dynamic_cast<Discret::ELEMENTS::FluidXWall*>(surrele[k]);
 
       if (xwallele) enriched = 1;
     }
@@ -430,7 +432,7 @@ void FLD::XWall::init_wall_dist()
   {
     int xwallgid = xwallcolnodemap_->GID(j);
 
-    CORE::Nodes::Node* xwallnode = commondis->gNode(xwallgid);
+    Core::Nodes::Node* xwallnode = commondis->gNode(xwallgid);
     if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
     double mydist = 1.0E10;
@@ -444,7 +446,7 @@ void FLD::XWall::init_wall_dist()
 
       if (discret_->NodeRowMap()->MyGID(gid))
       {
-        CORE::Nodes::Node* node = discret_->gNode(gid);
+        Core::Nodes::Node* node = discret_->gNode(gid);
 
         if (!node) FOUR_C_THROW("ERROR: Cannot find wall node with gid %", gid);
 
@@ -479,7 +481,7 @@ void FLD::XWall::init_wall_dist()
     }
   }
 
-  CORE::LINALG::Export(*walldist_, *wdist_);
+  Core::LinAlg::Export(*walldist_, *wdist_);
   tauwcouplingmattrans_->Complete();
 
   double mean = 0.0;
@@ -511,21 +513,22 @@ void FLD::XWall::init_toggle_vector()
 
     if (discret_->NodeRowMap()->MyGID(xwallgid))  // just in case
     {
-      CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
+      Core::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
       bool fullyenriched = true;
 
       // Mortar interface
-      std::vector<CORE::Conditions::Condition*> mortarcond;
+      std::vector<Core::Conditions::Condition*> mortarcond;
       xwallnode->GetCondition("Mortar", mortarcond);
       if (not mortarcond.empty()) fullyenriched = false;
 
       // get all surrounding elements
-      CORE::Elements::Element** surrele = xwallnode->Elements();
+      Core::Elements::Element** surrele = xwallnode->Elements();
       for (int k = 0; k < xwallnode->NumElement(); ++k)
       {
-        DRT::ELEMENTS::FluidXWall* xwallele = dynamic_cast<DRT::ELEMENTS::FluidXWall*>(surrele[k]);
+        Discret::ELEMENTS::FluidXWall* xwallele =
+            dynamic_cast<Discret::ELEMENTS::FluidXWall*>(surrele[k]);
 
         if (!xwallele) fullyenriched = false;
       }
@@ -537,7 +540,7 @@ void FLD::XWall::init_toggle_vector()
       }
       else
       {
-        if (blendingtype_ != INPAR::FLUID::ramp_function)
+        if (blendingtype_ != Inpar::FLUID::ramp_function)
         {
           int err = xtoggleloc_->ReplaceMyValue(j, 0, 0.7);
           if (err != 0) FOUR_C_THROW("something went wrong");
@@ -547,8 +550,8 @@ void FLD::XWall::init_toggle_vector()
     }
   }
 
-  CORE::LINALG::Export(*xtoggleloc_, *xwalltoggle_);
-  CORE::LINALG::Export(*xtoggleloc_, *xwalltogglexwdis_);
+  Core::LinAlg::Export(*xtoggleloc_, *xwalltoggle_);
+  Core::LinAlg::Export(*xtoggleloc_, *xwalltogglexwdis_);
 
   int gcount;
   (discret_->Comm()).SumAll(&count, &gcount, 1);
@@ -568,8 +571,8 @@ void FLD::XWall::setup_x_wall_dis()
   // build a new discretization
   Teuchos::RCP<Epetra_Comm> newcomm = Teuchos::rcp(discret_->Comm().Clone());
 
-  xwdiscret_ = Teuchos::rcp(new DRT::Discretization(
-      (std::string) "xwalldis", newcomm, GLOBAL::Problem::Instance()->NDim()));
+  xwdiscret_ = Teuchos::rcp(new Discret::Discretization(
+      (std::string) "xwalldis", newcomm, Global::Problem::Instance()->NDim()));
 
   // loop over all xwall row nodes and add
   for (int i = 0; i < (discret_->NodeColMap())->NumMyElements(); ++i)
@@ -578,23 +581,23 @@ void FLD::XWall::setup_x_wall_dis()
 
     if (xwallcolnodemap_->MyGID(gid))
     {
-      CORE::Nodes::Node* node = discret_->lColNode(i);
+      Core::Nodes::Node* node = discret_->lColNode(i);
       if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
-      Teuchos::RCP<CORE::Nodes::Node> newnode = Teuchos::rcp(node->Clone());
+      Teuchos::RCP<Core::Nodes::Node> newnode = Teuchos::rcp(node->Clone());
       xwdiscret_->AddNode(newnode);
     }
   }
   // loop over all column elements of underlying problem discret and add
   for (int i = 0; i < discret_->NumMyColElements(); ++i)
   {
-    CORE::Elements::Element* ele = discret_->lColElement(i);
+    Core::Elements::Element* ele = discret_->lColElement(i);
     if (!ele) FOUR_C_THROW("Cannot find ele with lid %", i);
 
-    DRT::ELEMENTS::FluidXWall* xwallele = dynamic_cast<DRT::ELEMENTS::FluidXWall*>(ele);
+    Discret::ELEMENTS::FluidXWall* xwallele = dynamic_cast<Discret::ELEMENTS::FluidXWall*>(ele);
 
     if (!xwallele) continue;
 
-    Teuchos::RCP<CORE::Elements::Element> newele = Teuchos::rcp(ele->Clone());
+    Teuchos::RCP<Core::Elements::Element> newele = Teuchos::rcp(ele->Clone());
     xwdiscret_->add_element(newele);
   }
 
@@ -608,7 +611,7 @@ void FLD::XWall::setup_x_wall_dis()
     for (unsigned numcond = 0; numcond < allcond.size(); ++numcond)
     {
       // get condition
-      std::vector<CORE::Conditions::Condition*> actcond;
+      std::vector<Core::Conditions::Condition*> actcond;
       discret_->GetCondition(allcond[numcond], actcond);
       // loop all condition of the current type
       for (unsigned numactcond = 0; numactcond < actcond.size(); ++numactcond)
@@ -624,8 +627,8 @@ void FLD::XWall::setup_x_wall_dis()
   bool parallel = (xwdiscret_->Comm().NumProc() == 1) ? false : true;
 
   // dofs of the original discretization are used to set same dofs for the new discretization
-  Teuchos::RCP<CORE::Dofsets::DofSet> newdofset =
-      Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(discret_, parallel));
+  Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
+      Teuchos::rcp(new Core::DOFSets::TransparentDofSet(discret_, parallel));
 
   xwdiscret_->ReplaceDofSet(newdofset);
   xwdiscret_->fill_complete(true, true, true);
@@ -637,18 +640,18 @@ void FLD::XWall::setup_x_wall_dis()
     Teuchos::RCP<Epetra_Map> elemap = Teuchos::rcp(new Epetra_Map(*xwdiscret_->ElementRowMap()));
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(discret_->Comm().Clone());
 
-    Teuchos::RCP<const Epetra_CrsGraph> nodegraph = CORE::REBALANCE::BuildGraph(xwdiscret_, elemap);
+    Teuchos::RCP<const Epetra_CrsGraph> nodegraph = Core::Rebalance::BuildGraph(xwdiscret_, elemap);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));
 
     const auto& [rownodes, colnodes] =
-        CORE::REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
+        Core::Rebalance::RebalanceNodeMaps(nodegraph, rebalanceParams);
 
     // rebuild of the system with new maps
     xwdiscret_->Redistribute(*rownodes, *colnodes, false, false);
 
-    CORE::Conditions::PeriodicBoundaryConditions pbc(xwdiscret_, false);
+    Core::Conditions::PeriodicBoundaryConditions pbc(xwdiscret_, false);
     pbc.update_dofs_for_periodic_boundary_conditions();
     xwdiscret_->ReplaceDofSet(newdofset);
     xwdiscret_->fill_complete(true, true, true);
@@ -675,10 +678,10 @@ void FLD::XWall::setup_l2_projection()
       // continue only if on this proc
       if (xwdiscret_->NodeRowMap()->MyGID(gid))
       {
-        CORE::Nodes::Node* node = xwdiscret_->gNode(gid);
+        Core::Nodes::Node* node = xwdiscret_->gNode(gid);
         if (!node) FOUR_C_THROW("ERROR: Cannot find off wall node with gid %", gid);
         // make sure that periodic nodes are not assembled twice
-        std::vector<CORE::Conditions::Condition*> periodiccond;
+        std::vector<Core::Conditions::Condition*> periodiccond;
         node->GetCondition("SurfacePeriodic", periodiccond);
         // make sure that slave periodic bc are not included
         bool includedofs = true;
@@ -708,7 +711,7 @@ void FLD::XWall::setup_l2_projection()
     enrdofrowmap_ =
         Teuchos::rcp(new Epetra_Map(-1, (int)enrdf.size(), enrdf.data(), 0, xwdiscret_->Comm()));
 
-    massmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*enrdofrowmap_, 108, false, true));
+    massmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*enrdofrowmap_, 108, false, true));
 
     incveln_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
     incvelnp_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
@@ -741,28 +744,28 @@ void FLD::XWall::setup_l2_projection()
     if (solvernumber < 0) FOUR_C_THROW("provide a solver number for l2-projection");
     // get solver parameter list of linear solver
     const Teuchos::ParameterList& solverparams =
-        GLOBAL::Problem::Instance()->SolverParams(solvernumber);
+        Global::Problem::Instance()->SolverParams(solvernumber);
     const auto solvertype =
-        Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
+        Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, xwdiscret_->Comm()));
+    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, xwdiscret_->Comm()));
 
-    if (solvertype != CORE::LINEAR_SOLVER::SolverType::umfpack)
+    if (solvertype != Core::LinearSolver::SolverType::umfpack)
     {
-      if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos && myrank_ == 0)
+      if (solvertype != Core::LinearSolver::SolverType::belos && myrank_ == 0)
         std::cout
             << "\nUse Belos as solver because it can handle several right hand sides at once!\n"
             << std::endl;
-      const auto prectyp = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
-          solverparams, "AZPREC");
+      const auto prectyp =
+          Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(solverparams, "AZPREC");
       // watch out: only ILU might work right now because of compute nullspace might not work...?
       // ... test!
       switch (prectyp)
       {
-        case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml:
-        case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid:
-        case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2:
-        case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu:
+        case Core::LinearSolver::PreconditionerType::multigrid_ml:
+        case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid:
+        case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2:
+        case Core::LinearSolver::PreconditionerType::multigrid_muelu:
         {
           if (proj_)
           {  // has 3 dofs, velocity dofs
@@ -810,7 +813,7 @@ void FLD::XWall::setup_l2_projection()
             for (int i = 0; i < xwdiscret_->NumMyRowNodes(); ++i)
             {
               const unsigned int ndof = 3;
-              CORE::Nodes::Node* actnode = xwdiscret_->lRowNode(i);
+              Core::Nodes::Node* actnode = xwdiscret_->lRowNode(i);
               if (!actnode) FOUR_C_THROW("cannot find node");
               std::vector<int> dofs = xwdiscret_->Dof(0, actnode);
               std::vector<int> actdofs;
@@ -838,7 +841,7 @@ void FLD::XWall::setup_l2_projection()
           }
         }
         break;
-        case CORE::LINEAR_SOLVER::PreconditionerType::ilu:
+        case Core::LinearSolver::PreconditionerType::ilu:
           // do nothing
           break;
         default:
@@ -869,8 +872,8 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
   {
     wss = restart_wss_;
   }
-  else if (((tauwcalctype_ == INPAR::FLUID::gradient_to_residual && step >= switch_step_) ||
-               (tauwcalctype_ != INPAR::FLUID::gradient_to_residual && step > 1)))
+  else if (((tauwcalctype_ == Inpar::FLUID::gradient_to_residual && step >= switch_step_) ||
+               (tauwcalctype_ != Inpar::FLUID::gradient_to_residual && step > 1)))
   {
     if (mystressmanager_ == Teuchos::null) FOUR_C_THROW("wssmanager not available in xwall");
     // fix nodal forces on dirichlet inflow surfaces if desired
@@ -878,14 +881,14 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
   }
   switch (tauwtype_)
   {
-    case INPAR::FLUID::constant:  // works
+    case Inpar::FLUID::constant:  // works
     {
       if (step == 1) calc_mk();
       // tauw_ is constant and inctauw_ is zero
       return;
     }
     break;
-    case INPAR::FLUID::between_steps:
+    case Inpar::FLUID::between_steps:
     {
       inctauw_->PutScalar(0.0);
 
@@ -900,7 +903,7 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
       break;
   }
 
-  CORE::LINALG::Export(*tauw_, *newtauw);
+  Core::LinAlg::Export(*tauw_, *newtauw);
 
   double actmean = -1.0;
   newtauw->MeanValue(&actmean);
@@ -913,7 +916,7 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
 
   // convergence check, works only if we don't take the mean
   newtauw->PutScalar(0.0);
-  CORE::LINALG::Export(*inctauw_, *newtauw);
+  Core::LinAlg::Export(*inctauw_, *newtauw);
   newtauw->Norm2(&inctauwnorm_);
   // rescale inctauw to full increment
   if (fac_ > 1.0e-8) inctauwnorm_ /= fac_;
@@ -928,7 +931,7 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
   if (proj_)
   {
     if (myrank_ == 0) std::cout << "  L2-project... ";
-    if (tauwtype_ == INPAR::FLUID::between_steps)
+    if (tauwtype_ == Inpar::FLUID::between_steps)
     {
       l2_project_vector(veln, Teuchos::null, accn);
 
@@ -962,12 +965,12 @@ void FLD::XWall::calc_tau_w(
   Teuchos::RCP<Epetra_Vector> tauw =
       Teuchos::rcp(new Epetra_Vector(*(discret_->NodeColMap()), true));
 
-  if (tauwcalctype_ == INPAR::FLUID::gradient_to_residual && switch_step_ == step && myrank_ == 0)
+  if (tauwcalctype_ == Inpar::FLUID::gradient_to_residual && switch_step_ == step && myrank_ == 0)
     std::cout << "\n switching from gradient to residual \n" << std::endl;
 
 
-  if (tauwcalctype_ == INPAR::FLUID::residual ||
-      (tauwcalctype_ == INPAR::FLUID::gradient_to_residual && step >= switch_step_))
+  if (tauwcalctype_ == Inpar::FLUID::residual ||
+      (tauwcalctype_ == Inpar::FLUID::gradient_to_residual && step >= switch_step_))
   {
     for (int lnodeid = 0; lnodeid < dircolnodemap_->NumMyElements(); lnodeid++)
     {
@@ -975,7 +978,7 @@ void FLD::XWall::calc_tau_w(
       // continue only if on this proc
       if (discret_->NodeRowMap()->MyGID(gid))
       {
-        CORE::Nodes::Node* node = discret_->gNode(gid);
+        Core::Nodes::Node* node = discret_->gNode(gid);
         if (!node) FOUR_C_THROW("ERROR: Cannot find off wall node with gid %", gid);
 
         int firstglobaldofid = discret_->Dof(0, node, 0);
@@ -997,8 +1000,8 @@ void FLD::XWall::calc_tau_w(
       }
     }
   }
-  else if (tauwcalctype_ == INPAR::FLUID::gradient ||
-           (tauwcalctype_ == INPAR::FLUID::gradient_to_residual && step < switch_step_))
+  else if (tauwcalctype_ == Inpar::FLUID::gradient ||
+           (tauwcalctype_ == Inpar::FLUID::gradient_to_residual && step < switch_step_))
   {
     // necessary to set right state (the maps of the state vector and discretization have to be
     // equal)
@@ -1006,7 +1009,7 @@ void FLD::XWall::calc_tau_w(
         Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->dof_row_map()), true));
     Teuchos::RCP<Epetra_Vector> newtauwxwdis =
         Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->NodeRowMap()), true));
-    CORE::LINALG::Export(*velnp, *statevel);
+    Core::LinAlg::Export(*velnp, *statevel);
 
     xwdiscret_->set_state("vel", statevel);
 
@@ -1018,11 +1021,11 @@ void FLD::XWall::calc_tau_w(
     std::vector<int> lmstride;
 
     // define element matrices and vectors
-    CORE::LINALG::SerialDenseMatrix elematrix1;
-    CORE::LINALG::SerialDenseMatrix elematrix2;
-    CORE::LINALG::SerialDenseVector elevector1;
-    CORE::LINALG::SerialDenseVector elevector2;
-    CORE::LINALG::SerialDenseVector elevector3;
+    Core::LinAlg::SerialDenseMatrix elematrix1;
+    Core::LinAlg::SerialDenseMatrix elematrix2;
+    Core::LinAlg::SerialDenseVector elevector1;
+    Core::LinAlg::SerialDenseVector elevector2;
+    Core::LinAlg::SerialDenseVector elevector3;
 
     // get number of elements
     const int numele = xwdiscret_->NumMyColElements();
@@ -1037,7 +1040,7 @@ void FLD::XWall::calc_tau_w(
     // loop column elements: vector
     for (int i = 0; i < numele; ++i)
     {
-      CORE::Elements::Element* actele = xwdiscret_->lColElement(i);
+      Core::Elements::Element* actele = xwdiscret_->lColElement(i);
 
       const int numnode = actele->num_node();
 
@@ -1056,7 +1059,7 @@ void FLD::XWall::calc_tau_w(
       lm.resize(numnode);
       lmowner.resize(numnode);
 
-      CORE::Nodes::Node** nodes = actele->Nodes();
+      Core::Nodes::Node** nodes = actele->Nodes();
       for (int n = 0; n < numnode; ++n)
       {
         lm[n] = nodes[n]->Id();
@@ -1064,8 +1067,8 @@ void FLD::XWall::calc_tau_w(
       }
 
       // assembling into node maps
-      CORE::LINALG::Assemble(*newtauwxwdis, elevector1, lm, lmowner);
-      CORE::LINALG::Assemble(*timesvec, elevector2, lm, lmowner);
+      Core::LinAlg::Assemble(*newtauwxwdis, elevector1, lm, lmowner);
+      Core::LinAlg::Assemble(*timesvec, elevector2, lm, lmowner);
     }  // end element loop
 
     xwdiscret_->ClearState();
@@ -1086,7 +1089,7 @@ void FLD::XWall::calc_tau_w(
         if (err != 0) FOUR_C_THROW("something went wrong during replacemyvalue");
       }
     }
-    CORE::LINALG::Export(*newtauwxwdis, *newtauw);
+    Core::LinAlg::Export(*newtauwxwdis, *newtauw);
   }
   else
     FOUR_C_THROW("unknown tauwcalctype_");
@@ -1101,17 +1104,17 @@ void FLD::XWall::calc_tau_w(
   double meansp = 0.0;
   newtauw2->MeanValue(&meansp);
 
-  CORE::LINALG::Export(*newtauw2, *tauw);
+  Core::LinAlg::Export(*newtauw2, *tauw);
   inctauw_->Update(fac_, *tauw, -fac_);  // now this is the increment (new-old)
 
   tauw_->Update(1.0, *inctauw_, 1.0);
 
   overwrite_transferred_values();
 
-  CORE::LINALG::Export(*inctauw_, *newtauw2);
-  CORE::LINALG::Export(*newtauw2, *inctauwxwdis_);
-  CORE::LINALG::Export(*tauw_, *newtauw2);
-  CORE::LINALG::Export(*newtauw2, *tauwxwdis_);
+  Core::LinAlg::Export(*inctauw_, *newtauw2);
+  Core::LinAlg::Export(*newtauw2, *inctauwxwdis_);
+  Core::LinAlg::Export(*tauw_, *newtauw2);
+  Core::LinAlg::Export(*newtauw2, *tauwxwdis_);
 
   if (meansp < 2.0e-9)
     FOUR_C_THROW(
@@ -1138,9 +1141,9 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Epetra_Vector> veln,
   if (accn != Teuchos::null) incaccn_->PutScalar(0.0);
   if (velnp != Teuchos::null) incvelnp_->PutScalar(0.0);
 
-  CORE::LINALG::Export(*veln, *stateveln_);
-  if (accn != Teuchos::null) CORE::LINALG::Export(*accn, *stateaccn_);
-  if (velnp != Teuchos::null) CORE::LINALG::Export(*velnp, *statevelnp_);
+  Core::LinAlg::Export(*veln, *stateveln_);
+  if (accn != Teuchos::null) Core::LinAlg::Export(*accn, *stateaccn_);
+  if (velnp != Teuchos::null) Core::LinAlg::Export(*velnp, *statevelnp_);
 
   // number of right hand sides during solving
   // is the number of velocity components that is solved for
@@ -1171,12 +1174,12 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Epetra_Vector> veln,
   std::vector<int> lmstride;
 
   // define element matrices and vectors
-  CORE::LINALG::SerialDenseMatrix elematrix1;
-  CORE::LINALG::SerialDenseMatrix elematrix2;
-  CORE::LINALG::SerialDenseVector elevector1;
-  CORE::LINALG::SerialDenseVector elevectordummy;
-  CORE::LINALG::SerialDenseVector elevector2;
-  CORE::LINALG::SerialDenseVector elevector3;
+  Core::LinAlg::SerialDenseMatrix elematrix1;
+  Core::LinAlg::SerialDenseMatrix elematrix2;
+  Core::LinAlg::SerialDenseVector elevector1;
+  Core::LinAlg::SerialDenseVector elevectordummy;
+  Core::LinAlg::SerialDenseVector elevector2;
+  Core::LinAlg::SerialDenseVector elevector3;
 
   // get number of elements
   const int numele = xwdiscret_->NumMyColElements();
@@ -1184,7 +1187,7 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Epetra_Vector> veln,
   // loop column elements
   for (int i = 0; i < numele; ++i)
   {
-    CORE::Elements::Element* actele = xwdiscret_->lColElement(i);
+    Core::Elements::Element* actele = xwdiscret_->lColElement(i);
 
     const int numnode = actele->num_node();
     const int numdf = 3;
@@ -1228,7 +1231,7 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Epetra_Vector> veln,
       // copy results into Serial_DenseVector for assembling
       for (int idf = 0; idf < numnode * numdf; ++idf) elevector1(idf) = elematrix2(idf, n);
       // assemble into nth vector of MultiVector
-      CORE::LINALG::Assemble(*rhsassemble, n, elevector1, lmassemble, lmownerassemble);
+      Core::LinAlg::Assemble(*rhsassemble, n, elevector1, lmassemble, lmownerassemble);
     }
   }  // end element loop
 
@@ -1241,15 +1244,15 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Epetra_Vector> veln,
       Teuchos::rcp(new Epetra_MultiVector(*enrdofrowmap_, numberofrhs));
 
   // solve for 1, 2 or 3 right hand sides at the same time --> thanks to Belos
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   solver_->Solve(massmatrix_->EpetraOperator(), resultvec, rhsassemble, solver_params);
 
   // now copy result in original vector: the result is an increment of the velocity/ acceleration
-  CORE::LINALG::Export(*((*resultvec)(0)), *incveln_);
-  if (numberofrhs > 1) CORE::LINALG::Export(*((*resultvec)(1)), *incaccn_);
-  if (numberofrhs > 2) CORE::LINALG::Export(*((*resultvec)(2)), *incvelnp_);
+  Core::LinAlg::Export(*((*resultvec)(0)), *incveln_);
+  if (numberofrhs > 1) Core::LinAlg::Export(*((*resultvec)(1)), *incaccn_);
+  if (numberofrhs > 2) Core::LinAlg::Export(*((*resultvec)(2)), *incvelnp_);
 
   veln->Update(1.0, *incveln_, 1.0);
   if (accn != Teuchos::null) accn->Update(1.0, *incaccn_, 1.0);
@@ -1262,7 +1265,7 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Epetra_Vector> veln,
 /*----------------------------------------------------------------------*
  |  Adapt ML Nullspace for MFS aggregation                     bk 09/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::AdaptMLNullspace(const Teuchos::RCP<CORE::LINALG::Solver>& solver)
+void FLD::XWall::AdaptMLNullspace(const Teuchos::RCP<Core::LinAlg::Solver>& solver)
 {
   // extract the ML parameters:
   Teuchos::ParameterList& mlparams = solver->Params().sublist("ML Parameters");
@@ -1282,7 +1285,7 @@ void FLD::XWall::AdaptMLNullspace(const Teuchos::RCP<CORE::LINALG::Solver>& solv
     if (not discret_->NodeRowMap()->MyGID(xwallgid))  // just in case
       FOUR_C_THROW("not on proc");
     {
-      CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
+      Core::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
       int firstglobaldofid = discret_->Dof(xwallnode, 0);
@@ -1323,10 +1326,10 @@ void FLD::XWall::calc_mk()
       Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap()), true));
 
   // export
-  CORE::LINALG::Export(*((*mkxw)(0)), *mkxwv);
-  CORE::LINALG::Export(*mkxwv, *mkxwstate_);
-  CORE::LINALG::Export(*mkxwv, *mkv);
-  CORE::LINALG::Export(*mkv, *mkstate_);
+  Core::LinAlg::Export(*((*mkxw)(0)), *mkxwv);
+  Core::LinAlg::Export(*mkxwv, *mkxwstate_);
+  Core::LinAlg::Export(*mkxwv, *mkv);
+  Core::LinAlg::Export(*mkv, *mkstate_);
 
 
   return;
@@ -1342,7 +1345,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::GetOutputVector(Teuchos::RCP<Epetra_Vect
   for (int i = 0; i < xwallrownodemap_->NumMyElements(); ++i)
   {
     int xwallgid = xwallrownodemap_->GID(i);
-    CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
+    Core::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
     if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
     int firstglobaldofid = discret_->Dof(xwallnode, 0);
@@ -1369,8 +1372,8 @@ void FLD::XWall::transfer_and_save_tauw()
 {
   if (turbulent_inflow_condition_->is_active())
   {
-    CORE::LINALG::Export(*tauw_, *oldtauw_);
-    CORE::LINALG::Export(*inctauw_, *oldinctauw_);
+    Core::LinAlg::Export(*tauw_, *oldtauw_);
+    Core::LinAlg::Export(*inctauw_, *oldinctauw_);
     turbulent_inflow_condition_->Transfer(oldtauw_, oldtauw_, 0.0);
     turbulent_inflow_condition_->Transfer(oldinctauw_, oldinctauw_, 0.0);
   }
@@ -1386,23 +1389,23 @@ void FLD::XWall::overwrite_transferred_values()
   {
     Teuchos::RCP<Epetra_Vector> inctauwtmp =
         Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    CORE::LINALG::Export(*inctauw_, *inctauwtmp);
+    Core::LinAlg::Export(*inctauw_, *inctauwtmp);
     Teuchos::RCP<Epetra_Vector> tauwtmp =
         Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    CORE::LINALG::Export(*tauw_, *tauwtmp);
+    Core::LinAlg::Export(*tauw_, *tauwtmp);
 
     for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
     {
       int xwallgid = discret_->NodeRowMap()->GID(i);
-      CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
+      Core::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
-      std::vector<CORE::Conditions::Condition*> nodecloudstocouple;
+      std::vector<Core::Conditions::Condition*> nodecloudstocouple;
       xwallnode->GetCondition("TransferTurbulentInflow", nodecloudstocouple);
       if (not nodecloudstocouple.empty())
       {
         // usually we will only have one condition in nodecloudstocouple
         // but it doesn't hurt if there are several ones
-        for (std::vector<CORE::Conditions::Condition*>::iterator cond = nodecloudstocouple.begin();
+        for (std::vector<Core::Conditions::Condition*>::iterator cond = nodecloudstocouple.begin();
              cond != nodecloudstocouple.end(); ++cond)
         {
           const std::string& mytoggle = (*cond)->parameters().Get<std::string>("toggle");
@@ -1415,8 +1418,8 @@ void FLD::XWall::overwrite_transferred_values()
       }
     }
 
-    CORE::LINALG::Export(*inctauwtmp, *inctauw_);
-    CORE::LINALG::Export(*tauwtmp, *tauw_);
+    Core::LinAlg::Export(*inctauwtmp, *inctauw_);
+    Core::LinAlg::Export(*tauwtmp, *tauw_);
   }
   return;
 }
@@ -1424,13 +1427,13 @@ void FLD::XWall::overwrite_transferred_values()
 /*----------------------------------------------------------------------*
  |  Read Restart                                               bk 01/15 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::read_restart(CORE::IO::DiscretizationReader& reader)
+void FLD::XWall::read_restart(Core::IO::DiscretizationReader& reader)
 {
   Teuchos::RCP<Epetra_Vector> tauw =
       Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
   reader.ReadVector(tauw, "xwall_tauw");
-  CORE::LINALG::Export(*tauw, *tauw_);
-  CORE::LINALG::Export(*tauw, *tauwxwdis_);
+  Core::LinAlg::Export(*tauw, *tauw_);
+  Core::LinAlg::Export(*tauw, *tauwxwdis_);
 
   restart_wss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
   reader.ReadVector(restart_wss_, "wss");
@@ -1454,14 +1457,14 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
   {
     Teuchos::RCP<Epetra_Vector> res =
         Teuchos::rcp(new Epetra_Vector(*(discret_->DofColMap()), true));
-    CORE::LINALG::Export(*trueresidual, *res);
+    Core::LinAlg::Export(*trueresidual, *res);
     for (int j = 0; j < xwallrownodemap_->NumMyElements(); ++j)
     {
       int xwallgid = xwallrownodemap_->GID(j);
 
-      CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
+      Core::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
       if (!xwallnode) FOUR_C_THROW("Cannot find node");
-      std::vector<CORE::Conditions::Condition*> periodiccond;
+      std::vector<Core::Conditions::Condition*> periodiccond;
       xwallnode->GetCondition("SurfacePeriodic", periodiccond);
 
       bool includedofs = true;
@@ -1482,10 +1485,10 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
       {
         if (discret_->NodeRowMap()->MyGID(xwallgid))
         {
-          std::vector<CORE::Conditions::Condition*> dircond;
+          std::vector<Core::Conditions::Condition*> dircond;
           xwallnode->GetCondition("Dirichlet", dircond);
 
-          std::vector<CORE::Conditions::Condition*> stresscond;
+          std::vector<Core::Conditions::Condition*> stresscond;
           xwallnode->GetCondition("FluidStressCalc", stresscond);
 
           int numdf = discret_->NumDof(xwallnode);
@@ -1504,9 +1507,9 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
             {
               //
               // the new node has to be on these as well
-              //  std::vector<CORE::Conditions::Condition*> dircond;
+              //  std::vector<Core::Conditions::Condition*> dircond;
               //    discret_->GetCondition("FluidStressCalc",dircond);
-              CORE::Elements::Element** surrele = xwallnode->Elements();
+              Core::Elements::Element** surrele = xwallnode->Elements();
 
               // loop over all surrounding elements and find indices of node k, l which is closes
               // while fulfilling all criteria
@@ -1515,18 +1518,18 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
               int foundl = -1;
               for (int k = 0; k < (xwallnode->NumElement()); ++k)  // loop over elements
               {
-                CORE::Nodes::Node** test = surrele[k]->Nodes();
+                Core::Nodes::Node** test = surrele[k]->Nodes();
                 for (int l = 0; l < surrele[k]->num_node(); ++l)  // loop over nodes of element
                 {
                   // it has to be on fluidstresscalc
                   // it may not be a dirichlet inflow node
                   // get Dirichlet conditions
-                  std::vector<CORE::Conditions::Condition*> stresscond;
+                  std::vector<Core::Conditions::Condition*> stresscond;
                   test[l]->GetCondition("FluidStressCalc", stresscond);
                   int numdf = discret_->NumDof(test[l]);
                   if (not stresscond.empty() and numdf > 5)
                   {
-                    std::vector<CORE::Conditions::Condition*> dircond;
+                    std::vector<Core::Conditions::Condition*> dircond;
                     test[l]->GetCondition("Dirichlet", dircond);
                     bool isuglydirnode = false;
                     if (dircond.empty())
@@ -1562,7 +1565,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
 
               if (foundk < 0 or foundl < 0) FOUR_C_THROW("haven't found required node");
 
-              CORE::Nodes::Node** test = surrele[foundk]->Nodes();
+              Core::Nodes::Node** test = surrele[foundk]->Nodes();
 
               int firstglobaldofidtoreplace = discret_->Dof(xwallnode, 0);
               int secondglobaldofidtoreplace = discret_->Dof(xwallnode, 0) + 1;
@@ -1596,8 +1599,8 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 01/15 |
  *----------------------------------------------------------------------*/
-FLD::XWallAleFSI::XWallAleFSI(Teuchos::RCP<DRT::Discretization> dis, int nsd,
-    Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
+FLD::XWallAleFSI::XWallAleFSI(Teuchos::RCP<Discret::Discretization> dis, int nsd,
+    Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
     Teuchos::RCP<FLD::UTILS::StressManager> wssmanager, Teuchos::RCP<Epetra_Vector> dispnp,
     Teuchos::RCP<Epetra_Vector> gridv)
     : XWall(dis, nsd, params, dbcmaps, wssmanager), mydispnp_(dispnp), mygridv_(gridv)
@@ -1622,7 +1625,7 @@ void FLD::XWallAleFSI::UpdateWDistWALE()
 
     if (not discret_->NodeRowMap()->MyGID(xwallgid))  // just in case
       FOUR_C_THROW("not on proc");
-    CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
+    Core::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
     if (!xwallnode) FOUR_C_THROW("Cannot find node");
 
     int firstglobaldofid = discret_->Dof(xwallnode, 0);
@@ -1655,7 +1658,7 @@ void FLD::XWallAleFSI::UpdateWDistWALE()
 
     if (not discret_->NodeRowMap()->MyGID(xwallgid))  // just in case
       FOUR_C_THROW("not on proc");
-    CORE::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
+    Core::Nodes::Node* xwallnode = discret_->gNode(xwallgid);
     if (!xwallnode) FOUR_C_THROW("Cannot find node");
     double x = (*wdistx)[j];
     double y = (*wdisty)[j];
@@ -1665,8 +1668,8 @@ void FLD::XWallAleFSI::UpdateWDistWALE()
     if (err > 0) FOUR_C_THROW("something wrong");
   }
 
-  CORE::LINALG::Export(*walldist_, *wdist_);
-  CORE::LINALG::Export(*walldist_, *wdistxwdis_);
+  Core::LinAlg::Export(*walldist_, *wdist_);
+  Core::LinAlg::Export(*walldist_, *wdistxwdis_);
   // save old one for projection
   incwdistxwdis_->Update(1.0, *wdistxwdis_, -1.0);
 
@@ -1698,11 +1701,11 @@ void FLD::XWallAleFSI::set_x_wall_params_xw_dis(Teuchos::ParameterList& eleparam
   // params required for the shape functions
   eleparams.set("incwalldist", incwdistxwdis_);
   Teuchos::RCP<Epetra_Vector> xwdisdispnp =
-      CORE::LINALG::CreateVector(*(xwdiscret_->dof_row_map()), true);
-  CORE::LINALG::Export(*mydispnp_, *xwdisdispnp);
+      Core::LinAlg::CreateVector(*(xwdiscret_->dof_row_map()), true);
+  Core::LinAlg::Export(*mydispnp_, *xwdisdispnp);
   Teuchos::RCP<Epetra_Vector> xwdisgridv =
-      CORE::LINALG::CreateVector(*(xwdiscret_->dof_row_map()), true);
-  CORE::LINALG::Export(*mygridv_, *xwdisgridv);
+      Core::LinAlg::CreateVector(*(xwdiscret_->dof_row_map()), true);
+  Core::LinAlg::Export(*mygridv_, *xwdisgridv);
 
   xwdiscret_->set_state("dispnp", xwdisdispnp);
   xwdiscret_->set_state("gridv", xwdisgridv);
@@ -1719,7 +1722,7 @@ void FLD::XWallAleFSI::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresi
 {
   UpdateWDistWALE();
   FLD::XWall::UpdateTauW(step, trueresidual, itnum, accn, velnp, veln);
-  if (tauwtype_ == INPAR::FLUID::constant)
+  if (tauwtype_ == Inpar::FLUID::constant)
   {
     if (proj_)
     {

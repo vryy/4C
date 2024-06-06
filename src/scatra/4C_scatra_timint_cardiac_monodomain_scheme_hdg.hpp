@@ -19,18 +19,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace SCATRA
+namespace ScaTra
 {
   class TimIntCardiacMonodomainHDG : public virtual TimIntCardiacMonodomain,
                                      public virtual TimIntHDG
   {
    public:
     //! Standard Constructor
-    TimIntCardiacMonodomainHDG(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    TimIntCardiacMonodomainHDG(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
 
     //! setup time integration scheme
@@ -60,7 +60,7 @@ namespace SCATRA
 
     //! read restart
     void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
    private:
     //! activation time
@@ -72,7 +72,7 @@ namespace SCATRA
 
   };  // class TimIntCardiacMonodomainHDG
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

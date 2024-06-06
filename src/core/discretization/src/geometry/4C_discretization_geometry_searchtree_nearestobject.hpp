@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   //! possible positions of a point with respect to an element
   enum ObjectType
@@ -45,12 +45,12 @@ namespace CORE::GEO
     /*!
     \brief copy constructor
     */
-    NearestObject(const CORE::GEO::NearestObject& old);
+    NearestObject(const Core::Geo::NearestObject& old);
 
     /*!
     \brief assignment operator
     */
-    CORE::GEO::NearestObject& operator=(const CORE::GEO::NearestObject& old);
+    Core::Geo::NearestObject& operator=(const Core::Geo::NearestObject& old);
 
     /*!
     \brief clear nearest object
@@ -64,7 +64,7 @@ namespace CORE::GEO
     \param physcoord    (in)        : physical coordinates of point on object
     */
     void setNodeObjectType(
-        const int nodeId, const int label, const CORE::LINALG::Matrix<3, 1>& physcoord);
+        const int nodeId, const int label, const Core::LinAlg::Matrix<3, 1>& physcoord);
 
     /*!
     \brief Set line object type
@@ -74,7 +74,7 @@ namespace CORE::GEO
     \param physcoord    (in)        : physical coordinates of point on object
     */
     void setLineObjectType(const int lineId, const int surfId, const int label,
-        const CORE::LINALG::Matrix<3, 1>& physcoord);
+        const Core::LinAlg::Matrix<3, 1>& physcoord);
 
     /*!
     \brief Set surface object type
@@ -83,7 +83,7 @@ namespace CORE::GEO
     \param physcoord    (in)        : physical coordinates of point on object
     */
     void set_surface_object_type(
-        const int surfId, const int label, const CORE::LINALG::Matrix<3, 1>& physcoord);
+        const int surfId, const int label, const Core::LinAlg::Matrix<3, 1>& physcoord);
 
     /*!
     \brief Return object type
@@ -98,7 +98,7 @@ namespace CORE::GEO
     /*!
     \brief Return vector of physical coordinates
      */
-    inline CORE::LINALG::Matrix<3, 1> getPhysCoord() const
+    inline Core::LinAlg::Matrix<3, 1> getPhysCoord() const
     {
       if (object_type_ == NOTYPE_OBJECT)
         FOUR_C_THROW("no object type and physical coordinates are set");
@@ -123,10 +123,10 @@ namespace CORE::GEO
     int label_;
 
     //! physical coordinates of point on nearest object
-    CORE::LINALG::Matrix<3, 1> physcoord_;
+    Core::LinAlg::Matrix<3, 1> physcoord_;
   };
 
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

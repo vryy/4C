@@ -34,21 +34,21 @@ FOUR_C_NAMESPACE_OPEN
  |                                                           dano 11/10 |
  *----------------------------------------------------------------------*/
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class MultiMapExtractor;
 
   class BlockSparseMatrixBase;
   class Solver;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   class LocsysManager;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class MortarVolCoupl;
 }
@@ -122,7 +122,7 @@ namespace TSI
     void setup_system_matrix();
 
     //! composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
     //! solve linear TSI system
     void linear_solve();
@@ -132,17 +132,17 @@ namespace TSI
 
     //! Evaluate mechanical-thermal system matrix
     void apply_str_coupl_matrix(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> k_st  //!< mechanical-thermal stiffness matrix
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> k_st  //!< mechanical-thermal stiffness matrix
     );
 
     //! Evaluate thermal-mechanical system matrix
     void ApplyThrCouplMatrix(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
     );
 
     //! Evaluate thermal-mechanical system matrix for geonln + heat convection BC
     void apply_thr_coupl_matrix_conv_bc(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
     );
 
     //@}
@@ -196,18 +196,18 @@ namespace TSI
     void print_newton_conv();
 
     //! Determine norm of force residual
-    double calculate_vector_norm(const enum INPAR::TSI::VectorNorm norm,  //!< norm to use
+    double calculate_vector_norm(const enum Inpar::TSI::VectorNorm norm,  //!< norm to use
         const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
     );
 
     //@}
 
     //! apply infnorm scaling to linear block system
-    virtual void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     //! undo infnorm scaling from scaled solution
     virtual void unscale_solution(
-        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
    protected:
     //! @name Time loop building blocks
@@ -252,7 +252,7 @@ namespace TSI
     Teuchos::RCP<Epetra_Map> combined_dbc_map();
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> extractor() const { return blockrowdofmap_; }
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> extractor() const { return blockrowdofmap_; }
 
     //! setup list with default parameters
     void set_default_parameters();
@@ -268,7 +268,7 @@ namespace TSI
 
     bool solveradapttol_;                        //!< adapt solver tolerance
     double solveradaptolbetter_;                 //!< tolerance to which is adpated ????
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
 
     //@}
 
@@ -289,7 +289,7 @@ namespace TSI
     //@}
 
     //! enum for STR time integartion
-    enum INPAR::STR::DynamicType strmethodname_;
+    enum Inpar::STR::DynamicType strmethodname_;
 
     //! apply structural displacements and velocities on thermo discretization
     void apply_struct_coupling_state(
@@ -304,7 +304,7 @@ namespace TSI
     const Teuchos::ParameterList& tsidynmono_;  //!< monolithic TSI dynamic parameter list
 
     //! dofrowmap splitted in (field) blocks
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     void setup_vector(Epetra_Vector& f,        //!< vector of length of all dofs
@@ -316,31 +316,31 @@ namespace TSI
     bool l_sadmissible();
 
     //! block systemmatrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     //! off diagonal matrixes
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_st_;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ts_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_st_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts_;
 
     bool merge_tsi_blockmatrix_;  //!< bool whether TSI block matrix is merged
 
     //! @name iterative solution technique
 
-    enum INPAR::TSI::NlnSolTech soltech_;  //!< kind of iteration technique or
+    enum Inpar::TSI::NlnSolTech soltech_;  //!< kind of iteration technique or
                                            //!< nonlinear solution technique
 
-    enum INPAR::TSI::ConvNorm normtypeinc_;     //!< convergence check for increments
-    enum INPAR::TSI::ConvNorm normtyperhs_;     //!< convergence check for residual forces
-    enum INPAR::STR::ConvNorm normtypedisi_;    //!< convergence check for residual displacements
-    enum INPAR::STR::ConvNorm normtypestrrhs_;  //!< convergence check for residual forces
-    enum INPAR::THR::ConvNorm normtypetempi_;   //!< convergence check for residual temperatures
-    enum INPAR::THR::ConvNorm normtypethrrhs_;  //!< convergence check for residual thermal forces
+    enum Inpar::TSI::ConvNorm normtypeinc_;     //!< convergence check for increments
+    enum Inpar::TSI::ConvNorm normtyperhs_;     //!< convergence check for residual forces
+    enum Inpar::STR::ConvNorm normtypedisi_;    //!< convergence check for residual displacements
+    enum Inpar::STR::ConvNorm normtypestrrhs_;  //!< convergence check for residual forces
+    enum Inpar::THR::ConvNorm normtypetempi_;   //!< convergence check for residual temperatures
+    enum Inpar::THR::ConvNorm normtypethrrhs_;  //!< convergence check for residual thermal forces
 
-    enum INPAR::TSI::BinaryOp combincrhs_;  //!< binary operator to combine increments and forces
+    enum Inpar::TSI::BinaryOp combincrhs_;  //!< binary operator to combine increments and forces
 
-    enum INPAR::TSI::VectorNorm iternorm_;     //!< vector norm to check TSI values with
-    enum INPAR::TSI::VectorNorm iternormstr_;  //!< vector norm to check structural values with
-    enum INPAR::TSI::VectorNorm iternormthr_;  //!< vector norm to check thermal values with
+    enum Inpar::TSI::VectorNorm iternorm_;     //!< vector norm to check TSI values with
+    enum Inpar::TSI::VectorNorm iternormstr_;  //!< vector norm to check structural values with
+    enum Inpar::TSI::VectorNorm iternormthr_;  //!< vector norm to check thermal values with
 
     double tolinc_;     //!< tolerance for increment
     double tolrhs_;     //!< tolerance for rhs
@@ -381,7 +381,7 @@ namespace TSI
     //@}
 
     //! @name line search parameters
-    INPAR::TSI::LineSearch ls_strategy_;
+    Inpar::TSI::LineSearch ls_strategy_;
     double ls_step_length_;
     std::pair<double, double> last_iter_res_;
     //@}
@@ -398,7 +398,7 @@ namespace TSI
     Teuchos::RCP<const Epetra_Vector> vel_;
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<CORE::Conditions::LocsysManager> locsysman_;
+    Teuchos::RCP<Core::Conditions::LocsysManager> locsysman_;
 
     //@}
 

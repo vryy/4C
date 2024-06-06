@@ -18,12 +18,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Equilibration;
   enum class EquilibrationMethod;
@@ -31,9 +31,9 @@ namespace CORE::LINALG
   class Solver;
   class SparseMatrix;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace SCATRA
+namespace ScaTra
 {
   class meshtying_strategy_s2_i;
 }
@@ -59,10 +59,10 @@ namespace SSTI
   //! equilibration methods applied to system matrix
   struct SSTIMonoEquilibrationMethod
   {
-    const CORE::LINALG::EquilibrationMethod global;     //! unique equilibration
-    const CORE::LINALG::EquilibrationMethod scatra;     //! equilibration for scatra block
-    const CORE::LINALG::EquilibrationMethod structure;  //! equilibration for structure block
-    const CORE::LINALG::EquilibrationMethod thermo;     //! equilibration for thermo block
+    const Core::LinAlg::EquilibrationMethod global;     //! unique equilibration
+    const Core::LinAlg::EquilibrationMethod scatra;     //! equilibration for scatra block
+    const Core::LinAlg::EquilibrationMethod structure;  //! equilibration for structure block
+    const Core::LinAlg::EquilibrationMethod thermo;     //! equilibration for thermo block
   };
 
   enum class Subproblem
@@ -126,7 +126,7 @@ namespace SSTI
     Teuchos::RCP<Epetra_Vector> extract_sub_increment(Subproblem sub);
 
     // build and return vector of equilibration methods for each block of system matrix
-    std::vector<CORE::LINALG::EquilibrationMethod> get_block_equilibration();
+    std::vector<Core::LinAlg::EquilibrationMethod> get_block_equilibration();
 
     //! evaluate time step using Newton-Raphson iteration
     void newton_loop();
@@ -152,7 +152,7 @@ namespace SSTI
     //@{
     Teuchos::RCP<Epetra_Vector> increment_;
     Teuchos::RCP<Epetra_Vector> residual_;
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
     //@}
 
     //! evaluation of off-diagonal blocks
@@ -175,7 +175,7 @@ namespace SSTI
     //@{
     //! equilibration method applied to system matrix
     const struct SSTIMonoEquilibrationMethod equilibration_method_;
-    const CORE::LINALG::MatrixType matrixtype_;
+    const Core::LinAlg::MatrixType matrixtype_;
     //@}
 
     //! convergence check of Newton iteration
@@ -191,7 +191,7 @@ namespace SSTI
     Teuchos::RCP<SSTI::AssembleStrategyBase> strategy_assemble_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<CORE::LINALG::Equilibration> strategy_equilibration_;
+    Teuchos::RCP<Core::LinAlg::Equilibration> strategy_equilibration_;
   };
 }  // namespace SSTI
 FOUR_C_NAMESPACE_CLOSE

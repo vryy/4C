@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Singleton access method                                  thon 02/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::Instance(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>*
+Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcRefConcReac<distype, probdim>>(
@@ -35,17 +35,18 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  |  Private constructor                                      thon 02/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ScaTraEleBoundaryCalcRefConcReac(
-    const int numdofpernode, const int numscal, const std::string& disname)
-    : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype,
+    probdim>::ScaTraEleBoundaryCalcRefConcReac(const int numdofpernode, const int numscal,
+    const std::string& disname)
+    : Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
           numdofpernode, numscal, disname)
 {
   return;
@@ -55,36 +56,36 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ScaTraEleBoun
 /*---------------------------------------------------------------------------*
  | Factor needed for the calculation of reference concentrations  thon 02/16 |
  *---------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::fac_for_ref_conc(
+template <Core::FE::CellType distype, int probdim>
+double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::fac_for_ref_conc(
     const int iquad,                          ///< current boundary integration point
-    const CORE::Elements::FaceElement* bele,  ///< current boundary element
+    const Core::Elements::FaceElement* bele,  ///< current boundary element
     Teuchos::ParameterList& params,           ///< parameter list
-    DRT::Discretization& discretization       ///< discretization
+    Discret::Discretization& discretization   ///< discretization
 )
 {
-  const CORE::Elements::Element* pele = bele->parent_element();
+  const Core::Elements::Element* pele = bele->parent_element();
 
   double J = 1.0;
   // only 3D cases:
-  if (bele->Shape() == CORE::FE::CellType::tri3)
+  if (bele->Shape() == Core::FE::CellType::tri3)
   {
-    if (pele->Shape() == CORE::FE::CellType::tet4)
-      J = calc_jat_int_point<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4>(
+    if (pele->Shape() == Core::FE::CellType::tet4)
+      J = calc_jat_int_point<Core::FE::CellType::tri3, Core::FE::CellType::tet4>(
           iquad, bele, pele, params, discretization);
-    else if (pele->Shape() == CORE::FE::CellType::pyramid5)
-      J = calc_jat_int_point<CORE::FE::CellType::tri3, CORE::FE::CellType::pyramid5>(
+    else if (pele->Shape() == Core::FE::CellType::pyramid5)
+      J = calc_jat_int_point<Core::FE::CellType::tri3, Core::FE::CellType::pyramid5>(
           iquad, bele, pele, params, discretization);
     else
       FOUR_C_THROW("Parent element not supported here!");
   }
-  else if (bele->Shape() == CORE::FE::CellType::quad4)
+  else if (bele->Shape() == Core::FE::CellType::quad4)
   {
-    if (pele->Shape() == CORE::FE::CellType::hex8)
-      J = calc_jat_int_point<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
+    if (pele->Shape() == Core::FE::CellType::hex8)
+      J = calc_jat_int_point<Core::FE::CellType::quad4, Core::FE::CellType::hex8>(
           iquad, bele, pele, params, discretization);
-    else if (pele->Shape() == CORE::FE::CellType::pyramid5)
-      J = calc_jat_int_point<CORE::FE::CellType::quad4, CORE::FE::CellType::pyramid5>(
+    else if (pele->Shape() == Core::FE::CellType::pyramid5)
+      J = calc_jat_int_point<Core::FE::CellType::quad4, Core::FE::CellType::pyramid5>(
           iquad, bele, pele, params, discretization);
     else
       FOUR_C_THROW("Parent element not supported here!");
@@ -99,38 +100,38 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::fac_fo
 /*---------------------------------------------------------------------------*
  | Factor needed for the calculation of reference concentrations  thon 02/16 |
  *---------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_jat_int_point(
+template <Core::FE::CellType distype, int probdim>
+template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_jat_int_point(
     const int iquad,                          ///< current boundary integration point
-    const CORE::Elements::FaceElement* bele,  ///< current boundary element
-    const CORE::Elements::Element* pele,      ///< current parent element
+    const Core::Elements::FaceElement* bele,  ///< current boundary element
+    const Core::Elements::Element* pele,      ///< current parent element
     Teuchos::ParameterList& params,           ///< parameter list
-    DRT::Discretization& discretization       ///< discretization
+    Discret::Discretization& discretization   ///< discretization
 )
 {
   // NOTE: we want to evaluate J=det(F) on the current gauss point of the current boundary element.
   // Since this does depend on ALL values of the involved element this is quite a hassle :(
 
   // number of parent spatial dimensions
-  const int pnsd = CORE::FE::dim<pdistype>;
+  const int pnsd = Core::FE::dim<pdistype>;
   // number of boundary spatial dimensions
-  const int bnsd = CORE::FE::dim<bdistype>;
+  const int bnsd = Core::FE::dim<bdistype>;
 
   if (pnsd != nsd_) FOUR_C_THROW("dimension do not match!");
   if (bnsd != nsd_ele_) FOUR_C_THROW("dimension do not match!");
 
   // number of parent element nodes
-  const int pnen = CORE::FE::num_nodes<pdistype>;
+  const int pnen = Core::FE::num_nodes<pdistype>;
   // number of (boundary) element nodes
-  static const int bnen = CORE::FE::num_nodes<bdistype>;
+  static const int bnen = Core::FE::num_nodes<bdistype>;
 
   if (bnen != nen_) FOUR_C_THROW("Number of element nodes do not match!");
 
   // get local node coordinates
-  CORE::LINALG::Matrix<pnsd, pnen> pxyze(true);
-  CORE::LINALG::Matrix<pnsd, pnen> pxyze0(true);
-  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, CORE::LINALG::Matrix<pnsd, pnen>>(
+  Core::LinAlg::Matrix<pnsd, pnen> pxyze(true);
+  Core::LinAlg::Matrix<pnsd, pnen> pxyze0(true);
+  Core::Geo::fillInitialPositionArray<pdistype, pnsd, Core::LinAlg::Matrix<pnsd, pnen>>(
       pele, pxyze0);
   pxyze = pxyze0;
 
@@ -143,7 +144,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_j
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // parent element location array
-    CORE::Elements::Element::LocationArray pla(discretization.NumDofSets());
+    Core::Elements::Element::LocationArray pla(discretization.NumDofSets());
     pele->LocationVector(discretization, pla, false);
 
     // determine number of velocity related dofs per node
@@ -156,10 +157,10 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_j
         plmdisp[inode * pnsd + idim] = pla[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // we deal with a nsd_-dimensional flow field
-    CORE::LINALG::Matrix<pnsd, pnen> pedispnp(true);
+    Core::LinAlg::Matrix<pnsd, pnen> pedispnp(true);
 
     // extract local values of convective velocity field from global state vector
-    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<pnsd, pnen>>(*dispnp, pedispnp, plmdisp);
+    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<pnsd, pnen>>(*dispnp, pedispnp, plmdisp);
 
     // rotate the vector field in the case of rotationally symmetric boundary conditions
     // my::rotsymmpbc_->template rotate_my_values_if_necessary<pnsd,pnen>(pedispnp);
@@ -168,14 +169,14 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_j
   }
 
   // get Gaussian integration points
-  const CORE::FE::IntPointsAndWeights<pnsd> pintpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+  const Core::FE::IntPointsAndWeights<pnsd> pintpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
   // get Gaussian integration points
-  const CORE::FE::IntPointsAndWeights<bnsd> bintpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+  const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
-  CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+  Core::LinAlg::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
   for (int biquad = 0; biquad < bintpoints.IP().nquad; ++biquad)
   {
     const double* gpcoord = (bintpoints.IP().qxg)[biquad];
@@ -186,15 +187,15 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_j
   }
 
   // distinguish 2- and 3-D case
-  CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, pnsd);
+  Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.IP().nquad, pnsd);
   if (pnsd == 2)
-    CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
+    Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
   else if (pnsd == 3)
-    CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
+    Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
 
 
-  CORE::LINALG::Matrix<pnsd, 1> pxsi(true);
-  CORE::LINALG::Matrix<pnsd, pnen> pderiv(true);
+  Core::LinAlg::Matrix<pnsd, 1> pxsi(true);
+  Core::LinAlg::Matrix<pnsd, pnen> pderiv(true);
 
   // reference coordinates of integration point from parent element
   for (int idim = 0; idim < pnsd; idim++)
@@ -203,15 +204,15 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_j
   }
 
   // parent element shape functions and local derivatives
-  CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
+  Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
   // Jacobian matrix and determinant of parent element (including check)
-  CORE::LINALG::Matrix<pnsd, pnsd> dxds(true);
+  Core::LinAlg::Matrix<pnsd, pnsd> dxds(true);
   dxds.MultiplyNT(pderiv, pxyze);
   const double detdxds = dxds.Determinant();
 
   // Jacobian matrix and determinant of parent element (including check)
-  CORE::LINALG::Matrix<pnsd, pnsd> dXds(true);
+  Core::LinAlg::Matrix<pnsd, pnsd> dXds(true);
   dXds.MultiplyNT(pderiv, pxyze0);
   const double detdXds = dXds.Determinant();
 
@@ -223,15 +224,15 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_j
 
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<CORE::FE::CellType::nurbs9, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::quad9, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::tri6, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::line3, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::nurbs3, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::nurbs9, 3>;
 
 FOUR_C_NAMESPACE_CLOSE

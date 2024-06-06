@@ -20,11 +20,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class FluidFluidFSI;
   class AleXFFsiWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace FSI
 {
@@ -177,7 +177,7 @@ namespace FSI
     void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps
-    const CORE::LINALG::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
+    const Core::LinAlg::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
 
     /// setup list with default parameters
     void set_default_parameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
@@ -201,9 +201,9 @@ namespace FSI
     virtual bool has_fluid_dof_map_changed(const Epetra_BlockMap& fluidincrementmap) = 0;
 
     /// access type-cast pointer to problem-specific ALE-wrapper
-    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& ale_field() { return ale_; }
+    const Teuchos::RCP<Adapter::AleXFFsiWrapper>& ale_field() { return ale_; }
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;  //!< block system matrix
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;  //!< block system matrix
 
     bool firstcall_;
 
@@ -259,10 +259,10 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> iterinc_;        //!< increment between Newton steps k and k+1
     Teuchos::RCP<Epetra_Vector> rhs_;            //!< rhs of FSI system
     Teuchos::RCP<Epetra_Vector> zeros_;          //!< a zero vector of full length
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
 
     /// type-cast pointer to problem-specific fluid-wrapper
-    Teuchos::RCP<ADAPTER::FluidFluidFSI> fluid_;
+    Teuchos::RCP<Adapter::FluidFluidFSI> fluid_;
 
    private:
     /*!
@@ -273,7 +273,7 @@ namespace FSI
     void validate_parameters();
 
     /// dof row map splitted in (field) blocks
-    CORE::LINALG::MultiMapExtractor blockrowdofmap_;
+    Core::LinAlg::MultiMapExtractor blockrowdofmap_;
 
     /// output stream
     Teuchos::RCP<std::ofstream> log_;
@@ -287,9 +287,9 @@ namespace FSI
 
     //! @name Iterative solution technique
     //@{
-    enum INPAR::FSI::ConvNorm normtypeinc_;   //!< convergence check for increment
-    enum INPAR::FSI::ConvNorm normtypefres_;  //!< convergence check for residual forces
-    enum INPAR::FSI::BinaryOp combincfres_;  //!< binary operator to combine temperatures and forces
+    enum Inpar::FSI::ConvNorm normtypeinc_;   //!< convergence check for increment
+    enum Inpar::FSI::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    enum Inpar::FSI::BinaryOp combincfres_;  //!< binary operator to combine temperatures and forces
 
     double tolinc_;   //!< tolerance residual temperatures
     double tolfres_;  //!< tolerance force residual
@@ -313,7 +313,7 @@ namespace FSI
     //@}
 
     /// type-cast pointer to problem-specific ALE-wrapper
-    Teuchos::RCP<ADAPTER::AleXFFsiWrapper> ale_;
+    Teuchos::RCP<Adapter::AleXFFsiWrapper> ale_;
   };
 }  // namespace FSI
 

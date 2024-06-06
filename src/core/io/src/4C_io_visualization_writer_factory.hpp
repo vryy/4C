@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   /**
    * @brief Creates the visualization writer that is specified in the parameters object
@@ -31,7 +31,7 @@ namespace CORE::IO
   [[nodiscard]] std::unique_ptr<VisualizationWriterBase> VisualizationWriterFactory(
       const VisualizationParameters& parameters, const Epetra_Comm& comm,
       const std::string& visualization_data_name);
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

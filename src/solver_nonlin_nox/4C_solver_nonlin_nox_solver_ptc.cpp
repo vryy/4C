@@ -40,11 +40,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Solver::PseudoTransient::PseudoTransient(const Teuchos::RCP<::NOX::Abstract::Group>& grp,
+NOX::Nln::Solver::PseudoTransient::PseudoTransient(const Teuchos::RCP<::NOX::Abstract::Group>& grp,
     const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
-    const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
+    const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,
     const Teuchos::RCP<Teuchos::ParameterList>& params)
-    : NOX::NLN::Solver::LineSearchBased(grp, outerTests, innerTests, params),
+    : NOX::Nln::Solver::LineSearchBased(grp, outerTests, innerTests, params),
       iTestPtr_(innerTests),
       xDot_(Teuchos::null),
       usePseudoTransientResidual_(false),
@@ -57,7 +57,7 @@ NOX::NLN::Solver::PseudoTransient::PseudoTransient(const Teuchos::RCP<::NOX::Abs
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::init()
+void NOX::Nln::Solver::PseudoTransient::init()
 {
   checkType = ::NOX::Solver::parseStatusTestCheckType(paramsPtr->sublist("Solver Options"));
 
@@ -85,7 +85,7 @@ void NOX::NLN::Solver::PseudoTransient::init()
   const std::string& control_str = p_ptc.get<std::string>("Time Step Control");
   tscType_ = String2TSCType(control_str);
   const std::string& norm_str = p_ptc.get<std::string>("Norm Type for TSC");
-  normType_ = NOX::NLN::AUX::String2NormType(norm_str);
+  normType_ = NOX::Nln::Aux::String2NormType(norm_str);
 
   // get the scaling operator type
   const std::string& scaleop_str = p_ptc.get<std::string>("Scaling Type");
@@ -108,9 +108,9 @@ void NOX::NLN::Solver::PseudoTransient::init()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::reset(const ::NOX::Abstract::Vector& initialGuess,
+void NOX::Nln::Solver::PseudoTransient::reset(const ::NOX::Abstract::Vector& initialGuess,
     const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
-    const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests)
+    const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests)
 {
   solnPtr->setX(initialGuess);
   if (not outerTests.is_null()) testPtr = outerTests;
@@ -123,7 +123,7 @@ void NOX::NLN::Solver::PseudoTransient::reset(const ::NOX::Abstract::Vector& ini
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::reset(const ::NOX::Abstract::Vector& initialGuess,
+void NOX::Nln::Solver::PseudoTransient::reset(const ::NOX::Abstract::Vector& initialGuess,
     const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests)
 {
   solnPtr->setX(initialGuess);
@@ -136,13 +136,13 @@ void NOX::NLN::Solver::PseudoTransient::reset(const ::NOX::Abstract::Vector& ini
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::create_scaling_operator()
+void NOX::Nln::Solver::PseudoTransient::create_scaling_operator()
 {
   if (is_scaling_operator()) return;
 
   switch (scaleOpType_)
   {
-    case NOX::NLN::Solver::PseudoTransient::scale_op_identity:
+    case NOX::Nln::Solver::PseudoTransient::scale_op_identity:
     {
       // identity matrix
       Teuchos::RCP<const ::NOX::Epetra::Vector> epetraXPtr =
@@ -157,28 +157,28 @@ void NOX::NLN::Solver::PseudoTransient::create_scaling_operator()
 
       break;
     }
-    case NOX::NLN::Solver::PseudoTransient::scale_op_lumped_mass:
+    case NOX::Nln::Solver::PseudoTransient::scale_op_lumped_mass:
     {
       // get the lumped mass matrix
       scalingDiagOpPtr_ = Teuchos::rcp(new Epetra_Vector(
-          *(Teuchos::rcp_dynamic_cast<NOX::NLN::Group>(solnPtr)->get_lumped_mass_matrix_ptr())));
+          *(Teuchos::rcp_dynamic_cast<NOX::Nln::Group>(solnPtr)->get_lumped_mass_matrix_ptr())));
       break;
     }
     // get element based scaling operator
-    case NOX::NLN::Solver::PseudoTransient::scale_op_element_based:
+    case NOX::Nln::Solver::PseudoTransient::scale_op_element_based:
     {
       // Get element based contributions and assemble into SparseMatrix
-      scalingMatrixOpPtr_ = Teuchos::rcp_dynamic_cast<NOX::NLN::Group>(solnPtr)
+      scalingMatrixOpPtr_ = Teuchos::rcp_dynamic_cast<NOX::Nln::Group>(solnPtr)
                                 ->get_contributions_from_element_level();
 
-      if (build_scaling_op_ == NOX::NLN::Solver::PseudoTransient::build_op_everyiter)
+      if (build_scaling_op_ == NOX::Nln::Solver::PseudoTransient::build_op_everyiter)
         isScalingOperator_ = false;
       else
         isScalingOperator_ = true;
 
       break;
     }
-    case NOX::NLN::Solver::PseudoTransient::scale_op_cfl_diagonal:
+    case NOX::Nln::Solver::PseudoTransient::scale_op_cfl_diagonal:
     {
       FOUR_C_THROW("Not yet implemented!");
       break;
@@ -193,27 +193,27 @@ void NOX::NLN::Solver::PseudoTransient::create_scaling_operator()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::create_lin_system_pre_post_operator()
+void NOX::Nln::Solver::PseudoTransient::create_lin_system_pre_post_operator()
 {
-  prePostLinSysPtr_ = Teuchos::rcp(new NOX::NLN::LinSystem::PrePostOp::PseudoTransient(
+  prePostLinSysPtr_ = Teuchos::rcp(new NOX::Nln::LinSystem::PrePostOp::PseudoTransient(
       scalingDiagOpPtr_, scalingMatrixOpPtr_, *this));
 
   // The name of the direction method and the corresponding sublist has to match!
-  const std::string dir_str(NOX::NLN::AUX::GetDirectionMethodListName(*paramsPtr));
+  const std::string dir_str(NOX::Nln::Aux::GetDirectionMethodListName(*paramsPtr));
   if (paramsPtr->sublist("Direction").isSublist(dir_str))
   {
     // set the new pre/post operator for the linear system in the parameter list
     Teuchos::ParameterList& p_linsolver =
         paramsPtr->sublist("Direction").sublist(dir_str).sublist("Linear Solver");
     // get the current map. If there is no map, return a new empty one. (reference)
-    NOX::NLN::LinSystem::PrePostOperator::Map& prePostLinSystemMap =
-        NOX::NLN::LinSystem::PrePostOp::GetMap(p_linsolver);
+    NOX::Nln::LinSystem::PrePostOperator::Map& prePostLinSystemMap =
+        NOX::Nln::LinSystem::PrePostOp::GetMap(p_linsolver);
     // insert/replace the old pointer in the map
-    prePostLinSystemMap[NOX::NLN::LinSystem::prepost_ptc] = prePostLinSysPtr_;
+    prePostLinSystemMap[NOX::Nln::LinSystem::prepost_ptc] = prePostLinSysPtr_;
     /* Now the last thing to do is, that we have to reset the pre/post-operator in
      * the nln linear system class with the ptc pre/post-operator. */
     // Get the linear system
-    Teuchos::RCP<NOX::NLN::Group> nlnSolnPtr = Teuchos::rcp_dynamic_cast<NOX::NLN::Group>(solnPtr);
+    Teuchos::RCP<NOX::Nln::Group> nlnSolnPtr = Teuchos::rcp_dynamic_cast<NOX::Nln::Group>(solnPtr);
     if (nlnSolnPtr.is_null())
       throw_error("create_lin_system_pre_post_operator", "The group cast failed!");
     /* Call the reset function of the nox nln linear system to reset the
@@ -233,25 +233,25 @@ void NOX::NLN::Solver::PseudoTransient::create_lin_system_pre_post_operator()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::create_group_pre_post_operator()
+void NOX::Nln::Solver::PseudoTransient::create_group_pre_post_operator()
 {
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln group in the parameter list
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList& p_grpOpt = paramsPtr->sublist("Group Options");
   // get the current map. If there is no map, return a new empty one. (reference)
-  NOX::NLN::GROUP::PrePostOperator::Map& prePostGroupMap =
-      NOX::NLN::GROUP::PrePostOp::GetMap(p_grpOpt);
+  NOX::Nln::GROUP::PrePostOperator::Map& prePostGroupMap =
+      NOX::Nln::GROUP::PrePostOp::GetMap(p_grpOpt);
   // insert or replace the old pointer in the map
-  prePostGroupPtr_ = Teuchos::rcp(new NOX::NLN::GROUP::PrePostOp::PseudoTransient(
+  prePostGroupPtr_ = Teuchos::rcp(new NOX::Nln::GROUP::PrePostOp::PseudoTransient(
       scalingDiagOpPtr_, scalingMatrixOpPtr_, *this));
 
   // set the modified map
-  prePostGroupMap[NOX::NLN::GROUP::prepost_ptc] = prePostGroupPtr_;
+  prePostGroupMap[NOX::Nln::GROUP::prepost_ptc] = prePostGroupPtr_;
   /* Now the last thing to do is, that we have to reset the pre/post-operator in
    * the nln group class with the ptc pre/post-operator. */
   // Get the nln group
-  Teuchos::RCP<NOX::NLN::Group> nlnSoln = Teuchos::rcp_dynamic_cast<NOX::NLN::Group>(solnPtr);
+  Teuchos::RCP<NOX::Nln::Group> nlnSoln = Teuchos::rcp_dynamic_cast<NOX::Nln::Group>(solnPtr);
   if (nlnSoln.is_null()) throw_error("create_group_pre_post_operator", "The group cast failed!");
   /* Call the reset function of the nox nln group to reset the corresponding
    * pre/post operator map. */
@@ -262,7 +262,7 @@ void NOX::NLN::Solver::PseudoTransient::create_group_pre_post_operator()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
+::NOX::StatusTest::StatusType NOX::Nln::Solver::PseudoTransient::step()
 {
   observer->runPreIterate(*this);
 
@@ -324,10 +324,10 @@ void NOX::NLN::Solver::PseudoTransient::create_group_pre_post_operator()
    * solution. Steady-state F is already computed so the only thing
    * to compute is J. The necessary non-linear solver dependent changes
    * to the Jacobian are done by using the run_post_compute_jacobian() routine of the
-   * pre/post-operator object of the NOX::NLN::LinearSystem class and
+   * pre/post-operator object of the NOX::Nln::LinearSystem class and
    * its derived classes.
    *
-   * See the NOX::NLN::LinSystem::PrePostOP::PseudoTransient class for
+   * See the NOX::Nln::LinSystem::PrePostOP::PseudoTransient class for
    * more information. */
   bool ok = directionPtr->compute(*dirPtr, soln, *this);
 
@@ -338,7 +338,7 @@ void NOX::NLN::Solver::PseudoTransient::create_group_pre_post_operator()
 
   if (not ok)
   {
-    utilsPtr->out() << "NOX::NLN::Solver::PseudoTransient::step - unable to calculate direction"
+    utilsPtr->out() << "NOX::Nln::Solver::PseudoTransient::step - unable to calculate direction"
                     << std::endl;
     status = ::NOX::StatusTest::Failed;
 
@@ -373,7 +373,7 @@ void NOX::NLN::Solver::PseudoTransient::create_group_pre_post_operator()
   {
     if (stepSize == 0.0)
     {
-      utilsPtr->out() << "NOX::NLN::Solver::PseudoTransient::step - line search failed"
+      utilsPtr->out() << "NOX::Nln::Solver::PseudoTransient::step - line search failed"
                       << std::endl;
       status = ::NOX::StatusTest::Failed;
 
@@ -383,7 +383,7 @@ void NOX::NLN::Solver::PseudoTransient::create_group_pre_post_operator()
     }
     else if (utilsPtr->isPrintType(::NOX::Utils::Warning))
       utilsPtr->out()
-          << "NOX::NLN::Solver::PseudoTransient::step - using recovery step for line search"
+          << "NOX::Nln::Solver::PseudoTransient::step - using recovery step for line search"
           << std::endl;
   }
 
@@ -409,7 +409,7 @@ void NOX::NLN::Solver::PseudoTransient::create_group_pre_post_operator()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::eval_model_reduction_ratio()
+void NOX::Nln::Solver::PseudoTransient::eval_model_reduction_ratio()
 {
   if (tscType_ != tsc_mrr) return;
 
@@ -431,7 +431,7 @@ void NOX::NLN::Solver::PseudoTransient::eval_model_reduction_ratio()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::solve()
+::NOX::StatusTest::StatusType NOX::Nln::Solver::PseudoTransient::solve()
 {
   isPtcSolve_ = true;
   observer->runPreSolve(*this);
@@ -450,7 +450,7 @@ void NOX::NLN::Solver::PseudoTransient::eval_model_reduction_ratio()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::compute_pseudo_velocity()
+void NOX::Nln::Solver::PseudoTransient::compute_pseudo_velocity()
 {
   if (nIter >= maxPseudoTransientIterations_ or scaleOpType_ == scale_op_identity) return;
 
@@ -467,7 +467,7 @@ void NOX::NLN::Solver::PseudoTransient::compute_pseudo_velocity()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::adjust_pseudo_time_step()
+void NOX::Nln::Solver::PseudoTransient::adjust_pseudo_time_step()
 {
   /* Check the step-length. If the step-length is not equal 1.0,
    * we adjust the pseudo time step size by using a least squares
@@ -481,10 +481,10 @@ void NOX::NLN::Solver::PseudoTransient::adjust_pseudo_time_step()
                     << std::scientific << delta_ << " |" << std::endl;
   }
 
-  Teuchos::RCP<NOX::NLN::Group> oldNlnSolnPtr =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::Group>(oldSolnPtr);
+  Teuchos::RCP<NOX::Nln::Group> oldNlnSolnPtr =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::Group>(oldSolnPtr);
   if (oldNlnSolnPtr.is_null())
-    throw_error("update_pseudo_time_step", "Dynamic cast to NOX::NLN::Group failed!");
+    throw_error("update_pseudo_time_step", "Dynamic cast to NOX::Nln::Group failed!");
   oldNlnSolnPtr->adjust_pseudo_time_step(delta_, stepSize, *dirPtr, *this);
 
   if (utilsPtr->isPrintType(::NOX::Utils::Details))
@@ -499,7 +499,7 @@ void NOX::NLN::Solver::PseudoTransient::adjust_pseudo_time_step()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::update_pseudo_time_step()
+void NOX::Nln::Solver::PseudoTransient::update_pseudo_time_step()
 {
   if (nIter < maxPseudoTransientIterations_)
   {
@@ -522,7 +522,7 @@ void NOX::NLN::Solver::PseudoTransient::update_pseudo_time_step()
               1.0, *scalingDiagOpPtr_, epetraScaledRHS.getEpetraVector(), 0.0);
           normF = epetraScaledRHS.norm(normType_);
         }
-        if (normF > CORE::GEO::TOL12)
+        if (normF > Core::Geo::TOL12)
           deltaInit_ = 1.0 / (normF * normF);
         else
           deltaInit_ = 1.0;
@@ -575,7 +575,7 @@ void NOX::NLN::Solver::PseudoTransient::update_pseudo_time_step()
            * the pseudo time step.
            * This is meant to speed up the convergence close to the solution. */
           if (stepSize == 1.0 and
-              GetStatus<NOX::NLN::StatusTest::NormF>() == ::NOX::StatusTest::Converged)
+              GetStatus<NOX::Nln::StatusTest::NormF>() == ::NOX::StatusTest::Converged)
             muinv *= 4.0;
           /* if the model performed badly: reduce the pseudo time step by a
            * factor tau_red, where 0.25 <= tau_red <= 0.8.
@@ -645,26 +645,26 @@ void NOX::NLN::Solver::PseudoTransient::update_pseudo_time_step()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const double& NOX::NLN::Solver::PseudoTransient::get_inverse_pseudo_time_step() const
+const double& NOX::Nln::Solver::PseudoTransient::get_inverse_pseudo_time_step() const
 {
   return invDelta_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const double& NOX::NLN::Solver::PseudoTransient::getScalingFactor() const { return scaleFactor_; }
+const double& NOX::Nln::Solver::PseudoTransient::getScalingFactor() const { return scaleFactor_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const enum NOX::NLN::Solver::PseudoTransient::ScaleOpType&
-NOX::NLN::Solver::PseudoTransient::get_scaling_operator_type() const
+const enum NOX::Nln::Solver::PseudoTransient::ScaleOpType&
+NOX::Nln::Solver::PseudoTransient::get_scaling_operator_type() const
 {
   return scaleOpType_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Vector& NOX::NLN::Solver::PseudoTransient::get_scaling_diag_operator() const
+const Epetra_Vector& NOX::Nln::Solver::PseudoTransient::get_scaling_diag_operator() const
 {
   if (scalingDiagOpPtr_.is_null())
     throw_error("get_scaling_diag_operator", "The scaling operator is not initialized!");
@@ -674,18 +674,18 @@ const Epetra_Vector& NOX::NLN::Solver::PseudoTransient::get_scaling_diag_operato
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::NLN::Solver::PseudoTransient::use_pseudo_transient_residual() const
+bool NOX::Nln::Solver::PseudoTransient::use_pseudo_transient_residual() const
 {
   return usePseudoTransientResidual_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::NLN::Solver::PseudoTransient::isPtcSolve() const { return isPtcSolve_; }
+bool NOX::Nln::Solver::PseudoTransient::isPtcSolve() const { return isPtcSolve_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::printUpdate()
+void NOX::Nln::Solver::PseudoTransient::printUpdate()
 {
   double normSoln = 0;
   double normStep = 0;
@@ -762,13 +762,13 @@ void NOX::NLN::Solver::PseudoTransient::printUpdate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::Solver::PseudoTransient::throw_error(
+void NOX::Nln::Solver::PseudoTransient::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utilsPtr->isPrintType(::NOX::Utils::Error))
   {
     std::ostringstream msg;
-    msg << "ERROR - NOX::NLN::Sovler::PseudoTransient::" << functionName << " - " << errorMsg
+    msg << "ERROR - NOX::Nln::Sovler::PseudoTransient::" << functionName << " - " << errorMsg
         << std::endl;
     FOUR_C_THROW(msg.str());
   }
@@ -777,10 +777,10 @@ void NOX::NLN::Solver::PseudoTransient::throw_error(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::LinSystem::PrePostOp::PseudoTransient::PseudoTransient(
+NOX::Nln::LinSystem::PrePostOp::PseudoTransient::PseudoTransient(
     Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr,
-    const NOX::NLN::Solver::PseudoTransient& ptcsolver)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr,
+    const NOX::Nln::Solver::PseudoTransient& ptcsolver)
     : ptcsolver_(ptcsolver),
       scaling_diag_op_ptr_(scalingDiagOpPtr),
       scaling_matrix_op_ptr_(scalingMatrixOpPtr)
@@ -790,21 +790,21 @@ NOX::NLN::LinSystem::PrePostOp::PseudoTransient::PseudoTransient(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::run_post_compute_jacobian(
-    CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
+void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::run_post_compute_jacobian(
+    Core::LinAlg::SparseOperator& jac, const Epetra_Vector& x, const NOX::Nln::LinearSystem& linsys)
 {
   if (not ptcsolver_.isPtcSolve()) return;
 
   // get the type of the jacobian
-  const enum NOX::NLN::LinSystem::OperatorType& jactype = linsys.get_jacobian_operator_type();
+  const enum NOX::Nln::LinSystem::OperatorType& jactype = linsys.get_jacobian_operator_type();
 
   switch (jactype)
   {
-    case NOX::NLN::LinSystem::LinalgSparseMatrix:
+    case NOX::Nln::LinSystem::LinalgSparseMatrix:
     {
-      // First cast the CORE::LINALG::SparseOperator and do an additional sanity
+      // First cast the Core::LinAlg::SparseOperator and do an additional sanity
       // check.
-      CORE::LINALG::SparseMatrix* jacPtr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
+      Core::LinAlg::SparseMatrix* jacPtr = dynamic_cast<Core::LinAlg::SparseMatrix*>(&jac);
       if (jacPtr == nullptr)
         FOUR_C_THROW(
             "Something strange happened: The jacobian has not the "
@@ -817,7 +817,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::run_post_compute_jacobian(
     default:
     {
       FOUR_C_THROW("Unsupported jacobian operator type: %s",
-          NOX::NLN::LinSystem::OperatorType2String(jactype).c_str());
+          NOX::Nln::LinSystem::OperatorType2String(jactype).c_str());
       break;
     }
   }
@@ -827,28 +827,28 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::run_post_compute_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::run_post_compute_fand_jacobian(
-    Epetra_Vector& rhs, CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
-    const NOX::NLN::LinearSystem& linsys)
+void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::run_post_compute_fand_jacobian(
+    Epetra_Vector& rhs, Core::LinAlg::SparseOperator& jac, const Epetra_Vector& x,
+    const NOX::Nln::LinearSystem& linsys)
 {
   run_post_compute_jacobian(jac, x, linsys);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
-    CORE::LINALG::SparseMatrix& jac)
+void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
+    Core::LinAlg::SparseMatrix& jac)
 {
   // get the inverse pseudo time step
   const double& deltaInv = ptcsolver_.get_inverse_pseudo_time_step();
-  const enum NOX::NLN::Solver::PseudoTransient::ScaleOpType& scaleoptype =
+  const enum NOX::Nln::Solver::PseudoTransient::ScaleOpType& scaleoptype =
       ptcsolver_.get_scaling_operator_type();
   const double& scaleFactor = ptcsolver_.getScalingFactor();
 
   switch (scaleoptype)
   {
-    case NOX::NLN::Solver::PseudoTransient::scale_op_identity:
-    case NOX::NLN::Solver::PseudoTransient::scale_op_lumped_mass:
+    case NOX::Nln::Solver::PseudoTransient::scale_op_identity:
+    case NOX::Nln::Solver::PseudoTransient::scale_op_lumped_mass:
     {
       /* Build the scaling operator V and multiply it with the inverse
        * pseudo time step. Finally, we modify the jacobian.
@@ -858,14 +858,14 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
       // Scale v with scaling factor
       v->Scale(deltaInv * scaleFactor);
       // get the diagonal terms of the jacobian
-      Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(jac.RowMap(), false);
+      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(jac.RowMap(), false);
       jac.ExtractDiagonalCopy(*diag);
       diag->Update(1.0, *v, 1.0);
       // Finally modify the jacobian
       jac.replace_diagonal_values(*diag);
       break;
     }
-    case NOX::NLN::Solver::PseudoTransient::scale_op_element_based:
+    case NOX::Nln::Solver::PseudoTransient::scale_op_element_based:
     {
       /* Build the scaling operator V and multiply it with the inverse
        * pseudo time step. Finally, we modify the jacobian.
@@ -878,7 +878,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
 
       break;
     }
-    case NOX::NLN::Solver::PseudoTransient::scale_op_cfl_diagonal:
+    case NOX::Nln::Solver::PseudoTransient::scale_op_cfl_diagonal:
     {
       FOUR_C_THROW("Not yet implemented!");
       break;
@@ -894,10 +894,10 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::GROUP::PrePostOp::PseudoTransient::PseudoTransient(
+NOX::Nln::GROUP::PrePostOp::PseudoTransient::PseudoTransient(
     Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr,
-    const NOX::NLN::Solver::PseudoTransient& ptcsolver)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr,
+    const NOX::Nln::Solver::PseudoTransient& ptcsolver)
     : ptcsolver_(ptcsolver),
       scaling_diag_op_ptr_(scalingDiagOpPtr),
       scaling_matrix_op_ptr_(scalingMatrixOpPtr),
@@ -909,8 +909,8 @@ NOX::NLN::GROUP::PrePostOp::PseudoTransient::PseudoTransient(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::Epetra::Vector>
-NOX::NLN::GROUP::PrePostOp::PseudoTransient::eval_pseudo_transient_f_update(
-    const NOX::NLN::Group& grp)
+NOX::Nln::GROUP::PrePostOp::PseudoTransient::eval_pseudo_transient_f_update(
+    const NOX::Nln::Group& grp)
 {
   // get the current trial point
   Teuchos::RCP<::NOX::Epetra::Vector> xUpdate =
@@ -925,11 +925,11 @@ NOX::NLN::GROUP::PrePostOp::PseudoTransient::eval_pseudo_transient_f_update(
    * step size. */
   xUpdate->update(-1.0, xOld, 1.0);
 
-  const enum NOX::NLN::Solver::PseudoTransient::ScaleOpType& scaleoptype =
+  const enum NOX::Nln::Solver::PseudoTransient::ScaleOpType& scaleoptype =
       ptcsolver_.get_scaling_operator_type();
   switch (scaleoptype)
   {
-    case NOX::NLN::Solver::PseudoTransient::scale_op_identity:
+    case NOX::Nln::Solver::PseudoTransient::scale_op_identity:
     {
       ::NOX::Epetra::Vector v = ::NOX::Epetra::Vector(scaling_diag_op_ptr_);
       v.scale(ptcsolver_.get_inverse_pseudo_time_step());
@@ -937,7 +937,7 @@ NOX::NLN::GROUP::PrePostOp::PseudoTransient::eval_pseudo_transient_f_update(
 
       break;
     }
-    case NOX::NLN::Solver::PseudoTransient::scale_op_element_based:
+    case NOX::Nln::Solver::PseudoTransient::scale_op_element_based:
     {
       scaling_matrix_op_ptr_->Multiply(
           false, xUpdate->getEpetraVector(), xUpdate->getEpetraVector());
@@ -956,8 +956,8 @@ NOX::NLN::GROUP::PrePostOp::PseudoTransient::eval_pseudo_transient_f_update(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPostComputeF(
-    Epetra_Vector& F, const NOX::NLN::Group& grp)
+void NOX::Nln::GROUP::PrePostOp::PseudoTransient::runPostComputeF(
+    Epetra_Vector& F, const NOX::Nln::Group& grp)
 {
   if (not ptcsolver_.isPtcSolve()) return;
 
@@ -980,8 +980,8 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPostComputeF(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPreComputeF(
-    Epetra_Vector& F, const NOX::NLN::Group& grp)
+void NOX::Nln::GROUP::PrePostOp::PseudoTransient::runPreComputeF(
+    Epetra_Vector& F, const NOX::Nln::Group& grp)
 {
   if (not ptcsolver_.isPtcSolve()) return;
 

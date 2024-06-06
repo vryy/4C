@@ -28,8 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 //
 //----------------------------------------------------------------------
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
-    Teuchos::RCP<DRT::Discretization> discret, std::string homdir,
-    CORE::LINALG::MapExtractor& velpressplitter, const bool withscatra)
+    Teuchos::RCP<Discret::Discretization> discret, std::string homdir,
+    Core::LinAlg::MapExtractor& velpressplitter, const bool withscatra)
     : discret_(discret),
       standarddofset_(Teuchos::null),
       velpressplitter_(velpressplitter),
@@ -78,9 +78,9 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
 //
 //----------------------------------------------------------------------
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
-    Teuchos::RCP<DRT::Discretization> discret,
-    Teuchos::RCP<const CORE::Dofsets::DofSet> standarddofset, std::string homdir,
-    CORE::LINALG::MapExtractor& velpressplitter, const bool withscatra)
+    Teuchos::RCP<Discret::Discretization> discret,
+    Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset, std::string homdir,
+    Core::LinAlg::MapExtractor& velpressplitter, const bool withscatra)
     : discret_(discret),
       standarddofset_(standarddofset),
       velpressplitter_(velpressplitter),
@@ -240,7 +240,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
       // get the processor local node
-      CORE::Nodes::Node* lnode = discret_->lRowNode(nn);
+      Core::Nodes::Node* lnode = discret_->lRowNode(nn);
 
       double xdim = (lnode->X())[dim];
 
@@ -267,10 +267,10 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
       // get the processor local node
-      CORE::Nodes::Node* lnode = discret_->lRowNode(nn);
+      Core::Nodes::Node* lnode = discret_->lRowNode(nn);
 
       // check for slave nodes  to skip them
-      std::vector<CORE::Conditions::Condition*> mypbcs;
+      std::vector<Core::Conditions::Condition*> mypbcs;
       lnode->GetCondition("SurfacePeriodic", mypbcs);
 
       // check whether a periodic boundary condition is active on this node
@@ -405,7 +405,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
   std::map<double, int, Doublecomp>::iterator y_and_i;
 
   // create an exporter for point to point comunication
-  CORE::COMM::Exporter exporter(avgcomm);
+  Core::Communication::Exporter exporter(avgcomm);
 
   // necessary variables
   MPI_Request request;
@@ -462,7 +462,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
 
       // size
       int size;
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, size);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, size);
 
       x.resize(size, 0.0);
       y.resize(size, 0.0);
@@ -474,17 +474,17 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
       avg_p.resize(size, 0.0);
 
       // x and y
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, x);
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, y);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, x);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, y);
 
       // counters
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, count);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, count);
 
       // avgs
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_u);
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_v);
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_w);
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_p);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, avg_u);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, avg_v);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, avg_w);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, avg_p);
 
       rblock.clear();
     }
@@ -524,10 +524,10 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
       for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
       {
         // get the processor local node
-        CORE::Nodes::Node* lnode = discret_->lRowNode(nn);
+        Core::Nodes::Node* lnode = discret_->lRowNode(nn);
 
         // check for slave nodes  to skip them
-        std::vector<CORE::Conditions::Condition*> mypbcs;
+        std::vector<Core::Conditions::Condition*> mypbcs;
         lnode->GetCondition("SurfacePeriodic", mypbcs);
 
         // check whether a periodic boundary condition is active on this node
@@ -538,7 +538,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
           // yes, we have one
           for (unsigned numcond = 0; numcond < mypbcs.size(); ++numcond)
           {
-            CORE::Conditions::Condition* pbc = mypbcs[numcond];
+            Core::Conditions::Condition* pbc = mypbcs[numcond];
 
             // see whether pbc is active in plane orthogonal to sampling plane
             const std::string& dofsforpbcplanename =
@@ -659,41 +659,41 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
 
       //--------------------------------------------------
       // Pack block to send
-      CORE::COMM::PackBuffer data;
+      Core::Communication::PackBuffer data;
 
       // size
       int size = x.size();
-      CORE::COMM::ParObject::AddtoPack(data, size);
+      Core::Communication::ParObject::AddtoPack(data, size);
 
       // x and y
-      CORE::COMM::ParObject::AddtoPack(data, x);
-      CORE::COMM::ParObject::AddtoPack(data, y);
+      Core::Communication::ParObject::AddtoPack(data, x);
+      Core::Communication::ParObject::AddtoPack(data, y);
 
       // counters
-      CORE::COMM::ParObject::AddtoPack(data, count);
+      Core::Communication::ParObject::AddtoPack(data, count);
 
       // avgs
-      CORE::COMM::ParObject::AddtoPack(data, avg_u);
-      CORE::COMM::ParObject::AddtoPack(data, avg_v);
-      CORE::COMM::ParObject::AddtoPack(data, avg_w);
-      CORE::COMM::ParObject::AddtoPack(data, avg_p);
+      Core::Communication::ParObject::AddtoPack(data, avg_u);
+      Core::Communication::ParObject::AddtoPack(data, avg_v);
+      Core::Communication::ParObject::AddtoPack(data, avg_w);
+      Core::Communication::ParObject::AddtoPack(data, avg_p);
 
       data.StartPacking();
 
-      CORE::COMM::ParObject::AddtoPack(data, size);
+      Core::Communication::ParObject::AddtoPack(data, size);
 
       // x and y
-      CORE::COMM::ParObject::AddtoPack(data, x);
-      CORE::COMM::ParObject::AddtoPack(data, y);
+      Core::Communication::ParObject::AddtoPack(data, x);
+      Core::Communication::ParObject::AddtoPack(data, y);
 
       // counters
-      CORE::COMM::ParObject::AddtoPack(data, count);
+      Core::Communication::ParObject::AddtoPack(data, count);
 
       // avgs
-      CORE::COMM::ParObject::AddtoPack(data, avg_u);
-      CORE::COMM::ParObject::AddtoPack(data, avg_v);
-      CORE::COMM::ParObject::AddtoPack(data, avg_w);
-      CORE::COMM::ParObject::AddtoPack(data, avg_p);
+      Core::Communication::ParObject::AddtoPack(data, avg_u);
+      Core::Communication::ParObject::AddtoPack(data, avg_v);
+      Core::Communication::ParObject::AddtoPack(data, avg_w);
+      Core::Communication::ParObject::AddtoPack(data, avg_p);
 
       swap(sblock, data());
 
@@ -771,7 +771,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
 
       // size
       int size;
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, size);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, size);
 
       count.resize(size, 0);
       avg_u.resize(size, 0.0);
@@ -780,17 +780,17 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
       avg_p.resize(size, 0.0);
 
       // x and y
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, x);
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, y);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, x);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, y);
 
       // counters
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, count);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, count);
 
       // avgs
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_u);
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_v);
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_w);
-      CORE::COMM::ParObject::ExtractfromPack(position, rblock, avg_p);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, avg_u);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, avg_v);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, avg_w);
+      Core::Communication::ParObject::ExtractfromPack(position, rblock, avg_p);
 
       rblock.clear();
     }
@@ -826,10 +826,10 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
       // get the processor local node
-      CORE::Nodes::Node* lnode = discret_->lRowNode(nn);
+      Core::Nodes::Node* lnode = discret_->lRowNode(nn);
 
       // check for slave nodes  to skip them
-      std::vector<CORE::Conditions::Condition*> mypbcs;
+      std::vector<Core::Conditions::Condition*> mypbcs;
       lnode->GetCondition("SurfacePeriodic", mypbcs);
 
       // check whether a periodic boundary condition is active on this node
@@ -840,7 +840,7 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
         // yes, we have one
         for (unsigned numcond = 0; numcond < mypbcs.size(); ++numcond)
         {
-          CORE::Conditions::Condition* pbc = mypbcs[numcond];
+          Core::Conditions::Condition* pbc = mypbcs[numcond];
 
           // see whether pbc is active in plane orthogonal to sampling plane
           const std::string& dofsforpbcplanename =
@@ -954,42 +954,42 @@ void FLD::TurbulenceStatisticsGeneralMean::space_average_in_one_direction(const 
     {
       //--------------------------------------------------
       // Pack block to send
-      CORE::COMM::PackBuffer data;
+      Core::Communication::PackBuffer data;
 
       // size
       int size = x.size();
 
-      CORE::COMM::ParObject::AddtoPack(data, size);
+      Core::Communication::ParObject::AddtoPack(data, size);
 
       // x and y
-      CORE::COMM::ParObject::AddtoPack(data, x);
-      CORE::COMM::ParObject::AddtoPack(data, y);
+      Core::Communication::ParObject::AddtoPack(data, x);
+      Core::Communication::ParObject::AddtoPack(data, y);
 
       // counters
-      CORE::COMM::ParObject::AddtoPack(data, count);
+      Core::Communication::ParObject::AddtoPack(data, count);
 
       // avgs
-      CORE::COMM::ParObject::AddtoPack(data, avg_u);
-      CORE::COMM::ParObject::AddtoPack(data, avg_v);
-      CORE::COMM::ParObject::AddtoPack(data, avg_w);
-      CORE::COMM::ParObject::AddtoPack(data, avg_p);
+      Core::Communication::ParObject::AddtoPack(data, avg_u);
+      Core::Communication::ParObject::AddtoPack(data, avg_v);
+      Core::Communication::ParObject::AddtoPack(data, avg_w);
+      Core::Communication::ParObject::AddtoPack(data, avg_p);
 
       data.StartPacking();
 
-      CORE::COMM::ParObject::AddtoPack(data, size);
+      Core::Communication::ParObject::AddtoPack(data, size);
 
       // x and y
-      CORE::COMM::ParObject::AddtoPack(data, x);
-      CORE::COMM::ParObject::AddtoPack(data, y);
+      Core::Communication::ParObject::AddtoPack(data, x);
+      Core::Communication::ParObject::AddtoPack(data, y);
 
       // counters
-      CORE::COMM::ParObject::AddtoPack(data, count);
+      Core::Communication::ParObject::AddtoPack(data, count);
 
       // avgs
-      CORE::COMM::ParObject::AddtoPack(data, avg_u);
-      CORE::COMM::ParObject::AddtoPack(data, avg_v);
-      CORE::COMM::ParObject::AddtoPack(data, avg_w);
-      CORE::COMM::ParObject::AddtoPack(data, avg_p);
+      Core::Communication::ParObject::AddtoPack(data, avg_u);
+      Core::Communication::ParObject::AddtoPack(data, avg_v);
+      Core::Communication::ParObject::AddtoPack(data, avg_w);
+      Core::Communication::ParObject::AddtoPack(data, avg_p);
 
       swap(sblock, data());
 
@@ -1056,7 +1056,7 @@ void FLD::TurbulenceStatisticsGeneralMean::add_to_total_time_average()
 //          Read previous statistics from a file (for restart)
 //
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(CORE::IO::DiscretizationReader& input)
+void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(Core::IO::DiscretizationReader& input)
 {
   prev_n_ = input.ReadInt("num_steps_in_sample");
   prev_avg_time_ = input.ReadDouble("sampling_time");
@@ -1072,7 +1072,7 @@ void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(CORE::IO::Discretiz
 //
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_sca_tra(
-    CORE::IO::DiscretizationReader& input)
+    Core::IO::DiscretizationReader& input)
 {
   if (withscatra_)
   {
@@ -1088,7 +1088,7 @@ void FLD::TurbulenceStatisticsGeneralMean::read_old_statistics_sca_tra(
 //
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
-    CORE::IO::DiscretizationWriter& output)
+    Core::IO::DiscretizationWriter& output)
 {
   // loop homogeneous directions, do averaging
   for (unsigned i = 0; i < homdir_.size(); ++i)
@@ -1142,7 +1142,7 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
     {
       const Epetra_Map* scatradofrowmap = scatradis_->dof_row_map();
       curr_avg_scatra_ = Teuchos::null;
-      curr_avg_scatra_ = CORE::LINALG::CreateVector(*scatradofrowmap, true);
+      curr_avg_scatra_ = Core::LinAlg::CreateVector(*scatradofrowmap, true);
     }
   }
 
@@ -1158,11 +1158,11 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
 void FLD::TurbulenceStatisticsGeneralMean::time_reset_fluid_avg_vectors(const Epetra_Map& dofrowmap)
 {
   curr_avg_ = Teuchos::null;
-  curr_avg_ = CORE::LINALG::CreateVector(dofrowmap, true);
+  curr_avg_ = Core::LinAlg::CreateVector(dofrowmap, true);
   if (withscatra_)
   {
     curr_avg_sca_ = Teuchos::null;
-    curr_avg_sca_ = CORE::LINALG::CreateVector(dofrowmap, true);
+    curr_avg_sca_ = Core::LinAlg::CreateVector(dofrowmap, true);
   }
 }  // FLD::TurbulenceStatisticsGeneralMean::time_reset_fluid_avg_vectors
 
@@ -1190,9 +1190,9 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
     {
       const Epetra_Map* scatradofrowmap = scatradis_->dof_row_map();
       curr_avg_scatra_ = Teuchos::null;
-      curr_avg_scatra_ = CORE::LINALG::CreateVector(*scatradofrowmap, true);
+      curr_avg_scatra_ = Core::LinAlg::CreateVector(*scatradofrowmap, true);
       prev_avg_scatra_ = Teuchos::null;
-      prev_avg_scatra_ = CORE::LINALG::CreateVector(*scatradofrowmap, true);
+      prev_avg_scatra_ = Core::LinAlg::CreateVector(*scatradofrowmap, true);
     }
   }
 }  // FLD::TurbulenceStatisticsGeneralMean::ResetComplete
@@ -1206,13 +1206,13 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
 void FLD::TurbulenceStatisticsGeneralMean::reset_fluid_avg_vectors(const Epetra_Map& dofrowmap)
 {
   curr_avg_ = Teuchos::null;
-  curr_avg_ = CORE::LINALG::CreateVector(dofrowmap, true);
+  curr_avg_ = Core::LinAlg::CreateVector(dofrowmap, true);
 
   curr_n_ = 0;
   curr_avg_time_ = 0.0;
 
   prev_avg_ = Teuchos::null;
-  prev_avg_ = CORE::LINALG::CreateVector(dofrowmap, true);
+  prev_avg_ = Core::LinAlg::CreateVector(dofrowmap, true);
 
   prev_n_ = 0;
   prev_avg_time_ = 0.0;
@@ -1220,9 +1220,9 @@ void FLD::TurbulenceStatisticsGeneralMean::reset_fluid_avg_vectors(const Epetra_
   if (withscatra_)
   {
     curr_avg_sca_ = Teuchos::null;
-    curr_avg_sca_ = CORE::LINALG::CreateVector(dofrowmap, true);
+    curr_avg_sca_ = Core::LinAlg::CreateVector(dofrowmap, true);
     prev_avg_sca_ = Teuchos::null;
-    prev_avg_sca_ = CORE::LINALG::CreateVector(dofrowmap, true);
+    prev_avg_sca_ = Core::LinAlg::CreateVector(dofrowmap, true);
   }
 }  // FLD::TurbulenceStatisticsGeneralMean::reset_fluid_avg_vectors
 
@@ -1232,15 +1232,15 @@ void FLD::TurbulenceStatisticsGeneralMean::reset_fluid_avg_vectors(const Epetra_
 //
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
-    Teuchos::RCP<const CORE::Dofsets::DofSet> standarddofset,
-    Teuchos::RCP<DRT::Discretization> discret)
+    Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset,
+    Teuchos::RCP<Discret::Discretization> discret)
 {
   standarddofset_ = Teuchos::null;
   standarddofset_ = standarddofset;
   const Epetra_Map* dofrowmap = standarddofset_->dof_row_map();
 
   // split based on complete fluid field
-  CORE::LINALG::CreateMapExtractorFromDiscretization(
+  Core::LinAlg::CreateMapExtractorFromDiscretization(
       *discret, *standarddofset_, 3, velpressplitter_);
 
   Teuchos::RCP<Epetra_Vector> old;
@@ -1249,14 +1249,14 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
   {
     old = curr_avg_;
     curr_avg_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
-    CORE::LINALG::Export(*old, *curr_avg_);
+    Core::LinAlg::Export(*old, *curr_avg_);
   }
 
   if (prev_avg_ != Teuchos::null)
   {
     old = prev_avg_;
     prev_avg_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
-    CORE::LINALG::Export(*old, *prev_avg_);
+    Core::LinAlg::Export(*old, *prev_avg_);
   }
 
   if (withscatra_)
@@ -1265,14 +1265,14 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
     {
       old = curr_avg_sca_;
       curr_avg_sca_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
-      CORE::LINALG::Export(*old, *curr_avg_sca_);
+      Core::LinAlg::Export(*old, *curr_avg_sca_);
     }
 
     if (prev_avg_sca_ != Teuchos::null)
     {
       old = prev_avg_sca_;
       prev_avg_sca_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
-      CORE::LINALG::Export(*old, *prev_avg_sca_);
+      Core::LinAlg::Export(*old, *prev_avg_sca_);
     }
 
     if (scatradis_ != Teuchos::null)
@@ -1283,14 +1283,14 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
       {
         old = curr_avg_scatra_;
         curr_avg_scatra_ = Teuchos::rcp(new Epetra_Vector(*scatradofrowmap), true);
-        CORE::LINALG::Export(*old, *curr_avg_scatra_);
+        Core::LinAlg::Export(*old, *curr_avg_scatra_);
       }
 
       if (prev_avg_scatra_ != Teuchos::null)
       {
         old = prev_avg_scatra_;
         prev_avg_scatra_ = Teuchos::rcp(new Epetra_Vector(*scatradofrowmap), true);
-        CORE::LINALG::Export(*old, *prev_avg_scatra_);
+        Core::LinAlg::Export(*old, *prev_avg_scatra_);
       }
     }
   }
@@ -1303,7 +1303,7 @@ Add results from scalar transport field solver to statistics
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults(
-    Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
+    Teuchos::RCP<Discret::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
 {
   withscatra_ = true;  // now it is clear: we have scatra results as well!
 
@@ -1320,7 +1320,7 @@ void FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults(
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
-    CORE::IO::DiscretizationWriter& output, int step)
+    Core::IO::DiscretizationWriter& output, int step)
 {
   if (withscatra_)
   {

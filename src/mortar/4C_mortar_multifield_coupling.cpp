@@ -21,20 +21,20 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-void MORTAR::MultiFieldCoupling::PushBackCoupling(const Teuchos::RCP<DRT::Discretization>& dis,
+void Mortar::MultiFieldCoupling::PushBackCoupling(const Teuchos::RCP<Discret::Discretization>& dis,
     const int nodeset, const std::vector<int> dofs_to_couple)
 {
   if (!dis->GetCondition("MortarMulti"))
     FOUR_C_THROW("this discretization does not have a Mortar-Muti condition");
 
-  Teuchos::RCP<CORE::ADAPTER::CouplingMortar> adaptermeshtying =
-      Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(GLOBAL::Problem::Instance()->NDim(),
-          GLOBAL::Problem::Instance()->mortar_coupling_params(),
-          GLOBAL::Problem::Instance()->contact_dynamic_params(),
-          GLOBAL::Problem::Instance()->spatial_approximation_type()));
+  Teuchos::RCP<Core::Adapter::CouplingMortar> adaptermeshtying =
+      Teuchos::rcp(new Core::Adapter::CouplingMortar(Global::Problem::Instance()->NDim(),
+          Global::Problem::Instance()->mortar_coupling_params(),
+          Global::Problem::Instance()->contact_dynamic_params(),
+          Global::Problem::Instance()->spatial_approximation_type()));
 
   adaptermeshtying->Setup(dis, dis, Teuchos::null, dofs_to_couple, "MortarMulti", dis->Comm(),
-      GLOBAL::Problem::Instance()->FunctionManager(), false, false, nodeset, nodeset);
+      Global::Problem::Instance()->FunctionManager(), false, false, nodeset, nodeset);
 
   adaptermeshtying->Evaluate();
   p_.push_back(adaptermeshtying->GetMortarMatrixP());
@@ -42,24 +42,24 @@ void MORTAR::MultiFieldCoupling::PushBackCoupling(const Teuchos::RCP<DRT::Discre
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-void MORTAR::MultiFieldCoupling::CondenseMatrix(
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat)
+void Mortar::MultiFieldCoupling::CondenseMatrix(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat)
 {
-  MORTAR::UTILS::MortarMatrixCondensation(mat, p_);
+  Mortar::UTILS::MortarMatrixCondensation(mat, p_);
 }
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-void MORTAR::MultiFieldCoupling::CondenseRhs(Teuchos::RCP<Epetra_Vector>& rhs)
+void Mortar::MultiFieldCoupling::CondenseRhs(Teuchos::RCP<Epetra_Vector>& rhs)
 {
-  MORTAR::UTILS::MortarRhsCondensation(rhs, p_);
+  Mortar::UTILS::MortarRhsCondensation(rhs, p_);
 }
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-void MORTAR::MultiFieldCoupling::RecoverIncr(Teuchos::RCP<Epetra_Vector>& incr)
+void Mortar::MultiFieldCoupling::RecoverIncr(Teuchos::RCP<Epetra_Vector>& incr)
 {
-  MORTAR::UTILS::MortarRecover(incr, p_);
+  Mortar::UTILS::MortarRecover(incr, p_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

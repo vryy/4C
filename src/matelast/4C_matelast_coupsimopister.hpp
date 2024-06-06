@@ -17,9 +17,9 @@ term
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
@@ -29,11 +29,11 @@ namespace MAT
        * <h3>Input line</h3>
        * MAT 1 ELAST_CoupSimoPister MUE 1000
        */
-      class CoupSimoPister : public CORE::MAT::PAR::Parameter
+      class CoupSimoPister : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
-        CoupSimoPister(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        CoupSimoPister(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -42,11 +42,11 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
       };  // class CoupSimoPister
@@ -77,35 +77,35 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      CoupSimoPister(MAT::ELASTIC::PAR::CoupSimoPister* params);
+      CoupSimoPister(Mat::Elastic::PAR::CoupSimoPister* params);
 
       /// @name Access material constants
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_coupsimopister;
+        return Core::Materials::mes_coupsimopister;
       }
 
       //@}
 
       // add strain energy
       void AddStrainEnergy(double& psi,  ///< strain energy function
-          const CORE::LINALG::Matrix<3, 1>&
+          const Core::LinAlg::Matrix<3, 1>&
               prinv,  ///< principal invariants of right Cauchy-Green tensor
-          const CORE::LINALG::Matrix<3, 1>&
+          const Core::LinAlg::Matrix<3, 1>&
               modinv,  ///< modified invariants of right Cauchy-Green tensor
-          const CORE::LINALG::Matrix<6, 1>&
+          const Core::LinAlg::Matrix<6, 1>&
               glstrain,  ///< Green-Lagrange strain in strain like Voigt notation
           int gp,        ///< Gauss point
           int eleGID     ///< element GID
           ) override;
 
       void add_derivatives_principal(
-          CORE::LINALG::Matrix<3, 1>& dPI,    ///< first derivative with respect to invariants
-          CORE::LINALG::Matrix<6, 1>& ddPII,  ///< second derivative with respect to invariants
-          const CORE::LINALG::Matrix<3, 1>&
+          Core::LinAlg::Matrix<3, 1>& dPI,    ///< first derivative with respect to invariants
+          Core::LinAlg::Matrix<6, 1>& ddPII,  ///< second derivative with respect to invariants
+          const Core::LinAlg::Matrix<3, 1>&
               prinv,  ///< principal invariants of right Cauchy-Green tensor
           int gp,     ///< Gauss point
           int eleGID  ///< element GID
@@ -134,11 +134,11 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::CoupSimoPister* params_;
+      Mat::Elastic::PAR::CoupSimoPister* params_;
     };
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

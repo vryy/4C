@@ -24,7 +24,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : PrestressStrategy(matdata),
       inner_radius_(matdata->Get<double>("INNER_RADIUS")),
       wall_thickness_(matdata->Get<double>("WALL_THICKNESS")),
@@ -55,8 +55,8 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::Setup(
 }
 
 void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const MixtureRule& mixtureRule,
-    const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
-    MIXTURE::MixtureConstituent& constituent, CORE::LINALG::Matrix<3, 3>& G,
+    const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
+    MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // We evaluate the stress in the reference configuration with a prestretch. Hence, the
@@ -79,8 +79,8 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
 
   // Let's assume that for simplicity, the first index is the IsoNeoHooke material and the second
   // index is the Sussman-Bathe penalty parameter
-  auto matiso = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::IsoNeoHooke>(elhyper.Summands()[0]);
-  auto matvol = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::VolSussmanBathe>(elhyper.Summands()[1]);
+  auto matiso = Teuchos::rcp_dynamic_cast<Mat::Elastic::IsoNeoHooke>(elhyper.Summands()[0]);
+  auto matvol = Teuchos::rcp_dynamic_cast<Mat::Elastic::VolSussmanBathe>(elhyper.Summands()[1]);
 
   if (Teuchos::is_null(matiso))
   {
@@ -101,7 +101,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
       dynamic_cast<const MIXTURE::GrowthRemodelMixtureRule&>(mixtureRule);
 
 
-  Teuchos::RCP<const MAT::CylinderCoordinateSystemProvider> cylinderCosy =
+  Teuchos::RCP<const Mat::CylinderCoordinateSystemProvider> cylinderCosy =
       cosy->get_cylinder_coordinate_system();
 
   if (Teuchos::is_null(cylinderCosy))
@@ -111,7 +111,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
         "strategy!");
   }
 
-  const auto& reference_coordinates = params.get<CORE::LINALG::Matrix<3, 1>>("gp_coords_ref");
+  const auto& reference_coordinates = params.get<Core::LinAlg::Matrix<3, 1>>("gp_coords_ref");
 
   double r = 0;
   for (unsigned i = 0; i < 3; ++i)
@@ -178,11 +178,11 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
 }
 
 double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule& mixtureRule,
-    const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
+    const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
     MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
     Teuchos::ParameterList& params, int gp, int eleGID) const
 {
-  Teuchos::RCP<const MAT::CylinderCoordinateSystemProvider> cylinderCosy =
+  Teuchos::RCP<const Mat::CylinderCoordinateSystemProvider> cylinderCosy =
       cosy->get_cylinder_coordinate_system();
 
   if (Teuchos::is_null(cylinderCosy))
@@ -192,15 +192,15 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
         "strategy!");
   }
 
-  CORE::LINALG::Matrix<3, 3> F = CORE::LINALG::IdentityMatrix<3>();
-  CORE::LINALG::Matrix<6, 1> E_strain(true);
-  CORE::LINALG::Matrix<6, 1> S_stress(true);
-  CORE::LINALG::Matrix<6, 6> cmat(true);
+  Core::LinAlg::Matrix<3, 3> F = Core::LinAlg::IdentityMatrix<3>();
+  Core::LinAlg::Matrix<6, 1> E_strain(true);
+  Core::LinAlg::Matrix<6, 1> S_stress(true);
+  Core::LinAlg::Matrix<6, 6> cmat(true);
 
 
   mixtureRule.Evaluate(F, E_strain, params, S_stress, cmat, gp, eleGID);
 
-  CORE::LINALG::Matrix<6, 1> Acir(false);
+  Core::LinAlg::Matrix<6, 1> Acir(false);
   // Compute structural tensor
   for (int i = 0; i < 3; ++i) Acir(i) = cylinderCosy->GetCir()(i) * cylinderCosy->GetCir()(i);
   Acir(3) = 2.0 * cylinderCosy->GetCir()(0) * cylinderCosy->GetCir()(1);
@@ -214,7 +214,7 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
   double initial_constituent_reference_density =
       growth_remodel_rule.get_constituent_initial_reference_mass_density(constituent);
 
-  CORE::LINALG::Matrix<6, 1> Smembrane(false);
+  Core::LinAlg::Matrix<6, 1> Smembrane(false);
   membraneEvaluation.evaluate_membrane_stress(Smembrane, params, gp, eleGID);
   Smembrane.Scale(initial_constituent_reference_density);
 
@@ -229,9 +229,9 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
 }
 
 void MIXTURE::IsotropicCylinderPrestressStrategy::Update(
-    const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
-    MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
-    CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
+    const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+    MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
+    Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
 }
 FOUR_C_NAMESPACE_CLOSE

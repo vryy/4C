@@ -27,7 +27,7 @@ const int NUMDOF_SOH18 = 54;         ///< total dofs per element
 const int NUMGPT_SOH18 = 2 * 3 * 3;  ///< total gauss points per element
 const int NUMDIM_SOH18 = 3;          ///< number of dimensions
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -35,30 +35,30 @@ namespace DRT
 
   namespace ELEMENTS
   {
-    class SoHex18Type : public CORE::Elements::ElementType
+    class SoHex18Type : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "So_hex18Type"; }
 
       static SoHex18Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -100,12 +100,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::hex18; };
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::hex18; };
 
       /*!
       \brief Return number of volumes of this element
@@ -126,13 +126,13 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -148,7 +148,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -167,19 +167,19 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
 
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -197,7 +197,7 @@ namespace DRT
 
 
 
-      CORE::Elements::ElementType& ElementType() const override { return SoHex18Type::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return SoHex18Type::Instance(); }
 
       //@}
 
@@ -253,7 +253,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -285,11 +285,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -305,10 +305,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Return value how expensive it is to evaluate this element
@@ -317,7 +317,7 @@ namespace DRT
       */
       double EvaluationCost() override
       {
-        if (Material()->MaterialType() == CORE::Materials::m_struct_multiscale)
+        if (Material()->MaterialType() == Core::Materials::m_struct_multiscale)
           return 25000.0;
         else
           return 10.0;
@@ -347,11 +347,11 @@ namespace DRT
       };
 
       //! vector of inverses of the jacobian in material frame
-      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>> invJ_;
+      std::vector<Core::LinAlg::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>> invJ_;
       //! vector of inverses of the jacobian in material frame
       std::vector<double> detJ_;
       //! Gauss point coordinates
-      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH18, 1>> xsi_;
+      std::vector<Core::LinAlg::Matrix<NUMDIM_SOH18, 1>> xsi_;
       //! Gauss point weights
       std::vector<double> wgt_;
 
@@ -371,26 +371,26 @@ namespace DRT
       virtual void nlnstiffmass(std::vector<int>& lm,  ///< location matrix
           std::vector<double>& disp,                   ///< current displacements
           std::vector<double>& residual,               ///< current residual displ
-          CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>*
+          Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>*
               stiffmatrix,  ///< element stiffness matrix
-          CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* massmatrix,  ///< element mass matrix
-          CORE::LINALG::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
-          CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* massmatrix,  ///< element mass matrix
+          Core::LinAlg::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
+          Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,  ///< stress output option
-          const INPAR::STR::StrainType iostrain   ///< strain output option
+          const Inpar::STR::StressType iostress,  ///< stress output option
+          const Inpar::STR::StrainType iostrain   ///< strain output option
       );                                          ///< plastic strain output option
 
       //! Lump mass matrix (bborn 07/08)
-      void lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass);
+      void lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass);
 
       void flip_t();
 
       // parameter space coords of one node
-      CORE::LINALG::Matrix<3, 1> node_param_coord(const int node);
+      Core::LinAlg::Matrix<3, 1> node_param_coord(const int node);
       // parameter space coords of all nodes
-      CORE::LINALG::Matrix<18, 3> node_param_coord();
+      Core::LinAlg::Matrix<18, 3> node_param_coord();
 
       // Update the element
       void update(){/* do nothing */};
@@ -406,7 +406,7 @@ namespace DRT
     };  // class So_hex18
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 

@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class FPSIStructureWrapper : public FSIStructureWrapper
   {
@@ -46,7 +46,7 @@ namespace ADAPTER
     */
     virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispnp(bool FPSI = false);
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

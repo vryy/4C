@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   /*----------------------------------------------------------------------*
    | create communicator                                      ghamm 02/12 |
@@ -346,8 +346,8 @@ namespace CORE::COMM
     MPI_Comm_compare(mpi_gcomm, mpi_lcomm, &result);
     if (result == 0)
     {
-      CORE::IO::cout << "WARNING:: Vectors " << name
-                     << " cannot be compared because second 4C run is missing" << CORE::IO::endl;
+      Core::IO::cout << "WARNING:: Vectors " << name
+                     << " cannot be compared because second 4C run is missing" << Core::IO::endl;
       return false;
     }
 
@@ -359,14 +359,14 @@ namespace CORE::COMM
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
     Teuchos::RCP<Epetra_Map> proc0map;
     if (lcomm->MyPID() == gcomm->MyPID())
-      proc0map = CORE::LINALG::AllreduceOverlappingEMap(*vecmap, 0);
+      proc0map = Core::LinAlg::AllreduceOverlappingEMap(*vecmap, 0);
     else
-      proc0map = CORE::LINALG::AllreduceOverlappingEMap(*vecmap, lcomm->NumProc() - 1);
+      proc0map = Core::LinAlg::AllreduceOverlappingEMap(*vecmap, lcomm->NumProc() - 1);
 
     // export full vectors to the two desired processors
     Teuchos::RCP<Epetra_MultiVector> fullvec =
         Teuchos::rcp(new Epetra_MultiVector(*proc0map, vec->NumVectors(), true));
-    CORE::LINALG::Export(*vec, *fullvec);
+    Core::LinAlg::Export(*vec, *fullvec);
 
     const int myglobalrank = gcomm->MyPID();
     double maxdiff = 0.0;
@@ -431,8 +431,8 @@ namespace CORE::COMM
       }
       if (maxdiff <= tol)
       {
-        CORE::IO::cout << "compared vectors " << name << " of length: " << mylength
-                       << " which are identical." << CORE::IO::endl;
+        Core::IO::cout << "compared vectors " << name << " of length: " << mylength
+                       << " which are identical." << Core::IO::endl;
         result = 1;
       }
     }
@@ -489,8 +489,8 @@ namespace CORE::COMM
     MPI_Comm_compare(mpi_gcomm, mpi_lcomm, &result);
     if (result == 0)
     {
-      CORE::IO::cout << "WARNING:: Matrices " << name
-                     << " cannot be compared because second 4C run is missing" << CORE::IO::endl;
+      Core::IO::cout << "WARNING:: Matrices " << name
+                     << " cannot be compared because second 4C run is missing" << Core::IO::endl;
       return false;
     }
 
@@ -499,9 +499,9 @@ namespace CORE::COMM
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
     Teuchos::RCP<Epetra_Map> serialmap;
     if (lcomm->MyPID() == gcomm->MyPID())
-      serialmap = CORE::LINALG::AllreduceOverlappingEMap(originalmap, 0);
+      serialmap = Core::LinAlg::AllreduceOverlappingEMap(originalmap, 0);
     else
-      serialmap = CORE::LINALG::AllreduceOverlappingEMap(originalmap, lcomm->NumProc() - 1);
+      serialmap = Core::LinAlg::AllreduceOverlappingEMap(originalmap, lcomm->NumProc() - 1);
 
     // export full matrices to the two desired processors
     Teuchos::RCP<Epetra_Import> serialimporter =
@@ -595,8 +595,8 @@ namespace CORE::COMM
               iscolindex == 0 ? "row" : "col", name, data_indices[i], receivebuf_indices[i]);
         }
       }
-      CORE::IO::cout << "indices of compared matrices " << name << " of length: " << mylength
-                     << " are identical." << CORE::IO::endl;
+      Core::IO::cout << "indices of compared matrices " << name << " of length: " << mylength
+                     << " are identical." << Core::IO::endl;
 
       // compare data: values
       lengthRecv = 0;
@@ -635,8 +635,8 @@ namespace CORE::COMM
       }
       if (maxdiff <= tol)
       {
-        CORE::IO::cout << "values of compared matrices " << name << " of length: " << mylength
-                       << " are identical." << CORE::IO::endl;
+        Core::IO::cout << "values of compared matrices " << name << " of length: " << mylength
+                       << " are identical." << Core::IO::endl;
       }
     }
     else if (myglobalrank == gcomm->NumProc() - 1)
@@ -685,6 +685,6 @@ namespace CORE::COMM
 
     return true;
   }
-}  // namespace CORE::COMM
+}  // namespace Core::Communication
 
 FOUR_C_NAMESPACE_CLOSE

@@ -23,17 +23,17 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 
-namespace STRUMULTI
+namespace MultiScale
 {
   class MicroStatic;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
-namespace MAT
+namespace Mat
 {
   /// one Gauss point of the micro material
   class MicroMaterialGP
@@ -57,8 +57,8 @@ namespace MAT
     std::string new_result_file_path(const std::string& newprefix);
 
     /// Perform microscale simulation
-    void perform_micro_simulation(CORE::LINALG::Matrix<3, 3>* defgrd,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat);
+    void perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* defgrd,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat);
 
     void Update();
 
@@ -92,12 +92,12 @@ namespace MAT
     const int microdisnum_;
 
     /// microstructure "time integration" classes (one for each micro-discretization)
-    static std::map<int, Teuchos::RCP<STRUMULTI::MicroStatic>> microstaticmap_;
+    static std::map<int, Teuchos::RCP<MultiScale::MicroStatic>> microstaticmap_;
 
     static std::map<int, int> microstaticcounter_;
 
     /// microstructure discretization writer
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> micro_output_;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> micro_output_;
 
     /// homogenized density
     double density_;
@@ -109,11 +109,11 @@ namespace MAT
     Teuchos::RCP<Epetra_Vector> disn_;
 
     // my EAS history data -> note that microstructure is not parallel
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> old_kaainv_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> old_kda_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldalpha_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldfeas_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> old_kaainv_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> old_kda_;
 
     /// my stresses and strains
     Teuchos::RCP<std::vector<char>> stress_;
@@ -144,7 +144,7 @@ namespace MAT
     /// flag for build of stiffness matrix
     bool build_stiff_;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

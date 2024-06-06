@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluid& xfluid)
-    : CORE::UTILS::ResultTest("XFLUID"),
+    : Core::UTILS::ResultTest("XFLUID"),
       discret_(xfluid.discret_),
       velnp_(xfluid.state_->velnp_),
       node_from_zero_(true)
@@ -30,7 +30,7 @@ FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluid& xfluid)
 }
 
 FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluidFluid& xfluid)
-    : CORE::UTILS::ResultTest("XFLUID"),
+    : Core::UTILS::ResultTest("XFLUID"),
       discret_(xfluid.discret_),
       velnp_(xfluid.state_->velnp_),
       coupl_discret_(xfluid.embedded_fluid_->discretization()),
@@ -41,7 +41,7 @@ FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluidFluid& xfluid)
   // adapt the test cases!
 }
 
-void FLD::XFluidResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -65,8 +65,8 @@ void FLD::XFluidResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int
     return;
 }
 
-void FLD::XFluidResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count,
-    int node, const Teuchos::RCP<const DRT::Discretization>& discret,
+void FLD::XFluidResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count,
+    int node, const Teuchos::RCP<const Discret::Discretization>& discret,
     const Teuchos::RCP<const Epetra_Vector>& velnp)
 {
   int havenode(discret->HaveGlobalNode(node));
@@ -81,7 +81,7 @@ void FLD::XFluidResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int
   {
     if (discret->HaveGlobalNode(node))
     {
-      CORE::Nodes::Node* actnode = discret->gNode(node);
+      Core::Nodes::Node* actnode = discret->gNode(node);
 
       if (actnode->Owner() != discret->Comm().MyPID()) return;
 

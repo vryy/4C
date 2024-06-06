@@ -17,9 +17,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     /*!
     \begin Line between two points. These lines result from cuts and there are no cut points on a
@@ -117,8 +117,8 @@ namespace CORE::GEO
       plain_element_set cut_elements_;
     };
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

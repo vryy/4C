@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR
+namespace Inpar
 {
   namespace STR
   {
@@ -25,43 +25,43 @@ namespace INPAR
     /*----------------------------------------------------------------------*/
     void SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
     {
-      using namespace INPUT;
+      using namespace Input;
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
       setStringToIntegralParameter<int>("KIND", "None", "Method for time step size adaptivity",
           tuple<std::string>("None", "ZienkiewiczXie", "JointExplicit",  //
               "AdamsBashforth2", "ExplicitEuler", "CentralDifference"),  // backward compatibility
-          tuple<int>(INPAR::STR::timada_kind_none, INPAR::STR::timada_kind_zienxie,
-              INPAR::STR::timada_kind_joint_explicit,  //
-              INPAR::STR::timada_kind_ab2, INPAR::STR::timada_kind_expleuler,
-              INPAR::STR::timada_kind_centraldiff),  // backward compatibility
+          tuple<int>(Inpar::STR::timada_kind_none, Inpar::STR::timada_kind_zienxie,
+              Inpar::STR::timada_kind_joint_explicit,  //
+              Inpar::STR::timada_kind_ab2, Inpar::STR::timada_kind_expleuler,
+              Inpar::STR::timada_kind_centraldiff),  // backward compatibility
           &list);
 
-      CORE::UTILS::DoubleParameter("OUTSYSPERIOD", 0.0,
+      Core::UTILS::DoubleParameter("OUTSYSPERIOD", 0.0,
           "Write system vectors (displacements, velocities, etc) every given period of time",
           &list);
-      CORE::UTILS::DoubleParameter(
+      Core::UTILS::DoubleParameter(
           "OUTSTRPERIOD", 0.0, "Write stress/strain every given period of time", &list);
-      CORE::UTILS::DoubleParameter(
+      Core::UTILS::DoubleParameter(
           "OUTENEPERIOD", 0.0, "Write energy every given period of time", &list);
-      CORE::UTILS::DoubleParameter(
+      Core::UTILS::DoubleParameter(
           "OUTRESTPERIOD", 0.0, "Write restart data every given period of time", &list);
-      CORE::UTILS::IntParameter("OUTSIZEEVERY", 0, "Write step size every given time step", &list);
+      Core::UTILS::IntParameter("OUTSIZEEVERY", 0, "Write step size every given time step", &list);
 
-      CORE::UTILS::DoubleParameter(
+      Core::UTILS::DoubleParameter(
           "STEPSIZEMAX", 0.0, "Limit maximally permitted time step size (>0)", &list);
-      CORE::UTILS::DoubleParameter(
+      Core::UTILS::DoubleParameter(
           "STEPSIZEMIN", 0.0, "Limit minimally allowed time step size (>0)", &list);
-      CORE::UTILS::DoubleParameter("SIZERATIOMAX", 0.0,
+      Core::UTILS::DoubleParameter("SIZERATIOMAX", 0.0,
           "Limit maximally permitted change of time step size compared to previous size, important "
           "for multi-step schemes (>0)",
           &list);
-      CORE::UTILS::DoubleParameter("SIZERATIOMIN", 0.0,
+      Core::UTILS::DoubleParameter("SIZERATIOMIN", 0.0,
           "Limit minimally permitted change of time step size compared to previous size, important "
           "for multi-step schemes (>0)",
           &list);
-      CORE::UTILS::DoubleParameter("SIZERATIOSCALE", 0.9,
+      Core::UTILS::DoubleParameter("SIZERATIOSCALE", 0.9,
           "This is a safety factor to scale theoretical optimal step size, should be lower than 1 "
           "and must be larger than 0",
           &list);
@@ -69,19 +69,19 @@ namespace INPAR
       setStringToIntegralParameter<int>("LOCERRNORM", "Vague",
           "Vector norm to treat error vector with",
           tuple<std::string>("Vague", "L1", "L2", "Rms", "Inf"),
-          tuple<int>(INPAR::STR::norm_vague, INPAR::STR::norm_l1, INPAR::STR::norm_l2,
-              INPAR::STR::norm_rms, INPAR::STR::norm_inf),
+          tuple<int>(Inpar::STR::norm_vague, Inpar::STR::norm_l1, Inpar::STR::norm_l2,
+              Inpar::STR::norm_rms, Inpar::STR::norm_inf),
           &list);
 
-      CORE::UTILS::DoubleParameter("LOCERRTOL", 0.0, "Target local error tolerance (>0)", &list);
-      CORE::UTILS::IntParameter(
+      Core::UTILS::DoubleParameter("LOCERRTOL", 0.0, "Target local error tolerance (>0)", &list);
+      Core::UTILS::IntParameter(
           "ADAPTSTEPMAX", 0, "Limit maximally allowed step size reduction attempts (>0)", &list);
 
       /// valid parameters for JOINT EXPLICIT
 
       Teuchos::ParameterList& jep = list.sublist("JOINT EXPLICIT", false, "");
 
-      CORE::UTILS::IntParameter(
+      Core::UTILS::IntParameter(
           "LINEAR_SOLVER", -1, "number of linear solver used for auxiliary integrator", &jep);
 
       setStringToIntegralParameter<int>("INT_STRATEGY", "Standard",
@@ -93,7 +93,7 @@ namespace INPAR
           tuple<std::string>("ExplicitEuler", "CentrDiff", "AdamsBashforth2", "AdamsBashforth4"),
           tuple<int>(dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_ab4), &jep);
 
-      CORE::UTILS::BoolParameter(
+      Core::UTILS::BoolParameter(
           "LUMPMASS", "No", "Lump the mass matrix for explicit time integration", &jep);
 
       setStringToIntegralParameter<int>("DAMPING", "No",
@@ -104,15 +104,15 @@ namespace INPAR
               damp_rayleigh, damp_material),
           &jep);
 
-      CORE::UTILS::DoubleParameter("M_DAMP", -1.0, "", &jep);
-      CORE::UTILS::DoubleParameter("K_DAMP", -1.0, "", &jep);
+      Core::UTILS::DoubleParameter("M_DAMP", -1.0, "", &jep);
+      Core::UTILS::DoubleParameter("K_DAMP", -1.0, "", &jep);
     }
 
 
 
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     {
-      using namespace INPUT;
+      using namespace Input;
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
@@ -122,7 +122,7 @@ namespace INPAR
           "global type of the used integration strategy", tuple<std::string>("Old", "Standard"),
           tuple<int>(int_old, int_standard), &sdyn);
 
-      CORE::UTILS::BoolParameter(
+      Core::UTILS::BoolParameter(
           "TIME_ADAPTIVITY", "No", "Enable adaptive time integration", &sdyn);
 
       setStringToIntegralParameter<int>("DYNAMICTYP", "GenAlpha",
@@ -134,40 +134,40 @@ namespace INPAR
               dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_ab4, dyna_euma, dyna_euimsto),
           &sdyn);
 
-      setStringToIntegralParameter<INPAR::STR::PreStress>("PRESTRESS", "none",
+      setStringToIntegralParameter<Inpar::STR::PreStress>("PRESTRESS", "none",
           "prestressing takes values none mulf material_iterative",
           tuple<std::string>("none", "None", "NONE", "mulf", "Mulf", "MULF", "Material_Iterative",
               "MATERIAL_ITERATIVE", "material_iterative"),
-          tuple<INPAR::STR::PreStress>(INPAR::STR::PreStress::none, INPAR::STR::PreStress::none,
-              INPAR::STR::PreStress::none, INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::mulf,
-              INPAR::STR::PreStress::mulf, INPAR::STR::PreStress::material_iterative,
-              INPAR::STR::PreStress::material_iterative, INPAR::STR::PreStress::material_iterative),
+          tuple<Inpar::STR::PreStress>(Inpar::STR::PreStress::none, Inpar::STR::PreStress::none,
+              Inpar::STR::PreStress::none, Inpar::STR::PreStress::mulf, Inpar::STR::PreStress::mulf,
+              Inpar::STR::PreStress::mulf, Inpar::STR::PreStress::material_iterative,
+              Inpar::STR::PreStress::material_iterative, Inpar::STR::PreStress::material_iterative),
           &sdyn);
 
-      CORE::UTILS::DoubleParameter(
+      Core::UTILS::DoubleParameter(
           "PRESTRESSTIME", 0.0, "time to switch from pre to post stressing", &sdyn);
 
-      CORE::UTILS::DoubleParameter("PRESTRESSTOLDISP", 1e-9,
+      Core::UTILS::DoubleParameter("PRESTRESSTOLDISP", 1e-9,
           "tolerance in the displacement norm during prestressing", &sdyn);
-      CORE::UTILS::IntParameter(
+      Core::UTILS::IntParameter(
           "PRESTRESSMINLOADSTEPS", 0, "Minimum number of load steps during prestressing", &sdyn);
 
       // Output type
-      CORE::UTILS::IntParameter(
+      Core::UTILS::IntParameter(
           "RESULTSEVRY", 1, "save displacements and contact forces every RESULTSEVRY steps", &sdyn);
-      CORE::UTILS::IntParameter(
+      Core::UTILS::IntParameter(
           "RESEVRYERGY", 0, "write system energies every requested step", &sdyn);
-      CORE::UTILS::IntParameter(
+      Core::UTILS::IntParameter(
           "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &sdyn);
-      CORE::UTILS::BoolParameter("CALC_ACC_ON_RESTART", "No",
+      Core::UTILS::BoolParameter("CALC_ACC_ON_RESTART", "No",
           "Compute the initial state for a restart dynamics analysis", &sdyn);
-      CORE::UTILS::IntParameter("OUTPUT_STEP_OFFSET", 0,
+      Core::UTILS::IntParameter("OUTPUT_STEP_OFFSET", 0,
           "An offset added to the current step to shift the steps to be written.", &sdyn);
       // Time loop control
-      CORE::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size", &sdyn);
-      CORE::UTILS::IntParameter("NUMSTEP", 200, "maximum number of steps", &sdyn);
-      CORE::UTILS::DoubleParameter("TIMEINIT", 0.0, "initial time", &sdyn);
-      CORE::UTILS::DoubleParameter("MAXTIME", 5.0, "maximum time", &sdyn);
+      Core::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size", &sdyn);
+      Core::UTILS::IntParameter("NUMSTEP", 200, "maximum number of steps", &sdyn);
+      Core::UTILS::DoubleParameter("TIMEINIT", 0.0, "initial time", &sdyn);
+      Core::UTILS::DoubleParameter("MAXTIME", 5.0, "maximum time", &sdyn);
       // Damping
       setStringToIntegralParameter<int>("DAMPING", "No",
           "type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, "
@@ -176,29 +176,29 @@ namespace INPAR
           tuple<int>(damp_none, damp_none, damp_none, damp_rayleigh, damp_rayleigh, damp_rayleigh,
               damp_rayleigh, damp_material),
           &sdyn);
-      CORE::UTILS::DoubleParameter("M_DAMP", -1.0, "", &sdyn);
-      CORE::UTILS::DoubleParameter("K_DAMP", -1.0, "", &sdyn);
+      Core::UTILS::DoubleParameter("M_DAMP", -1.0, "", &sdyn);
+      Core::UTILS::DoubleParameter("K_DAMP", -1.0, "", &sdyn);
 
-      CORE::UTILS::DoubleParameter(
+      Core::UTILS::DoubleParameter(
           "TOLDISP", 1.0E-10, "tolerance in the displacement norm for the newton iteration", &sdyn);
       setStringToIntegralParameter<int>("NORM_DISP", "Abs",
           "type of norm for displacement convergence check",
           tuple<std::string>("Abs", "Rel", "Mix"),
           tuple<int>(convnorm_abs, convnorm_rel, convnorm_mix), &sdyn);
 
-      CORE::UTILS::DoubleParameter(
+      Core::UTILS::DoubleParameter(
           "TOLRES", 1.0E-08, "tolerance in the residual norm for the newton iteration", &sdyn);
       setStringToIntegralParameter<int>("NORM_RESF", "Abs",
           "type of norm for residual convergence check", tuple<std::string>("Abs", "Rel", "Mix"),
           tuple<int>(convnorm_abs, convnorm_rel, convnorm_mix), &sdyn);
 
-      CORE::UTILS::DoubleParameter(
+      Core::UTILS::DoubleParameter(
           "TOLPRE", 1.0E-08, "tolerance in pressure norm for the newton iteration", &sdyn);
       setStringToIntegralParameter<int>("NORM_PRES", "Abs",
           "type of norm for pressure convergence check", tuple<std::string>("Abs"),
           tuple<int>(convnorm_abs), &sdyn);
 
-      CORE::UTILS::DoubleParameter("TOLINCO", 1.0E-08,
+      Core::UTILS::DoubleParameter("TOLINCO", 1.0E-08,
           "tolerance in the incompressible residual norm for the newton iteration", &sdyn);
       setStringToIntegralParameter<int>("NORM_INCO", "Abs",
           "type of norm for incompressible residual convergence check", tuple<std::string>("Abs"),
@@ -221,22 +221,22 @@ namespace INPAR
           tuple<std::string>("no", "No", "NO", "Symmetric", "Right"),
           tuple<int>(stc_none, stc_none, stc_none, stc_currsym, stc_curr), &sdyn);
 
-      CORE::UTILS::IntParameter("STC_LAYER", 1, "number of STC layers for multilayer case", &sdyn);
+      Core::UTILS::IntParameter("STC_LAYER", 1, "number of STC layers for multilayer case", &sdyn);
 
-      CORE::UTILS::DoubleParameter("PTCDT", 0.1,
+      Core::UTILS::DoubleParameter("PTCDT", 0.1,
           "pseudo time step for pseudo transient continuation (PTC) stabilized Newton procedure",
           &sdyn);
 
-      CORE::UTILS::DoubleParameter("TOLCONSTR", 1.0E-08,
+      Core::UTILS::DoubleParameter("TOLCONSTR", 1.0E-08,
           "tolerance in the constr error norm for the newton iteration", &sdyn);
 
-      CORE::UTILS::DoubleParameter("TOLCONSTRINCR", 1.0E-08,
+      Core::UTILS::DoubleParameter("TOLCONSTRINCR", 1.0E-08,
           "tolerance in the constr lm incr norm for the newton iteration", &sdyn);
 
-      CORE::UTILS::IntParameter("MAXITER", 50,
+      Core::UTILS::IntParameter("MAXITER", 50,
           "maximum number of iterations allowed for Newton-Raphson iteration before failure",
           &sdyn);
-      CORE::UTILS::IntParameter("MINITER", 0,
+      Core::UTILS::IntParameter("MINITER", 0,
           "minimum number of iterations to be done within Newton-Raphson loop", &sdyn);
       setStringToIntegralParameter<int>("ITERNORM", "L2", "type of norm to be applied to residuals",
           tuple<std::string>("L1", "L2", "Rms", "Inf"),
@@ -253,7 +253,7 @@ namespace INPAR
               divcont_adapt_3D0Dptc_ele_err),
           &sdyn);
 
-      CORE::UTILS::IntParameter("MAXDIVCONREFINEMENTLEVEL", 10,
+      Core::UTILS::IntParameter("MAXDIVCONREFINEMENTLEVEL", 10,
           "number of times timestep is halved in case nonlinear solver diverges", &sdyn);
 
       setStringToIntegralParameter<int>("NLNSOL", "fullnewton", "Nonlinear solution technique",
@@ -265,17 +265,17 @@ namespace INPAR
               soltech_noxnewtonlinesearch, soltech_noxgeneral, soltech_nox_nln, soltech_singlestep),
           &sdyn);
 
-      CORE::UTILS::IntParameter("LSMAXITER", 30, "maximum number of line search steps", &sdyn);
-      CORE::UTILS::DoubleParameter(
+      Core::UTILS::IntParameter("LSMAXITER", 30, "maximum number of line search steps", &sdyn);
+      Core::UTILS::DoubleParameter(
           "ALPHA_LS", 0.5, "step reduction factor alpha in (Newton) line search scheme", &sdyn);
-      CORE::UTILS::DoubleParameter(
+      Core::UTILS::DoubleParameter(
           "SIGMA_LS", 1.e-4, "sufficient descent factor in (Newton) line search scheme", &sdyn);
 
       setStringToIntegralParameter<int>("MATERIALTANGENT", "analytical",
           "way of evaluating the constitutive matrix",
           tuple<std::string>("analytical", "finitedifferences"), tuple<int>(0, 1), &sdyn);
 
-      CORE::UTILS::BoolParameter(
+      Core::UTILS::BoolParameter(
           "LOADLIN", "No", "Use linearization of external follower load in Newton", &sdyn);
 
       setStringToIntegralParameter<int>("MASSLIN", "No", "Application of nonlinear inertia terms",
@@ -284,7 +284,7 @@ namespace INPAR
           tuple<int>(ml_none, ml_none, ml_standard, ml_standard, ml_rotations, ml_rotations),
           &sdyn);
 
-      CORE::UTILS::BoolParameter("NEGLECTINERTIA", "No", "Neglect inertia", &sdyn);
+      Core::UTILS::BoolParameter("NEGLECTINERTIA", "No", "Neglect inertia", &sdyn);
 
       // Since predictor "none" would be misleading, the usage of no predictor is called vague.
       setStringToIntegralParameter<int>("PREDICT", "ConstDis", "Type of predictor",
@@ -295,11 +295,11 @@ namespace INPAR
           &sdyn);
 
       // Uzawa iteration for constraint systems
-      CORE::UTILS::DoubleParameter("UZAWAPARAM", 1.0,
+      Core::UTILS::DoubleParameter("UZAWAPARAM", 1.0,
           "Parameter for Uzawa algorithm dealing with lagrange multipliers", &sdyn);
-      CORE::UTILS::DoubleParameter(
+      Core::UTILS::DoubleParameter(
           "UZAWATOL", 1.0E-8, "Tolerance for iterative solve with Uzawa algorithm", &sdyn);
-      CORE::UTILS::IntParameter("UZAWAMAXITER", 50,
+      Core::UTILS::IntParameter("UZAWAMAXITER", 50,
           "maximum number of iterations allowed for uzawa algorithm before failure going to next "
           "newton step",
           &sdyn);
@@ -308,27 +308,27 @@ namespace INPAR
           tuple<int>(consolve_uzawa, consolve_simple, consolve_direct), &sdyn);
 
       // convergence criteria adaptivity
-      CORE::UTILS::BoolParameter("ADAPTCONV", "No",
+      Core::UTILS::BoolParameter("ADAPTCONV", "No",
           "Switch on adaptive control of linear solver tolerance for nonlinear solution", &sdyn);
-      CORE::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.1,
+      Core::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.1,
           "The linear solver shall be this much better than the current nonlinear residual in the "
           "nonlinear convergence limit",
           &sdyn);
 
-      CORE::UTILS::BoolParameter(
+      Core::UTILS::BoolParameter(
           "LUMPMASS", "No", "Lump the mass matrix for explicit time integration", &sdyn);
 
-      CORE::UTILS::BoolParameter("MODIFIEDEXPLEULER", "Yes",
+      Core::UTILS::BoolParameter("MODIFIEDEXPLEULER", "Yes",
           "Use the modified explicit Euler time integration scheme", &sdyn);
 
       // linear solver id used for structural problems
-      CORE::UTILS::IntParameter(
+      Core::UTILS::IntParameter(
           "LINEAR_SOLVER", -1, "number of linear solver used for structural problems", &sdyn);
 
       // where the geometry comes from
       setStringToIntegralParameter<int>("GEOMETRY", "full", "How the geometry is specified",
           tuple<std::string>("full", "box", "file"),
-          tuple<int>(CORE::IO::geometry_full, CORE::IO::geometry_box, CORE::IO::geometry_file),
+          tuple<int>(Core::IO::geometry_full, Core::IO::geometry_box, Core::IO::geometry_file),
           &sdyn);
 
       setStringToIntegralParameter<int>("MIDTIME_ENERGY_TYPE", "vague",
@@ -343,7 +343,7 @@ namespace INPAR
           tuple<int>(initdisp_zero_disp, initdisp_disp_by_function), &sdyn);
 
       // Function to evaluate initial displacement
-      CORE::UTILS::IntParameter("STARTFUNCNO", -1, "Function for Initial displacement", &sdyn);
+      Core::UTILS::IntParameter("STARTFUNCNO", -1, "Function for Initial displacement", &sdyn);
 
       /*--------------------------------------------------------------------*/
       /* parameters for time step size adaptivity in structural dynamics */
@@ -357,11 +357,11 @@ namespace INPAR
       setStringToIntegralParameter<int>("GENAVG", "TrLike", "mid-average type of internal forces",
           tuple<std::string>("Vague", "ImrLike", "TrLike"),
           tuple<int>(midavg_vague, midavg_imrlike, midavg_trlike), &genalpha);
-      CORE::UTILS::DoubleParameter("BETA", -1.0, "Generalised-alpha factor in (0,1/2]", &genalpha);
-      CORE::UTILS::DoubleParameter("GAMMA", -1.0, "Generalised-alpha factor in (0,1]", &genalpha);
-      CORE::UTILS::DoubleParameter("ALPHA_M", -1.0, "Generalised-alpha factor in [0,1)", &genalpha);
-      CORE::UTILS::DoubleParameter("ALPHA_F", -1.0, "Generalised-alpha factor in [0,1)", &genalpha);
-      CORE::UTILS::DoubleParameter("RHO_INF", 1.0,
+      Core::UTILS::DoubleParameter("BETA", -1.0, "Generalised-alpha factor in (0,1/2]", &genalpha);
+      Core::UTILS::DoubleParameter("GAMMA", -1.0, "Generalised-alpha factor in (0,1]", &genalpha);
+      Core::UTILS::DoubleParameter("ALPHA_M", -1.0, "Generalised-alpha factor in [0,1)", &genalpha);
+      Core::UTILS::DoubleParameter("ALPHA_F", -1.0, "Generalised-alpha factor in [0,1)", &genalpha);
+      Core::UTILS::DoubleParameter("RHO_INF", 1.0,
           "Spectral radius for generalised-alpha time integration, valid range is [0,1]",
           &genalpha);
 
@@ -369,15 +369,15 @@ namespace INPAR
       /* parameters for one-step-theta structural integrator */
       Teuchos::ParameterList& onesteptheta = sdyn.sublist("ONESTEPTHETA", false, "");
 
-      CORE::UTILS::DoubleParameter("THETA", 0.5, "One-step-theta factor in (0,1]", &onesteptheta);
+      Core::UTILS::DoubleParameter("THETA", 0.5, "One-step-theta factor in (0,1]", &onesteptheta);
     }
 
 
 
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
     {
-      using namespace INPUT;
+      using namespace Input;
 
       /*--------------------------------------------------------------------*/
 
@@ -385,63 +385,63 @@ namespace INPAR
       // 08/16
 
       auto robinspringdashpotsurf = Teuchos::rcp(
-          new CORE::Conditions::ConditionDefinition("DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS",
-              "RobinSpringDashpot", "Robin Spring Dashpot", CORE::Conditions::RobinSpringDashpot,
-              true, CORE::Conditions::geometry_type_surface));
+          new Core::Conditions::ConditionDefinition("DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS",
+              "RobinSpringDashpot", "Robin Spring Dashpot", Core::Conditions::RobinSpringDashpot,
+              true, Core::Conditions::geometry_type_surface));
 
       auto robinspringdashpotpoint = Teuchos::rcp(
-          new CORE::Conditions::ConditionDefinition("DESIGN POINT ROBIN SPRING DASHPOT CONDITIONS",
-              "RobinSpringDashpot", "Robin Spring Dashpot", CORE::Conditions::RobinSpringDashpot,
-              true, CORE::Conditions::geometry_type_point));
+          new Core::Conditions::ConditionDefinition("DESIGN POINT ROBIN SPRING DASHPOT CONDITIONS",
+              "RobinSpringDashpot", "Robin Spring Dashpot", Core::Conditions::RobinSpringDashpot,
+              true, Core::Conditions::geometry_type_point));
 
-      std::vector<Teuchos::RCP<INPUT::LineComponent>> robinspringdashpotcomp;
+      std::vector<Teuchos::RCP<Input::LineComponent>> robinspringdashpotcomp;
 
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("NUMDOF")));
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new INPUT::IntComponent("numdof")));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("NUMDOF")));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new Input::IntComponent("numdof")));
 
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("ONOFF")));
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new INPUT::IntVectorComponent("onoff", 3)));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new Input::IntVectorComponent("onoff", 3)));
 
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("STIFF")));
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new INPUT::RealVectorComponent("stiff", 3)));
-
-      robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::SeparatorComponent("TIMEFUNCTSTIFF")));
-      robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::IntVectorComponent("funct_stiff", 3)));
-
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("VISCO")));
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new INPUT::RealVectorComponent("visco", 3)));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("STIFF")));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new Input::RealVectorComponent("stiff", 3)));
 
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::SeparatorComponent("TIMEFUNCTVISCO")));
+          Teuchos::rcp(new Input::SeparatorComponent("TIMEFUNCTSTIFF")));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::IntVectorComponent("funct_visco", 3)));
+          Teuchos::rcp(new Input::IntVectorComponent("funct_stiff", 3)));
+
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("VISCO")));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new Input::RealVectorComponent("visco", 3)));
 
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::SeparatorComponent("DISPLOFFSET")));
+          Teuchos::rcp(new Input::SeparatorComponent("TIMEFUNCTVISCO")));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::RealVectorComponent("disploffset", 3)));
+          Teuchos::rcp(new Input::IntVectorComponent("funct_visco", 3)));
 
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::SeparatorComponent("TIMEFUNCTDISPLOFFSET")));
+          Teuchos::rcp(new Input::SeparatorComponent("DISPLOFFSET")));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::IntVectorComponent("funct_disploffset", 3)));
+          Teuchos::rcp(new Input::RealVectorComponent("disploffset", 3)));
 
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::SeparatorComponent("FUNCTNONLINSTIFF")));
+          Teuchos::rcp(new Input::SeparatorComponent("TIMEFUNCTDISPLOFFSET")));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::IntVectorComponent("funct_nonlinstiff", 3)));
+          Teuchos::rcp(new Input::IntVectorComponent("funct_disploffset", 3)));
 
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("DIRECTION")));
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new INPUT::SelectionComponent("direction",
+      robinspringdashpotcomp.emplace_back(
+          Teuchos::rcp(new Input::SeparatorComponent("FUNCTNONLINSTIFF")));
+      robinspringdashpotcomp.emplace_back(
+          Teuchos::rcp(new Input::IntVectorComponent("funct_nonlinstiff", 3)));
+
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("DIRECTION")));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new Input::SelectionComponent("direction",
           "xyz", Teuchos::tuple<std::string>("xyz", "refsurfnormal", "cursurfnormal"),
           Teuchos::tuple<std::string>("xyz", "refsurfnormal", "cursurfnormal"), false)));
 
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING", "", true)));
+          Teuchos::rcp(new Input::SeparatorComponent("COUPLING", "", true)));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new INPUT::IntComponent("coupling id", {0, true, true})));
+          Teuchos::rcp(new Input::IntComponent("coupling id", {0, true, true})));
 
       for (const auto& comp : robinspringdashpotcomp)
       {
@@ -456,13 +456,13 @@ namespace INPAR
       // surface coupling for spring dashpot DIRECTION cursurfnormal
       // pfaller Apr15
 
-      Teuchos::RCP<CORE::Conditions::ConditionDefinition> springdashpotcoupcond =
-          Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+      Teuchos::RCP<Core::Conditions::ConditionDefinition> springdashpotcoupcond =
+          Teuchos::rcp(new Core::Conditions::ConditionDefinition(
               "DESIGN SURF ROBIN SPRING DASHPOT COUPLING CONDITIONS", "RobinSpringDashpotCoupling",
-              "RobinSpring Dashpot Coupling", CORE::Conditions::RobinSpringDashpotCoupling, true,
-              CORE::Conditions::geometry_type_surface));
+              "RobinSpring Dashpot Coupling", Core::Conditions::RobinSpringDashpotCoupling, true,
+              Core::Conditions::geometry_type_surface));
 
-      springdashpotcoupcond->AddComponent(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
+      springdashpotcoupcond->AddComponent(Teuchos::rcp(new Input::IntComponent("coupling id")));
 
       condlist.push_back(springdashpotcoupcond);
 
@@ -470,23 +470,23 @@ namespace INPAR
       /*--------------------------------------------------------------------*/
       // surfactant
 
-      Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfactant =
-          Teuchos::rcp(new CORE::Conditions::ConditionDefinition("SURFACTANT CONDITIONS",
-              "SurfaceStress", "Surface Stress (surfactant)", CORE::Conditions::Surfactant, true,
-              CORE::Conditions::geometry_type_surface));
+      Teuchos::RCP<Core::Conditions::ConditionDefinition> surfactant =
+          Teuchos::rcp(new Core::Conditions::ConditionDefinition("SURFACTANT CONDITIONS",
+              "SurfaceStress", "Surface Stress (surfactant)", Core::Conditions::Surfactant, true,
+              Core::Conditions::geometry_type_surface));
 
-      surfactant->AddComponent(Teuchos::rcp(new INPUT::IntComponent("funct", {0, true, true})));
-      INPUT::AddNamedReal(surfactant, "k1xCbulk");
-      INPUT::AddNamedReal(surfactant, "k2");
-      INPUT::AddNamedReal(surfactant, "m1");
-      INPUT::AddNamedReal(surfactant, "m2");
-      INPUT::AddNamedReal(surfactant, "gamma_0");
-      INPUT::AddNamedReal(surfactant, "gamma_min");
+      surfactant->AddComponent(Teuchos::rcp(new Input::IntComponent("funct", {0, true, true})));
+      Input::AddNamedReal(surfactant, "k1xCbulk");
+      Input::AddNamedReal(surfactant, "k2");
+      Input::AddNamedReal(surfactant, "m1");
+      Input::AddNamedReal(surfactant, "m2");
+      Input::AddNamedReal(surfactant, "gamma_0");
+      Input::AddNamedReal(surfactant, "gamma_min");
 
       condlist.push_back(surfactant);
     }
 
   }  // end of namespace STR
-}  // end of namespace INPAR
+}  // end of namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE

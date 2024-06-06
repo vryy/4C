@@ -96,12 +96,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Set gap
     */
-    void SetNormal(CORE::LINALG::Matrix<3, 1, TYPE> normal) { normal_ = normal; };
+    void SetNormal(Core::LinAlg::Matrix<3, 1, TYPE> normal) { normal_ = normal; };
 
     /*!
     \brief Get gap
     */
-    CORE::LINALG::Matrix<3, 1, TYPE> GetNormal() const { return normal_; };
+    Core::LinAlg::Matrix<3, 1, TYPE> GetNormal() const { return normal_; };
 
     /*!
     \brief Get penalty parameter
@@ -191,10 +191,10 @@ namespace BEAMINTERACTION
     {
       out << "\nInstance of BeamToBeamContactVariables (SegmentIds " << segids_.first << " & "
           << segids_.second << "):";
-      out << "\ngap= " << CORE::FADUTILS::CastToDouble(gap_);
+      out << "\ngap= " << Core::FADUtils::CastToDouble(gap_);
       out << "\nangle= " << angle_ / M_PI * 180.0 << " degree";
-      out << "\nclosest point coords: " << CORE::FADUTILS::CastToDouble(closestpoint_.first) << " "
-          << CORE::FADUTILS::CastToDouble(closestpoint_.second);
+      out << "\nclosest point coords: " << Core::FADUtils::CastToDouble(closestpoint_.first) << " "
+          << Core::FADUtils::CastToDouble(closestpoint_.second);
 
       out << "\n";
     }
@@ -231,7 +231,7 @@ namespace BEAMINTERACTION
     TYPE gap_;
 
     // normal vector
-    CORE::LINALG::Matrix<3, 1, TYPE> normal_;
+    Core::LinAlg::Matrix<3, 1, TYPE> normal_;
 
     // penalty parameter
     double pp_;

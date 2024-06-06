@@ -23,17 +23,17 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for micro material
-    class MicroMaterial : public CORE::MAT::PAR::Parameter
+    class MicroMaterial : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      MicroMaterial(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      MicroMaterial(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -48,20 +48,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class MicroMaterial
 
   }  // namespace PAR
 
-  class MicroMaterialType : public CORE::COMM::ParObjectType
+  class MicroMaterialType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "MicroMaterialType"; }
 
     static MicroMaterialType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MicroMaterialType instance_;
@@ -80,7 +80,7 @@ namespace MAT
     MicroMaterial();
 
     /// construct the material object given material parameters
-    explicit MicroMaterial(MAT::PAR::MicroMaterial* params);
+    explicit MicroMaterial(Mat::PAR::MicroMaterial* params);
 
     //! @name Packing and Unpacking
 
@@ -105,7 +105,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -124,34 +124,34 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_struct_multiscale;
+      return Core::Materials::m_struct_multiscale;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (!(kinem == Inpar::STR::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new MicroMaterial(*this));
     }
 
     /// evaluate micro material on a processor with macro scale
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
     /// evaluate micro material on a processor which only knows about the micro scale (supporting
     /// proc)
-    void Evaluate(CORE::LINALG::Matrix<3, 3>* defgrd, CORE::LINALG::Matrix<6, 6>* cmat,
-        CORE::LINALG::Matrix<6, 1>* stress, const int gp, const int ele_ID, const int microdisnum,
+    void Evaluate(Core::LinAlg::Matrix<3, 3>* defgrd, Core::LinAlg::Matrix<6, 6>* cmat,
+        Core::LinAlg::Matrix<6, 1>* stress, const int gp, const int ele_ID, const int microdisnum,
         double V0, bool eleowner);
 
     double Density() const override;
@@ -181,7 +181,7 @@ namespace MAT
     //@}
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     std::map<int, Teuchos::RCP<MicroMaterialGP>> matgp_;
@@ -189,10 +189,10 @@ namespace MAT
     double density_;
 
     /// my material parameters
-    MAT::PAR::MicroMaterial* params_;
+    Mat::PAR::MicroMaterial* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

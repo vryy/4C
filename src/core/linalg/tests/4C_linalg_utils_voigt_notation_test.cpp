@@ -20,12 +20,12 @@ namespace
   class VoigtNotationTest : public testing::Test
   {
    public:
-    CORE::LINALG::Matrix<3, 3> tens;
-    CORE::LINALG::Matrix<3, 3> itens;
-    CORE::LINALG::Matrix<6, 1> tens_strain;
-    CORE::LINALG::Matrix<6, 1> itens_strain;
-    CORE::LINALG::Matrix<6, 1> tens_stress;
-    CORE::LINALG::Matrix<6, 1> itens_stress;
+    Core::LinAlg::Matrix<3, 3> tens;
+    Core::LinAlg::Matrix<3, 3> itens;
+    Core::LinAlg::Matrix<6, 1> tens_strain;
+    Core::LinAlg::Matrix<6, 1> itens_strain;
+    Core::LinAlg::Matrix<6, 1> tens_stress;
+    Core::LinAlg::Matrix<6, 1> itens_stress;
 
     VoigtNotationTest()
     {
@@ -73,36 +73,36 @@ namespace
 
   TEST_F(VoigtNotationTest, MatrixToVectorStressLike)
   {
-    CORE::LINALG::Matrix<6, 1> cmp_stress(false);
+    Core::LinAlg::Matrix<6, 1> cmp_stress(false);
 
-    CORE::LINALG::VOIGT::Stresses::MatrixToVector(tens, cmp_stress);
+    Core::LinAlg::Voigt::Stresses::MatrixToVector(tens, cmp_stress);
 
     FOUR_C_EXPECT_NEAR(cmp_stress, tens_stress, 1e-10);
   }
 
   TEST_F(VoigtNotationTest, MatrixToVectorStrainLike)
   {
-    CORE::LINALG::Matrix<6, 1> cmp_strain(false);
+    Core::LinAlg::Matrix<6, 1> cmp_strain(false);
 
-    CORE::LINALG::VOIGT::Strains::MatrixToVector(tens, cmp_strain);
+    Core::LinAlg::Voigt::Strains::MatrixToVector(tens, cmp_strain);
 
     FOUR_C_EXPECT_NEAR(cmp_strain, tens_strain, 1e-10);
   }
 
   TEST_F(VoigtNotationTest, DeterminantStressLike)
   {
-    EXPECT_NEAR(CORE::LINALG::VOIGT::Stresses::Determinant(tens_stress), 1.7143620000000002, 1e-10);
+    EXPECT_NEAR(Core::LinAlg::Voigt::Stresses::Determinant(tens_stress), 1.7143620000000002, 1e-10);
   }
 
   TEST_F(VoigtNotationTest, DeterminantStrainLike)
   {
-    EXPECT_NEAR(CORE::LINALG::VOIGT::Strains::Determinant(tens_strain), 1.7143620000000002, 1e-10);
+    EXPECT_NEAR(Core::LinAlg::Voigt::Strains::Determinant(tens_strain), 1.7143620000000002, 1e-10);
   }
 
   TEST_F(VoigtNotationTest, InvariantsPrincipalStressLike)
   {
-    CORE::LINALG::Matrix<3, 1> prinv(false);
-    CORE::LINALG::VOIGT::Stresses::InvariantsPrincipal(prinv, tens_stress);
+    Core::LinAlg::Matrix<3, 1> prinv(false);
+    Core::LinAlg::Voigt::Stresses::InvariantsPrincipal(prinv, tens_stress);
     EXPECT_NEAR(prinv(0), 3.5999999999999996, 1e-10);
     EXPECT_NEAR(prinv(1), 4.3085999999999984, 1e-10);
     EXPECT_NEAR(prinv(2), 1.7143620000000002, 1e-10);
@@ -110,8 +110,8 @@ namespace
 
   TEST_F(VoigtNotationTest, InvariantsPrincipalStrainLike)
   {
-    CORE::LINALG::Matrix<3, 1> prinv(false);
-    CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, tens_strain);
+    Core::LinAlg::Matrix<3, 1> prinv(false);
+    Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv, tens_strain);
     EXPECT_NEAR(prinv(0), 3.5999999999999996, 1e-10);
     EXPECT_NEAR(prinv(1), 4.3085999999999984, 1e-10);
     EXPECT_NEAR(prinv(2), 1.7143620000000002, 1e-10);
@@ -119,26 +119,26 @@ namespace
 
   TEST_F(VoigtNotationTest, InverseStressLike)
   {
-    CORE::LINALG::Matrix<6, 1> itens_stress_result(false);
-    CORE::LINALG::VOIGT::Stresses::InverseTensor(tens_stress, itens_stress_result);
+    Core::LinAlg::Matrix<6, 1> itens_stress_result(false);
+    Core::LinAlg::Voigt::Stresses::InverseTensor(tens_stress, itens_stress_result);
 
     FOUR_C_EXPECT_NEAR(itens_stress_result, itens_stress, 1e-5);
   }
 
   TEST_F(VoigtNotationTest, InverseStrainLike)
   {
-    CORE::LINALG::Matrix<6, 1> itens_strain_result(false);
-    CORE::LINALG::VOIGT::Strains::InverseTensor(tens_strain, itens_strain_result);
+    Core::LinAlg::Matrix<6, 1> itens_strain_result(false);
+    Core::LinAlg::Voigt::Strains::InverseTensor(tens_strain, itens_strain_result);
 
     FOUR_C_EXPECT_NEAR(itens_strain_result, itens_strain, 1e-5);
   }
 
   TEST_F(VoigtNotationTest, ToStressLike)
   {
-    CORE::LINALG::Matrix<6, 1> strain_to_stress(false);
-    CORE::LINALG::Matrix<6, 1> stress_to_stress(false);
-    CORE::LINALG::VOIGT::Strains::ToStressLike(tens_strain, strain_to_stress);
-    CORE::LINALG::VOIGT::Stresses::ToStressLike(tens_stress, stress_to_stress);
+    Core::LinAlg::Matrix<6, 1> strain_to_stress(false);
+    Core::LinAlg::Matrix<6, 1> stress_to_stress(false);
+    Core::LinAlg::Voigt::Strains::ToStressLike(tens_strain, strain_to_stress);
+    Core::LinAlg::Voigt::Stresses::ToStressLike(tens_stress, stress_to_stress);
 
     FOUR_C_EXPECT_NEAR(strain_to_stress, tens_stress, 1e-5);
     FOUR_C_EXPECT_NEAR(stress_to_stress, stress_to_stress, 1e-5);
@@ -146,10 +146,10 @@ namespace
 
   TEST_F(VoigtNotationTest, ToStrainLike)
   {
-    CORE::LINALG::Matrix<6, 1> strain_to_strain(false);
-    CORE::LINALG::Matrix<6, 1> stress_to_strain(false);
-    CORE::LINALG::VOIGT::Strains::ToStrainLike(tens_strain, strain_to_strain);
-    CORE::LINALG::VOIGT::Stresses::ToStrainLike(tens_stress, stress_to_strain);
+    Core::LinAlg::Matrix<6, 1> strain_to_strain(false);
+    Core::LinAlg::Matrix<6, 1> stress_to_strain(false);
+    Core::LinAlg::Voigt::Strains::ToStrainLike(tens_strain, strain_to_strain);
+    Core::LinAlg::Voigt::Stresses::ToStrainLike(tens_stress, stress_to_strain);
 
 
     FOUR_C_EXPECT_NEAR(strain_to_strain, tens_strain, 1e-5);
@@ -158,9 +158,9 @@ namespace
 
   TEST_F(VoigtNotationTest, IdentityMatrix)
   {
-    CORE::LINALG::Matrix<6, 1> id(false);
+    Core::LinAlg::Matrix<6, 1> id(false);
 
-    CORE::LINALG::VOIGT::IdentityMatrix(id);
+    Core::LinAlg::Voigt::IdentityMatrix(id);
 
     EXPECT_NEAR(id(0), 1.0, 1e-10);
     EXPECT_NEAR(id(1), 1.0, 1e-10);
@@ -172,15 +172,15 @@ namespace
 
   TEST_F(VoigtNotationTest, StrainLikeVectorToMatrix)
   {
-    CORE::LINALG::Matrix<3, 3> matrix(false);
-    CORE::LINALG::VOIGT::Strains::VectorToMatrix(tens_strain, matrix);
+    Core::LinAlg::Matrix<3, 3> matrix(false);
+    Core::LinAlg::Voigt::Strains::VectorToMatrix(tens_strain, matrix);
     EXPECT_EQ(matrix, tens);
   }
 
   TEST_F(VoigtNotationTest, StressLikeVectorToMatrix)
   {
-    CORE::LINALG::Matrix<3, 3> matrix(false);
-    CORE::LINALG::VOIGT::Stresses::VectorToMatrix(tens_stress, matrix);
+    Core::LinAlg::Matrix<3, 3> matrix(false);
+    Core::LinAlg::Voigt::Stresses::VectorToMatrix(tens_stress, matrix);
     EXPECT_EQ(matrix, tens);
   }
 }  // namespace

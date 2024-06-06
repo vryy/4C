@@ -23,16 +23,16 @@ namespace MIXTURE
   class MixtureGrowthStrategy;
   namespace PAR
   {
-    class MixtureGrowthStrategy : public CORE::MAT::PAR::Parameter
+    class MixtureGrowthStrategy : public Core::Mat::PAR::Parameter
     {
       friend class MIXTURE::MixtureGrowthStrategy;
 
      public:
       /// constructor
-      explicit MixtureGrowthStrategy(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+      explicit MixtureGrowthStrategy(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
       /// Override this method and throw error, as only the create_growth_strategy() should be used.
-      Teuchos::RCP<CORE::MAT::Material> create_material() final
+      Teuchos::RCP<Core::Mat::Material> create_material() final
       {
         FOUR_C_THROW(
             "Cannot create mixture growth strategy from this method. Use create_growth_strategy() "
@@ -67,14 +67,14 @@ namespace MIXTURE
     MixtureGrowthStrategy(MixtureGrowthStrategy&&) noexcept = default;
     MixtureGrowthStrategy& operator=(MixtureGrowthStrategy&&) noexcept = default;
 
-    virtual void pack_mixture_growth_strategy(CORE::COMM::PackBuffer& data) const {}
+    virtual void pack_mixture_growth_strategy(Core::Communication::PackBuffer& data) const {}
 
     virtual void unpack_mixture_growth_strategy(
         std::vector<char>::size_type& position, const std::vector<char>& data)
     {
     }
 
-    virtual void register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
+    virtual void register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
     {
       // do nothing in the default case
     }
@@ -92,7 +92,7 @@ namespace MIXTURE
      * @param currentReferenceGrowthScalar (in) : current reference growth scalar
      * @param gp (in) : Gauss point
      */
-    virtual void evaluate_inverse_growth_deformation_gradient(CORE::LINALG::Matrix<3, 3>& iFgM,
+    virtual void evaluate_inverse_growth_deformation_gradient(Core::LinAlg::Matrix<3, 3>& iFgM,
         const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
         int gp) const = 0;
 
@@ -118,10 +118,10 @@ namespace MIXTURE
      */
     virtual void evaluate_growth_stress_cmat(const MIXTURE::MixtureRule& mixtureRule,
         double currentReferenceGrowthScalar,
-        const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
-        const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-        CORE::LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID) const = 0;
+        const Core::LinAlg::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
+        const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+        Core::LinAlg::Matrix<6, 6>& cmat, const int gp, const int eleGID) const = 0;
   };
 }  // namespace MIXTURE
 

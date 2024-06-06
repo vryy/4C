@@ -19,42 +19,42 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::DEMAdhesionSurfaceEnergyBase(
+ParticleInteraction::DEMAdhesionSurfaceEnergyBase::DEMAdhesionSurfaceEnergyBase(
     const Teuchos::ParameterList& params)
     : params_dem_(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::Init()
+void ParticleInteraction::DEMAdhesionSurfaceEnergyBase::Init()
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase::Setup()
+void ParticleInteraction::DEMAdhesionSurfaceEnergyBase::Setup()
 {
   // safety check
   if (not(params_dem_.get<double>("ADHESION_SURFACE_ENERGY") > 0.0))
     FOUR_C_THROW("non-positive adhesion surface energy!");
 }
 
-PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyConstant::DEMAdhesionSurfaceEnergyConstant(
+ParticleInteraction::DEMAdhesionSurfaceEnergyConstant::DEMAdhesionSurfaceEnergyConstant(
     const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase(params)
+    : ParticleInteraction::DEMAdhesionSurfaceEnergyBase(params)
 {
   // empty constructor
 }
 
-PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::
+ParticleInteraction::DEMAdhesionSurfaceEnergyDistributionBase::
     DEMAdhesionSurfaceEnergyDistributionBase(const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyBase(params),
+    : ParticleInteraction::DEMAdhesionSurfaceEnergyBase(params),
       variance_(params_dem_.get<double>("ADHESION_SURFACE_ENERGY_DISTRIBUTION_VAR")),
       cutofffactor_(params_dem_.get<double>("ADHESION_SURFACE_ENERGY_DISTRIBUTION_CUTOFF_FACTOR"))
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::Setup()
+void ParticleInteraction::DEMAdhesionSurfaceEnergyDistributionBase::Setup()
 {
   // call base class setup
   DEMAdhesionSurfaceEnergyBase::Setup();
@@ -64,7 +64,7 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::Setup()
   if (cutofffactor_ < 0.0) FOUR_C_THROW("negative cutoff factor of adhesion surface energy!");
 }
 
-void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::
+void ParticleInteraction::DEMAdhesionSurfaceEnergyDistributionBase::
     adjust_surface_energy_to_allowed_bounds(
         const double& mean_surface_energy, double& surface_energy) const
 {
@@ -78,41 +78,41 @@ void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase::
     surface_energy = adhesion_surface_energy_min;
 }
 
-PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::
+ParticleInteraction::DEMAdhesionSurfaceEnergyDistributionNormal::
     DEMAdhesionSurfaceEnergyDistributionNormal(const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase(params)
+    : ParticleInteraction::DEMAdhesionSurfaceEnergyDistributionBase(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionNormal::adhesion_surface_energy(
+void ParticleInteraction::DEMAdhesionSurfaceEnergyDistributionNormal::adhesion_surface_energy(
     const double& mean_surface_energy, double& surface_energy) const
 {
   // initialize random number generator
-  GLOBAL::Problem::Instance()->Random()->SetMeanVariance(mean_surface_energy, variance_);
+  Global::Problem::Instance()->Random()->SetMeanVariance(mean_surface_energy, variance_);
 
   // set normal distributed random value for surface energy
-  surface_energy = GLOBAL::Problem::Instance()->Random()->Normal();
+  surface_energy = Global::Problem::Instance()->Random()->Normal();
 
   // adjust surface energy to allowed bounds
   adjust_surface_energy_to_allowed_bounds(mean_surface_energy, surface_energy);
 }
 
-PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::
+ParticleInteraction::DEMAdhesionSurfaceEnergyDistributionLogNormal::
     DEMAdhesionSurfaceEnergyDistributionLogNormal(const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionBase(params)
+    : ParticleInteraction::DEMAdhesionSurfaceEnergyDistributionBase(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::DEMAdhesionSurfaceEnergyDistributionLogNormal::adhesion_surface_energy(
+void ParticleInteraction::DEMAdhesionSurfaceEnergyDistributionLogNormal::adhesion_surface_energy(
     const double& mean_surface_energy, double& surface_energy) const
 {
   // initialize random number generator
-  GLOBAL::Problem::Instance()->Random()->SetMeanVariance(std::log(mean_surface_energy), variance_);
+  Global::Problem::Instance()->Random()->SetMeanVariance(std::log(mean_surface_energy), variance_);
 
   // set log-normal distributed random value for surface energy
-  surface_energy = std::exp(GLOBAL::Problem::Instance()->Random()->Normal());
+  surface_energy = std::exp(Global::Problem::Instance()->Random()->Normal());
 
   // adjust surface energy to allowed bounds
   adjust_surface_energy_to_allowed_bounds(mean_surface_energy, surface_energy);

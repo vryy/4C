@@ -37,7 +37,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace Interface
     {
@@ -49,25 +49,25 @@ namespace NOX
 
         //! returns the right-hand-side norms of the primary DoF fields
         virtual double GetPrimaryRHSNorms(const Epetra_Vector& F,
-            const NOX::NLN::StatusTest::QuantityType& checkQuantity,
+            const NOX::Nln::StatusTest::QuantityType& checkQuantity,
             const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
             const bool& isScaled = false) const = 0;
 
         //! Returns the Root Mean Squares (abbr.: RMS) of the primary solution updates
         virtual double get_primary_solution_update_rms(const Epetra_Vector& xNew,
             const Epetra_Vector& xOld, const double& aTol, const double& rTol,
-            const NOX::NLN::StatusTest::QuantityType& checkQuantity,
+            const NOX::Nln::StatusTest::QuantityType& checkQuantity,
             const bool& disable_implicit_weighting = false) const = 0;
 
         //! Returns the increment norm of the primary DoF fields
         virtual double get_primary_solution_update_norms(const Epetra_Vector& xNew,
-            const Epetra_Vector& xOld, const NOX::NLN::StatusTest::QuantityType& checkQuantity,
+            const Epetra_Vector& xOld, const NOX::Nln::StatusTest::QuantityType& checkQuantity,
             const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
             const bool& isScaled = false) const = 0;
 
         //! Returns the previous solution norm of primary DoF fields
         virtual double get_previous_primary_solution_norms(const Epetra_Vector& xOld,
-            const NOX::NLN::StatusTest::QuantityType& checkQuantity,
+            const NOX::Nln::StatusTest::QuantityType& checkQuantity,
             const ::NOX::Abstract::Vector::NormType& type = ::NOX::Abstract::Vector::TwoNorm,
             const bool& isScaled = false) const = 0;
 
@@ -77,9 +77,9 @@ namespace NOX
 
         //! return model terms of a linear model (optional)
         virtual double get_linearized_model_terms(const ::NOX::Abstract::Group* group,
-            const Epetra_Vector& dir, const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
-            const enum NOX::NLN::MeritFunction::LinOrder linorder,
-            const enum NOX::NLN::MeritFunction::LinType lintype) const
+            const Epetra_Vector& dir, const enum NOX::Nln::MeritFunction::MeritFctName mf_type,
+            const enum NOX::Nln::MeritFunction::LinOrder linorder,
+            const enum NOX::Nln::MeritFunction::LinType lintype) const
         {
           FOUR_C_THROW("Not implemented!");
           exit(EXIT_FAILURE);
@@ -123,7 +123,7 @@ namespace NOX
         };
       };
     }  // namespace Interface
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 

@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-thermo interaction          fang 10/16 |
  *------------------------------------------------------------------------*/
-void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
+  using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -53,21 +53,21 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("THERMO_INITIALFIELD", "zero_field",
       "initial temperature field for scatra-thermo interaction problems",
       tuple<std::string>("zero_field", "field_by_function", "field_by_condition"),
-      tuple<int>(INPAR::SCATRA::initfield_zero_field, INPAR::SCATRA::initfield_field_by_function,
-          INPAR::SCATRA::initfield_field_by_condition),
+      tuple<int>(Inpar::ScaTra::initfield_zero_field, Inpar::ScaTra::initfield_field_by_function,
+          Inpar::ScaTra::initfield_field_by_condition),
       &stidyn);
 
   // function number for initial temperature field
-  CORE::UTILS::IntParameter("THERMO_INITFUNCNO", -1,
+  Core::UTILS::IntParameter("THERMO_INITFUNCNO", -1,
       "function number for initial temperature field for scatra-thermo interaction problems",
       &stidyn);
 
   // ID of linear solver for temperature field
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "THERMO_LINEAR_SOLVER", -1, "ID of linear solver for temperature field", &stidyn);
 
   // flag for double condensation of linear equations associated with temperature field
-  CORE::UTILS::BoolParameter("THERMO_CONDENSATION", "No",
+  Core::UTILS::BoolParameter("THERMO_CONDENSATION", "No",
       "flag for double condensation of linear equations associated with temperature field",
       &stidyn);
 
@@ -77,15 +77,15 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "MONOLITHIC", false, "control parameters for monolithic scatra-thermo interaction problems");
 
   // ID of linear solver for global system of equations
-  CORE::UTILS::IntParameter("LINEAR_SOLVER", -1,
+  Core::UTILS::IntParameter("LINEAR_SOLVER", -1,
       "ID of linear solver for global system of equations", &stidyn_monolithic);
 
   // type of global system matrix in global system of equations
-  setStringToIntegralParameter<CORE::LINALG::MatrixType>("MATRIXTYPE", "block",
+  setStringToIntegralParameter<Core::LinAlg::MatrixType>("MATRIXTYPE", "block",
       "type of global system matrix in global system of equations",
       tuple<std::string>("block", "sparse"),
-      tuple<CORE::LINALG::MatrixType>(
-          CORE::LINALG::MatrixType::block_condition, CORE::LINALG::MatrixType::sparse),
+      tuple<Core::LinAlg::MatrixType>(
+          Core::LinAlg::MatrixType::block_condition, Core::LinAlg::MatrixType::sparse),
       &stidyn_monolithic);
 
   /*----------------------------------------------------------------------*/
@@ -94,10 +94,10 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "control parameters for partitioned scatra-thermo interaction problems");
 
   // relaxation parameter
-  CORE::UTILS::DoubleParameter("OMEGA", 1., "relaxation parameter", &stidyn_partitioned);
+  Core::UTILS::DoubleParameter("OMEGA", 1., "relaxation parameter", &stidyn_partitioned);
 
   // maximum value of Aitken relaxation parameter
-  CORE::UTILS::DoubleParameter("OMEGAMAX", 0.,
+  Core::UTILS::DoubleParameter("OMEGAMAX", 0.,
       "maximum value of Aitken relaxation parameter (0.0 = no constraint)", &stidyn_partitioned);
 
   return;
@@ -107,10 +107,10 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 /*------------------------------------------------------------------------*
  | set valid conditions for scatra-thermo interaction          fang 10/16 |
  *------------------------------------------------------------------------*/
-void INPAR::STI::SetValidConditions(
-    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
+void Inpar::STI::SetValidConditions(
+    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
-  using namespace INPUT;
+  using namespace Input;
 
   return;
 }

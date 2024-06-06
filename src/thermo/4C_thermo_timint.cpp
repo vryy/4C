@@ -43,28 +43,28 @@ void THR::TimInt::Logo()
  *----------------------------------------------------------------------*/
 THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : discret_(actdis),
       myrank_(actdis->Comm().MyPID()),
       solver_(solver),
-      solveradapttol_(CORE::UTILS::IntegralValue<int>(tdynparams, "ADAPTCONV") == 1),
+      solveradapttol_(Core::UTILS::IntegralValue<int>(tdynparams, "ADAPTCONV") == 1),
       solveradaptolbetter_(tdynparams.get<double>("ADAPTCONV_BETTER")),
-      dbcmaps_(Teuchos::rcp(new CORE::LINALG::MapExtractor())),
+      dbcmaps_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),
       output_(output),
       printlogo_(true),  // DON'T EVEN DARE TO SET THIS TO FALSE
       printscreen_(ioparams.get<int>("STDOUTEVRY")),
       printiter_(true),  // ADD INPUT PARAMETER
       writerestartevery_(tdynparams.get<int>("RESTARTEVRY")),
-      writeglob_((bool)CORE::UTILS::IntegralValue<int>(ioparams, "THERM_TEMPERATURE")),
+      writeglob_((bool)Core::UTILS::IntegralValue<int>(ioparams, "THERM_TEMPERATURE")),
       writeglobevery_(tdynparams.get<int>("RESULTSEVRY")),
       writeheatflux_(
-          CORE::UTILS::IntegralValue<INPAR::THR::HeatFluxType>(ioparams, "THERM_HEATFLUX")),
+          Core::UTILS::IntegralValue<Inpar::THR::HeatFluxType>(ioparams, "THERM_HEATFLUX")),
       writetempgrad_(
-          CORE::UTILS::IntegralValue<INPAR::THR::TempGradType>(ioparams, "THERM_TEMPGRAD")),
+          Core::UTILS::IntegralValue<Inpar::THR::TempGradType>(ioparams, "THERM_TEMPGRAD")),
       writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),
       energyfile_(nullptr),
-      calcerror_(CORE::UTILS::IntegralValue<INPAR::THR::CalcError>(tdynparams, "CALCERROR")),
+      calcerror_(Core::UTILS::IntegralValue<Inpar::THR::CalcError>(tdynparams, "CALCERROR")),
       errorfunctno_(tdynparams.get<int>("CALCERRORFUNCNO")),
       time_(Teuchos::null),
       timen_(0.0),
@@ -74,7 +74,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       step_(0),
       stepn_(0),
       firstoutputofrun_(true),
-      lumpcapa_(CORE::UTILS::IntegralValue<int>(tdynparams, "LUMPCAPA") == 1),
+      lumpcapa_(Core::UTILS::IntegralValue<int>(tdynparams, "LUMPCAPA") == 1),
       zeros_(Teuchos::null),
       temp_(Teuchos::null),
       rate_(Teuchos::null),
@@ -96,10 +96,10 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   }
 
   // time state
-  time_ = Teuchos::rcp(new TIMESTEPPING::TimIntMStep<double>(0, 0, 0.0));
+  time_ = Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, 0.0));
   // HERE SHOULD BE SOMETHING LIKE (tdynparams.get<double>("TIMEINIT"))
   dt_ =
-      Teuchos::rcp(new TIMESTEPPING::TimIntMStep<double>(0, 0, tdynparams.get<double>("TIMESTEP")));
+      Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, tdynparams.get<double>("TIMESTEP")));
   step_ = 0;
   timen_ = (*time_)[0] + (*dt_)[0];  // set target time to initial time plus step size
   stepn_ = step_ + 1;
@@ -108,42 +108,42 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   if ((writeenergyevery_ != 0) and (myrank_ == 0)) AttachEnergyFile();
 
   // a zero vector of full length
-  zeros_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  zeros_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
 
   // Map containing Dirichlet DOFs
   {
     Teuchos::ParameterList p;
     p.set("total time", timen_);
-    p.set<const CORE::UTILS::FunctionManager*>(
-        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
+    p.set<const Core::UTILS::FunctionManager*>(
+        "function_manager", &Global::Problem::Instance()->FunctionManager());
     discret_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
 
   // temperatures T_{n}
   temp_ = Teuchos::rcp(
-      new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, discret_->dof_row_map(), true));
+      new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, discret_->dof_row_map(), true));
   // temperature rates R_{n}
   rate_ = Teuchos::rcp(
-      new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, discret_->dof_row_map(), true));
+      new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, discret_->dof_row_map(), true));
 
   // temperatures T_{n+1} at t_{n+1}
-  tempn_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  tempn_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
   // temperature rates R_{n+1} at t_{n+1}
-  raten_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  raten_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
 
   // create empty interface force vector
-  fifc_ = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+  fifc_ = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
 
   // create empty matrix
-  tang_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*discret_->dof_row_map(), 81, true, true));
+  tang_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*discret_->dof_row_map(), 81, true, true));
   // we condensed the capacity matrix out of the system
 
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------
   const int startfuncno = tdynparams.get<int>("INITFUNCNO");
-  SetInitialField(CORE::UTILS::IntegralValue<INPAR::THR::InitialField>(tdynparams, "INITIALFIELD"),
+  SetInitialField(Core::UTILS::IntegralValue<Inpar::THR::InitialField>(tdynparams, "INITIALFIELD"),
       startfuncno);
 
   // stay with us
@@ -160,9 +160,9 @@ void THR::TimInt::determine_capa_consist_temp_rate()
 {
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext =
-      CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);  //!< external force
+      Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);  //!< external force
   Teuchos::RCP<Epetra_Vector> fint =
-      CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);  //!< internal force
+      Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);  //!< internal force
 
   // overwrite initial state vectors with DirichletBCs
   apply_dirichlet_bc((*time_)[0], (*temp_)(0), (*rate_)(0), false);
@@ -208,11 +208,11 @@ void THR::TimInt::determine_capa_consist_temp_rate()
   {
     // rhs corresponds to residual on the rhs
     // K . DT = - R_n+1 = - R_n - (fint_n+1 - fext_n+1)
-    Teuchos::RCP<Epetra_Vector> rhs = CORE::LINALG::CreateVector(*discret_->dof_row_map(), true);
+    Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::CreateVector(*discret_->dof_row_map(), true);
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     // blank RHS on DBC DOFs
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;
     solver_->Solve(tang_->EpetraMatrix(), (*rate_)(0), rhs, solver_params);
@@ -223,7 +223,7 @@ void THR::TimInt::determine_capa_consist_temp_rate()
   // effects (basically managers).
   // BUT: in case of explicit time integration, the conductivity matrix
   // is stored in tang_ which is needed throughout the simulation
-  if (MethodName() != INPAR::THR::dyna_expleuler) tang_->Reset();
+  if (MethodName() != Inpar::THR::dyna_expleuler) tang_->Reset();
 
   // leave this hell
   return;
@@ -241,8 +241,8 @@ void THR::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vect
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // target time
-  p.set<const CORE::UTILS::FunctionManager*>(
-      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
+  p.set<const Core::UTILS::FunctionManager*>(
+      "function_manager", &Global::Problem::Instance()->FunctionManager());
 
   // predicted Dirichlet values
   // \c temp then also holds prescribed new Dirichlet temperatures
@@ -314,13 +314,13 @@ void THR::TimInt::reset_step()
  *----------------------------------------------------------------------*/
 void THR::TimInt::read_restart(const int step)
 {
-  CORE::IO::DiscretizationReader reader(
-      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader reader(
+      discret_, Global::Problem::Instance()->InputControlFile(), step);
   if (step != reader.ReadInt("step")) FOUR_C_THROW("Time step on file not equal to given step");
 
   step_ = step;
   stepn_ = step_ + 1;
-  time_ = Teuchos::rcp(new TIMESTEPPING::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
+  time_ = Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
   timen_ = (*time_)[0] + (*dt_)[0];
 
   ReadRestartState();
@@ -334,8 +334,8 @@ void THR::TimInt::read_restart(const int step)
  *----------------------------------------------------------------------*/
 void THR::TimInt::ReadRestartState()
 {
-  CORE::IO::DiscretizationReader reader(
-      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
+  Core::IO::DiscretizationReader reader(
+      discret_, Global::Problem::Instance()->InputControlFile(), step_);
   reader.ReadVector(tempn_, "temperature");
   temp_->UpdateSteps(*tempn_);
   reader.ReadVector(raten_, "rate");
@@ -356,7 +356,7 @@ void THR::TimInt::OutputStep(bool forced_writerestart)
   {
     // restart has already been written or simulation has just started
     if ((writerestartevery_ and (step_ % writerestartevery_ == 0)) or
-        step_ == GLOBAL::Problem::Instance()->Restart())
+        step_ == Global::Problem::Instance()->Restart())
       return;
     // if state already exists, add restart information
     if (writeglobevery_ and (step_ % writeglobevery_ == 0))
@@ -386,8 +386,8 @@ void THR::TimInt::OutputStep(bool forced_writerestart)
 
   // output heatflux & tempgrad
   if (writeglobevery_ and (step_ % writeglobevery_ == 0) and
-      ((writeheatflux_ != INPAR::THR::heatflux_none) or
-          (writetempgrad_ != INPAR::THR::tempgrad_none)))
+      ((writeheatflux_ != Inpar::THR::heatflux_none) or
+          (writetempgrad_ != Inpar::THR::tempgrad_none)))
   {
     output_heatflux_tempgrad(datawritten);
   }
@@ -523,14 +523,14 @@ void THR::TimInt::output_heatflux_tempgrad(bool& datawritten)
   datawritten = true;
 
   // write heatflux
-  if (writeheatflux_ != INPAR::THR::heatflux_none)
+  if (writeheatflux_ != Inpar::THR::heatflux_none)
   {
     std::string heatfluxtext = "";
-    if (writeheatflux_ == INPAR::THR::heatflux_current)
+    if (writeheatflux_ == Inpar::THR::heatflux_current)
     {
       heatfluxtext = "gauss_current_heatfluxes_xyz";
     }
-    else if (writeheatflux_ == INPAR::THR::heatflux_initial)
+    else if (writeheatflux_ == Inpar::THR::heatflux_initial)
     {
       heatfluxtext = "gauss_initial_heatfluxes_xyz";
     }
@@ -542,14 +542,14 @@ void THR::TimInt::output_heatflux_tempgrad(bool& datawritten)
   }
 
   // write temperature gradient
-  if (writetempgrad_ != INPAR::THR::tempgrad_none)
+  if (writetempgrad_ != Inpar::THR::tempgrad_none)
   {
     std::string tempgradtext = "";
-    if (writetempgrad_ == INPAR::THR::tempgrad_current)
+    if (writetempgrad_ == Inpar::THR::tempgrad_current)
     {
       tempgradtext = "gauss_current_tempgrad_xyz";
     }
-    else if (writetempgrad_ == INPAR::THR::tempgrad_initial)
+    else if (writetempgrad_ == Inpar::THR::tempgrad_initial)
     {
       tempgradtext = "gauss_initial_tempgrad_xyz";
     }
@@ -583,8 +583,8 @@ void THR::TimInt::output_energy()
     // set_state(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->set_state(0, "temperature", (*temp_)(0));
     // get energies
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> energies =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> energies =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(1));
     discret_->EvaluateScalars(p, energies);
     discret_->ClearState();
     intergy = (*energies)(0);
@@ -594,7 +594,7 @@ void THR::TimInt::output_energy()
   //  double kinergy = 0.0;  // total kinetic energy
   //  {
   //    Teuchos::RCP<Epetra_Vector> linmom
-  //      = CORE::LINALG::CreateVector(*dofrowmap_, true);
+  //      = Core::LinAlg::CreateVector(*dofrowmap_, true);
   //    capa_->Multiply(false, (*rate_)[0], *linmom);
   //    linmom->Dot((*rate_)[0], &kinergy);
   //    kinergy *= 0.5;
@@ -627,7 +627,7 @@ void THR::TimInt::output_energy()
 /*----------------------------------------------------------------------*
  | thermal result test                                       dano 01/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::UTILS::ResultTest> THR::TimInt::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> THR::TimInt::CreateFieldTest()
 {
   return Teuchos::rcp(new THR::ResultTest(*this));
 
@@ -673,7 +673,7 @@ void THR::TimInt::apply_force_external_conv(Teuchos::ParameterList& p,
     const Teuchos::RCP<Epetra_Vector> tempn,         //!< temperature state T_n
     const Teuchos::RCP<Epetra_Vector> temp,          //!< temperature state T_n+1
     Teuchos::RCP<Epetra_Vector>& fext,               //!< external force
-    Teuchos::RCP<CORE::LINALG::SparseOperator> tang  //!< tangent at time n+1
+    Teuchos::RCP<Core::LinAlg::SparseOperator> tang  //!< tangent at time n+1
 )
 {
   // for heat convection von Neumann boundary conditions, i.e. q_c^, the
@@ -719,7 +719,7 @@ void THR::TimInt::apply_force_tang_internal(
     const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
     const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperature
     Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
 )
 {
   // type of calling time integrator
@@ -745,7 +745,7 @@ void THR::TimInt::apply_force_tang_internal(
             1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.))
       FOUR_C_THROW("update failed");
     if (contact_params_interface_->GetCouplingScheme() ==
-        INPAR::CONTACT::CouplingScheme::monolithic)
+        Inpar::CONTACT::CouplingScheme::monolithic)
     {
       tang->UnComplete();
       tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
@@ -772,7 +772,7 @@ void THR::TimInt::apply_force_tang_internal(
     const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperature
     Teuchos::RCP<Epetra_Vector> fcap,              //!< capacity force
     Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
 )
 {
   // type of calling time integrator
@@ -793,7 +793,7 @@ void THR::TimInt::apply_force_tang_internal(
 
   // in case of genalpha extract midpoint temperature rate R_{n+alpha_m}
   // extract it after ClearState() is called.
-  if (MethodName() == INPAR::THR::dyna_genalpha)
+  if (MethodName() == Inpar::THR::dyna_genalpha)
   {
     Teuchos::RCP<const Epetra_Vector> ratem =
         p.get<Teuchos::RCP<const Epetra_Vector>>("mid-temprate");
@@ -808,7 +808,7 @@ void THR::TimInt::apply_force_tang_internal(
   {
     fint->Update(1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.);
     if (contact_params_interface_->GetCouplingScheme() ==
-        INPAR::CONTACT::CouplingScheme::monolithic)
+        Inpar::CONTACT::CouplingScheme::monolithic)
     {
       tang->UnComplete();
       tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
@@ -866,11 +866,11 @@ void THR::TimInt::apply_force_internal(
 /*----------------------------------------------------------------------*
  | set initial field for temperature (according to ScaTra)   dano 06/10 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int startfuncno)
+void THR::TimInt::SetInitialField(const Inpar::THR::InitialField init, const int startfuncno)
 {
   switch (init)
   {
-    case INPAR::THR::initfield_zero_field:
+    case Inpar::THR::initfield_zero_field:
     {
       // extract temperature vector at time t_n (temp_ contains various vectors of
       // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
@@ -879,7 +879,7 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
       break;
     }  // initfield_zero_field
 
-    case INPAR::THR::initfield_field_by_function:
+    case Inpar::THR::initfield_field_by_function:
     {
       const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
@@ -887,7 +887,7 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
       for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        CORE::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
+        Core::Nodes::Node* lnode = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
         std::vector<int> nodedofset = discret_->Dof(0, lnode);
 
@@ -897,8 +897,8 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
-          double initialval = GLOBAL::Problem::Instance()
-                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+          double initialval = Global::Problem::Instance()
+                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(lnode->X().data(), 0.0, k);
           // extract temperature vector at time t_n (temp_ contains various vectors of
           // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
@@ -914,14 +914,14 @@ void THR::TimInt::SetInitialField(const INPAR::THR::InitialField init, const int
       break;
     }  // initfield_field_by_function
 
-    case INPAR::THR::initfield_field_by_condition:
+    case Inpar::THR::initfield_field_by_condition:
     {
       std::vector<int> localdofs;
       localdofs.push_back(0);
       discret_->evaluate_initial_field(
-          GLOBAL::Problem::Instance()->FunctionManager(), "Temperature", (*temp_)(0), localdofs);
+          Global::Problem::Instance()->FunctionManager(), "Temperature", (*temp_)(0), localdofs);
       discret_->evaluate_initial_field(
-          GLOBAL::Problem::Instance()->FunctionManager(), "Temperature", tempn_, localdofs);
+          Global::Problem::Instance()->FunctionManager(), "Temperature", tempn_, localdofs);
 
       break;
     }  // initfield_field_by_condition
@@ -952,13 +952,13 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analyt
 {
   switch (calcerror_)
   {
-    case INPAR::THR::no_error_calculation:
+    case Inpar::THR::no_error_calculation:
     {
       // do nothing --- no analytical solution available
       return Teuchos::null;
       break;
     }
-    case INPAR::THR::calcerror_byfunct:
+    case Inpar::THR::calcerror_byfunct:
     {
       // std::vector containing
       // [0]: relative L2 temperature error
@@ -981,8 +981,8 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analyt
       // 1: delta temperature for H1-error norm
       // 2: analytical temperature for L2 norm
       // 3: analytical temperature for H1 norm
-      Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
-          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4));
+      Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
+          Teuchos::rcp(new Core::LinAlg::SerialDenseVector(4));
 
       // vector for output
       Teuchos::RCP<Epetra_MultiVector> normvec =
@@ -1018,7 +1018,7 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analyt
         {
           std::ostringstream temp;
           const std::string simulation =
-              GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+              Global::Problem::Instance()->OutputControlFile()->FileName();
           const std::string fname = simulation + "_thermo.relerror";
 
           std::ofstream f;
@@ -1031,7 +1031,7 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::evaluate_error_compared_to_analyt
           f.close();
         }
 
-        const std::string simulation = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation = Global::Problem::Instance()->OutputControlFile()->FileName();
         const std::string fname = simulation + "_thermo_time.relerror";
 
         if (step_ == 1)

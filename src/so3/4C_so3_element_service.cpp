@@ -15,9 +15,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void DRT::ELEMENTS::AssembleGaussPointValues(
+void Discret::ELEMENTS::AssembleGaussPointValues(
     std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
-    const CORE::LINALG::SerialDenseMatrix& gp_data, const CORE::Elements::Element& ele)
+    const Core::LinAlg::SerialDenseMatrix& gp_data, const Core::Elements::Element& ele)
 {
   for (int gp = 0; gp < gp_data.numRows(); ++gp)
   {
@@ -33,8 +33,8 @@ void DRT::ELEMENTS::AssembleGaussPointValues(
   }
 }
 
-void DRT::ELEMENTS::AssembleNodalElementCount(
-    Epetra_IntVector& global_count, const CORE::Elements::Element& ele)
+void Discret::ELEMENTS::AssembleNodalElementCount(
+    Epetra_IntVector& global_count, const Core::Elements::Element& ele)
 {
   for (int n = 0; n < ele.num_node(); ++n)
   {
@@ -49,14 +49,14 @@ void DRT::ELEMENTS::AssembleNodalElementCount(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi(
-    const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity)
+template <Core::FE::CellType distype>
+std::vector<double> Discret::ELEMENTS::ProjectNodalQuantityToXi(
+    const Core::LinAlg::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity)
 {
-  const int numNodesPerElement = CORE::FE::num_nodes<distype>;
+  const int numNodesPerElement = Core::FE::num_nodes<distype>;
 
-  CORE::LINALG::Matrix<numNodesPerElement, 1> shapefunct(true);
-  CORE::FE::shape_function<distype>(xi, shapefunct);
+  Core::LinAlg::Matrix<numNodesPerElement, 1> shapefunct(true);
+  Core::FE::shape_function<distype>(xi, shapefunct);
 
   const int num_dof_per_node = static_cast<int>(nodal_quantity.size()) / numNodesPerElement;
   std::vector<double> projected_quantities(num_dof_per_node, 0.0);
@@ -73,15 +73,16 @@ std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi(
 }
 
 // explicit template instantiations
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<CORE::FE::CellType::hex8>(
-    const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<CORE::FE::CellType::hex27>(
-    const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<CORE::FE::CellType::tet4>(
-    const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<CORE::FE::CellType::tet10>(
-    const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<CORE::FE::CellType::wedge6>(
-    const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
+template std::vector<double> Discret::ELEMENTS::ProjectNodalQuantityToXi<Core::FE::CellType::hex8>(
+    const Core::LinAlg::Matrix<3, 1>&, const std::vector<double>&);
+template std::vector<double> Discret::ELEMENTS::ProjectNodalQuantityToXi<Core::FE::CellType::hex27>(
+    const Core::LinAlg::Matrix<3, 1>&, const std::vector<double>&);
+template std::vector<double> Discret::ELEMENTS::ProjectNodalQuantityToXi<Core::FE::CellType::tet4>(
+    const Core::LinAlg::Matrix<3, 1>&, const std::vector<double>&);
+template std::vector<double> Discret::ELEMENTS::ProjectNodalQuantityToXi<Core::FE::CellType::tet10>(
+    const Core::LinAlg::Matrix<3, 1>&, const std::vector<double>&);
+template std::vector<double>
+Discret::ELEMENTS::ProjectNodalQuantityToXi<Core::FE::CellType::wedge6>(
+    const Core::LinAlg::Matrix<3, 1>&, const std::vector<double>&);
 
 FOUR_C_NAMESPACE_CLOSE

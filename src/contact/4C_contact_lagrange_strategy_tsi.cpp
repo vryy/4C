@@ -50,18 +50,18 @@ CONTACT::LagrangeStrategyTsi::LagrangeStrategyTsi(
  | Assign general thermo contact state                         seitz 08/15|
  *------------------------------------------------------------------------*/
 void CONTACT::LagrangeStrategyTsi::set_state(
-    const enum MORTAR::StateType& statetype, const Epetra_Vector& vec)
+    const enum Mortar::StateType& statetype, const Epetra_Vector& vec)
 {
   switch (statetype)
   {
-    case MORTAR::state_temperature:
+    case Mortar::state_temperature:
     {
       for (int j = 0; j < (int)interface_.size(); ++j)
       {
-        DRT::Discretization& idiscr = interface_[j]->Discret();
+        Discret::Discretization& idiscr = interface_[j]->Discret();
         Teuchos::RCP<Epetra_Vector> global =
             Teuchos::rcp(new Epetra_Vector(*idiscr.DofColMap(), false));
-        CORE::LINALG::Export(vec, *global);
+        Core::LinAlg::Export(vec, *global);
 
         for (int i = 0; i < idiscr.NumMyColNodes(); ++i)
         {
@@ -70,29 +70,29 @@ void CONTACT::LagrangeStrategyTsi::set_state(
           std::vector<double> mytemp(1);
           std::vector<int> lm(1, node->Dofs()[0]);
 
-          CORE::FE::ExtractMyValues(*global, mytemp, lm);
+          Core::FE::ExtractMyValues(*global, mytemp, lm);
           if (node->HasTSIData())  // in case the interface has not been initialized yet
             node->TSIData().Temp() = mytemp[0];
         }
       }
       break;
     }
-    case MORTAR::state_thermo_lagrange_multiplier:
+    case Mortar::state_thermo_lagrange_multiplier:
     {
       for (int j = 0; j < (int)interface_.size(); ++j)
       {
-        DRT::Discretization& idiscr = interface_[j]->Discret();
+        Discret::Discretization& idiscr = interface_[j]->Discret();
 
         Teuchos::RCP<Epetra_Vector> global =
             Teuchos::rcp(new Epetra_Vector(*idiscr.DofColMap(), false));
-        CORE::LINALG::Export(vec, *global);
+        Core::LinAlg::Export(vec, *global);
 
         for (int i = 0; i < idiscr.NumMyColNodes(); ++i)
         {
           CONTACT::Node* node = dynamic_cast<CONTACT::Node*>(idiscr.lColNode(i));
           std::vector<int> lm(1, node->Dofs()[0]);
           std::vector<double> myThermoLM(1, 0.);
-          CORE::FE::ExtractMyValues(*global, myThermoLM, lm);
+          Core::FE::ExtractMyValues(*global, myThermoLM, lm);
           node->TSIData().ThermoLM() = myThermoLM[0];
         }
       }
@@ -110,24 +110,24 @@ void CONTACT::LagrangeStrategyTsi::set_state(
 
 
 void CONTACT::LagrangeStrategyTsi::Evaluate(
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
-    Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST,
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<Core::Adapter::Coupling> coupST,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp)
 {
   if (thr_s_dofs_ == Teuchos::null) thr_s_dofs_ = coupST->MasterToSlaveMap(gsdofrowmap_);
 
   // set the new displacements
-  set_state(MORTAR::state_new_displacement, *dis);
+  set_state(Mortar::state_new_displacement, *dis);
 
   for (unsigned i = 0; i < interface_.size(); ++i) interface_[i]->Initialize();
 
   // set new temperatures
   Teuchos::RCP<Epetra_Vector> temp2 = coupST()->SlaveToMaster(temp);
-  set_state(MORTAR::state_temperature, *temp2);
+  set_state(Mortar::state_temperature, *temp2);
 
   // error checks
-  if (CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(Params(), "SYSTEM") !=
-      INPAR::CONTACT::system_condensed)
+  if (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(Params(), "SYSTEM") !=
+      Inpar::CONTACT::system_condensed)
     FOUR_C_THROW("only condensed system implemented");
 
   // First, we need to evaluate all the interfaces
@@ -153,54 +153,54 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   Teuchos::RCP<Epetra_Map> thr_all_dofs = Teuchos::rcp(new Epetra_Map(*coupST->SlaveDofMap()));
 
   // assemble the constraint lines for the active contact nodes
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dcsdd = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *gactivedofs_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
-  CORE::LINALG::SparseMatrix dcsdT(
-      *gactivedofs_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dcsdLMc = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *gactivedofs_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
-  Teuchos::RCP<Epetra_Vector> rcsa = CORE::LINALG::CreateVector(*gactivedofs_, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dcsdd = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  Core::LinAlg::SparseMatrix dcsdT(
+      *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dcsdLMc = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  Teuchos::RCP<Epetra_Vector> rcsa = Core::LinAlg::CreateVector(*gactivedofs_, true);
   Teuchos::RCP<Epetra_Vector> g_all;
-  if (constr_direction_ == INPAR::CONTACT::constr_xyz)
-    g_all = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
+  if (constr_direction_ == Inpar::CONTACT::constr_xyz)
+    g_all = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
   else
-    g_all = CORE::LINALG::CreateVector(*gsnoderowmap_, true);
+    g_all = Core::LinAlg::CreateVector(*gsnoderowmap_, true);
 
   // assemble linearization of heat conduction (thermal contact)
-  CORE::LINALG::SparseMatrix dcTdd(
-      *gactivedofs_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::SparseMatrix dcTdT(
-      *gactivedofs_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::SparseMatrix dcTdLMc(
-      *gactivedofs_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::SparseMatrix dcTdLMt(
-      *gactivedofs_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  Teuchos::RCP<Epetra_Vector> rcTa = CORE::LINALG::CreateVector(*gactivedofs_, true);
+  Core::LinAlg::SparseMatrix dcTdd(
+      *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix dcTdT(
+      *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix dcTdLMc(
+      *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix dcTdLMt(
+      *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Teuchos::RCP<Epetra_Vector> rcTa = Core::LinAlg::CreateVector(*gactivedofs_, true);
 
   // D and M matrix for the active nodes
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dInv =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100, true, false));
-  CORE::LINALG::SparseMatrix s(
-      *gactivedofs_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dInv =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, true, false));
+  Core::LinAlg::SparseMatrix s(
+      *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
-  CORE::LINALG::SparseMatrix m_LinDissDISP(
-      *gmdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::SparseMatrix m_LinDissContactLM(
-      *gmdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix m_LinDissDISP(
+      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix m_LinDissContactLM(
+      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   // setup some linearizations
-  CORE::LINALG::SparseMatrix linDcontactLM(
-      *gsdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::SparseMatrix linMcontactLM(
-      *gmdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::SparseMatrix linMdiss(
-      *gmdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::SparseMatrix linMThermoLM(
-      *gmdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::SparseMatrix linDThermoLM(
-      *gsdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::SparseMatrix m_LinDissContactLM_thrRow(
-      *thr_m_dofs, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix linDcontactLM(
+      *gsdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix linMcontactLM(
+      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix linMdiss(
+      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix linMThermoLM(
+      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix linDThermoLM(
+      *gsdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix m_LinDissContactLM_thrRow(
+      *thr_m_dofs, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   // stick / slip linearization
   for (unsigned i = 0; i < interface_.size(); ++i)
@@ -255,17 +255,17 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   // normal contact
   Teuchos::RCP<Epetra_Vector> gact;
-  if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+  if (constr_direction_ == Inpar::CONTACT::constr_xyz)
   {
-    gact = CORE::LINALG::CreateVector(*gactivedofs_, true);
-    if (gact->GlobalLength()) CORE::LINALG::Export(*g_all, *gact);
+    gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
+    if (gact->GlobalLength()) Core::LinAlg::Export(*g_all, *gact);
   }
   else
   {
-    gact = CORE::LINALG::CreateVector(*gactivenodes_, true);
+    gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gact->GlobalLength())
     {
-      CORE::LINALG::Export(*g_all, *gact);
+      Core::LinAlg::Export(*g_all, *gact);
       if (gact->ReplaceMap(*gactiven_)) FOUR_C_THROW("replaceMap went wrong");
     }
   }
@@ -284,22 +284,22 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   // get the seperate blocks of the 2x2 TSI block system
   // View mode!!! Since we actually want to add things there
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kss =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(sysmat->Matrix(0, 0), CORE::LINALG::Copy));
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kst =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(sysmat->Matrix(0, 1), CORE::LINALG::Copy));
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kts =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(sysmat->Matrix(1, 0), CORE::LINALG::Copy));
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> ktt =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(sysmat->Matrix(1, 1), CORE::LINALG::Copy));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kss =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(sysmat->Matrix(0, 0), Core::LinAlg::Copy));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kst =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(sysmat->Matrix(0, 1), Core::LinAlg::Copy));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kts =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(sysmat->Matrix(1, 0), Core::LinAlg::Copy));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> ktt =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(sysmat->Matrix(1, 1), Core::LinAlg::Copy));
   kss->UnComplete();
   kts->UnComplete();
 
   // split rhs
   Teuchos::RCP<Epetra_Vector> rs = Teuchos::rcp(new Epetra_Vector(*gdisprowmap_, true));
   Teuchos::RCP<Epetra_Vector> rt = Teuchos::rcp(new Epetra_Vector(*coupST->SlaveDofMap(), true));
-  CORE::LINALG::Export(*combined_RHS, *rs);
-  CORE::LINALG::Export(*combined_RHS, *rt);
+  Core::LinAlg::Export(*combined_RHS, *rs);
+  Core::LinAlg::Export(*combined_RHS, *rt);
 
   // we don't want the rhs but the residual
   rs->Scale(-1.);
@@ -310,7 +310,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
                                // contact force, after that, fscn_ should be initialized propperly
   {
     Epetra_Vector tmp(*gdisprowmap_);
-    CORE::LINALG::Export(*fscn_, tmp);
+    Core::LinAlg::Export(*fscn_, tmp);
     if (rs->Update(alphaf_, tmp, 1.) != 0)  // fscn already scaled with alphaf_ in update
       FOUR_C_THROW("update went wrong");
   }
@@ -318,13 +318,13 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   if (ftcn_ != Teuchos::null)
   {
     Epetra_Vector tmp(*coupST->SlaveDofMap());
-    CORE::LINALG::Export(*ftcn_, tmp);
+    Core::LinAlg::Export(*ftcn_, tmp);
     if (rt->Update((1. - tsi_alpha_), tmp, 1.) != 0) FOUR_C_THROW("update went wrong");
   }
 
   // map containing the inactive and non-contact structural dofs
   Teuchos::RCP<Epetra_Map> str_gni_dofs =
-      CORE::LINALG::SplitMap(*CORE::LINALG::SplitMap(*gdisprowmap_, *gmdofrowmap_), *gactivedofs_);
+      Core::LinAlg::SplitMap(*Core::LinAlg::SplitMap(*gdisprowmap_, *gmdofrowmap_), *gactivedofs_);
   // map containing the inactive and non-contact thermal dofs
   Teuchos::RCP<Epetra_Map> thr_gni_dofs = coupST->MasterToSlaveMap(str_gni_dofs);
 
@@ -333,19 +333,19 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   kss->Add(linMcontactLM, false, 1. - alphaf_, 1.);
 
   // transform and add to kts
-  CORE::LINALG::MatrixRowTransform()(
-      m_LinDissDISP, +tsi_alpha_, CORE::ADAPTER::CouplingMasterConverter(*coupST), *kts, true);
-  CORE::LINALG::MatrixRowTransform()(linMdiss,
+  Core::LinAlg::MatrixRowTransform()(
+      m_LinDissDISP, +tsi_alpha_, Core::Adapter::CouplingMasterConverter(*coupST), *kts, true);
+  Core::LinAlg::MatrixRowTransform()(linMdiss,
       -tsi_alpha_,  // this minus sign is there, since assemble linM does not actually
-      CORE::ADAPTER::CouplingMasterConverter(*coupST), *kts,
+      Core::Adapter::CouplingMasterConverter(*coupST), *kts,
       true);  // assemble the linearization of M but the negative linearization of M
-  CORE::LINALG::MatrixRowTransform()(
-      linMThermoLM, tsi_alpha_, CORE::ADAPTER::CouplingMasterConverter(*coupST), *kts, true);
-  CORE::LINALG::MatrixRowTransform()(
-      linDThermoLM, tsi_alpha_, CORE::ADAPTER::CouplingMasterConverter(*coupST), *kts, true);
+  Core::LinAlg::MatrixRowTransform()(
+      linMThermoLM, tsi_alpha_, Core::Adapter::CouplingMasterConverter(*coupST), *kts, true);
+  Core::LinAlg::MatrixRowTransform()(
+      linDThermoLM, tsi_alpha_, Core::Adapter::CouplingMasterConverter(*coupST), *kts, true);
 
-  CORE::LINALG::MatrixRowTransform().operator()(m_LinDissContactLM, 1.,
-      CORE::ADAPTER::CouplingMasterConverter(*coupST), m_LinDissContactLM_thrRow, false);
+  Core::LinAlg::MatrixRowTransform().operator()(m_LinDissContactLM, 1.,
+      Core::Adapter::CouplingMasterConverter(*coupST), m_LinDissContactLM_thrRow, false);
   m_LinDissContactLM_thrRow.Complete(*gactivedofs_, *thr_m_dofs);
 
   // complete the matrix blocks again, now that we have added
@@ -354,11 +354,11 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   kts->Complete(*gdisprowmap_, *coupST->SlaveDofMap());
 
   // split matrix blocks in 3 rows: Active, Master and (Inactive+others)
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kss_ni, kss_m, kss_a, kst_ni, kst_m, kst_a, kts_ni,
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kss_ni, kss_m, kss_a, kst_ni, kst_m, kst_a, kts_ni,
       kts_m, kts_a, ktt_ni, ktt_m, ktt_a, dummy1, dummy2, dummy3;
 
   // temporary matrix
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> tmp;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> tmp;
   Teuchos::RCP<Epetra_Vector> tmpv;
 
   // an empty dummy map
@@ -368,7 +368,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   // split kss block*************************************
   // ****************************************************
   // split first row
-  CORE::LINALG::SplitMatrix2x2(
+  Core::LinAlg::SplitMatrix2x2(
       kss, str_gni_dofs, dummy_map1, gdisprowmap_, dummy_map2, kss_ni, dummy1, tmp, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -382,7 +382,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   dummy_map2 = Teuchos::null;
 
   // split the remaining two rows
-  CORE::LINALG::SplitMatrix2x2(
+  Core::LinAlg::SplitMatrix2x2(
       tmp, gmdofrowmap_, dummy_map1, gdisprowmap_, dummy_map2, kss_m, dummy1, kss_a, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -403,7 +403,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   // split kst block*************************************
   // ****************************************************
   // split first row
-  CORE::LINALG::SplitMatrix2x2(
+  Core::LinAlg::SplitMatrix2x2(
       kst, str_gni_dofs, dummy_map1, thr_all_dofs, dummy_map2, kst_ni, dummy1, tmp, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -417,7 +417,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   dummy_map2 = Teuchos::null;
 
   // split the remaining two rows
-  CORE::LINALG::SplitMatrix2x2(
+  Core::LinAlg::SplitMatrix2x2(
       tmp, gmdofrowmap_, dummy_map1, thr_all_dofs, dummy_map2, kst_m, dummy1, kst_a, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -438,7 +438,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   // split kts block*************************************
   // ****************************************************
   // split first row
-  CORE::LINALG::SplitMatrix2x2(
+  Core::LinAlg::SplitMatrix2x2(
       kts, thr_gni_dofs, dummy_map1, gdisprowmap_, dummy_map2, kts_ni, dummy1, tmp, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -452,7 +452,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   dummy_map2 = Teuchos::null;
 
   // split the remaining two rows
-  CORE::LINALG::SplitMatrix2x2(
+  Core::LinAlg::SplitMatrix2x2(
       tmp, thr_m_dofs, dummy_map1, gdisprowmap_, dummy_map2, kts_m, dummy1, kts_a, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -473,7 +473,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   // split ktt block*************************************
   // ****************************************************
   // split first row
-  CORE::LINALG::SplitMatrix2x2(
+  Core::LinAlg::SplitMatrix2x2(
       ktt, thr_gni_dofs, dummy_map1, thr_all_dofs, dummy_map2, ktt_ni, dummy1, tmp, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -487,7 +487,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   dummy_map2 = Teuchos::null;
 
   // split the remaining two rows
-  CORE::LINALG::SplitMatrix2x2(
+  Core::LinAlg::SplitMatrix2x2(
       tmp, thr_m_dofs, dummy_map1, thr_all_dofs, dummy_map2, ktt_m, dummy1, ktt_a, dummy2);
 
   // this shoud be a split in rows, so that two blocks should have zero columns
@@ -509,36 +509,36 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   // ****************************************************
   // split structural rhs
   Epetra_Vector rsni(*str_gni_dofs);
-  CORE::LINALG::Export(*rs, rsni);
+  Core::LinAlg::Export(*rs, rsni);
   Epetra_Vector rsm(*gmdofrowmap_);
-  CORE::LINALG::Export(*rs, rsm);
+  Core::LinAlg::Export(*rs, rsm);
   Teuchos::RCP<Epetra_Vector> rsa = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-  CORE::LINALG::Export(*rs, *rsa);
+  Core::LinAlg::Export(*rs, *rsa);
 
   // split thermal rhs
   Epetra_Vector rtni(*thr_gni_dofs);
-  CORE::LINALG::Export(*rt, rtni);
+  Core::LinAlg::Export(*rt, rtni);
   Epetra_Vector rtm(*thr_m_dofs);
-  CORE::LINALG::Export(*rt, rtm);
+  Core::LinAlg::Export(*rt, rtm);
   Teuchos::RCP<Epetra_Vector> rta = Teuchos::rcp(new Epetra_Vector(*thr_act_dofs));
-  CORE::LINALG::Export(*rt, *rta);
+  Core::LinAlg::Export(*rt, *rta);
   // ****************************************************
   // split rhs vectors***********************************
   // ****************************************************
 
   // D and M matrix for the active nodes
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dInvA =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gactivedofs_, 100, true, false));
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> mA =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gactivedofs_, 100, true, false));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dInvA =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 100, true, false));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> mA =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gactivedofs_, 100, true, false));
 
   dummy_map1 = dummy_map2 = Teuchos::null;
   dummy1 = dummy2 = dummy3 = Teuchos::null;
-  CORE::LINALG::SplitMatrix2x2(
+  Core::LinAlg::SplitMatrix2x2(
       dmatrix_, gactivedofs_, dummy_map1, gactivedofs_, dummy_map2, dInvA, dummy1, dummy2, dummy3);
   dummy_map1 = dummy_map2 = Teuchos::null;
   dummy1 = dummy2 = dummy3 = Teuchos::null;
-  CORE::LINALG::SplitMatrix2x2(
+  Core::LinAlg::SplitMatrix2x2(
       mmatrix_, gactivedofs_, dummy_map1, gmdofrowmap_, dummy_map2, mA, dummy1, dummy2, dummy3);
 
   // now we have added the additional linearizations.
@@ -547,10 +547,10 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   if (gactivenodes_->NumGlobalElements() == 0)
   {
     sysmat->Reset();
-    sysmat->Assign(0, 0, CORE::LINALG::Copy, *kss);
-    sysmat->Assign(0, 1, CORE::LINALG::Copy, *kst);
-    sysmat->Assign(1, 0, CORE::LINALG::Copy, *kts);
-    sysmat->Assign(1, 1, CORE::LINALG::Copy, *ktt);
+    sysmat->Assign(0, 0, Core::LinAlg::Copy, *kss);
+    sysmat->Assign(0, 1, Core::LinAlg::Copy, *kst);
+    sysmat->Assign(1, 0, Core::LinAlg::Copy, *kts);
+    sysmat->Assign(1, 1, Core::LinAlg::Copy, *ktt);
     return;
   }
 
@@ -560,7 +560,7 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   // We can do that, since the system is linear in the LMs.
   tmpv = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
   Teuchos::RCP<Epetra_Vector> tmpv2 = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-  CORE::LINALG::Export(*z_, *tmpv2);
+  Core::LinAlg::Export(*z_, *tmpv2);
   dcsdLMc->Multiply(false, *tmpv2, *tmpv);
   tmpv->Scale(-1.);
   CONTACT::UTILS::AddVector(*tmpv, *rcsa);
@@ -568,13 +568,13 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   tmpv2 = Teuchos::null;
 
   dcTdLMt.Complete(*gsdofrowmap_, *gactivedofs_);
-  CORE::LINALG::SparseMatrix test(
-      *gactivedofs_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> a1(&dcTdLMt, false);
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> a2;
+  Core::LinAlg::SparseMatrix test(
+      *gactivedofs_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> a1(&dcTdLMt, false);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> a2;
   dummy_map1 = dummy_map2 = Teuchos::null;
   dummy1 = dummy2 = dummy3 = Teuchos::null;
-  CORE::LINALG::SplitMatrix2x2(
+  Core::LinAlg::SplitMatrix2x2(
       a1, gactivedofs_, dummy_map1, gactivedofs_, dummy_map2, a2, dummy1, dummy2, dummy3);
   dcTdLMt = *a2;
 
@@ -582,15 +582,15 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   dInvA->Complete(*gactivedofs_, *gactivedofs_);
   mA->Complete(*gmdofrowmap_, *gactivedofs_);
 
-  CORE::LINALG::SparseMatrix dcTdLMc_thr(
-      *thr_act_dofs, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::SparseMatrix dcTdLMt_thr(
-      *thr_act_dofs, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::MatrixRowTransform()(
-      dcTdLMc, 1., CORE::ADAPTER::CouplingMasterConverter(*coupST), dcTdLMc_thr, true);
-  CORE::LINALG::MatrixRowColTransform()(dcTdLMt, 1.,
-      CORE::ADAPTER::CouplingMasterConverter(*coupST),
-      CORE::ADAPTER::CouplingMasterConverter(*coupST), dcTdLMt_thr, true, false);
+  Core::LinAlg::SparseMatrix dcTdLMc_thr(
+      *thr_act_dofs, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix dcTdLMt_thr(
+      *thr_act_dofs, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::MatrixRowTransform()(
+      dcTdLMc, 1., Core::Adapter::CouplingMasterConverter(*coupST), dcTdLMc_thr, true);
+  Core::LinAlg::MatrixRowColTransform()(dcTdLMt, 1.,
+      Core::Adapter::CouplingMasterConverter(*coupST),
+      Core::Adapter::CouplingMasterConverter(*coupST), dcTdLMt_thr, true, false);
   dcTdLMc_thr.Complete(*gactivedofs_, *thr_act_dofs);
   dcTdLMt_thr.Complete(*thr_act_dofs, *thr_act_dofs);
 
@@ -601,10 +601,10 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   dInvA->replace_diagonal_values(dDiag);
 
   // get dinv on thermal dofs
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dInvaThr = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *thr_act_dofs, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
-  CORE::LINALG::MatrixRowColTransform()(*dInvA, 1., CORE::ADAPTER::CouplingMasterConverter(*coupST),
-      CORE::ADAPTER::CouplingMasterConverter(*coupST), *dInvaThr, false, false);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dInvaThr = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *thr_act_dofs, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  Core::LinAlg::MatrixRowColTransform()(*dInvA, 1., Core::Adapter::CouplingMasterConverter(*coupST),
+      Core::Adapter::CouplingMasterConverter(*coupST), *dInvaThr, false, false);
   dInvaThr->Complete(*thr_act_dofs, *thr_act_dofs);
 
   // save some matrix blocks for recovery
@@ -619,33 +619,33 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   thr_act_dofs_ = thr_act_dofs;
 
   // get dinv * M
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dInvMa =
-      CORE::LINALG::MLMultiply(*dInvA, false, *mA, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dInvMa =
+      Core::LinAlg::MLMultiply(*dInvA, false, *mA, false, false, false, true);
 
   // get dinv * M on the thermal dofs
-  CORE::LINALG::SparseMatrix dInvMaThr(
-      *thr_act_dofs, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::MatrixRowColTransform()(*dInvMa, 1.,
-      CORE::ADAPTER::CouplingMasterConverter(*coupST),
-      CORE::ADAPTER::CouplingMasterConverter(*coupST), dInvMaThr, false, false);
+  Core::LinAlg::SparseMatrix dInvMaThr(
+      *thr_act_dofs, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::MatrixRowColTransform()(*dInvMa, 1.,
+      Core::Adapter::CouplingMasterConverter(*coupST),
+      Core::Adapter::CouplingMasterConverter(*coupST), dInvMaThr, false, false);
   dInvMaThr.Complete(*thr_m_dofs, *thr_act_dofs);
 
   // apply contact symmetry conditions
-  if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+  if (constr_direction_ == Inpar::CONTACT::constr_xyz)
   {
     double haveDBC = 0;
     pgsdirichtoggle_->Norm1(&haveDBC);
     if (haveDBC > 0.)
     {
-      Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(*gactivedofs_, true);
+      Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(*gactivedofs_, true);
       dInvA->ExtractDiagonalCopy(*diag);
-      Teuchos::RCP<Epetra_Vector> lmDBC = CORE::LINALG::CreateVector(*gactivedofs_, true);
-      CORE::LINALG::Export(*pgsdirichtoggle_, *lmDBC);
-      Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*gactivedofs_, true);
+      Teuchos::RCP<Epetra_Vector> lmDBC = Core::LinAlg::CreateVector(*gactivedofs_, true);
+      Core::LinAlg::Export(*pgsdirichtoggle_, *lmDBC);
+      Teuchos::RCP<Epetra_Vector> tmp = Core::LinAlg::CreateVector(*gactivedofs_, true);
       tmp->Multiply(1., *diag, *lmDBC, 0.);
       diag->Update(-1., *tmp, 1.);
       dInvA->replace_diagonal_values(*diag);
-      dInvMa = CORE::LINALG::MLMultiply(*dInvA, false, *mA, false, false, false, true);
+      dInvMa = Core::LinAlg::MLMultiply(*dInvA, false, *mA, false, false, false, true);
     }
   }
 
@@ -656,15 +656,15 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
 
   // need diagonal block kss with explicitdirichtlet_=true
   // to be able to apply dirichlet values for contact symmetry condition
-  CORE::LINALG::SparseMatrix tmpkss(
-      *gdisprowmap_, 100, false, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
-  sysmat->Assign(0, 0, CORE::LINALG::Copy, tmpkss);
+  Core::LinAlg::SparseMatrix tmpkss(
+      *gdisprowmap_, 100, false, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  sysmat->Assign(0, 0, Core::LinAlg::Copy, tmpkss);
 
   // get references to the blocks (just for convenience)
-  CORE::LINALG::SparseMatrix& kss_new = sysmat->Matrix(0, 0);
-  CORE::LINALG::SparseMatrix& kst_new = sysmat->Matrix(0, 1);
-  CORE::LINALG::SparseMatrix& kts_new = sysmat->Matrix(1, 0);
-  CORE::LINALG::SparseMatrix& ktt_new = sysmat->Matrix(1, 1);
+  Core::LinAlg::SparseMatrix& kss_new = sysmat->Matrix(0, 0);
+  Core::LinAlg::SparseMatrix& kst_new = sysmat->Matrix(0, 1);
+  Core::LinAlg::SparseMatrix& kts_new = sysmat->Matrix(1, 0);
+  Core::LinAlg::SparseMatrix& ktt_new = sysmat->Matrix(1, 1);
 
   // reset rhs
   combined_RHS->PutScalar(0.0);
@@ -695,31 +695,31 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   // (2)b active constraints in the active slave rows
   kss_new.Add(*dcsdd, false, 1., 1.);
 
-  CORE::LINALG::MatrixColTransform()(*gactivedofs_, *gsmdofrowmap_, dcsdT, 1.,
-      CORE::ADAPTER::CouplingMasterConverter(*coupST), kst_new, false, true);
-  CORE::LINALG::MatrixRowTransform()(
-      dcTdd, 1., CORE::ADAPTER::CouplingMasterConverter(*coupST), kts_new, true);
-  CORE::LINALG::MatrixRowColTransform()(dcTdT, 1., CORE::ADAPTER::CouplingMasterConverter(*coupST),
-      CORE::ADAPTER::CouplingMasterConverter(*coupST), ktt_new, true, true);
+  Core::LinAlg::MatrixColTransform()(*gactivedofs_, *gsmdofrowmap_, dcsdT, 1.,
+      Core::Adapter::CouplingMasterConverter(*coupST), kst_new, false, true);
+  Core::LinAlg::MatrixRowTransform()(
+      dcTdd, 1., Core::Adapter::CouplingMasterConverter(*coupST), kts_new, true);
+  Core::LinAlg::MatrixRowColTransform()(dcTdT, 1., Core::Adapter::CouplingMasterConverter(*coupST),
+      Core::Adapter::CouplingMasterConverter(*coupST), ktt_new, true, true);
   CONTACT::UTILS::AddVector(*rcsa, *combined_RHS);
 
   // (3) condensed parts
   // second row
   kss_new.Add(
-      *CORE::LINALG::MLMultiply(*dInvMa, true, *kss_a, false, false, false, true), false, 1., 1.);
+      *Core::LinAlg::MLMultiply(*dInvMa, true, *kss_a, false, false, false, true), false, 1., 1.);
   kst_new.Add(
-      *CORE::LINALG::MLMultiply(*dInvMa, true, *kst_a, false, false, false, true), false, 1., 1.);
+      *Core::LinAlg::MLMultiply(*dInvMa, true, *kst_a, false, false, false, true), false, 1., 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   dInvMa->Multiply(true, *rsa, *tmpv);
   CONTACT::UTILS::AddVector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
 
   // third row
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> wDinv =
-      CORE::LINALG::MLMultiply(*dcsdLMc, false, *dInvA, true, false, false, true);
-  kss_new.Add(*CORE::LINALG::MLMultiply(*wDinv, false, *kss_a, false, false, false, true), false,
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> wDinv =
+      Core::LinAlg::MLMultiply(*dcsdLMc, false, *dInvA, true, false, false, true);
+  kss_new.Add(*Core::LinAlg::MLMultiply(*wDinv, false, *kss_a, false, false, false, true), false,
       -1. / (1. - alphaf_), 1.);
-  kst_new.Add(*CORE::LINALG::MLMultiply(*wDinv, false, *kst_a, false, false, false, true), false,
+  kst_new.Add(*Core::LinAlg::MLMultiply(*wDinv, false, *kst_a, false, false, false, true), false,
       -1. / (1. - alphaf_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
   wDinv->Multiply(false, *rsa, *tmpv);
@@ -733,10 +733,10 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   // fifth row
   tmp = Teuchos::null;
   tmp =
-      CORE::LINALG::MLMultiply(m_LinDissContactLM_thrRow, false, *dInvA, false, false, false, true);
-  kts_new.Add(*CORE::LINALG::MLMultiply(*tmp, false, *kss_a, false, false, false, true), false,
+      Core::LinAlg::MLMultiply(m_LinDissContactLM_thrRow, false, *dInvA, false, false, false, true);
+  kts_new.Add(*Core::LinAlg::MLMultiply(*tmp, false, *kss_a, false, false, false, true), false,
       -tsi_alpha_ / (1. - alphaf_), 1.);
-  ktt_new.Add(*CORE::LINALG::MLMultiply(*tmp, false, *kst_a, false, false, false, true), false,
+  ktt_new.Add(*Core::LinAlg::MLMultiply(*tmp, false, *kst_a, false, false, false, true), false,
       -tsi_alpha_ / (1. - alphaf_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*thr_m_dofs));
   tmp->Multiply(false, *rsa, *tmpv);
@@ -745,20 +745,20 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   tmpv = Teuchos::null;
 
   kts_new.Add(
-      *CORE::LINALG::MLMultiply(dInvMaThr, true, *kts_a, false, false, false, true), false, 1., 1.);
+      *Core::LinAlg::MLMultiply(dInvMaThr, true, *kts_a, false, false, false, true), false, 1., 1.);
   ktt_new.Add(
-      *CORE::LINALG::MLMultiply(dInvMaThr, true, *ktt_a, false, false, false, true), false, 1., 1.);
+      *Core::LinAlg::MLMultiply(dInvMaThr, true, *ktt_a, false, false, false, true), false, 1., 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*thr_m_dofs));
   dInvMaThr.Multiply(true, *rta, *tmpv);
   CONTACT::UTILS::AddVector(*tmpv, *combined_RHS);
   tmp = Teuchos::null;
 
   // sixth row
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> yDinv =
-      CORE::LINALG::MLMultiply(dcTdLMc_thr, false, *dInvA, false, false, false, true);
-  kts_new.Add(*CORE::LINALG::MLMultiply(*yDinv, false, *kss_a, false, false, false, true), false,
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> yDinv =
+      Core::LinAlg::MLMultiply(dcTdLMc_thr, false, *dInvA, false, false, false, true);
+  kts_new.Add(*Core::LinAlg::MLMultiply(*yDinv, false, *kss_a, false, false, false, true), false,
       -1. / (1. - alphaf_), 1.);
-  ktt_new.Add(*CORE::LINALG::MLMultiply(*yDinv, false, *kst_a, false, false, false, true), false,
+  ktt_new.Add(*Core::LinAlg::MLMultiply(*yDinv, false, *kst_a, false, false, false, true), false,
       -1. / (1. - alphaf_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*thr_act_dofs));
   yDinv->Multiply(false, *rsa, *tmpv);
@@ -766,11 +766,11 @@ void CONTACT::LagrangeStrategyTsi::Evaluate(
   CONTACT::UTILS::AddVector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> gDinv =
-      CORE::LINALG::MLMultiply(dcTdLMt_thr, false, *dInvaThr, false, false, false, true);
-  kts_new.Add(*CORE::LINALG::MLMultiply(*gDinv, false, *kts_a, false, false, false, true), false,
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> gDinv =
+      Core::LinAlg::MLMultiply(dcTdLMt_thr, false, *dInvaThr, false, false, false, true);
+  kts_new.Add(*Core::LinAlg::MLMultiply(*gDinv, false, *kts_a, false, false, false, true), false,
       -1. / (tsi_alpha_), 1.);
-  ktt_new.Add(*CORE::LINALG::MLMultiply(*gDinv, false, *ktt_a, false, false, false, true), false,
+  ktt_new.Add(*Core::LinAlg::MLMultiply(*gDinv, false, *ktt_a, false, false, false, true), false,
       -1. / (tsi_alpha_), 1.);
   tmpv = Teuchos::rcp(new Epetra_Vector(*thr_act_dofs));
   gDinv->Multiply(false, *rta, *tmpv);
@@ -799,13 +799,13 @@ void CONTACT::UTILS::AddVector(Epetra_Vector& src, Epetra_Vector& dst)
 #endif
 
   Epetra_Vector tmp = Epetra_Vector(dst.Map(), true);
-  CORE::LINALG::Export(src, tmp);
+  Core::LinAlg::Export(src, tmp);
   if (dst.Update(1., tmp, 1.)) FOUR_C_THROW("vector update went wrong");
   return;
 }
 
 void CONTACT::LagrangeStrategyTsi::RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc,
-    Teuchos::RCP<Epetra_Vector> tinc, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST)
+    Teuchos::RCP<Epetra_Vector> tinc, Teuchos::RCP<Core::Adapter::Coupling> coupST)
 {
   Teuchos::RCP<Epetra_Vector> z_old = Teuchos::null;
   if (z_ != Teuchos::null) z_old = Teuchos::rcp(new Epetra_Vector(*z_));
@@ -830,7 +830,7 @@ void CONTACT::LagrangeStrategyTsi::RecoverCoupled(Teuchos::RCP<Epetra_Vector> si
     dinvA_->Multiply(false, lmc_a_new, tmp);
     tmp.Scale(-1. / (1. - alphaf_));
     z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    CORE::LINALG::Export(tmp, *z_);
+    Core::LinAlg::Export(tmp, *z_);
 
     // recover thermo LM
     // do we have everything we need?
@@ -848,7 +848,7 @@ void CONTACT::LagrangeStrategyTsi::RecoverCoupled(Teuchos::RCP<Epetra_Vector> si
     dinvAthr_->Multiply(false, lmt_a_new, tmp2);
     tmp2.Scale(-1. / (tsi_alpha_));
     z_thr_ = Teuchos::rcp(new Epetra_Vector(*thr_s_dofs_));
-    CORE::LINALG::Export(tmp2, *z_thr_);
+    Core::LinAlg::Export(tmp2, *z_thr_);
   }
 
   else
@@ -869,24 +869,24 @@ void CONTACT::LagrangeStrategyTsi::RecoverCoupled(Teuchos::RCP<Epetra_Vector> si
   }
 
   // store updated LM into nodes
-  store_nodal_quantities(MORTAR::StrategyBase::lmupdate, Teuchos::null);
-  store_nodal_quantities(MORTAR::StrategyBase::lmThermo, coupST);
+  store_nodal_quantities(Mortar::StrategyBase::lmupdate, Teuchos::null);
+  store_nodal_quantities(Mortar::StrategyBase::lmThermo, coupST);
 
   return;
 };
 
 void CONTACT::LagrangeStrategyTsi::store_nodal_quantities(
-    MORTAR::StrategyBase::QuantityType type, Teuchos::RCP<CORE::ADAPTER::Coupling> coupST)
+    Mortar::StrategyBase::QuantityType type, Teuchos::RCP<Core::Adapter::Coupling> coupST)
 {
   Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
   // start type switch
   switch (type)
   {
-    case MORTAR::StrategyBase::lmThermo:
+    case Mortar::StrategyBase::lmThermo:
     {
       Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*coupST->SlaveDofMap()));
 
-      CORE::LINALG::Export(*z_thr_, *tmp);
+      Core::LinAlg::Export(*z_thr_, *tmp);
       vectorglobal = z_thr_;
       vectorglobal = coupST->SlaveToMaster(tmp);
       Teuchos::RCP<Epetra_Map> sdofmap, snodemap;
@@ -897,13 +897,13 @@ void CONTACT::LagrangeStrategyTsi::store_nodal_quantities(
         snodemap = interface_[i]->SlaveColNodes();
         Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::null;
         vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofmap));
-        if (vectorglobal != Teuchos::null) CORE::LINALG::Export(*vectorglobal, *vectorinterface);
+        if (vectorglobal != Teuchos::null) Core::LinAlg::Export(*vectorglobal, *vectorinterface);
 
         // loop over all slave nodes (column or row) on the current interface
         for (int j = 0; j < snodemap->NumMyElements(); ++j)
         {
           int gid = snodemap->GID(j);
-          CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+          Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
           Node* cnode = dynamic_cast<Node*>(node);
 
@@ -939,21 +939,21 @@ void CONTACT::LagrangeStrategyTsi::Update(Teuchos::RCP<const Epetra_Vector> dis)
 
   CONTACT::AbstractStrategy::Update(dis);
 
-  CORE::LINALG::SparseMatrix dThr(*coupST_->MasterToSlaveMap(gsdofrowmap_), 100, true, false,
-      CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::MatrixRowColTransform()(*dmatrix_, 1.,
-      CORE::ADAPTER::CouplingMasterConverter(*coupST_),
-      CORE::ADAPTER::CouplingMasterConverter(*coupST_), dThr, false, false);
+  Core::LinAlg::SparseMatrix dThr(*coupST_->MasterToSlaveMap(gsdofrowmap_), 100, true, false,
+      Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::MatrixRowColTransform()(*dmatrix_, 1.,
+      Core::Adapter::CouplingMasterConverter(*coupST_),
+      Core::Adapter::CouplingMasterConverter(*coupST_), dThr, false, false);
   dThr.Complete();
   tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gsdofrowmap_)));
   if (dThr.Apply(*z_thr_, *tmp) != 0) FOUR_C_THROW("apply went wrong");
   CONTACT::UTILS::AddVector(*tmp, *ftcnp_);
 
-  CORE::LINALG::SparseMatrix mThr(*coupST_->MasterToSlaveMap(gsdofrowmap_), 100, true, false,
-      CORE::LINALG::SparseMatrix::FE_MATRIX);
-  CORE::LINALG::MatrixRowColTransform()(*mmatrix_, 1.,
-      CORE::ADAPTER::CouplingMasterConverter(*coupST_),
-      CORE::ADAPTER::CouplingMasterConverter(*coupST_), mThr, false, false);
+  Core::LinAlg::SparseMatrix mThr(*coupST_->MasterToSlaveMap(gsdofrowmap_), 100, true, false,
+      Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::MatrixRowColTransform()(*mmatrix_, 1.,
+      Core::Adapter::CouplingMasterConverter(*coupST_),
+      Core::Adapter::CouplingMasterConverter(*coupST_), mThr, false, false);
   mThr.Complete(*coupST_->MasterToSlaveMap(gmdofrowmap_), *coupST_->MasterToSlaveMap(gsdofrowmap_));
   mThr.UseTranspose();
   tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gmdofrowmap_)));
@@ -961,22 +961,22 @@ void CONTACT::LagrangeStrategyTsi::Update(Teuchos::RCP<const Epetra_Vector> dis)
   tmp->Scale(-1.);
   CONTACT::UTILS::AddVector(*tmp, *ftcnp_);
 
-  CORE::LINALG::SparseMatrix m_LinDissContactLM(
-      *gmdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
+  Core::LinAlg::SparseMatrix m_LinDissContactLM(
+      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
   for (unsigned i = 0; i < interface_.size(); ++i)
     dynamic_cast<CONTACT::TSIInterface*>(&(*interface_[i]))
         ->AssembleDM_linDiss(nullptr, nullptr, nullptr, &m_LinDissContactLM, 1.);
   m_LinDissContactLM.Complete(*gactivedofs_, *gmdofrowmap_);
   Teuchos::RCP<Epetra_Vector> z_act = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-  CORE::LINALG::Export(*z_, *z_act);
+  Core::LinAlg::Export(*z_, *z_act);
   tmp = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   if (m_LinDissContactLM.Multiply(false, *z_act, *tmp) != 0) FOUR_C_THROW("multiply went wrong");
   Teuchos::RCP<Epetra_Vector> tmp2 = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterDofMap()));
-  CORE::LINALG::Export(*tmp, *tmp2);
+  Core::LinAlg::Export(*tmp, *tmp2);
   Teuchos::RCP<Epetra_Vector> tmp3 = coupST_->MasterToSlave(tmp2);
   Teuchos::RCP<Epetra_Vector> tmp4 =
       Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gmdofrowmap_)));
-  CORE::LINALG::Export(*tmp3, *tmp4);
+  Core::LinAlg::Export(*tmp3, *tmp4);
   CONTACT::UTILS::AddVector(*tmp4, *ftcnp_);
 
   ftcn_ = ftcnp_;
@@ -984,17 +984,17 @@ void CONTACT::LagrangeStrategyTsi::Update(Teuchos::RCP<const Epetra_Vector> dis)
 
 void CONTACT::LagrangeStrategyTsi::SetAlphafThermo(const Teuchos::ParameterList& tdyn)
 {
-  INPAR::THR::DynamicType dyn_type =
-      CORE::UTILS::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP");
+  Inpar::THR::DynamicType dyn_type =
+      Core::UTILS::IntegralValue<Inpar::THR::DynamicType>(tdyn, "DYNAMICTYP");
   switch (dyn_type)
   {
-    case INPAR::THR::dyna_genalpha:
+    case Inpar::THR::dyna_genalpha:
       tsi_alpha_ = tdyn.sublist("GENALPHA").get<double>("ALPHA_F");
       break;
-    case INPAR::THR::dyna_onesteptheta:
+    case Inpar::THR::dyna_onesteptheta:
       tsi_alpha_ = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
       break;
-    case INPAR::THR::dyna_statics:
+    case Inpar::THR::dyna_statics:
       tsi_alpha_ = 1.;
       break;
     default:
@@ -1015,23 +1015,23 @@ void CONTACT::LagrangeStrategyTsi::DoWriteRestart(
   if (fscn_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
-    CORE::LINALG::Export(*fscn_, *tmp);
+    Core::LinAlg::Export(*fscn_, *tmp);
     restart_vectors["last_contact_force"] = tmp;
   }
   if (ftcn_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->SlaveDofMap()));
-    CORE::LINALG::Export(*ftcn_, *tmp);
+    Core::LinAlg::Export(*ftcn_, *tmp);
     restart_vectors["last_thermo_force"] = coupST_->SlaveToMaster(tmp);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategyTsi::DoReadRestart(CORE::IO::DiscretizationReader& reader,
+void CONTACT::LagrangeStrategyTsi::DoReadRestart(Core::IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
-  bool restartwithcontact = CORE::UTILS::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
+  bool restartwithcontact = Core::UTILS::IntegralValue<int>(Params(), "RESTART_WITH_CONTACT");
 
   CONTACT::AbstractStrategy::DoReadRestart(reader, dis);
   fscn_ = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
@@ -1041,7 +1041,7 @@ void CONTACT::LagrangeStrategyTsi::DoReadRestart(CORE::IO::DiscretizationReader&
   if (!restartwithcontact) reader.ReadVector(tmp, "last_thermo_force");
   ftcn_ = coupST_->MasterToSlave(tmp);
   tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gsmdofrowmap_)));
-  CORE::LINALG::Export(*ftcn_, *tmp);
+  Core::LinAlg::Export(*ftcn_, *tmp);
   ftcn_ = tmp;
 }
 

@@ -23,38 +23,38 @@ Pack, Unpack, NumDofPerNode etc.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    class LubricationType : public CORE::Elements::ElementType
+    class LubricationType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "LubricationType"; }
 
       static LubricationType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
       /// pre-evaluation
-      void pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-          Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-          Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+      void pre_evaluate(Discret::Discretization& dis, Teuchos::ParameterList& p,
+          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+          Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
           Teuchos::RCP<Epetra_Vector> systemvector3) override;
 
@@ -65,7 +65,7 @@ namespace DRT
     /*!
     \brief The Lubrication element
     */
-    class Lubrication : public CORE::Elements::Element
+    class Lubrication : public Core::Elements::Element
     {
      public:
       //@}
@@ -93,17 +93,17 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief set discretization type of element
       */
-      virtual void SetDisType(CORE::FE::CellType shape)
+      virtual void SetDisType(Core::FE::CellType shape)
       {
         distype_ = shape;
         return;
@@ -127,12 +127,12 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -151,7 +151,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -168,18 +168,18 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can re-decide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 1; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 1; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can re-decide along the way of a simulation.
@@ -198,7 +198,7 @@ namespace DRT
       /*!
       \brief Return ElementType
       */
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return LubricationType::Instance();
       }
@@ -211,7 +211,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -243,11 +243,11 @@ namespace DRT
                                   given in params
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -263,10 +263,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
@@ -274,7 +274,7 @@ namespace DRT
 
      private:
       //! the element discretization type (shape)
-      CORE::FE::CellType distype_;
+      Core::FE::CellType distype_;
 
       //! don't want = operator
       Lubrication& operator=(const Lubrication& old);
@@ -286,24 +286,24 @@ namespace DRT
     //=======================================================================
     //=======================================================================
 
-    class LubricationBoundaryType : public CORE::Elements::ElementType
+    class LubricationBoundaryType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "LubricationBoundaryType"; }
 
       static LubricationBoundaryType& Instance();
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -320,7 +320,7 @@ namespace DRT
           purpose is to evaluate certain boundary conditions that might be
           adjacent to a parent Lubrication element.
     */
-    class LubricationBoundary : public CORE::Elements::FaceElement
+    class LubricationBoundary : public Core::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -337,7 +337,7 @@ namespace DRT
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
       LubricationBoundary(int id, int owner, int nnode, const int* nodeids,
-          CORE::Nodes::Node** nodes, DRT::ELEMENTS::Lubrication* parent, const int lsurface);
+          Core::Nodes::Node** nodes, Discret::ELEMENTS::Lubrication* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -354,12 +354,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of boundary element
@@ -375,12 +375,12 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -399,7 +399,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -417,32 +417,32 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can re-decide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override
+      int NumDofPerNode(const Core::Nodes::Node& node) const override
       {
         return parent_element()->NumDofPerNode(node);
       }
 
       //! Return a pointer to the parent element of this boundary element
-      virtual DRT::ELEMENTS::Lubrication* parent_element() const
+      virtual Discret::ELEMENTS::Lubrication* parent_element() const
       {
-        CORE::Elements::Element* parent = CORE::Elements::FaceElement::parent_element();
+        Core::Elements::Element* parent = Core::Elements::FaceElement::parent_element();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<DRT::ELEMENTS::Lubrication*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Lubrication*>(parent) != nullptr,
             "Master element is no Lubrication element");
-        return static_cast<DRT::ELEMENTS::Lubrication*>(parent);
+        return static_cast<Discret::ELEMENTS::Lubrication*>(parent);
       }
 
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can re-decide along the way of a simulation.
@@ -461,7 +461,7 @@ namespace DRT
       /*!
       \brief Return ElementType
       */
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return LubricationBoundaryType::Instance();
       }
@@ -496,11 +496,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override
       {
         FOUR_C_THROW("Evaluate() method for Lubrication boundary element not yet implemented");
         return 0;
@@ -524,10 +524,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override
       {
         FOUR_C_THROW(
             "evaluate_neumann() method for Lubrication boundary element not yet implemented");
@@ -544,7 +544,7 @@ namespace DRT
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 

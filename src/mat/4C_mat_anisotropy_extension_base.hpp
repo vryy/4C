@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Declaration of a base anisotropy extension to be used by anisotropic materials with
-@MAT::Anisotropy
+@Mat::Anisotropy
 
 \level 3
 
@@ -22,11 +22,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
-namespace MAT
+namespace Mat
 {
   // forward declaration
   class Anisotropy;
@@ -50,7 +50,7 @@ namespace MAT
      *
      * \param data
      */
-    virtual void PackAnisotropy(CORE::COMM::PackBuffer& data) const = 0;
+    virtual void PackAnisotropy(Core::Communication::PackBuffer& data) const = 0;
 
     /*!
      * \brief Unpack all data from parallel distribution or restart
@@ -63,7 +63,7 @@ namespace MAT
     /// @}
 
     /*!
-     * \brief This method will be called by MAT::Anisotropy if element and Gauss point fibers are
+     * \brief This method will be called by Mat::Anisotropy if element and Gauss point fibers are
      * available
      */
     virtual void on_global_data_initialized() = 0;
@@ -84,19 +84,19 @@ namespace MAT
 
    private:
     /*!
-     * \brief This method will be called by MAT::Anisotropy to notify that element information is
+     * \brief This method will be called by Mat::Anisotropy to notify that element information is
      * available.
      */
     virtual void on_global_element_data_initialized() = 0;
 
 
     /*!
-     * \brief This method will be called by MAT::Anisotropy to notify that Gauss point information
+     * \brief This method will be called by Mat::Anisotropy to notify that Gauss point information
      * is available.
      */
     virtual void on_global_gp_data_initialized() = 0;
 
-    /// \name Private methods called by the friend class MAT::Anisotropy
+    /// \name Private methods called by the friend class Mat::Anisotropy
     /// \{
     /*!
      * \brief Set the anisotropy. This method will only be used by Anisotropy itself to give the
@@ -109,7 +109,7 @@ namespace MAT
     /// Reference to Anisotropy
     Teuchos::RCP<Anisotropy> anisotropy_;
   };
-}  // namespace MAT
+}  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

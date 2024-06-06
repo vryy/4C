@@ -32,9 +32,9 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 BeamDiscretizationRuntimeOutputWriter::BeamDiscretizationRuntimeOutputWriter(
-    CORE::IO::VisualizationParameters parameters, const Epetra_Comm& comm)
+    Core::IO::VisualizationParameters parameters, const Epetra_Comm& comm)
     : visualization_manager_(Teuchos::rcp(
-          new CORE::IO::VisualizationManager(std::move(parameters), comm, "structure-beams"))),
+          new Core::IO::VisualizationManager(std::move(parameters), comm, "structure-beams"))),
       use_absolute_positions_(true)
 {
   // empty constructor
@@ -43,9 +43,9 @@ BeamDiscretizationRuntimeOutputWriter::BeamDiscretizationRuntimeOutputWriter(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::Initialize(
-    Teuchos::RCP<DRT::Discretization> discretization,
+    Teuchos::RCP<Discret::Discretization> discretization,
     bool use_absolute_positions_for_point_coordinates, const unsigned int n_subsegments,
-    Teuchos::RCP<const CORE::GEO::MESHFREE::BoundingBox> const& periodic_boundingbox)
+    Teuchos::RCP<const Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox)
 {
   discretization_ = discretization;
   use_absolute_positions_ = use_absolute_positions_for_point_coordinates;
@@ -93,10 +93,11 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
   for (unsigned int iele = 0; iele < static_cast<unsigned int>(discretization_->NumMyRowElements());
        ++iele)
   {
-    const CORE::Elements::Element* ele = discretization_->lRowElement(iele);
+    const Core::Elements::Element* ele = discretization_->lRowElement(iele);
 
     // check for beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     if (beamele != nullptr) local_row_indices_beam_elements_.push_back(iele);
   }
@@ -133,11 +134,12 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
 
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -163,8 +165,8 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
 
     /* loop over the chosen visualization points (equidistant distribution in the element
      * parameter space xi \in [-1,1] ) and determine their interpolated (initial) positions r */
-    CORE::LINALG::Matrix<3, 1> interpolated_position(true);
-    CORE::LINALG::Matrix<3, 1> interpolated_position_priorpoint(true);
+    Core::LinAlg::Matrix<3, 1> interpolated_position(true);
+    Core::LinAlg::Matrix<3, 1> interpolated_position_priorpoint(true);
     double xi = 0.0;
 
     for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
@@ -180,7 +182,7 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
       if (periodic_boundingbox_ != Teuchos::null)
         periodic_boundingbox_->Shift3D(interpolated_position);
 
-      CORE::LINALG::Matrix<3, 1> unshift_interpolated_position = interpolated_position;
+      Core::LinAlg::Matrix<3, 1> unshift_interpolated_position = interpolated_position;
 
       // check if an element is cut by a periodic boundary
       bool shift = false;
@@ -273,11 +275,12 @@ void BeamDiscretizationRuntimeOutputWriter::append_displacement_field(
   // loop over myrank's beam elements and compute disp for each visualization point
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -292,8 +295,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_displacement_field(
 
     /* loop over the chosen visualization points (equidistant distribution in the element
      * parameter space xi \in [-1,1] ) and determine its disp state */
-    CORE::LINALG::Matrix<3, 1> pos_visualization_point;
-    CORE::LINALG::Matrix<3, 1> refpos_visualization_point;
+    Core::LinAlg::Matrix<3, 1> pos_visualization_point;
+    Core::LinAlg::Matrix<3, 1> refpos_visualization_point;
     double xi = 0.0;
 
     for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
@@ -368,11 +371,12 @@ void BeamDiscretizationRuntimeOutputWriter::AppendTriadField(
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -388,7 +392,7 @@ void BeamDiscretizationRuntimeOutputWriter::AppendTriadField(
 
     /* loop over the chosen visualization points (equidistant distribution in the element
      * parameter space xi \in [-1,1] ) and determine the triad */
-    CORE::LINALG::Matrix<3, 3> triad_visualization_point;
+    Core::LinAlg::Matrix<3, 3> triad_visualization_point;
     double xi = 0.0;
 
     for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
@@ -452,12 +456,13 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_owning_processor()
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
     if (beamele == nullptr)
       FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 #endif
@@ -484,12 +489,13 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementGID()
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
     if (beamele == nullptr)
       FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 #endif
@@ -505,9 +511,9 @@ void BeamDiscretizationRuntimeOutputWriter::AppendElementGID()
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::append_element_ghosting_information()
 {
-  const auto only_select_beam_elements = [](const CORE::Elements::Element* ele)
-  { return dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele); };
-  CORE::IO::append_element_ghosting_information(
+  const auto only_select_beam_elements = [](const Core::Elements::Element* ele)
+  { return dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele); };
+  Core::IO::append_element_ghosting_information(
       *discretization_, *visualization_manager_, only_select_beam_elements);
 }
 
@@ -526,12 +532,13 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_internal_energy()
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // Todo safety check for now, may be removed when better tested
@@ -563,12 +570,13 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_kinetic_energy()
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // Todo safety check for now, may be removed when better tested
@@ -601,24 +609,25 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_filament_id_and_type(
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
       FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 
     // get filament number (note so far only one filament for each element and node)
-    CORE::Conditions::Condition* cond = ele->Nodes()[0]->GetCondition("BeamLineFilamentCondition");
+    Core::Conditions::Condition* cond = ele->Nodes()[0]->GetCondition("BeamLineFilamentCondition");
     if (cond == nullptr)
       FOUR_C_THROW(" No filament number assigned to element with gid %i .", ele->Id());
 
     double current_id = cond->parameters().Get<int>("FilamentId");
     double current_type =
-        INPAR::BEAMINTERACTION::String2FilamentType((cond->parameters().Get<std::string>("Type")));
+        Inpar::BEAMINTERACTION::String2FilamentType((cond->parameters().Get<std::string>("Type")));
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
     {
@@ -650,11 +659,12 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_circular_cross_sectio
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -706,11 +716,12 @@ void BeamDiscretizationRuntimeOutputWriter::append_point_circular_cross_section_
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -729,7 +740,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_point_circular_cross_section_
 
     /* loop over the chosen visualization points (equidistant distribution in the element
      * parameter space xi \in [-1,1] ) and determine the triad */
-    CORE::LINALG::Matrix<3, 3> triad_visualization_point;
+    Core::LinAlg::Matrix<3, 3> triad_visualization_point;
     double xi = 0.0;
     for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
     {
@@ -809,11 +820,12 @@ void BeamDiscretizationRuntimeOutputWriter::
   // loop over my elements and collect the data
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -984,11 +996,12 @@ void BeamDiscretizationRuntimeOutputWriter::
   // loop over my elements and collect the data
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -1171,11 +1184,12 @@ void BeamDiscretizationRuntimeOutputWriter::
   // loop over my elements and collect the data
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -1343,12 +1357,12 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater
   // all elements)
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // length of element is approximated linearly, as also the direction of a element is calculated
     // linearly independent of centerline interpolation
-    CORE::LINALG::Matrix<3, 1> dirvec(true);
+    Core::LinAlg::Matrix<3, 1> dirvec(true);
 
     std::vector<double> pos(2, 0.0);
     for (int dim = 0; dim < 3; ++dim)
@@ -1366,7 +1380,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater
     double curr_lin_ele_length = dirvec.Norm2();
 
     // loop over all base vectors for orientation index x,y and z
-    CORE::LINALG::Matrix<3, 1> unit_base_vec(true);
+    Core::LinAlg::Matrix<3, 1> unit_base_vec(true);
     std::vector<double> curr_ele_orientation_parameter(3, 0.0);
     for (int unsigned ibase = 0; ibase < 3; ++ibase)
     {
@@ -1444,12 +1458,12 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
   std::vector<std::vector<double>> fint_sum(3, std::vector<double>(3, 0.0));
   std::vector<double> beamelement_displacement_vector;
   std::vector<double> beamelement_shift_displacement_vector;
-  CORE::LINALG::Matrix<3, 1> pos_node_1(true);
-  CORE::LINALG::Matrix<3, 1> pos_node_2(true);
+  Core::LinAlg::Matrix<3, 1> pos_node_1(true);
+  Core::LinAlg::Matrix<3, 1> pos_node_2(true);
 
   // create pseudo planes through center of RVE (like this it also works if
   // your box is not periodic, i.e. you do not have cut element on the box edges)
-  CORE::LINALG::Matrix<3, 2> box(true);
+  Core::LinAlg::Matrix<3, 2> box(true);
   if (periodic_boundingbox_ != Teuchos::null)
   {
     for (unsigned dim = 0; dim < 3; ++dim)
@@ -1460,16 +1474,17 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
     }
   }
 
-  CORE::LINALG::Matrix<3, 1> xi_intersect(true);
+  Core::LinAlg::Matrix<3, 1> xi_intersect(true);
 
   // loop over all my elements and build force sum of myrank's cut element
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     BEAMINTERACTION::UTILS::GetCurrentElementDis(
         *discretization_, ele, displacement_state_vector, beamelement_shift_displacement_vector);
@@ -1542,11 +1557,11 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_elastic_energy()
   //  // loop over my elements and collect the data about triads/base vectors
   //  for (unsigned int iele=0; iele<num_row_elements; ++iele)
   //  {
-  //    const CORE::Elements::Element* ele = discretization_->lRowElement(iele);
+  //    const Core::Elements::Element* ele = discretization_->lRowElement(iele);
   //
   //    // check for beam element
-  //    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const
-  //    DRT::ELEMENTS::Beam3Base*>(ele);
+  //    const Discret::ELEMENTS::Beam3Base* beamele = dynamic_cast<const
+  //    Discret::ELEMENTS::Beam3Base*>(ele);
   //
   //    // Todo for now, simply skip all other elements
   //    if ( beamele == nullptr )
@@ -1576,11 +1591,11 @@ void BeamDiscretizationRuntimeOutputWriter::AppendRefLength()
   // loop over my elements and collect the data about triads/base vectors
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    auto beamele = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     if (beamele == nullptr)
       FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
@@ -1633,7 +1648,7 @@ int BeamDiscretizationRuntimeOutputWriter::get_global_number_of_gauss_points_per
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::calc_interpolation_polynomial_coefficients(
-    const CORE::FE::GaussRule1D& gauss_rule, const std::vector<double>& gauss_point_values,
+    const Core::FE::GaussRule1D& gauss_rule, const std::vector<double>& gauss_point_values,
     std::vector<double>& polynomial_coefficients) const
 {
   // Get the coefficients for the interpolation functions at the Gauss points.
@@ -1641,7 +1656,7 @@ void BeamDiscretizationRuntimeOutputWriter::calc_interpolation_polynomial_coeffi
   std::array<std::array<double, 3>, 3> lagrange_coefficients;
   switch (gauss_rule)
   {
-    case CORE::FE::GaussRule1D::line_3point:
+    case Core::FE::GaussRule1D::line_3point:
     {
       lagrange_coefficients[0][0] = 0.0;
       lagrange_coefficients[0][1] = -0.645497224367889;
@@ -1656,7 +1671,7 @@ void BeamDiscretizationRuntimeOutputWriter::calc_interpolation_polynomial_coeffi
       lagrange_coefficients[2][2] = 0.8333333333333333;
     }
     break;
-    case CORE::FE::GaussRule1D::line_lobatto3point:
+    case Core::FE::GaussRule1D::line_lobatto3point:
     {
       lagrange_coefficients[0][0] = 0.0;
       lagrange_coefficients[0][1] = -0.5;
@@ -1718,11 +1733,11 @@ void BeamDiscretizationRuntimeOutputWriter::append_continuous_stress_strain_resu
   // loop over myrank's beam elements and compute strain resultants for each visualization point
   for (std::size_t ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
-    const CORE::Elements::Element* ele =
+    const Core::Elements::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to SR beam element
-    const auto* sr_beam = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(ele);
+    const auto* sr_beam = dynamic_cast<const Discret::ELEMENTS::Beam3r*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (sr_beam == nullptr)
@@ -1751,13 +1766,13 @@ void BeamDiscretizationRuntimeOutputWriter::append_continuous_stress_strain_resu
     }
 
     // Calculate the interpolated coefficients
-    CORE::FE::GaussRule1D force_int_rule =
-        sr_beam->MyGaussRule(DRT::ELEMENTS::Beam3r::res_elastic_force);
+    Core::FE::GaussRule1D force_int_rule =
+        sr_beam->MyGaussRule(Discret::ELEMENTS::Beam3r::res_elastic_force);
     for (std::size_t i = 0; i < 3; i++)
       calc_interpolation_polynomial_coefficients(
           force_int_rule, stress_strain_GPs_current_element[i], stress_strain_coefficients[i]);
-    CORE::FE::GaussRule1D moment_int_rule =
-        sr_beam->MyGaussRule(DRT::ELEMENTS::Beam3r::res_elastic_moment);
+    Core::FE::GaussRule1D moment_int_rule =
+        sr_beam->MyGaussRule(Discret::ELEMENTS::Beam3r::res_elastic_moment);
     for (std::size_t i = 3; i < 6; i++)
       calc_interpolation_polynomial_coefficients(
           moment_int_rule, stress_strain_GPs_current_element[i], stress_strain_coefficients[i]);

@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::VolumeChange::CheckStatus(
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::VolumeChange::CheckStatus(
     const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
@@ -58,14 +58,14 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::VolumeChang
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::VolumeChange::GetStatus() const
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::VolumeChange::GetStatus() const
 {
   return status_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::NLN::INNER::StatusTest::VolumeChange::Print(
+std::ostream& NOX::Nln::Inner::StatusTest::VolumeChange::Print(
     std::ostream& stream, int indent) const
 {
   const std::string indent_str(indent, ' ');
@@ -85,10 +85,10 @@ std::ostream& NOX::NLN::INNER::StatusTest::VolumeChange::Print(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::INNER::StatusTest::VolumeChange::set_element_volumes(
+::NOX::Abstract::Group::ReturnType NOX::Nln::Inner::StatusTest::VolumeChange::set_element_volumes(
     const ::NOX::Abstract::Group& grp, Teuchos::RCP<Epetra_Vector>& ele_vols) const
 {
-  const NOX::NLN::Group& nln_grp = dynamic_cast<const NOX::NLN::Group&>(grp);
+  const NOX::Nln::Group& nln_grp = dynamic_cast<const NOX::Nln::Group&>(grp);
 
   ele_vols = Teuchos::null;
   return nln_grp.compute_element_volumes(ele_vols);
@@ -96,7 +96,7 @@ std::ostream& NOX::NLN::INNER::StatusTest::VolumeChange::Print(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int NOX::NLN::INNER::StatusTest::VolumeChange::number_of_bad_elements()
+int NOX::Nln::Inner::StatusTest::VolumeChange::number_of_bad_elements()
 {
   min_vol_change_ = 1.0;
   max_vol_change_ = 1.0;

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
     class Strategy;
     class Interface;
@@ -47,7 +47,7 @@ namespace CONTACT
 
      private:
       /// create the interface objects for the combined strategies
-      static void create_strategy_interfaces(const enum INPAR::CONTACT::SolvingStrategy strat_type,
+      static void create_strategy_interfaces(const enum Inpar::CONTACT::SolvingStrategy strat_type,
           const plain_interface_set& ref_interfaces, plain_interface_set& strat_interfaces);
 
       /// create the linear solver objects for the different combined contact strategies
@@ -70,10 +70,10 @@ namespace CONTACT
       /// @{
 
       /// return the type of currently active wrapped contact strategy
-      INPAR::CONTACT::SolvingStrategy Type() const override;
+      Inpar::CONTACT::SolvingStrategy Type() const override;
 
       /// return the linear solver for the currently active strategy
-      CORE::LINALG::Solver* GetLinearSolver() const override;
+      Core::LinAlg::Solver* GetLinearSolver() const override;
 
       /// function wrapper
       void Reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
@@ -138,13 +138,13 @@ namespace CONTACT
           Epetra_Vector& f, const double& timefac_np) const override;
 
       /// function wrapper
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
           const enum CONTACT::MatBlockType& bt,
           const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
       /// function wrapper
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> get_condensed_matrix_block_ptr(
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteff, const double& timefac_np) const override;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> get_condensed_matrix_block_ptr(
+          Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteff, const double& timefac_np) const override;
 
       /// function wrapper
       Teuchos::RCP<Epetra_Vector> ConstrRhs() override;
@@ -159,7 +159,7 @@ namespace CONTACT
       void update_active_set_semi_smooth(const bool firstStepPredictor = false) override;
 
       /// function wrapper
-      void DoReadRestart(CORE::IO::DiscretizationReader& reader,
+      void DoReadRestart(Core::IO::DiscretizationReader& reader,
           Teuchos::RCP<const Epetra_Vector> dis,
           Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
@@ -168,16 +168,16 @@ namespace CONTACT
 
       /// function wrapper
       double GetPotentialValue(
-          const enum NOX::NLN::MeritFunction::MeritFctName mrt_type) const override;
+          const enum NOX::Nln::MeritFunction::MeritFctName mrt_type) const override;
 
       /// function wrapper
       double get_linearized_potential_value_terms(const Epetra_Vector& dir,
-          const enum NOX::NLN::MeritFunction::MeritFctName mrt_type,
-          const enum NOX::NLN::MeritFunction::LinOrder linorder,
-          const enum NOX::NLN::MeritFunction::LinType lintype) const override;
+          const enum NOX::Nln::MeritFunction::MeritFctName mrt_type,
+          const enum NOX::Nln::MeritFunction::LinOrder linorder,
+          const enum NOX::Nln::MeritFunction::LinType lintype) const override;
 
       /// function wrapper
-      void WriteOutput(CORE::IO::DiscretizationWriter& writer) const override;
+      void WriteOutput(Core::IO::DiscretizationWriter& writer) const override;
 
       /// function wrapper
       void evaluate_reference_state() override;
@@ -253,21 +253,21 @@ namespace CONTACT
       /// function wrapper
       void run_post_apply_jacobian_inverse(const CONTACT::ParamsInterface& cparams,
           const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
-          const NOX::NLN::Group& grp) override;
+          const NOX::Nln::Group& grp) override;
 
       /// function wrapper
       void remove_condensed_contributions_from_rhs(Epetra_Vector& str_rhs) const override;
 
       /// function wrapper
       void correct_parameters(
-          CONTACT::ParamsInterface& cparams, const NOX::NLN::CorrectionType type) override;
+          CONTACT::ParamsInterface& cparams, const NOX::Nln::CorrectionType type) override;
 
       /// function wrapper
       void reset_lagrange_multipliers(
           const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew) override;
 
       void post_store_dirichlet_status(
-          Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) override;
+          Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps) override;
 
       /// @}
      private:
@@ -275,10 +275,10 @@ namespace CONTACT
       /// @{
 
       /// access the currently active contact strategy
-      CONTACT::AUG::Strategy& get();
+      CONTACT::Aug::Strategy& get();
 
       /// access the currently active contact strategy (read-only)
-      const CONTACT::AUG::Strategy& get() const;
+      const CONTACT::Aug::Strategy& get() const;
 
       /// update the strategy switching conditions
       void switch_update(CONTACT::ParamsInterface& cparams);
@@ -299,19 +299,19 @@ namespace CONTACT
 
       //! @name Deprecated methods
       //! @{
-      void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+      void EvaluateContact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
         FOUR_C_THROW("Deprecated function call!");
       };
-      void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+      void EvaluateFriction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
         FOUR_C_THROW("Deprecated function call!");
       };
-      void build_saddle_point_system(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
+      void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
           Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-          Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+          Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
           Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
       {
         FOUR_C_THROW("Deprecated function call!");
@@ -338,7 +338,7 @@ namespace CONTACT
         FOUR_C_THROW("Wrong strategy!");
         exit(EXIT_FAILURE);
       };
-      void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+      void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
         FOUR_C_THROW("Wrong strategy!");
@@ -366,7 +366,7 @@ namespace CONTACT
       /// interface of the wrapped contact solution strategies
       plain_interface_sets interface_sets_;
 
-      CONTACT::AUG::DataContainer& data_;
+      CONTACT::Aug::DataContainer& data_;
 
       /*----------------------------------------------------------------------*/
       /** \brief nested container for the non-dbc dof handling
@@ -387,13 +387,13 @@ namespace CONTACT
         }
 
         /// assemble the maps
-        void Assemble(const Epetra_Map& dbcmap, const CONTACT::AUG::DataContainer& data);
+        void Assemble(const Epetra_Map& dbcmap, const CONTACT::Aug::DataContainer& data);
 
         /// handle a parallel redistribution
-        void Redistribute(const CONTACT::AUG::DataContainer& data);
+        void Redistribute(const CONTACT::Aug::DataContainer& data);
 
         /// reset container members
-        void Reset(const Epetra_Map& slMaMap, const CONTACT::AUG::DataContainer& data);
+        void Reset(const Epetra_Map& slMaMap, const CONTACT::Aug::DataContainer& data);
 
         /// slave/master DOF map without DBC
         Teuchos::RCP<Epetra_Map> slMaMap_;
@@ -459,7 +459,7 @@ namespace CONTACT
       virtual ~Switching() = default;
 
       /// return the ID of the given solving strategy
-      unsigned Id(enum INPAR::CONTACT::SolvingStrategy sol_type) const;
+      unsigned Id(enum Inpar::CONTACT::SolvingStrategy sol_type) const;
 
       /// return the active ID
       virtual unsigned Id() const = 0;
@@ -469,7 +469,7 @@ namespace CONTACT
 
      protected:
       /// find the id corresponding to \c sol_type
-      unsigned find_id(INPAR::CONTACT::SolvingStrategy sol_type) const;
+      unsigned find_id(Inpar::CONTACT::SolvingStrategy sol_type) const;
 
       /// detect strategy types of the wrapped strategies
       void get_strategy_types(
@@ -594,7 +594,7 @@ namespace CONTACT
       /// internal container (see container description for more info)
       MaxAbsAWGap maxabsawgap_;
     };
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 

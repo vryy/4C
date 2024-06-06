@@ -112,10 +112,10 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     //--------------------------------------------------------------------
     // calculate nodal heatfluxes from gauss point heatfluxes
     //--------------------------------------------------------------------
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
+    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
 
     // create the parameters for the discretization
     Teuchos::ParameterList p;
@@ -126,9 +126,9 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     p.set("total time", -1.0);
 
     // create heatfluxes, three scalarvalued vectors
-    Teuchos::RCP<Epetra_Vector> heatfluxx = CORE::LINALG::CreateVector(*(dis->dof_row_map()), true);
-    Teuchos::RCP<Epetra_Vector> heatfluxy = CORE::LINALG::CreateVector(*(dis->dof_row_map()), true);
-    Teuchos::RCP<Epetra_Vector> heatfluxz = CORE::LINALG::CreateVector(*(dis->dof_row_map()), true);
+    Teuchos::RCP<Epetra_Vector> heatfluxx = Core::LinAlg::CreateVector(*(dis->dof_row_map()), true);
+    Teuchos::RCP<Epetra_Vector> heatfluxy = Core::LinAlg::CreateVector(*(dis->dof_row_map()), true);
+    Teuchos::RCP<Epetra_Vector> heatfluxz = Core::LinAlg::CreateVector(*(dis->dof_row_map()), true);
     dis->Evaluate(p, Teuchos::null, Teuchos::null, heatfluxx, heatfluxy, heatfluxz);
 
     // change the dis from a dof_row_map to a NodeRowMap, because Paraview can only visualize
@@ -144,7 +144,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     {
       for (int i = 0; i < numnodes; ++i)
       {
-        const CORE::Nodes::Node* lnode = dis->lRowNode(i);
+        const Core::Nodes::Node* lnode = dis->lRowNode(i);
         const std::vector<int> lnodedofs = dis->Dof(lnode);
 
         if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
@@ -162,7 +162,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     {
       for (int i = 0; i < numnodes; ++i)
       {
-        const CORE::Nodes::Node* lnode = dis->lRowNode(i);
+        const Core::Nodes::Node* lnode = dis->lRowNode(i);
         const std::vector<int> lnodedofs = dis->Dof(lnode);
 
         if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
@@ -178,7 +178,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     {
       for (int i = 0; i < numnodes; ++i)
       {
-        const CORE::Nodes::Node* lnode = dis->lRowNode(i);
+        const Core::Nodes::Node* lnode = dis->lRowNode(i);
         const std::vector<int> lnodedofs = dis->Dof(lnode);
 
         if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
@@ -239,8 +239,8 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     //--------------------------------------------------------------------
     // calculate element center heatfluxes from gauss point heatfluxes
     //--------------------------------------------------------------------
-    const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
+    const Teuchos::RCP<Discret::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
     // create the parameters for the discretization
     Teuchos::ParameterList p;

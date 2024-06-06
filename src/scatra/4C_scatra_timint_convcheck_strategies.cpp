@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               fang 02/16 |
  *----------------------------------------------------------------------*/
-SCATRA::ConvCheckStrategyBase::ConvCheckStrategyBase(
+ScaTra::ConvCheckStrategyBase::ConvCheckStrategyBase(
     const Teuchos::ParameterList& parameters  //!< parameter list for Newton-Raphson iteration
     )
     : itmax_(parameters.get<int>("ITEMAX")),
@@ -40,7 +40,7 @@ SCATRA::ConvCheckStrategyBase::ConvCheckStrategyBase(
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 02/16 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyStd::abort_nonlin_iter(
+bool ScaTra::ConvCheckStrategyStd::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
@@ -162,13 +162,13 @@ bool SCATRA::ConvCheckStrategyStd::abort_nonlin_iter(
 
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStd::abort_nonlin_iter()
+}  // ScaTra::ConvCheckStrategyStd::abort_nonlin_iter()
 
 
 /*--------------------------------------------------------------------------------------------*
  | perform convergence check for outer iteration in partitioned coupling schemes   fang 08/17 |
  *--------------------------------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyStd::AbortOuterIter(
+bool ScaTra::ConvCheckStrategyStd::AbortOuterIter(
     const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
 ) const
 {
@@ -239,13 +239,13 @@ bool SCATRA::ConvCheckStrategyStd::AbortOuterIter(
 
   // proceed with next outer iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStd::AbortOuterIter
+}  // ScaTra::ConvCheckStrategyStd::AbortOuterIter
 
 
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 04/16 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyStdMicroScale::abort_nonlin_iter(
+bool ScaTra::ConvCheckStrategyStdMicroScale::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
@@ -291,13 +291,13 @@ bool SCATRA::ConvCheckStrategyStdMicroScale::abort_nonlin_iter(
 
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStdMicroScale::abort_nonlin_iter()
+}  // ScaTra::ConvCheckStrategyStdMicroScale::abort_nonlin_iter()
 
 
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 02/16 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyStdElch::abort_nonlin_iter(
+bool ScaTra::ConvCheckStrategyStdElch::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
@@ -450,13 +450,13 @@ bool SCATRA::ConvCheckStrategyStdElch::abort_nonlin_iter(
 
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStdElch::abort_nonlin_iter()
+}  // ScaTra::ConvCheckStrategyStdElch::abort_nonlin_iter()
 
 
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 02/16 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyS2ILM::abort_nonlin_iter(
+bool ScaTra::ConvCheckStrategyS2ILM::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
@@ -484,8 +484,8 @@ bool SCATRA::ConvCheckStrategyS2ILM::abort_nonlin_iter(
   scatratimint.Increment()->Norm2(&conc_inc_L2);
 
   // extract meshtying strategy from scalar transport time integrator
-  const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategys2i =
-      Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(scatratimint.Strategy());
+  const Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategys2i =
+      Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint.Strategy());
   if (meshtyingstrategys2i == Teuchos::null)
     FOUR_C_THROW("Invalid scalar transport meshtying strategy!");
 
@@ -608,13 +608,13 @@ bool SCATRA::ConvCheckStrategyS2ILM::abort_nonlin_iter(
 
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyS2ILM::abort_nonlin_iter()
+}  // ScaTra::ConvCheckStrategyS2ILM::abort_nonlin_iter()
 
 
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 02/16 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyS2ILMElch::abort_nonlin_iter(
+bool ScaTra::ConvCheckStrategyS2ILMElch::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
@@ -662,8 +662,8 @@ bool SCATRA::ConvCheckStrategyS2ILMElch::abort_nonlin_iter(
   pot_vector->Norm2(&pot_inc_L2);
 
   // extract meshtying strategy from scalar transport time integrator
-  const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategys2i =
-      Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(scatratimint.Strategy());
+  const Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategys2i =
+      Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(scatratimint.Strategy());
   if (meshtyingstrategys2i == Teuchos::null)
     FOUR_C_THROW("Invalid scalar transport meshtying strategy!");
 
@@ -799,13 +799,13 @@ bool SCATRA::ConvCheckStrategyS2ILMElch::abort_nonlin_iter(
 
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyS2ILMElch::abort_nonlin_iter()
+}  // ScaTra::ConvCheckStrategyS2ILMElch::abort_nonlin_iter()
 
 
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 08/17 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter(
+bool ScaTra::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
@@ -993,13 +993,13 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter(
 
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter
+}  // ScaTra::ConvCheckStrategyStdMacroScaleElch::abort_nonlin_iter
 
 
 /*--------------------------------------------------------------------------------------------*
  | perform convergence check for outer iteration in partitioned coupling schemes   fang 08/17 |
  *--------------------------------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
+bool ScaTra::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
     const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
 ) const
 {
@@ -1100,12 +1100,12 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
 
   // proceed with next outer iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter
+}  // ScaTra::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter
 
 /*-------------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration kremheller 12/17 |
  *------------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyPoroMultiphaseScatra::abort_nonlin_iter(
+bool ScaTra::ConvCheckStrategyPoroMultiphaseScatra::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
@@ -1224,12 +1224,12 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatra::abort_nonlin_iter(
   actresidual = std::max(conc_res_Rms, conc_inc_L2 / conc_state_L2);
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStd::abort_nonlin_iter()
+}  // ScaTra::ConvCheckStrategyStd::abort_nonlin_iter()
 
 /*-------------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration kremheller 12/17 |
  *------------------------------------------------------------------------*/
-bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::abort_nonlin_iter(
+bool ScaTra::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::abort_nonlin_iter(
     const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
     double& actresidual                    //!< return maximum current residual value
 ) const
@@ -1241,8 +1241,8 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::abort_nonlin_ite
   const int itnum = scatratimint.IterNum();
 
   // get mesh tying strategy
-  Teuchos::RCP<SCATRA::MeshtyingStrategyArtery> scatramsht =
-      Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyArtery>(scatratimint.Strategy());
+  Teuchos::RCP<ScaTra::MeshtyingStrategyArtery> scatramsht =
+      Teuchos::rcp_dynamic_cast<ScaTra::MeshtyingStrategyArtery>(scatratimint.Strategy());
   if (scatramsht == Teuchos::null) FOUR_C_THROW("cast to Meshtying strategy failed!");
 
   // compute L2 norm of concentration state vector
@@ -1381,6 +1381,6 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::abort_nonlin_ite
       std::max(conc_res_art_Rms, conc_inc_art_L2 / conc_state_art_L2));
   // proceed with next iteration step
   return false;
-}  // SCATRA::ConvCheckStrategyStd::abort_nonlin_iter()
+}  // ScaTra::ConvCheckStrategyStd::abort_nonlin_iter()
 
 FOUR_C_NAMESPACE_CLOSE

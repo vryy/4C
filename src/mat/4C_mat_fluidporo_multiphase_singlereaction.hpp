@@ -19,15 +19,15 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                                |
  *---------------------------------------------------------------------*/
-namespace DRT
+namespace Discret
 {
   namespace UTILS
   {
     class FunctionOfAnything;
   }  // namespace UTILS
-}  // namespace DRT
+}  // namespace Discret
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -35,7 +35,7 @@ namespace MAT
     /// material parameters for a single phase of porous multiphase fluid
     ///
     /// This object exists only once for each read fluid.
-    class FluidPoroSingleReaction : public CORE::MAT::PAR::Parameter
+    class FluidPoroSingleReaction : public Core::Mat::PAR::Parameter
     {
       enum PorofluidReactionCoupling
       {
@@ -46,10 +46,10 @@ namespace MAT
 
      public:
       /// standard constructor
-      FluidPoroSingleReaction(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      FluidPoroSingleReaction(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// initialize
       void Initialize();
@@ -97,7 +97,7 @@ namespace MAT
       const std::vector<int> scale_;
 
       /// type of coupling
-      const MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling coupling_;
+      const Mat::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling coupling_;
 
       /// ID of the function defining the reaction
       const int functID_;
@@ -105,8 +105,8 @@ namespace MAT
 
      private:
       /// returns the enum of the current coupling type
-      MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling set_coupling_type(
-          Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Mat::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling set_coupling_type(
+          Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! templated internal Initialize implementation
       template <int dim>
@@ -148,14 +148,14 @@ namespace MAT
   /*----------------------------------------------------------------------*
    | instance access method                                   vuong 08/16 |
    *----------------------------------------------------------------------*/
-  class FluidPoroSingleReactionType : public CORE::COMM::ParObjectType
+  class FluidPoroSingleReactionType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "FluidPoroSingleReactionType"; }
 
     static FluidPoroSingleReactionType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroSingleReactionType instance_;
@@ -172,16 +172,16 @@ namespace MAT
     FluidPoroSingleReaction();
 
     /// construct the material object given material parameters
-    explicit FluidPoroSingleReaction(MAT::PAR::FluidPoroSingleReaction* params);
+    explicit FluidPoroSingleReaction(Mat::PAR::FluidPoroSingleReaction* params);
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_fluidporo_singlereaction;
+      return Core::Materials::m_fluidporo_singlereaction;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroSingleReaction(*this));
     }
@@ -209,7 +209,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -231,7 +231,7 @@ namespace MAT
     void Initialize() override;
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// evaluate reaction
     void EvaluateReaction(std::vector<double>& reacval,
@@ -253,10 +253,10 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::FluidPoroSingleReaction* params_;
+    Mat::PAR::FluidPoroSingleReaction* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -16,42 +16,43 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-using namespace CORE::FE;
+using namespace Core::FE;
 
-DRT::ELEMENTS::RedAirBloodScatraType DRT::ELEMENTS::RedAirBloodScatraType::instance_;
+Discret::ELEMENTS::RedAirBloodScatraType Discret::ELEMENTS::RedAirBloodScatraType::instance_;
 
-DRT::ELEMENTS::RedAirBloodScatraType& DRT::ELEMENTS::RedAirBloodScatraType::Instance()
+Discret::ELEMENTS::RedAirBloodScatraType& Discret::ELEMENTS::RedAirBloodScatraType::Instance()
 {
   return instance_;
 }
 
 
-CORE::COMM::ParObject* DRT::ELEMENTS::RedAirBloodScatraType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::RedAirBloodScatraType::Create(
+    const std::vector<char>& data)
 {
   FOUR_C_THROW("Not implemented.");
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedAirBloodScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAirBloodScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedAirBloodScatraType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAirBloodScatraType::Create(
     const int id, const int owner)
 {
   FOUR_C_THROW("Not implemented.");
 }
 
 
-void DRT::ELEMENTS::RedAirBloodScatraType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::RedAirBloodScatraType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["RED_AIR_BLOOD_SCATRA"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["RED_AIR_BLOOD_SCATRA"];
 
-  defs["LINE2"] = INPUT::LineDefinition::Builder()
+  defs["LINE2"] = Input::LineDefinition::Builder()
                       .AddIntVector("LINE2", 2)
                       .AddNamedDouble("DiffusionCoefficient")
                       .AddNamedDouble("WallThickness")
@@ -64,8 +65,8 @@ void DRT::ELEMENTS::RedAirBloodScatraType::setup_element_definition(
  |  ctor (public)                                           ismail 05/13|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(int id, int owner)
-    : CORE::Elements::Element(id, owner)
+Discret::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(int id, int owner)
+    : Core::Elements::Element(id, owner)
 {
 }
 
@@ -73,8 +74,9 @@ DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(int id, int owner)
  |  copy-ctor (public)                                      ismail 05/13|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(const DRT::ELEMENTS::RedAirBloodScatra& old)
-    : CORE::Elements::Element(old), elem_params_(old.elem_params_), generation_(old.generation_)
+Discret::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(
+    const Discret::ELEMENTS::RedAirBloodScatra& old)
+    : Core::Elements::Element(old), elem_params_(old.elem_params_), generation_(old.generation_)
 {
 }
 
@@ -83,7 +85,7 @@ DRT::ELEMENTS::RedAirBloodScatra::RedAirBloodScatra(const DRT::ELEMENTS::RedAirB
  |  to it                                                      (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::RedAirBloodScatra::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::RedAirBloodScatra::Clone() const
 {
   FOUR_C_THROW("Not implemented.");
 }
@@ -92,14 +94,14 @@ CORE::Elements::Element* DRT::ELEMENTS::RedAirBloodScatra::Clone() const
  |                                                             (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::RedAirBloodScatra::Shape() const
+Core::FE::CellType Discret::ELEMENTS::RedAirBloodScatra::Shape() const
 {
   switch (num_node())
   {
     case 2:
-      return CORE::FE::CellType::line2;
+      return Core::FE::CellType::line2;
     case 3:
-      return CORE::FE::CellType::line3;
+      return Core::FE::CellType::line3;
     default:
       FOUR_C_THROW("unexpected number of nodes %d", num_node());
   }
@@ -109,9 +111,9 @@ CORE::FE::CellType DRT::ELEMENTS::RedAirBloodScatra::Shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirBloodScatra::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::RedAirBloodScatra::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -141,11 +143,11 @@ void DRT::ELEMENTS::RedAirBloodScatra::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                         ismail 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirBloodScatra::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::RedAirBloodScatra::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -180,7 +182,7 @@ void DRT::ELEMENTS::RedAirBloodScatra::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 05/13|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirBloodScatra::Print(std::ostream& os) const
+void Discret::ELEMENTS::RedAirBloodScatra::Print(std::ostream& os) const
 {
   os << "RedAirBloodScatra ";
   Element::Print(os);
@@ -191,19 +193,20 @@ void DRT::ELEMENTS::RedAirBloodScatra::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  Return names of visualization data                     ismail 05/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirBloodScatra::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::RedAirBloodScatra::VisNames(std::map<std::string, int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
-  CORE::Elements::Element::VisNames(names);
+  Core::Elements::Element::VisNames(names);
 }
 
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::RedAirBloodScatra::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::RedAirBloodScatra::VisData(
+    const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (CORE::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::VisData(name, data)) return true;
 
   return false;
 }
@@ -213,7 +216,7 @@ bool DRT::ELEMENTS::RedAirBloodScatra::VisData(const std::string& name, std::vec
 /*----------------------------------------------------------------------*
  |  Get element parameters (public)                        ismail 04/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirBloodScatra::getParams(std::string name, double& var)
+void Discret::ELEMENTS::RedAirBloodScatra::getParams(std::string name, double& var)
 {
   std::map<std::string, double>::iterator it;
   it = elem_params_.find(name);
@@ -228,7 +231,7 @@ void DRT::ELEMENTS::RedAirBloodScatra::getParams(std::string name, double& var)
 /*----------------------------------------------------------------------*
  |  Get element parameters (public)                        ismail 03/11 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirBloodScatra::getParams(std::string name, int& var)
+void Discret::ELEMENTS::RedAirBloodScatra::getParams(std::string name, int& var)
 {
   if (name == "Generation")
   {
@@ -244,7 +247,7 @@ void DRT::ELEMENTS::RedAirBloodScatra::getParams(std::string name, int& var)
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)              ismail  02/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::RedAirBloodScatra::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::RedAirBloodScatra::Lines()
 {
   FOUR_C_ASSERT(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
 

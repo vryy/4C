@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   /**
    * @brief This class defines a container that eases the management of visualization data and
@@ -57,7 +57,7 @@ namespace CORE::IO
      * - "contact_forces"
      * - "contact_segmentation"
      */
-    VisualizationManager(CORE::IO::VisualizationParameters parameters, const Epetra_Comm& comm,
+    VisualizationManager(Core::IO::VisualizationParameters parameters, const Epetra_Comm& comm,
         std::string base_output_name);
 
     /**
@@ -120,7 +120,7 @@ namespace CORE::IO
 
    private:
     //! Visualization parameters
-    const CORE::IO::VisualizationParameters parameters_;
+    const Core::IO::VisualizationParameters parameters_;
 
     //! MPI communicator
     const Epetra_Comm& comm_;
@@ -132,7 +132,7 @@ namespace CORE::IO
     //! Base name of this output data
     const std::string base_output_name_;
   };
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

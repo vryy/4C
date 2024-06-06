@@ -15,7 +15,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*/
-std::vector<std::vector<double>> CORE::IO::ReadCsvAsColumns(
+std::vector<std::vector<double>> Core::IO::ReadCsvAsColumns(
     const int number_of_columns, std::istream& csv_stream)
 {
   // prepare variables
@@ -61,7 +61,7 @@ std::vector<std::vector<double>> CORE::IO::ReadCsvAsColumns(
 }
 
 /*-----------------------------------------------------------------------------------------------*/
-std::vector<std::vector<double>> CORE::IO::ReadCsvAsColumns(
+std::vector<std::vector<double>> Core::IO::ReadCsvAsColumns(
     const int number_of_columns, const std::string& csv_file_path)
 {
   std::ifstream csv_file_stream(csv_file_path);

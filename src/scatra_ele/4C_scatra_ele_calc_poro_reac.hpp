@@ -20,11 +20,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleCalcPoroReac : virtual public ScaTraEleCalcPoro<distype>,
                                   virtual public ScaTraEleCalcAdvReac<distype>
     {
@@ -45,7 +45,7 @@ namespace DRT
      protected:
       //! evaluate material
       void materials(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -56,7 +56,7 @@ namespace DRT
 
       //! get the material parameters
       void get_material_params(
-          const CORE::Elements::Element* ele,  //!< the element we are dealing with
+          const Core::Elements::Element* ele,  //!< the element we are dealing with
           std::vector<double>& densn,          //!< density at t_(n)
           std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
           std::vector<double>& densam,         //!< density at t_(n+alpha_M)
@@ -66,7 +66,7 @@ namespace DRT
 
       //! material ScaTra
       void mat_scatra(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -77,12 +77,12 @@ namespace DRT
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      void extract_element_and_node_values(CORE::Elements::Element* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la) override;
+      void extract_element_and_node_values(Core::Elements::Element* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la) override;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-ADAPTER::StructureTimIntAda::StructureTimIntAda(
+Adapter::StructureTimIntAda::StructureTimIntAda(
     Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti)
     : StructureWrapper(sti), sta_(sta)
 {
@@ -32,11 +32,11 @@ ADAPTER::StructureTimIntAda::StructureTimIntAda(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int ADAPTER::StructureTimIntAda::Integrate() { return sta_->Integrate(); }
+int Adapter::StructureTimIntAda::Integrate() { return sta_->Integrate(); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimIntAda::prepare_output(bool force_prepare)
+void Adapter::StructureTimIntAda::prepare_output(bool force_prepare)
 {
   sta_->PrepareOutputPeriod(force_prepare);
 }
@@ -44,7 +44,7 @@ void ADAPTER::StructureTimIntAda::prepare_output(bool force_prepare)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureTimIntAda::Output() { sta_->OutputPeriod(); }
+void Adapter::StructureTimIntAda::Output() { sta_->OutputPeriod(); }
 
 
 /*----------------------------------------------------------------------*/

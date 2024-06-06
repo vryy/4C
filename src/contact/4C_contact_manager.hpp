@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -32,7 +32,7 @@ namespace CONTACT
 
   */
 
-  class Manager : public MORTAR::ManagerBase
+  class Manager : public Mortar::ManagerBase
   {
    public:
     /*!
@@ -53,7 +53,7 @@ namespace CONTACT
     \param alphaf (in): Generalized-alpha parameter (set to 0.0 by default)
 
     */
-    Manager(DRT::Discretization& discret, double alphaf = 0.0);
+    Manager(Discret::Discretization& discret, double alphaf = 0.0);
 
 
 
@@ -64,7 +64,7 @@ namespace CONTACT
     \brief Get discretization
 
     */
-    const DRT::Discretization& Discret() const { return discret_; };
+    const Discret::Discretization& Discret() const { return discret_; };
 
     //! @}
 
@@ -81,7 +81,7 @@ namespace CONTACT
     \param output (in): IO::discretization writer for restart
     \param forcedrestart (in): Force writing of restart data?
     */
-    void write_restart(CORE::IO::DiscretizationWriter& output, bool forcedrestart = false) final;
+    void write_restart(Core::IO::DiscretizationWriter& output, bool forcedrestart = false) final;
 
     /*!
     \brief Read restart information for contact
@@ -97,7 +97,7 @@ namespace CONTACT
     \param zero (in)  : global dof zero vector
 
     */
-    void read_restart(CORE::IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
+    void read_restart(Core::IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Epetra_Vector> zero) final;
 
     /*!
@@ -106,7 +106,7 @@ namespace CONTACT
     \param output (in): IO::discretization writer for restart
 
     */
-    void postprocess_quantities(CORE::IO::DiscretizationWriter& output) final;
+    void postprocess_quantities(Core::IO::DiscretizationWriter& output) final;
 
     //! [derived]
     void postprocess_quantities_per_interface(
@@ -130,7 +130,7 @@ namespace CONTACT
 
     */
     void set_poro_parent_element(int& slavetype, int& mastertype,
-        Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<CORE::Elements::Element>& ele);
+        Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<Core::Elements::Element>& ele);
 
     /*!
     \brief Find Physical Type (Poro or Structure) of Poro Interface
@@ -149,14 +149,14 @@ namespace CONTACT
 
    protected:
     //! the underlying problem discretization
-    DRT::Discretization& discret_;
+    Discret::Discretization& discret_;
 
    private:
     /*!
      \brief Read and check contact input parameters
 
      All specified contact-related input parameters are read from the
-     GLOBAL::Problem::Instance() and stored into a local variable of
+     Global::Problem::Instance() and stored into a local variable of
      type Teuchos::ParameterList. Invalid parameter combinations are
      sorted out and throw a FOUR_C_THROW.
 

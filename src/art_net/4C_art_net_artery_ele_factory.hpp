@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -37,20 +37,20 @@ namespace DRT
       virtual ~ArtNetFactory() = default;
       //! ProvideImpl
       static ArteryEleInterface* ProvideImpl(
-          CORE::FE::CellType distype, INPAR::ARTDYN::ImplType problem, const std::string& disname);
+          Core::FE::CellType distype, Inpar::ArtDyn::ImplType problem, const std::string& disname);
 
      private:
       //! define ArteryEle instances dependent on problem
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       static ArteryEleInterface* define_problem_type(
-          INPAR::ARTDYN::ImplType problem, const std::string& disname);
+          Inpar::ArtDyn::ImplType problem, const std::string& disname);
 
 
     };  // end class ArtNetFactory
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 
 

@@ -49,10 +49,10 @@ STR::Integrator::Integrator()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::Init(const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& sdyn_ptr,
-    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
-    const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr)
+void STR::Integrator::Init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
+    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
+    const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr)
 {
   issetup_ = false;
 
@@ -100,18 +100,18 @@ void STR::Integrator::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::Integrator::set_initial_displacement(
-    const INPAR::STR::InitialDisp init, const int startfuncno)
+    const Inpar::STR::InitialDisp init, const int startfuncno)
 {
   switch (init)
   {
-    case INPAR::STR::initdisp_zero_disp:
+    case Inpar::STR::initdisp_zero_disp:
     {
       global_state().GetDisN()->PutScalar(0.0);
       global_state().GetDisNp()->PutScalar(0.0);
 
       break;
     }
-    case INPAR::STR::initdisp_disp_by_function:
+    case Inpar::STR::initdisp_disp_by_function:
     {
       const Epetra_Map* dofrowmap = global_state().GetDiscret()->dof_row_map();
 
@@ -119,7 +119,7 @@ void STR::Integrator::set_initial_displacement(
       for (int lnodeid = 0; lnodeid < global_state().GetDiscret()->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        const CORE::Nodes::Node* lnode = global_state().GetDiscret()->lRowNode(lnodeid);
+        const Core::Nodes::Node* lnode = global_state().GetDiscret()->lRowNode(lnodeid);
 
         // the set of degrees of freedom associated with the node
         const std::vector<int> nodedofset = global_state().GetDiscret()->Dof(0, lnode);
@@ -132,8 +132,8 @@ void STR::Integrator::set_initial_displacement(
 
           // evaluate component k of spatial function
           const double initialval =
-              GLOBAL::Problem::Instance()
-                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+              Global::Problem::Instance()
+                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                   .Evaluate(lnode->X().data(), global_state().GetTimeN(), d);
 
           const int err = global_state().GetDisN()->ReplaceMyValues(1, &initialval, &doflid);
@@ -184,8 +184,8 @@ void STR::Integrator::equilibrate_initial_state()
       Teuchos::rcp(new ::NOX::Epetra::Vector(rhs_ptr, ::NOX::Epetra::Vector::CreateView));
 
   // initialize a temporal structural stiffness matrix
-  Teuchos::RCP<CORE::LINALG::SparseOperator> stiff_ptr =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*global_state().DofRowMapView(), 81, true, true));
+  Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_ptr =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*global_state().DofRowMapView(), 81, true, true));
 
 
   // overwrite initial state vectors with Dirichlet BCs
@@ -245,16 +245,16 @@ void STR::Integrator::equilibrate_initial_state()
   global_state().apply_element_technology_to_acceleration_system(*stiff_ptr, *rhs_ptr);
 
   // ---------------------------------------------------------------------------
-  // build a NOX::NLN::STR::LinearSystem
+  // build a NOX::Nln::STR::LinearSystem
   // ---------------------------------------------------------------------------
   // get the structural linear solver
-  std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>> str_linsolver;
-  str_linsolver[NOX::NLN::sol_structure] =
-      tim_int().GetDataSDyn().GetLinSolvers().at(INPAR::STR::model_structure);
+  std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>> str_linsolver;
+  str_linsolver[NOX::Nln::sol_structure] =
+      tim_int().GetDataSDyn().GetLinSolvers().at(Inpar::STR::model_structure);
 
   // copy the nox parameter-list
   Teuchos::ParameterList p_nox = tim_int().GetDataSDyn().GetNoxParams();
-  NOX::NLN::AUX::set_printing_parameters(p_nox, global_state().GetComm());
+  NOX::Nln::Aux::set_printing_parameters(p_nox, global_state().GetComm());
 
   // create a copy of the initial displacement vector
   Teuchos::RCP<Epetra_Vector> soln_ptr =
@@ -279,7 +279,7 @@ void STR::Integrator::equilibrate_initial_state()
   Teuchos::ParameterList& p_ls =
       p_nox.sublist("Direction", true).sublist("Newton", true).sublist("Linear Solver", true);
 
-  Teuchos::RCP<NOX::NLN::LinearSystem> linsys_ptr = Teuchos::rcp(new NOX::NLN::STR::LinearSystem(
+  Teuchos::RCP<NOX::Nln::LinearSystem> linsys_ptr = Teuchos::rcp(new NOX::Nln::STR::LinearSystem(
       p_print, p_ls, str_linsolver, Teuchos::null, Teuchos::null, stiff_ptr, *nox_soln_ptr));
 
   // (re)set the linear solver parameters
@@ -398,7 +398,7 @@ double STR::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
 
   EvalData().clear_values_for_all_energy_types();
   STR::MODELEVALUATOR::Structure& str_model =
-      dynamic_cast<STR::MODELEVALUATOR::Structure&>(Evaluator(INPAR::STR::model_structure));
+      dynamic_cast<STR::MODELEVALUATOR::Structure&>(Evaluator(Inpar::STR::model_structure));
 
   Teuchos::RCP<const Epetra_Vector> dis_avg =
       mt_energy_.Average(disnp, *global_state().GetDisN(), GetIntParam());
@@ -410,8 +410,8 @@ double STR::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
   mt_energy_.kin_energy_np_ = EvalData().GetEnergyData(STR::kinetic_energy);
   global_state().GetFextNp()->Dot(*dis_avg, &mt_energy_.ext_energy_np_);
 
-  CORE::IO::cout(CORE::IO::debug) << __LINE__ << " -- " << __PRETTY_FUNCTION__ << "\n";
-  mt_energy_.Print(CORE::IO::cout.os(CORE::IO::debug));
+  Core::IO::cout(Core::IO::debug) << __LINE__ << " -- " << __PRETTY_FUNCTION__ << "\n";
+  mt_energy_.Print(Core::IO::cout.os(Core::IO::debug));
 
   return mt_energy_.GetTotal();
 }
@@ -440,7 +440,7 @@ bool STR::Integrator::determine_element_volumes(
     const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols)
 {
   check_init_setup();
-  STR::MODELEVALUATOR::Generic& model = Evaluator(INPAR::STR::model_structure);
+  STR::MODELEVALUATOR::Generic& model = Evaluator(Inpar::STR::model_structure);
   STR::MODELEVALUATOR::Structure& smodel = dynamic_cast<STR::MODELEVALUATOR::Structure&>(model);
 
   return smodel.determine_element_volumes(x, ele_vols);
@@ -448,7 +448,7 @@ bool STR::Integrator::determine_element_volumes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const
+void STR::Integrator::OutputStepState(Core::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
   ModelEval().OutputStepState(iowriter);
@@ -456,7 +456,7 @@ void STR::Integrator::OutputStepState(CORE::IO::DiscretizationWriter& iowriter) 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::MonitorDbc(CORE::IO::DiscretizationWriter& writer) const
+void STR::Integrator::MonitorDbc(Core::IO::DiscretizationWriter& writer) const
 {
   monitor_dbc_ptr_->Execute(writer);
 }
@@ -496,7 +496,7 @@ void STR::Integrator::ResetStepState()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::Integrator::get_condensed_update_norm(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+    const enum NOX::Nln::StatusTest::QuantityType& qtype) const
 {
   check_init_setup();
 
@@ -510,7 +510,7 @@ double STR::Integrator::get_condensed_update_norm(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::Integrator::get_condensed_previous_sol_norm(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+    const enum NOX::Nln::StatusTest::QuantityType& qtype) const
 {
   check_init_setup();
 
@@ -524,7 +524,7 @@ double STR::Integrator::get_condensed_previous_sol_norm(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::Integrator::get_condensed_solution_update_rms(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+    const enum NOX::Nln::StatusTest::QuantityType& qtype) const
 {
   check_init_setup();
   // global relative mean square norm
@@ -543,7 +543,7 @@ double STR::Integrator::get_condensed_solution_update_rms(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int STR::Integrator::get_condensed_dof_number(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+    const enum NOX::Nln::StatusTest::QuantityType& qtype) const
 {
   check_init_setup();
   // global dof number of the given quantity
@@ -556,7 +556,7 @@ int STR::Integrator::get_condensed_dof_number(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double STR::Integrator::get_condensed_global_norm(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype,
+    const enum NOX::Nln::StatusTest::QuantityType& qtype,
     const enum ::NOX::Abstract::Vector::NormType& normtype, double& mynorm) const
 {
   double gnorm = 0;
@@ -609,7 +609,7 @@ Teuchos::RCP<const STR::ModelEvaluator> STR::Integrator::ModelEvalPtr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::Generic& STR::Integrator::Evaluator(const INPAR::STR::ModelType& mt)
+STR::MODELEVALUATOR::Generic& STR::Integrator::Evaluator(const Inpar::STR::ModelType& mt)
 {
   check_init_setup();
   return ModelEval().Evaluator(mt);
@@ -618,7 +618,7 @@ STR::MODELEVALUATOR::Generic& STR::Integrator::Evaluator(const INPAR::STR::Model
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const STR::MODELEVALUATOR::Generic& STR::Integrator::Evaluator(
-    const INPAR::STR::ModelType& mt) const
+    const Inpar::STR::ModelType& mt) const
 {
   check_init_setup();
   return ModelEval().Evaluator(mt);
@@ -642,7 +642,7 @@ STR::MODELEVALUATOR::Data& STR::Integrator::EvalData()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::BaseDataSDyn& STR::Integrator::s_dyn()
+STR::TimeInt::BaseDataSDyn& STR::Integrator::s_dyn()
 {
   check_init();
   return *sdyn_ptr_;
@@ -650,7 +650,7 @@ STR::TIMINT::BaseDataSDyn& STR::Integrator::s_dyn()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TIMINT::BaseDataSDyn& STR::Integrator::s_dyn() const
+const STR::TimeInt::BaseDataSDyn& STR::Integrator::s_dyn() const
 {
   check_init();
   return *sdyn_ptr_;
@@ -658,7 +658,7 @@ const STR::TIMINT::BaseDataSDyn& STR::Integrator::s_dyn() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TIMINT::BaseDataGlobalState& STR::Integrator::global_state() const
+const STR::TimeInt::BaseDataGlobalState& STR::Integrator::global_state() const
 {
   check_init();
   return *gstate_ptr_;
@@ -666,7 +666,7 @@ const STR::TIMINT::BaseDataGlobalState& STR::Integrator::global_state() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::BaseDataGlobalState& STR::Integrator::global_state()
+STR::TimeInt::BaseDataGlobalState& STR::Integrator::global_state()
 {
   check_init();
   return *gstate_ptr_;
@@ -690,7 +690,7 @@ const STR::Dbc& STR::Integrator::GetDbc() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TIMINT::Base& STR::Integrator::tim_int() const
+const STR::TimeInt::Base& STR::Integrator::tim_int() const
 {
   check_init();
   return *timint_ptr_;
@@ -715,7 +715,7 @@ void STR::Integrator::recover_from_backup_state()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::Integrator::MidTimeEnergy::MidTimeEnergy(const Integrator& integrator)
-    : integrator_(integrator), avg_type_(INPAR::STR::midavg_vague)
+    : integrator_(integrator), avg_type_(Inpar::STR::midavg_vague)
 {
   /* empty */
 }
@@ -731,7 +731,7 @@ void STR::Integrator::MidTimeEnergy::Print(std::ostream& os) const
   os << "external energy (dead load/potential) = " << ext_energy_np_ << "\n";
   os << "kinetic energy                        = " << kin_energy_np_ << "\n";
 
-  if (avg_type_ == INPAR::STR::midavg_trlike)
+  if (avg_type_ == Inpar::STR::midavg_trlike)
   {
     os << "--- Contributions of time step n   (previously accepted)\n";
     os << "strain energy                         = " << int_energy_n_ << "\n";
@@ -755,7 +755,7 @@ double STR::Integrator::MidTimeEnergy::GetTotal() const
 
   double total_energy = 0.0;
   total_energy = int_energy_np_ - kin_energy_np_ - ext_energy_np_;
-  if (avg_type_ == INPAR::STR::midavg_trlike)
+  if (avg_type_ == Inpar::STR::midavg_trlike)
   {
     const double energy_n = int_energy_n_ - kin_energy_n_ - ext_energy_n_;
     total_energy = fac_np * total_energy + fac_n * energy_n;
@@ -774,10 +774,10 @@ Teuchos::RCP<const Epetra_Vector> STR::Integrator::MidTimeEnergy::Average(
   Teuchos::RCP<Epetra_Vector> state_avg = Teuchos::rcp(new Epetra_Vector(state_np));
   switch (avg_type_)
   {
-    case INPAR::STR::midavg_vague:
-    case INPAR::STR::midavg_trlike:
+    case Inpar::STR::midavg_vague:
+    case Inpar::STR::midavg_trlike:
       return state_avg;
-    case INPAR::STR::midavg_imrlike:
+    case Inpar::STR::midavg_imrlike:
     {
       state_avg->Update(fac_n, state_n, fac_np);
       return state_avg;
@@ -803,9 +803,9 @@ bool STR::Integrator::MidTimeEnergy::is_correctly_configured() const
 {
   FOUR_C_ASSERT(issetup_, "Call Setup() first.");
 
-  if (avg_type_ == INPAR::STR::midavg_vague)
+  if (avg_type_ == Inpar::STR::midavg_vague)
   {
-    if (integrator_.s_dyn().GetDynamicType() != INPAR::STR::dyna_statics) return false;
+    if (integrator_.s_dyn().GetDynamicType() != Inpar::STR::dyna_statics) return false;
   }
   return true;
 }
@@ -814,7 +814,7 @@ bool STR::Integrator::MidTimeEnergy::is_correctly_configured() const
  *----------------------------------------------------------------------------*/
 bool STR::Integrator::MidTimeEnergy::StoreEnergyN() const
 {
-  return avg_type_ == INPAR::STR::midavg_trlike;
+  return avg_type_ == Inpar::STR::midavg_trlike;
 }
 
 /*----------------------------------------------------------------------------*

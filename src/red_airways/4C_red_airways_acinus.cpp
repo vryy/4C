@@ -17,37 +17,39 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-using namespace CORE::FE;
+using namespace Core::FE;
 
-DRT::ELEMENTS::RedAcinusType DRT::ELEMENTS::RedAcinusType::instance_;
+Discret::ELEMENTS::RedAcinusType Discret::ELEMENTS::RedAcinusType::instance_;
 
-DRT::ELEMENTS::RedAcinusType& DRT::ELEMENTS::RedAcinusType::Instance() { return instance_; }
+Discret::ELEMENTS::RedAcinusType& Discret::ELEMENTS::RedAcinusType::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::RedAcinusType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::RedAcinusType::Create(
+    const std::vector<char>& data)
 {
-  DRT::ELEMENTS::RedAcinus* object = new DRT::ELEMENTS::RedAcinus(-1, -1);
+  Discret::ELEMENTS::RedAcinus* object = new Discret::ELEMENTS::RedAcinus(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedAcinusType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAcinusType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "RED_ACINUS")
   {
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::RedAcinus(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::RedAcinus(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedAcinusType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAcinusType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::RedAcinus(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::RedAcinus(id, owner));
   return ele;
 }
 
@@ -57,12 +59,12 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::RedAcinusType::Create(
  |                                                             (public) |
  |                                                           roth 10/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAcinusType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::RedAcinusType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["RED_ACINUS"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["RED_ACINUS"];
 
-  defs["LINE2"] = INPUT::LineDefinition::Builder()
+  defs["LINE2"] = Input::LineDefinition::Builder()
                       .AddIntVector("LINE2", 2)
                       .AddNamedInt("MAT")
                       .AddNamedString("TYPE")
@@ -91,15 +93,15 @@ void DRT::ELEMENTS::RedAcinusType::setup_element_definition(
  |  ctor (public)                                           ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAcinus::RedAcinus(int id, int owner) : CORE::Elements::Element(id, owner) {}
+Discret::ELEMENTS::RedAcinus::RedAcinus(int id, int owner) : Core::Elements::Element(id, owner) {}
 
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAcinus::RedAcinus(const DRT::ELEMENTS::RedAcinus& old)
-    : CORE::Elements::Element(old),
+Discret::ELEMENTS::RedAcinus::RedAcinus(const Discret::ELEMENTS::RedAcinus& old)
+    : Core::Elements::Element(old),
       elem_type_(old.elem_type_),
       resistance_(old.elem_type_),
       acinus_params_(old.acinus_params_)
@@ -112,9 +114,9 @@ DRT::ELEMENTS::RedAcinus::RedAcinus(const DRT::ELEMENTS::RedAcinus& old)
  |  to it                                                      (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::RedAcinus::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::RedAcinus::Clone() const
 {
-  DRT::ELEMENTS::RedAcinus* newelement = new DRT::ELEMENTS::RedAcinus(*this);
+  Discret::ELEMENTS::RedAcinus* newelement = new Discret::ELEMENTS::RedAcinus(*this);
   return newelement;
 }
 
@@ -123,14 +125,14 @@ CORE::Elements::Element* DRT::ELEMENTS::RedAcinus::Clone() const
  |                                                             (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::RedAcinus::Shape() const
+Core::FE::CellType Discret::ELEMENTS::RedAcinus::Shape() const
 {
   switch (num_node())
   {
     case 2:
-      return CORE::FE::CellType::line2;
+      return Core::FE::CellType::line2;
     case 3:
-      return CORE::FE::CellType::line3;
+      return Core::FE::CellType::line3;
     default:
       FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;
@@ -142,9 +144,9 @@ CORE::FE::CellType DRT::ELEMENTS::RedAcinus::Shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAcinus::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::RedAcinus::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -171,11 +173,11 @@ void DRT::ELEMENTS::RedAcinus::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAcinus::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::RedAcinus::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -202,7 +204,7 @@ void DRT::ELEMENTS::RedAcinus::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 01/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAcinus::Print(std::ostream& os) const
+void Discret::ELEMENTS::RedAcinus::Print(std::ostream& os) const
 {
   os << "RedAcinus ";
   Element::Print(os);
@@ -212,12 +214,12 @@ void DRT::ELEMENTS::RedAcinus::Print(std::ostream& os) const
 
 /*-----------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::RedAcinus::element_center_refe_coords()
+std::vector<double> Discret::ELEMENTS::RedAcinus::element_center_refe_coords()
 {
   //  // update element geometry
-  CORE::Nodes::Node** nodes = Nodes();
+  Core::Nodes::Node** nodes = Nodes();
 
-  CORE::LINALG::SerialDenseMatrix mat(num_node(), 3, false);
+  Core::LinAlg::SerialDenseMatrix mat(num_node(), 3, false);
   for (int i = 0; i < num_node(); ++i)
   {
     const auto& x = nodes[i]->X();
@@ -243,13 +245,13 @@ std::vector<double> DRT::ELEMENTS::RedAcinus::element_center_refe_coords()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data                     ismail 01/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAcinus::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::RedAcinus::VisNames(std::map<std::string, int>& names)
 {
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
   // cast to specific material, because general material does not have VisNames/VisData
-  Teuchos::RCP<MAT::Maxwell0dAcinus> mxwll_0d_acin =
-      Teuchos::rcp_dynamic_cast<MAT::Maxwell0dAcinus>(Material());
+  Teuchos::RCP<Mat::Maxwell0dAcinus> mxwll_0d_acin =
+      Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(Material());
   mxwll_0d_acin->VisNames(names);
 }
 
@@ -257,26 +259,26 @@ void DRT::ELEMENTS::RedAcinus::VisNames(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::RedAcinus::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::RedAcinus::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (CORE::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::VisData(name, data)) return true;
 
   // cast to specific material, because general material does not have VisNames/VisData
-  Teuchos::RCP<MAT::Maxwell0dAcinus> mxwll_0d_acin =
-      Teuchos::rcp_dynamic_cast<MAT::Maxwell0dAcinus>(Material());
+  Teuchos::RCP<Mat::Maxwell0dAcinus> mxwll_0d_acin =
+      Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(Material());
 
   return mxwll_0d_acin->VisData(name, data, this->Id());
 }
 
 
-void DRT::ELEMENTS::RedAcinus::UpdateRelaxedVolume(double newVol)
+void Discret::ELEMENTS::RedAcinus::UpdateRelaxedVolume(double newVol)
 {
   acinus_params_.volume_relaxed = newVol;
 }
 
 
-const DRT::REDAIRWAYS::AcinusParams& DRT::ELEMENTS::RedAcinus::GetAcinusParams() const
+const Discret::ReducedLung::AcinusParams& Discret::ELEMENTS::RedAcinus::GetAcinusParams() const
 {
   return acinus_params_;
 }
@@ -284,7 +286,7 @@ const DRT::REDAIRWAYS::AcinusParams& DRT::ELEMENTS::RedAcinus::GetAcinusParams()
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)              ismail  02/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::RedAcinus::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::RedAcinus::Lines()
 {
   FOUR_C_ASSERT(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
 

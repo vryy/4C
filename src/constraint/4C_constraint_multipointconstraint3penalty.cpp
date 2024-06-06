@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
-    Teuchos::RCP<DRT::Discretization> discr,  ///< discretization constraint lives on
-    const std::string& CondName               ///< Name of condition to create constraint from
+    Teuchos::RCP<Discret::Discretization> discr,  ///< discretization constraint lives on
+    const std::string& CondName                   ///< Name of condition to create constraint from
     )
     : MPConstraint(discr, CondName)
 {
@@ -51,14 +51,14 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
     constraintdis_ = create_discretization_from_condition(
         actdisc_, constrcond_, "ConstrDisc", "CONSTRELE3", startID);
 
-    std::map<int, Teuchos::RCP<DRT::Discretization>>::iterator discriter;
+    std::map<int, Teuchos::RCP<Discret::Discretization>>::iterator discriter;
     for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
     {
       Teuchos::RCP<Epetra_Map> newcolnodemap =
-          CORE::REBALANCE::ComputeNodeColMap(actdisc_, discriter->second);
+          Core::Rebalance::ComputeNodeColMap(actdisc_, discriter->second);
       actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-      Teuchos::RCP<CORE::Dofsets::DofSet> newdofset =
-          Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(actdisc_));
+      Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
+          Teuchos::rcp(new Core::DOFSets::TransparentDofSet(actdisc_));
       (discriter->second)->ReplaceDofSet(newdofset);
       newdofset = Teuchos::null;
       (discriter->second)->fill_complete();
@@ -72,7 +72,7 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
     }
     // initialize maps and importer
     errormap_ = Teuchos::rcp(new Epetra_Map(numele, nummyele, 0, actdisc_->Comm()));
-    rederrormap_ = CORE::LINALG::AllreduceEMap(*errormap_);
+    rederrormap_ = Core::LinAlg::AllreduceEMap(*errormap_);
     errorexport_ = Teuchos::rcp(new Epetra_Export(*rederrormap_, *errormap_));
     errorimport_ = Teuchos::rcp(new Epetra_Import(*rederrormap_, *errormap_));
     acterror_ = Teuchos::rcp(new Epetra_Vector(*rederrormap_));
@@ -147,8 +147,8 @@ void CONSTRAINTS::MPConstraint3Penalty::Initialize(Teuchos::ParameterList& param
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::MPConstraint3Penalty::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
@@ -165,7 +165,7 @@ void CONSTRAINTS::MPConstraint3Penalty::Evaluate(Teuchos::ParameterList& params,
   }
 
   acterror_->PutScalar(0.0);
-  std::map<int, Teuchos::RCP<DRT::Discretization>>::iterator discriter;
+  std::map<int, Teuchos::RCP<Discret::Discretization>>::iterator discriter;
   for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
 
     evaluate_error(discriter->second, params, acterror_);
@@ -192,14 +192,14 @@ void CONSTRAINTS::MPConstraint3Penalty::Evaluate(Teuchos::ParameterList& params,
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-std::map<int, Teuchos::RCP<DRT::Discretization>>
+std::map<int, Teuchos::RCP<Discret::Discretization>>
 CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
-    Teuchos::RCP<DRT::Discretization> actdisc,
-    std::vector<CORE::Conditions::Condition*> constrcondvec, const std::string& discret_name,
+    Teuchos::RCP<Discret::Discretization> actdisc,
+    std::vector<Core::Conditions::Condition*> constrcondvec, const std::string& discret_name,
     const std::string& element_name, int& startID)
 {
   // start with empty map
-  std::map<int, Teuchos::RCP<DRT::Discretization>> newdiscmap;
+  std::map<int, Teuchos::RCP<Discret::Discretization>> newdiscmap;
 
   if (!actdisc->Filled())
   {
@@ -214,13 +214,13 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
   // Loop all conditions in constrcondvec and build discretization for any condition ID
 
   int index = 0;  // counter for the index of condition in vector
-  std::vector<CORE::Conditions::Condition*>::iterator conditer;
+  std::vector<Core::Conditions::Condition*>::iterator conditer;
   for (conditer = constrcondvec.begin(); conditer != constrcondvec.end(); conditer++)
   {
     // initialize a new discretization
     Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
-    Teuchos::RCP<DRT::Discretization> newdis =
-        Teuchos::rcp(new DRT::Discretization(discret_name, com, actdisc->n_dim()));
+    Teuchos::RCP<Discret::Discretization> newdis =
+        Teuchos::rcp(new Discret::Discretization(discret_name, com, actdisc->n_dim()));
     const int myrank = newdis->Comm().MyPID();
     std::set<int> rownodeset;
     std::set<int> colnodeset;
@@ -271,7 +271,7 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
       const int numnodes = ngid_ele.size();
       remove_copy_if(ngid_ele.data(), ngid_ele.data() + numnodes,
           inserter(rownodeset, rownodeset.begin()),
-          std::not_fn(CORE::Conditions::MyGID(actnoderowmap)));
+          std::not_fn(Core::Conditions::MyGID(actnoderowmap)));
       // copy node ids specified in condition to colnodeset
       copy(ngid_ele.data(), ngid_ele.data() + numnodes, inserter(colnodeset, colnodeset.begin()));
 
@@ -281,15 +281,15 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
         const int gid = actnoderowmap->GID(i);
         if (rownodeset.find(gid) != rownodeset.end())
         {
-          const CORE::Nodes::Node* standardnode = actdisc->lRowNode(i);
-          newdis->AddNode(Teuchos::rcp(new CORE::Nodes::Node(gid, standardnode->X(), myrank)));
+          const Core::Nodes::Node* standardnode = actdisc->lRowNode(i);
+          newdis->AddNode(Teuchos::rcp(new Core::Nodes::Node(gid, standardnode->X(), myrank)));
         }
       }
 
       if (myrank == 0)
       {
-        Teuchos::RCP<CORE::Elements::Element> constraintele =
-            CORE::COMM::Factory(element_name, "Polynomial", nodeiter + startID, myrank);
+        Teuchos::RCP<Core::Elements::Element> constraintele =
+            Core::Communication::Factory(element_name, "Polynomial", nodeiter + startID, myrank);
         // set the same global node ids to the ale element
         constraintele->SetNodeIds(ngid_ele.size(), ngid_ele.data());
         // add constraint element
@@ -334,9 +334,10 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(Teuchos::RCP<DRT::Discretization> disc,
-    Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
+    Teuchos::RCP<Discret::Discretization> disc, Teuchos::ParameterList& params,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
@@ -344,11 +345,11 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(Teuchos::RCP<DRT::Di
   if (!(disc->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // define element matrices and vectors
-  CORE::LINALG::SerialDenseMatrix elematrix1;
-  CORE::LINALG::SerialDenseMatrix elematrix2;
-  CORE::LINALG::SerialDenseVector elevector1;
-  CORE::LINALG::SerialDenseVector elevector2;
-  CORE::LINALG::SerialDenseVector elevector3;
+  Core::LinAlg::SerialDenseMatrix elematrix1;
+  Core::LinAlg::SerialDenseMatrix elematrix2;
+  Core::LinAlg::SerialDenseVector elevector1;
+  Core::LinAlg::SerialDenseVector elevector2;
+  Core::LinAlg::SerialDenseVector elevector3;
 
   const double time = params.get("total time", -1.0);
   const int numcolele = disc->NumMyColElements();
@@ -360,11 +361,11 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(Teuchos::RCP<DRT::Di
   for (int i = 0; i < numcolele; ++i)
   {
     // some useful data for computation
-    CORE::Elements::Element* actele = disc->lColElement(i);
+    Core::Elements::Element* actele = disc->lColElement(i);
     int eid = actele->Id();
     int condID = eletocond_id_.find(eid)->second;
-    CORE::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
-    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+    Core::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // computation only if time is larger or equal than initialization time for constraint
     if (inittimes_.find(condID)->second <= time)
@@ -408,8 +409,8 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(Teuchos::RCP<DRT::Di
       bool usetime = true;
       if (time < 0.0) usetime = false;
       if (curvenum >= 0 && usetime)
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
                        .Evaluate(time);
 
 
@@ -421,25 +422,25 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(Teuchos::RCP<DRT::Di
 
       systemmatrix1->Assemble(eid, lmstride, elematrix1, lm, lmowner);
       elevector1.scale(2. * penalties_[condID] * diff);
-      CORE::LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
+      Core::LinAlg::Assemble(*systemvector1, elevector1, lm, lmowner);
     }
   }
 }  // end of evaluate_condition
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<DRT::Discretization> disc,
+void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<Discret::Discretization> disc,
     Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector, bool init)
 {
   if (!(disc->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!(disc->HaveDofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // define element matrices and vectors
-  CORE::LINALG::SerialDenseMatrix elematrix1;
-  CORE::LINALG::SerialDenseMatrix elematrix2;
-  CORE::LINALG::SerialDenseVector elevector1;
-  CORE::LINALG::SerialDenseVector elevector2;
-  CORE::LINALG::SerialDenseVector elevector3;
+  Core::LinAlg::SerialDenseMatrix elematrix1;
+  Core::LinAlg::SerialDenseMatrix elematrix2;
+  Core::LinAlg::SerialDenseVector elevector1;
+  Core::LinAlg::SerialDenseVector elevector2;
+  Core::LinAlg::SerialDenseVector elevector3;
 
   // loop over column elements
   const double time = params.get("total time", -1.0);
@@ -447,11 +448,11 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<DRT::Discret
   for (int i = 0; i < numcolele; ++i)
   {
     // some useful data for computation
-    CORE::Elements::Element* actele = disc->lColElement(i);
+    Core::Elements::Element* actele = disc->lColElement(i);
     int eid = actele->Id();
     int condID = eletocond_id_.find(eid)->second;
-    CORE::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
-    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+    Core::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
@@ -478,7 +479,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<DRT::Discret
     std::vector<int> constrowner;
     constrlm.push_back(eid);
     constrowner.push_back(actele->Owner());
-    CORE::LINALG::Assemble(*systemvector, elevector3, constrlm, constrowner);
+    Core::LinAlg::Assemble(*systemvector, elevector3, constrlm, constrowner);
 
     activecons_.find(condID)->second = true;
 

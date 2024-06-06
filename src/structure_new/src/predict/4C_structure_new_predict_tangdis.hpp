@@ -25,14 +25,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     class Group;
-  }  // namespace NLN
+  }  // namespace Nln
 }  // namespace NOX
 namespace STR
 {
-  namespace PREDICT
+  namespace Predict
   {
     class TangDis : public Generic
     {
@@ -58,12 +58,12 @@ namespace STR
 
       bool apply_linear_reaction_forces_;
     };  // class TangDis
-  }     // namespace PREDICT
+  }     // namespace Predict
 }  // namespace STR
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace GROUP
     {
@@ -71,29 +71,29 @@ namespace NOX
       {
         /*! \brief Tangential Displacement helper class
          *
-         *  This class is an implementation of the NOX::NLN::Abstract::PrePostOperator
-         *  and is used to modify the computeF() routines of the given NOX::NLN::Group
-         *  (see STR::PREDICT::TangDis). It's called by the wrapper class
-         *  NOX::NLN::GROUP::PrePostOperator.
+         *  This class is an implementation of the NOX::Nln::Abstract::PrePostOperator
+         *  and is used to modify the computeF() routines of the given NOX::Nln::Group
+         *  (see STR::Predict::TangDis). It's called by the wrapper class
+         *  NOX::Nln::GROUP::PrePostOperator.
          *
          *  \author Michael Hiermeier */
-        class TangDis : public NOX::NLN::Abstract::PrePostOperator
+        class TangDis : public NOX::Nln::Abstract::PrePostOperator
         {
          public:
           //! constructor
-          TangDis(const Teuchos::RCP<const STR::PREDICT::TangDis>& tang_predict_ptr);
+          TangDis(const Teuchos::RCP<const STR::Predict::TangDis>& tang_predict_ptr);
 
 
           //! add the linear reaction forces
-          void runPostComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp) override;
+          void runPostComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
 
          private:
           //! pointer to the tangdis object (read-only)
-          Teuchos::RCP<const STR::PREDICT::TangDis> tang_predict_ptr_;
+          Teuchos::RCP<const STR::Predict::TangDis> tang_predict_ptr_;
         };  // class TangDis
       }     // namespace PrePostOp
     }       // namespace GROUP
-  }         // namespace NLN
+  }         // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

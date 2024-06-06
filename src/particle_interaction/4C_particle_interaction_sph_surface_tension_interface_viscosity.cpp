@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHInterfaceViscosity::SPHInterfaceViscosity(
+ParticleInteraction::SPHInterfaceViscosity::SPHInterfaceViscosity(
     const Teuchos::ParameterList& params)
     : params_sph_(params),
       liquidtype_(PARTICLEENGINE::Phase1),
@@ -40,9 +40,9 @@ PARTICLEINTERACTION::SPHInterfaceViscosity::SPHInterfaceViscosity(
   // empty constructor
 }
 
-PARTICLEINTERACTION::SPHInterfaceViscosity::~SPHInterfaceViscosity() = default;
+ParticleInteraction::SPHInterfaceViscosity::~SPHInterfaceViscosity() = default;
 
-void PARTICLEINTERACTION::SPHInterfaceViscosity::Init()
+void ParticleInteraction::SPHInterfaceViscosity::Init()
 {
   // init artificial viscosity handler
   init_artificial_viscosity_handler();
@@ -56,18 +56,18 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::Init()
   // safety check
   if (trans_d_t_intvisc_ > 0.0)
   {
-    if (CORE::UTILS::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
-            params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
+    if (Core::UTILS::IntegralValue<Inpar::PARTICLE::TemperatureEvaluationScheme>(
+            params_sph_, "TEMPERATUREEVALUATION") == Inpar::PARTICLE::NoTemperatureEvaluation)
       FOUR_C_THROW("temperature evaluation needed for linear transition of interface viscosity!");
   }
 }
 
-void PARTICLEINTERACTION::SPHInterfaceViscosity::Setup(
+void ParticleInteraction::SPHInterfaceViscosity::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+    const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
+    const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+    const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle,
+    const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -108,12 +108,12 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::Setup(
   // iterate over all fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
-    fluidmaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialSPHFluid*>(
+    fluidmaterial_[type_i] = dynamic_cast<const Mat::PAR::ParticleMaterialSPHFluid*>(
         particlematerial->get_ptr_to_particle_mat_parameter(type_i));
   }
 }
 
-void PARTICLEINTERACTION::SPHInterfaceViscosity::compute_interface_viscosity_contribution() const
+void ParticleInteraction::SPHInterfaceViscosity::compute_interface_viscosity_contribution() const
 {
   // compute interface viscosity contribution (particle contribution)
   compute_interface_viscosity_particle_contribution();
@@ -122,17 +122,17 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::compute_interface_viscosity_con
   compute_interface_viscosity_particle_boundary_contribution();
 }
 
-void PARTICLEINTERACTION::SPHInterfaceViscosity::init_artificial_viscosity_handler()
+void ParticleInteraction::SPHInterfaceViscosity::init_artificial_viscosity_handler()
 {
   // create artificial viscosity handler
-  artificialviscosity_ = std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity>(
-      new PARTICLEINTERACTION::SPHArtificialViscosity());
+  artificialviscosity_ = std::unique_ptr<ParticleInteraction::SPHArtificialViscosity>(
+      new ParticleInteraction::SPHArtificialViscosity());
 
   // init artificial viscosity handler
   artificialviscosity_->Init();
 }
 
-void PARTICLEINTERACTION::SPHInterfaceViscosity::compute_interface_viscosity_particle_contribution()
+void ParticleInteraction::SPHInterfaceViscosity::compute_interface_viscosity_particle_contribution()
     const
 {
   // get relevant particle pair indices
@@ -164,8 +164,8 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::compute_interface_viscosity_par
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get material for particle types
-    const MAT::PAR::ParticleMaterialSPHFluid* material_i = fluidmaterial_[type_i];
-    const MAT::PAR::ParticleMaterialSPHFluid* material_j = fluidmaterial_[type_j];
+    const Mat::PAR::ParticleMaterialSPHFluid* material_i = fluidmaterial_[type_i];
+    const Mat::PAR::ParticleMaterialSPHFluid* material_j = fluidmaterial_[type_j];
 
     // get pointer to particle states
     const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
@@ -231,7 +231,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::compute_interface_viscosity_par
   }
 }
 
-void PARTICLEINTERACTION::SPHInterfaceViscosity::
+void ParticleInteraction::SPHInterfaceViscosity::
     compute_interface_viscosity_particle_boundary_contribution() const
 {
   // get relevant particle pair indices
@@ -283,10 +283,10 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get material for particle types
-    const MAT::PAR::ParticleMaterialSPHFluid* material_i = fluidmaterial_[type_i];
+    const Mat::PAR::ParticleMaterialSPHFluid* material_i = fluidmaterial_[type_i];
 
     // get equation of state for particle types
-    const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_i =
+    const ParticleInteraction::SPHEquationOfStateBase* equationofstate_i =
         equationofstatebundle_->get_ptr_to_specific_equation_of_state(type_i);
 
     // get pointer to particle states

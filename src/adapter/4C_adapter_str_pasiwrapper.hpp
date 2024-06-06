@@ -41,7 +41,7 @@ namespace STR
 /*----------------------------------------------------------------------*
  | class declarations                                                   |
  *----------------------------------------------------------------------*/
-namespace ADAPTER
+namespace Adapter
 {
   class PASIStructureWrapper : public StructureWrapper
   {
@@ -80,7 +80,7 @@ namespace ADAPTER
     Teuchos::RCP<STR::MapExtractor> interface_;
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

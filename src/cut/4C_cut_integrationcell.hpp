@@ -17,9 +17,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Mesh;
     class VolumeCell;
@@ -30,7 +30,7 @@ namespace CORE::GEO
     class IntegrationCell
     {
      public:
-      IntegrationCell(Point::PointPosition position, const CORE::LINALG::SerialDenseMatrix& xyz,
+      IntegrationCell(Point::PointPosition position, const Core::LinAlg::SerialDenseMatrix& xyz,
           const std::vector<Point*>& points, VolumeCell* cell)
           : position_(position), xyz_(xyz), points_(points), cell_(cell)
       {
@@ -41,9 +41,9 @@ namespace CORE::GEO
       virtual unsigned Dim() const = 0;
 
       /// get the shape of the integration cell
-      virtual CORE::FE::CellType Shape() const = 0;
+      virtual Core::FE::CellType Shape() const = 0;
 
-      virtual int CubatureDegree(CORE::FE::CellType elementshape) const = 0;
+      virtual int CubatureDegree(Core::FE::CellType elementshape) const = 0;
 
       void DumpGmsh(std::ofstream& file, int* value = nullptr);
 
@@ -59,12 +59,12 @@ namespace CORE::GEO
 
       Point::PointPosition Position() const { return position_; }
 
-      const CORE::LINALG::SerialDenseMatrix& Coordinates() const { return xyz_; }
+      const Core::LinAlg::SerialDenseMatrix& Coordinates() const { return xyz_; }
 
-      bool Contains(CORE::LINALG::Matrix<3, 1>& x);
+      bool Contains(Core::LinAlg::Matrix<3, 1>& x);
 
-      template <unsigned probdim, CORE::FE::CellType celltype>
-      bool Contains(CORE::LINALG::Matrix<probdim, 1>& x);
+      template <unsigned probdim, Core::FE::CellType celltype>
+      bool Contains(Core::LinAlg::Matrix<probdim, 1>& x);
 
 
       /** Print the integration cells
@@ -75,7 +75,7 @@ namespace CORE::GEO
 
      protected:
       Point::PointPosition position_;
-      CORE::LINALG::SerialDenseMatrix xyz_;
+      Core::LinAlg::SerialDenseMatrix xyz_;
       std::vector<Point*> points_;
       VolumeCell* cell_;
     };  // class IntegrationCell
@@ -86,15 +86,15 @@ namespace CORE::GEO
     {
      public:
       Line2IntegrationCell(Point::PointPosition position,
-          const CORE::LINALG::SerialDenseMatrix& xyz, const std::vector<Point*>& points,
+          const Core::LinAlg::SerialDenseMatrix& xyz, const std::vector<Point*>& points,
           VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      unsigned Dim() const override { return CORE::FE::dim<CORE::FE::CellType::line2>; };
+      unsigned Dim() const override { return Core::FE::dim<Core::FE::CellType::line2>; };
 
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::line2; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::line2; }
 
-      int CubatureDegree(CORE::FE::CellType elementshape) const override;
+      int CubatureDegree(Core::FE::CellType elementshape) const override;
 
     };  // class Line2IntegrationCell
 
@@ -103,15 +103,15 @@ namespace CORE::GEO
     class Tri3IntegrationCell : public IntegrationCell
     {
      public:
-      Tri3IntegrationCell(Point::PointPosition position, const CORE::LINALG::SerialDenseMatrix& xyz,
+      Tri3IntegrationCell(Point::PointPosition position, const Core::LinAlg::SerialDenseMatrix& xyz,
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      unsigned Dim() const override { return CORE::FE::dim<CORE::FE::CellType::tri3>; };
+      unsigned Dim() const override { return Core::FE::dim<Core::FE::CellType::tri3>; };
 
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::tri3; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::tri3; }
 
-      int CubatureDegree(CORE::FE::CellType elementshape) const override;
+      int CubatureDegree(Core::FE::CellType elementshape) const override;
 
     };  // class Tri3IntegrationCell
 
@@ -121,15 +121,15 @@ namespace CORE::GEO
     {
      public:
       Quad4IntegrationCell(Point::PointPosition position,
-          const CORE::LINALG::SerialDenseMatrix& xyz, const std::vector<Point*>& points,
+          const Core::LinAlg::SerialDenseMatrix& xyz, const std::vector<Point*>& points,
           VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      unsigned Dim() const override { return CORE::FE::dim<CORE::FE::CellType::quad4>; };
+      unsigned Dim() const override { return Core::FE::dim<Core::FE::CellType::quad4>; };
 
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::quad4; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::quad4; }
 
-      int CubatureDegree(CORE::FE::CellType elementshape) const override;
+      int CubatureDegree(Core::FE::CellType elementshape) const override;
 
     };  // class Tri3IntegrationCell
 
@@ -138,7 +138,7 @@ namespace CORE::GEO
     class Hex8IntegrationCell : public IntegrationCell
     {
      public:
-      Hex8IntegrationCell(Point::PointPosition position, const CORE::LINALG::SerialDenseMatrix& xyz,
+      Hex8IntegrationCell(Point::PointPosition position, const Core::LinAlg::SerialDenseMatrix& xyz,
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell)
       {
@@ -146,9 +146,9 @@ namespace CORE::GEO
 
       unsigned Dim() const override { return 3; };
 
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::hex8; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::hex8; }
 
-      int CubatureDegree(CORE::FE::CellType elementshape) const override;
+      int CubatureDegree(Core::FE::CellType elementshape) const override;
 
       // virtual double Volume() const;
 
@@ -160,7 +160,7 @@ namespace CORE::GEO
     class Tet4IntegrationCell : public IntegrationCell
     {
      public:
-      Tet4IntegrationCell(Point::PointPosition position, const CORE::LINALG::SerialDenseMatrix& xyz,
+      Tet4IntegrationCell(Point::PointPosition position, const Core::LinAlg::SerialDenseMatrix& xyz,
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell)
       {
@@ -168,9 +168,9 @@ namespace CORE::GEO
 
       unsigned Dim() const override { return 3; };
 
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::tet4; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::tet4; }
 
-      int CubatureDegree(CORE::FE::CellType elementshape) const override;
+      int CubatureDegree(Core::FE::CellType elementshape) const override;
 
       // virtual double Volume() const;
     };
@@ -181,7 +181,7 @@ namespace CORE::GEO
     {
      public:
       Wedge6IntegrationCell(Point::PointPosition position,
-          const CORE::LINALG::SerialDenseMatrix& xyz, const std::vector<Point*>& points,
+          const Core::LinAlg::SerialDenseMatrix& xyz, const std::vector<Point*>& points,
           VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell)
       {
@@ -189,9 +189,9 @@ namespace CORE::GEO
 
       unsigned Dim() const override { return 3; };
 
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::wedge6; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::wedge6; }
 
-      int CubatureDegree(CORE::FE::CellType elementshape) const override;
+      int CubatureDegree(Core::FE::CellType elementshape) const override;
 
       // virtual double Volume() const;
      private:
@@ -203,7 +203,7 @@ namespace CORE::GEO
     {
      public:
       Pyramid5IntegrationCell(Point::PointPosition position,
-          const CORE::LINALG::SerialDenseMatrix& xyz, const std::vector<Point*>& points,
+          const Core::LinAlg::SerialDenseMatrix& xyz, const std::vector<Point*>& points,
           VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell)
       {
@@ -211,16 +211,16 @@ namespace CORE::GEO
 
       unsigned Dim() const override { return 3; };
 
-      CORE::FE::CellType Shape() const override { return CORE::FE::CellType::pyramid5; }
+      Core::FE::CellType Shape() const override { return Core::FE::CellType::pyramid5; }
 
-      int CubatureDegree(CORE::FE::CellType elementshape) const override;
+      int CubatureDegree(Core::FE::CellType elementshape) const override;
 
       // virtual double Volume() const;
      private:
     };  // class Pyramid5IntegrationCell
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

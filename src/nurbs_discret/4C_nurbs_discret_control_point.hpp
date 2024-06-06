@@ -23,18 +23,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
-  namespace NURBS
+  namespace Nurbs
   {
-    class ControlPointType : public CORE::COMM::ParObjectType
+    class ControlPointType : public Core::Communication::ParObjectType
     {
      public:
       std::string Name() const override { return "ControlPointType"; }
 
       static ControlPointType& Instance() { return instance_; };
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
      private:
       static ControlPointType instance_;
@@ -53,7 +53,7 @@ namespace DRT
     not a mesh point coordinate.
 
     */
-    class ControlPoint : public CORE::Nodes::Node
+    class ControlPoint : public Core::Nodes::Node
     {
      public:
       //! @name Enums and Friends
@@ -85,14 +85,14 @@ namespace DRT
       \param old (in): The control point to copy
 
       */
-      ControlPoint(const DRT::NURBS::ControlPoint& old);
+      ControlPoint(const Discret::Nurbs::ControlPoint& old);
 
       /*!
       \brief Deep copy the derived class and return
              pointer to it
 
       */
-      DRT::NURBS::ControlPoint* Clone() const override;
+      Discret::Nurbs::ControlPoint* Clone() const override;
 
 
       /*!
@@ -116,7 +116,7 @@ namespace DRT
       \param data (in/out): a char vector to pack the data into
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -155,9 +155,9 @@ namespace DRT
 
     };  // class ControlPoint
 
-  }  // namespace NURBS
+  }  // namespace Nurbs
 
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

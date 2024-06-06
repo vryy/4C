@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -35,11 +35,11 @@ namespace MAT
     {
      public:
       //! constructor
-      explicit Electrode(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit Electrode(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
 
       //! create instance of electrode material
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! @name parameters for electrode material
       //! @{
@@ -83,19 +83,19 @@ namespace MAT
      private:
       //! convert string to model for half cell open circuit potential
       [[nodiscard]] OCPModels string_to_ocp_model(const std::string& ocpmodelstring) const;
-    };  // class MAT::PAR::Electrode
+    };  // class Mat::PAR::Electrode
   }     // namespace PAR
 
 
   /*----------------------------------------------------------------------*/
-  class ElectrodeType : public CORE::COMM::ParObjectType
+  class ElectrodeType : public Core::Communication::ParObjectType
   {
    public:
     [[nodiscard]] std::string Name() const override { return "ElectrodeType"; };
 
     static ElectrodeType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ElectrodeType instance_;
@@ -111,7 +111,7 @@ namespace MAT
     Electrode() = default;
 
     //! construct electrode material with specific material parameters
-    explicit Electrode(MAT::PAR::Electrode* params);
+    explicit Electrode(Mat::PAR::Electrode* params);
 
     //! @name packing and unpacking
     /*!
@@ -135,7 +135,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -152,13 +152,13 @@ namespace MAT
     //@}
 
     //! return material type
-    [[nodiscard]] CORE::Materials::MaterialType MaterialType() const override
+    [[nodiscard]] Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_electrode;
+      return Core::Materials::m_electrode;
     };
 
     //! clone electrode material
-    [[nodiscard]] Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new Electrode(*this));
     };
@@ -292,13 +292,13 @@ namespace MAT
 
    protected:
     //! return material parameters
-    [[nodiscard]] CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     //! my material parameters
-    MAT::PAR::Electrode* params_;
+    Mat::PAR::Electrode* params_;
   };
-}  // namespace MAT
+}  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

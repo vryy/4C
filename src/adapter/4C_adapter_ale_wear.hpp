@@ -34,7 +34,7 @@ namespace ALE
 
 /*----------------------------------------------------------------------------*/
 /* class definitions */
-namespace ADAPTER
+namespace Adapter
 {
   class AleWearWrapper : public AleWrapper
   {
@@ -60,7 +60,7 @@ namespace ADAPTER
     Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
 
   };  // class AleWearWrapper
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -18,9 +18,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct FBarPreparationData
   {
     /// jacobian mapping evaluated at element centroid
@@ -40,7 +40,7 @@ namespace DRT::ELEMENTS
    *
    * @tparam celltype
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct FBarFormulation
   {
     static constexpr bool has_gauss_point_history = false;
@@ -52,7 +52,7 @@ namespace DRT::ELEMENTS
 
 
     static FBarPreparationData<celltype> Prepare(
-        const CORE::Elements::Element& ele, const ElementNodes<celltype>& nodal_coordinates)
+        const Core::Elements::Element& ele, const ElementNodes<celltype>& nodal_coordinates)
     {
       const JacobianMapping<celltype> jacobian_mapping_centroid =
           EvaluateJacobianMappingCentroid(nodal_coordinates);
@@ -62,9 +62,9 @@ namespace DRT::ELEMENTS
     }
 
     template <typename Evaluator>
-    static auto Evaluate(const CORE::Elements::Element& ele,
+    static auto Evaluate(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& nodal_coordinates,
-        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
         const FBarPreparationData<celltype>& preparation_data, Evaluator evaluator)
@@ -98,23 +98,23 @@ namespace DRT::ELEMENTS
       const SpatialMaterialMapping<celltype> spatial_material_mapping_bar =
           EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates, fbar_factor);
 
-      const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> cauchygreen_bar =
+      const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> cauchygreen_bar =
           EvaluateCauchyGreen(spatial_material_mapping_bar);
 
-      CORE::LINALG::Matrix<DETAIL::num_str<celltype>, 1> gl_strain_bar =
+      Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> gl_strain_bar =
           EvaluateGreenLagrangeStrain(cauchygreen_bar);
 
       return evaluator(
           spatial_material_mapping_bar.deformation_gradient_, gl_strain_bar, linearization);
     }
 
-    static inline CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
-    evaluate_d_deformation_gradient_d_displacements(const CORE::Elements::Element& ele,
+    static inline Core::LinAlg::Matrix<9, Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
+    evaluate_d_deformation_gradient_d_displacements(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
-        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
             deformation_gradient,
         const FBarPreparationData<celltype>& preparation_data)
     {
@@ -123,27 +123,27 @@ namespace DRT::ELEMENTS
           "implemented");
     }
 
-    static inline CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>
-    evaluate_d_deformation_gradient_d_xi(const CORE::Elements::Element& ele,
+    static inline Core::LinAlg::Matrix<9, Core::FE::dim<celltype>>
+    evaluate_d_deformation_gradient_d_xi(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
-        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
             deformation_gradient,
         const FBarPreparationData<celltype>& preparation_data)
     {
       FOUR_C_THROW("This derivative of the deformation gradient w.r.t. xi is not implemented");
     }
 
-    static inline CORE::LINALG::Matrix<9,
-        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
-    evaluate_d_deformation_gradient_d_displacements_d_xi(const CORE::Elements::Element& ele,
+    static inline Core::LinAlg::Matrix<9,
+        Core::FE::num_nodes<celltype> * Core::FE::dim<celltype> * Core::FE::dim<celltype>>
+    evaluate_d_deformation_gradient_d_displacements_d_xi(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
-        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
             deformation_gradient,
         const FBarPreparationData<celltype>& preparation_data)
     {
@@ -152,8 +152,8 @@ namespace DRT::ELEMENTS
           "not implemented");
     }
 
-    static CORE::LINALG::Matrix<DETAILS::num_str<celltype>,
-        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+    static Core::LinAlg::Matrix<Details::num_str<celltype>,
+        Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
     GetLinearBOperator(const FBarLinearizationContainer<celltype>& linearization)
     {
       return linearization.Bop;
@@ -162,22 +162,22 @@ namespace DRT::ELEMENTS
     static void add_internal_force_vector(const FBarLinearizationContainer<celltype>& linearization,
         const Stress<celltype>& stress, const double integration_factor,
         const FBarPreparationData<celltype>& preparation_data,
-        CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, 1>&
+        Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>, 1>&
             force_vector)
     {
-      DRT::ELEMENTS::add_internal_force_vector(
+      Discret::ELEMENTS::add_internal_force_vector(
           linearization.Bop, stress, integration_factor / linearization.fbar_factor, force_vector);
     }
 
     static void AddStiffnessMatrix(const FBarLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
         const double integration_factor, const FBarPreparationData<celltype>& preparation_data,
-        CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>,
-            CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>& stiffness_matrix)
+        Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>,
+            Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>& stiffness_matrix)
     {
-      DRT::ELEMENTS::AddElasticStiffnessMatrix(linearization.Bop, stress,
+      Discret::ELEMENTS::AddElasticStiffnessMatrix(linearization.Bop, stress,
           integration_factor * linearization.fbar_factor, stiffness_matrix);
-      DRT::ELEMENTS::AddGeometricStiffnessMatrix(jacobian_mapping.N_XYZ_, stress,
+      Discret::ELEMENTS::AddGeometricStiffnessMatrix(jacobian_mapping.N_XYZ_, stress,
           integration_factor / linearization.fbar_factor, stiffness_matrix);
 
       // additional stiffness matrix needed for fbar method
@@ -186,11 +186,11 @@ namespace DRT::ELEMENTS
     }
   };
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   using FBarSolidIntegrator = SolidEleCalc<celltype, FBarFormulation<celltype>>;
 
 
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 #endif

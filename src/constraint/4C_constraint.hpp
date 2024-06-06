@@ -23,12 +23,12 @@ Thomas Kloeppel
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
 }
@@ -60,7 +60,7 @@ namespace CONSTRAINTS
     takes care of the constraint IDs.
     */
 
-    Constraint(Teuchos::RCP<DRT::Discretization> discr,  ///< discretization constraint lives on
+    Constraint(Teuchos::RCP<Discret::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname,  ///< Name of condition to creat constraint from
         int& minID,                        ///< minimum constraint or monitor ID so far
         int& maxID                         ///< maximum constraint or monitor ID so far
@@ -70,7 +70,7 @@ namespace CONSTRAINTS
     \brief Constructor of a constraint based on a conditions with a given name.
     */
 
-    Constraint(Teuchos::RCP<DRT::Discretization> discr,  ///< discretization constraint lives on
+    Constraint(Teuchos::RCP<Discret::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname  ///< Name of condition to create constraints from
     );
 
@@ -98,10 +98,10 @@ namespace CONSTRAINTS
     void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
         Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by
@@ -119,8 +119,8 @@ namespace CONSTRAINTS
     std::vector<int> GetActiveCondID();
 
    protected:
-    Teuchos::RCP<DRT::Discretization> actdisc_;  ///< standard discretization
-    std::vector<CORE::Conditions::Condition*>
+    Teuchos::RCP<Discret::Discretization> actdisc_;  ///< standard discretization
+    std::vector<Core::Conditions::Condition*>
         constrcond_;         ///< conditions, that define the constraint (all of the same kind)
     ConstrType constrtype_;  ///< constraint type
     std::map<int, double>
@@ -141,10 +141,10 @@ namespace CONSTRAINTS
     void evaluate_constraint(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
         Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by

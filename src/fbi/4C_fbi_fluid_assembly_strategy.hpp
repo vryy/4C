@@ -28,14 +28,14 @@ class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class SparseOperator;
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace CORE::LINALG
-namespace DRT
+}  // namespace Core::LinAlg
+namespace Discret
 {
   class Discretization;
 }
@@ -74,8 +74,8 @@ namespace FBI
        * \param[in] lmrowowner vector with owner procs of row gids
        * \param[in] lmcol vector with column gids
        */
-      virtual void AssembleFluidMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> cff, int elegid,
-          const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix& elemat,
+      virtual void AssembleFluidMatrix(Teuchos::RCP<Core::LinAlg::SparseOperator> cff, int elegid,
+          const std::vector<int>& lmstride, const Core::LinAlg::SerialDenseMatrix& elemat,
           const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
           const std::vector<int>& lmcol);
 
@@ -98,15 +98,15 @@ namespace FBI
        * matrix relating DOFs in the first discretization to DOFs in the second discretization
        *
        */
-      virtual void Assemble(const DRT::Discretization& discretization1,
-          const DRT::Discretization& discretization2, std::vector<int> const& elegid,
-          std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
-          std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
+      virtual void Assemble(const Discret::Discretization& discretization1,
+          const Discret::Discretization& discretization2, std::vector<int> const& elegid,
+          std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
+          std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
           Teuchos::RCP<Epetra_FEVector>& f1, Teuchos::RCP<Epetra_FEVector>& f2,
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& c11,
-          Teuchos::RCP<CORE::LINALG::SparseOperator> c22,
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& c12,
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& c21);
+          Teuchos::RCP<Core::LinAlg::SparseMatrix>& c11,
+          Teuchos::RCP<Core::LinAlg::SparseOperator> c22,
+          Teuchos::RCP<Core::LinAlg::SparseMatrix>& c12,
+          Teuchos::RCP<Core::LinAlg::SparseMatrix>& c21);
     };
   }  // namespace UTILS
 }  // namespace FBI

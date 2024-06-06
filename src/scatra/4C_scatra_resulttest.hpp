@@ -21,17 +21,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace SCATRA
+namespace ScaTra
 {
   // forward declaration
   class ScaTraTimIntImpl;
@@ -42,7 +42,7 @@ namespace SCATRA
     \author gjb
     \date 07/08
   */
-  class ScaTraResultTest : public CORE::UTILS::ResultTest
+  class ScaTraResultTest : public Core::UTILS::ResultTest
   {
    public:
     /*!
@@ -55,15 +55,15 @@ namespace SCATRA
     /*!
       Possible position flags is only "phi"
      */
-    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
     //! test special quantity not associated with a particular element or node
-    void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    protected:
     //! get nodal result to be tested
     virtual double result_node(const std::string quantity,  //! name of quantity to be tested
-        CORE::Nodes::Node* node  //! node carrying the result to be tested
+        Core::Nodes::Node* node  //! node carrying the result to be tested
     ) const;
 
     //! get special result to be tested
@@ -75,7 +75,7 @@ namespace SCATRA
 
    private:
   };
-}  // namespace SCATRA
+}  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

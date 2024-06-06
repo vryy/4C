@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   enum ActionType
   {
@@ -240,7 +240,7 @@ namespace CORE::Elements
     }
   };  // ActionType2String
 
-}  // namespace CORE::Elements
+}  // namespace Core::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

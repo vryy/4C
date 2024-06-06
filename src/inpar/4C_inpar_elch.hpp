@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 
-namespace INPAR
+namespace Inpar
 {
-  namespace ELCH
+  namespace ElCh
   {
     /// possible types of moving boundary simulation
     enum ElchMovingBoundary
@@ -88,9 +88,9 @@ namespace INPAR
 
     /// set specific elch conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
-  }  // namespace ELCH
-}  // namespace INPAR
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
+  }  // namespace ElCh
+}  // namespace Inpar
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

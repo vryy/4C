@@ -26,23 +26,23 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Group::Group(Teuchos::ParameterList& printParams, Teuchos::ParameterList& grpOptionParams,
+NOX::Nln::Group::Group(Teuchos::ParameterList& printParams, Teuchos::ParameterList& grpOptionParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x,
     const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys)
     : ::NOX::Epetra::Group(printParams, i, x, linSys),
       skipUpdateX_(false),
-      corr_type_(NOX::NLN::CorrectionType::vague),
-      prePostOperatorPtr_(Teuchos::rcp(new NOX::NLN::GROUP::PrePostOperator(grpOptionParams)))
+      corr_type_(NOX::Nln::CorrectionType::vague),
+      prePostOperatorPtr_(Teuchos::rcp(new NOX::Nln::GROUP::PrePostOperator(grpOptionParams)))
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Group::Group(const NOX::NLN::Group& source, ::NOX::CopyType type)
+NOX::Nln::Group::Group(const NOX::Nln::Group& source, ::NOX::CopyType type)
     : ::NOX::Epetra::Group(source, type),
       skipUpdateX_(false),
-      corr_type_(NOX::NLN::CorrectionType::vague),
+      corr_type_(NOX::Nln::CorrectionType::vague),
       prePostOperatorPtr_(source.prePostOperatorPtr_)
 {
   switch (type)
@@ -61,25 +61,25 @@ NOX::NLN::Group::Group(const NOX::NLN::Group& source, ::NOX::CopyType type)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::Group::clone(::NOX::CopyType type) const
+Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::Group::clone(::NOX::CopyType type) const
 {
-  Teuchos::RCP<::NOX::Abstract::Group> newgrp = Teuchos::rcp(new NOX::NLN::Group(*this, type));
+  Teuchos::RCP<::NOX::Abstract::Group> newgrp = Teuchos::rcp(new NOX::Nln::Group(*this, type));
   return newgrp;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group& NOX::NLN::Group::operator=(const ::NOX::Abstract::Group& source)
+::NOX::Abstract::Group& NOX::Nln::Group::operator=(const ::NOX::Abstract::Group& source)
 {
   return operator=(dynamic_cast<const ::NOX::Epetra::Group&>(source));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group& NOX::NLN::Group::operator=(const ::NOX::Epetra::Group& source)
+::NOX::Abstract::Group& NOX::Nln::Group::operator=(const ::NOX::Epetra::Group& source)
 {
   ::NOX::Epetra::Group::operator=(source);
-  const NOX::NLN::Group& nln_src = dynamic_cast<const NOX::NLN::Group&>(source);
+  const NOX::Nln::Group& nln_src = dynamic_cast<const NOX::Nln::Group&>(source);
 
   this->skipUpdateX_ = nln_src.skipUpdateX_;
   this->corr_type_ = nln_src.corr_type_;
@@ -90,20 +90,20 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::NLN::Group::clone(::NOX::CopyType type
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::resetIsValid()
+void NOX::Nln::Group::resetIsValid()
 {
   ::NOX::Epetra::Group::resetIsValid();
   ev_.isvalid_ = false;
-  corr_type_ = NOX::NLN::CorrectionType::vague;
+  corr_type_ = NOX::Nln::CorrectionType::vague;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::computeX(
+void NOX::Nln::Group::computeX(
     const ::NOX::Abstract::Group& grp, const ::NOX::Abstract::Vector& d, double step)
 {
   // Cast to appropriate type, then call the "native" computeX
-  const NOX::NLN::Group* nlngrp = dynamic_cast<const NOX::NLN::Group*>(&grp);
+  const NOX::Nln::Group* nlngrp = dynamic_cast<const NOX::Nln::Group*>(&grp);
   if (nlngrp == nullptr) throw_error("computeX", "dyn_cast to nox_nln_group failed!");
   const ::NOX::Epetra::Vector& epetrad = dynamic_cast<const ::NOX::Epetra::Vector&>(d);
 
@@ -113,8 +113,8 @@ void NOX::NLN::Group::computeX(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::computeX(
-    const NOX::NLN::Group& grp, const ::NOX::Epetra::Vector& d, double step)
+void NOX::Nln::Group::computeX(
+    const NOX::Nln::Group& grp, const ::NOX::Epetra::Vector& d, double step)
 {
   skipUpdateX_ = false;
   prePostOperatorPtr_->runPreComputeX(grp, d.getEpetraVector(), step, *this);
@@ -131,7 +131,7 @@ void NOX::NLN::Group::computeX(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Group::setF(Teuchos::RCP<::NOX::Epetra::Vector> Fptr)
+::NOX::Abstract::Group::ReturnType NOX::Nln::Group::setF(Teuchos::RCP<::NOX::Epetra::Vector> Fptr)
 {
   if (Fptr == Teuchos::null or Fptr->getEpetraVector().Map().NumGlobalElements() == 0)
     return ::NOX::Abstract::Group::BadDependency;
@@ -144,7 +144,7 @@ void NOX::NLN::Group::computeX(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Group::setJacobianOperator(
+::NOX::Abstract::Group::ReturnType NOX::Nln::Group::setJacobianOperator(
     const Teuchos::RCP<const Epetra_Operator> jacOperator)
 {
   if (jacOperator == Teuchos::null or jacOperator->OperatorRangeMap().NumGlobalElements() == 0)
@@ -158,15 +158,15 @@ void NOX::NLN::Group::computeX(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::resetX() { xVector.init(0.0); }
+void NOX::Nln::Group::resetX() { xVector.init(0.0); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpdateX; }
+void NOX::Nln::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpdateX; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeF()
+::NOX::Abstract::Group::ReturnType NOX::Nln::Group::computeF()
 {
   prePostOperatorPtr_->runPreComputeF(RHSVector.getEpetraVector(), *this);
 
@@ -177,7 +177,7 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
 
   if (not success)
   {
-    throw "NOX::NLN::Group::computeF() - fill failed";
+    throw "NOX::Nln::Group::computeF() - fill failed";
   }
 
   isValidRHS = true;
@@ -188,7 +188,7 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeFandJacobian()
+::NOX::Abstract::Group::ReturnType NOX::Nln::Group::computeFandJacobian()
 {
   // initialize the return type
   ::NOX::Abstract::Group::ReturnType ret = ::NOX::Abstract::Group::Failed;
@@ -204,8 +204,8 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
     isValidRHS = false;
     prePostOperatorPtr_->runPreComputeF(RHSVector.getEpetraVector(), *this);
     bool status = false;
-    Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
-        Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this));
+    Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
+        Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this));
 
     if (nlnSharedLinearSystem.is_null())
       throw_error("computeFandJacobian", "Dynamic cast of the shared linear system failed!");
@@ -231,7 +231,7 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Group::compute_element_volumes(
+::NOX::Abstract::Group::ReturnType NOX::Nln::Group::compute_element_volumes(
     Teuchos::RCP<Epetra_Vector>& ele_vols) const
 {
   const bool success =
@@ -242,7 +242,7 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Group::compute_trial_element_volumes(
+::NOX::Abstract::Group::ReturnType NOX::Nln::Group::compute_trial_element_volumes(
     Teuchos::RCP<Epetra_Vector>& ele_vols, const ::NOX::Abstract::Vector& dir, double step)
 {
   if (tmpVectorPtr.is_null() or !tmpVectorPtr->Map().SameAs(xVector.getEpetraVector().Map()) or
@@ -262,7 +262,7 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Group::applyJacobianInverse(Teuchos::ParameterList& p,
+::NOX::Abstract::Group::ReturnType NOX::Nln::Group::applyJacobianInverse(Teuchos::ParameterList& p,
     const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   prePostOperatorPtr_->run_pre_apply_jacobian_inverse(input, result, xVector, *this);
@@ -277,7 +277,7 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Group::applyJacobianBlock(
+::NOX::Abstract::Group::ReturnType NOX::Nln::Group::applyJacobianBlock(
     const ::NOX::Epetra::Vector& input, Teuchos::RCP<::NOX::Epetra::Vector>& result, unsigned rbid,
     unsigned cbid) const
 {
@@ -286,8 +286,8 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
         "It is not possible to access the Jacobian since it has not yet "
         "been evaluated.");
 
-  Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this), true);
+  Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this), true);
 
   const bool success = nlnSharedLinearSystem->applyJacobianBlock(input, result, rbid, cbid);
 
@@ -296,13 +296,13 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Group::compute_correction_system(
-    const enum NOX::NLN::CorrectionType type)
+::NOX::Abstract::Group::ReturnType NOX::Nln::Group::compute_correction_system(
+    const enum NOX::Nln::CorrectionType type)
 {
   prePostOperatorPtr_->runPreComputeF(RHSVector.getEpetraVector(), *this);
 
-  Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this));
+  Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this));
 
   if (nlnSharedLinearSystem.is_null())
     FOUR_C_THROW("Dynamic cast of the shared linear system failed!");
@@ -326,23 +326,23 @@ void NOX::NLN::Group::setSkipUpdateX(bool skipUpdateX) { skipUpdateX_ = skipUpda
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const NOX::NLN::Interface::Required> NOX::NLN::Group::get_nln_req_interface_ptr() const
+Teuchos::RCP<const NOX::Nln::Interface::Required> NOX::Nln::Group::get_nln_req_interface_ptr() const
 {
-  Teuchos::RCP<NOX::NLN::Interface::Required> userInterfaceNlnPtr =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(userInterfacePtr);
+  Teuchos::RCP<NOX::Nln::Interface::Required> userInterfaceNlnPtr =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Required>(userInterfacePtr);
 
   if (userInterfaceNlnPtr.is_null())
     throw_error("get_nln_req_interface_ptr",
-        "Dynamic cast of the userInterfacePtr to NOX::NLN::Interface::Required failed!");
+        "Dynamic cast of the userInterfacePtr to NOX::Nln::Interface::Required failed!");
 
   return userInterfaceNlnPtr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const std::vector<double>> NOX::NLN::Group::GetRHSNorms(
+Teuchos::RCP<const std::vector<double>> NOX::Nln::Group::GetRHSNorms(
     const std::vector<::NOX::Abstract::Vector::NormType>& type,
-    const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
+    const std::vector<NOX::Nln::StatusTest::QuantityType>& chQ,
     Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale) const
 {
   if (scale.is_null())
@@ -365,7 +365,7 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::Group::GetRHSNorms(
       std::ostringstream msg;
       msg << "The desired quantity"
              " for the \"NormF\" Status Test could not be found! (enum="
-          << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i]) << ")"
+          << chQ[i] << " | " << NOX::Nln::StatusTest::QuantityType2String(chQ[i]) << ")"
           << std::endl;
       throw_error("GetRHSNorms", msg.str());
     }
@@ -376,9 +376,9 @@ Teuchos::RCP<const std::vector<double>> NOX::NLN::Group::GetRHSNorms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<double>> NOX::NLN::Group::get_solution_update_rms(
+Teuchos::RCP<std::vector<double>> NOX::Nln::Group::get_solution_update_rms(
     const ::NOX::Abstract::Vector& xOld, const std::vector<double>& aTol,
-    const std::vector<double>& rTol, const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
+    const std::vector<double>& rTol, const std::vector<NOX::Nln::StatusTest::QuantityType>& chQ,
     const std::vector<bool>& disable_implicit_weighting) const
 {
   const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
@@ -398,7 +398,7 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::Group::get_solution_update_rms(
       std::ostringstream msg;
       msg << "The desired quantity"
              " for the \"NormWRMS\" Status Test could not be found! (enum="
-          << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i]) << ")"
+          << chQ[i] << " | " << NOX::Nln::StatusTest::QuantityType2String(chQ[i]) << ")"
           << std::endl;
       throw_error("get_solution_update_rms", msg.str());
     }
@@ -409,7 +409,7 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::Group::get_solution_update_rms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::Group::GetTrialUpdateNorm(const ::NOX::Abstract::Vector& dir,
+double NOX::Nln::Group::GetTrialUpdateNorm(const ::NOX::Abstract::Vector& dir,
     const ::NOX::Abstract::Vector::NormType normtype, const StatusTest::QuantityType quantity,
     const StatusTest::NormUpdate::ScaleType scale) const
 {
@@ -440,7 +440,7 @@ double NOX::NLN::Group::GetTrialUpdateNorm(const ::NOX::Abstract::Vector& dir,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<double>> NOX::NLN::Group::get_solution_update_norms(
+Teuchos::RCP<std::vector<double>> NOX::Nln::Group::get_solution_update_norms(
     const ::NOX::Abstract::Vector& xOld, const std::vector<::NOX::Abstract::Vector::NormType>& type,
     const std::vector<StatusTest::QuantityType>& chQ,
     Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType>> scale) const
@@ -467,7 +467,7 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::Group::get_solution_update_norms(
       std::ostringstream msg;
       msg << "The desired quantity"
              " for the \"NormIncr\" Status Test could not be found! (enum="
-          << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i]) << ")"
+          << chQ[i] << " | " << NOX::Nln::StatusTest::QuantityType2String(chQ[i]) << ")"
           << std::endl;
       throw_error("get_solution_update_norms", msg.str());
     }
@@ -478,7 +478,7 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::Group::get_solution_update_norms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<double>> NOX::NLN::Group::get_previous_solution_norms(
+Teuchos::RCP<std::vector<double>> NOX::Nln::Group::get_previous_solution_norms(
     const ::NOX::Abstract::Vector& xOld, const std::vector<::NOX::Abstract::Vector::NormType>& type,
     const std::vector<StatusTest::QuantityType>& chQ,
     Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType>> scale) const
@@ -505,7 +505,7 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::Group::get_previous_solution_norms(
       std::ostringstream msg;
       msg << "The desired quantity"
              " for the \"NormUpdate\" Status Test could not be found! (enum="
-          << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i]) << ")"
+          << chQ[i] << " | " << NOX::Nln::StatusTest::QuantityType2String(chQ[i]) << ")"
           << std::endl;
       throw_error("get_previous_solution_norms", msg.str());
     }
@@ -516,7 +516,7 @@ Teuchos::RCP<std::vector<double>> NOX::NLN::Group::get_previous_solution_norms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::Group::GetModelValue(const enum MeritFunction::MeritFctName merit_func_type) const
+double NOX::Nln::Group::GetModelValue(const enum MeritFunction::MeritFctName merit_func_type) const
 {
   return get_nln_req_interface_ptr()->GetModelValue(
       xVector.getEpetraVector(), RHSVector.getEpetraVector(), merit_func_type);
@@ -524,10 +524,10 @@ double NOX::NLN::Group::GetModelValue(const enum MeritFunction::MeritFctName mer
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::Group::get_linearized_model_terms(const ::NOX::Abstract::Vector& dir,
-    const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
-    const enum NOX::NLN::MeritFunction::LinOrder linorder,
-    const enum NOX::NLN::MeritFunction::LinType lintype) const
+double NOX::Nln::Group::get_linearized_model_terms(const ::NOX::Abstract::Vector& dir,
+    const enum NOX::Nln::MeritFunction::MeritFctName mf_type,
+    const enum NOX::Nln::MeritFunction::LinOrder linorder,
+    const enum NOX::Nln::MeritFunction::LinType lintype) const
 {
   const ::NOX::Epetra::Vector& dir_nox_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
   const Epetra_Vector& dir_epetra = dir_nox_epetra.getEpetraVector();
@@ -538,7 +538,7 @@ double NOX::NLN::Group::get_linearized_model_terms(const ::NOX::Abstract::Vector
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::reset_pre_post_operator(
+void NOX::Nln::Group::reset_pre_post_operator(
     Teuchos::ParameterList& grpOptionParams, const bool& resetIsValidFlags)
 {
   if (resetIsValidFlags) resetIsValid();
@@ -548,13 +548,13 @@ void NOX::NLN::Group::reset_pre_post_operator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::reset_lin_sys_pre_post_operator(
+void NOX::Nln::Group::reset_lin_sys_pre_post_operator(
     Teuchos::ParameterList& linearSolverParams, const bool& resetIsValidFlags)
 {
   if (resetIsValidFlags) resetIsValid();
 
-  Teuchos::RCP<NOX::NLN::LinearSystem> nlnLinsysPtr =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(getLinearSystem());
+  Teuchos::RCP<NOX::Nln::LinearSystem> nlnLinsysPtr =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(getLinearSystem());
 
   if (nlnLinsysPtr.is_null())
     throw_error("reset_lin_sys_pre_post_operator", "The linear system cast failed!");
@@ -564,8 +564,8 @@ void NOX::NLN::Group::reset_lin_sys_pre_post_operator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::adjust_pseudo_time_step(double& delta, const double& stepSize,
-    const ::NOX::Abstract::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver)
+void NOX::Nln::Group::adjust_pseudo_time_step(double& delta, const double& stepSize,
+    const ::NOX::Abstract::Vector& dir, const NOX::Nln::Solver::PseudoTransient& ptcsolver)
 {
   const ::NOX::Epetra::Vector& dirEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
   adjust_pseudo_time_step(delta, stepSize, dirEpetra, ptcsolver);
@@ -573,14 +573,14 @@ void NOX::NLN::Group::adjust_pseudo_time_step(double& delta, const double& stepS
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::adjust_pseudo_time_step(double& delta, const double& stepSize,
-    const ::NOX::Epetra::Vector& dir, const NOX::NLN::Solver::PseudoTransient& ptcsolver)
+void NOX::Nln::Group::adjust_pseudo_time_step(double& delta, const double& stepSize,
+    const ::NOX::Epetra::Vector& dir, const NOX::Nln::Solver::PseudoTransient& ptcsolver)
 {
   if (!isF() or !isJacobian())
     throw_error("AdjustPseudoTimeStep", "F and/or the jacobian are not evaluated!");
 
-  Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this));
+  Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this));
 
   if (nlnSharedLinearSystem.is_null())
     throw_error("AdjustPseudoTimeStep()", "Dynamic cast of the shared linear system failed!");
@@ -590,26 +590,26 @@ void NOX::NLN::Group::adjust_pseudo_time_step(double& delta, const double& stepS
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> NOX::NLN::Group::get_lumped_mass_matrix_ptr() const
+Teuchos::RCP<const Epetra_Vector> NOX::Nln::Group::get_lumped_mass_matrix_ptr() const
 {
-  return Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(userInterfacePtr)
+  return Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Required>(userInterfacePtr)
       ->get_lumped_mass_matrix_ptr();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> NOX::NLN::Group::get_contributions_from_element_level()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> NOX::Nln::Group::get_contributions_from_element_level()
 {
-  return Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>(userInterfacePtr)
+  return Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Jacobian>(userInterfacePtr)
       ->calc_jacobian_contributions_from_element_level_for_ptc();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Group::DestroyJacobian()
+bool NOX::Nln::Group::DestroyJacobian()
 {
-  Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this));
+  Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this));
 
   isValidJacobian = false;
 
@@ -618,7 +618,7 @@ bool NOX::NLN::Group::DestroyJacobian()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Group::isJacobian() const
+bool NOX::Nln::Group::isJacobian() const
 {
   if (isValidJacobian and not sharedLinearSystem.isOwner(this)) sharedLinearSystem.getObject(this);
 
@@ -627,28 +627,28 @@ bool NOX::NLN::Group::isJacobian() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::throw_error(
+void NOX::Nln::Group::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   std::ostringstream msg;
-  msg << "ERROR - NOX::NLN::Group::" << functionName << " - " << errorMsg << std::endl;
+  msg << "ERROR - NOX::Nln::Group::" << functionName << " - " << errorMsg << std::endl;
 
   FOUR_C_THROW(msg.str());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_BlockMap& NOX::NLN::Group::getDofMap() const
+const Epetra_BlockMap& NOX::Nln::Group::getDofMap() const
 {
   return xVector.getEpetraVector().Map();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::CreateBackupState(const ::NOX::Abstract::Vector& dir) const
+void NOX::Nln::Group::CreateBackupState(const ::NOX::Abstract::Vector& dir) const
 {
-  Teuchos::RCP<NOX::NLN::Interface::Required> nln_required =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(userInterfacePtr, true);
+  Teuchos::RCP<NOX::Nln::Interface::Required> nln_required =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Required>(userInterfacePtr, true);
 
   const ::NOX::Epetra::Vector* epetra_dir = dynamic_cast<const ::NOX::Epetra::Vector*>(&dir);
   if (not epetra_dir) FOUR_C_THROW("Dynamic cast failed.");
@@ -658,10 +658,10 @@ void NOX::NLN::Group::CreateBackupState(const ::NOX::Abstract::Vector& dir) cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::recover_from_backup_state()
+void NOX::Nln::Group::recover_from_backup_state()
 {
-  Teuchos::RCP<NOX::NLN::Interface::Required> nln_required =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(userInterfacePtr);
+  Teuchos::RCP<NOX::Nln::Interface::Required> nln_required =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Required>(userInterfacePtr);
 
   if (nln_required.is_null()) FOUR_C_THROW("Dynamic cast failed.");
 
@@ -670,37 +670,37 @@ void NOX::NLN::Group::recover_from_backup_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map& NOX::NLN::Group::getJacobianRangeMap(unsigned rbid, unsigned cbid) const
+const Epetra_Map& NOX::Nln::Group::getJacobianRangeMap(unsigned rbid, unsigned cbid) const
 {
   if (not isJacobian())
     FOUR_C_THROW(
         "It is not possible to access the Jacobian since it has not yet "
         "been evaluated.");
 
-  Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this), true);
+  Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this), true);
 
   return nlnSharedLinearSystem->getJacobianRangeMap(rbid, cbid);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> NOX::NLN::Group::get_diagonal_of_jacobian(unsigned diag_bid) const
+Teuchos::RCP<Epetra_Vector> NOX::Nln::Group::get_diagonal_of_jacobian(unsigned diag_bid) const
 {
   if (not isJacobian())
     FOUR_C_THROW(
         "It is not possible to access the Jacobian since it has not yet "
         "been evaluated.");
 
-  Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this), true);
+  Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this), true);
 
   return nlnSharedLinearSystem->get_diagonal_of_jacobian(diag_bid);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::replace_diagonal_of_jacobian(
+void NOX::Nln::Group::replace_diagonal_of_jacobian(
     const Epetra_Vector& new_diag, unsigned diag_bid) const
 {
   if (not isJacobian())
@@ -708,16 +708,16 @@ void NOX::NLN::Group::replace_diagonal_of_jacobian(
         "It is not possible to access the Jacobian since it has not yet "
         "been evaluated.");
 
-  Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this), true);
+  Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this), true);
 
   return nlnSharedLinearSystem->replace_diagonal_of_jacobian(new_diag, diag_bid);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Group::compute_serial_jacobian_condition_number(
-    const NOX::NLN::LinSystem::ConditionNumber condnum_type, bool printOutput)
+::NOX::Abstract::Group::ReturnType NOX::Nln::Group::compute_serial_jacobian_condition_number(
+    const NOX::Nln::LinSystem::ConditionNumber condnum_type, bool printOutput)
 {
   if (isConditionNumber()) return ::NOX::Abstract::Group::Ok;
 
@@ -745,8 +745,8 @@ void NOX::NLN::Group::replace_diagonal_of_jacobian(
     case LinSystem::ConditionNumber::one_norm:
     case LinSystem::ConditionNumber::inf_norm:
     {
-      Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
-          Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(
+      Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
+          Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(
               sharedLinearSystem.getObject(this), true);
 
       conditionNumber =
@@ -770,15 +770,15 @@ void NOX::NLN::Group::replace_diagonal_of_jacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::NLN::Group::compute_serial_jacobian_eigenvalues(
+::NOX::Abstract::Group::ReturnType NOX::Nln::Group::compute_serial_jacobian_eigenvalues(
     bool printOutput)
 {
   if (xVector.getEpetraVector().Comm().NumProc() != 1) FOUR_C_THROW("Works only in serial mode!");
 
   if (ev_.isvalid_) return ::NOX::Abstract::Group::Ok;
 
-  Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this), true);
+  Teuchos::RCP<NOX::Nln::LinearSystem> nlnSharedLinearSystem =
+      Teuchos::rcp_dynamic_cast<NOX::Nln::LinearSystem>(sharedLinearSystem.getObject(this), true);
 
   nlnSharedLinearSystem->compute_serial_eigenvalues_of_jacobian(ev_.realpart_, ev_.imaginarypart_);
 
@@ -799,11 +799,11 @@ void NOX::NLN::Group::replace_diagonal_of_jacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Group::isEigenvalues() const { return ev_.isvalid_; }
+bool NOX::Nln::Group::isEigenvalues() const { return ev_.isvalid_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::get_jacobian_real_eigenvalues() const
+const Core::LinAlg::SerialDenseVector& NOX::Nln::Group::get_jacobian_real_eigenvalues() const
 {
   if (not isEigenvalues()) FOUR_C_THROW("The eigenvalues has not yet been computed!");
   return ev_.realpart_;
@@ -811,7 +811,7 @@ const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::get_jacobian_real_eigenv
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::get_jacobian_imaginary_eigenvalues() const
+const Core::LinAlg::SerialDenseVector& NOX::Nln::Group::get_jacobian_imaginary_eigenvalues() const
 {
   if (not isEigenvalues()) FOUR_C_THROW("The eigenvalues has not yet been computed!");
   return ev_.imaginarypart_;
@@ -819,7 +819,7 @@ const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::get_jacobian_imaginary_e
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::Group::get_jacobian_max_real_eigenvalue() const
+double NOX::Nln::Group::get_jacobian_max_real_eigenvalue() const
 {
   if (not isEigenvalues()) FOUR_C_THROW("The eigenvalues has not yet been computed!");
   return ev_.real_max_;
@@ -827,7 +827,7 @@ double NOX::NLN::Group::get_jacobian_max_real_eigenvalue() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::Group::get_jacobian_min_real_eigenvalue() const
+double NOX::Nln::Group::get_jacobian_min_real_eigenvalue() const
 {
   if (not isEigenvalues()) FOUR_C_THROW("The eigenvalues has not yet been computed!");
   return ev_.real_min_;
@@ -835,7 +835,7 @@ double NOX::NLN::Group::get_jacobian_min_real_eigenvalue() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Group::Eigenvalues& NOX::NLN::Group::Eigenvalues::operator=(const Eigenvalues& src)
+NOX::Nln::Group::Eigenvalues& NOX::Nln::Group::Eigenvalues::operator=(const Eigenvalues& src)
 {
   if (not src.isvalid_)
   {
@@ -859,7 +859,7 @@ NOX::NLN::Group::Eigenvalues& NOX::NLN::Group::Eigenvalues::operator=(const Eige
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::getDofsFromElements(
+void NOX::Nln::Group::getDofsFromElements(
     const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const
 {
   get_nln_req_interface_ptr()->getDofsFromElements(my_ele_gids, my_ele_dofs);

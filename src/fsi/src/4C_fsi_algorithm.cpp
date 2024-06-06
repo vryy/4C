@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 // turn defines the dof number ordering of the Discretizations.
 /*----------------------------------------------------------------------*/
 FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
-    : AlgorithmBase(comm, GLOBAL::Problem::Instance()->FSIDynamicParams()),
+    : AlgorithmBase(comm, Global::Problem::Instance()->FSIDynamicParams()),
       adapterbase_ptr_(Teuchos::null),
       use_old_structure_(false)
 {
@@ -46,15 +46,16 @@ FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 void FSI::Algorithm::Setup()
 {
   // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Discret::Discretization> structdis =
+      Global::Problem::Instance()->GetDis("structure");
 
   // access structural dynamic params list which will be possibly modified while creating the time
   // integrator
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
 
   // access the fsi dynamic params
   Teuchos::ParameterList& fsidyn =
-      const_cast<Teuchos::ParameterList&>(GLOBAL::Problem::Instance()->FSIDynamicParams());
+      const_cast<Teuchos::ParameterList&>(Global::Problem::Instance()->FSIDynamicParams());
 
   // build and register fsi model evaluator
   Teuchos::RCP<STR::MODELEVALUATOR::Generic> fsi_model_ptr =
@@ -71,11 +72,11 @@ void FSI::Algorithm::Setup()
   // build structure
   if (sdyn.get<std::string>("INT_STRATEGY") == "Standard")
   {
-    adapterbase_ptr_ = ADAPTER::build_structure_algorithm(sdyn);
+    adapterbase_ptr_ = Adapter::build_structure_algorithm(sdyn);
     adapterbase_ptr_->Init(fsidyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     adapterbase_ptr_->register_model_evaluator("Partitioned Coupling Model", fsi_model_ptr);
     adapterbase_ptr_->Setup();
-    structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(
+    structure_ = Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(
         adapterbase_ptr_->structure_field());
 
     // set pointer in FSIStructureWrapper
@@ -83,7 +84,7 @@ void FSI::Algorithm::Setup()
         Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::PartitionedFSI>(fsi_model_ptr));
 
     if (structure_ == Teuchos::null)
-      FOUR_C_THROW("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
+      FOUR_C_THROW("cast from Adapter::Structure to Adapter::FSIStructureWrapper failed");
   }
   else if (sdyn.get<std::string>("INT_STRATEGY") ==
            "Old")  // todo this is the part that should be removed !
@@ -95,15 +96,15 @@ void FSI::Algorithm::Setup()
                    "\n"
                 << std::endl;
 
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(
-        new ADAPTER::StructureBaseAlgorithm(GLOBAL::Problem::Instance()->FSIDynamicParams(),
+    Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure = Teuchos::rcp(
+        new Adapter::StructureBaseAlgorithm(Global::Problem::Instance()->FSIDynamicParams(),
             const_cast<Teuchos::ParameterList&>(sdyn), structdis));
     structure_ =
-        Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->structure_field());
+        Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure->structure_field());
     structure_->Setup();
 
     if (structure_ == Teuchos::null)
-      FOUR_C_THROW("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
+      FOUR_C_THROW("cast from Adapter::Structure to Adapter::FSIStructureWrapper failed");
 
     use_old_structure_ = true;
   }
@@ -114,12 +115,12 @@ void FSI::Algorithm::Setup()
         "If you want to use yet unsupported elements or you want to do crack simulation,\n"
         "set INT_STRATEGY to Old in ---STRUCUTRAL DYNAMIC section!");
 
-  Teuchos::RCP<ADAPTER::FluidMovingBoundaryBaseAlgorithm> MBFluidbase =
-      Teuchos::rcp(new ADAPTER::FluidMovingBoundaryBaseAlgorithm(
-          GLOBAL::Problem::Instance()->FSIDynamicParams(), "FSICoupling"));
+  Teuchos::RCP<Adapter::FluidMovingBoundaryBaseAlgorithm> MBFluidbase =
+      Teuchos::rcp(new Adapter::FluidMovingBoundaryBaseAlgorithm(
+          Global::Problem::Instance()->FSIDynamicParams(), "FSICoupling"));
   fluid_ = MBFluidbase->MBFluidField();
 
-  coupsf_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupsf_ = Teuchos::rcp(new Core::Adapter::Coupling());
 }
 
 
@@ -194,12 +195,12 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::fluid_to_struct(Teuchos::RCP<Epetra_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::ADAPTER::Coupling& FSI::Algorithm::structure_fluid_coupling() { return *coupsf_; }
+Core::Adapter::Coupling& FSI::Algorithm::structure_fluid_coupling() { return *coupsf_; }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const CORE::ADAPTER::Coupling& FSI::Algorithm::structure_fluid_coupling() const { return *coupsf_; }
+const Core::Adapter::Coupling& FSI::Algorithm::structure_fluid_coupling() const { return *coupsf_; }
 
 
 /*----------------------------------------------------------------------*/

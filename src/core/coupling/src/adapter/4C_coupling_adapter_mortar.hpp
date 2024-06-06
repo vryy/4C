@@ -25,39 +25,39 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   class FunctionManager;
 }
 
-namespace MORTAR
+namespace Mortar
 {
   class Interface;
   class IntCell;
-}  // namespace MORTAR
+}  // namespace Mortar
 
 /// Couple non-matching interface meshes using mortar method
-namespace CORE::ADAPTER
+namespace Core::Adapter
 { /*!
 This is a generic class used to couple any non-matching meshes
 (or more general: discretizations) at interfaces. The current
@@ -65,7 +65,7 @@ applications in 4C encompass FSI coupling algorithms (i.e. to
 interpolate between fluid and structure fields at the interface)
 and fluid mesh tying algorithms (i.e. to couple non-matching
 Eulerian fluid meshes). All the hard work is actually done by
-the MORTAR::Interface class (thus we use the mortar method).
+the Mortar::Interface class (thus we use the mortar method).
 
 The major part of this code is the Setup() method that gets the
 non-matching interface meshes on input, initializes the mortar
@@ -81,13 +81,13 @@ Whenever you want to add a new problem class, check whether you
 can re-use one of the already existing Setup() methods. If not,
 feel free to write your own tailored Setup() method.
 */
-  class CouplingMortar : public CORE::ADAPTER::CouplingBase
+  class CouplingMortar : public Core::Adapter::CouplingBase
   {
    public:
     /// Construct the CouplingMortar with basic parameters.
     CouplingMortar(int spatial_dimension, Teuchos::ParameterList mortar_coupling_params,
         Teuchos::ParameterList contact_dynamic_params,
-        CORE::FE::ShapeFunctionType shape_function_type);
+        Core::FE::ShapeFunctionType shape_function_type);
 
     /*! setup the machinery (generalized version)
      *
@@ -96,13 +96,13 @@ feel free to write your own tailored Setup() method.
      * meshtying
      *  - ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
      */
-    void Setup(const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
-        const Teuchos::RCP<DRT::Discretization>& slavedis,          ///< slave discretization
-        const Teuchos::RCP<DRT::Discretization>& aledis,            ///< ALE discretization
+    void Setup(const Teuchos::RCP<Discret::Discretization>& masterdis,  ///< master discretization
+        const Teuchos::RCP<Discret::Discretization>& slavedis,          ///< slave discretization
+        const Teuchos::RCP<Discret::Discretization>& aledis,            ///< ALE discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
         const std::string& couplingcond,     ///< string for coupling condition
         const Epetra_Comm& comm,             ///< communicator
-        const CORE::UTILS::FunctionManager& function_manager,  ///< function manager
+        const Core::UTILS::FunctionManager& function_manager,  ///< function manager
         const bool slavewithale = false,                       ///< flag defining if slave is ALE
         const bool slidingale = false,                         ///< flag indicating sliding ALE case
         const int nds_master = 0,                              ///< master dofset number
@@ -117,16 +117,16 @@ feel free to write your own tailored Setup() method.
      *  - ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
      */
     void setup_interface(
-        const Teuchos::RCP<DRT::Discretization>& masterdis,  ///< master discretization
-        const Teuchos::RCP<DRT::Discretization>& slavedis,   ///< slave discretization
+        const Teuchos::RCP<Discret::Discretization>& masterdis,  ///< master discretization
+        const Teuchos::RCP<Discret::Discretization>& slavedis,   ///< slave discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
-        const std::map<int, CORE::Nodes::Node*>&
+        const std::map<int, Core::Nodes::Node*>&
             mastergnodes,  ///< master nodes, including ghosted nodes
-        const std::map<int, CORE::Nodes::Node*>&
+        const std::map<int, Core::Nodes::Node*>&
             slavegnodes,  ///< slave nodes, including ghosted nodes
-        const std::map<int, Teuchos::RCP<CORE::Elements::Element>>&
+        const std::map<int, Teuchos::RCP<Core::Elements::Element>>&
             masterelements,  ///< master elements
-        const std::map<int, Teuchos::RCP<CORE::Elements::Element>>&
+        const std::map<int, Teuchos::RCP<Core::Elements::Element>>&
             slaveelements,                ///< slave elements
         const Epetra_Comm& comm,          ///< communicator
         const bool slavewithale = false,  ///< flag defining if slave is ALE
@@ -136,7 +136,7 @@ feel free to write your own tailored Setup() method.
     );
 
     /// create integration cells
-    virtual void EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell>>&
+    virtual void EvaluateGeometry(std::vector<Teuchos::RCP<Mortar::IntCell>>&
             intcells  //!< vector of mortar integration cells
     );
 
@@ -154,39 +154,39 @@ feel free to write your own tailored Setup() method.
 
     //! Compute mortar matrices after performing a mesh correction step
     virtual void evaluate_with_mesh_relocation(
-        Teuchos::RCP<DRT::Discretization> slavedis,  ///< slave discretization
-        Teuchos::RCP<DRT::Discretization> aledis,    ///< ALE discretization
-        Teuchos::RCP<Epetra_Vector>& idisp,          ///< ALE displacements
-        const Epetra_Comm& comm,                     ///< communicator
-        bool slavewithale                            ///< flag defining if slave is ALE
+        Teuchos::RCP<Discret::Discretization> slavedis,  ///< slave discretization
+        Teuchos::RCP<Discret::Discretization> aledis,    ///< ALE discretization
+        Teuchos::RCP<Epetra_Vector>& idisp,              ///< ALE displacements
+        const Epetra_Comm& comm,                         ///< communicator
+        bool slavewithale                                ///< flag defining if slave is ALE
     );
 
     //! Get the mortar interface itself
-    Teuchos::RCP<MORTAR::Interface> Interface() const { return interface_; }
+    Teuchos::RCP<Mortar::Interface> Interface() const { return interface_; }
 
     //! Access to slave side mortar matrix \f$D\f$
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixD() const
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMortarMatrixD() const
     {
       if (D_ == Teuchos::null) FOUR_C_THROW("D Matrix is null pointer!");
       return D_;
     };
 
     //! Access to inverse of slave side mortar matrix \f$D^{-1}\f$
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixDinv() const
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMortarMatrixDinv() const
     {
       if (Dinv_ == Teuchos::null) FOUR_C_THROW("DInv Matrix is null pointer!");
       return Dinv_;
     };
 
     //! Access to master side mortar matrix \f$M\f$
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixM() const
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMortarMatrixM() const
     {
       if (M_ == Teuchos::null) FOUR_C_THROW("M Matrix is null pointer!");
       return M_;
     };
 
     //! Access to mortar projection operator \f$P\f$
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixP() const
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMortarMatrixP() const
     {
       if (P_ == Teuchos::null) FOUR_C_THROW("P Matrix is null pointer!");
       return P_;
@@ -289,14 +289,14 @@ feel free to write your own tailored Setup() method.
 
     /// do condensation of Lagrange multiplier and slave-sided dofs
     void MortarCondensation(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix>& k,  ///< in:  tangent matrix w/o condensation
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,  ///< in:  tangent matrix w/o condensation
                                                       ///< out: tangent matrix w/  condensation
         Teuchos::RCP<Epetra_Vector>& rhs              ///< in:  rhs vector     w/o condensation
                                                       ///< out: rhs vector     w/  condensation
     ) const;
 
     /// recover slave-sided dofs
-    void MortarRecover(Teuchos::RCP<CORE::LINALG::SparseMatrix>& k,  ///< in: tangent matrix
+    void MortarRecover(Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,  ///< in: tangent matrix
         Teuchos::RCP<Epetra_Vector>& inc  ///< in:  solution vector     w/o condensation
                                           ///< out: solution vector     w/  condensation
     ) const;
@@ -316,8 +316,8 @@ feel free to write your own tailored Setup() method.
      *  [1] Puso, M and Laursen, TA: Mesh tying on curved interfaces in 3D,
      *      Engineering Computation, 20:305-319 (2003)
      */
-    void check_slave_dirichlet_overlap(const Teuchos::RCP<DRT::Discretization>& slavedis,
-        const Epetra_Comm& comm, const CORE::UTILS::FunctionManager& function_manager);
+    void check_slave_dirichlet_overlap(const Teuchos::RCP<Discret::Discretization>& slavedis,
+        const Epetra_Comm& comm, const Core::UTILS::FunctionManager& function_manager);
 
     /// back transformation to initial parallel distribution
     void matrix_row_col_transform();
@@ -333,8 +333,9 @@ feel free to write your own tailored Setup() method.
 
    private:
     /// perform mesh relocation
-    void mesh_relocation(Teuchos::RCP<DRT::Discretization> slavedis,  ///< [in] Slave discretization
-        Teuchos::RCP<DRT::Discretization> aledis,                     ///< [in] ALE discretization
+    void mesh_relocation(
+        Teuchos::RCP<Discret::Discretization> slavedis,  ///< [in] Slave discretization
+        Teuchos::RCP<Discret::Discretization> aledis,    ///< [in] ALE discretization
         Teuchos::RCP<const Epetra_Map>
             masterdofrowmap,  ///< [in] DOF row map of master discretization
         Teuchos::RCP<const Epetra_Map>
@@ -354,13 +355,13 @@ feel free to write your own tailored Setup() method.
     Teuchos::ParameterList contact_dynamic_params_;
 
     //! Shape functions used in coupled discretizations
-    CORE::FE::ShapeFunctionType shape_function_type_;
+    Core::FE::ShapeFunctionType shape_function_type_;
 
     /// Check for setup
     bool issetup_;
 
     /// Interface
-    Teuchos::RCP<MORTAR::Interface> interface_;
+    Teuchos::RCP<Mortar::Interface> interface_;
 
     /// Map of master row dofs (after parallel redist.)
     Teuchos::RCP<const Epetra_Map> masterdofrowmap_;
@@ -375,18 +376,18 @@ feel free to write your own tailored Setup() method.
     Teuchos::RCP<const Epetra_Map> pslavedofrowmap_;
 
     /// Slave side mortar matrix \f$D\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> D_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> D_;
 
     /// Inverse \f$D^{-1}\f$ of slave side mortar matrix \f$D\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> Dinv_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> Dinv_;
 
     /// Master side mortar matrix \f$M\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> M_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> M_;
 
     /// Mortar projection operator \f$P=D^{-1}M\f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> P_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> P_;
   };
-}  // namespace CORE::ADAPTER
+}  // namespace Core::Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

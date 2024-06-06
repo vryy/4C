@@ -26,23 +26,23 @@ FOUR_C_NAMESPACE_OPEN
 void lubrication_dyn(int restart)
 {
   // access the communicator
-  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("lubrication")->Comm();
+  const Epetra_Comm& comm = Global::Problem::Instance()->GetDis("lubrication")->Comm();
 
   // print problem type
   if (comm.MyPID() == 0)
   {
     std::cout << "###################################################" << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: " << GLOBAL::Problem::Instance()->ProblemName() << std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << Global::Problem::Instance()->ProblemName() << std::endl;
     std::cout << "###################################################" << std::endl;
   }
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& lubricationdyn =
-      GLOBAL::Problem::Instance()->lubrication_dynamic_params();
+      Global::Problem::Instance()->lubrication_dynamic_params();
 
   // access the lubrication discretization
-  Teuchos::RCP<DRT::Discretization> lubricationdis =
-      GLOBAL::Problem::Instance()->GetDis("lubrication");
+  Teuchos::RCP<Discret::Discretization> lubricationdis =
+      Global::Problem::Instance()->GetDis("lubrication");
 
   lubricationdis->fill_complete();
 
@@ -51,9 +51,9 @@ void lubrication_dyn(int restart)
     FOUR_C_THROW("No elements in the ---LUBRICATION ELEMENTS section");
 
   // add proxy of velocity related degrees of freedom to lubrication discretization
-  Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
-          GLOBAL::Problem::Instance()->NDim(), 0, 0, true));
+  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
+      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+          Global::Problem::Instance()->NDim(), 0, 0, true));
   if (lubricationdis->AddDofSet(dofsetaux) != 1)
     FOUR_C_THROW("lub discretization has illegal number of dofsets!");
 
@@ -68,12 +68,12 @@ void lubrication_dyn(int restart)
         "DYNAMIC to a valid number!");
 
   // create instance of Lubrication basis algorithm
-  Teuchos::RCP<ADAPTER::LubricationBaseAlgorithm> lubricationonly =
-      Teuchos::rcp(new ADAPTER::LubricationBaseAlgorithm());
+  Teuchos::RCP<Adapter::LubricationBaseAlgorithm> lubricationonly =
+      Teuchos::rcp(new Adapter::LubricationBaseAlgorithm());
 
   // setup Lubrication basis algorithm
   lubricationonly->Setup(
-      lubricationdyn, lubricationdyn, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
+      lubricationdyn, lubricationdyn, Global::Problem::Instance()->SolverParams(linsolvernumber));
 
   // read the restart information, set vectors and variables
   if (restart) lubricationonly->LubricationField()->read_restart(restart);
@@ -82,8 +82,8 @@ void lubrication_dyn(int restart)
   (lubricationonly->LubricationField())->TimeLoop();
 
   // perform the result test if required
-  GLOBAL::Problem::Instance()->AddFieldTest(lubricationonly->create_lubrication_field_test());
-  GLOBAL::Problem::Instance()->TestAll(comm);
+  Global::Problem::Instance()->AddFieldTest(lubricationonly->create_lubrication_field_test());
+  Global::Problem::Instance()->TestAll(comm);
 
   return;
 

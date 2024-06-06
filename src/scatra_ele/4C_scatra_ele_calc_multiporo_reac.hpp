@@ -32,19 +32,19 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace MAT
+namespace Mat
 {
   class ScatraMat;
 }
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerMultiPoro;
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleCalcMultiPoroReac : public ScaTraEleCalcPoroReac<distype>
     {
      private:
@@ -65,20 +65,20 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       /// Setup element evaluation
-      int SetupCalc(CORE::Elements::Element* ele, DRT::Discretization& discretization) override;
+      int SetupCalc(Core::Elements::Element* ele, Discret::Discretization& discretization) override;
 
      protected:
       //! extract element based or nodal values
       //  return extracted values of phinp
-      void extract_element_and_node_values(CORE::Elements::Element* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la) override;
+      void extract_element_and_node_values(Core::Elements::Element* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la) override;
 
       //! extract element based or nodal values --> L2-projection case: called within
       //! extract_element_and_node_values
       //  return extracted values of phinp
-      virtual void extract_nodal_flux(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
+      virtual void extract_nodal_flux(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           const int numfluidphases);
 
       //! set internal variables
@@ -86,7 +86,7 @@ namespace DRT
 
       //! evaluate material
       void materials(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -97,7 +97,7 @@ namespace DRT
 
       //! material mat_multi_poro_fluid
       virtual void mat_multi_poro_fluid(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -108,7 +108,7 @@ namespace DRT
 
       //! material mat_multi_poro_vol_frac
       virtual void mat_multi_poro_vol_frac(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -119,7 +119,7 @@ namespace DRT
 
       //! material mat_multi_poro_solid
       virtual void mat_multi_poro_solid(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -130,7 +130,7 @@ namespace DRT
 
       //! material mat_multi_poro_temperature
       virtual void mat_multi_poro_temperature(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -141,7 +141,7 @@ namespace DRT
 
       //! Set advanced reaction terms and derivatives
       void set_advanced_reaction_terms(const int k,               //!< index of current scalar
-          const Teuchos::RCP<MAT::MatListReactions> matreaclist,  //!< index of current scalar
+          const Teuchos::RCP<Mat::MatListReactions> matreaclist,  //!< index of current scalar
           const double* gpcoord  //!< current Gauss-point coordinates
           ) override;
 
@@ -158,18 +158,18 @@ namespace DRT
       //! calculation of convective element matrix in convective form
       //! the only difference to the base class version is, that there is no scaling with the
       //! density
-      void calc_mat_conv(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+      void calc_mat_conv(Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                                           //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
-          const CORE::LINALG::Matrix<nen_, 1>& sgconv  //!< subgrid-scale convective operator
+          const Core::LinAlg::Matrix<nen_, 1>& sgconv  //!< subgrid-scale convective operator
           ) override;
 
       //! adaption of convective term for rhs
       //! the only difference to the base class version is, that there is no scaling with the
       //! density
       void recompute_conv_phi_for_rhs(const int k,        //!< index of current scalar
-          const CORE::LINALG::Matrix<nsd_, 1>& sgvelint,  //!< subgrid-scale velocity at Gauss point
+          const Core::LinAlg::Matrix<nsd_, 1>& sgvelint,  //!< subgrid-scale velocity at Gauss point
           const double densnp,                            //!< density at time_(n+1)
           const double densn,                             //!< density at time_(n)
           const double vdiv                               //!< velocity divergence
@@ -179,7 +179,7 @@ namespace DRT
       //! the only difference to the base class version is, that there is no scaling with the
       //! density
       void calc_mat_conv_add_cons(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double vdiv,        //!< velocity divergence
@@ -187,7 +187,7 @@ namespace DRT
           ) override;
 
       //! calculation of mass element matrix (standard shape functions)
-      void calc_mat_mass(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+      void calc_mat_mass(Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int& k,                                          //!< index of current scalar
           const double& fac,                                     //!< domain-integration factor
           const double& densam                                   //!< density at time_(n+am)
@@ -196,15 +196,15 @@ namespace DRT
       //! calculation of convective element matrix (OD term structure coupling)
       //! difference to base class: linearization of mesh motion + shapederivatives pressure
       //! gradient have to be included
-      void calc_conv_od_mesh(CORE::LINALG::SerialDenseMatrix& emat, const int k,
+      void calc_conv_od_mesh(Core::LinAlg::SerialDenseMatrix& emat, const int k,
           const int ndofpernodemesh, const double fac, const double rhsfac, const double densnp,
-          const double J, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
-          const CORE::LINALG::Matrix<nsd_, 1>& convelint) override;
+          const double J, const Core::LinAlg::Matrix<nsd_, 1>& gradphi,
+          const Core::LinAlg::Matrix<nsd_, 1>& convelint) override;
 
       //! calculation of linearized mass (off diagonal/shapederivative term mesh)
       //! difference to base class: linearization of porosity is included
       void calc_lin_mass_od_mesh(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -214,7 +214,7 @@ namespace DRT
           const double phinp,   //!< scalar at time_(n+1)
           const double hist,    //!< history of time integartion
           const double J,       //!< determinant of Jacobian det(dx/ds)
-          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
+          const Core::LinAlg::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivative of det(dx/ds) w.r.t. mesh displacement
           ) override;
 
@@ -222,13 +222,13 @@ namespace DRT
       //! term mesh) difference to base class: linearization of porosity and advanced reaction terms
       //! are included
       void calc_hist_and_source_od_mesh(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element current to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double fac,                       //!< domain-integration factor
           const double rhsint,                    //!< rhs at Gauss point
           const double J,                         //!< determinant of Jacobian det(dx/ds)
-          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
+          const Core::LinAlg::Matrix<1, nsd_ * nen_>&
               dJ_dmesh,        //!< derivative of det(dx/ds) w.r.t. mesh displacement
           const double densnp  //!< density
           ) override;
@@ -236,47 +236,47 @@ namespace DRT
       //! standard Galerkin diffusive term (off diagonal/shapederivative term mesh)
       //! difference to base class: linearization of porosity and effective diffusivity
       void calc_diff_od_mesh(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element current to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double diffcoeff,                 //!< diffusion coefficient
           const double fac,                       //!< domain-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double J,       //!< determinant of Jacobian det(dx/ds)
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
-          const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity
-          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
+          const Core::LinAlg::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
+          const Core::LinAlg::Matrix<nsd_, 1>& convelint,  //!< convective velocity
+          const Core::LinAlg::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivative of det(dx/ds) w.r.t. mesh displacement
           ) override;
 
       //! reactive terms (standard Galerkin) (off diagonal/shapederivative term mesh)
       //! difference to base class: linearization of porosity
       void calc_react_od_mesh(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element current to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double rea_phi,  //!< reactive term
           const double J,        //!< determinant of Jacobian det(dx/ds)
-          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
+          const Core::LinAlg::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivative of det(dx/ds) w.r.t. mesh displacement
           ) override;
 
       //! calculation of convective element matrix in convective form (off diagonal term fluid)
       void calc_mat_conv_od_fluid(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodefluid,  //!< number of dofs per node of fluid element // only a dummy
                                        //!< variable
           const double rhsfac,         //!< domain-integration factor times time-integration factor
           const double densnp,         //!< density at time_(n+1)
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
+          const Core::LinAlg::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
           ) override;
 
       //! calculation of convective element matrix in convective form -- additional conservative
       //! contributions (off diagonal term fluid) not yet implemented --> FOUR_C_THROW
       void calc_mat_conv_add_cons_od_fluid(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodefluid,             //!< number of dofs per node of fluid element
           const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -287,7 +287,7 @@ namespace DRT
       //! calculation of linearized mass (off diagonal terms fluid)
       //! linearization of porosity*saturation*vtrans
       void calc_lin_mass_od_fluid(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,  //!< number of dofs per node of fluid element // only a dummy
                                       //!< variable
@@ -300,14 +300,14 @@ namespace DRT
           ) override;
 
       // calculate linearization of a mass matrix type matrix (OD-fluid terms)
-      virtual void calc_lin_mass_matrix_type_od_fluid(CORE::LINALG::SerialDenseMatrix& emat,
+      virtual void calc_lin_mass_matrix_type_od_fluid(Core::LinAlg::SerialDenseMatrix& emat,
           const int k, const std::vector<double>* prefaclinmassodfluid,
           const int totalnummultiphasedofpernode, double prefac);
 
       //! standard Galerkin transient, old part of rhs and source term (off diagonal terms fluid)
       //! linearization of porosity*saturation*vtrans + advanced reaction terms
       void calc_hist_and_source_od_fluid(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element current to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double fac,                       //!< domain-integration factor
@@ -318,7 +318,7 @@ namespace DRT
       //! standard Galerkin reactive term (off diagonal terms fluid)
       //! linearization of porosity*saturation*vreact
       void calc_react_od_fluid(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element current to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -328,17 +328,17 @@ namespace DRT
       //! standard Galerkin diffusive term (off diagonal terms fluid)
       //! linearization of porosity*saturation*d_eff
       void calc_diff_od_fluid(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element current to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
+          const Core::LinAlg::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
           ) override;
 
       //! fill coupling vector and add variables to reaction in order to compute reaction values and
       //! derivatives
       void fill_coupling_vector_and_add_variables(const int k,
-          const Teuchos::RCP<MAT::MatListReactions> matreaclist,
+          const Teuchos::RCP<Mat::MatListReactions> matreaclist,
           const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager);
 
       //! Get right hand side including reaction bodyforce term
@@ -348,25 +348,25 @@ namespace DRT
           ) override;
 
       //! calculation of reactive element matrix
-      void calc_mat_react(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+      void calc_mat_react(Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau
           const double taufac,                          //!< domain-integration factor times tau
           const double densnp,                          //!< density at time_(n+1)
-          const CORE::LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
-          const CORE::LINALG::Matrix<nen_, 1>& diff     //!< laplace term
+          const Core::LinAlg::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
+          const Core::LinAlg::Matrix<nen_, 1>& diff     //!< laplace term
           ) override;
 
       //! "shapederivatives" pressure gradient
-      virtual void apply_shape_derivs_pressure_grad(CORE::LINALG::SerialDenseMatrix& emat,
-          const int k, const double vrhs, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
-          const CORE::LINALG::Matrix<nsd_, 1> refgradpres);
+      virtual void apply_shape_derivs_pressure_grad(Core::LinAlg::SerialDenseMatrix& emat,
+          const int k, const double vrhs, const Core::LinAlg::Matrix<nsd_, 1>& gradphi,
+          const Core::LinAlg::Matrix<nsd_, 1> refgradpres);
 
      protected:
       //! nodal flux values at t_(n+1)
-      std::vector<CORE::LINALG::Matrix<nsd_, nen_>> efluxnp_;
+      std::vector<Core::LinAlg::Matrix<nsd_, nen_>> efluxnp_;
 
       //! a vector containing all quantities, the equation is coupled with
       //! (i.e. pressures, saturations and porosity)
@@ -401,41 +401,41 @@ namespace DRT
             min_val_of_phase_(numscal, 0.0),
             evaluate_scalar_(numscal, true),
             scalartophasemap_(
-                numscal, {-1, MAT::ScatraMatMultiPoro::SpeciesType::species_undefined}),
+                numscal, {-1, Mat::ScaTraMatMultiPoro::SpeciesType::species_undefined}),
             materialset_(false),
-            myaction_(SCATRA::Action::calc_mat_and_rhs)
+            myaction_(ScaTra::Action::calc_mat_and_rhs)
       {
         return;
       }
 
       // compute and set internal variables -- no L2-projection but evaluation at GP
       void set_internal_variables_multi_poro(
-          const CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
-          const CORE::LINALG::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<NEN, 1>& funct,  //! array for shape functions
+          const Core::LinAlg::Matrix<NSD, NEN>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          const CORE::LINALG::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<NSD, NEN>&
               deriv,  //! global derivatives of shape functions w.r.t r,s,t
-          const CORE::LINALG::Matrix<NSD, NSD>& xjm, const CORE::LINALG::Matrix<NSD, NEN>& xyze0,
-          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
+          const Core::LinAlg::Matrix<NSD, NSD>& xjm, const Core::LinAlg::Matrix<NSD, NEN>& xyze0,
+          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
               ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
-          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephin,  //! scalar at t_(n)
-          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephin,  //! scalar at t_(n)
+          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
               ehist,  //! history vector of transported scalars
-          const CORE::LINALG::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<NSD, NEN>&
               eforcevelocity  //! nodal velocity due to external force
       )
       {
         // call base class (scatra) with dummy variable
-        const CORE::LINALG::Matrix<NSD, NEN> dummy_econv(true);
+        const Core::LinAlg::Matrix<NSD, NEN> dummy_econv(true);
         my::set_internal_variables(funct, derxy, ephinp, ephin, dummy_econv, ehist, dummy_econv);
 
         // velocity due to the external force
-        CORE::LINALG::Matrix<NSD, 1> force_velocity;
+        Core::LinAlg::Matrix<NSD, 1> force_velocity;
         force_velocity.Multiply(eforcevelocity, funct);
 
         //------------------------get determinant of Jacobian dX / ds
         // transposed jacobian "dX/ds"
-        CORE::LINALG::Matrix<NSD, NSD> xjm0;
+        Core::LinAlg::Matrix<NSD, NSD> xjm0;
         xjm0.MultiplyNT(deriv, xyze0);
 
         // inverse of transposed jacobian "ds/dX"
@@ -470,23 +470,23 @@ namespace DRT
         volfracpressure_.resize(numvolfrac);
         relative_mobility_funct_id_.resize(my::numscal_);
 
-        const std::vector<CORE::LINALG::Matrix<NSD, 1>>& fluidgradphi =
+        const std::vector<Core::LinAlg::Matrix<NSD, 1>>& fluidgradphi =
             *(variablemanager_->GradPhinp());
 
         volfrac_ = phasemanager_->VolFrac();
         volfracpressure_ = phasemanager_->VolFracPressure();
 
         //! convective velocity
-        std::vector<CORE::LINALG::Matrix<NSD, 1>> phase_fluid_velocity(0.0);
+        std::vector<Core::LinAlg::Matrix<NSD, 1>> phase_fluid_velocity(0.0);
         phase_fluid_velocity.resize(numfluidphases + numvolfrac);
         //! convective part in convective form: u_x*N,x + u_y*N,y
-        std::vector<CORE::LINALG::Matrix<NEN, 1>> phase_fluid_velocity_conv(0.0);
+        std::vector<Core::LinAlg::Matrix<NEN, 1>> phase_fluid_velocity_conv(0.0);
         phase_fluid_velocity_conv.resize(numfluidphases + numvolfrac);
 
         //! temperature convective velocity
-        CORE::LINALG::Matrix<NSD, 1> temperatureconvelint(true);
+        Core::LinAlg::Matrix<NSD, 1> temperatureconvelint(true);
         //! temperature convective part in convective form
-        CORE::LINALG::Matrix<NEN, 1> temperatureconv(true);
+        Core::LinAlg::Matrix<NEN, 1> temperatureconv(true);
 
         for (int i_phase = 0; i_phase < numfluidphases; ++i_phase)
         {
@@ -566,8 +566,8 @@ namespace DRT
           // - rho * k/\mu*grad p * grad phi
           switch (scalartophasemap_[k].species_type)
           {
-            case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
-            case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
+            case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
+            case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac:
               my::convelint_[k] = phase_fluid_velocity[scalartophasemap_[k].phaseID];
               // if the scalar reacts to the external force, add the velocity due to the external
               // force scaled with the relative mobility and the porosity * saturation
@@ -581,13 +581,13 @@ namespace DRT
               my::conv_phi_[k] = my::convelint_[k].Dot(my::gradphi_[k]);
               break;
 
-            case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
-              my::convelint_[k] = CORE::LINALG::Matrix<NSD, 1>(0.0);
-              my::conv_[k] = CORE::LINALG::Matrix<NEN, 1>(0.0);
+            case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
+              my::convelint_[k] = Core::LinAlg::Matrix<NSD, 1>(0.0);
+              my::conv_[k] = Core::LinAlg::Matrix<NEN, 1>(0.0);
               my::conv_phi_[k] = 0;
               break;
 
-            case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
+            case Mat::ScaTraMatMultiPoro::SpeciesType::species_temperature:
               my::convelint_[k] = temperatureconvelint;
               my::conv_[k] = temperatureconv;
               my::conv_phi_[k] = temperatureconvelint.Dot(my::gradphi_[k]);
@@ -605,20 +605,20 @@ namespace DRT
 
       // adapt convective term in case of L2-projection
       void adapt_convective_term_for_l2(
-          const CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
-          const CORE::LINALG::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<NEN, 1>& funct,  //! array for shape functions
+          const Core::LinAlg::Matrix<NSD, NEN>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          const std::vector<CORE::LINALG::Matrix<NSD, NEN>>&
+          const std::vector<Core::LinAlg::Matrix<NSD, NEN>>&
               efluxnp  //! nodal flux values at t_(n+1) or t_(n+alpha_F)
       )
       {
         const int numfluidphases = efluxnp.size();
 
-        std::vector<CORE::LINALG::Matrix<NSD, 1>> flux(0.0);
+        std::vector<Core::LinAlg::Matrix<NSD, 1>> flux(0.0);
         flux.resize(numfluidphases);
 
         // in convective form: q_x*N,x + q_y*N,y
-        std::vector<CORE::LINALG::Matrix<NEN, 1>> flux_conv(0.0);
+        std::vector<Core::LinAlg::Matrix<NEN, 1>> flux_conv(0.0);
         flux_conv.resize(numfluidphases);
 
         for (int i_phase = 0; i_phase < numfluidphases; ++i_phase)
@@ -638,13 +638,13 @@ namespace DRT
         {
           switch (scalartophasemap_[k].species_type)
           {
-            case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
-            case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
+            case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
+            case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac:
               my::conv_phi_[k] = flux[scalartophasemap_[k].phaseID].Dot(my::gradphi_[k]);
               break;
 
-            case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
-            case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
+            case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
+            case Mat::ScaTraMatMultiPoro::SpeciesType::species_temperature:
               my::conv_phi_[k] = 0;
               break;
 
@@ -658,16 +658,16 @@ namespace DRT
       };
 
       // Set the fluid-material in the scatra-Varmanager
-      void set_fluid_poromultiphase_material(CORE::Elements::Element* ele)
+      void set_fluid_poromultiphase_material(Core::Elements::Element* ele)
       {
         // check if we actually have three materials
         if (ele->NumMaterial() < 3) FOUR_C_THROW("no third material available");
 
         // here we rely that the PoroMultiPhase material has been added as third material
-        multiphasemat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(
+        multiphasemat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(
             ele->Material(ndsscatra_porofluid_));
         if (multiphasemat_ == Teuchos::null)
-          FOUR_C_THROW("cast to MAT::FluidPoroMultiPhase failed!");
+          FOUR_C_THROW("cast to Mat::FluidPoroMultiPhase failed!");
 
         materialset_ = true;
       }
@@ -681,7 +681,7 @@ namespace DRT
       {
         switch (scalartophasemap_[k].species_type)
         {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
             return pressure_[scalartophasemap_[k].phaseID];
 
           default:
@@ -698,7 +698,7 @@ namespace DRT
       {
         switch (scalartophasemap_[k].species_type)
         {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
             return saturation_[scalartophasemap_[k].phaseID];
 
           default:
@@ -715,14 +715,14 @@ namespace DRT
       {
         switch (scalartophasemap_[k].species_type)
         {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac:
             return density_[scalartophasemap_[k].phaseID];
 
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
             return phasemanager_->SolidDensity();
 
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_temperature:
             // set to 1.0 because densities are included in the effective heat capacity
             return 1.0;
 
@@ -744,8 +744,8 @@ namespace DRT
       {
         switch (scalartophasemap_[k].species_type)
         {
-          // case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
+          // case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac:
             return volfrac_[GetPhaseID(k) - phasemanager_->NumFluidPhases()];
 
           default:
@@ -762,7 +762,7 @@ namespace DRT
 
       //! set scalar ID to phase ID mapping and species type
       void set_phase_id_and_species_type(const int scalarID, const int phaseID,
-          const MAT::ScatraMatMultiPoro::SpeciesType& spectype)
+          const Mat::ScaTraMatMultiPoro::SpeciesType& spectype)
       {
         scalartophasemap_[scalarID].phaseID = phaseID;
         scalartophasemap_[scalarID].species_type = spectype;
@@ -779,7 +779,7 @@ namespace DRT
       };
 
       //! get species type of scalar 'k'
-      MAT::ScatraMatMultiPoro::SpeciesType GetSpeciesType(const int k)
+      Mat::ScaTraMatMultiPoro::SpeciesType GetSpeciesType(const int k)
       {
         return scalartophasemap_[k].species_type;
       };
@@ -811,7 +811,7 @@ namespace DRT
       };
 
       //! set action
-      void SetAction(const SCATRA::Action action) { myaction_ = action; };
+      void SetAction(const ScaTra::Action action) { myaction_ = action; };
 
       //! get delta
       double GetDelta(const int k) { return delta_[k]; };
@@ -841,7 +841,7 @@ namespace DRT
 
         switch (scalartophasemap_[k].species_type)
         {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
           {
             // linearization of porosity
             //------------------------------------------------dporosity/dd = dporosity/dJ * dJ/dd =
@@ -858,12 +858,12 @@ namespace DRT
                         phasemanager_->porosity_deriv_wrt_jacobian_def_grad();
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac:
           {
             // do nothing: correct prefac = fac
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
           {
             if (phasemanager_->porosity_depends_on_struct())
               prefac -= fac / (1 - phasemanager_->Porosity() - phasemanager_->SumAddVolFrac()) *
@@ -875,7 +875,7 @@ namespace DRT
 
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_temperature:
           {
             if (phasemanager_->porosity_depends_on_struct())
             {
@@ -917,7 +917,7 @@ namespace DRT
 
         switch (scalartophasemap_[k].species_type)
         {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
           {
             const int curphase = GetPhaseID(k);
             const int totalnummultiphasedofpernode = MultiphaseMat()->NumMat();
@@ -939,7 +939,7 @@ namespace DRT
             }
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac:
           {
             const int curphase = GetPhaseID(k);
             // d volfrac_j / d volfrac_j = 1.0; scaling with 1.0/volfrac since term is re-scaled
@@ -948,13 +948,13 @@ namespace DRT
 
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
           {
             // porosity of solid epsilon_s does not depend on fluid primary variables
 
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_temperature:
           {
             // evaluate the effective heat capacity factor
             const int numdofs = phasemanager_->NumFluidPhases() + phasemanager_->NumVolFrac();
@@ -1015,8 +1015,8 @@ namespace DRT
         varfunction_variables.emplace_back("porosity", phasemanager_->Porosity());
 
         const auto relative_mobility =
-            GLOBAL::Problem::Instance()
-                ->FunctionById<CORE::UTILS::FunctionOfAnything>(
+            Global::Problem::Instance()
+                ->FunctionById<Core::UTILS::FunctionOfAnything>(
                     relative_mobility_funct_id_[current_scalar] - 1)
                 .Evaluate(varfunction_variables, varfunction_constants, 0);
 
@@ -1025,9 +1025,9 @@ namespace DRT
 
       //! get pre-factor needed for OD-fluid-linearization of convective term
       void get_pre_fac_lin_conv_od_fluid(const int k, const unsigned ui,
-          std::vector<double>* prefaclinconvodfluid, const CORE::LINALG::Matrix<NSD, 1>& gradphi,
-          const CORE::LINALG::Matrix<1, NSD>& gradphiTdifftensor,
-          const CORE::LINALG::Matrix<NEN, 1>& funct, const CORE::LINALG::Matrix<NSD, NEN>& derxy,
+          std::vector<double>* prefaclinconvodfluid, const Core::LinAlg::Matrix<NSD, 1>& gradphi,
+          const Core::LinAlg::Matrix<1, NSD>& gradphiTdifftensor,
+          const Core::LinAlg::Matrix<NEN, 1>& funct, const Core::LinAlg::Matrix<NSD, NEN>& derxy,
           const int phase)
       {
         // reset to zero
@@ -1050,15 +1050,15 @@ namespace DRT
           // derivative after relative permeabilty
           if (not phasemanager_->has_constant_rel_permeability(phase))
           {
-            const CORE::LINALG::Matrix<NSD, 1> gradpres = PressureGradient(phase);
+            const Core::LinAlg::Matrix<NSD, 1> gradpres = PressureGradient(phase);
             const double abspressgrad = AbsPressureGradient(phase);
 
-            static CORE::LINALG::Matrix<NSD, NSD> difftensor(true);
+            static Core::LinAlg::Matrix<NSD, NSD> difftensor(true);
             phasemanager_->PermeabilityTensor(phase, difftensor);
             difftensor.Scale(phasemanager_->rel_permeability_deriv(phase) /
                              phasemanager_->DynViscosity(phase, abspressgrad, 2));
 
-            static CORE::LINALG::Matrix<1, NSD> gradphiTdifftensor(true);
+            static Core::LinAlg::Matrix<1, NSD> gradphiTdifftensor(true);
             gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
 
             double laplawf(0.0);
@@ -1089,7 +1089,7 @@ namespace DRT
 
         switch (scalartophasemap_[k].species_type)
         {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
           {
             if (phasemanager_->porosity_depends_on_struct())
             {
@@ -1109,12 +1109,12 @@ namespace DRT
             }
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac:
           {
             // do nothing: linearization performed in base class
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
           {
             if (phasemanager_->porosity_depends_on_struct())
             {
@@ -1140,7 +1140,7 @@ namespace DRT
             }
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_temperature:
           {
             if (phasemanager_->porosity_depends_on_struct())
             {
@@ -1176,7 +1176,7 @@ namespace DRT
 
         switch (scalartophasemap_[k].species_type)
         {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
           {
             const int curphase = GetPhaseID(k);
             const int numfluidphases = phasemanager_->NumFluidPhases();
@@ -1217,7 +1217,7 @@ namespace DRT
             }
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac:
           {
             const int curphase = GetPhaseID(k);
             const double delta = GetDelta(k);
@@ -1229,12 +1229,12 @@ namespace DRT
                                               std::pow(VolFrac(k), delta);
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
           {
             // porosity of solid epsilon_s does not depend on fluid primary variables
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_temperature:
           {
             const int numfluidphases = phasemanager_->NumFluidPhases();
             const int numdofs = numfluidphases + phasemanager_->NumVolFrac();
@@ -1272,18 +1272,18 @@ namespace DRT
 
       //! get difftensor of fluid phases (permeability*relpermeability/mu)
       void GetDiffTensorFluid(
-          const int k, CORE::LINALG::Matrix<NSD, NSD>& difftensor, const int phase)
+          const int k, Core::LinAlg::Matrix<NSD, NSD>& difftensor, const int phase)
       {
         switch (scalartophasemap_[k].species_type)
         {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_temperature:
           {
             difftensor = difftensorsfluid_[phase];
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
           default:
             FOUR_C_THROW(
                 "unknown species type %i for species %i!", scalartophasemap_[k].species_type, k);
@@ -1294,8 +1294,8 @@ namespace DRT
       }
 
       //! compute gradient of pressure in reference configuration
-      void GetRefGradPres(const int k, const CORE::LINALG::Matrix<NSD, NSD>& xjm,
-          CORE::LINALG::Matrix<NSD, 1>& refgradpres, const int phase)
+      void GetRefGradPres(const int k, const Core::LinAlg::Matrix<NSD, NSD>& xjm,
+          Core::LinAlg::Matrix<NSD, 1>& refgradpres, const int phase)
       {
         refgradpres.Clear();
 
@@ -1305,12 +1305,12 @@ namespace DRT
         // fluid phase
         if (phase >= 0 && phase < numfluidphases)
         {
-          const std::vector<CORE::LINALG::Matrix<NSD, 1>>& fluidgradphi =
+          const std::vector<Core::LinAlg::Matrix<NSD, 1>>& fluidgradphi =
               *(variablemanager_->GradPhinp());
 
           // gradient of phi w.r.t. reference coordinates
-          std::vector<CORE::LINALG::Matrix<NSD, 1>> reffluidgradphi(
-              numfluidphases, CORE::LINALG::Matrix<NSD, 1>(true));
+          std::vector<Core::LinAlg::Matrix<NSD, 1>> reffluidgradphi(
+              numfluidphases, Core::LinAlg::Matrix<NSD, 1>(true));
           for (int idof = 0; idof < numfluidphases; ++idof)
             reffluidgradphi[idof].Multiply(xjm, fluidgradphi[idof]);
 
@@ -1337,26 +1337,26 @@ namespace DRT
 
         switch (scalartophasemap_[k].species_type)
         {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
           {
             // if smaller than threshold (at GP) we do not evaluate
             evaluate_scalar_[k] =
                 (fabs(saturation_[scalartophasemap_[k].phaseID]) > min_val_of_phase_[k]);
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac:
           {
             // if smaller than minimum nodal volume fraction in element we do not evaluate
             evaluate_scalar_[k] = variablemanager_->element_has_valid_vol_frac_species(
                 scalartophasemap_[k].phaseID - numfluidphases);
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
           {
             evaluate_scalar_[k] = true;
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_temperature:
           {
             evaluate_scalar_[k] = true;
             break;
@@ -1382,7 +1382,7 @@ namespace DRT
 
         switch (scalartophasemap_[k].species_type)
         {
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_fluid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
           {
             // 2) linearization of history:
             //    prefactor is densnp = porosity * rho * S
@@ -1401,12 +1401,12 @@ namespace DRT
                         phasemanager_->porosity_deriv_wrt_jacobian_def_grad();
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_volfrac:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac:
           {
             // do nothing: correct prefac = fac*rhsint
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_in_solid:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
           {
             if (phasemanager_->porosity_depends_on_struct())
               prefac -= fac * hist * densnp /
@@ -1417,7 +1417,7 @@ namespace DRT
             // do nothing: prefac = fac
             break;
           }
-          case MAT::ScatraMatMultiPoro::SpeciesType::species_temperature:
+          case Mat::ScaTraMatMultiPoro::SpeciesType::species_temperature:
           {
             // evaluate the effective heat capacity factor
             const int numdofs = phasemanager_->NumFluidPhases() + phasemanager_->NumVolFrac();
@@ -1448,14 +1448,14 @@ namespace DRT
       };
 
       //! get action
-      SCATRA::Action GetAction()
+      ScaTra::Action GetAction()
       {
         // return
         return myaction_;
       };
 
       //! return pressure gradient of current phase
-      const CORE::LINALG::Matrix<NSD, 1>& PressureGradient(const int curphase) const
+      const Core::LinAlg::Matrix<NSD, 1>& PressureGradient(const int curphase) const
       {
         return pressuregrad_[curphase];
       };
@@ -1464,7 +1464,7 @@ namespace DRT
       double AbsPressureGradient(const int curphase) const { return abspressuregrad_[curphase]; };
 
       //! return fluid material
-      Teuchos::RCP<MAT::FluidPoroMultiPhase> MultiphaseMat()
+      Teuchos::RCP<Mat::FluidPoroMultiPhase> MultiphaseMat()
       {
         if (!materialset_)
           FOUR_C_THROW("Fluid-Multiphase Material has not yet been set in Variablemanager");
@@ -1473,25 +1473,26 @@ namespace DRT
       }
 
       //! Setup phasemanager and variablemanager of fluid
-      void setup_poro_fluid_managers(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
+      void setup_poro_fluid_managers(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
           const int numfluidphases, const int totalnummultiphasedofpernode)
       {
         // dummy parameter list
-        DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter* para =
-            DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(discretization.Name());
+        Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter* para =
+            Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(discretization.Name());
 
         // create phase-manager
-        phasemanager_ = DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::CreatePhaseManager(
-            *para, NSD, MultiphaseMat()->MaterialType(),
-            POROFLUIDMULTIPHASE::Action::get_access_from_scatra, totalnummultiphasedofpernode,
-            numfluidphases);
+        phasemanager_ =
+            Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::CreatePhaseManager(*para,
+                NSD, MultiphaseMat()->MaterialType(),
+                POROFLUIDMULTIPHASE::Action::get_access_from_scatra, totalnummultiphasedofpernode,
+                numfluidphases);
 
         // access from outside to the phasemanager: scatra-discretization has fluid-dis on dofset 2
         phasemanager_->Setup(ele, ndsscatra_porofluid_);
 
         // create variablemanager
-        variablemanager_ = DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<NSD,
+        variablemanager_ = Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<NSD,
             NEN>::create_variable_manager(*para,
             POROFLUIDMULTIPHASE::Action::get_access_from_scatra, MultiphaseMat(),
             totalnummultiphasedofpernode, numfluidphases);
@@ -1501,9 +1502,9 @@ namespace DRT
 
       // extract the element and node values of the poro-fluid --> extract them from its
       // variablemanager
-      void extract_element_and_node_values_of_poro_fluid(CORE::Elements::Element* ele,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::Matrix<NSD, NEN>& xyze)
+      void extract_element_and_node_values_of_poro_fluid(Core::Elements::Element* ele,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::Matrix<NSD, NEN>& xyze)
       {
         // access from outside to the variablemananger: scatra-discretization has fluid-dis on
         // dofset 2
@@ -1514,13 +1515,13 @@ namespace DRT
       }
 
       // get the phasemanager of the fluid
-      Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface> FluidPhaseManager()
+      Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface> FluidPhaseManager()
       {
         return phasemanager_;
       }
 
       // get the variablemanager of the fluid
-      Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<NSD, NEN>>
+      Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<NSD, NEN>>
       FluidVarManager()
       {
         return variablemanager_;
@@ -1536,9 +1537,9 @@ namespace DRT
       //! solid pressure
       double solidpressure_;
       //! pressure gradient
-      std::vector<CORE::LINALG::Matrix<NSD, 1>> pressuregrad_;
+      std::vector<Core::LinAlg::Matrix<NSD, 1>> pressuregrad_;
       //! pressure gradient
-      std::vector<CORE::LINALG::Matrix<NSD, NSD>> difftensorsfluid_;
+      std::vector<Core::LinAlg::Matrix<NSD, NSD>> difftensorsfluid_;
       //! norm of pressure-gradient
       std::vector<double> abspressuregrad_;
       //! volume fraction
@@ -1547,7 +1548,7 @@ namespace DRT
       std::vector<double> volfracpressure_;
 
       //! fluid-poro multiphase material
-      Teuchos::RCP<MAT::FluidPoroMultiPhase> multiphasemat_;
+      Teuchos::RCP<Mat::FluidPoroMultiPhase> multiphasemat_;
 
       //! delta for effective diffusivity
       std::vector<double> delta_;
@@ -1569,17 +1570,17 @@ namespace DRT
       //! flag to check if we have to evaluate the species equation in this element
       std::vector<bool> evaluate_scalar_;
       //! scalar to phase map
-      std::vector<MAT::ScatraMatMultiPoro::ScalarToPhaseMap> scalartophasemap_;
+      std::vector<Mat::ScaTraMatMultiPoro::ScalarToPhaseMap> scalartophasemap_;
       //! check if multiphase material has been set
       bool materialset_;
 
-      SCATRA::Action myaction_;
+      ScaTra::Action myaction_;
 
       //! phase manager of the fluid
-      Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface> phasemanager_;
+      Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface> phasemanager_;
 
       //! variable manager of the fluid
-      Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<NSD, NEN>>
+      Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<NSD, NEN>>
           variablemanager_;
 
       //! dofset of fluid field on scatra dis
@@ -1588,7 +1589,7 @@ namespace DRT
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -20,18 +20,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEOMETRICSEARCH
+namespace Core::GeometricSearch
 {
   /**
    * @brief Class to write visualization output for geometric search bounding volumes
    */
-  class GeometricSearchVisualization : private CORE::IO::VisualizationManager
+  class GeometricSearchVisualization : private Core::IO::VisualizationManager
   {
    public:
     /**
      * @brief Constructor (derived from base class), the output data fields are defined here.
      */
-    GeometricSearchVisualization(CORE::IO::VisualizationParameters parameters,
+    GeometricSearchVisualization(Core::IO::VisualizationParameters parameters,
         const Epetra_Comm& comm, std::string base_output_name);
 
     /**
@@ -45,14 +45,14 @@ namespace CORE::GEOMETRICSEARCH
      */
     void write_primitives_and_predicates_to_disk(const double visualziation_time,
         const int visualization_step,
-        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& primitives,
-        const std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>>& predicates);
+        const std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& primitives,
+        const std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>>& predicates);
 
    private:
     //! GID of the current rank
     int my_rank_;
   };
-}  // namespace CORE::GEOMETRICSEARCH
+}  // namespace Core::GeometricSearch
 
 FOUR_C_NAMESPACE_CLOSE
 

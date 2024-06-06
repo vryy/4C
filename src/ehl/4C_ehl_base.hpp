@@ -24,22 +24,22 @@ algorithms
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class LubricationBaseAlgorithm;
   class Structure;
   class Coupling;
   class CouplingEhlMortar;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
 }
 
 namespace EHL
 {
-  class Base : public ADAPTER::AlgorithmBase
+  class Base : public Adapter::AlgorithmBase
   {
    public:
     /// create using a Epetra_Comm
@@ -61,7 +61,7 @@ namespace EHL
     void read_restart(int restart) override;
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::Structure>& structure_field() { return structure_; }
+    const Teuchos::RCP<Adapter::Structure>& structure_field() { return structure_; }
 
     /// set structure solution on lubrication field
     void set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp);
@@ -83,37 +83,37 @@ namespace EHL
         Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce);
 
     /// underlying structure of the EHL problem
-    Teuchos::RCP<ADAPTER::Structure> structure_;
+    Teuchos::RCP<Adapter::Structure> structure_;
 
     /// underlying lubrication problem of the EHL problem
-    Teuchos::RCP<ADAPTER::LubricationBaseAlgorithm> lubrication_;
+    Teuchos::RCP<Adapter::LubricationBaseAlgorithm> lubrication_;
 
     //! Type of coupling strategy between the two fields of the EHL problems
-    const INPAR::EHL::FieldCoupling fieldcoupling_;
+    const Inpar::EHL::FieldCoupling fieldcoupling_;
 
     //! adapter for coupling the nodes of the lubrication field with the nodes from the master side
     //! of the structure
-    Teuchos::RCP<ADAPTER::CouplingEhlMortar> mortaradapter_;
+    Teuchos::RCP<Adapter::CouplingEhlMortar> mortaradapter_;
 
     //! Interface traction vector in the slave str dof map
     Teuchos::RCP<Epetra_Vector> stritraction_D_;
     Teuchos::RCP<Epetra_Vector> stritraction_M_;
 
     //! Transformation matrix for lubrication pre dof map <-> lubrication disp dof map
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> lubrimaptransform_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> lubrimaptransform_;
 
     //! Mapextractors for dealing with interface vectors of the structure field
-    Teuchos::RCP<CORE::LINALG::MapExtractor> slaverowmapextr_;
-    Teuchos::RCP<CORE::LINALG::MapExtractor> masterrowmapextr_;
-    Teuchos::RCP<CORE::LINALG::MapExtractor> mergedrowmapextr_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> slaverowmapextr_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> masterrowmapextr_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> mergedrowmapextr_;
 
     //! Transformation matrix for slave side node map <-> slave side disp dof map
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> slavemaptransform_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> slavemaptransform_;
 
     //! several adapters to transform maps
-    Teuchos::RCP<CORE::ADAPTER::Coupling> ada_strDisp_to_lubDisp_;
-    Teuchos::RCP<CORE::ADAPTER::Coupling> ada_strDisp_to_lubPres_;
-    Teuchos::RCP<CORE::ADAPTER::Coupling> ada_lubPres_to_lubDisp_;
+    Teuchos::RCP<Core::Adapter::Coupling> ada_strDisp_to_lubDisp_;
+    Teuchos::RCP<Core::Adapter::Coupling> ada_strDisp_to_lubPres_;
+    Teuchos::RCP<Core::Adapter::Coupling> ada_lubPres_to_lubDisp_;
 
     //! height old vector to calculate the time derivative of height (Squeeze term)
     Teuchos::RCP<const Epetra_Vector> heightold_;

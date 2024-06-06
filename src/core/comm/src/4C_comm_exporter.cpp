@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-CORE::COMM::Exporter::Exporter(const Epetra_Comm& comm)
+Core::Communication::Exporter::Exporter(const Epetra_Comm& comm)
     : dummymap_(0, 0, comm),
       frommap_(dummymap_),
       tomap_(dummymap_),
@@ -27,7 +27,7 @@ CORE::COMM::Exporter::Exporter(const Epetra_Comm& comm)
 {
 }
 
-CORE::COMM::Exporter::Exporter(
+Core::Communication::Exporter::Exporter(
     const Epetra_Map& frommap, const Epetra_Map& tomap, const Epetra_Comm& comm)
     : dummymap_(0, 0, comm),
       frommap_(frommap),
@@ -39,7 +39,7 @@ CORE::COMM::Exporter::Exporter(
   construct_exporter();
 }
 
-void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const char* data,
+void Core::Communication::Exporter::i_send(const int frompid, const int topid, const char* data,
     const int dsize, const int tag, MPI_Request& request) const
 {
   if (my_pid() != frompid) return;
@@ -48,7 +48,7 @@ void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const char
   MPI_Isend((void*)data, dsize, MPI_CHAR, topid, tag, comm->Comm(), &request);
 }
 
-void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const int* data,
+void Core::Communication::Exporter::i_send(const int frompid, const int topid, const int* data,
     const int dsize, const int tag, MPI_Request& request) const
 {
   if (my_pid() != frompid) return;
@@ -57,7 +57,7 @@ void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const int*
   MPI_Isend((void*)data, dsize, MPI_INT, topid, tag, comm->Comm(), &request);
 }
 
-void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const double* data,
+void Core::Communication::Exporter::i_send(const int frompid, const int topid, const double* data,
     const int dsize, const int tag, MPI_Request& request) const
 {
   if (my_pid() != frompid) return;
@@ -66,7 +66,7 @@ void CORE::COMM::Exporter::i_send(const int frompid, const int topid, const doub
   MPI_Isend((void*)data, dsize, MPI_DOUBLE, topid, tag, comm->Comm(), &request);
 }
 
-void CORE::COMM::Exporter::ReceiveAny(
+void Core::Communication::Exporter::ReceiveAny(
     int& source, int& tag, std::vector<char>& recvbuff, int& length) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -83,7 +83,7 @@ void CORE::COMM::Exporter::ReceiveAny(
   MPI_Recv(recvbuff.data(), length, MPI_CHAR, source, tag, comm->Comm(), &status);
 }
 
-void CORE::COMM::Exporter::Receive(
+void Core::Communication::Exporter::Receive(
     const int source, const int tag, std::vector<char>& recvbuff, int& length) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -97,7 +97,7 @@ void CORE::COMM::Exporter::Receive(
   MPI_Recv(recvbuff.data(), length, MPI_CHAR, source, tag, comm->Comm(), &status);
 }
 
-void CORE::COMM::Exporter::ReceiveAny(
+void Core::Communication::Exporter::ReceiveAny(
     int& source, int& tag, std::vector<int>& recvbuff, int& length) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -114,7 +114,7 @@ void CORE::COMM::Exporter::ReceiveAny(
   MPI_Recv(recvbuff.data(), length, MPI_INT, source, tag, comm->Comm(), &status);
 }
 
-void CORE::COMM::Exporter::Receive(
+void Core::Communication::Exporter::Receive(
     const int source, const int tag, std::vector<int>& recvbuff, int& length) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -128,7 +128,7 @@ void CORE::COMM::Exporter::Receive(
   MPI_Recv(recvbuff.data(), length, MPI_INT, source, tag, comm->Comm(), &status);
 }
 
-void CORE::COMM::Exporter::ReceiveAny(
+void Core::Communication::Exporter::ReceiveAny(
     int& source, int& tag, std::vector<double>& recvbuff, int& length) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -145,7 +145,7 @@ void CORE::COMM::Exporter::ReceiveAny(
   MPI_Recv(recvbuff.data(), length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
 }
 
-void CORE::COMM::Exporter::Receive(
+void Core::Communication::Exporter::Receive(
     const int source, const int tag, std::vector<double>& recvbuff, int& length) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -159,7 +159,7 @@ void CORE::COMM::Exporter::Receive(
   MPI_Recv(recvbuff.data(), length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
 }
 
-void CORE::COMM::Exporter::Allreduce(
+void Core::Communication::Exporter::Allreduce(
     std::vector<int>& sendbuff, std::vector<int>& recvbuff, MPI_Op mpi_op)
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -171,7 +171,7 @@ void CORE::COMM::Exporter::Allreduce(
   MPI_Allreduce(sendbuff.data(), recvbuff.data(), length, MPI_INT, mpi_op, comm->Comm());
 }
 
-void CORE::COMM::Exporter::Broadcast(
+void Core::Communication::Exporter::Broadcast(
     const int frompid, std::vector<char>& data, const int tag) const
 {
   const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -186,7 +186,7 @@ void CORE::COMM::Exporter::Broadcast(
   MPI_Bcast((void*)data.data(), length, MPI_CHAR, frompid, comm->Comm());
 }
 
-void CORE::COMM::Exporter::construct_exporter()
+void Core::Communication::Exporter::construct_exporter()
 {
   if (SourceMap().SameAs(TargetMap())) return;
 
@@ -240,7 +240,7 @@ void CORE::COMM::Exporter::construct_exporter()
   }  // for (int proc=0; proc<NumProc(); ++proc)
 }
 
-void CORE::COMM::Exporter::generic_export(ExporterHelper& helper)
+void Core::Communication::Exporter::generic_export(ExporterHelper& helper)
 {
   if (send_plan().size() == 0) return;
   // if (SourceMap().SameAs(TargetMap())) return;
@@ -261,7 +261,7 @@ void CORE::COMM::Exporter::generic_export(ExporterHelper& helper)
 
     //------------------------------------------------ do sending to tproc
     // gather all objects to be send
-    CORE::COMM::PackBuffer sendblock;
+    Core::Communication::PackBuffer sendblock;
     std::vector<int> sendgid;
     sendgid.reserve(send_plan()[tproc].size());
 
@@ -341,22 +341,22 @@ void CORE::COMM::Exporter::generic_export(ExporterHelper& helper)
   helper.PostExportCleanup(this);
 }
 
-void CORE::COMM::Exporter::Export(std::map<int, int>& data)
+void Core::Communication::Exporter::Export(std::map<int, int>& data)
 {
   PODExporterHelper<int> helper(data);
   generic_export(helper);
 }
 
-void CORE::COMM::Exporter::Export(std::map<int, double>& data)
+void Core::Communication::Exporter::Export(std::map<int, double>& data)
 {
   PODExporterHelper<double> helper(data);
   generic_export(helper);
 }
 
-void CORE::COMM::Exporter::Export(
-    std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>& data)
+void Core::Communication::Exporter::Export(
+    std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& data)
 {
-  AnyObjectExporterHelper<CORE::LINALG::SerialDenseMatrix> helper(data);
+  AnyObjectExporterHelper<Core::LinAlg::SerialDenseMatrix> helper(data);
   generic_export(helper);
 }
 

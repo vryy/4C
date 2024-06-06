@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
 
   // class implementation
@@ -30,16 +30,16 @@ namespace SCATRA
 
    private:
     //! return pointer to elch time integrator after cast
-    Teuchos::RCP<const SCATRA::ScaTraTimIntElch> elch_tim_int() const
+    Teuchos::RCP<const ScaTra::ScaTraTimIntElch> elch_tim_int() const
     {
-      return Teuchos::rcp_dynamic_cast<const SCATRA::ScaTraTimIntElch>(scatratimint_);
+      return Teuchos::rcp_dynamic_cast<const ScaTra::ScaTraTimIntElch>(scatratimint_);
     };
 
     //! get special result to be tested
     double result_special(const std::string quantity  //! name of quantity to be tested
     ) const override;
   };  // class ElchResultTest : public ScaTraResultTest
-}  // namespace SCATRA
+}  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

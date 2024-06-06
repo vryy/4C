@@ -30,17 +30,17 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
 }
@@ -48,19 +48,20 @@ namespace CORE::LINALG
 namespace XFEM
 {
   /// evaluate Neumann boundary conditions
-  void evaluate_neumann(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> discret,
-      Teuchos::RCP<Epetra_Vector> systemvector,
-      Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix = Teuchos::null);
+  void evaluate_neumann(Teuchos::ParameterList& params,
+      Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<Epetra_Vector> systemvector,
+      Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix = Teuchos::null);
 
   /// evaluate Neumann boundary conditions
-  void evaluate_neumann(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> discret,
-      Epetra_Vector& systemvector, CORE::LINALG::SparseOperator* systemmatrix = nullptr);
+  void evaluate_neumann(Teuchos::ParameterList& params,
+      Teuchos::RCP<Discret::Discretization> discret, Epetra_Vector& systemvector,
+      Core::LinAlg::SparseOperator* systemmatrix = nullptr);
 
   /// evaluate standard Neumann boundary conditions
-  void EvaluateNeumannStandard(std::multimap<std::string, CORE::Conditions::Condition*>& condition,
+  void EvaluateNeumannStandard(std::multimap<std::string, Core::Conditions::Condition*>& condition,
       const double time, bool assemblemat, Teuchos::ParameterList& params,
-      Teuchos::RCP<DRT::Discretization> discret, Epetra_Vector& systemvector,
-      CORE::LINALG::SparseOperator* systemmatrix);
+      Teuchos::RCP<Discret::Discretization> discret, Epetra_Vector& systemvector,
+      Core::LinAlg::SparseOperator* systemmatrix);
 
 
 }  // namespace XFEM

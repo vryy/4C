@@ -46,8 +46,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor.
      */
-    GeometryPairLineToVolumeGaussPointProjection(const CORE::Elements::Element* element1,
-        const CORE::Elements::Element* element2,
+    GeometryPairLineToVolumeGaussPointProjection(const Core::Elements::Element* element1,
+        const Core::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
 
 

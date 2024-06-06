@@ -30,8 +30,8 @@ namespace CONSTRAINTS
     \brief Standard Constructor
     */
     MPConstraint3Penalty(
-        Teuchos::RCP<DRT::Discretization> discr,  ///< discretization constraint lives on
-        const std::string& CondName               ///< Name of condition to create constraint from
+        Teuchos::RCP<Discret::Discretization> discr,  ///< discretization constraint lives on
+        const std::string& CondName  ///< Name of condition to create constraint from
     );
 
     /// unused
@@ -56,10 +56,10 @@ namespace CONSTRAINTS
     void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
         Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by
@@ -80,13 +80,13 @@ namespace CONSTRAINTS
 
     //! Evaluate constraint discretization and assemble the results
     void evaluate_constraint(
-        Teuchos::RCP<DRT::Discretization> disc,  ///< discretization to evaluate
+        Teuchos::RCP<Discret::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
         Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by
@@ -98,7 +98,7 @@ namespace CONSTRAINTS
                    ///< assembly of element contributions
 
     //! Initialize constraint discretization and assemble the results to the refbasevector
-    void evaluate_error(Teuchos::RCP<DRT::Discretization> disc,  ///< discretization to evaluate
+    void evaluate_error(Teuchos::RCP<Discret::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> systemvector3,  ///< distributed vector that may be filled by
@@ -106,9 +106,9 @@ namespace CONSTRAINTS
         bool init = false);
 
     //! creating a new discretization based on conditions containing constraint elements
-    std::map<int, Teuchos::RCP<DRT::Discretization>> create_discretization_from_condition(
-        Teuchos::RCP<DRT::Discretization> actdisc,
-        std::vector<CORE::Conditions::Condition*>
+    std::map<int, Teuchos::RCP<Discret::Discretization>> create_discretization_from_condition(
+        Teuchos::RCP<Discret::Discretization> actdisc,
+        std::vector<Core::Conditions::Condition*>
             constrcond,                   ///< conditions as discretization basis
         const std::string& discret_name,  ///< name of new discretization
         const std::string& element_name,  ///< name of element type to create

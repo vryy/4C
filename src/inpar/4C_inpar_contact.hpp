@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace CONTACT
   {
@@ -397,7 +397,7 @@ namespace INPAR
 
   }  // namespace CONTACT
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

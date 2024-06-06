@@ -18,14 +18,14 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  | (public) kremheller                                                03/18 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
-    CORE::FE::CellType distype, INPAR::ARTDYN::ImplType problem, const std::string& disname)
+Discret::ELEMENTS::ArteryEleInterface* Discret::ELEMENTS::ArtNetFactory::ProvideImpl(
+    Core::FE::CellType distype, Inpar::ArtDyn::ImplType problem, const std::string& disname)
 {
   switch (distype)
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      return define_problem_type<CORE::FE::CellType::line2>(problem, disname);
+      return define_problem_type<Core::FE::CellType::line2>(problem, disname);
 
       break;
     }
@@ -47,22 +47,22 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
 /*--------------------------------------------------------------------------*
  | (public) kremheller                                                03/18 |
  *--------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::define_problem_type(
-    INPAR::ARTDYN::ImplType problem, const std::string& disname)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ArteryEleInterface* Discret::ELEMENTS::ArtNetFactory::define_problem_type(
+    Inpar::ArtDyn::ImplType problem, const std::string& disname)
 {
   switch (problem)
   {
-    case INPAR::ARTDYN::ImplType::impltype_lin_exp:
+    case Inpar::ArtDyn::ImplType::impltype_lin_exp:
     {
       // 2 dofs per node
-      return DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Instance(2, disname);
+      return Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::Instance(2, disname);
       break;
     }
-    case INPAR::ARTDYN::ImplType::impltype_pressure_based:
+    case Inpar::ArtDyn::ImplType::impltype_pressure_based:
     {
       // 1 dof per node (only pressure)
-      return DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(1, disname);
+      return Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::Instance(1, disname);
       break;
     }
     default:

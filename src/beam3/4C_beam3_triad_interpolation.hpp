@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace LARGEROTATIONS
+namespace LargeRotations
 {
   /**
    * \brief abstract base class for a triad interpolation scheme
@@ -56,27 +56,27 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void Reset(std::vector<CORE::LINALG::Matrix<4, 1, T>> const& nodal_quaternions) = 0;
+    virtual void Reset(std::vector<Core::LinAlg::Matrix<4, 1, T>> const& nodal_quaternions) = 0;
 
     /** \brief reset interpolation scheme with nodal triads
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void Reset(std::vector<CORE::LINALG::Matrix<3, 3, T>> const& nodal_triads) = 0;
+    virtual void Reset(std::vector<Core::LinAlg::Matrix<3, 3, T>> const& nodal_triads) = 0;
 
     /** \brief compute the interpolated triad at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
     virtual void get_interpolated_triad_at_xi(
-        CORE::LINALG::Matrix<3, 3, T>& triad, const double xi) const = 0;
+        Core::LinAlg::Matrix<3, 3, T>& triad, const double xi) const = 0;
 
     /** \brief compute the interpolated quaternion at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
     virtual void get_interpolated_quaternion_at_xi(
-        CORE::LINALG::Matrix<4, 1, T>& quaternion, const double xi) const = 0;
+        Core::LinAlg::Matrix<4, 1, T>& quaternion, const double xi) const = 0;
     //@}
 
    private:
@@ -90,7 +90,7 @@ namespace LARGEROTATIONS
     //@}
   };
 
-}  // namespace LARGEROTATIONS
+}  // namespace LargeRotations
 
 FOUR_C_NAMESPACE_CLOSE
 

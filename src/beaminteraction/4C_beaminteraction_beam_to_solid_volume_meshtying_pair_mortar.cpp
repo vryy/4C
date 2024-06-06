@@ -43,10 +43,10 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
-    CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
-    CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+    mortar>::evaluate_and_assemble_mortar_contributions(const Discret::Discretization& discret,
+    const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
+    Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
+    Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
@@ -65,10 +65,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Initialize variables for local mortar matrices.
-  CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double> local_D(false);
-  CORE::LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double> local_M(false);
-  CORE::LINALG::Matrix<mortar::n_dof_, 1, double> local_kappa(false);
-  CORE::LINALG::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
+  Core::LinAlg::Matrix<mortar::n_dof_, beam::n_dof_, double> local_D(false);
+  Core::LinAlg::Matrix<mortar::n_dof_, solid::n_dof_, double> local_M(false);
+  Core::LinAlg::Matrix<mortar::n_dof_, 1, double> local_kappa(false);
+  Core::LinAlg::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
 
   // Evaluate the local mortar contributions.
   evaluate_dm(local_D, local_M, local_kappa, local_constraint);
@@ -108,11 +108,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   {
     // Setup variables.
     GEOMETRYPAIR::ElementData<mortar, double> element_data_lambda;
-    CORE::LINALG::Matrix<3, 1, scalar_type> X;
-    CORE::LINALG::Matrix<3, 1, scalar_type> r;
-    CORE::LINALG::Matrix<3, 1, scalar_type> u;
-    CORE::LINALG::Matrix<3, 1, double> lambda_discret;
-    CORE::LINALG::Matrix<3, 1, double> xi_mortar_node;
+    Core::LinAlg::Matrix<3, 1, scalar_type> X;
+    Core::LinAlg::Matrix<3, 1, scalar_type> r;
+    Core::LinAlg::Matrix<3, 1, scalar_type> u;
+    Core::LinAlg::Matrix<3, 1, double> lambda_discret;
+    Core::LinAlg::Matrix<3, 1, double> xi_mortar_node;
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
@@ -126,7 +126,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     const auto& [lambda_row_pos, _] = mortar_manager->LocationVector(*this);
 
     std::vector<double> lambda_pair;
-    CORE::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row_pos);
+    Core::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row_pos);
     for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
       element_data_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 
@@ -162,7 +162,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
         for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
         {
           // Get the local coordinate of this node.
-          xi_mortar_node = CORE::FE::GetNodeCoordinates(i_node, mortar::discretization_);
+          xi_mortar_node = Core::FE::GetNodeCoordinates(i_node, mortar::discretization_);
 
           // Get position and displacement of the mortar node.
           GEOMETRYPAIR::EvaluatePosition<beam>(xi_mortar_node(0), this->ele1pos_, r);
@@ -177,9 +177,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
-            displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
-            lambda_vis.push_back(CORE::FADUTILS::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(Core::FADUtils::CastToDouble(X(dim)));
+            displacement.push_back(Core::FADUtils::CastToDouble(u(dim)));
+            lambda_vis.push_back(Core::FADUtils::CastToDouble(lambda_discret(dim)));
           }
 
           if (write_unique_ids)
@@ -240,9 +240,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X(dim)));
-            displacement.push_back(CORE::FADUTILS::CastToDouble(u(dim)));
-            lambda_vis.push_back(CORE::FADUTILS::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(Core::FADUtils::CastToDouble(X(dim)));
+            displacement.push_back(Core::FADUtils::CastToDouble(u(dim)));
+            lambda_vis.push_back(Core::FADUtils::CastToDouble(lambda_discret(dim)));
           }
         }
 
@@ -271,10 +271,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>::evaluate_dm(
-    CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
-    CORE::LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double>& local_M,
-    CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
-    CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
+    Core::LinAlg::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+    Core::LinAlg::Matrix<mortar::n_dof_, solid::n_dof_, double>& local_M,
+    Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_kappa,
+    Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
 {
   // Initialize the local mortar matrices.
   local_D.PutScalar(0.0);
@@ -283,12 +283,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
   local_constraint.PutScalar(0.0);
 
   // Initialize variables for shape function values.
-  CORE::LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
-  CORE::LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
-  CORE::LINALG::Matrix<1, solid::n_nodes_ * solid::n_val_, double> N_solid(true);
+  Core::LinAlg::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
+  Core::LinAlg::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
+  Core::LinAlg::Matrix<1, solid::n_nodes_ * solid::n_val_, double> N_solid(true);
 
   // Initialize variable for beam position derivative.
-  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref(true);
+  Core::LinAlg::Matrix<3, 1, double> dr_beam_ref(true);
 
   // Initialize scalar variables.Clear
   double segment_jacobian = 0.0;
@@ -368,11 +368,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
       local_constraint(i_lambda) +=
           local_D(i_lambda, i_beam) *
-          CORE::FADUTILS::CastToDouble(this->ele1pos_.element_position_(i_beam));
+          Core::FADUtils::CastToDouble(this->ele1pos_.element_position_(i_beam));
     for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
       local_constraint(i_lambda) -=
           local_M(i_lambda, i_solid) *
-          CORE::FADUTILS::CastToDouble(this->ele2pos_.element_position_(i_solid));
+          Core::FADUtils::CastToDouble(this->ele2pos_.element_position_(i_solid));
   }
 }
 
@@ -381,9 +381,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::evaluate_penalty_force_double(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
-    const CORE::LINALG::Matrix<3, 1, double>& r_solid,
-    CORE::LINALG::Matrix<3, 1, double>& force) const
+    mortar>::evaluate_penalty_force_double(const Core::LinAlg::Matrix<3, 1, double>& r_beam,
+    const Core::LinAlg::Matrix<3, 1, double>& r_solid,
+    Core::LinAlg::Matrix<3, 1, double>& force) const
 {
   force.PutScalar(0.0);
 }

@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                                       |
  *----------------------------------------------------------------------*/
 CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
-    const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData, const int id,
+    const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
     bool selfcontact, const int contactconstitutivelawid)
     : Interface(interfaceData, id, comm, dim, icontact, selfcontact)
@@ -49,7 +49,7 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -113,8 +113,8 @@ void CONTACT::ConstitutivelawInterface::assemble_reg_normal_forces(
       // printf("lm=%f\n", -coconstlaw_->Evaluate(kappa * gap));
 
       // contribution of derivative of normal
-      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
-      CORE::GEN::Pairedvector<int, double>::iterator ncurr;
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      Core::Gen::Pairedvector<int, double>::iterator ncurr;
 
       for (int j = 0; j < dim; ++j)
       {

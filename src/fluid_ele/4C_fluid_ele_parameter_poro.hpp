@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -29,7 +29,7 @@ namespace DRT
      public:
       /// Singleton access method
       static FluidEleParameterPoro* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       void set_element_poro_parameter(Teuchos::ParameterList& params, int myrank);
 
@@ -51,15 +51,15 @@ namespace DRT
       //! flag for inclusion of transient terms in continuity equation
       bool IsStationaryConti() const
       {
-        return (not(transient_terms_ == INPAR::POROELAST::transient_all or
-                    transient_terms_ == INPAR::POROELAST::transient_continuity_only));
+        return (not(transient_terms_ == Inpar::PoroElast::transient_all or
+                    transient_terms_ == Inpar::PoroElast::transient_continuity_only));
       };
 
       //! flag for inclusion of transient terms in momentum equation
       bool is_stationary_momentum() const
       {
-        return (not(transient_terms_ == INPAR::POROELAST::transient_all or
-                    transient_terms_ == INPAR::POROELAST::transient_momentum_only));
+        return (not(transient_terms_ == Inpar::PoroElast::transient_all or
+                    transient_terms_ == Inpar::PoroElast::transient_momentum_only));
       };
 
 
@@ -80,14 +80,14 @@ namespace DRT
       bool poro_convective_term_;
 
       //! type of handling transient terms
-      INPAR::POROELAST::TransientEquationsOfPoroFluid transient_terms_;
+      Inpar::PoroElast::TransientEquationsOfPoroFluid transient_terms_;
 
       /// private Constructor since we are a Singleton.
       FluidEleParameterPoro();
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -27,7 +27,7 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations...
-namespace INPAR
+namespace Inpar
 {
   namespace STR
   {
@@ -38,12 +38,12 @@ namespace INPAR
     enum SolvingStrategy : int;
     enum SystemType : int;
   }  // namespace CONTACT
-}  // namespace INPAR
-namespace CORE::LINALG
+}  // namespace Inpar
+namespace Core::LinAlg
 {
   class Solver;
 }
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -58,7 +58,7 @@ namespace STR
     class Factory
     {
      private:
-      typedef std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>> LinSolMap;
+      typedef std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>> LinSolMap;
 
      public:
       //! constructor
@@ -69,38 +69,38 @@ namespace STR
 
       //! build the desired linear solvers
       Teuchos::RCP<LinSolMap> BuildLinSolvers(
-          const std::set<enum INPAR::STR::ModelType>& modeltypes,
-          const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const;
+          const std::set<enum Inpar::STR::ModelType>& modeltypes,
+          const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const;
 
       //! create the meshtying/contact linear solver
-      static Teuchos::RCP<CORE::LINALG::Solver> build_meshtying_contact_lin_solver(
-          DRT::Discretization& actdis, enum INPAR::CONTACT::SolvingStrategy sol_type,
-          enum INPAR::CONTACT::SystemType sys_type, const int lin_solver_id);
+      static Teuchos::RCP<Core::LinAlg::Solver> build_meshtying_contact_lin_solver(
+          Discret::Discretization& actdis, enum Inpar::CONTACT::SolvingStrategy sol_type,
+          enum Inpar::CONTACT::SystemType sys_type, const int lin_solver_id);
 
      private:
       //! create the structural linear solver (should be called by default)
-      Teuchos::RCP<CORE::LINALG::Solver> build_structure_lin_solver(
-          const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const;
+      Teuchos::RCP<Core::LinAlg::Solver> build_structure_lin_solver(
+          const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const;
 
       //! create the meshtying/contact linear solver
-      Teuchos::RCP<CORE::LINALG::Solver> build_meshtying_contact_lin_solver(
-          DRT::Discretization& actdis) const;
+      Teuchos::RCP<Core::LinAlg::Solver> build_meshtying_contact_lin_solver(
+          Discret::Discretization& actdis) const;
 
       //! create the Lagrange/penalty enforced constraint linear solver
-      Teuchos::RCP<CORE::LINALG::Solver> build_lag_pen_constraint_lin_solver(
-          const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const;
+      Teuchos::RCP<Core::LinAlg::Solver> build_lag_pen_constraint_lin_solver(
+          const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const;
 
       //! create the Windkessel linear solver
-      Teuchos::RCP<CORE::LINALG::Solver> build_cardiovascular0_d_lin_solver(
-          const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const;
+      Teuchos::RCP<Core::LinAlg::Solver> build_cardiovascular0_d_lin_solver(
+          const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const;
 
     };  // class Factory
 
     /*! Non-member function, which relates to the STR::SOLVER::Factory class
      *  Please call this method from outside! */
-    Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
-    BuildLinSolvers(const std::set<enum INPAR::STR::ModelType>& modeltypes,
-        const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis);
+    Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+    BuildLinSolvers(const std::set<enum Inpar::STR::ModelType>& modeltypes,
+        const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis);
   }  // namespace SOLVER
 }  // namespace STR
 

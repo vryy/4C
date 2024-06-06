@@ -24,26 +24,26 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::ScaTraEleCalcChemoReac(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::ScaTraEleCalcChemoReac(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
+    : Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
           numdofpernode, numscal, disname),
-      DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ScaTraEleCalcChemo(
+      Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ScaTraEleCalcChemo(
           numdofpernode, numscal, disname),
-      DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
+      Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
           numdofpernode, numscal, disname)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Instance(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>*
+Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcChemoReac<distype, probdim>>(
@@ -51,16 +51,16 @@ DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get the material constants  (private)                    thon 06/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::get_material_params(
-    const CORE::Elements::Element* ele,  //!< the element we are dealing with
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::get_material_params(
+    const Core::Elements::Element* ele,  //!< the element we are dealing with
     std::vector<double>& densn,          //!< density at t_(n)
     std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
     std::vector<double>& densam,         //!< density at t_(n+alpha_M)
@@ -69,7 +69,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::get_material_param
 )
 {
   // get the material
-  Teuchos::RCP<CORE::MAT::Material> material = ele->Material();
+  Teuchos::RCP<Core::Mat::Material> material = ele->Material();
 
   // We may have some reactive and some non-reactive elements in one discretisation.
   // But since the calculation classes are singleton, we have to reset all reactive stuff in case
@@ -81,31 +81,31 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::get_material_param
   // time
   chemo::clear_chemotaxis_terms();
 
-  if (material->MaterialType() == CORE::Materials::m_matlist)
+  if (material->MaterialType() == Core::Materials::m_matlist)
   {
-    const Teuchos::RCP<const MAT::MatList> actmat =
-        Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
+    const Teuchos::RCP<const Mat::MatList> actmat =
+        Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
     if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->MatID(k);
-      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
 
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
 
-  else if (material->MaterialType() == CORE::Materials::m_matlist_reactions)
+  else if (material->MaterialType() == Core::Materials::m_matlist_reactions)
   {
-    const Teuchos::RCP<MAT::MatListReactions> actmat =
-        Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);
+    const Teuchos::RCP<Mat::MatListReactions> actmat =
+        Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(material);
     if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->MatID(k);
-      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
 
       // Note: order is important here!!
       advreac::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
@@ -115,10 +115,10 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::get_material_param
     }
   }
 
-  else if (material->MaterialType() == CORE::Materials::m_matlist_chemotaxis)
+  else if (material->MaterialType() == Core::Materials::m_matlist_chemotaxis)
   {
-    const Teuchos::RCP<MAT::MatListChemotaxis> actmat =
-        Teuchos::rcp_dynamic_cast<MAT::MatListChemotaxis>(material);
+    const Teuchos::RCP<Mat::MatListChemotaxis> actmat =
+        Teuchos::rcp_dynamic_cast<Mat::MatListChemotaxis>(material);
     if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     chemo::get_chemotaxis_coefficients(
@@ -127,16 +127,16 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::get_material_param
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->MatID(k);
-      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
 
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
 
-  else if (material->MaterialType() == CORE::Materials::m_matlist_chemoreac)
+  else if (material->MaterialType() == Core::Materials::m_matlist_chemoreac)
   {
-    const Teuchos::RCP<MAT::MatListReactions> actmat =
-        Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(material);
+    const Teuchos::RCP<Mat::MatListReactions> actmat =
+        Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(material);
     if (actmat->NumMat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     chemo::get_chemotaxis_coefficients(
@@ -145,7 +145,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::get_material_param
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->MatID(k);
-      Teuchos::RCP<CORE::MAT::Material> singlemat = actmat->MaterialById(matid);
+      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->MaterialById(matid);
 
       // Note: order is important here!!
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
@@ -166,25 +166,25 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype, probdim>::get_material_param
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::line3>;
+template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::quad9>;
+template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::quad4>;
+// template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::quad9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::pyramid5>;
-template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::nurbs9>;
-// template class DRT::ELEMENTS::ScaTraEleCalcChemoReac<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::hex8>;
+// template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::tet10>;
+// template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::pyramid5>;
+template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::nurbs9>;
+// template class Discret::ELEMENTS::ScaTraEleCalcChemoReac<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

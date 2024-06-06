@@ -312,7 +312,7 @@ void testfunction(std::map<std::string, testfunct>::const_iterator iterator,
     std::cout << "Testing " << iterator->first << " ...\n";
     (*iterator->second)();
   }
-  catch (CORE::Exception& err)
+  catch (Core::Exception& err)
   {
     std::cout << "FAILED: " << err.what_with_stacktrace() << "\n";
     failures.push_back(iterator->first);
@@ -417,7 +417,7 @@ int runtests(char** argv, std::map<std::string, testfunct>& functable, std::stri
  */
 void SetProblemDimension(const std::map<std::string, testfunct>& functable)
 {
-  GLOBAL::Problem& problem = (*GLOBAL::Problem::Instance());
+  Global::Problem& problem = (*Global::Problem::Instance());
   Teuchos::RCP<Teuchos::ParameterList> pptr = Teuchos::rcp(new Teuchos::ParameterList());
   Teuchos::ParameterList& size_params = pptr->sublist("PROBLEM SIZE", false);
   int probdim = 3;
@@ -771,7 +771,7 @@ int main(int argc, char** argv)
 
   SetProblemDimension(functable);
   int result = runtests(argv, functable, testname, ignore_testname);
-  GLOBAL::Problem::Done();
+  Global::Problem::Done();
   MPI_Finalize();
   return result;
 }

@@ -29,8 +29,9 @@ FOUR_C_NAMESPACE_OPEN
 
 */
 /*----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::ParameterList& params, const std::string& statistics_outfilename)
+FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params,
+    const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {
   if (discret_->Comm().MyPID() == 0)
@@ -78,8 +79,8 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  togglew_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  togglep_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  togglew_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  togglep_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
 
   //----------------------------------------------------------------------
@@ -95,7 +96,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
   {
     // create node object
-    CORE::Nodes::Node* node = discret_->lRowNode(i);
+    Core::Nodes::Node* node = discret_->lRowNode(i);
 
     // Is the actual node on z-axis?
     // => get z-coordinates of nodes on z-axis
@@ -114,23 +115,23 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   std::vector<char> rblock;
 
   // create an exporter for point to point communication
-  CORE::COMM::Exporter exporter(discret_->Comm());
+  Core::Communication::Exporter exporter(discret_->Comm());
 
   // first, communicate coordinates in x1-direction
   for (int np = 0; np < numprocs; ++np)
   {
-    CORE::COMM::PackBuffer data;
+    Core::Communication::PackBuffer data;
 
     for (std::set<double, LineSortCriterion>::iterator zline = zavcoords.begin();
          zline != zavcoords.end(); ++zline)
     {
-      CORE::COMM::ParObject::AddtoPack(data, *zline);
+      Core::Communication::ParObject::AddtoPack(data, *zline);
     }
     data.StartPacking();
     for (std::set<double, LineSortCriterion>::iterator zline = zavcoords.begin();
          zline != zavcoords.end(); ++zline)
     {
-      CORE::COMM::ParObject::AddtoPack(data, *zline);
+      Core::Communication::ParObject::AddtoPack(data, *zline);
     }
     std::swap(sblock, data());
 
@@ -173,7 +174,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
       while (index < rblock.size())
       {
         double onecoord;
-        CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
+        Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
         zavcoords.insert(onecoord);
       }
     }
@@ -257,7 +258,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
     for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
     {
       // create node object
-      CORE::Nodes::Node* node = discret_->lRowNode(i);
+      Core::Nodes::Node* node = discret_->lRowNode(i);
 
       // Get all nodes on evaluation plane at this z position with y=0 and x>2e-9
       if (node->X()[2] < actZ + 2e-9 && node->X()[2] > actZ - 2e-9 && node->X()[1] < 2e-9 &&
@@ -282,23 +283,23 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
     std::vector<char> rblock;
 
     // create an exporter for point to point communication
-    CORE::COMM::Exporter exporter(discret_->Comm());
+    Core::Communication::Exporter exporter(discret_->Comm());
 
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)
     {
-      CORE::COMM::PackBuffer data;
+      Core::Communication::PackBuffer data;
 
       for (std::set<double, LineSortCriterion>::iterator zline = ravcoords.begin();
            zline != ravcoords.end(); ++zline)
       {
-        CORE::COMM::ParObject::AddtoPack(data, *zline);
+        Core::Communication::ParObject::AddtoPack(data, *zline);
       }
       data.StartPacking();
       for (std::set<double, LineSortCriterion>::iterator zline = ravcoords.begin();
            zline != ravcoords.end(); ++zline)
       {
-        CORE::COMM::ParObject::AddtoPack(data, *zline);
+        Core::Communication::ParObject::AddtoPack(data, *zline);
       }
       std::swap(sblock, data());
 
@@ -343,7 +344,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
         while (index < rblock.size())
         {
           double onecoord;
-          CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
+          Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
           ravcoords.insert(onecoord);
         }
       }
@@ -390,16 +391,16 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   //----------------------------------------------------------------------
   // allocate arrays for sums of mean values
   //----------------------------------------------------------------------
-  zsumw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  zsumw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   zsumw_->reshape(1, numzcoor_);
 
-  zsump_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  zsump_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   zsump_->reshape(1, numzcoor_);
 
-  rsumw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  rsumw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   rsumw_->reshape(numrstatlocations_, numPosEvaluation);
 
-  rsump_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  rsump_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
   rsump_->reshape(numrstatlocations_, numPosEvaluation);
 
 
@@ -468,7 +469,7 @@ void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> vel
     // write a 1.0 at the position of the actual node of the processor in the toggle vectors
     for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
     {
-      CORE::Nodes::Node* node = discret_->lRowNode(nn);
+      Core::Nodes::Node* node = discret_->lRowNode(nn);
 
       // If node is on z-axis then get toggle vector for pressure and velocity at actual node //
       // this is the wall node
@@ -559,7 +560,7 @@ void FLD::TurbulenceStatisticsBfda::DoTimeSample(Teuchos::RCP<Epetra_Vector> vel
         // Put 1.0 in toggle vectors if node on proc is desired node
         for (int nn = 0; nn < discret_->NumMyRowNodes(); ++nn)
         {
-          CORE::Nodes::Node* node = discret_->lRowNode(nn);
+          Core::Nodes::Node* node = discret_->lRowNode(nn);
 
           // If node is on desired position then get toggle vector for pressure and velocity at
           // actual node

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods for namespace DRT
+\brief A collection of helper methods for namespace Discret
 
 \level 0
 
@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   /*!
   \brief Create an instance of a ParObject depending on the type stored in data
@@ -44,7 +44,7 @@ namespace CORE::COMM
   /*!
   \brief Create an instance of a finite element depending on the type of element
 
-  A CORE::Elements::Element derived class is allocated and returned. The type of element
+  A Core::Elements::Element derived class is allocated and returned. The type of element
   allocated depends on the input parameter eletype.
 
   \param eletype (in): A string containing the type of element
@@ -53,7 +53,7 @@ namespace CORE::COMM
   \param owner   (in): owner of the new element
 
   */
-  Teuchos::RCP<CORE::Elements::Element> Factory(
+  Teuchos::RCP<Core::Elements::Element> Factory(
       const std::string eletype, const std::string distype, const int id, const int owner);
 
   //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
@@ -84,7 +84,7 @@ namespace CORE::COMM
    * \date 05/08
    */
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<CORE::Elements::Element>> ElementBoundaryFactory(
+  std::vector<Teuchos::RCP<Core::Elements::Element>> ElementBoundaryFactory(
       const BoundaryBuildType
           buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
       ParentEle& ele  ///< pointer on the parent element
@@ -93,29 +93,29 @@ namespace CORE::COMM
     // do we have to build volume, surface or line elements?
     // get node connectivity for specific distype of parent element
     unsigned int nele = 0;
-    const CORE::FE::CellType distype = ele.Shape();
+    const Core::FE::CellType distype = ele.Shape();
     std::vector<std::vector<int>> connectivity;
     switch (buildtype)
     {
       case buildSurfaces:
       {
         nele = ele.NumSurface();
-        connectivity = CORE::FE::getEleNodeNumberingSurfaces(distype);
+        connectivity = Core::FE::getEleNodeNumberingSurfaces(distype);
         break;
       }
       case buildLines:
       {
         nele = ele.NumLine();
-        connectivity = CORE::FE::getEleNodeNumberingLines(distype);
+        connectivity = Core::FE::getEleNodeNumberingLines(distype);
         break;
       }
       default:
         FOUR_C_THROW("buildNothing case not handled in ElementBoundaryFactory");
     }
     // create vectors that will contain the volume, surface or line elements
-    std::vector<Teuchos::RCP<CORE::Elements::Element>> boundaryeles(nele);
+    std::vector<Teuchos::RCP<Core::Elements::Element>> boundaryeles(nele);
 
-    // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
+    // does Discret::UTILS convention match your implementation of NumSurface() or NumLine()?
     if (nele != connectivity.size()) FOUR_C_THROW("number of surfaces or lines does not match!");
 
     // now, build the new surface/line elements
@@ -124,7 +124,7 @@ namespace CORE::COMM
       // allocate node vectors
       unsigned int nnode = connectivity[iele].size();  // this number changes for pyramids or wedges
       std::vector<int> nodeids(nnode);
-      std::vector<CORE::Nodes::Node*> nodes(nnode);
+      std::vector<Core::Nodes::Node*> nodes(nnode);
 
       // get connectivity infos
       for (unsigned int inode = 0; inode < nnode; inode++)
@@ -161,11 +161,11 @@ namespace CORE::COMM
    * \date 03/12
    */
   template <class IntFaceEle, class ParentEle>
-  Teuchos::RCP<CORE::Elements::Element> ElementIntFaceFactory(int id,  ///< element id
+  Teuchos::RCP<Core::Elements::Element> ElementIntFaceFactory(int id,  ///< element id
       int owner,                  ///< owner (= owner of parent element with smallest gid)
       int nnode,                  ///< number of nodes
       const int* nodeids,         ///< node ids
-      CORE::Nodes::Node** nodes,  ///< nodes of surface
+      Core::Nodes::Node** nodes,  ///< nodes of surface
       ParentEle* master_ele,      ///< pointer on the master parent element
       ParentEle* slave_ele,       ///< pointer on the slave parent element
       const int lsurface_master,  ///< local surface index with respect to master parent element
@@ -179,14 +179,14 @@ namespace CORE::COMM
   }
 
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<CORE::Elements::Element>> GetElementLines(ParentEle& ele)
+  std::vector<Teuchos::RCP<Core::Elements::Element>> GetElementLines(ParentEle& ele)
   {
     // 1D boundary element and 2D/3D parent element
-    if (CORE::FE::getDimension(ele.Shape()) > 1)
+    if (Core::FE::getDimension(ele.Shape()) > 1)
     {
       return ElementBoundaryFactory<BoundaryEle, ParentEle>(buildLines, ele);
     }
-    else if (CORE::FE::getDimension(ele.Shape()) == 1)
+    else if (Core::FE::getDimension(ele.Shape()) == 1)
     {
       // 1D boundary element and 1D parent element
       //  -> we return the element itself
@@ -196,14 +196,14 @@ namespace CORE::COMM
   }
 
   template <class BoundaryEle, class ParentEle>
-  std::vector<Teuchos::RCP<CORE::Elements::Element>> GetElementSurfaces(ParentEle& ele)
+  std::vector<Teuchos::RCP<Core::Elements::Element>> GetElementSurfaces(ParentEle& ele)
   {
-    if (CORE::FE::getDimension(ele.Shape()) > 2)
+    if (Core::FE::getDimension(ele.Shape()) > 2)
     {
       // 2D boundary element and 3D parent element
       return ElementBoundaryFactory<BoundaryEle, ParentEle>(buildSurfaces, ele);
     }
-    else if (CORE::FE::getDimension(ele.Shape()) == 2)
+    else if (Core::FE::getDimension(ele.Shape()) == 2)
     {
       // 2D boundary element and 2D parent element
       // -> we return the element itself
@@ -213,7 +213,7 @@ namespace CORE::COMM
     FOUR_C_THROW("Surfaces do not exist for 1D-elements.");
   }
 
-}  // namespace CORE::COMM
+}  // namespace Core::Communication
 
 
 

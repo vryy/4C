@@ -23,28 +23,28 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
   class ParObject;
-}  // namespace CORE::COMM
+}  // namespace Core::Communication
 
-namespace CORE::COUPLING
+namespace Core::COUPLING
 {
   class OctreeElement;
 
@@ -88,7 +88,7 @@ namespace CORE::COUPLING
     \param   tol            (i) tolerance for octree
 
     \return void  */
-    virtual int Init(const DRT::Discretization& actdis, const std::vector<int>& masternodeids,
+    virtual int Init(const Discret::Discretization& actdis, const std::vector<int>& masternodeids,
         const int maxnodeperleaf = 150, const double tol = 1e-08);
 
     //! setup this class
@@ -123,31 +123,31 @@ namespace CORE::COUPLING
 
     //! calc unique coordinate of entity
     virtual void calc_point_coordinate(
-        const DRT::Discretization* dis, const int id, double* coord) = 0;
+        const Discret::Discretization* dis, const int id, double* coord) = 0;
 
     //! calc unique coordinate of entity
-    virtual void calc_point_coordinate(CORE::COMM::ParObject* entity, double* coord) = 0;
+    virtual void calc_point_coordinate(Core::Communication::ParObject* entity, double* coord) = 0;
 
     //! check if entity is on calling proc
-    virtual bool check_have_entity(const DRT::Discretization* dis, const int id) = 0;
+    virtual bool check_have_entity(const Discret::Discretization* dis, const int id) = 0;
 
     //! returns true if entity is owned by calling proc
-    virtual bool check_entity_owner(const DRT::Discretization* dis, const int id) = 0;
+    virtual bool check_entity_owner(const Discret::Discretization* dis, const int id) = 0;
 
     //! pack entity to PackPuffer
-    virtual void pack_entity(
-        CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id) = 0;
+    virtual void pack_entity(Core::Communication::PackBuffer& data,
+        const Discret::Discretization* dis, const int id) = 0;
 
     //! unpack entity to PackPuffer
     virtual void un_pack_entity(std::vector<char>::size_type& index,
         std::vector<char>& rblockofnodes, std::vector<char>& data) = 0;
 
     //! check if unpacked type is correct
-    virtual int check_valid_entity_type(Teuchos::RCP<CORE::COMM::ParObject> o) = 0;
+    virtual int check_valid_entity_type(Teuchos::RCP<Core::Communication::ParObject> o) = 0;
 
     //! create an octree element
     virtual Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
-        CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) = 0;
+        Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer) = 0;
 
     //@}
 
@@ -207,7 +207,7 @@ namespace CORE::COUPLING
       \param slavedis     (i) discretization the slave nodes belong to
       \param slavenodeids (i) gids of nodes to match
       \param coupling     (o) master node gid to (slave node gid, distance) */
-    virtual void FindMatch(const DRT::Discretization& slavedis,
+    virtual void FindMatch(const Discret::Discretization& slavedis,
         const std::vector<int>& slavenodeids, std::map<int, std::pair<int, double>>& coupling);
 
     /*! \brief find pairs of nearest nodes
@@ -223,14 +223,14 @@ namespace CORE::COUPLING
       \param slavedis     (i) discretization the slave entity belongs to
       \param slavenodeids (i) gids of entity to match
       \param coupling     (o) slave entity gid to (slave entity gid, distance, owned) */
-    virtual void fill_slave_to_master_gid_mapping(const DRT::Discretization& slavedis,
+    virtual void fill_slave_to_master_gid_mapping(const Discret::Discretization& slavedis,
         const std::vector<int>& slavenodeids, std::map<int, std::vector<double>>& coupling);
 
     //@}
 
    protected:
     //! \brief all nodes in leafs are nodes of this discretization
-    const DRT::Discretization* discret_;
+    const Discret::Discretization* discret_;
     //! \brief order of magnitude of smallest element size (used for tolerances)
     double tol_;
     //! \brief root of the local search tree
@@ -288,31 +288,31 @@ namespace CORE::COUPLING
    protected:
     //! calc unique coordinate, associated to node
     void calc_point_coordinate(
-        const DRT::Discretization* dis, const int id, double* coord) override;
+        const Discret::Discretization* dis, const int id, double* coord) override;
 
     //! calc unique coordinate of Node
-    void calc_point_coordinate(CORE::COMM::ParObject* entity, double* coord) override;
+    void calc_point_coordinate(Core::Communication::ParObject* entity, double* coord) override;
 
     //! check if node with gid = id is on calling proc
-    bool check_have_entity(const DRT::Discretization* dis, const int id) override;
+    bool check_have_entity(const Discret::Discretization* dis, const int id) override;
 
     //! returns true if node with gid = id is owned by calling proc
-    bool check_entity_owner(const DRT::Discretization* dis, const int id) override;
+    bool check_entity_owner(const Discret::Discretization* dis, const int id) override;
 
     //! pack node to PackPuffer
-    void pack_entity(
-        CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id) override;
+    void pack_entity(Core::Communication::PackBuffer& data, const Discret::Discretization* dis,
+        const int id) override;
 
     //! unpack node from PackPuffer
     void un_pack_entity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
         std::vector<char>& data) override;
 
     //! check if unpacked type is correct
-    int check_valid_entity_type(Teuchos::RCP<CORE::COMM::ParObject> o) override;
+    int check_valid_entity_type(Teuchos::RCP<Core::Communication::ParObject> o) override;
 
     //! create an octree element
     Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
-        CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) override;
+        Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
   };  // class NodeMatchingOctree
 
@@ -327,31 +327,31 @@ namespace CORE::COUPLING
    protected:
     //! calc unique coordinate, associated to element
     void calc_point_coordinate(
-        const DRT::Discretization* dis, const int id, double* coord) override;
+        const Discret::Discretization* dis, const int id, double* coord) override;
 
     //! calc unique coordinate of entity
-    void calc_point_coordinate(CORE::COMM::ParObject* entity, double* coord) override;
+    void calc_point_coordinate(Core::Communication::ParObject* entity, double* coord) override;
 
     //! check if element with gid = id is on calling proc
-    bool check_have_entity(const DRT::Discretization* dis, const int id) override;
+    bool check_have_entity(const Discret::Discretization* dis, const int id) override;
 
     //! returns true if element is owned by calling proc
-    bool check_entity_owner(const DRT::Discretization* dis, const int id) override;
+    bool check_entity_owner(const Discret::Discretization* dis, const int id) override;
 
     //! pack element to PackPuffer
-    void pack_entity(
-        CORE::COMM::PackBuffer& data, const DRT::Discretization* dis, const int id) override;
+    void pack_entity(Core::Communication::PackBuffer& data, const Discret::Discretization* dis,
+        const int id) override;
 
     //! unpack element from PackPuffer
     void un_pack_entity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
         std::vector<char>& data) override;
 
     //! check if unpacked type is correct
-    int check_valid_entity_type(Teuchos::RCP<CORE::COMM::ParObject> o) override;
+    int check_valid_entity_type(Teuchos::RCP<Core::Communication::ParObject> o) override;
 
     //! create an octree element
     Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
-        CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) override;
+        Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
    private:
     //! \brief Map that stores id and RCP to flying nodes
@@ -369,7 +369,7 @@ namespace CORE::COUPLING
     //!
     //! \author Andreas Rauch
     //! \date   10/16
-    std::map<int, Teuchos::RCP<CORE::Nodes::Node>> nodes_;
+    std::map<int, Teuchos::RCP<Core::Nodes::Node>> nodes_;
 
   };  // class ElementMatchingOctree
 
@@ -406,8 +406,8 @@ namespace CORE::COUPLING
     \param  tol             (i) Tolerance for octree
 
     \return  int  */
-    virtual int Init(const DRT::Discretization& actdis, std::vector<int>& nodeids,
-        const CORE::LINALG::SerialDenseMatrix& boundingbox, const int layer,
+    virtual int Init(const Discret::Discretization& actdis, std::vector<int>& nodeids,
+        const Core::LinAlg::SerialDenseMatrix& boundingbox, const int layer,
         const int maxnodeperleaf, const double tol);
 
     //! setup this class
@@ -486,17 +486,17 @@ namespace CORE::COUPLING
    protected:
     //! calc unique coordinate of entity
     virtual void calc_point_coordinate(
-        const DRT::Discretization* dis, const int id, double* coord) = 0;
+        const Discret::Discretization* dis, const int id, double* coord) = 0;
 
     //! create an octree element
     virtual Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
-        CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) = 0;
+        Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer) = 0;
 
    protected:
     //! all nodes belong to this discretisation
-    const DRT::Discretization* discret_;
+    const Discret::Discretization* discret_;
     //! the bounding box of the element
-    CORE::LINALG::SerialDenseMatrix boundingbox_;
+    Core::LinAlg::SerialDenseMatrix boundingbox_;
     //! the nodeids (needs to be a copy !)
     std::vector<int> nodeids_;
     //! \brief depth of the octree element in the tree
@@ -556,11 +556,11 @@ namespace CORE::COUPLING
    protected:
     //! calc unique coordinate of node
     void calc_point_coordinate(
-        const DRT::Discretization* dis, const int id, double* coord) override;
+        const Discret::Discretization* dis, const int id, double* coord) override;
 
     //! create an octree element
     Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
-        CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) override;
+        Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
   };  // OctreeNodalElement
 
@@ -575,15 +575,15 @@ namespace CORE::COUPLING
    protected:
     //! calc unique coordinate of element
     void calc_point_coordinate(
-        const DRT::Discretization* dis, const int id, double* coord) override;
+        const Discret::Discretization* dis, const int id, double* coord) override;
 
     //! create an octree element
     Teuchos::RCP<OctreeElement> create_octree_element(std::vector<int>& nodeidstoadd,
-        CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) override;
+        Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
   };  // OctreeNodalElement
 
-}  // namespace CORE::COUPLING
+}  // namespace Core::COUPLING
 
 FOUR_C_NAMESPACE_CLOSE
 

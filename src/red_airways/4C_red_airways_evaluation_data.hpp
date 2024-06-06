@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::REDAIRWAYS
+namespace Discret::ReducedLung
 {
   /**
    * Store all global vectors that are required to evaluate different kind of reduced airway
@@ -104,7 +104,7 @@ namespace DRT::REDAIRWAYS
     EvaluationData& operator=(const EvaluationData&) = delete;
     EvaluationData& operator=(EvaluationData&&) = delete;
   };
-}  // namespace DRT::REDAIRWAYS
+}  // namespace Discret::ReducedLung
 
 FOUR_C_NAMESPACE_CLOSE
 

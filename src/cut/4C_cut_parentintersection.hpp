@@ -19,14 +19,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Node;
     class Edge;
@@ -52,7 +52,7 @@ namespace CORE::GEO
         //! (constructor during the Robin round)
         DofSetData(int set_index,  ///< set index for Volumecell
             bool inside_cell,      ///< cell inside or outside
-            std::vector<CORE::LINALG::Matrix<3, 1>>&
+            std::vector<Core::LinAlg::Matrix<3, 1>>&
                 cut_points_coords,  ///< coordinates of cut_points
             int peid,               ///< parent element id
             std::map<int, int>&
@@ -90,7 +90,7 @@ namespace CORE::GEO
 
         int set_index_;     ///< set index for Volumecell
         bool inside_cell_;  ///< bool inside or outside cell
-        std::vector<CORE::LINALG::Matrix<3, 1>>
+        std::vector<Core::LinAlg::Matrix<3, 1>>
             cut_points_coords_;  ///< coordinates for points of Volumecell
         int peid_;               ///< parent element Id for volumecell
         std::map<int, int>
@@ -121,13 +121,13 @@ namespace CORE::GEO
       void SetFindPositions(bool positions) { options_.SetFindPositions(positions); }
 
       /// set the option if positions have to be determined or not
-      void set_nodal_dof_set_strategy(INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy)
+      void set_nodal_dof_set_strategy(Inpar::Cut::NodalDofSetStrategy nodal_dofset_strategy)
       {
         options_.set_nodal_dof_set_strategy(nodal_dofset_strategy);
       }
 
       /// Set the position for the boundary cell creation
-      void set_gen_boundary_cell_position(INPAR::CUT::BoundaryCellPosition gen_bcell_position)
+      void set_gen_boundary_cell_position(Inpar::Cut::BoundaryCellPosition gen_bcell_position)
       {
         options_.set_gen_boundary_cell_position(gen_bcell_position);
       }
@@ -146,28 +146,28 @@ namespace CORE::GEO
       virtual void Cut_SelfCut(bool include_inner, bool screenoutput)
       {
         if (myrank_ == 0 and screenoutput)
-          CORE::IO::cout << "\t * 2/6 Cut_SelfCut ... not performed";
+          Core::IO::cout << "\t * 2/6 Cut_SelfCut ... not performed";
         return;
       };
 
       virtual void cut_collision_detection(bool include_inner, bool screenoutput)
       {
         if (myrank_ == 0 and screenoutput)
-          CORE::IO::cout << "\t * 3/6 cut_collision_detection ... not performed";
+          Core::IO::cout << "\t * 3/6 cut_collision_detection ... not performed";
         return;
       };
 
       virtual void Cut_Mesh(bool screenoutput)
       {
         if (myrank_ == 0 and screenoutput)
-          CORE::IO::cout << "\t * 4/6 Cut_Mesh (LevelSet-Cut) ... not performed";
+          Core::IO::cout << "\t * 4/6 Cut_Mesh (LevelSet-Cut) ... not performed";
         return;
       };
 
       virtual void cut_mesh_intersection(bool screenoutput)
       {
         if (myrank_ == 0 and screenoutput)
-          CORE::IO::cout << "\t * 4/6 cut_mesh_intersection (Mesh-Cut) ... not performed";
+          Core::IO::cout << "\t * 4/6 cut_mesh_intersection (Mesh-Cut) ... not performed";
         return;
       };
 
@@ -175,19 +175,19 @@ namespace CORE::GEO
       \brief The routine which splits the volumecell into integrationcells by tessellation, or
       create Gaussian integration rules by moment fitting equations
        */
-      void Cut_Finalize(bool include_inner, INPAR::CUT::VCellGaussPts VCellgausstype,
-          INPAR::CUT::BCellGaussPts BCellgausstype, bool tetcellsonly, bool screenoutput);
+      void Cut_Finalize(bool include_inner, Inpar::Cut::VCellGaussPts VCellgausstype,
+          Inpar::Cut::BCellGaussPts BCellgausstype, bool tetcellsonly, bool screenoutput);
 
       /*========================================================================*/
       //! @name nodal dofset routines
       /*========================================================================*/
 
       /// Create nodal dofset sets within the parallel cut framework
-      void CreateNodalDofSet(bool include_inner, const DRT::Discretization& dis);
+      void CreateNodalDofSet(bool include_inner, const Discret::Discretization& dis);
 
       /// fill parallel DofSetData with information that has to be communicated
       void fill_parallel_dof_set_data(std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData,
-          const DRT::Discretization& dis, bool include_inner);
+          const Discret::Discretization& dis, bool include_inner);
 
       /// create parallel DofSetData for a volumecell that has to be communicated
       void create_parallel_dof_set_data_vc(
@@ -205,7 +205,7 @@ namespace CORE::GEO
 
       /// connect sets of volumecells for neighboring elements around a node
       void ConnectNodalDOFSets(std::vector<Node*>& nodes, bool include_inner,
-          const DRT::Discretization& dis,
+          const Discret::Discretization& dis,
           const std::vector<plain_volumecell_set>& connected_vc_sets,
           std::vector<std::vector<int>>& nodaldofset_vc_sets,
           std::vector<std::map<int, int>>& vcsets_nid_dofsetnumber_map_toComm);
@@ -240,15 +240,15 @@ namespace CORE::GEO
       /// write gmsh debug output for nodal cell sets
       void dump_gmsh_nodal_cell_set(
           std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets,
-          const DRT::Discretization& dis);
+          const Discret::Discretization& dis);
 
       /// write gmsh debug output for CellSets
       void DumpGmshCellSets(
-          std::vector<plain_volumecell_set>& cell_sets, const DRT::Discretization& dis);
+          std::vector<plain_volumecell_set>& cell_sets, const Discret::Discretization& dis);
 
       /// write gmsh cut output for number of dofsets and the connected vc sets
       void dump_gmsh_num_dof_sets(
-          std::string filename, bool include_inner, const DRT::Discretization& dis);
+          std::string filename, bool include_inner, const Discret::Discretization& dis);
 
       /// write gmsh output for volumecells
       void dump_gmsh_volume_cells(std::string name, bool include_inner);
@@ -279,8 +279,8 @@ namespace CORE::GEO
       int myrank_;                  ///< my processor Id
     };
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

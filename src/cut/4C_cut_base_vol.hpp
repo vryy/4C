@@ -17,17 +17,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     /*!
     \brief Returns the actual base function to be integrated over the volume to form the moment
     fitting matrix
     */
     double base_function(std::vector<double> coordi, int base_num);
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

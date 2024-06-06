@@ -40,10 +40,10 @@ FSI::ConstrMonolithic::ConstrMonolithic(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : BlockMonolithic(comm, timeparams), conman_(structure_field()->get_constraint_manager())
 {
-  icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupsaout_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupfsout_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupfaout_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  icoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupsaout_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupfsout_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupfaout_ = Teuchos::rcp(new Core::Adapter::Coupling());
 
   return;
 }
@@ -52,10 +52,10 @@ FSI::ConstrMonolithic::ConstrMonolithic(
 /*----------------------------------------------------------------------*/
 void FSI::ConstrMonolithic::GeneralSetup()
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
-      CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -69,12 +69,12 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
   // right now we use matching meshes at the interface
 
-  CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
-  CORE::ADAPTER::Coupling& coupsa = structure_ale_coupling();
-  CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
+  Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  Core::Adapter::Coupling& coupsa = structure_ale_coupling();
+  Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   // structure to fluid
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
   coupsf.setup_condition_coupling(*structure_field()->discretization(),
       structure_field()->Interface()->FSICondMap(), *fluid_field()->discretization(),
       fluid_field()->Interface()->FSICondMap(), "FSICoupling", ndim);
@@ -123,17 +123,17 @@ void FSI::ConstrMonolithic::GeneralSetup()
   aleintersectionmaps.push_back(ale_field()->GetDBCMapExtractor()->CondMap());
   aleintersectionmaps.push_back(ale_field()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap =
-      CORE::LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
+      Core::LinAlg::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
 
   // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
   dbcmaps.push_back(structure_field()->GetDBCMapExtractor()->CondMap());
   dbcmaps.push_back(fluid_field()->GetDBCMapExtractor()->CondMap());
   dbcmaps.push_back(aleintersectionmap);
-  Teuchos::RCP<const Epetra_Map> dbcmap = CORE::LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
+  Teuchos::RCP<const Epetra_Map> dbcmap = Core::LinAlg::MultiMapExtractor::MergeMaps(dbcmaps);
 
   // Finally, create the global FSI Dirichlet map extractor
-  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*dof_row_map(), dbcmap, true));
+  dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(*dof_row_map(), dbcmap, true));
   if (dbcmaps_ == Teuchos::null)
   {
     FOUR_C_THROW("Creation of FSI Dirichlet map extractor failed.");
@@ -166,12 +166,12 @@ void FSI::ConstrMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_incr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::ConstrMonolithic::scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+void FSI::ConstrMonolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -218,11 +218,11 @@ void FSI::ConstrMonolithic::scale_system(CORE::LINALG::BlockSparseMatrixBase& ma
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::ConstrMonolithic::unscale_solution(
-    CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+    Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -331,7 +331,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::ConstrMonolithic::create_linear_s
 
   switch (linearsolverstrategy_)
   {
-    case INPAR::FSI::PreconditionedKrylov:
+    case Inpar::FSI::PreconditionedKrylov:
       linSys = Teuchos::rcp(new ::NOX::Epetra::LinearSystemAztecOO(printParams, *lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
       break;
@@ -390,7 +390,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
   //  std::vector<Teuchos::RCP<const Epetra_Map> > interface;
   //  interface.push_back(fluid_field()->Interface()->FSICondMap());
   //  interface.push_back(Teuchos::null);
-  //  CORE::LINALG::MultiMapExtractor interfaceextract(*dof_row_map(),interface);
+  //  Core::LinAlg::MultiMapExtractor interfaceextract(*dof_row_map(),interface);
   //
   //  Teuchos::RCP<::NOX::StatusTest::Combo> interfacecombo =
   //    Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
@@ -418,7 +418,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidvel;
   fluidvel.push_back(fluid_field()->InnerVelocityRowMap());
   fluidvel.push_back(Teuchos::null);
-  CORE::LINALG::MultiMapExtractor fluidvelextract(*dof_row_map(), fluidvel);
+  Core::LinAlg::MultiMapExtractor fluidvelextract(*dof_row_map(), fluidvel);
 
   Teuchos::RCP<::NOX::StatusTest::Combo> fluidvelcombo =
       Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
@@ -441,7 +441,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidpress;
   fluidpress.push_back(fluid_field()->PressureRowMap());
   fluidpress.push_back(Teuchos::null);
-  CORE::LINALG::MultiMapExtractor fluidpressextract(*dof_row_map(), fluidpress);
+  Core::LinAlg::MultiMapExtractor fluidpressextract(*dof_row_map(), fluidpress);
 
   Teuchos::RCP<::NOX::StatusTest::Combo> fluidpresscombo =
       Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
@@ -462,7 +462,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
   std::vector<Teuchos::RCP<const Epetra_Map>> volconstr;
   volconstr.push_back(conman_->GetConstraintMap());
   volconstr.push_back(Teuchos::null);
-  CORE::LINALG::MultiMapExtractor volconstrextract(*dof_row_map(), volconstr);
+  Core::LinAlg::MultiMapExtractor volconstrextract(*dof_row_map(), volconstr);
 
   Teuchos::RCP<::NOX::StatusTest::Combo> volconstrcombo =
       Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
@@ -489,7 +489,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
 /*----------------------------------------------------------------------*/
 void FSI::ConstrMonolithic::create_system_matrix(bool structuresplit)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // get the PCITER from inputfile
@@ -537,10 +537,10 @@ void FSI::ConstrMonolithic::create_system_matrix(bool structuresplit)
 
   switch (linearsolverstrategy_)
   {
-    case INPAR::FSI::PreconditionedKrylov:
+    case Inpar::FSI::PreconditionedKrylov:
       systemmatrix_ = Teuchos::rcp(new ConstrOverlappingBlockMatrix(extractor(), *structure_field(),
           *fluid_field(), *ale_field(), structuresplit,
-          CORE::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
+          Core::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
           spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0], apciter[0]));
 
       break;

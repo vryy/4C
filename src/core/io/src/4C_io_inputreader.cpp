@@ -52,7 +52,7 @@ namespace
 
 }  // namespace
 
-namespace CORE::IO
+namespace Core::IO
 {
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
@@ -171,7 +171,8 @@ namespace CORE::IO
   /*----------------------------------------------------------------------*/
   void DatFileReader::ReadDesign(const std::string& name,
       std::vector<std::vector<int>>& dobj_fenode,
-      const std::function<const DRT::Discretization&(const std::string& name)>& get_discretization)
+      const std::function<const Discret::Discretization&(const std::string& name)>&
+          get_discretization)
   {
     std::map<int, std::set<int>> topology;
 
@@ -255,7 +256,7 @@ namespace CORE::IO
             FOUR_C_THROW("Illegal line in section '%s': '%s'", marker.c_str(), l);
           }
 
-          const DRT::Discretization& actdis = get_discretization(disname);
+          const Discret::Discretization& actdis = get_discretization(disname);
 
           std::vector<double> box_specifications;
           if (cached_box_specifications_.find(disname) != cached_box_specifications_.end())
@@ -280,7 +281,7 @@ namespace CORE::IO
                 {
                   // remove comments, trailing and leading whitespaces
                   // compact internal whitespaces
-                  line = CORE::UTILS::StripComment(line);
+                  line = Core::UTILS::StripComment(line);
 
                   // line is now empty
                   if (line.size() == 0) continue;
@@ -393,7 +394,7 @@ namespace CORE::IO
                 (coords[2] <= bbox[2] || coords[2] >= bbox[5]))
               dnodes.insert(node->Id());
           }
-          CORE::LINALG::GatherAll(dnodes, *comm_);
+          Core::LinAlg::GatherAll(dnodes, *comm_);
           topology[dobj - 1].insert(dnodes.begin(), dnodes.end());
         }
 
@@ -425,7 +426,7 @@ namespace CORE::IO
   /// read a knotvector section (for isogeometric analysis)
   //----------------------------------------------------------------------
   void DatFileReader::ReadKnots(
-      const std::string& name, Teuchos::RCP<DRT::NURBS::Knotvector>& disknots)
+      const std::string& name, Teuchos::RCP<Discret::Nurbs::Knotvector>& disknots)
   {
     // io to shell
     const int myrank = comm_->MyPID();
@@ -472,7 +473,7 @@ namespace CORE::IO
     {
       if (!MyOutputFlag())
       {
-        CORE::IO::cout << "Reading knot vectors for " << name << " discretization :\n";
+        Core::IO::cout << "Reading knot vectors for " << name << " discretization :\n";
         fflush(stdout);
       }
     }
@@ -594,7 +595,7 @@ namespace CORE::IO
     //--------------------------------------------------------------------
 
     // allocate knotvector for this dis
-    disknots = Teuchos::rcp(new DRT::NURBS::Knotvector(nurbs_dim, npatches));
+    disknots = Teuchos::rcp(new Discret::Nurbs::Knotvector(nurbs_dim, npatches));
 
     // make sure that we have some Knotvector object to fill
     if (disknots == Teuchos::null)
@@ -835,7 +836,7 @@ namespace CORE::IO
     {
       if (!MyOutputFlag())
       {
-        CORE::IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
+        Core::IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
 
         time.reset();
         fflush(stdout);
@@ -956,7 +957,7 @@ namespace CORE::IO
       {
         // remove comments, trailing and leading whitespaces
         // compact internal whitespaces
-        line = CORE::UTILS::StripComment(line);
+        line = Core::UTILS::StripComment(line);
 
         // line is now empty
         if (line.size() == 0) continue;
@@ -1159,15 +1160,15 @@ namespace CORE::IO
     // now it's time to create noise on the screen
     if (printout and (Comm()->MyPID() == 0))
     {
-      CORE::IO::cout << "\nERROR!"
+      Core::IO::cout << "\nERROR!"
                      << "\n--------"
                      << "\nThe following input file sections remained unused (obsolete or typo?):"
-                     << CORE::IO::endl;
+                     << Core::IO::endl;
       for (const auto& [section_name, known] : knownsections_)
       {
-        if (!known) CORE::IO::cout << section_name << CORE::IO::endl;
+        if (!known) Core::IO::cout << section_name << Core::IO::endl;
       }
-      CORE::IO::cout << CORE::IO::endl;
+      Core::IO::cout << Core::IO::endl;
     }
 
     // we wait till all procs are here. Otherwise a hang up might occur where
@@ -1198,14 +1199,14 @@ namespace CORE::IO
         FOUR_C_THROW("Line '%s' with just one word in parameter section", line.c_str());
     }
 
-    std::string key = CORE::UTILS::Trim(line.substr(0, separator_index));
-    std::string value = CORE::UTILS::Trim(line.substr(separator_index + 1));
+    std::string key = Core::UTILS::Trim(line.substr(0, separator_index));
+    std::string value = Core::UTILS::Trim(line.substr(separator_index + 1));
 
     if (key.empty()) FOUR_C_THROW("Cannot get key from line '%s'", line.c_str());
     if (value.empty()) FOUR_C_THROW("Cannot get value from line '%s'", line.c_str());
 
     return {std::move(key), std::move(value)};
   }
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE

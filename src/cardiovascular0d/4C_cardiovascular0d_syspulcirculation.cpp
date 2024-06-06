@@ -30,12 +30,12 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
 UTILS::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(
-    Teuchos::RCP<DRT::Discretization> discr, const std::string& conditionname,
+    Teuchos::RCP<Discret::Discretization> discr, const std::string& conditionname,
     std::vector<int>& curID)
     : Cardiovascular0D(discr, conditionname, curID)
 {
   Teuchos::ParameterList artvensyspulpar =
-      GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
+      Global::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
           "SYS-PUL CIRCULATION PARAMETERS");
 
   // set all 0D model parameters
@@ -109,9 +109,9 @@ UTILS::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(
  |mechanics", IJNMBE, 2016)                                              |
  *-----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat2,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
     Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
     const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
@@ -154,12 +154,12 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   double y_at_l_np = 0.0;
   double y_at_r_np = 0.0;
   if (atrium_act_curve_l_ >= 0 && usetime)
-    y_at_l_np = GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfTime>(atrium_act_curve_l_ - 1)
+    y_at_l_np = Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfTime>(atrium_act_curve_l_ - 1)
                     .Evaluate(tim);
   if (atrium_act_curve_r_ >= 0 && usetime)
-    y_at_r_np = GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfTime>(atrium_act_curve_r_ - 1)
+    y_at_r_np = Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfTime>(atrium_act_curve_r_ - 1)
                     .Evaluate(tim);
   // 0D time-varying atrial elastance
   double E_at_l_np = 0.;
@@ -169,12 +169,12 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   double y_v_l_np = 0.0;
   double y_v_r_np = 0.0;
   if (ventricle_act_curve_l_ >= 0 && usetime)
-    y_v_l_np = GLOBAL::Problem::Instance()
-                   ->FunctionById<CORE::UTILS::FunctionOfTime>(ventricle_act_curve_l_ - 1)
+    y_v_l_np = Global::Problem::Instance()
+                   ->FunctionById<Core::UTILS::FunctionOfTime>(ventricle_act_curve_l_ - 1)
                    .Evaluate(tim);
   if (ventricle_act_curve_r_ >= 0 && usetime)
-    y_v_r_np = GLOBAL::Problem::Instance()
-                   ->FunctionById<CORE::UTILS::FunctionOfTime>(ventricle_act_curve_r_ - 1)
+    y_v_r_np = Global::Problem::Instance()
+                   ->FunctionById<Core::UTILS::FunctionOfTime>(ventricle_act_curve_r_ - 1)
                    .Evaluate(tim);
   // 0D time-varying ventricular elastance
   double E_v_l_np = 0.;
@@ -184,43 +184,43 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   double E_at_l_prescr_np = 0.0;
   double E_at_r_prescr_np = 0.0;
   if (atrium_prescr_e_curve_l_ >= 0 && usetime)
-    E_at_l_prescr_np = GLOBAL::Problem::Instance()
-                           ->FunctionById<CORE::UTILS::FunctionOfTime>(atrium_prescr_e_curve_l_ - 1)
+    E_at_l_prescr_np = Global::Problem::Instance()
+                           ->FunctionById<Core::UTILS::FunctionOfTime>(atrium_prescr_e_curve_l_ - 1)
                            .Evaluate(tim);
   if (atrium_prescr_e_curve_r_ >= 0 && usetime)
-    E_at_r_prescr_np = GLOBAL::Problem::Instance()
-                           ->FunctionById<CORE::UTILS::FunctionOfTime>(atrium_prescr_e_curve_r_ - 1)
+    E_at_r_prescr_np = Global::Problem::Instance()
+                           ->FunctionById<Core::UTILS::FunctionOfTime>(atrium_prescr_e_curve_r_ - 1)
                            .Evaluate(tim);
   // prescribed ventricular elastances
   double E_v_l_prescr_np = 0.0;
   double E_v_r_prescr_np = 0.0;
   if (ventricle_prescr_e_curve_l_ >= 0 && usetime)
     E_v_l_prescr_np =
-        GLOBAL::Problem::Instance()
-            ->FunctionById<CORE::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_l_ - 1)
+        Global::Problem::Instance()
+            ->FunctionById<Core::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_l_ - 1)
             .Evaluate(tim);
   if (ventricle_prescr_e_curve_r_ >= 0 && usetime)
     E_v_r_prescr_np =
-        GLOBAL::Problem::Instance()
-            ->FunctionById<CORE::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_r_ - 1)
+        Global::Problem::Instance()
+            ->FunctionById<Core::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_r_ - 1)
             .Evaluate(tim);
 
 
   switch (atrium_model_)
   {
-    case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
+    case Inpar::CARDIOVASCULAR0D::atr_elastance_0d:
     {
       E_at_l_np = (e_at_max_l_ - e_at_min_l_) * y_at_l_np + e_at_min_l_;
       E_at_r_np = (e_at_max_r_ - e_at_min_r_) * y_at_r_np + e_at_min_r_;
     }
     break;
-    case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
+    case Inpar::CARDIOVASCULAR0D::atr_structure_3d:
     {
       E_at_l_np = 0.;
       E_at_r_np = 0.;
     }
     break;
-    case INPAR::CARDIOVASCULAR0D::atr_prescribed:
+    case Inpar::CARDIOVASCULAR0D::atr_prescribed:
     {
       E_at_l_np = E_at_l_prescr_np;
       E_at_r_np = E_at_r_prescr_np;
@@ -233,19 +233,19 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
 
   switch (ventricle_model_)
   {
-    case INPAR::CARDIOVASCULAR0D::ventr_elastance_0d:
+    case Inpar::CARDIOVASCULAR0D::ventr_elastance_0d:
     {
       E_v_l_np = (e_v_max_l_ - e_v_min_l_) * y_v_l_np + e_v_min_l_;
       E_v_r_np = (e_v_max_r_ - e_v_min_r_) * y_v_r_np + e_v_min_r_;
     }
     break;
-    case INPAR::CARDIOVASCULAR0D::ventr_structure_3d:
+    case Inpar::CARDIOVASCULAR0D::ventr_structure_3d:
     {
       E_v_l_np = 0.;
       E_v_r_np = 0.;
     }
     break;
-    case INPAR::CARDIOVASCULAR0D::ventr_prescribed:
+    case Inpar::CARDIOVASCULAR0D::ventr_prescribed:
     {
       E_v_l_np = E_v_l_prescr_np;
       E_v_r_np = E_v_r_prescr_np;
@@ -257,7 +257,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   }
 
   // Cardiovascular0D stiffness
-  CORE::LINALG::SerialDenseMatrix wkstiff(16, 16);
+  Core::LinAlg::SerialDenseMatrix wkstiff(16, 16);
 
   // contributions to total residuals r:
   // r_m = df_m              - f_m
@@ -324,14 +324,14 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
 
     switch (atrium_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
-      case INPAR::CARDIOVASCULAR0D::atr_prescribed:
+      case Inpar::CARDIOVASCULAR0D::atr_elastance_0d:
+      case Inpar::CARDIOVASCULAR0D::atr_prescribed:
       {
         df_np[0] = p_at_l_np / E_at_l_np;
         df_np[8] = p_at_r_np / E_at_r_np;
       }
       break;
-      case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
+      case Inpar::CARDIOVASCULAR0D::atr_structure_3d:
       {
         df_np[0] = V_at_l_np;
         df_np[8] = V_at_r_np;
@@ -344,14 +344,14 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
 
     switch (ventricle_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::ventr_structure_3d:
+      case Inpar::CARDIOVASCULAR0D::ventr_structure_3d:
       {
         df_np[2] = V_v_l_np;
         df_np[10] = V_v_r_np;
       }
       break;
-      case INPAR::CARDIOVASCULAR0D::ventr_elastance_0d:
-      case INPAR::CARDIOVASCULAR0D::ventr_prescribed:
+      case Inpar::CARDIOVASCULAR0D::ventr_elastance_0d:
+      case Inpar::CARDIOVASCULAR0D::ventr_prescribed:
       {
         df_np[2] = p_v_l_np / E_v_l_np;
         df_np[10] = p_v_r_np / E_v_r_np;
@@ -418,12 +418,12 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     // atrium - left and right
     switch (atrium_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
-      case INPAR::CARDIOVASCULAR0D::atr_prescribed:
+      case Inpar::CARDIOVASCULAR0D::atr_elastance_0d:
+      case Inpar::CARDIOVASCULAR0D::atr_prescribed:
         wkstiff(0, 0) = 1. / (E_at_l_np * ts_size);
         wkstiff(8, 8) = 1. / (E_at_r_np * ts_size);
         break;
-      case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
+      case Inpar::CARDIOVASCULAR0D::atr_structure_3d:
         wkstiff(0, 0) = 0.;
         wkstiff(8, 8) = 0.;
         break;
@@ -432,12 +432,12 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     // ventricle - left and right
     switch (ventricle_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::ventr_structure_3d:
+      case Inpar::CARDIOVASCULAR0D::ventr_structure_3d:
         wkstiff(2, 3) = 0.;
         wkstiff(10, 11) = 0.;
         break;
-      case INPAR::CARDIOVASCULAR0D::ventr_elastance_0d:
-      case INPAR::CARDIOVASCULAR0D::ventr_prescribed:
+      case Inpar::CARDIOVASCULAR0D::ventr_elastance_0d:
+      case Inpar::CARDIOVASCULAR0D::ventr_prescribed:
         wkstiff(2, 3) = 1. / (E_v_l_np * ts_size);
         wkstiff(10, 11) = 1. / (E_v_r_np * ts_size);
         break;
@@ -572,16 +572,16 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
     p_ar_pul_np = (*sysvec4)[12];
     p_ven_pul_np = (*sysvec4)[14];
 
-    if (atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_elastance_0d or
-        atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_prescribed)
+    if (atrium_model_ == Inpar::CARDIOVASCULAR0D::atr_elastance_0d or
+        atrium_model_ == Inpar::CARDIOVASCULAR0D::atr_prescribed)
     {
       // 0D left atrial volume
       (*sysvec5)[0] = p_at_l_np / E_at_l_np + v_at_l_u_;
       // 0D right atrial volume
       (*sysvec5)[8] = p_at_r_np / E_at_r_np + v_at_r_u_;
     }
-    if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d or
-        ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_prescribed)
+    if (ventricle_model_ == Inpar::CARDIOVASCULAR0D::ventr_elastance_0d or
+        ventricle_model_ == Inpar::CARDIOVASCULAR0D::ventr_prescribed)
     {
       // 0D left ventricular volume
       (*sysvec5)[2] = p_v_l_np / E_v_l_np + v_v_l_u_;
@@ -606,27 +606,27 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
   //----------------------------------------------------------------------
   for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
   {
-    CORE::Conditions::Condition& cond = *(cardiovascular0dcond_[i]);
+    Core::Conditions::Condition& cond = *(cardiovascular0dcond_[i]);
 
     // elements might need condition
-    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
 
     const std::string* conditiontype =
         &cardiovascular0dcond_[i]->parameters().Get<std::string>("type");
 
     // define element matrices and vectors
-    CORE::LINALG::SerialDenseMatrix elematrix1;
-    CORE::LINALG::SerialDenseMatrix elematrix2;
-    CORE::LINALG::SerialDenseVector elevector1;
-    CORE::LINALG::SerialDenseVector elevector2;
-    CORE::LINALG::SerialDenseVector elevector3;
+    Core::LinAlg::SerialDenseMatrix elematrix1;
+    Core::LinAlg::SerialDenseMatrix elematrix2;
+    Core::LinAlg::SerialDenseVector elevector1;
+    Core::LinAlg::SerialDenseVector elevector2;
+    Core::LinAlg::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond.Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond.Geometry();
     // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -675,7 +675,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
         if (*conditiontype == "atrium_left") cardiovascular0dlm.push_back(gindex[0]);
         if (*conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[8]);
         cardiovascular0downer.push_back(curr->second->Owner());
-        CORE::LINALG::Assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
+        Core::LinAlg::Assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
       }
     }
   }
@@ -713,7 +713,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
 
 
   Teuchos::ParameterList artvensyspulpar =
-      GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
+      Global::Problem::Instance()->cardiovascular0_d_structural_params().sublist(
           "SYS-PUL CIRCULATION PARAMETERS");
 
   const double p_at_l_0 = artvensyspulpar.get("p_at_l_0", 0.0);
@@ -762,22 +762,22 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
     int condID = cond->parameters().Get<int>("id");
     params.set("id", condID);
 
-    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
 
     // define element matrices and vectors
-    CORE::LINALG::SerialDenseMatrix elematrix1;
-    CORE::LINALG::SerialDenseMatrix elematrix2;
-    CORE::LINALG::SerialDenseVector elevector1;
-    CORE::LINALG::SerialDenseVector elevector2;
-    CORE::LINALG::SerialDenseVector elevector3;
+    Core::LinAlg::SerialDenseMatrix elematrix1;
+    Core::LinAlg::SerialDenseMatrix elematrix2;
+    Core::LinAlg::SerialDenseVector elevector1;
+    Core::LinAlg::SerialDenseVector elevector2;
+    Core::LinAlg::SerialDenseVector elevector3;
 
     const std::string conditiontype = cond->parameters().Get<std::string>("type");
 
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond->Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -806,7 +806,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
       if (conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[8]);
       cardiovascular0downer.push_back(curr->second->Owner());
       if (assvec1 and conditiontype != "dummy")
-        CORE::LINALG::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
+        Core::LinAlg::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
     }
   }
 

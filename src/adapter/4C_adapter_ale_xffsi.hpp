@@ -25,14 +25,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* class definitions */
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief ALE Wrapper for XFFSI Problems
    *
    *  Provide XFFSI specific ALE functionalities here by overloading the
-   *  respective routines from ADAPTER::AleFsiWrapper and ADAPTER::AleWrapper
+   *  respective routines from Adapter::AleFsiWrapper and Adapter::AleWrapper
    *
-   *  \sa ADAPTER::Ale, ADAPTER::AleWrapper, ADAPTER::AleFsiWrapper
+   *  \sa Adapter::Ale, Adapter::AleWrapper, Adapter::AleFsiWrapper
    *
    *  \author mayr.mt \date 10/2014
    */
@@ -48,7 +48,7 @@ namespace ADAPTER
     //@}
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override;
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override;
 
     /// evaluate and assemble residual and jacobian matrix
     void Evaluate(
@@ -71,7 +71,7 @@ namespace ADAPTER
     Teuchos::RCP<ALE::UTILS::XFluidFluidMapExtractor> xff_interface_;
 
   };  // class AleXFFsiWrapper
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -92,7 +92,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::evaluate_dirichlet_bo
     deg = 1;
 
   // get bounding box dimensions
-  CORE::LINALG::Matrix<3, 2> boundingbox =
+  Core::LinAlg::Matrix<3, 2> boundingbox =
       particleengineinterface_->domain_bounding_box_corner_positions();
 
   // get bin size
@@ -126,7 +126,7 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::evaluate_dirichlet_bo
 
     // get reference to function
     const auto& function =
-        GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functid - 1);
+        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functid - 1);
 
     // get pointer to particle states
     const double* refpos = container->GetPtrToState(PARTICLEENGINE::ReferencePosition, 0);

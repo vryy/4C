@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
   /*!
   \brief time integration for HDG scatra
@@ -25,11 +25,11 @@ namespace SCATRA
   {
    public:
     //! standard constructor
-    TimIntHDG(const Teuchos::RCP<DRT::Discretization>& actdis,
-        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    TimIntHDG(const Teuchos::RCP<Discret::Discretization>& actdis,
+        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<Teuchos::ParameterList>& extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     //! setup
     void Setup() override;
@@ -57,10 +57,10 @@ namespace SCATRA
 
     //! read restart
     void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
     //! set the initial scalar field phi
-    void SetInitialField(const INPAR::SCATRA::InitialField init,  //!< type of initial field
+    void SetInitialField(const Inpar::ScaTra::InitialField init,  //!< type of initial field
         const int startfuncno                                     //!< number of spatial function
         ) override;
 
@@ -77,9 +77,9 @@ namespace SCATRA
     /*!
     \brief Compare the numerical solution to the analytical one.
     */
-    virtual Teuchos::RCP<CORE::LINALG::SerialDenseVector> compute_error() const;
+    virtual Teuchos::RCP<Core::LinAlg::SerialDenseVector> compute_error() const;
 
-    Teuchos::RCP<CORE::UTILS::ResultTest> create_sca_tra_field_test() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> create_sca_tra_field_test() override;
 
    protected:
     //! copy constructor
@@ -150,7 +150,7 @@ namespace SCATRA
     virtual void adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_new,
         Teuchos::RCP<Epetra_Vector> phi_old, Teuchos::RCP<Epetra_Vector> intphi_new,
         Teuchos::RCP<Epetra_Vector> intphi_old, int nds_var_old, int nds_intvar_old,
-        std::vector<CORE::Elements::Element::LocationArray> la_old);
+        std::vector<Core::Elements::Element::LocationArray> la_old);
 
     //! calculate matrices on element
     virtual void calc_mat_initial();
@@ -172,7 +172,7 @@ namespace SCATRA
 
    private:
     //! time algorithm flag actually set (we internally reset it)
-    INPAR::SCATRA::TimeIntegrationScheme timealgoset_;
+    Inpar::ScaTra::TimeIntegrationScheme timealgoset_;
 
     //! @name time stepping variable
     bool startalgo_;  //!< flag for starting algorithm
@@ -184,7 +184,7 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> activation_time_interpol_np_;
 
     //! HDG discretization
-    DRT::DiscretizationHDG* hdgdis_;
+    Discret::DiscretizationHDG* hdgdis_;
 
     //! p-adativitity
     bool padaptivity_;
@@ -203,7 +203,7 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> elementdegree_;
 
   };  // class TimIntHDG
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

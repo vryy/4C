@@ -33,13 +33,13 @@ namespace ALE
 
 /*----------------------------------------------------------------------------*/
 /* class definitions */
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief ALE Wrapper for FSI Problems ith internal mesh tying or mesh sliding interface
    *
    *  Provide an additional map extractor
    *
-   *  \sa ADAPTER::Ale, ADAPTER::AleWrapper, ADAPTER::AleFsiWrapper
+   *  \sa Adapter::Ale, Adapter::AleWrapper, Adapter::AleFsiWrapper
    *
    *  \author wirtz \date 02/2016
    */
@@ -61,7 +61,7 @@ namespace ADAPTER
     Teuchos::RCP<ALE::UTILS::FsiMapExtractor> fsiinterface_;
 
   };  // class AleFsiWrapper
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 FOUR_C_NAMESPACE_CLOSE

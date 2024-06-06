@@ -13,7 +13,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class DgElement
   {
@@ -26,7 +26,7 @@ namespace CORE::Elements
 
     virtual int num_dof_per_element_auxiliary() const = 0;
   };
-}  // namespace CORE::Elements
+}  // namespace Core::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -24,17 +24,17 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::MESHTYING::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Nln::MeshTying::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-    const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+    const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
-    const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector,
+    const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector,
     const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
-    : NOX::NLN::LinearSystem(printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M,
+    : NOX::Nln::LinearSystem(printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M,
           cloneVector, scalingObject),
       i_constr_(iConstr),
       i_constr_prec_(iConstrPrec)
@@ -44,16 +44,16 @@ NOX::NLN::MESHTYING::LinearSystem::LinearSystem(Teuchos::ParameterList& printPar
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::MESHTYING::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Nln::MeshTying::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-    const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+    const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
-    const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector)
-    : NOX::NLN::LinearSystem(
+    const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector)
+    : NOX::Nln::LinearSystem(
           printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M, cloneVector),
       i_constr_(iConstr),
       i_constr_prec_(iConstrPrec)
@@ -63,11 +63,11 @@ NOX::NLN::MESHTYING::LinearSystem::LinearSystem(Teuchos::ParameterList& printPar
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::SolverParams NOX::NLN::MESHTYING::LinearSystem::set_solver_options(
-    Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
-    const NOX::NLN::SolutionType& solverType)
+Core::LinAlg::SolverParams NOX::Nln::MeshTying::LinearSystem::set_solver_options(
+    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::Solver>& solverPtr,
+    const NOX::Nln::SolutionType& solverType)
 {
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
 
   bool isAdaptiveControl = p.get<bool>("Adaptive Control");
   double adaptiveControlObjective = p.get<double>("Adaptive Control Objective");
@@ -81,8 +81,8 @@ CORE::LINALG::SolverParams NOX::NLN::MESHTYING::LinearSystem::set_solver_options
   if (isAdaptiveControl)
   {
     // dynamic cast of the required/rhs interface
-    Teuchos::RCP<NOX::NLN::Interface::Required> iNlnReq =
-        Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(reqInterfacePtr_);
+    Teuchos::RCP<NOX::Nln::Interface::Required> iNlnReq =
+        Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Required>(reqInterfacePtr_);
     if (iNlnReq.is_null()) throw_error("setSolverOptions", "required interface cast failed");
 
     double worst = iNlnReq->CalcRefNormForce();
@@ -95,7 +95,7 @@ CORE::LINALG::SolverParams NOX::NLN::MESHTYING::LinearSystem::set_solver_options
   }
 
   // nothing more to do for a pure structural solver
-  if (solverType == NOX::NLN::sol_structure) return solver_params;
+  if (solverType == NOX::Nln::sol_structure) return solver_params;
 
   // update information about active slave dofs
   // ---------------------------------------------------------------------
@@ -126,11 +126,11 @@ CORE::LINALG::SolverParams NOX::NLN::MESHTYING::LinearSystem::set_solver_options
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", prec_maps[2]);
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", prec_maps[3]);
       // contact or contact/meshtying
-      if (i_constr_prec_.begin()->first == NOX::NLN::sol_contact)
-        mueluParams.set<std::string>("CORE::ProblemType", "contact");
+      if (i_constr_prec_.begin()->first == NOX::Nln::sol_contact)
+        mueluParams.set<std::string>("Core::ProblemType", "contact");
       // only meshtying
-      else if (i_constr_prec_.begin()->first == NOX::NLN::sol_meshtying)
-        mueluParams.set<std::string>("CORE::ProblemType", "meshtying");
+      else if (i_constr_prec_.begin()->first == NOX::Nln::sol_meshtying)
+        mueluParams.set<std::string>("Core::ProblemType", "meshtying");
       else
         FOUR_C_THROW("Currently we support only a pure meshtying OR a pure contact problem!");
 
@@ -145,17 +145,17 @@ CORE::LINALG::SolverParams NOX::NLN::MESHTYING::LinearSystem::set_solver_options
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::SolutionType NOX::NLN::MESHTYING::LinearSystem::get_active_lin_solver(
-    const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
-    Teuchos::RCP<CORE::LINALG::Solver>& currSolver)
+NOX::Nln::SolutionType NOX::Nln::MeshTying::LinearSystem::get_active_lin_solver(
+    const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
+    Teuchos::RCP<Core::LinAlg::Solver>& currSolver)
 {
-  currSolver = solvers.at(NOX::NLN::sol_meshtying);
-  return NOX::NLN::sol_meshtying;
+  currSolver = solvers.at(NOX::Nln::sol_meshtying);
+  return NOX::Nln::sol_meshtying;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::MESHTYING::LinearSystem::throw_error(
+void NOX::Nln::MeshTying::LinearSystem::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(::NOX::Utils::Error))

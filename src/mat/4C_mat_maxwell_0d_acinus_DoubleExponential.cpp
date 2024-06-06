@@ -37,26 +37,26 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Maxwell0dAcinusDoubleExponential::Maxwell0dAcinusDoubleExponential(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::Maxwell0dAcinusDoubleExponential::Maxwell0dAcinusDoubleExponential(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Maxwell0dAcinus(matdata)
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Maxwell0dAcinusDoubleExponential::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::Maxwell0dAcinusDoubleExponential::create_material()
 {
-  return Teuchos::rcp(new MAT::Maxwell0dAcinusDoubleExponential(this));
+  return Teuchos::rcp(new Mat::Maxwell0dAcinusDoubleExponential(this));
 }
 
 
-MAT::Maxwell0dAcinusDoubleExponentialType MAT::Maxwell0dAcinusDoubleExponentialType::instance_;
+Mat::Maxwell0dAcinusDoubleExponentialType Mat::Maxwell0dAcinusDoubleExponentialType::instance_;
 
 
-CORE::COMM::ParObject* MAT::Maxwell0dAcinusDoubleExponentialType::Create(
+Core::Communication::ParObject* Mat::Maxwell0dAcinusDoubleExponentialType::Create(
     const std::vector<char>& data)
 {
-  MAT::Maxwell0dAcinusDoubleExponential* mxwll_0d_acin =
-      new MAT::Maxwell0dAcinusDoubleExponential();
+  Mat::Maxwell0dAcinusDoubleExponential* mxwll_0d_acin =
+      new Mat::Maxwell0dAcinusDoubleExponential();
   mxwll_0d_acin->Unpack(data);
   return mxwll_0d_acin;
 }
@@ -64,13 +64,13 @@ CORE::COMM::ParObject* MAT::Maxwell0dAcinusDoubleExponentialType::Create(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Maxwell0dAcinusDoubleExponential::Maxwell0dAcinusDoubleExponential() : Maxwell0dAcinus() {}
+Mat::Maxwell0dAcinusDoubleExponential::Maxwell0dAcinusDoubleExponential() : Maxwell0dAcinus() {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Maxwell0dAcinusDoubleExponential::Maxwell0dAcinusDoubleExponential(
-    MAT::PAR::Maxwell0dAcinus* params)
+Mat::Maxwell0dAcinusDoubleExponential::Maxwell0dAcinusDoubleExponential(
+    Mat::PAR::Maxwell0dAcinus* params)
     : Maxwell0dAcinus(params)
 {
 }
@@ -78,9 +78,9 @@ MAT::Maxwell0dAcinusDoubleExponential::Maxwell0dAcinusDoubleExponential(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusDoubleExponential::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::Maxwell0dAcinusDoubleExponential::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // Pack type of this instance of ParObject
@@ -106,11 +106,11 @@ void MAT::Maxwell0dAcinusDoubleExponential::Pack(CORE::COMM::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusDoubleExponential::Unpack(const std::vector<char>& data)
+void Mat::Maxwell0dAcinusDoubleExponential::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // Extract e1_01_, e1_lin1_, e1_exp1_, tau1_
   ExtractfromPack(position, data, e1_01_);
@@ -128,14 +128,14 @@ void MAT::Maxwell0dAcinusDoubleExponential::Unpack(const std::vector<char>& data
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Maxwell0dAcinusDoubleExponential*>(mat);
+        params_ = static_cast<Mat::PAR::Maxwell0dAcinusDoubleExponential*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -151,7 +151,7 @@ void MAT::Maxwell0dAcinusDoubleExponential::Unpack(const std::vector<char>& data
  | E1_01, E1_LIN1, E1_EXP1, TAU1 and                                    |
  | E1_02, E1_LIN2, E1_EXP2, TAU2 to material                roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusDoubleExponential::Setup(INPUT::LineDefinition* linedef)
+void Mat::Maxwell0dAcinusDoubleExponential::Setup(Input::LineDefinition* linedef)
 {
   linedef->ExtractDouble("E1_01", e1_01_);
   linedef->ExtractDouble("E1_LIN1", e1_lin1_);
@@ -170,10 +170,10 @@ void MAT::Maxwell0dAcinusDoubleExponential::Setup(INPUT::LineDefinition* linedef
  | Evaluate DoubleExponential material and build system matrix and rhs. |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusDoubleExponential::Evaluate(CORE::LINALG::SerialDenseVector& epnp,
-    CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
-    CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
-    const DRT::REDAIRWAYS::ElemParams& params, const double NumOfAcini, const double Vo,
+void Mat::Maxwell0dAcinusDoubleExponential::Evaluate(Core::LinAlg::SerialDenseVector& epnp,
+    Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
+    Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
+    const Discret::ReducedLung::ElemParams& params, const double NumOfAcini, const double Vo,
     double time, double dt)
 {
   // Set sysmat and rhs to zero

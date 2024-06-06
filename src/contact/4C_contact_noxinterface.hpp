@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------*/
 /*! \file
-\brief Concrete mplementation of all the %NOX::NLN::CONSTRAINT::Interface::Required
+\brief Concrete mplementation of all the %NOX::Nln::CONSTRAINT::Interface::Required
        (pure) virtual routines.
 
 \level 3
@@ -24,7 +24,7 @@ namespace CONTACT
 {
   class AbstractStrategy;
 
-  class NoxInterface : public NOX::NLN::CONSTRAINT::Interface::Required
+  class NoxInterface : public NOX::Nln::CONSTRAINT::Interface::Required
   {
    public:
     /// constructor
@@ -42,46 +42,46 @@ namespace CONTACT
     /// @{
     //! Returns the constraint right-hand-side norms [derived]
     double get_constraint_rhs_norms(const Epetra_Vector& F,
-        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
+        NOX::Nln::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
         bool isScaled) const override;
 
     /// Returns the root mean square (abbr.: RMS) of the Lagrange multiplier updates [derived]
     double get_lagrange_multiplier_update_rms(const Epetra_Vector& xNew, const Epetra_Vector& xOld,
-        double aTol, double rTol, NOX::NLN::StatusTest::QuantityType checkQuantity,
+        double aTol, double rTol, NOX::Nln::StatusTest::QuantityType checkQuantity,
         bool disable_implicit_weighting) const override;
 
     /// Returns the increment norm of the largange multiplier DoFs
     double get_lagrange_multiplier_update_norms(const Epetra_Vector& xNew,
-        const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
+        const Epetra_Vector& xOld, NOX::Nln::StatusTest::QuantityType checkQuantity,
         ::NOX::Abstract::Vector::NormType type, bool isScaled) const override;
 
     /// Returns the previous solution norm of the largange multiplier DoFs
     double get_previous_lagrange_multiplier_norms(const Epetra_Vector& xOld,
-        NOX::NLN::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
+        NOX::Nln::StatusTest::QuantityType checkQuantity, ::NOX::Abstract::Vector::NormType type,
         bool isScaled) const override;
 
     /// Returns the active set info [derived]
     enum ::NOX::StatusTest::StatusType GetActiveSetInfo(
-        enum NOX::NLN::StatusTest::QuantityType checkQuantity, int& activesetsize) const override;
+        enum NOX::Nln::StatusTest::QuantityType checkQuantity, int& activesetsize) const override;
 
     /// Returns the current active set map
     Teuchos::RCP<const Epetra_Map> get_current_active_set_map(
-        enum NOX::NLN::StatusTest::QuantityType checkQuantity) const override;
+        enum NOX::Nln::StatusTest::QuantityType checkQuantity) const override;
 
     /// Returns the old active set map of the previous Newton step
     Teuchos::RCP<const Epetra_Map> GetOldActiveSetMap(
-        enum NOX::NLN::StatusTest::QuantityType checkQuantity) const override;
+        enum NOX::Nln::StatusTest::QuantityType checkQuantity) const override;
     /// @}
 
     /// @name Merit function support functions
     /// @{
 
-    double GetModelValue(NOX::NLN::MeritFunction::MeritFctName name) const override;
+    double GetModelValue(NOX::Nln::MeritFunction::MeritFctName name) const override;
 
     double get_linearized_model_terms(const Epetra_Vector& dir,
-        const enum NOX::NLN::MeritFunction::MeritFctName name,
-        const enum NOX::NLN::MeritFunction::LinOrder linorder,
-        const enum NOX::NLN::MeritFunction::LinType lintype) const override;
+        const enum NOX::Nln::MeritFunction::MeritFctName name,
+        const enum NOX::Nln::MeritFunction::LinOrder linorder,
+        const enum NOX::Nln::MeritFunction::LinType lintype) const override;
 
     /// @}
 

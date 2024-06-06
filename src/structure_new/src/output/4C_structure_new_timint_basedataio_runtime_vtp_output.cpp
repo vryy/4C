@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
+void STR::TimeInt::ParamsRuntimeVtpOutput::Init(
     const Teuchos::ParameterList& IO_vtp_structure_paramslist)
 {
   // We have to call Setup() after Init()
@@ -28,21 +28,21 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
   output_interval_steps_ = IO_vtp_structure_paramslist.get<int>("INTERVAL_STEPS");
 
   output_every_iteration_ =
-      (bool)CORE::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
+      (bool)Core::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
 
   if (output_every_iteration_)
     FOUR_C_THROW("Every iteration output not implemented for structure vtp output!");
 
-  output_owner_ = (bool)CORE::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
+  output_owner_ = (bool)Core::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
 
   output_orientationandlength_ =
-      (bool)CORE::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "ORIENTATIONANDLENGTH");
+      (bool)Core::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "ORIENTATIONANDLENGTH");
 
   output_numberofbonds_ =
-      (bool)CORE::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
+      (bool)Core::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
 
   output_linkingforce_ =
-      (bool)CORE::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "LINKINGFORCE");
+      (bool)Core::UTILS::IntegralValue<int>(IO_vtp_structure_paramslist, "LINKINGFORCE");
 
 
   isinit_ = true;
@@ -50,7 +50,7 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TIMINT::ParamsRuntimeVtpOutput::Setup()
+void STR::TimeInt::ParamsRuntimeVtpOutput::Setup()
 {
   FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 
@@ -61,7 +61,7 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TIMINT::ParamsRuntimeVtpOutput::check_init_setup() const
+void STR::TimeInt::ParamsRuntimeVtpOutput::check_init_setup() const
 {
   FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
 }

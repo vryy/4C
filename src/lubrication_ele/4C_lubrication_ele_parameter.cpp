@@ -25,22 +25,22 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                  wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::LubricationEleParameter* DRT::ELEMENTS::LubricationEleParameter::Instance(
+Discret::ELEMENTS::LubricationEleParameter* Discret::ELEMENTS::LubricationEleParameter::Instance(
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const std::string& disname)
       { return std::unique_ptr<LubricationEleParameter>(new LubricationEleParameter(disname)); });
 
-  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  | private constructor for singletons                       wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
+Discret::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
     const std::string& disname  //!< name of discretization
     )
 
@@ -56,7 +56,7 @@ DRT::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every lubrication     wirtz 10/15 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::LubricationEleParameter::SetTimeParameters(
+void Discret::ELEMENTS::LubricationEleParameter::SetTimeParameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {
@@ -67,7 +67,7 @@ void DRT::ELEMENTS::LubricationEleParameter::SetTimeParameters(
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every lubrication     wirtz 10/15 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::LubricationEleParameter::set_general_parameters(
+void Discret::ELEMENTS::LubricationEleParameter::set_general_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {

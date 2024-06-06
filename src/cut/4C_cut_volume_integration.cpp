@@ -29,9 +29,9 @@ FOUR_C_NAMESPACE_OPEN
          compute the rhs of the moment fitting equations
          Integration of base functions take place inside this
 *---------------------------------------------------------------------------*/
-CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_moment()
+Core::LinAlg::SerialDenseVector Core::Geo::Cut::VolumeIntegration::compute_rhs_moment()
 {
-  CORE::LINALG::SerialDenseVector rhs_mom(num_func_);
+  Core::LinAlg::SerialDenseVector rhs_mom(num_func_);
 
   const plain_facet_set &facete = volcell_->Facets();
 
@@ -73,33 +73,33 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_m
   double volGlobal = 0.0;
   switch (elem1_->Shape())
   {
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
-      volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::hex8>(
+      volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::hex8>(
           rhs_mom(0), "LocalToGlobal");
       break;
     }
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
     {
-      volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::tet4>(
+      volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::tet4>(
           rhs_mom(0), "LocalToGlobal");
       break;
     }
-    case CORE::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge6:
     {
-      volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::wedge6>(
+      volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::wedge6>(
           rhs_mom(0), "LocalToGlobal");
       break;
     }
-    case CORE::FE::CellType::pyramid5:
+    case Core::FE::CellType::pyramid5:
     {
-      volGlobal = elem1_->scalar_from_local_to_global<3, CORE::FE::CellType::pyramid5>(
+      volGlobal = elem1_->scalar_from_local_to_global<3, Core::FE::CellType::pyramid5>(
           rhs_mom(0), "LocalToGlobal");
       break;
     }
     default:
       FOUR_C_THROW("unsupported integration cell type ( cell type = %s )",
-          CORE::FE::CellTypeToString(elem1_->Shape()).c_str());
+          Core::FE::CellTypeToString(elem1_->Shape()).c_str());
       exit(EXIT_FAILURE);
   }
   volcell_->SetVolume(volGlobal);
@@ -113,7 +113,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_m
     numeach should be more than 1
     uses ray tracing method
 *-----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::VolumeIntegration::compute_gaussian_points(int numeach)
+bool Core::Geo::Cut::VolumeIntegration::compute_gaussian_points(int numeach)
 {
   Teuchos::RCP<BoundingBox> box1 = Teuchos::rcp(BoundingBox::Create(*volcell_, elem1_));
   double minn[3], maxx[3];
@@ -251,7 +251,7 @@ bool CORE::GEO::CUT::VolumeIntegration::compute_gaussian_points(int numeach)
     Store the z- and y-coordinates of the all corner points which will be used to find whether the
 intersection point lies inside the volume or not
 *--------------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeIntegration::get_zcoordinates(
+void Core::Geo::Cut::VolumeIntegration::get_zcoordinates(
     std::vector<std::vector<double>> &zcoord, std::vector<std::vector<double>> &ycoord)
 {
   const plain_facet_set &facete = volcell_->Facets();
@@ -289,7 +289,7 @@ void CORE::GEO::CUT::VolumeIntegration::get_zcoordinates(
               check whether the generated ray intersect any of the facets
               if so generate gauss points along the ray
 *------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::VolumeIntegration::is_intersect(double *pt, double *mini, double *maxi,
+bool Core::Geo::Cut::VolumeIntegration::is_intersect(double *pt, double *mini, double *maxi,
     std::vector<std::vector<double>> &linePts, std::vector<std::vector<double>> zcoord,
     std::vector<std::vector<double>> ycoord, double toler, int numeach)
 {
@@ -470,7 +470,7 @@ bool CORE::GEO::CUT::VolumeIntegration::is_intersect(double *pt, double *mini, d
          Check whether the intersection point, which is in the plane containing the facet, actually
          lies with in the facet area
 *--------------------------------------------------------------------------------------------------------------------*/
-int CORE::GEO::CUT::VolumeIntegration::pnpoly(
+int Core::Geo::Cut::VolumeIntegration::pnpoly(
     int npol, std::vector<double> xp, std::vector<double> yp, double x, double y)
 {
   // check whether given point is one of the corner points
@@ -516,17 +516,17 @@ int CORE::GEO::CUT::VolumeIntegration::pnpoly(
 /*-------------------------------------------------------------------------------------------------------------------*
 ???
 *--------------------------------------------------------------------------------------------------------------------*/
-int CORE::GEO::CUT::VolumeIntegration::pnpoly(const std::vector<std::vector<double>> &xp,
-    const CORE::LINALG::Matrix<3, 1> &pt, CORE::GEO::CUT::ProjectionDirection projType)
+int Core::Geo::Cut::VolumeIntegration::pnpoly(const std::vector<std::vector<double>> &xp,
+    const Core::LinAlg::Matrix<3, 1> &pt, Core::Geo::Cut::ProjectionDirection projType)
 {
   int npol = xp.size();
   int ind1 = 1, ind2 = 2;
-  if (projType == CORE::GEO::CUT::proj_y)
+  if (projType == Core::Geo::Cut::proj_y)
   {
     ind1 = 2;
     ind2 = 0;
   }
-  else if (projType == CORE::GEO::CUT::proj_z)
+  else if (projType == Core::Geo::Cut::proj_z)
   {
     ind1 = 0;
     ind2 = 1;
@@ -593,7 +593,7 @@ int CORE::GEO::CUT::VolumeIntegration::pnpoly(const std::vector<std::vector<doub
         Check whether the particular z-plane of the volumecell contains significant area so as to
  distribute the Gauss points in that plane
  *--------------------------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::VolumeIntegration::is_contain_area(double minn[3], double maxx[3],
+bool Core::Geo::Cut::VolumeIntegration::is_contain_area(double minn[3], double maxx[3],
     double &zmin, std::vector<std::vector<double>> &pts, std::vector<std::vector<double>> zcoord,
     std::vector<std::vector<double>> ycoord, double toler, int numeach)
 {
@@ -694,7 +694,7 @@ bool CORE::GEO::CUT::VolumeIntegration::is_contain_area(double minn[3], double m
         Generates equally spaced "num" number of points on the line whose end points are specified
 by inter1 and inter2
 *-------------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeIntegration::on_line(std::vector<double> inter1,
+void Core::Geo::Cut::VolumeIntegration::on_line(std::vector<double> inter1,
     std::vector<double> inter2, std::vector<std::vector<double>> &linePts, int num)
 {
   std::vector<double> left, right;
@@ -725,7 +725,7 @@ void CORE::GEO::CUT::VolumeIntegration::on_line(std::vector<double> inter1,
 /*-------------------------------------------------------------------------------------------------------------------*
                                                 form the moment fitting matrix
 *--------------------------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::VolumeIntegration::moment_fitting_matrix(
+void Core::Geo::Cut::VolumeIntegration::moment_fitting_matrix(
     std::vector<std::vector<double>> &mom, std::vector<std::vector<double>> gauspts)
 {
   for (int i = 0; i < num_func_; i++)
@@ -734,7 +734,7 @@ void CORE::GEO::CUT::VolumeIntegration::moment_fitting_matrix(
     for (std::vector<std::vector<double>>::iterator j = gauspts.begin(); j != gauspts.end(); j++)
     {
       std::vector<double> cordi = *j;
-      mom[i][k] = CORE::GEO::CUT::base_function(cordi, i + 1);
+      mom[i][k] = Core::Geo::Cut::base_function(cordi, i + 1);
       k++;
     }
   }
@@ -744,15 +744,15 @@ void CORE::GEO::CUT::VolumeIntegration::moment_fitting_matrix(
     Compute Gauss point weights by solving the moment fitting equations and returns the coordinates
 of Gauss points and their corresponding weights
 *--------------------------------------------------------------------------------------------------------------------*/
-CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weights()
+Core::LinAlg::SerialDenseVector Core::Geo::Cut::VolumeIntegration::compute_weights()
 {
-  CORE::LINALG::SerialDenseVector rhs_moment(num_func_);
+  Core::LinAlg::SerialDenseVector rhs_moment(num_func_);
   rhs_moment = compute_rhs_moment();
 
   bool wei;
   // we should ask for more than 1 point in each direction
   int numeach = 7;
-  CORE::LINALG::SerialDenseVector weights;
+  Core::LinAlg::SerialDenseVector weights;
   while (1)
   {
     gaus_pts_.clear();
@@ -810,7 +810,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weigh
       break;
     }
 
-    CORE::LINALG::SerialDenseVector err(num_func_);
+    Core::LinAlg::SerialDenseVector err(num_func_);
     for (int i = 0; i < num_func_; i++)
     {
       err(i) = 0.0;
@@ -837,14 +837,14 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weigh
 }
 
 // Writes the Geometry of volumecell and location of Gauss points in GMSH format output file
-void CORE::GEO::CUT::VolumeIntegration::gauss_point_gmsh()
+void Core::Geo::Cut::VolumeIntegration::gauss_point_gmsh()
 {
   volcell_->dump_gmsh_gauss_points_mom_fit(gaus_pts_);
 }
 
 // compute integration of x+y,y+z and x+z values from the integration of x, y and z values
-void CORE::GEO::CUT::VolumeIntegration::first_order_additional_terms(
-    std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
+void Core::Geo::Cut::VolumeIntegration::first_order_additional_terms(
+    std::vector<std::vector<double>> &mat, Core::LinAlg::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
   // no of additional elements is n(n+1)/2 where n=(no_of_monomials-1). Here no_of
@@ -864,8 +864,8 @@ void CORE::GEO::CUT::VolumeIntegration::first_order_additional_terms(
 }
 
 // integration of linear combination of second order terms like x^2+xy+y^2+yz
-void CORE::GEO::CUT::VolumeIntegration::second_order_additional_terms(
-    std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
+void Core::Geo::Cut::VolumeIntegration::second_order_additional_terms(
+    std::vector<std::vector<double>> &mat, Core::LinAlg::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
   rhs.resize(i + 15);
@@ -883,8 +883,8 @@ void CORE::GEO::CUT::VolumeIntegration::second_order_additional_terms(
 }
 
 // integration of linear combination of third order terms x^3+xyz
-void CORE::GEO::CUT::VolumeIntegration::third_order_additional_terms(
-    std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
+void Core::Geo::Cut::VolumeIntegration::third_order_additional_terms(
+    std::vector<std::vector<double>> &mat, Core::LinAlg::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
   rhs.resize(i + 45);
@@ -901,8 +901,8 @@ void CORE::GEO::CUT::VolumeIntegration::third_order_additional_terms(
   }
 }
 
-void CORE::GEO::CUT::VolumeIntegration::fourth_order_additional_terms(
-    std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
+void Core::Geo::Cut::VolumeIntegration::fourth_order_additional_terms(
+    std::vector<std::vector<double>> &mat, Core::LinAlg::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
   rhs.resize(i + 105);
@@ -920,8 +920,8 @@ void CORE::GEO::CUT::VolumeIntegration::fourth_order_additional_terms(
   }
 }
 
-void CORE::GEO::CUT::VolumeIntegration::fifth_order_additional_terms(
-    std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
+void Core::Geo::Cut::VolumeIntegration::fifth_order_additional_terms(
+    std::vector<std::vector<double>> &mat, Core::LinAlg::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
   rhs.resize(i + 210);
@@ -938,8 +938,8 @@ void CORE::GEO::CUT::VolumeIntegration::fifth_order_additional_terms(
   }
 }
 
-void CORE::GEO::CUT::VolumeIntegration::sixth_order_additional_terms(
-    std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
+void Core::Geo::Cut::VolumeIntegration::sixth_order_additional_terms(
+    std::vector<std::vector<double>> &mat, Core::LinAlg::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
   rhs.resize(i + 561);
@@ -958,8 +958,8 @@ void CORE::GEO::CUT::VolumeIntegration::sixth_order_additional_terms(
 
 /*  Computes the error introduced by the generated integration rule for integrating some specific
    functions Used only in post-processing    */
-void CORE::GEO::CUT::VolumeIntegration::error_for_specific_function(
-    CORE::LINALG::SerialDenseVector rhs_moment, CORE::LINALG::SerialDenseVector weights,
+void Core::Geo::Cut::VolumeIntegration::error_for_specific_function(
+    Core::LinAlg::SerialDenseVector rhs_moment, Core::LinAlg::SerialDenseVector weights,
     int numeach)
 {
   static std::vector<int> gausSize;
@@ -1069,7 +1069,7 @@ void CORE::GEO::CUT::VolumeIntegration::error_for_specific_function(
  * Check whether the point with this element Local coordinates is inside,              *
  * outside or on boundary of this volumecell                            sudhakar 07/12 *
  *-------------------------------------------------------------------------------------*/
-std::string CORE::GEO::CUT::VolumeIntegration::IsPointInside(CORE::LINALG::Matrix<3, 1> &rst)
+std::string Core::Geo::Cut::VolumeIntegration::IsPointInside(Core::LinAlg::Matrix<3, 1> &rst)
 {
   const plain_facet_set &facete = volcell_->Facets();
 
@@ -1107,7 +1107,7 @@ std::string CORE::GEO::CUT::VolumeIntegration::IsPointInside(CORE::LINALG::Matri
     Facet *fe = *XFacets[i];
     std::vector<std::vector<double>> cornersLocal;
     fe->CornerPointsLocal(elem1_, cornersLocal);
-    int cutno = pnpoly(cornersLocal, rst, CORE::GEO::CUT::proj_x);
+    int cutno = pnpoly(cornersLocal, rst, Core::Geo::Cut::proj_x);
     if (cutno == 1)
     {
       // find x-value of intersection point, (yInt,zInt) = (y,z) of given pt
@@ -1138,7 +1138,7 @@ std::string CORE::GEO::CUT::VolumeIntegration::IsPointInside(CORE::LINALG::Matri
         Facet *fe = *NotXFacets[i];
         std::vector<std::vector<double>> cornersLocal;
         fe->CornerPointsLocal(elem1_, cornersLocal);
-        int cutno = pnpoly(cornersLocal, rst, CORE::GEO::CUT::proj_y);
+        int cutno = pnpoly(cornersLocal, rst, Core::Geo::Cut::proj_y);
         if (cutno == 1)  // make sure pt is within facet area
         {
           return "onBoundary";
@@ -1153,7 +1153,7 @@ std::string CORE::GEO::CUT::VolumeIntegration::IsPointInside(CORE::LINALG::Matri
         Facet *fe = *NotXFacets[i];
         std::vector<std::vector<double>> cornersLocal;
         fe->CornerPointsLocal(elem1_, cornersLocal);
-        int cutno = pnpoly(cornersLocal, rst, CORE::GEO::CUT::proj_z);
+        int cutno = pnpoly(cornersLocal, rst, Core::Geo::Cut::proj_z);
         if (cutno == 1)
         {
           return "onBoundary";

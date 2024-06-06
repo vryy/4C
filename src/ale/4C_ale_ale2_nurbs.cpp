@@ -13,32 +13,33 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::NURBS::Ale2NurbsType DRT::ELEMENTS::NURBS::Ale2NurbsType::instance_;
+Discret::ELEMENTS::Nurbs::Ale2NurbsType Discret::ELEMENTS::Nurbs::Ale2NurbsType::instance_;
 
-DRT::ELEMENTS::NURBS::Ale2NurbsType& DRT::ELEMENTS::NURBS::Ale2NurbsType::Instance()
+Discret::ELEMENTS::Nurbs::Ale2NurbsType& Discret::ELEMENTS::Nurbs::Ale2NurbsType::Instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::NURBS::Ale2NurbsType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::Ale2NurbsType::Create(
+    const std::vector<char>& data)
 {
-  DRT::ELEMENTS::NURBS::Ale2Nurbs* object = new DRT::ELEMENTS::NURBS::Ale2Nurbs(-1, -1);
+  Discret::ELEMENTS::Nurbs::Ale2Nurbs* object = new Discret::ELEMENTS::Nurbs::Ale2Nurbs(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NURBS::Ale2NurbsType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale2NurbsType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ALE2")
   {
     if (eledistype == "NURBS4" || eledistype == "NURBS9")
     {
-      return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Ale2Nurbs(id, owner));
+      return Teuchos::rcp(new Discret::ELEMENTS::Nurbs::Ale2Nurbs(id, owner));
     }
   }
   return Teuchos::null;
@@ -46,30 +47,31 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NURBS::Ale2NurbsType::Creat
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::NURBS::Ale2NurbsType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale2NurbsType::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::NURBS::Ale2Nurbs(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::Nurbs::Ale2Nurbs(id, owner));
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Ale2Nurbs::Ale2Nurbs(int id, int owner) : DRT::ELEMENTS::Ale2::Ale2(id, owner)
+Discret::ELEMENTS::Nurbs::Ale2Nurbs::Ale2Nurbs(int id, int owner)
+    : Discret::ELEMENTS::Ale2::Ale2(id, owner)
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::NURBS::Ale2Nurbs::Ale2Nurbs(const DRT::ELEMENTS::NURBS::Ale2Nurbs& old)
-    : DRT::ELEMENTS::Ale2::Ale2(old)
+Discret::ELEMENTS::Nurbs::Ale2Nurbs::Ale2Nurbs(const Discret::ELEMENTS::Nurbs::Ale2Nurbs& old)
+    : Discret::ELEMENTS::Ale2::Ale2(old)
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::Ale2Nurbs::Print(std::ostream& os) const
+void Discret::ELEMENTS::Nurbs::Ale2Nurbs::Print(std::ostream& os) const
 {
   os << "Ale2Nurbs ";
   Element::Print(os);
@@ -78,14 +80,14 @@ void DRT::ELEMENTS::NURBS::Ale2Nurbs::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::NURBS::Ale2Nurbs::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Nurbs::Ale2Nurbs::Shape() const
 {
   switch (num_node())
   {
     case 4:
-      return CORE::FE::CellType::nurbs4;
+      return Core::FE::CellType::nurbs4;
     case 9:
-      return CORE::FE::CellType::nurbs9;
+      return Core::FE::CellType::nurbs9;
     default:
       FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;

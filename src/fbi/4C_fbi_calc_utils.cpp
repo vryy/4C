@@ -23,11 +23,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 
-void FBI::UTILS::GetFBIElementCenterlineDOFIndices(DRT::Discretization const& discret,
-    const CORE::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
+void FBI::UTILS::GetFBIElementCenterlineDOFIndices(Discret::Discretization const& discret,
+    const Core::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
     unsigned int& num_dof)
 {
-  // Todo implement method in CORE::Elements::Element or find alternative way of doing this
+  // Todo implement method in Core::Elements::Element or find alternative way of doing this
   // find out the elements' number of Dofs (=dimension of element vector/matrices)
   std::vector<int> lmrow;
   std::vector<int> dummy1, dummy2;
@@ -35,7 +35,8 @@ void FBI::UTILS::GetFBIElementCenterlineDOFIndices(DRT::Discretization const& di
   ele->LocationVector(discret, lmrow, dummy1, dummy2);
   num_dof = lmrow.size();
 
-  const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+  const Discret::ELEMENTS::Beam3Base* beamele =
+      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
   if (beamele != nullptr)
   {
@@ -59,18 +60,18 @@ void FBI::UTILS::GetFBIElementCenterlineDOFIndices(DRT::Discretization const& di
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
-    const DRT::Discretization& discretization1, const DRT::Discretization& discretization2,
+    const Discret::Discretization& discretization1, const Discret::Discretization& discretization2,
     std::vector<int> const& elegid,
-    std::vector<CORE::LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
-    std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
-    std::vector<CORE::LINALG::SerialDenseVector>* eleforce,
-    std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>* elestiff)
+    std::vector<Core::LinAlg::SerialDenseVector> const& eleforce_centerlineDOFs,
+    std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
+    std::vector<Core::LinAlg::SerialDenseVector>* eleforce,
+    std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>* elestiff)
 {
   std::vector<unsigned int> numdof_ele(2);
   std::vector<std::vector<unsigned int>> ele_centerlinedofindices(2);
 
   // Get DOFs for beam element
-  CORE::Elements::Element* ele = discretization1.gElement(elegid[0]);
+  Core::Elements::Element* ele = discretization1.gElement(elegid[0]);
   GetFBIElementCenterlineDOFIndices(
       discretization1, ele, ele_centerlinedofindices[0], numdof_ele[0]);
 

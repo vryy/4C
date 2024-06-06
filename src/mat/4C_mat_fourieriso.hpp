@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -33,11 +33,11 @@ namespace MAT
     ///
     /// <h3>Input line</h3>
     /// MAT 1 THERM_FourierIsoIso CAPA 1.0 COND 1.0
-    class FourierIso : public CORE::MAT::PAR::Parameter
+    class FourierIso : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      FourierIso(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      FourierIso(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -50,20 +50,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class FourierIso
 
   }  // namespace PAR
 
-  class FourierIsoType : public CORE::COMM::ParObjectType
+  class FourierIsoType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "FourierIsoType"; }
 
     static FourierIsoType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FourierIsoType instance_;
@@ -88,7 +88,7 @@ namespace MAT
     FourierIso();
 
     /// constructor with given material parameters
-    FourierIso(MAT::PAR::FourierIso* params);
+    FourierIso(Mat::PAR::FourierIso* params);
 
     /// @name Packing and Unpacking
     //@{
@@ -108,7 +108,8 @@ namespace MAT
     /// The first information to be stored in data has to be the
     /// unique parobject id delivered by UniqueParObjectId() which will then
     /// identify the exact class on the receiving processor.
-    void Pack(CORE::COMM::PackBuffer& data  ///< (in/out): char vector to store class information
+    void Pack(
+        Core::Communication::PackBuffer& data  ///< (in/out): char vector to store class information
     ) const override;
 
     /// \brief Unpack data from a char vector into this class
@@ -134,33 +135,33 @@ namespace MAT
     double Capacity() const override { return params_->capa_; }
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_th_fourier_iso;
+      return Core::Materials::m_th_fourier_iso;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new FourierIso(*this));
     }
 
     //@}
 
-    void Evaluate(const CORE::LINALG::Matrix<1, 1>& gradtemp, CORE::LINALG::Matrix<1, 1>& cmat,
-        CORE::LINALG::Matrix<1, 1>& heatflux) const override;
+    void Evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
+        Core::LinAlg::Matrix<1, 1>& heatflux) const override;
 
-    void Evaluate(const CORE::LINALG::Matrix<2, 1>& gradtemp, CORE::LINALG::Matrix<2, 2>& cmat,
-        CORE::LINALG::Matrix<2, 1>& heatflux) const override;
+    void Evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
+        Core::LinAlg::Matrix<2, 1>& heatflux) const override;
 
-    void Evaluate(const CORE::LINALG::Matrix<3, 1>& gradtemp, CORE::LINALG::Matrix<3, 3>& cmat,
-        CORE::LINALG::Matrix<3, 1>& heatflux) const override;
+    void Evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
+        Core::LinAlg::Matrix<3, 1>& heatflux) const override;
 
-    void ConductivityDerivT(CORE::LINALG::Matrix<3, 3>& dCondDT) const override { dCondDT.Clear(); }
+    void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const override { dCondDT.Clear(); }
 
-    void ConductivityDerivT(CORE::LINALG::Matrix<2, 2>& dCondDT) const override { dCondDT.Clear(); }
+    void ConductivityDerivT(Core::LinAlg::Matrix<2, 2>& dCondDT) const override { dCondDT.Clear(); }
 
-    void ConductivityDerivT(CORE::LINALG::Matrix<1, 1>& dCondDT) const override { dCondDT.Clear(); }
+    void ConductivityDerivT(Core::LinAlg::Matrix<1, 1>& dCondDT) const override { dCondDT.Clear(); }
 
     double CapacityDerivT() const override { return 0; }
 
@@ -180,15 +181,15 @@ namespace MAT
     }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
-    MAT::PAR::FourierIso* params_;
+    Mat::PAR::FourierIso* params_;
 
   };  // FourierIso
 
-}  // namespace MAT
+}  // namespace Mat
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

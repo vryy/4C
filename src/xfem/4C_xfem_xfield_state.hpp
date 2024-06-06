@@ -20,14 +20,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
-namespace CORE::GEO
+}  // namespace Discret
+namespace Core::Geo
 {
   class CutWizard;
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 namespace XFEM
 {
@@ -47,10 +47,10 @@ namespace XFEM
      *
      *  An examples is the XFluidFluid problem. */
     void Init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-        const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,
+        const Teuchos::RCP<Core::Geo::CutWizard>& wizard,
         const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
-        const Teuchos::RCP<DRT::Discretization>& xfielddiscret,
-        const Teuchos::RCP<DRT::Discretization>& fielddiscret);
+        const Teuchos::RCP<Discret::Discretization>& xfielddiscret,
+        const Teuchos::RCP<Discret::Discretization>& fielddiscret);
 
     /// setup the stored state objects
     virtual void Setup() = 0;
@@ -60,16 +60,16 @@ namespace XFEM
 
     /// transfer the old to a new state object
     virtual void TransferToNewState(
-        const DRT::Discretization& new_discret, XFEM::XFieldState& new_xstate) const = 0;
+        const Discret::Discretization& new_discret, XFEM::XFieldState& new_xstate) const = 0;
 
-    virtual void reset_non_standard_dofs(const DRT::Discretization& full_discret) = 0;
+    virtual void reset_non_standard_dofs(const Discret::Discretization& full_discret) = 0;
 
     virtual void SetNewState(const XFEM::XFieldState& xstate);
 
     /// @name Accessors
     /// @{
     /// Get cut wizard
-    CORE::GEO::CutWizard& CutWizard()
+    Core::Geo::CutWizard& CutWizard()
     {
       check_init();
       if (wizard_.is_null()) FOUR_C_THROW("The CutWizard was not initialized! (Teuchos::null)");
@@ -95,7 +95,7 @@ namespace XFEM
 
    protected:
     /// Get cut wizard pointer
-    Teuchos::RCP<CORE::GEO::CutWizard>& cut_wizard_ptr() { return wizard_; }
+    Teuchos::RCP<Core::Geo::CutWizard>& cut_wizard_ptr() { return wizard_; }
 
     /// Get condition manager pointer
     Teuchos::RCP<XFEM::ConditionManager>& condition_manager_ptr() { return condition_manager_; }
@@ -104,7 +104,7 @@ namespace XFEM
     Teuchos::RCP<XFEM::XFEMDofSet>& x_dof_set_ptr() { return xdofset_; }
 
     /// Returns the xFEM field discretizaton
-    DRT::Discretization& x_field_discret()
+    Discret::Discretization& x_field_discret()
     {
       if (xfield_discret_ptr_.is_null()) FOUR_C_THROW("xfield_discret_ptr_ is nullptr!");
 
@@ -112,10 +112,10 @@ namespace XFEM
     }
 
     /// Returns a pointer to the xFEM discretization
-    Teuchos::RCP<DRT::Discretization>& x_field_discret_ptr() { return xfield_discret_ptr_; }
+    Teuchos::RCP<Discret::Discretization>& x_field_discret_ptr() { return xfield_discret_ptr_; }
 
     /// Returns the standard field discretizaton
-    DRT::Discretization& field_discret()
+    Discret::Discretization& field_discret()
     {
       if (field_discret_ptr_.is_null()) FOUR_C_THROW("field_discret_ptr_ is nullptr!");
 
@@ -123,7 +123,7 @@ namespace XFEM
     }
 
     /// Returns a pointer to the standard discretization
-    Teuchos::RCP<DRT::Discretization>& field_discret_ptr() { return field_discret_ptr_; }
+    Teuchos::RCP<Discret::Discretization>& field_discret_ptr() { return field_discret_ptr_; }
 
     /// @}
 
@@ -150,7 +150,7 @@ namespace XFEM
 
    private:
     /// cut wizard
-    Teuchos::RCP<CORE::GEO::CutWizard> wizard_;
+    Teuchos::RCP<Core::Geo::CutWizard> wizard_;
 
     /// condition manager
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
@@ -159,10 +159,10 @@ namespace XFEM
     Teuchos::RCP<XFEM::XFEMDofSet> xdofset_;
 
     /// XFEM field discretization pointer
-    Teuchos::RCP<DRT::Discretization> xfield_discret_ptr_;
+    Teuchos::RCP<Discret::Discretization> xfield_discret_ptr_;
 
     /// field discretization pointer
-    Teuchos::RCP<DRT::Discretization> field_discret_ptr_;
+    Teuchos::RCP<Discret::Discretization> field_discret_ptr_;
   };  // class XFieldState
 }  // namespace XFEM
 

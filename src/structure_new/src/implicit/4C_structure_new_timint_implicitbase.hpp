@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     /** \brief Abstract class for all implicit based time integration strategies
      *
@@ -48,10 +48,10 @@ namespace STR
 
 
       /// Get type of thickness scaling for thin shell structures (derived)
-      INPAR::STR::StcScale GetSTCAlgo() override;
+      Inpar::STR::StcScale GetSTCAlgo() override;
 
       /// Get stc matrix (derived)
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override;
 
       /// Update routine for coupled problems with monolithic approach with time adaptivity
       void Update(double endtime) override;
@@ -70,15 +70,15 @@ namespace STR
       //! Return stiffness,
       //! i.e. force residual differentiated by displacements
       //!      (structural block only)
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
 
       /// Return stiffness,
       /// i.e. force residual differentiated by displacements
-      Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
+      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
       ///! FixMe switch structure field to block matrix in fsi simulations
-      void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-          Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override;
+      void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
+          Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override;
       /// @}
 
       //! print summary after step
@@ -100,7 +100,7 @@ namespace STR
       //! Returns the current solution group ptr
       virtual Teuchos::RCP<::NOX::Abstract::Group> solution_group_ptr() = 0;
     };
-  }  // namespace TIMINT
+  }  // namespace TimeInt
 }  // namespace STR
 
 

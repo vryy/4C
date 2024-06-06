@@ -16,9 +16,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR
+namespace Inpar
 {
-  namespace IO_MONITOR_STRUCTURE_DBC
+  namespace IOMonitorStructureDBC
   {
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
@@ -33,32 +33,32 @@ namespace INPAR
           sublist_IO.sublist("MONITOR STRUCTURE DBC", false, "");
 
       // output interval regarding steps: write output every INTERVAL_STEPS steps
-      CORE::UTILS::IntParameter("INTERVAL_STEPS", -1,
+      Core::UTILS::IntParameter("INTERVAL_STEPS", -1,
           "write reaction force output every INTERVAL_STEPS steps",
           &sublist_IO_monitor_structure_dbc);
 
       // precision for file
-      CORE::UTILS::IntParameter(
+      Core::UTILS::IntParameter(
           "PRECISION_FILE", 16, "precision for written file", &sublist_IO_monitor_structure_dbc);
 
       // precision for screen
-      CORE::UTILS::IntParameter("PRECISION_SCREEN", 5, "precision for written screen output",
+      Core::UTILS::IntParameter("PRECISION_SCREEN", 5, "precision for written screen output",
           &sublist_IO_monitor_structure_dbc);
 
       // type of written output file
       setStringToIntegralParameter<int>("FILE_TYPE", "csv", "type of written output file",
           tuple<std::string>("csv", "CSV", "Csv", "data", "Data", "DATA"),
-          tuple<int>(INPAR::IO_MONITOR_STRUCTURE_DBC::csv, INPAR::IO_MONITOR_STRUCTURE_DBC::csv,
-              INPAR::IO_MONITOR_STRUCTURE_DBC::csv, INPAR::IO_MONITOR_STRUCTURE_DBC::data,
-              INPAR::IO_MONITOR_STRUCTURE_DBC::data, INPAR::IO_MONITOR_STRUCTURE_DBC::data),
+          tuple<int>(Inpar::IOMonitorStructureDBC::csv, Inpar::IOMonitorStructureDBC::csv,
+              Inpar::IOMonitorStructureDBC::csv, Inpar::IOMonitorStructureDBC::data,
+              Inpar::IOMonitorStructureDBC::data, Inpar::IOMonitorStructureDBC::data),
           &sublist_IO_monitor_structure_dbc);
 
       // whether to write output in every iteration of the nonlinear solver
-      CORE::UTILS::BoolParameter("WRITE_HEADER", "No",
+      Core::UTILS::BoolParameter("WRITE_HEADER", "No",
           "write information about monitored boundary condition to output file",
           &sublist_IO_monitor_structure_dbc);
     }
-  }  // namespace IO_MONITOR_STRUCTURE_DBC
-}  // namespace INPAR
+  }  // namespace IOMonitorStructureDBC
+}  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE

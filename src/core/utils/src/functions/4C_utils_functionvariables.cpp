@@ -20,19 +20,19 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-CORE::UTILS::FunctionVariable::FunctionVariable(std::string name) : name_(std::move(name)) {}
+Core::UTILS::FunctionVariable::FunctionVariable(std::string name) : name_(std::move(name)) {}
 
 
-CORE::UTILS::ParsedFunctionVariable::ParsedFunctionVariable(
+Core::UTILS::ParsedFunctionVariable::ParsedFunctionVariable(
     std::string name, const std::string& buf)
     : FunctionVariable(std::move(name)),
-      timefunction_(Teuchos::rcp(new CORE::UTILS::SymbolicExpression<double>(buf)))
+      timefunction_(Teuchos::rcp(new Core::UTILS::SymbolicExpression<double>(buf)))
 
 {
 }
 
 
-double CORE::UTILS::ParsedFunctionVariable::Value(const double t)
+double Core::UTILS::ParsedFunctionVariable::Value(const double t)
 {
   // evaluate the value of the function
   double value = timefunction_->Value({{"t", t}});
@@ -41,7 +41,7 @@ double CORE::UTILS::ParsedFunctionVariable::Value(const double t)
 }
 
 
-double CORE::UTILS::ParsedFunctionVariable::TimeDerivativeValue(const double t, const unsigned deg)
+double Core::UTILS::ParsedFunctionVariable::TimeDerivativeValue(const double t, const unsigned deg)
 {
   Sacado::Fad::DFad<Sacado::Fad::DFad<double>> tfad(1, 0, t);
   tfad.val() = Sacado::Fad::DFad<double>(1, 0, t);
@@ -72,10 +72,10 @@ double CORE::UTILS::ParsedFunctionVariable::TimeDerivativeValue(const double t, 
 }
 
 
-bool CORE::UTILS::ParsedFunctionVariable::ContainTime(const double t) { return true; }
+bool Core::UTILS::ParsedFunctionVariable::ContainTime(const double t) { return true; }
 
 
-CORE::UTILS::LinearInterpolationVariable::LinearInterpolationVariable(std::string name,
+Core::UTILS::LinearInterpolationVariable::LinearInterpolationVariable(std::string name,
     std::vector<double> times, std::vector<double> values, struct Periodicstruct periodicdata)
     : FunctionVariable(std::move(name)),
       times_(std::move(times)),
@@ -87,7 +87,7 @@ CORE::UTILS::LinearInterpolationVariable::LinearInterpolationVariable(std::strin
 }
 
 
-double CORE::UTILS::LinearInterpolationVariable::Value(const double t)
+double Core::UTILS::LinearInterpolationVariable::Value(const double t)
 {
   // evaluate an equivalent time for a periodic variable
   double t_equivalent = t;
@@ -104,7 +104,7 @@ double CORE::UTILS::LinearInterpolationVariable::Value(const double t)
 }
 
 template <typename ScalarT>
-ScalarT CORE::UTILS::LinearInterpolationVariable::Value(const ScalarT& t)
+ScalarT Core::UTILS::LinearInterpolationVariable::Value(const ScalarT& t)
 {
   ScalarT value = 0.0;
 
@@ -143,7 +143,7 @@ ScalarT CORE::UTILS::LinearInterpolationVariable::Value(const ScalarT& t)
 }
 
 
-double CORE::UTILS::LinearInterpolationVariable::TimeDerivativeValue(
+double Core::UTILS::LinearInterpolationVariable::TimeDerivativeValue(
     const double t, const unsigned deg)
 {
   // evaluate an equivalent time for a periodic variable
@@ -183,7 +183,7 @@ double CORE::UTILS::LinearInterpolationVariable::TimeDerivativeValue(
 }
 
 
-bool CORE::UTILS::LinearInterpolationVariable::ContainTime(const double t)
+bool Core::UTILS::LinearInterpolationVariable::ContainTime(const double t)
 {
   /// check the inclusion of the considered time
   double t_equivalent = t;
@@ -205,7 +205,7 @@ bool CORE::UTILS::LinearInterpolationVariable::ContainTime(const double t)
 }
 
 
-CORE::UTILS::MultiFunctionVariable::MultiFunctionVariable(std::string name,
+Core::UTILS::MultiFunctionVariable::MultiFunctionVariable(std::string name,
     std::vector<double> times, std::vector<std::string> description_vec,
     struct Periodicstruct periodicdata)
     : FunctionVariable(std::move(name)),
@@ -219,12 +219,12 @@ CORE::UTILS::MultiFunctionVariable::MultiFunctionVariable(std::string name,
   for (unsigned int n = 0; n < times_.size() - 1; ++n)
   {
     timefunction_[n] =
-        Teuchos::rcp(new CORE::UTILS::SymbolicExpression<double>(description_vec[n]));
+        Teuchos::rcp(new Core::UTILS::SymbolicExpression<double>(description_vec[n]));
   }
 }
 
 
-double CORE::UTILS::MultiFunctionVariable::Value(const double t)
+double Core::UTILS::MultiFunctionVariable::Value(const double t)
 {
   // evaluate an equivalent time for a periodic variable
   double t_equivalent = t;
@@ -272,7 +272,7 @@ double CORE::UTILS::MultiFunctionVariable::Value(const double t)
 }
 
 
-double CORE::UTILS::MultiFunctionVariable::TimeDerivativeValue(const double t, const unsigned deg)
+double Core::UTILS::MultiFunctionVariable::TimeDerivativeValue(const double t, const unsigned deg)
 {
   // evaluate an equivalent time for a periodic variable
   double t_equivalent = t;
@@ -342,7 +342,7 @@ double CORE::UTILS::MultiFunctionVariable::TimeDerivativeValue(const double t, c
 }
 
 
-bool CORE::UTILS::MultiFunctionVariable::ContainTime(const double t)
+bool Core::UTILS::MultiFunctionVariable::ContainTime(const double t)
 {
   /// check the inclusion of the considered time
   double t_equivalent = t;
@@ -364,7 +364,7 @@ bool CORE::UTILS::MultiFunctionVariable::ContainTime(const double t)
 }
 
 
-CORE::UTILS::FourierInterpolationVariable::FourierInterpolationVariable(std::string name,
+Core::UTILS::FourierInterpolationVariable::FourierInterpolationVariable(std::string name,
     std::vector<double> times, std::vector<double> values, struct Periodicstruct periodicdata)
     : FunctionVariable(std::move(name)),
       times_(std::move(times)),
@@ -375,7 +375,7 @@ CORE::UTILS::FourierInterpolationVariable::FourierInterpolationVariable(std::str
 {
 }
 
-double CORE::UTILS::FourierInterpolationVariable::Value(const double t)
+double Core::UTILS::FourierInterpolationVariable::Value(const double t)
 {
   // evaluate an equivalent time for a periodic variable
   double t_equivalent = t;
@@ -392,7 +392,7 @@ double CORE::UTILS::FourierInterpolationVariable::Value(const double t)
 }
 
 template <typename ScalarT>
-ScalarT CORE::UTILS::FourierInterpolationVariable::Value(const ScalarT& t)
+ScalarT Core::UTILS::FourierInterpolationVariable::Value(const ScalarT& t)
 {
   // source: https://en.wikipedia.org/wiki/Trigonometric_interpolation
   ScalarT value = 0.0;
@@ -432,7 +432,7 @@ ScalarT CORE::UTILS::FourierInterpolationVariable::Value(const ScalarT& t)
 }
 
 
-double CORE::UTILS::FourierInterpolationVariable::TimeDerivativeValue(
+double Core::UTILS::FourierInterpolationVariable::TimeDerivativeValue(
     const double t, const unsigned deg)
 {
   // evaluate an equivalent time for a periodic variable
@@ -472,7 +472,7 @@ double CORE::UTILS::FourierInterpolationVariable::TimeDerivativeValue(
 }
 
 
-bool CORE::UTILS::FourierInterpolationVariable::ContainTime(const double t)
+bool Core::UTILS::FourierInterpolationVariable::ContainTime(const double t)
 {
   /// check the inclusion of the considered time
   double t_equivalent = t;
@@ -494,7 +494,7 @@ bool CORE::UTILS::FourierInterpolationVariable::ContainTime(const double t)
 }
 
 
-CORE::UTILS::PiecewiseVariable::PiecewiseVariable(
+Core::UTILS::PiecewiseVariable::PiecewiseVariable(
     const std::string& name, std::vector<Teuchos::RCP<FunctionVariable>> pieces)
     : FunctionVariable(name), pieces_(std::move(pieces))
 {
@@ -503,19 +503,19 @@ CORE::UTILS::PiecewiseVariable::PiecewiseVariable(
 }
 
 
-double CORE::UTILS::PiecewiseVariable::Value(const double t)
+double Core::UTILS::PiecewiseVariable::Value(const double t)
 {
   return find_piece_for_time(t).Value(t);
 }
 
 
-double CORE::UTILS::PiecewiseVariable::TimeDerivativeValue(const double t, const unsigned int deg)
+double Core::UTILS::PiecewiseVariable::TimeDerivativeValue(const double t, const unsigned int deg)
 {
   return find_piece_for_time(t).TimeDerivativeValue(t, deg);
 }
 
 
-bool CORE::UTILS::PiecewiseVariable::ContainTime(const double t)
+bool Core::UTILS::PiecewiseVariable::ContainTime(const double t)
 {
   const auto active_piece =
       std::find_if(pieces_.begin(), pieces_.end(), [t](auto& var) { return var->ContainTime(t); });
@@ -524,7 +524,7 @@ bool CORE::UTILS::PiecewiseVariable::ContainTime(const double t)
 }
 
 
-CORE::UTILS::FunctionVariable& CORE::UTILS::PiecewiseVariable::find_piece_for_time(const double t)
+Core::UTILS::FunctionVariable& Core::UTILS::PiecewiseVariable::find_piece_for_time(const double t)
 {
   auto active_piece =
       std::find_if(pieces_.begin(), pieces_.end(), [t](auto& var) { return var->ContainTime(t); });
@@ -535,7 +535,7 @@ CORE::UTILS::FunctionVariable& CORE::UTILS::PiecewiseVariable::find_piece_for_ti
   return **active_piece;
 }
 
-std::vector<double> CORE::UTILS::INTERNAL::ExtractTimeVector(const INPUT::LineDefinition& timevar)
+std::vector<double> Core::UTILS::INTERNAL::ExtractTimeVector(const Input::LineDefinition& timevar)
 {
   // read the number of points
   int numpoints;

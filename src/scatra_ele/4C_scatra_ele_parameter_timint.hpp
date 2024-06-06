@@ -25,7 +25,7 @@ general static parameters required for scalar transport element evaluation.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -66,7 +66,7 @@ namespace DRT
       double alpha_f_;
     };  // class ScaTraEleParameterTimInt
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

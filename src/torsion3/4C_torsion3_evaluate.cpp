@@ -26,16 +26,16 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 08/08|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   set_params_interface_ptr(params);
 
   // start with "none"
-  CORE::Elements::ActionType act = CORE::Elements::none;
+  Core::Elements::ActionType act = Core::Elements::none;
 
   if (IsParamsInterface())
   {
@@ -48,25 +48,25 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
     if (action == "calc_none")
       FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
-      act = CORE::Elements::struct_calc_linstiff;
+      act = Core::Elements::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
-      act = CORE::Elements::struct_calc_nlnstiff;
+      act = Core::Elements::struct_calc_nlnstiff;
     else if (action == "calc_struct_internalforce")
-      act = CORE::Elements::struct_calc_internalforce;
+      act = Core::Elements::struct_calc_internalforce;
     else if (action == "calc_struct_linstiffmass")
-      act = CORE::Elements::struct_calc_linstiffmass;
+      act = Core::Elements::struct_calc_linstiffmass;
     else if (action == "calc_struct_nlnstiffmass")
-      act = CORE::Elements::struct_calc_nlnstiffmass;
+      act = Core::Elements::struct_calc_nlnstiffmass;
     else if (action == "calc_struct_nlnstifflmass")
-      act = CORE::Elements::struct_calc_nlnstifflmass;
+      act = Core::Elements::struct_calc_nlnstifflmass;
     else if (action == "calc_struct_stress")
-      act = CORE::Elements::struct_calc_stress;
+      act = Core::Elements::struct_calc_stress;
     else if (action == "calc_struct_update_istep")
-      act = CORE::Elements::struct_calc_update_istep;
+      act = Core::Elements::struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
-      act = CORE::Elements::struct_calc_reset_istep;
+      act = Core::Elements::struct_calc_reset_istep;
     else if (action == "calc_struct_ptcstiff")
-      act = CORE::Elements::struct_calc_ptcstiff;
+      act = Core::Elements::struct_calc_ptcstiff;
     else
     {
       std::cout << action << std::endl;
@@ -76,21 +76,21 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
 
   switch (act)
   {
-    case CORE::Elements::struct_calc_ptcstiff:
+    case Core::Elements::struct_calc_ptcstiff:
     {
       // nothing to do
     }
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero
      dispalcement and residual values*/
-    case CORE::Elements::struct_calc_linstiff:
+    case Core::Elements::struct_calc_linstiff:
     {
       // only nonlinear case implemented!
       FOUR_C_THROW("linear stiffness matrix called, but not implemented");
     }
     break;
     // calculate internal energy
-    case CORE::Elements::struct_calc_energy:
+    case Core::Elements::struct_calc_energy:
     {
       // need current global displacement and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual
@@ -98,7 +98,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       t3_energy(params, mydisp, &elevec1);
     }
@@ -106,10 +106,10 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
 
     // nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is
     // required
-    case CORE::Elements::struct_calc_nlnstiffmass:
-    case CORE::Elements::struct_calc_nlnstifflmass:
-    case CORE::Elements::struct_calc_nlnstiff:
-    case CORE::Elements::struct_calc_internalforce:
+    case Core::Elements::struct_calc_nlnstiffmass:
+    case Core::Elements::struct_calc_nlnstifflmass:
+    case Core::Elements::struct_calc_nlnstiff:
+    case Core::Elements::struct_calc_internalforce:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual
@@ -119,12 +119,12 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       // get residual displacements
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       if (res == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::ExtractMyValues(*res, myres, lm);
 
       /*first displacement vector is modified for proper element evaluation in case of periodic
        *boundary conditions; in case that no periodic boundary conditions are to be applied the
@@ -134,13 +134,13 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
 
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
-      if (act == CORE::Elements::struct_calc_nlnstiffmass)
+      if (act == Core::Elements::struct_calc_nlnstiffmass)
         t3_nlnstiffmass(mydisp, &elemat1, &elemat2, &elevec1);
-      else if (act == CORE::Elements::struct_calc_nlnstifflmass)
+      else if (act == Core::Elements::struct_calc_nlnstifflmass)
         t3_nlnstiffmass(mydisp, &elemat1, &elemat2, &elevec1);
-      else if (act == CORE::Elements::struct_calc_nlnstiff)
+      else if (act == Core::Elements::struct_calc_nlnstiff)
         t3_nlnstiffmass(mydisp, &elemat1, nullptr, &elevec1);
-      else if (act == CORE::Elements::struct_calc_internalforce)
+      else if (act == Core::Elements::struct_calc_internalforce)
         t3_nlnstiffmass(mydisp, nullptr, nullptr, &elevec1);
 
 
@@ -156,12 +156,12 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
         int nnode  = num_node();
 
         //variable to store numerically approximated stiffness matrix
-        CORE::LINALG::SerialDenseMatrix stiff_approx;
+        Core::LinAlg::SerialDenseMatrix stiff_approx;
         stiff_approx.Shape(numdof*nnode,numdof*nnode);
 
 
         //relative error of numerically approximated stiffness matrix
-        CORE::LINALG::SerialDenseMatrix stiff_relerr;
+        Core::LinAlg::SerialDenseMatrix stiff_relerr;
         stiff_relerr.Shape(numdof*nnode,numdof*nnode);
 
         //characteristic length for numerical approximation of stiffness
@@ -176,7 +176,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
           for(int k=0; k<nnode; k++)//for all nodes
           {
 
-            CORE::LINALG::SerialDenseVector force_aux;
+            Core::LinAlg::SerialDenseVector force_aux;
             force_aux.Size(numdof*nnode);
 
             //create new displacement and velocity vectors in order to store artificially modified
@@ -228,17 +228,17 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
       */
     }
     break;
-    case CORE::Elements::struct_calc_update_istep:
-    case CORE::Elements::struct_calc_reset_istep:
-    case CORE::Elements::struct_calc_stress:
+    case Core::Elements::struct_calc_update_istep:
+    case Core::Elements::struct_calc_reset_istep:
+    case Core::Elements::struct_calc_stress:
       break;
-    case CORE::Elements::struct_calc_recover:
+    case Core::Elements::struct_calc_recover:
     {
       // do nothing here
       break;
     }
 
-    case CORE::Elements::struct_calc_predict:
+    case Core::Elements::struct_calc_predict:
     {
       // do nothing here
       break;
@@ -256,10 +256,10 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public) cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Torsion3::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::Torsion3::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   /*torsion spring assumed to be infinitesimally small and thus no Neumann boundary conditions
    * can be assigned to this element*/
@@ -270,12 +270,12 @@ int DRT::ELEMENTS::Torsion3::evaluate_neumann(Teuchos::ParameterList& params,
 /*--------------------------------------------------------------------------------------*
  | calculation of elastic energy                                             cyron 12/10|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params, std::vector<double>& disp,
-    CORE::LINALG::SerialDenseVector* intenergy)
+void Discret::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params,
+    std::vector<double>& disp, Core::LinAlg::SerialDenseVector* intenergy)
 {
   // current node position (first entries 0,1,2 for first node, 3,4,5 for second node , 6,7,8 for
   // third node)
-  CORE::LINALG::Matrix<9, 1> xcurr;
+  Core::LinAlg::Matrix<9, 1> xcurr;
 
   // current nodal position
   for (int j = 0; j < 3; ++j)
@@ -286,11 +286,11 @@ void DRT::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params, std::vec
   }
 
   // auxiliary vector for both internal force and stiffness matrix
-  CORE::LINALG::Matrix<6, 1> aux;
+  Core::LinAlg::Matrix<6, 1> aux;
   for (int j = 0; j < 6; ++j) aux(j) = xcurr(j + 3) - xcurr(j);
 
   // current length of vectors 1-->2  and 2-->3
-  CORE::LINALG::Matrix<2, 1> lcurr;
+  Core::LinAlg::Matrix<2, 1> lcurr;
   for (int j = 0; j < 2; ++j)
     lcurr(j) = sqrt(pow(aux(3 * j), 2) + pow(aux(3 * j + 1), 2) + pow(aux(3 * j + 2), 2));
 
@@ -305,15 +305,15 @@ void DRT::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params, std::vec
   deltatheta = acos(s);
 
   // spring constant from material law
-  Teuchos::RCP<const CORE::MAT::Material> currmat = Material();
+  Teuchos::RCP<const Core::Mat::Material> currmat = Material();
   double spring = 0.0;
 
   // assignment of material parameters; only spring material is accepted for this element
   switch (currmat->MaterialType())
   {
-    case CORE::Materials::m_spring:  // only elastic spring supported
+    case Core::Materials::m_spring:  // only elastic spring supported
     {
-      const MAT::Spring* actmat = static_cast<const MAT::Spring*>(currmat.get());
+      const Mat::Spring* actmat = static_cast<const Mat::Spring*>(currmat.get());
       spring = actmat->Stiffness();
     }
     break;
@@ -335,13 +335,13 @@ void DRT::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params, std::vec
 /*--------------------------------------------------------------------------------------*
  | evaluate nonlinear stiffness matrix and internal forces                    cyron 03/10|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
-    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
-    CORE::LINALG::SerialDenseVector* force)
+void Discret::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
+    Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
+    Core::LinAlg::SerialDenseVector* force)
 {
   // current node position (first entries 0,1,2 for first node, 3,4,5 for second node , 6,7,8 for
   // third node)
-  CORE::LINALG::Matrix<9, 1> xcurr(true);
+  Core::LinAlg::Matrix<9, 1> xcurr(true);
 
   // current nodal position
   for (int j = 0; j < 3; ++j)
@@ -352,11 +352,11 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
   }
 
   // auxiliary vector for both internal force and stiffness matrix
-  CORE::LINALG::Matrix<6, 1> aux(true);
+  Core::LinAlg::Matrix<6, 1> aux(true);
   for (int j = 0; j < 6; ++j) aux(j) = xcurr(j + 3) - xcurr(j);
 
   // current length of vectors 1-->2  and 2-->3
-  CORE::LINALG::Matrix<2, 1> lcurr(true);
+  Core::LinAlg::Matrix<2, 1> lcurr(true);
   for (int j = 0; j < 2; ++j)
     lcurr(j) = sqrt(pow(aux(3 * j), 2) + pow(aux(3 * j + 1), 2) + pow(aux(3 * j + 2), 2));
 
@@ -390,7 +390,7 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
 
 
   // variation of theta (equation 3.4)
-  CORE::LINALG::Matrix<9, 1> grtheta;
+  Core::LinAlg::Matrix<9, 1> grtheta;
 
   for (int j = 0; j < 3; ++j)
   {  // virual displacement of node 1 and 3
@@ -403,8 +403,8 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
     grtheta(3 + j) = -grtheta(j) - grtheta(j + 6);
 
   // auxiliary matrix for stiffness matrix (equation 3.9 and equation 3.10)
-  CORE::LINALG::Matrix<6, 3> A;
-  CORE::LINALG::Matrix<6, 3> B;
+  Core::LinAlg::Matrix<6, 3> A;
+  Core::LinAlg::Matrix<6, 3> B;
 
   for (int j = 0; j < 3; ++j)
   {
@@ -437,15 +437,15 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
   }
 
   // spring constant from material law
-  Teuchos::RCP<const CORE::MAT::Material> currmat = Material();
+  Teuchos::RCP<const Core::Mat::Material> currmat = Material();
   double spring = 0.0;
 
   // assignment of material parameters; only spring material is accepted for this element
   switch (currmat->MaterialType())
   {
-    case CORE::Materials::m_spring:  // only elastic spring supported
+    case Core::Materials::m_spring:  // only elastic spring supported
     {
-      const MAT::Spring* actmat = static_cast<const MAT::Spring*>(currmat.get());
+      const Mat::Spring* actmat = static_cast<const Mat::Spring*>(currmat.get());
       spring = actmat->Stiffness();
     }
     break;
@@ -589,8 +589,9 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
  10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template <int nnode, int ndim>  // number of nodes, number of dimensions
-inline void DRT::ELEMENTS::Torsion3::node_shift(Teuchos::ParameterList& params,  //!< parameter list
-    std::vector<double>& disp)  //!< element disp vector
+inline void Discret::ELEMENTS::Torsion3::node_shift(
+    Teuchos::ParameterList& params,  //!< parameter list
+    std::vector<double>& disp)       //!< element disp vector
 {
   FOUR_C_THROW(
       "Torsion3::node_shift is deprecated; if needed adapt parameter handling according to "
@@ -609,10 +610,10 @@ inline void DRT::ELEMENTS::Torsion3::node_shift(Teuchos::ParameterList& params, 
   //  int dbcdispdir = params.get<int> ("OSCILLDIR", -1)-1;
   //  Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
   //  Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
-  //  INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE",
-  //  INPAR::STATMECH::dbctype_std); bool shearflow = false;
-  //  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
-  //  dbctype==INPAR::STATMECH::dbctype_sheartrans || dbctype==INPAR::STATMECH::dbctype_affineshear)
+  //  Inpar::STATMECH::DBCType dbctype = params.get<Inpar::STATMECH::DBCType>("DBCTYPE",
+  //  Inpar::STATMECH::dbctype_std); bool shearflow = false;
+  //  if(dbctype==Inpar::STATMECH::dbctype_shearfixed ||
+  //  dbctype==Inpar::STATMECH::dbctype_sheartrans || dbctype==Inpar::STATMECH::dbctype_affineshear)
   //    shearflow = true;
   //
   //  /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0)
@@ -646,7 +647,7 @@ inline void DRT::ELEMENTS::Torsion3::node_shift(Teuchos::ParameterList& params, 
   //          if(shearflow && dof == 2 && curvenumber >=  0 && time>starttime &&
   //          fabs(time-starttime)>dt/1e4)
   //            disp[numdof*i+dbcdispdir] +=
-  //            shearamplitude*GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(curvenumber).evaluate_time_derivative(time);
+  //            shearamplitude*Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(curvenumber).evaluate_time_derivative(time);
   //        }
   //
   //        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) -
@@ -664,7 +665,7 @@ inline void DRT::ELEMENTS::Torsion3::node_shift(Teuchos::ParameterList& params, 
   //          if(shearflow && dof == 2 && curvenumber >=  0 && time>starttime &&
   //          fabs(time-starttime)>dt/1e4)
   //            disp[numdof*i+dbcdispdir] -=
-  //            shearamplitude*GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(curvenumber).evaluate_time_derivative(time);
+  //            shearamplitude*Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(curvenumber).evaluate_time_derivative(time);
   //        }
   //      }
   //    }
@@ -672,6 +673,6 @@ inline void DRT::ELEMENTS::Torsion3::node_shift(Teuchos::ParameterList& params, 
 
   return;
 
-}  // DRT::ELEMENTS::Torsion3::node_shift
+}  // Discret::ELEMENTS::Torsion3::node_shift
 
 FOUR_C_NAMESPACE_CLOSE

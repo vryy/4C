@@ -18,15 +18,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleCalcImmersed<distype>*
-DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleCalcImmersed<distype>*
+Discret::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcImmersed<distype>>(
-            new DRT::ELEMENTS::FluidEleCalcImmersed<distype>());
+        return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcImmersed<distype>>(
+            new Discret::ELEMENTS::FluidEleCalcImmersed<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -34,28 +34,29 @@ DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(CORE::UTILS::SingletonAct
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleCalcImmersed<distype>::FluidEleCalcImmersed()
-    : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(), immersedele_(nullptr), gp_iquad_(0)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleCalcImmersed<distype>::FluidEleCalcImmersed()
+    : Discret::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(), immersedele_(nullptr), gp_iquad_(0)
 {
-  my::fldpara_ = DRT::ELEMENTS::FluidEleParameterStd::Instance();
+  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::Instance();
 }
 
 /*----------------------------------------------------------------------*
  * Evaluate
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag)
 {
   // get integration rule for fluid elements cut by structural boundary
   int num_gp_fluid_bound =
-      GLOBAL::Problem::Instance()->immersed_method_params().get<int>("NUM_GP_FLUID_BOUND");
+      Global::Problem::Instance()->immersed_method_params().get<int>("NUM_GP_FLUID_BOUND");
   int degree_gp_fluid_bound = 3;
   if (num_gp_fluid_bound == 8)
     degree_gp_fluid_bound = 3;
@@ -75,11 +76,11 @@ int DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(DRT::ELEMENTS::Fluid*
         "and 1000).");
 
   // initialize integration rules
-  const CORE::FE::GaussIntegration intpoints_fluid_bound(distype, degree_gp_fluid_bound);
-  const CORE::FE::GaussIntegration intpoints_std(distype);
+  const Core::FE::GaussIntegration intpoints_fluid_bound(distype, degree_gp_fluid_bound);
+  const Core::FE::GaussIntegration intpoints_std(distype);
 
   // store current element
-  immersedele_ = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
+  immersedele_ = dynamic_cast<Discret::ELEMENTS::FluidImmersedBase*>(ele);
 
   // use different integration rule for fluid elements that are cut by the structural boundary
   if (immersedele_->IsBoundaryImmersed())
@@ -94,15 +95,15 @@ int DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(DRT::ELEMENTS::Fluid*
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocity(
-    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocity(
+    const Core::LinAlg::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
     double& facMtau, int iquad, double* saccn, double* sveln, double* svelnp)
 {
   // set number of current gp
   gp_iquad_ = iquad;
   // compute convective conservative term from previous iteration u_old(u_old*nabla)
-  CORE::LINALG::Matrix<nsd_, 1> conv_old_cons(true);
+  Core::LinAlg::Matrix<nsd_, 1> conv_old_cons(true);
   conv_old_cons.Update(my::vdiv_, my::convvelint_, 0.0);
 
   //----------------------------------------------------------------------
@@ -112,7 +113,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocit
   if (my::fldparatimint_->IsGenalpha())
   {
     // rhs of momentum equation: density*bodyforce at n+alpha_F
-    if (my::fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
+    if (my::fldpara_->PhysicalType() == Inpar::FLUID::boussinesq)
     {
       // safety check
       if (my::fldparatimint_->AlphaF() != 1.0 or my::fldparatimint_->Gamma() != 1.0)
@@ -158,7 +159,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocit
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho -
       // rho_0)*g else:                                      f = rho * g Changed density from densn_
       // to densaf_. Makes the OST consistent with the gen-alpha.
-      if (my::fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
+      if (my::fldpara_->PhysicalType() == Inpar::FLUID::boussinesq)
         my::rhsmom_.Update((my::densaf_ / my::fldparatimint_->Dt() / my::fldparatimint_->Theta()),
             my::histmom_, my::deltadens_, my::bodyforce_);
       else
@@ -196,7 +197,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocit
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho -
       // rho_0)*g else:                                      f = rho * g and pressure gradient
       // prescribed as body force (not density weighted)
-      if (my::fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
+      if (my::fldpara_->PhysicalType() == Inpar::FLUID::boussinesq)
         my::rhsmom_.Update(my::deltadens_, my::bodyforce_, 1.0, my::generalbodyforce_);
       else
         my::rhsmom_.Update(my::densaf_, my::bodyforce_, 1.0, my::generalbodyforce_);
@@ -225,7 +226,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocit
   // 1) quasi-static subgrid scales
   // Definition of subgrid-scale velocity is not consistent for the SUPG term and Franca, Valentin,
   // ... Definition of subgrid velocity used by Hughes
-  if (my::fldpara_->Tds() == INPAR::FLUID::subscales_quasistatic)
+  if (my::fldpara_->Tds() == Inpar::FLUID::subscales_quasistatic)
   {
     my::sgvelint_.Update(-my::tau_(1), my::momres_old_, 0.0);
   }
@@ -297,7 +298,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocit
 
     */
 
-    static CORE::LINALG::Matrix<1, nsd_> sgvelintaf(true);
+    static Core::LinAlg::Matrix<1, nsd_> sgvelintaf(true);
     sgvelintaf.Clear();
     for (int rr = 0; rr < nsd_; ++rr)
     {
@@ -333,10 +334,10 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocit
   // include computed subgrid-scale velocity in convective term
   // -> only required for cross- and Reynolds-stress terms
   //----------------------------------------------------------------------
-  if (my::fldpara_->Cross() != INPAR::FLUID::cross_stress_stab_none or
-      my::fldpara_->Reynolds() != INPAR::FLUID::reynolds_stress_stab_none or
-      my::fldpara_->ContiCross() != INPAR::FLUID::cross_stress_stab_none or
-      my::fldpara_->ContiReynolds() != INPAR::FLUID::reynolds_stress_stab_none)
+  if (my::fldpara_->Cross() != Inpar::FLUID::cross_stress_stab_none or
+      my::fldpara_->Reynolds() != Inpar::FLUID::reynolds_stress_stab_none or
+      my::fldpara_->ContiCross() != Inpar::FLUID::cross_stress_stab_none or
+      my::fldpara_->ContiReynolds() != Inpar::FLUID::reynolds_stress_stab_none)
     my::sgconv_c_.MultiplyTN(my::derxy_, my::sgvelint_);
   else
     my::sgconv_c_.Clear();
@@ -345,9 +346,9 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocit
 }
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::lin_gal_mom_res_u(
-    CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::lin_gal_mom_res_u(
+    Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
   /*
       instationary                                 conservative          cross-stress, part 1
@@ -414,11 +415,11 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::lin_gal_mom_res_u(
   return;
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::inertia_convection_reaction_gal_part(
-    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
-    CORE::LINALG::Matrix<nsd_, nen_>& velforce,
-    CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, CORE::LINALG::Matrix<nsd_, 1>& resM_Du,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::inertia_convection_reaction_gal_part(
+    Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+    Core::LinAlg::Matrix<nsd_, nen_>& velforce,
+    Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, Core::LinAlg::Matrix<nsd_, 1>& resM_Du,
     const double& rhsfac)
 {
   my::inertia_convection_reaction_gal_part(estif_u, velforce, lin_resM_Du, resM_Du, rhsfac);
@@ -430,9 +431,9 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::inertia_convection_reaction_g
       /* convection (conservative addition) on right-hand side */
       double v = -rhsfac * my::densaf_ * my::velint_(idim) * my::vdiv_;
 
-      if (my::fldpara_->PhysicalType() == INPAR::FLUID::loma)
+      if (my::fldpara_->PhysicalType() == Inpar::FLUID::loma)
         v += rhsfac * my::velint_(idim) * my::densaf_ * my::scaconvfacaf_ * my::conv_scaaf_;
-      else if (my::fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
+      else if (my::fldpara_->PhysicalType() == Inpar::FLUID::varying_density)
         v -= rhsfac * my::velint_(idim) * my::conv_scaaf_;
 
       for (int vi = 0; vi < nen_; ++vi) velforce(idim, vi) += v * my::funct_(vi);
@@ -442,9 +443,9 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::inertia_convection_reaction_g
   return;
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::continuity_gal_part(
-    CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, 1>& preforce,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::continuity_gal_part(
+    Core::LinAlg::Matrix<nen_, nen_ * nsd_>& estif_q_u, Core::LinAlg::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac)
 {
   for (int vi = 0; vi < nen_; ++vi)
@@ -480,10 +481,10 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::continuity_gal_part(
   return;
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::conservative_formulation(
-    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
-    CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::conservative_formulation(
+    Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+    Core::LinAlg::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
 {
   if (not(immersedele_->has_projected_dirichlet()))
     my::conservative_formulation(estif_u, velforce, timefacfac, rhsfac);
@@ -494,20 +495,20 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::conservative_formulation(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // Ursula is responsible for this comment!
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::wedge15>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalcImmersed<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::hex8>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::tet10>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::wedge15>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::pyramid5>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

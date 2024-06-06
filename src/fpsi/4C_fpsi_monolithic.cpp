@@ -61,26 +61,26 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
 
   // create instance of poroelast subproblem
   poroelast_subproblem_ =
-      Teuchos::rcp(new POROELAST::Monolithic(comm, fpsidynparams, Teuchos::null));
+      Teuchos::rcp(new PoroElast::Monolithic(comm, fpsidynparams, Teuchos::null));
   // ask base algorithm for the fluid time integrator
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   const Teuchos::ParameterList& fluiddynparams = problem->FluidDynamicParams();
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
-      Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fpsidynparams, fluiddynparams, "fluid", true));
-  fluid_subproblem_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFPSI>(fluid->fluid_field());
+  Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid =
+      Teuchos::rcp(new Adapter::FluidBaseAlgorithm(fpsidynparams, fluiddynparams, "fluid", true));
+  fluid_subproblem_ = Teuchos::rcp_dynamic_cast<Adapter::FluidFPSI>(fluid->fluid_field());
   // ask base algorithm for the ale time integrator
-  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
-      new ADAPTER::AleBaseAlgorithm(fpsidynparams, GLOBAL::Problem::Instance()->GetDis("ale")));
-  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFpsiWrapper>(ale->ale_field());
+  Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::rcp(
+      new Adapter::AleBaseAlgorithm(fpsidynparams, Global::Problem::Instance()->GetDis("ale")));
+  ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFpsiWrapper>(ale->ale_field());
   if (ale_ == Teuchos::null)
-    FOUR_C_THROW("cast from ADAPTER::Ale to ADAPTER::AleFpsiWrapper failed");
+    FOUR_C_THROW("cast from Adapter::Ale to Adapter::AleFpsiWrapper failed");
 
-  coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
 
-  coupsf_fsi_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupsa_fsi_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupfa_fsi_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  icoupfa_fsi_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupsf_fsi_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupsa_fsi_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupfa_fsi_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  icoupfa_fsi_ = Teuchos::rcp(new Core::Adapter::Coupling());
 
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
@@ -211,8 +211,8 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
       firstcall_(true)
 {
   const Teuchos::ParameterList& sdynparams =
-      GLOBAL::Problem::Instance()->structural_dynamic_params();
-  solveradapttol_ = (CORE::UTILS::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
+      Global::Problem::Instance()->structural_dynamic_params();
+  solveradapttol_ = (Core::UTILS::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
   // hydraulic conductivity (needed for coupling in case of probtype fps3i)
@@ -243,7 +243,7 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
         "in you .dat file! \n --> Or feel free to add the missing terms coming from the predictors "
         "to 4C!");
 
-  const Teuchos::ParameterList& fdynparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdynparams = Global::Problem::Instance()->FluidDynamicParams();
   if (fdynparams.get<std::string>("PREDICTOR") != "steady_state")
     FOUR_C_THROW(
         "No Fluid Predictor for FPSI implemented at the moment, choose <PREDICTOR = steady_state> "
@@ -257,9 +257,9 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
 /*----------------------------------------------------------------------*/
 void FPSI::Monolithic::SetupSystem()
 {
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
 
-  CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
+  Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
   const Epetra_Map* fluidnodemap = fluid_field()->discretization()->NodeRowMap();
   const Epetra_Map* alenodemap = ale_field()->discretization()->NodeRowMap();
@@ -286,11 +286,11 @@ void FPSI::Monolithic::SetupSystem_FSI()
 
   // right now we use matching meshes at the interface
 
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
 
-  CORE::ADAPTER::Coupling& coupsf_fsi = structure_fluid_coupling_fsi();
-  CORE::ADAPTER::Coupling& coupsa_fsi = structure_ale_coupling_fsi();
-  CORE::ADAPTER::Coupling& icoupfa_fsi = interface_fluid_ale_coupling_fsi();
+  Core::Adapter::Coupling& coupsf_fsi = structure_fluid_coupling_fsi();
+  Core::Adapter::Coupling& coupsa_fsi = structure_ale_coupling_fsi();
+  Core::Adapter::Coupling& icoupfa_fsi = interface_fluid_ale_coupling_fsi();
 
   // structure to fluid
   coupsf_fsi.setup_condition_coupling(*poro_field()->structure_field()->discretization(),
@@ -487,10 +487,10 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 /*----------------------------------------------------------------------*/
 void FPSI::Monolithic::TestResults(const Epetra_Comm& comm)
 {
-  GLOBAL::Problem::Instance()->AddFieldTest(poro_field()->structure_field()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->AddFieldTest(poro_field()->fluid_field()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->AddFieldTest(fluid_field()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->TestAll(comm);
+  Global::Problem::Instance()->AddFieldTest(poro_field()->structure_field()->CreateFieldTest());
+  Global::Problem::Instance()->AddFieldTest(poro_field()->fluid_field()->CreateFieldTest());
+  Global::Problem::Instance()->AddFieldTest(fluid_field()->CreateFieldTest());
+  Global::Problem::Instance()->TestAll(comm);
 }
 
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -501,7 +501,7 @@ void FPSI::Monolithic::TestResults(const Epetra_Comm& comm)
 void FPSI::Monolithic::SetupSolver()
 {
   const Teuchos::ParameterList& fpsidynamicparams =
-      GLOBAL::Problem::Instance()->FPSIDynamicParams();
+      Global::Problem::Instance()->FPSIDynamicParams();
 
   const int linsolvernumber = fpsidynamicparams.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
@@ -510,15 +510,15 @@ void FPSI::Monolithic::SetupSolver()
         "valid number !");
 
   const Teuchos::ParameterList& solverparams =
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
+      Global::Problem::Instance()->SolverParams(linsolvernumber);
   const auto solvertype =
-      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
+      Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
-  directsolve_ = (solvertype == CORE::LINEAR_SOLVER::SolverType::umfpack or
-                  solvertype == CORE::LINEAR_SOLVER::SolverType::superlu);
+  directsolve_ = (solvertype == Core::LinearSolver::SolverType::umfpack or
+                  solvertype == Core::LinearSolver::SolverType::superlu);
 
   if (directsolve_)
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
+    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, Comm()));
   else
     // create a linear solver
     create_linear_solver();
@@ -527,11 +527,11 @@ void FPSI::Monolithic::SetupSolver()
   maximumiterations_ = fpsidynamicparams.get<int>("ITEMAX");
   minimumiterations_ = fpsidynamicparams.get<int>("ITEMIN");
   normtypeinc_ =
-      CORE::UTILS::IntegralValue<INPAR::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_INC");
+      Core::UTILS::IntegralValue<Inpar::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_INC");
   normtypefres_ =
-      CORE::UTILS::IntegralValue<INPAR::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_RESF");
+      Core::UTILS::IntegralValue<Inpar::FPSI::ConvergenceNorm>(fpsidynamicparams, "NORM_RESF");
   combinedconvergence_ =
-      CORE::UTILS::IntegralValue<INPAR::FPSI::BinaryOp>(fpsidynamicparams, "NORMCOMBI_RESFINC");
+      Core::UTILS::IntegralValue<Inpar::FPSI::BinaryOp>(fpsidynamicparams, "NORMCOMBI_RESFINC");
 
   {
     std::istringstream tolresstream(
@@ -552,9 +552,9 @@ void FPSI::Monolithic::SetupSolver()
     toleranceiterinc_ = toleranceiterinclist_[0];
   }
 
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
-  linesearch_ = CORE::UTILS::IntegralValue<int>(fpsidynparams, "LineSearch");
+  linesearch_ = Core::UTILS::IntegralValue<int>(fpsidynparams, "LineSearch");
   if (linesearch_ == 1)
     FOUR_C_THROW(
         "Parameter 'LineSearch' is set to 'Yes' in the FPSI Dynamic section in your input-file.  \n"
@@ -573,7 +573,7 @@ void FPSI::Monolithic::SetupSolver()
 void FPSI::Monolithic::create_linear_solver()
 {
   // get dynamic section
-  const Teuchos::ParameterList& fpsidyn = GLOBAL::Problem::Instance()->FPSIDynamicParams();
+  const Teuchos::ParameterList& fpsidyn = Global::Problem::Instance()->FPSIDynamicParams();
 
   // get the linear solver number
   const int linsolvernumber = fpsidyn.get<int>("LINEAR_SOLVER");
@@ -583,7 +583,7 @@ void FPSI::Monolithic::create_linear_solver()
         "valid number !");
 
   // get parameter list of structural dynamics
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
   // use solver blocks for structure
   // get the solver number used for structural solver
   const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -594,7 +594,7 @@ void FPSI::Monolithic::create_linear_solver()
         "DYNAMIC to a valid number!");
 
   // get parameter list of fluid dynamics
-  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = Global::Problem::Instance()->FluidDynamicParams();
   // use solver blocks for fluid
   // get the solver number used for fluid solver
   const int flinsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
@@ -605,7 +605,7 @@ void FPSI::Monolithic::create_linear_solver()
         "valid number!");
 
   // get parameter list of structural dynamics
-  const Teuchos::ParameterList& aledyn = GLOBAL::Problem::Instance()->AleDynamicParams();
+  const Teuchos::ParameterList& aledyn = Global::Problem::Instance()->AleDynamicParams();
   // use solver blocks for structure
   // get the solver number used for structural solver
   const int alinsolvernumber = aledyn.get<int>("LINEAR_SOLVER");
@@ -617,12 +617,12 @@ void FPSI::Monolithic::create_linear_solver()
 
   // get solver parameter list of linear Poroelasticity solver
   const Teuchos::ParameterList& fpsisolverparams =
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
+      Global::Problem::Instance()->SolverParams(linsolvernumber);
 
   const auto solvertype =
-      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(fpsisolverparams, "SOLVER");
+      Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(fpsisolverparams, "SOLVER");
 
-  if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos)
+  if (solvertype != Core::LinearSolver::SolverType::belos)
   {
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     std::cout << " Note: the BGS2x2 preconditioner now " << std::endl;
@@ -633,13 +633,13 @@ void FPSI::Monolithic::create_linear_solver()
     std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     FOUR_C_THROW("Iterative solver expected");
   }
-  const auto azprectype = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
-      fpsisolverparams, "AZPREC");
+  const auto azprectype =
+      Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(fpsisolverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
+    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -650,15 +650,15 @@ void FPSI::Monolithic::create_linear_solver()
       break;
   }
 
-  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(fpsisolverparams, Comm()));
+  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(fpsisolverparams, Comm()));
 
   // use solver blocks for structure and fluid
   const Teuchos::ParameterList& ssolverparams =
-      GLOBAL::Problem::Instance()->SolverParams(slinsolvernumber);
+      Global::Problem::Instance()->SolverParams(slinsolvernumber);
   const Teuchos::ParameterList& fsolverparams =
-      GLOBAL::Problem::Instance()->SolverParams(flinsolvernumber);
+      Global::Problem::Instance()->SolverParams(flinsolvernumber);
   const Teuchos::ParameterList& asolverparams =
-      GLOBAL::Problem::Instance()->SolverParams(alinsolvernumber);
+      Global::Problem::Instance()->SolverParams(alinsolvernumber);
 
   // for now, use same solver parameters for poro fluid and free fluid
 
@@ -684,10 +684,10 @@ void FPSI::Monolithic::create_linear_solver()
   // fixing length of Inverse1 nullspace (solver/preconditioner ML)
   {
     std::string inv = "Inverse1";
-    const Epetra_Map& oldmap = *(GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map());
+    const Epetra_Map& oldmap = *(Global::Problem::Instance()->GetDis("structure")->dof_row_map());
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(structure_block_, structure_block_).EpetraMatrix()->RowMap();
-    CORE::LINEAR_SOLVER::Parameters::FixNullSpace(
+    Core::LinearSolver::Parameters::FixNullSpace(
         inv.data(), oldmap, newmap, solver_->Params().sublist("Inverse1"));
   }
   // fixing length of Inverse2 nullspace (solver/preconditioner ML)
@@ -696,7 +696,7 @@ void FPSI::Monolithic::create_linear_solver()
     const Epetra_Map& oldmap = *(poro_field()->fluid_field()->dof_row_map());
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(porofluid_block_, porofluid_block_).EpetraMatrix()->RowMap();
-    CORE::LINEAR_SOLVER::Parameters::FixNullSpace(
+    Core::LinearSolver::Parameters::FixNullSpace(
         inv.data(), oldmap, newmap, solver_->Params().sublist("Inverse2"));
   }
   // fixing length of Inverse3 nullspace (solver/preconditioner ML)
@@ -705,7 +705,7 @@ void FPSI::Monolithic::create_linear_solver()
     const Epetra_Map& oldmap = *(fluid_field()->dof_row_map());
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(fluid_block_, fluid_block_).EpetraMatrix()->RowMap();
-    CORE::LINEAR_SOLVER::Parameters::FixNullSpace(
+    Core::LinearSolver::Parameters::FixNullSpace(
         inv.data(), oldmap, newmap, solver_->Params().sublist("Inverse3"));
   }
   // fixing length of Inverse4 nullspace (solver/preconditioner ML)
@@ -714,7 +714,7 @@ void FPSI::Monolithic::create_linear_solver()
     const Epetra_Map& oldmap = *(ale_field()->dof_row_map());
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(ale_i_block_, ale_i_block_).EpetraMatrix()->RowMap();
-    CORE::LINEAR_SOLVER::Parameters::FixNullSpace(
+    Core::LinearSolver::Parameters::FixNullSpace(
         inv.data(), oldmap, newmap, solver_->Params().sublist("Inverse4"));
   }
 }
@@ -723,14 +723,14 @@ void FPSI::Monolithic::create_linear_solver()
 /*----------------------------------------------------------------------*/
 void FPSI::Monolithic::linear_solve()
 {
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   if (solveradapttol_ and (iter_ > 1))
   {
     solver_params.nonlin_tolerance = normofrhs_;
     solver_params.nonlin_residual = toleranceresidualforces_;
     solver_params.lin_tol_better = solveradaptolbetter_;
   }
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
   if (Teuchos::getIntegralValue<int>(fpsidynparams, "FDCheck"))
   {
@@ -742,16 +742,16 @@ void FPSI::Monolithic::linear_solve()
 
   if (directsolve_)
   {
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->Merge();
 
     if (FSI_Interface_exists_)
     {
       // remove entries in condensed dofs from matrix and rhs...
-      CORE::LINALG::apply_dirichlet_to_system(
+      Core::LinAlg::apply_dirichlet_to_system(
           *sparse, *iterinc_, *rhs_, *zeros_, *fluid_field()->Interface()->FSICondMap());
     }
 
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *sparse, *iterinc_, *rhs_, *zeros_, *combined_dbc_map());
 
     // line search
@@ -770,15 +770,15 @@ void FPSI::Monolithic::linear_solve()
     if (FSI_Interface_exists_)
     {
       // remove entries in condensed dofs from matrix and rhs...
-      CORE::LINALG::apply_dirichlet_to_system(
+      Core::LinAlg::apply_dirichlet_to_system(
           *systemmatrix_, *iterinc_, *rhs_, *zeros_, *fluid_field()->Interface()->FSICondMap());
     }
 
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *systemmatrix_, *iterinc_, *rhs_, *zeros_, *combined_dbc_map());
 
     // standard solver call
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = iter_ == 1;
     solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, solver_params);
@@ -787,7 +787,7 @@ void FPSI::Monolithic::linear_solve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic::LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& sparse)
+void FPSI::Monolithic::LineSearch(Teuchos::RCP<Core::LinAlg::SparseMatrix>& sparse)
 {
   // Note: the line search code seems to be experimental and is not
   // working properly (perhaps just a sign is wrong somewhere ...)
@@ -867,7 +867,7 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& spar
   // copy the old iterinc_ before new solve
   if (linesearch_ and islinesearch_ == false)
   {
-    rhsold_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+    rhsold_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
     rhsold_->Update(1.0, *rhs_, 0.0);
     rhsold_->Norm2(&normofrhsold_);
     if (abs(normofrhs_ - normofrhsold_) > 1.e-12 and iter_ > 1)
@@ -878,7 +878,7 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& spar
   // standard solver call
   if (islinesearch_ == false)
   {
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = iter_ == 1;
     solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
@@ -887,7 +887,7 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& spar
   if (islinesearch_ == false)
   {
     // check whether iterinc_ points in right direction
-    Teuchos::RCP<Epetra_Vector> tempvec = CORE::LINALG::CreateVector(*dof_row_map(), true);
+    Teuchos::RCP<Epetra_Vector> tempvec = Core::LinAlg::CreateVector(*dof_row_map(), true);
     sparse->Multiply(true, *rhs_, *tempvec);
     double climb = 0.0;
     tempvec->Dot(*iterinc_, &climb);
@@ -915,7 +915,7 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& spar
 
   if (linesearch_ and islinesearch_ == false)
   {
-    iterincold_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+    iterincold_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
     iterincold_->Update(1.0, *iterinc_, 0.0);
     iterincold_->Norm2(&normofiterincold_);
   }
@@ -931,9 +931,9 @@ Teuchos::RCP<Epetra_Map> FPSI::Monolithic::combined_dbc_map()
       poro_field()->fluid_field()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map> fcondmap = fluid_field()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map> acondmap = ale_field()->GetDBCMapExtractor()->CondMap();
-  Teuchos::RCP<Epetra_Map> tempmap = CORE::LINALG::MergeMap(scondmap, pfcondmap, false);
-  Teuchos::RCP<Epetra_Map> condmap_0 = CORE::LINALG::MergeMap(tempmap, fcondmap, false);
-  Teuchos::RCP<Epetra_Map> condmap = CORE::LINALG::MergeMap(condmap_0, acondmap, false);
+  Teuchos::RCP<Epetra_Map> tempmap = Core::LinAlg::MergeMap(scondmap, pfcondmap, false);
+  Teuchos::RCP<Epetra_Map> condmap_0 = Core::LinAlg::MergeMap(tempmap, fcondmap, false);
+  Teuchos::RCP<Epetra_Map> condmap = Core::LinAlg::MergeMap(condmap_0, acondmap, false);
 
   return condmap;
 }  // combined_dbc_map()
@@ -951,15 +951,15 @@ bool FPSI::Monolithic::Converged()
   // residual increments
   switch (normtypeinc_)
   {
-    case INPAR::FPSI::absoluteconvergencenorm:
+    case Inpar::FPSI::absoluteconvergencenorm:
       convinc = normofiterinc_ < toleranceiterinc_;
       break;
-    case INPAR::FPSI::absoluteconvergencenorm_sys_split:
+    case Inpar::FPSI::absoluteconvergencenorm_sys_split:
       FOUR_C_THROW(
           "Check for convergence of primary variables with type <absolut sys split> not "
           "implemented yet!");
       break;
-    case INPAR::FPSI::relativconvergencenorm_sys:
+    case Inpar::FPSI::relativconvergencenorm_sys:
       // increment convergence is checked relative to the average dofs of the different fields
       std::cout << " |ps| " << norm1_ps_ << " |pfv| " << norm1_pfv_ << " |pfp| " << norm1_pfp_
                 << " |fv| " << norm1_fv_ << " |fp| " << norm1_fp_ << " |a| " << norm1_a_
@@ -984,10 +984,10 @@ bool FPSI::Monolithic::Converged()
   // residual forces
   switch (normtypefres_)
   {
-    case INPAR::FPSI::absoluteconvergencenorm:
+    case Inpar::FPSI::absoluteconvergencenorm:
       convfres = normofrhs_ < toleranceresidualforces_;
       break;
-    case INPAR::FPSI::absoluteconvergencenorm_sys_split:
+    case Inpar::FPSI::absoluteconvergencenorm_sys_split:
       convfres = ((normrhsporostruct_ / sqrtnps_ < toleranceresidualforceslist_[2]) and
                   (normrhsfluidvelocity_ / sqrtnpfv_ < toleranceresidualforceslist_[0]) and
                   (normrhsporofluidpressure_ / sqrtnpfp_ < toleranceresidualforceslist_[1]) and
@@ -995,7 +995,7 @@ bool FPSI::Monolithic::Converged()
                   (normrhsfluidvelocity_ / sqrtnfv_ < toleranceresidualforceslist_[3]) and
                   (normrhsfluidpressure_ / sqrtnfp_ < toleranceresidualforceslist_[4]));
       break;
-    case INPAR::FPSI::relativconvergencenorm_sys:
+    case Inpar::FPSI::relativconvergencenorm_sys:
       FOUR_C_THROW(
           "Check for convergence of residual forces with type <relativ_sys> not implemented yet!");
       break;
@@ -1006,9 +1006,9 @@ bool FPSI::Monolithic::Converged()
 
   // combine increments and forces
   bool converged = false;
-  if (combinedconvergence_ == INPAR::FPSI::bop_and)
+  if (combinedconvergence_ == Inpar::FPSI::bop_and)
     converged = convinc and convfres;
-  else if (combinedconvergence_ == INPAR::FPSI::bop_or)
+  else if (combinedconvergence_ == Inpar::FPSI::bop_or)
     converged = convinc or convfres;
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -1047,7 +1047,7 @@ void FPSI::Monolithic::build_convergence_norms()
   //  Epetra_Vector(*fluid_field()->dof_row_map())); Teuchos::RCP<const Epetra_Vector> rhs_fsi =
   //  Teuchos::rcp(new
   //  Epetra_Vector(*fluid_field()->Interface()->Map(FLD::UTILS::MapExtractor::cond_fsi),true));
-  //  rhs_fullfluid = CORE::LINALG::MergeVector(rhs_fluid,rhs_fsi,false);
+  //  rhs_fullfluid = Core::LinAlg::MergeVector(rhs_fluid,rhs_fsi,false);
 
   rhs_fluidvelocity = fluid_field()->ExtractVelocityPart(rhs_fluid);
   rhs_fluidpressure = fluid_field()->ExtractPressurePart(rhs_fluid);
@@ -1108,7 +1108,7 @@ void FPSI::Monolithic::build_convergence_norms()
   //  Epetra_Vector(*fluid_field()->dof_row_map())); Teuchos::RCP<const Epetra_Vector> iterincfsi =
   //  Teuchos::rcp(new
   //  Epetra_Vector(*fluid_field()->Interface()->Map(FLD::UTILS::MapExtractor::cond_fsi),true));
-  //  iterincfullfluid = CORE::LINALG::MergeVector(iterincfluid,iterincfsi,false);
+  //  iterincfullfluid = Core::LinAlg::MergeVector(iterincfluid,iterincfsi,false);
 
   iterincfluidvelocity = fluid_field()->ExtractVelocityPart(iterincfluid);
   iterincfluidpressure = fluid_field()->ExtractPressurePart(iterincfluid);
@@ -1202,13 +1202,13 @@ void FPSI::Monolithic::print_newton_iter_header(FILE* ofile)
   // displacement
   switch (normtypefres_)
   {
-    case INPAR::FPSI::absoluteconvergencenorm:
+    case Inpar::FPSI::absoluteconvergencenorm:
       oss << std::setw(11) << "abs-res";
       break;
-    case INPAR::FPSI::absoluteconvergencenorm_sys_split:
+    case Inpar::FPSI::absoluteconvergencenorm_sys_split:
       oss << std::setw(11) << "abs-res_s";
       break;
-    case INPAR::FPSI::relativconvergencenorm_sys:
+    case Inpar::FPSI::relativconvergencenorm_sys:
       oss << std::setw(11) << "rel-res_s";
       break;
     default:
@@ -1218,13 +1218,13 @@ void FPSI::Monolithic::print_newton_iter_header(FILE* ofile)
 
   switch (normtypeinc_)
   {
-    case INPAR::FPSI::absoluteconvergencenorm:
+    case Inpar::FPSI::absoluteconvergencenorm:
       oss << std::setw(11) << "abs-inc";
       break;
-    case INPAR::FPSI::absoluteconvergencenorm_sys_split:
+    case Inpar::FPSI::absoluteconvergencenorm_sys_split:
       oss << std::setw(11) << "abs-inc_s";
       break;
-    case INPAR::FPSI::relativconvergencenorm_sys:
+    case Inpar::FPSI::relativconvergencenorm_sys:
       oss << std::setw(11) << "rel-inc_s";
       break;
     default:
@@ -1234,9 +1234,9 @@ void FPSI::Monolithic::print_newton_iter_header(FILE* ofile)
 
   switch (normtypefres_)
   {
-    case INPAR::FPSI::absoluteconvergencenorm:
-    case INPAR::FPSI::absoluteconvergencenorm_sys_split:
-    case INPAR::FPSI::relativconvergencenorm_sys:
+    case Inpar::FPSI::absoluteconvergencenorm:
+    case Inpar::FPSI::absoluteconvergencenorm_sys_split:
+    case Inpar::FPSI::relativconvergencenorm_sys:
       oss << std::setw(16) << "poro-s-res";
       // oss <<std::setw(15)<< "abs-f-res";
       oss << std::setw(15) << "poro-fvel-res";
@@ -1253,8 +1253,8 @@ void FPSI::Monolithic::print_newton_iter_header(FILE* ofile)
 
   switch (normtypeinc_)
   {
-    case INPAR::FPSI::absoluteconvergencenorm:
-    case INPAR::FPSI::absoluteconvergencenorm_sys_split:
+    case Inpar::FPSI::absoluteconvergencenorm:
+    case Inpar::FPSI::absoluteconvergencenorm_sys_split:
       oss << std::setw(15) << "poro-s-inc";
       // oss <<std::setw(15)<< "abs-f-inc";
       oss << std::setw(16) << "poro-fvel-inc";
@@ -1265,7 +1265,7 @@ void FPSI::Monolithic::print_newton_iter_header(FILE* ofile)
       oss << std::setw(14) << "poro-int-inc";
       oss << std::setw(14) << "fld-int-inc";
       break;
-    case INPAR::FPSI::relativconvergencenorm_sys:
+    case Inpar::FPSI::relativconvergencenorm_sys:
       oss << std::setw(15) << "poro-s-inc";
       // oss <<std::setw(15)<< "abs-f-inc";
       oss << std::setw(16) << "poro-fvel-inc";
@@ -1313,13 +1313,13 @@ void FPSI::Monolithic::print_newton_iter_text(FILE* ofile)
   // displacement
   switch (normtypefres_)
   {
-    case INPAR::FPSI::absoluteconvergencenorm:
+    case Inpar::FPSI::absoluteconvergencenorm:
       oss << std::setw(15) << std::setprecision(5) << std::scientific << normofrhs_;
       break;
-    case INPAR::FPSI::absoluteconvergencenorm_sys_split:
+    case Inpar::FPSI::absoluteconvergencenorm_sys_split:
       oss << std::setw(15) << std::setprecision(5) << std::scientific << normofrhs_ / sqrtnall_;
       break;
-    case INPAR::FPSI::relativconvergencenorm_sys:
+    case Inpar::FPSI::relativconvergencenorm_sys:
     default:
       FOUR_C_THROW("You should not turn up here.");
       break;
@@ -1327,14 +1327,14 @@ void FPSI::Monolithic::print_newton_iter_text(FILE* ofile)
 
   switch (normtypeinc_)
   {
-    case INPAR::FPSI::absoluteconvergencenorm:
+    case Inpar::FPSI::absoluteconvergencenorm:
       oss << std::setw(12) << std::setprecision(5) << std::scientific << normofiterinc_;
       break;
-    case INPAR::FPSI::relativconvergencenorm_sys:
+    case Inpar::FPSI::relativconvergencenorm_sys:
       oss << std::setw(12) << std::setprecision(5) << std::scientific
           << normofiterinc_ / norm1_alldof_ * sqrtnall_;
       break;
-    case INPAR::FPSI::absoluteconvergencenorm_sys_split:
+    case Inpar::FPSI::absoluteconvergencenorm_sys_split:
     default:
       FOUR_C_THROW("You should not turn up here.");
       break;
@@ -1342,7 +1342,7 @@ void FPSI::Monolithic::print_newton_iter_text(FILE* ofile)
 
   switch (normtypefres_)
   {
-    case INPAR::FPSI::absoluteconvergencenorm:
+    case Inpar::FPSI::absoluteconvergencenorm:
       oss << std::setw(15) << std::setprecision(5) << std::scientific << normrhsporostruct_;
       oss << std::setw(15) << std::setprecision(5) << std::scientific << normrhsporofluidvelocity_;
       oss << std::setw(15) << std::setprecision(5) << std::scientific << normrhsporofluidpressure_;
@@ -1351,7 +1351,7 @@ void FPSI::Monolithic::print_newton_iter_text(FILE* ofile)
       // oss << std::setw(15) << std::setprecision(5) << std::scientific << normrhsporointerface_;
       // oss << std::setw(15) << std::setprecision(5) << std::scientific << normrhsfluidinterface_;
       break;
-    case INPAR::FPSI::absoluteconvergencenorm_sys_split:
+    case Inpar::FPSI::absoluteconvergencenorm_sys_split:
       oss << std::setw(15) << std::setprecision(5) << std::scientific
           << normrhsporostruct_ / sqrtnps_;
       oss << std::setw(15) << std::setprecision(5) << std::scientific
@@ -1365,7 +1365,7 @@ void FPSI::Monolithic::print_newton_iter_text(FILE* ofile)
       // oss << std::setw(15) << std::setprecision(5) << std::scientific << normrhsporointerface_;
       // oss << std::setw(15) << std::setprecision(5) << std::scientific << normrhsfluidinterface_;
       break;
-    case INPAR::FPSI::relativconvergencenorm_sys:
+    case Inpar::FPSI::relativconvergencenorm_sys:
     default:
       FOUR_C_THROW("You should not turn up here.");
       break;
@@ -1373,7 +1373,7 @@ void FPSI::Monolithic::print_newton_iter_text(FILE* ofile)
 
   switch (normtypeinc_)
   {
-    case INPAR::FPSI::absoluteconvergencenorm:
+    case Inpar::FPSI::absoluteconvergencenorm:
       oss << std::setw(15) << std::setprecision(5) << std::scientific << normofiterincporostruct_;
       oss << std::setw(15) << std::setprecision(5) << std::scientific
           << normofiterincporofluidvelocity_;
@@ -1389,7 +1389,7 @@ void FPSI::Monolithic::print_newton_iter_text(FILE* ofile)
       oss << std::setw(14) << std::setprecision(5) << std::scientific
           << normofiterincporointerface_;
       break;
-    case INPAR::FPSI::relativconvergencenorm_sys:
+    case Inpar::FPSI::relativconvergencenorm_sys:
       oss << std::setw(15) << std::setprecision(5) << std::scientific
           << normofiterincporostruct_ / norm1_ps_ * sqrtnps_;
       oss << std::setw(15) << std::setprecision(5) << std::scientific
@@ -1403,7 +1403,7 @@ void FPSI::Monolithic::print_newton_iter_text(FILE* ofile)
       oss << std::setw(15) << std::setprecision(5) << std::scientific
           << normofiterincale_ / norm1_a_ * sqrtna_;
       break;
-    case INPAR::FPSI::absoluteconvergencenorm_sys_split:
+    case Inpar::FPSI::absoluteconvergencenorm_sys_split:
     default:
       FOUR_C_THROW("You should not turn up here.");
       break;
@@ -1466,11 +1466,11 @@ void FPSI::Monolithic::SetupNewton()
 
 
   // incremental solution vector with length of all dofs
-  iterinc_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+  iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
   iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
-  zeros_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+  zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
   zeros_->PutScalar(0.0);
 }
 
@@ -1510,7 +1510,7 @@ void FPSI::Monolithic::FPSIFDCheck()
   // define and set toggle parameter delta
   const double delta = 1e-8;
 
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
   int columntocheck = fpsidynparams.get<int>("FDCheck_column");
   int rowtocheck = fpsidynparams.get<int>("FDCheck_row");
@@ -1518,13 +1518,13 @@ void FPSI::Monolithic::FPSIFDCheck()
   // matrices and vectors
   //////////////////////////////////////////////////////////////
   // build artificial iteration increment
-  Teuchos::RCP<Epetra_Vector> iterinc = CORE::LINALG::CreateVector(*dof_row_map(), true);
+  Teuchos::RCP<Epetra_Vector> iterinc = Core::LinAlg::CreateVector(*dof_row_map(), true);
   const int dofs = iterinc->GlobalLength();
   iterinc->PutScalar(0.0);
   iterinc->ReplaceGlobalValue(0, 0, delta);
 
   // build approximated FD stiffness matrix
-  Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = CORE::LINALG::CreateMatrix(*dof_row_map(), 81);
+  Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Core::LinAlg::CreateMatrix(*dof_row_map(), 81);
 
   // store old rhs
   Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
@@ -1532,10 +1532,10 @@ void FPSI::Monolithic::FPSIFDCheck()
 
   Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*dof_row_map(), true));
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->Merge();
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse_copy =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(sparse->EpetraMatrix(), CORE::LINALG::Copy));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_copy =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(sparse->EpetraMatrix(), Core::LinAlg::Copy));
 
 
   std::cout << "\n****************** FPSI finite difference check ******************" << std::endl;
@@ -1569,9 +1569,9 @@ void FPSI::Monolithic::FPSIFDCheck()
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     poro_field()->ClearPoroIterinc();
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *fluid_field()->Interface()->FSICondMap());
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *combined_dbc_map());
 
     rhs_copy->Update(-1.0, *rhs_old, 1.0);  // finite difference approximation of partial derivative
@@ -1610,8 +1610,8 @@ void FPSI::Monolithic::FPSIFDCheck()
   int err = stiff_approx->FillComplete();
   if (err) FOUR_C_THROW("FD_Check: FillComplete failed with err-code: %d", err);
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> temp =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(stiff_approx, CORE::LINALG::Copy));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(stiff_approx, Core::LinAlg::Copy));
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx_sparse = temp->EpetraMatrix();
 

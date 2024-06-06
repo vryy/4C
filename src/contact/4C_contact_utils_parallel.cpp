@@ -30,11 +30,11 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
    */
   bool use_safe_ghosting_branch = false;
   {
-    const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
-    const enum INPAR::STR::IntegrationStrategy intstrat =
-        CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+    const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
+    const enum Inpar::STR::IntegrationStrategy intstrat =
+        Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
-    if (intstrat == INPAR::STR::int_old)
+    if (intstrat == Inpar::STR::int_old)
     {
       /* Enable new safe ghosting only for interface discretization type "mortar"
        *
@@ -50,11 +50,11 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
        * - Everything porous media related has to stick to the old code branch as well.
        * - "Large" wear, i.e. using Structure-ALE.
        */
-      if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(contactParams, "ALGORITHM") ==
-              INPAR::MORTAR::algorithm_mortar &&
-          (GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::poroelast &&
-              GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::poroscatra &&
-              GLOBAL::Problem::Instance()->GetProblemType() != CORE::ProblemType::struct_ale))
+      if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(contactParams, "ALGORITHM") ==
+              Inpar::Mortar::algorithm_mortar &&
+          (Global::Problem::Instance()->GetProblemType() != Core::ProblemType::poroelast &&
+              Global::Problem::Instance()->GetProblemType() != Core::ProblemType::poroscatra &&
+              Global::Problem::Instance()->GetProblemType() != Core::ProblemType::struct_ale))
         use_safe_ghosting_branch = true;
     }
     else

@@ -13,14 +13,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::FluidEleParameterStd* DRT::ELEMENTS::FluidEleParameterStd::Instance(
-    CORE::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidEleParameterStd* Discret::ELEMENTS::FluidEleParameterStd::Instance(
+    Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::FluidEleParameterStd>(
-            new DRT::ELEMENTS::FluidEleParameterStd());
+        return std::unique_ptr<Discret::ELEMENTS::FluidEleParameterStd>(
+            new Discret::ELEMENTS::FluidEleParameterStd());
       });
 
   return singleton_owner.Instance(action);
@@ -29,8 +29,8 @@ DRT::ELEMENTS::FluidEleParameterStd* DRT::ELEMENTS::FluidEleParameterStd::Instan
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidEleParameterStd::FluidEleParameterStd()
-    : DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
+Discret::ELEMENTS::FluidEleParameterStd::FluidEleParameterStd()
+    : Discret::ELEMENTS::FluidEleParameter::FluidEleParameter()
 {
 }
 

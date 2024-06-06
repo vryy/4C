@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<std::string, std::string> SCATRA::ScatraFluidCloneStrategy::conditions_to_copy() const
+std::map<std::string, std::string> ScaTra::ScatraFluidCloneStrategy::conditions_to_copy() const
 {
   return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
       {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
@@ -46,28 +46,28 @@ std::map<std::string, std::string> SCATRA::ScatraFluidCloneStrategy::conditions_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScatraFluidCloneStrategy::check_material_type(const int matid)
+void ScaTra::ScatraFluidCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  CORE::Materials::MaterialType mtype =
-      GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type();
-  if ((mtype != CORE::Materials::m_scatra) && (mtype != CORE::Materials::m_sutherland) &&
-      (mtype != CORE::Materials::m_ion) && (mtype != CORE::Materials::m_th_fourier_iso) &&
-      (mtype != CORE::Materials::m_thermostvenant) && (mtype != CORE::Materials::m_matlist) &&
-      (mtype != CORE::Materials::m_matlist_reactions) && (mtype != CORE::Materials::m_myocard) &&
-      (mtype != CORE::Materials::m_scatra_multiporo_fluid) &&
-      (mtype != CORE::Materials::m_scatra_multiporo_volfrac) &&
-      (mtype != CORE::Materials::m_scatra_multiporo_solid) &&
-      (mtype != CORE::Materials::m_scatra_multiporo_temperature))
+  Core::Materials::MaterialType mtype =
+      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+  if ((mtype != Core::Materials::m_scatra) && (mtype != Core::Materials::m_sutherland) &&
+      (mtype != Core::Materials::m_ion) && (mtype != Core::Materials::m_th_fourier_iso) &&
+      (mtype != Core::Materials::m_thermostvenant) && (mtype != Core::Materials::m_matlist) &&
+      (mtype != Core::Materials::m_matlist_reactions) && (mtype != Core::Materials::m_myocard) &&
+      (mtype != Core::Materials::m_scatra_multiporo_fluid) &&
+      (mtype != Core::Materials::m_scatra_multiporo_volfrac) &&
+      (mtype != Core::Materials::m_scatra_multiporo_solid) &&
+      (mtype != Core::Materials::m_scatra_multiporo_temperature))
     FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScatraFluidCloneStrategy::set_element_data(
-    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+void ScaTra::ScatraFluidCloneStrategy::set_element_data(
+    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
     const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -75,7 +75,7 @@ void SCATRA::ScatraFluidCloneStrategy::set_element_data(
   // element type in order to access the material property
 
   // note: SetMaterial() was reimplemented by the transport element!
-  DRT::ELEMENTS::Transport* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
+  Discret::ELEMENTS::Transport* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
   if (trans != nullptr)
   {
     trans->SetMaterial(matid, oldele);
@@ -91,8 +91,8 @@ void SCATRA::ScatraFluidCloneStrategy::set_element_data(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool SCATRA::ScatraFluidCloneStrategy::determine_ele_type(
-    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+bool ScaTra::ScatraFluidCloneStrategy::determine_ele_type(
+    Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation
 
@@ -106,7 +106,7 @@ bool SCATRA::ScatraFluidCloneStrategy::determine_ele_type(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<std::string, std::string> SCATRA::ScatraReactionCloneStrategy::conditions_to_copy() const
+std::map<std::string, std::string> ScaTra::ScatraReactionCloneStrategy::conditions_to_copy() const
 {
   return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
       {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
@@ -122,22 +122,22 @@ std::map<std::string, std::string> SCATRA::ScatraReactionCloneStrategy::conditio
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScatraReactionCloneStrategy::check_material_type(const int matid)
+void ScaTra::ScatraReactionCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  CORE::Materials::MaterialType mtype =
-      GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type();
-  if ((mtype != CORE::Materials::m_scatra) && (mtype != CORE::Materials::m_matlist) &&
-      (mtype != CORE::Materials::m_matlist_reactions))
+  Core::Materials::MaterialType mtype =
+      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+  if ((mtype != Core::Materials::m_scatra) && (mtype != Core::Materials::m_matlist) &&
+      (mtype != Core::Materials::m_matlist_reactions))
     FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::ScatraReactionCloneStrategy::set_element_data(
-    Teuchos::RCP<CORE::Elements::Element> newele, CORE::Elements::Element* oldele, const int matid,
+void ScaTra::ScatraReactionCloneStrategy::set_element_data(
+    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
     const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
@@ -145,7 +145,7 @@ void SCATRA::ScatraReactionCloneStrategy::set_element_data(
   // element type in order to access the material property
 
   // note: SetMaterial() was reimplemented by the transport element!
-  DRT::ELEMENTS::Transport* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
+  Discret::ELEMENTS::Transport* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
   if (trans != nullptr)
   {
     trans->SetMaterial(matid, oldele);
@@ -161,8 +161,8 @@ void SCATRA::ScatraReactionCloneStrategy::set_element_data(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool SCATRA::ScatraReactionCloneStrategy::determine_ele_type(
-    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+bool ScaTra::ScatraReactionCloneStrategy::determine_ele_type(
+    Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation
 

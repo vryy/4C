@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -36,7 +36,7 @@ namespace DRT
 
     \author vuong
     */
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class PoroFluidMultiPhaseEleBoundaryCalc : public PoroFluidMultiPhaseEleInterface
     {
      public:
@@ -46,45 +46,45 @@ namespace DRT
 
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static constexpr int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int nen_ = Core::FE::num_nodes<distype>;
 
       //! number of boundary(!) space dimensions
-      static constexpr int nsd_ = CORE::FE::dim<distype>;
+      static constexpr int nsd_ = Core::FE::dim<distype>;
 
       //! Evaluate the element (using location array)
-      int Evaluate(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-          std::vector<CORE::LINALG::SerialDenseVector*>& elevec) override;
+      int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+          std::vector<Core::LinAlg::SerialDenseVector*>& elevec) override;
 
      protected:
       //! setup element evaluation
-      int setup_calc(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization);
+      int setup_calc(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization);
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      virtual void extract_element_and_node_values(CORE::Elements::Element* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la);
+      virtual void extract_element_and_node_values(Core::Elements::Element* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la);
 
       //! evaluate action
-      virtual int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
-          CORE::Elements::Element::LocationArray& la,
-          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-          std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
+      virtual int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
+          Core::Elements::Element::LocationArray& la,
+          std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
+          std::vector<Core::LinAlg::SerialDenseVector*>& elevec);
 
       //! evaluate Neumann boundary condition
-      virtual int evaluate_neumann(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1);
+      virtual int evaluate_neumann(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1);
 
       //! evaluate shape functions and derivatives at int. point
       double eval_shape_func_and_int_fac(
-          const CORE::FE::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
+          const Core::FE::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
           const int iquad,                                       ///< id of current Gauss point
-          CORE::LINALG::Matrix<1 + nsd_, 1>* normalvec =
+          Core::LinAlg::Matrix<1 + nsd_, 1>* normalvec =
               nullptr  ///< normal vector at Gauss point(optional)
       );
 
@@ -93,32 +93,32 @@ namespace DRT
       PoroFluidMultiPhaseEleBoundaryCalc(const int numdofpernode, const std::string& disname);
 
       //! pointer to parameter list
-      DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter* params_;
+      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter* params_;
 
       //! number of dof per node
       const int numdofpernode_;
 
       //! node coordinates
-      CORE::LINALG::Matrix<nsd_ + 1, nen_> xyze_;
+      Core::LinAlg::Matrix<nsd_ + 1, nen_> xyze_;
       //! nodal displacement values for ALE
-      CORE::LINALG::Matrix<nsd_ + 1, nen_> edispnp_;
+      Core::LinAlg::Matrix<nsd_ + 1, nen_> edispnp_;
       //! coordinates of current integration point in reference coordinates
-      CORE::LINALG::Matrix<nsd_, 1> xsi_;
+      Core::LinAlg::Matrix<nsd_, 1> xsi_;
       //! array for shape functions
-      CORE::LINALG::Matrix<nen_, 1> funct_;
+      Core::LinAlg::Matrix<nen_, 1> funct_;
       //! array for shape function derivatives w.r.t r,s,t
-      CORE::LINALG::Matrix<nsd_, nen_> deriv_;
+      Core::LinAlg::Matrix<nsd_, nen_> deriv_;
       //! global derivatives of shape functions w.r.t x,y,z
-      CORE::LINALG::Matrix<nsd_, nen_> derxy_;
+      Core::LinAlg::Matrix<nsd_, nen_> derxy_;
       //! unit normal vector at integration point
-      CORE::LINALG::Matrix<nsd_ + 1, 1> normal_;
+      Core::LinAlg::Matrix<nsd_ + 1, 1> normal_;
       //! velocity vector in gausspoint
-      CORE::LINALG::Matrix<nsd_ + 1, 1> velint_;
+      Core::LinAlg::Matrix<nsd_ + 1, 1> velint_;
       //! metric tensor at integration point
-      CORE::LINALG::Matrix<nsd_, nsd_> metrictensor_;
+      Core::LinAlg::Matrix<nsd_, nsd_> metrictensor_;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 

@@ -45,17 +45,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class DiscretizationFaces;
   class ResultTest;
-}  // namespace DRT
-namespace CORE::IO
+}  // namespace Discret
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseMatrix;
@@ -63,15 +63,15 @@ namespace CORE::LINALG
   class MapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   class LocsysManager;
 }
 
 
-namespace ADAPTER
+namespace Adapter
 {
   class CouplingMortar;
 }
@@ -111,10 +111,10 @@ namespace FLD
     \brief Standard Constructor
 
     */
-    FluidImplicitTimeInt(const Teuchos::RCP<DRT::Discretization>& actdis,
-        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    FluidImplicitTimeInt(const Teuchos::RCP<Discret::Discretization>& actdis,
+        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid = false);
+        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /*!
     \brief initialization
@@ -378,7 +378,7 @@ namespace FLD
   \brief solve linearised fluid
 
   */
-    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return solver_; };
+    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override { return solver_; };
 
     /*!
     \brief preparatives for solver
@@ -391,7 +391,7 @@ namespace FLD
 
     */
     virtual void init_krylov_space_projection();
-    void setup_krylov_space_projection(CORE::Conditions::Condition* kspcond) override;
+    void setup_krylov_space_projection(Core::Conditions::Condition* kspcond) override;
     void update_krylov_space_projection() override;
     void check_matrix_nullspace() override;
 
@@ -438,7 +438,7 @@ namespace FLD
     */
     virtual void time_update_external_forces();
 
-    /// Implement ADAPTER::Fluid
+    /// Implement Adapter::Fluid
     void Update() override { TimeUpdate(); }
 
     //! @name Time step size adaptivity in monolithic FSI
@@ -553,7 +553,7 @@ namespace FLD
     \brief get access to map extractor for velocity and pressure
 
     */
-    Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
+    Teuchos::RCP<Core::LinAlg::MapExtractor> GetVelPressSplitter() override
     {
       return velpressplitter_;
     };
@@ -563,13 +563,13 @@ namespace FLD
 
     */
     void SetInitialFlowField(
-        const INPAR::FLUID::InitialField initfield, const int startfuncno) override;
+        const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
 
-    /// Implement ADAPTER::Fluid
+    /// Implement Adapter::Fluid
     Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(
         Teuchos::RCP<const Epetra_Vector> velpres) override;
 
-    /// Implement ADAPTER::Fluid
+    /// Implement Adapter::Fluid
     Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(
         Teuchos::RCP<const Epetra_Vector> velpres) override;
 
@@ -651,8 +651,8 @@ namespace FLD
 
       // set fine-scale velocity for parallel nigthly tests
       // separation matrix depends on the number of proc here
-      if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales and
-          (CORE::UTILS::IntegralValue<int>(
+      if (turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales and
+          (Core::UTILS::IntegralValue<int>(
               params_->sublist("MULTIFRACTAL SUBGRID SCALES"), "SET_FINE_SCALE_VEL")))
         fsvelaf_->PutScalar(0.01);
 
@@ -660,7 +660,7 @@ namespace FLD
     }
 
     /// access to Dirichlet maps
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
     {
       return dbcmaps_;
     }
@@ -699,7 +699,7 @@ namespace FLD
     virtual Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
     //! Return locsys manager
-    virtual Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() { return locsysman_; }
+    virtual Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() { return locsysman_; }
 
     //! Return wss manager
     virtual Teuchos::RCP<FLD::UTILS::StressManager> StressManager() { return stressmanager_; }
@@ -729,7 +729,7 @@ namespace FLD
     virtual Teuchos::RCP<Epetra_Vector> CreateDispnp()
     {
       const Epetra_Map* aledofrowmap = discret_->dof_row_map(ndsale_);
-      dispnp_ = CORE::LINALG::CreateVector(*aledofrowmap, true);
+      dispnp_ = Core::LinAlg::CreateVector(*aledofrowmap, true);
       return dispnp_;
     }
 
@@ -740,27 +740,27 @@ namespace FLD
     virtual Teuchos::RCP<Epetra_Vector> CreateDispn()
     {
       const Epetra_Map* aledofrowmap = discret_->dof_row_map(ndsale_);
-      dispn_ = CORE::LINALG::CreateVector(*aledofrowmap, true);
+      dispn_ = Core::LinAlg::CreateVector(*aledofrowmap, true);
       return dispn_;
     }
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
     {
-      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
+      return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
     }
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemSparseMatrix() override
     {
-      return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_)->Merge();
+      return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat_)->Merge();
     }
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
-      return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_);
+      return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat_);
     }
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ShapeDerivatives() override
     {
       return shapederivatives_;
     }
 
-    virtual Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter() { return velpressplitter_; };
+    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> VelPresSplitter() { return velpressplitter_; };
     Teuchos::RCP<const Epetra_Map> VelocityRowMap() override;
     Teuchos::RCP<const Epetra_Map> PressureRowMap() override;
     //  virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
@@ -810,7 +810,7 @@ namespace FLD
     */
     void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-        Teuchos::RCP<DRT::Discretization> scatradis, int dofset) override;
+        Teuchos::RCP<Discret::Discretization> scatradis, int dofset) override;
 
     /*!
     \brief set scalar fields
@@ -818,7 +818,7 @@ namespace FLD
     */
     void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
         Teuchos::RCP<const Epetra_Vector> scatraresidual,
-        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1) override;
+        Teuchos::RCP<Discret::Discretization> scatradis, const int whichscalar = -1) override;
 
     /*!
     \brief set velocity field obtained by separate computation
@@ -868,22 +868,22 @@ namespace FLD
     /// switch fluid field to block matrix
     virtual void use_block_matrix(
         Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
-        const CORE::LINALG::MultiMapExtractor&
+        const Core::LinAlg::MultiMapExtractor&
             domainmaps,  ///< domain maps for split of fluid matrix
-        const CORE::LINALG::MultiMapExtractor& rangemaps,  ///< range maps for split of fluid matrix
+        const Core::LinAlg::MultiMapExtractor& rangemaps,  ///< range maps for split of fluid matrix
         bool splitmatrix = true                            ///< flag for split of matrices
     );
 
     /// switch fluid field to block matrix (choose maps for shape derivatives separately)
     virtual void use_block_matrix(
         Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
-        const CORE::LINALG::MultiMapExtractor&
+        const Core::LinAlg::MultiMapExtractor&
             domainmaps,  ///< domain maps for split of fluid matrix
-        const CORE::LINALG::MultiMapExtractor& rangemaps,  ///< range maps for split of fluid matrix
+        const Core::LinAlg::MultiMapExtractor& rangemaps,  ///< range maps for split of fluid matrix
         Teuchos::RCP<std::set<int>> condelements_shape,    ///< conditioned elements
-        const CORE::LINALG::MultiMapExtractor&
+        const Core::LinAlg::MultiMapExtractor&
             domainmaps_shape,  ///< domain maps for split of shape deriv. matrix
-        const CORE::LINALG::MultiMapExtractor&
+        const Core::LinAlg::MultiMapExtractor&
             rangemaps_shape,     ///< domain maps for split of shape deriv. matrix
         bool splitmatrix = true  ///< flag for split of matrices
     );
@@ -908,7 +908,7 @@ namespace FLD
 
     /// set the initial porosity field
     void set_initial_porosity_field(
-        const INPAR::POROELAST::InitialField,  ///< type of initial field
+        const Inpar::PoroElast::InitialField,  ///< type of initial field
                                                // const int, ///< type of
                                                // initial field
         const int startfuncno                  ///< number of spatial function
@@ -933,7 +933,7 @@ namespace FLD
     void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) override;
 
     /// create field test
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
     Teuchos::RCP<const Epetra_Vector> ConvectiveVel() override;
 
@@ -976,7 +976,7 @@ namespace FLD
      * to be assembled into the overall fluid system matrix
      */
     virtual void set_coupling_contributions(
-        Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix);
+        Teuchos::RCP<const Core::LinAlg::SparseOperator> matrix);
 
     void ResetExternalForces();
 
@@ -1117,7 +1117,7 @@ namespace FLD
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
     bool alefluid_;
     //! do we have a turbulence model?
-    enum INPAR::FLUID::TurbModelAction turbmodel_;
+    enum Inpar::FLUID::TurbModelAction turbmodel_;
 
     //@}
 
@@ -1133,7 +1133,7 @@ namespace FLD
     double gasconstant_;
 
     //! use (or not) linearisation of reactive terms on the element
-    INPAR::FLUID::LinearisationAction newton_;
+    Inpar::FLUID::LinearisationAction newton_;
 
     //! kind of predictor used in nonlinear iteration
     std::string predictor_;
@@ -1165,7 +1165,7 @@ namespace FLD
     std::string statistics_outfilename_;
 
     //! @name cfl number for adaptive time step
-    INPAR::FLUID::AdaptiveTimeStepEstimator cfl_estimator_;  ///< type of adaptive estimator
+    Inpar::FLUID::AdaptiveTimeStepEstimator cfl_estimator_;  ///< type of adaptive estimator
     double cfl_;                                             ///< cfl number
     //@}
 
@@ -1194,7 +1194,7 @@ namespace FLD
     std::string convform_;
 
     /// fine-scale subgrid-viscosity flag
-    INPAR::FLUID::FineSubgridVisc fssgv_;
+    Inpar::FLUID::FineSubgridVisc fssgv_;
 
     /// cpu-time measures
     double dtele_;
@@ -1202,13 +1202,13 @@ namespace FLD
     double dtsolve_;
 
     /// (standard) system matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
 
     /// linearization with respect to mesh motion
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> shapederivatives_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> shapederivatives_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;
@@ -1284,13 +1284,13 @@ namespace FLD
     //@}
 
     /// only necessary for AVM3: scale-separation matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> Sep_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> Sep_;
 
     /// only necessary for AVM3: fine-scale solution vector
     Teuchos::RCP<Epetra_Vector> fsvelaf_;
 
     /// only necessary for LES models including filtered quantities: filter type
-    enum INPAR::FLUID::ScaleSeparation scale_sep_;
+    enum Inpar::FLUID::ScaleSeparation scale_sep_;
 
     /// fine-scale scalar: only necessary for multifractal subgrid-scale modeling in loma
     Teuchos::RCP<Epetra_Vector> fsscaaf_;
@@ -1327,7 +1327,7 @@ namespace FLD
     //!
     //! velocities  = OtherVector
     //! pressure    = CondVector
-    Teuchos::RCP<CORE::LINALG::MapExtractor> velpressplitter_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> velpressplitter_;
 
     /// row dof map extractor
     const UTILS::MapExtractor* surfacesplitter_;
@@ -1340,9 +1340,9 @@ namespace FLD
 
     bool inrelaxation_;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> dirichletlines_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> dirichletlines_;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> meshmatrix_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> meshmatrix_;
 
     /// coupling of fluid-fluid at an internal interface
     Teuchos::RCP<FLD::Meshtying> meshtying_;
@@ -1351,10 +1351,10 @@ namespace FLD
     Teuchos::RCP<FLD::XWall> xwall_;
 
     /// flag for mesh-tying
-    enum INPAR::FLUID::MeshTying msht_;
+    enum Inpar::FLUID::MeshTying msht_;
 
     /// face discretization (only initialized for edge-based stabilization)
-    Teuchos::RCP<DRT::DiscretizationFaces> facediscret_;
+    Teuchos::RCP<Discret::DiscretizationFaces> facediscret_;
 
     //@}
 
@@ -1367,7 +1367,7 @@ namespace FLD
     //@}
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<CORE::Conditions::LocsysManager> locsysman_;
+    Teuchos::RCP<Core::Conditions::LocsysManager> locsysman_;
 
     /// windkessel (outflow) boundaries
     Teuchos::RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
@@ -1414,7 +1414,7 @@ namespace FLD
     void setup_locsys_dirichlet_bc(const double time);
 
     /// prepares and evalutes egde-based internal face integrals
-    void evaluate_fluid_edge_based(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    void evaluate_fluid_edge_based(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::ParameterList edgebasedparams);
 
     /*! \brief Compute kinetic energy and write it to file
@@ -1431,7 +1431,7 @@ namespace FLD
     virtual void evaluate_mass_matrix();
 
     /// mass matrix (not involved in standard Evaluate() since it is invluded in #sysmat_)
-    Teuchos::RCP<CORE::LINALG::SparseOperator> massmat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> massmat_;
 
     /// output stream for energy-file
     Teuchos::RCP<std::ofstream> logenergy_;
@@ -1440,7 +1440,7 @@ namespace FLD
      * arise from meshtying methods or in general weak Dirichlet conditions
      *
      */
-    Teuchos::RCP<const CORE::LINALG::SparseOperator> couplingcontributions_;
+    Teuchos::RCP<const Core::LinAlg::SparseOperator> couplingcontributions_;
     double meshtyingnorm_;
 
   };  // class FluidImplicitTimeInt

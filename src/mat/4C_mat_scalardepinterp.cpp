@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ScalarDepInterp::ScalarDepInterp(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ScalarDepInterp::ScalarDepInterp(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       id_lambda_zero_(matdata->Get<int>("IDMATZEROSC")),
       id_lambda_unit_(matdata->Get<int>("IDMATUNITSC")){
@@ -37,25 +37,25 @@ MAT::PAR::ScalarDepInterp::ScalarDepInterp(Teuchos::RCP<CORE::MAT::PAR::Material
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScalarDepInterp::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScalarDepInterp::create_material()
 {
-  return Teuchos::rcp(new MAT::ScalarDepInterp(this));
+  return Teuchos::rcp(new Mat::ScalarDepInterp(this));
 }
 
 
-MAT::ScalarDepInterpType MAT::ScalarDepInterpType::instance_;
+Mat::ScalarDepInterpType Mat::ScalarDepInterpType::instance_;
 
 
-CORE::COMM::ParObject* MAT::ScalarDepInterpType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ScalarDepInterpType::Create(const std::vector<char>& data)
 {
-  MAT::ScalarDepInterp* ScalarDepInterp = new MAT::ScalarDepInterp();
+  Mat::ScalarDepInterp* ScalarDepInterp = new Mat::ScalarDepInterp();
   ScalarDepInterp->Unpack(data);
   return ScalarDepInterp;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScalarDepInterp::ScalarDepInterp()
+Mat::ScalarDepInterp::ScalarDepInterp()
     : params_(nullptr),
       isinit_(false),
       lambda_zero_mat_(Teuchos::null),
@@ -67,7 +67,7 @@ MAT::ScalarDepInterp::ScalarDepInterp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScalarDepInterp::ScalarDepInterp(MAT::PAR::ScalarDepInterp* params)
+Mat::ScalarDepInterp::ScalarDepInterp(Mat::PAR::ScalarDepInterp* params)
     : params_(params),
       isinit_(false),
       lambda_zero_mat_(Teuchos::null),
@@ -78,19 +78,19 @@ MAT::ScalarDepInterp::ScalarDepInterp(MAT::PAR::ScalarDepInterp* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::ScalarDepInterp::Setup(int numgp, Input::LineDefinition* linedef)
 {
   if (isinit_)
     FOUR_C_THROW("This function should just be called, if the material is jet not initialized.");
 
   // Setup of elastic material for zero concentration
   lambda_zero_mat_ =
-      Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Factory(params_->id_lambda_zero_));
+      Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->id_lambda_zero_));
   lambda_zero_mat_->Setup(numgp, linedef);
 
   // Setup of elastic material for zero concentration
   lambda_unit_mat_ =
-      Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Factory(params_->id_lambda_unit_));
+      Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->id_lambda_unit_));
   lambda_unit_mat_->Setup(numgp, linedef);
 
   // Some safety check
@@ -115,21 +115,21 @@ void MAT::ScalarDepInterp::Setup(int numgp, INPUT::LineDefinition* linedef)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::ScalarDepInterp::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   // evaluate elastic material corresponding to zero concentration
-  CORE::LINALG::Matrix<6, 1> stress_lambda_zero = *stress;
-  CORE::LINALG::Matrix<6, 6> cmat_zero_conc = *cmat;
+  Core::LinAlg::Matrix<6, 1> stress_lambda_zero = *stress;
+  Core::LinAlg::Matrix<6, 6> cmat_zero_conc = *cmat;
 
   lambda_zero_mat_->Evaluate(
       defgrd, glstrain, params, &stress_lambda_zero, &cmat_zero_conc, gp, eleGID);
 
   // evaluate elastic material corresponding to infinite concentration
-  CORE::LINALG::Matrix<6, 1> stress_lambda_unit = *stress;
-  CORE::LINALG::Matrix<6, 6> cmat_infty_conc = *cmat;
+  Core::LinAlg::Matrix<6, 1> stress_lambda_unit = *stress;
+  Core::LinAlg::Matrix<6, 6> cmat_infty_conc = *cmat;
 
   lambda_unit_mat_->Evaluate(
       defgrd, glstrain, params, &stress_lambda_unit, &cmat_infty_conc, gp, eleGID);
@@ -174,8 +174,8 @@ void MAT::ScalarDepInterp::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   if (params.isParameter("dlambda_dC"))
   {
     // get derivative of interpolation ratio w.r.t. glstrain
-    Teuchos::RCP<CORE::LINALG::Matrix<6, 1>> dlambda_dC =
-        params.get<Teuchos::RCP<CORE::LINALG::Matrix<6, 1>>>("dlambda_dC");
+    Teuchos::RCP<Core::LinAlg::Matrix<6, 1>> dlambda_dC =
+        params.get<Teuchos::RCP<Core::LinAlg::Matrix<6, 1>>>("dlambda_dC");
 
     // evaluate strain energy functions
     double psi_lambda_zero = 0.0;
@@ -195,9 +195,9 @@ void MAT::ScalarDepInterp::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ScalarDepInterp::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -234,25 +234,25 @@ void MAT::ScalarDepInterp::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
+void Mat::ScalarDepInterp::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = dynamic_cast<MAT::PAR::ScalarDepInterp*>(mat);
+        params_ = dynamic_cast<Mat::PAR::ScalarDepInterp*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -277,8 +277,9 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, dataelastic);
   if (dataelastic.size() > 0)
   {
-    CORE::COMM::ParObject* o = CORE::COMM::Factory(dataelastic);  // Unpack is done here
-    MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
+    Core::Communication::ParObject* o =
+        Core::Communication::Factory(dataelastic);  // Unpack is done here
+    Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
     if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     lambda_zero_mat_ = Teuchos::rcp(matel);
   }
@@ -290,8 +291,9 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, dataelastic2);
   if (dataelastic2.size() > 0)
   {
-    CORE::COMM::ParObject* o = CORE::COMM::Factory(dataelastic2);  // Unpack is done here
-    MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
+    Core::Communication::ParObject* o =
+        Core::Communication::Factory(dataelastic2);  // Unpack is done here
+    Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
     if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     lambda_unit_mat_ = Teuchos::rcp(matel);
   }
@@ -305,14 +307,14 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::Update()
+void Mat::ScalarDepInterp::Update()
 {
   lambda_zero_mat_->Update();
   lambda_unit_mat_->Update();
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::reset_step()
+void Mat::ScalarDepInterp::reset_step()
 {
   lambda_zero_mat_->reset_step();
   lambda_unit_mat_->reset_step();
@@ -320,7 +322,7 @@ void MAT::ScalarDepInterp::reset_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::VisNames(std::map<std::string, int>& names)
+void Mat::ScalarDepInterp::VisNames(std::map<std::string, int>& names)
 {
   std::string fiber = "lambda";
   names[fiber] = 1;  // 1-dim vector
@@ -331,7 +333,7 @@ void MAT::ScalarDepInterp::VisNames(std::map<std::string, int>& names)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool MAT::ScalarDepInterp::VisData(
+bool Mat::ScalarDepInterp::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "lambda")
@@ -352,16 +354,16 @@ bool MAT::ScalarDepInterp::VisData(
   return (tmp1 and tmp2);
 }
 
-void MAT::ScalarDepInterp::ReadLambda(
-    INPUT::LineDefinition* linedef, std::string specifier, double& lambda)
+void Mat::ScalarDepInterp::ReadLambda(
+    Input::LineDefinition* linedef, std::string specifier, double& lambda)
 {
   linedef->ExtractDouble(specifier, lambda);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::StrainEnergy(
-    const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+void Mat::ScalarDepInterp::StrainEnergy(
+    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   // evaluate strain energy functions
   double psi_lambda_zero = 0.0;

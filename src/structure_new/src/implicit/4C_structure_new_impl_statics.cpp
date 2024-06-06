@@ -44,7 +44,7 @@ void STR::IMPLICIT::Statics::Setup()
   Generic::Setup();
 
   // check for valid parameter combinations:
-  if (EvalData().GetDampingType() != INPAR::STR::damp_none)
+  if (EvalData().GetDampingType() != Inpar::STR::damp_none)
     FOUR_C_THROW("ERROR: Damping not provided for statics time integration!");
 
   issetup_ = true;
@@ -80,7 +80,7 @@ bool STR::IMPLICIT::Statics::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
+bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
   reset_eval_params();
@@ -92,7 +92,7 @@ bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::Sp
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Statics::ApplyForceStiff(
-    const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
+    const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
   reset_eval_params();
@@ -104,7 +104,7 @@ bool STR::IMPLICIT::Statics::ApplyForceStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Statics::assemble_force(
-    Epetra_Vector& f, const std::vector<INPAR::STR::ModelType>* without_these_models) const
+    Epetra_Vector& f, const std::vector<Inpar::STR::ModelType>* without_these_models) const
 {
   check_init_setup();
   return ModelEval().assemble_force(1.0, f, without_these_models);
@@ -113,13 +113,13 @@ bool STR::IMPLICIT::Statics::assemble_force(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
 
   // create empty dynamic forces
-  auto finertialn = CORE::LINALG::CreateVector(*global_state().DofRowMapView(), true);
-  auto fviscon = CORE::LINALG::CreateVector(*global_state().DofRowMapView(), true);
+  auto finertialn = Core::LinAlg::CreateVector(*global_state().DofRowMapView(), true);
+  auto fviscon = Core::LinAlg::CreateVector(*global_state().DofRowMapView(), true);
 
   // write dynamic forces, so that it can be used later on for restart dynamics analysis
   iowriter.WriteVector("finert", finertialn);
@@ -130,7 +130,7 @@ void STR::IMPLICIT::Statics::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::read_restart(CORE::IO::DiscretizationReader& ioreader)
+void STR::IMPLICIT::Statics::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ModelEval().read_restart(ioreader);
@@ -180,20 +180,20 @@ double STR::IMPLICIT::Statics::GetIntParam() const { return 0.0; }
 void STR::IMPLICIT::Statics::PreUpdate()
 {
   check_init_setup();
-  const STR::TIMINT::Implicit* impl_ptr = dynamic_cast<const STR::TIMINT::Implicit*>(&tim_int());
+  const STR::TimeInt::Implicit* impl_ptr = dynamic_cast<const STR::TimeInt::Implicit*>(&tim_int());
   if (impl_ptr == nullptr) return;
 
   // get the time step size
   const double dt = (*global_state().GetDeltaTime())[0];
 
-  const INPAR::STR::PredEnum& pred_type = impl_ptr->Predictor().GetType();
+  const Inpar::STR::PredEnum& pred_type = impl_ptr->Predictor().GetType();
   Teuchos::RCP<Epetra_Vector>& accnp_ptr = global_state().GetAccNp();
   Teuchos::RCP<Epetra_Vector>& velnp_ptr = global_state().GetVelNp();
 
   switch (pred_type)
   {
     // case: constant acceleration
-    case INPAR::STR::pred_constacc:
+    case Inpar::STR::pred_constacc:
     {
       // read-only access
       Teuchos::RCP<const Epetra_Vector> veln_ptr = global_state().GetVelN();
@@ -203,7 +203,7 @@ void STR::IMPLICIT::Statics::PreUpdate()
       [[fallthrough]];
     }
     // case: constant acceleration OR constant velocity
-    case INPAR::STR::pred_constvel:
+    case Inpar::STR::pred_constvel:
     {
       // read-only access
       Teuchos::RCP<const Epetra_Vector> disn_ptr = global_state().GetDisN();
@@ -320,7 +320,7 @@ double STR::IMPLICIT::Statics::GetModelValue(const Epetra_Vector& x)
 
   EvalData().clear_values_for_all_energy_types();
   STR::MODELEVALUATOR::Structure& str_model =
-      dynamic_cast<STR::MODELEVALUATOR::Structure&>(Evaluator(INPAR::STR::model_structure));
+      dynamic_cast<STR::MODELEVALUATOR::Structure&>(Evaluator(Inpar::STR::model_structure));
 
   str_model.determine_strain_energy(disnp, true);
   const double int_energy_np = EvalData().GetEnergyData(STR::internal_energy);
@@ -328,7 +328,7 @@ double STR::IMPLICIT::Statics::GetModelValue(const Epetra_Vector& x)
   global_state().GetFextNp()->Dot(disnp, &ext_energy_np);
   const double total = int_energy_np - ext_energy_np;
 
-  std::ostream& os = CORE::IO::cout.os(CORE::IO::debug);
+  std::ostream& os = Core::IO::cout.os(Core::IO::debug);
   os << __LINE__ << __PRETTY_FUNCTION__ << "\n";
   os << "internal/strain energy       = " << int_energy_np << "\n"
      << "external energy              = " << ext_energy_np << "\n";

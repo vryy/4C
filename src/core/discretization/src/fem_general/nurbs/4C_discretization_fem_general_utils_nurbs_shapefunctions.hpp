@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::FE::NURBS
+namespace Core::FE::Nurbs
 {
   /*
 
@@ -100,7 +100,7 @@ namespace CORE::FE::NURBS
 
   template <int degree, class V, class UV, class WG>
   bool nurbs_get_1D_funct(V& nurbs_shape_funct, const UV& u,
-      const CORE::LINALG::SerialDenseVector& knots, const WG& weights)
+      const Core::LinAlg::SerialDenseVector& knots, const WG& weights)
   {
     // size is the number of control points/basis
     // functions of this element
@@ -176,10 +176,10 @@ namespace CORE::FE::NURBS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
+    Core::LinAlg::SerialDenseVector bezier_shape_funct(size);
 
     // allocate bspline polynomials for both direction
-    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots);
+    Core::FE::Nurbs::BsplinePolynomial bspline_xi(degree, knots);
 
     // get temporary double
     double bspline_xi_value;
@@ -261,16 +261,16 @@ namespace CORE::FE::NURBS
    */
   template <class V, class UV, class WG>
   bool nurbs_get_1D_funct(V& nurbs_shape_funct, const UV& u,
-      const CORE::LINALG::SerialDenseVector& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const Core::LinAlg::SerialDenseVector& knots, const WG& weights,
+      const Core::FE::CellType& distype)
   {
     switch (distype)
     {
-      case CORE::FE::CellType::nurbs2:
+      case Core::FE::CellType::nurbs2:
       {
         return nurbs_get_1D_funct<1>(nurbs_shape_funct, u, knots, weights);
       }
-      case CORE::FE::CellType::nurbs3:
+      case Core::FE::CellType::nurbs3:
       {
         return nurbs_get_1D_funct<2>(nurbs_shape_funct, u, knots, weights);
       }
@@ -380,7 +380,7 @@ namespace CORE::FE::NURBS
   */
   template <int degree, class VF, class VD, class UV, class WG>
   bool nurbs_get_1D_funct_deriv(VF& nurbs_shape_funct, VD& nurbs_shape_deriv, const UV& u,
-      const CORE::LINALG::SerialDenseVector& knots, const WG& weights)
+      const Core::LinAlg::SerialDenseVector& knots, const WG& weights)
   {
     // size is the number of control points/basis
     // functions of this element
@@ -456,11 +456,11 @@ namespace CORE::FE::NURBS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
-    CORE::LINALG::SerialDenseVector bezier_shape_deriv(size);
+    Core::LinAlg::SerialDenseVector bezier_shape_funct(size);
+    Core::LinAlg::SerialDenseVector bezier_shape_deriv(size);
 
     // allocate bspline polynomials for both direction
-    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots);
+    Core::FE::Nurbs::BsplinePolynomial bspline_xi(degree, knots);
 
     // get temporary doubles
     double bspline_xi_value;
@@ -606,16 +606,16 @@ namespace CORE::FE::NURBS
    */
   template <class VF, class VD, class UV, class WG>
   bool nurbs_get_1D_funct_deriv(VF& nurbs_shape_funct, VD& nurbs_shape_deriv, const UV& u,
-      const CORE::LINALG::SerialDenseVector& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const Core::LinAlg::SerialDenseVector& knots, const WG& weights,
+      const Core::FE::CellType& distype)
   {
     switch (distype)
     {
-      case CORE::FE::CellType::nurbs2:
+      case Core::FE::CellType::nurbs2:
       {
         return nurbs_get_1D_funct_deriv<1>(nurbs_shape_funct, nurbs_shape_deriv, u, knots, weights);
       }
-      case CORE::FE::CellType::nurbs3:
+      case Core::FE::CellType::nurbs3:
       {
         return nurbs_get_1D_funct_deriv<2>(nurbs_shape_funct, nurbs_shape_deriv, u, knots, weights);
       }
@@ -628,7 +628,7 @@ namespace CORE::FE::NURBS
 
   template <int degree, class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_1D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
-      MSD& nurbs_shape_deriv2, const UV& u, const CORE::LINALG::SerialDenseVector& knots,
+      MSD& nurbs_shape_deriv2, const UV& u, const Core::LinAlg::SerialDenseVector& knots,
       const WG& weights)
   {
     // size is the number of control points/basis
@@ -646,12 +646,12 @@ namespace CORE::FE::NURBS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
-    CORE::LINALG::SerialDenseVector bezier_shape_deriv(size);
-    CORE::LINALG::SerialDenseVector bezier_shape_deriv2(size);
+    Core::LinAlg::SerialDenseVector bezier_shape_funct(size);
+    Core::LinAlg::SerialDenseVector bezier_shape_deriv(size);
+    Core::LinAlg::SerialDenseVector bezier_shape_deriv2(size);
 
     // allocate bspline polynomials for both direction
-    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots);
+    Core::FE::Nurbs::BsplinePolynomial bspline_xi(degree, knots);
 
     // get temporary doubles
     double bspline_xi_value;
@@ -743,17 +743,17 @@ namespace CORE::FE::NURBS
    */
   template <class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_1D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
-      MSD& nurbs_shape_deriv2, const UV& u, const CORE::LINALG::SerialDenseVector& knots,
-      const WG& weights, const CORE::FE::CellType& distype)
+      MSD& nurbs_shape_deriv2, const UV& u, const Core::LinAlg::SerialDenseVector& knots,
+      const WG& weights, const Core::FE::CellType& distype)
   {
     switch (distype)
     {
-      case CORE::FE::CellType::nurbs2:
+      case Core::FE::CellType::nurbs2:
       {
         return nurbs_get_1D_funct_deriv_deriv2<1>(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, u, knots, weights);
       }
-      case CORE::FE::CellType::nurbs3:
+      case Core::FE::CellType::nurbs3:
       {
         return nurbs_get_1D_funct_deriv_deriv2<2>(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, u, knots, weights);
@@ -850,7 +850,7 @@ namespace CORE::FE::NURBS
   */
   template <int degree, typename scalar_type = double, class VF, class UV, class WG>
   bool nurbs_get_2D_funct(VF& nurbs_shape_funct, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
     // size is the number of control points/basis
     // functions of this element
@@ -940,8 +940,8 @@ namespace CORE::FE::NURBS
     std::vector<scalar_type> bezier_shape_funct(size);
 
     // allocate bspline polynomials for both direction
-    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots[0]);
-    CORE::FE::NURBS::BsplinePolynomial bspline_eta(degree, knots[1]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_xi(degree, knots[0]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_eta(degree, knots[1]);
 
     // get temporary variables
     scalar_type bspline_xi_value;
@@ -1041,16 +1041,16 @@ namespace CORE::FE::NURBS
    */
   template <typename scalar_type = double, class VF, class UV, class WG>
   bool nurbs_get_2D_funct(VF& nurbs_shape_funct, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
+      const Core::FE::CellType& distype)
   {
     switch (distype)
     {
-      case CORE::FE::CellType::nurbs4:
+      case Core::FE::CellType::nurbs4:
       {
         return nurbs_get_2D_funct<1, scalar_type>(nurbs_shape_funct, uv, knots, weights);
       }
-      case CORE::FE::CellType::nurbs9:
+      case Core::FE::CellType::nurbs9:
       {
         return nurbs_get_2D_funct<2, scalar_type>(nurbs_shape_funct, uv, knots, weights);
       }
@@ -1177,7 +1177,7 @@ namespace CORE::FE::NURBS
   */
   template <int degree, typename scalar_type = double, class VF, class MD, class UV, class WG>
   bool nurbs_get_2D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
     // size is the number of control points/basis
     // functions of this element
@@ -1268,8 +1268,8 @@ namespace CORE::FE::NURBS
     std::vector<std::vector<scalar_type>> bezier_shape_deriv(2, std::vector<scalar_type>(size));
 
     // allocate bspline polynomials for both direction
-    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots[0]);
-    CORE::FE::NURBS::BsplinePolynomial bspline_eta(degree, knots[1]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_xi(degree, knots[0]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_eta(degree, knots[1]);
 
     // get temporary variables
     scalar_type bspline_xi_value;
@@ -1451,17 +1451,17 @@ namespace CORE::FE::NURBS
    */
   template <typename scalar_type = double, class VF, class MD, class UV, class WG>
   bool nurbs_get_2D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
+      const Core::FE::CellType& distype)
   {
     switch (distype)
     {
-      case CORE::FE::CellType::nurbs4:
+      case Core::FE::CellType::nurbs4:
       {
         return nurbs_get_2D_funct_deriv<1, scalar_type>(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
       }
-      case CORE::FE::CellType::nurbs9:
+      case Core::FE::CellType::nurbs9:
       {
         return nurbs_get_2D_funct_deriv<2, scalar_type>(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
@@ -1594,7 +1594,7 @@ namespace CORE::FE::NURBS
   template <int degree, class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_2D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
     // size is the number of control points/basis
     // functions of this element
@@ -1681,13 +1681,13 @@ namespace CORE::FE::NURBS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
-    CORE::LINALG::SerialDenseMatrix bezier_shape_deriv(2, size);
-    CORE::LINALG::SerialDenseMatrix bezier_shape_deriv2(3, size);
+    Core::LinAlg::SerialDenseVector bezier_shape_funct(size);
+    Core::LinAlg::SerialDenseMatrix bezier_shape_deriv(2, size);
+    Core::LinAlg::SerialDenseMatrix bezier_shape_deriv2(3, size);
 
     // allocate bspline polynomials for both direction
-    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots[0]);
-    CORE::FE::NURBS::BsplinePolynomial bspline_eta(degree, knots[1]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_xi(degree, knots[0]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_eta(degree, knots[1]);
 
     // get temporary doubles for derivatives and
     // values of the above devlared polynomials
@@ -2050,17 +2050,17 @@ namespace CORE::FE::NURBS
   template <class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_2D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
+      const Core::FE::CellType& distype)
   {
     switch (distype)
     {
-      case CORE::FE::CellType::nurbs4:
+      case Core::FE::CellType::nurbs4:
       {
         return nurbs_get_2D_funct_deriv_deriv2<1>(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights);
       }
-      case CORE::FE::CellType::nurbs9:
+      case Core::FE::CellType::nurbs9:
       {
         return nurbs_get_2D_funct_deriv_deriv2<2>(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights);
@@ -2182,7 +2182,7 @@ namespace CORE::FE::NURBS
 
   template <int degree, class V, class UV, class WG>
   bool nurbs_get_3D_funct(V& nurbs_shape_funct, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
     // size is the number of control points/basis
     // functions of this element
@@ -2301,12 +2301,12 @@ namespace CORE::FE::NURBS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
+    Core::LinAlg::SerialDenseVector bezier_shape_funct(size);
 
     // allocate bspline polynomials for both direction
-    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots[0]);
-    CORE::FE::NURBS::BsplinePolynomial bspline_eta(degree, knots[1]);
-    CORE::FE::NURBS::BsplinePolynomial bspline_nu(degree, knots[2]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_xi(degree, knots[0]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_eta(degree, knots[1]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_nu(degree, knots[2]);
 
     // get temporary doubles for derivatives and
     // values of the above devlared polynomials
@@ -2419,16 +2419,16 @@ namespace CORE::FE::NURBS
    */
   template <class V, class UV, class WG>
   bool nurbs_get_3D_funct(V& nurbs_shape_funct, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
+      const Core::FE::CellType& distype)
   {
     switch (distype)
     {
-      case CORE::FE::CellType::nurbs8:
+      case Core::FE::CellType::nurbs8:
       {
         return nurbs_get_3D_funct<1>(nurbs_shape_funct, uv, knots, weights);
       }
-      case CORE::FE::CellType::nurbs27:
+      case Core::FE::CellType::nurbs27:
       {
         return nurbs_get_3D_funct<2>(nurbs_shape_funct, uv, knots, weights);
       }
@@ -2588,7 +2588,7 @@ namespace CORE::FE::NURBS
 
   template <int degree, class VF, class UV, class MD, class WG>
   bool nurbs_get_3D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
     // size is the number of control points/basis
     // functions of this element
@@ -2707,13 +2707,13 @@ namespace CORE::FE::NURBS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
-    CORE::LINALG::SerialDenseMatrix bezier_shape_deriv(3, size);
+    Core::LinAlg::SerialDenseVector bezier_shape_funct(size);
+    Core::LinAlg::SerialDenseMatrix bezier_shape_deriv(3, size);
 
     // allocate bspline polynomials for both direction
-    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots[0]);
-    CORE::FE::NURBS::BsplinePolynomial bspline_eta(degree, knots[1]);
-    CORE::FE::NURBS::BsplinePolynomial bspline_nu(degree, knots[2]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_xi(degree, knots[0]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_eta(degree, knots[1]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_nu(degree, knots[2]);
 
     // get temporary doubles for derivatives and
     // values of the above devlared polynomials
@@ -2938,17 +2938,17 @@ namespace CORE::FE::NURBS
    */
   template <class VF, class UV, class MD, class WG>
   bool nurbs_get_3D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
+      const Core::FE::CellType& distype)
   {
     switch (distype)
     {
-      case CORE::FE::CellType::nurbs8:
+      case Core::FE::CellType::nurbs8:
       {
         return nurbs_get_3D_funct_deriv<1>(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
       }
-      case CORE::FE::CellType::nurbs27:
+      case Core::FE::CellType::nurbs27:
       {
         return nurbs_get_3D_funct_deriv<2>(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
@@ -3196,7 +3196,7 @@ namespace CORE::FE::NURBS
   template <int degree, class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_3D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
     const int degreep = degree + 1;
 
@@ -3316,14 +3316,14 @@ namespace CORE::FE::NURBS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
-    CORE::LINALG::SerialDenseMatrix bezier_shape_deriv(3, size);
-    CORE::LINALG::SerialDenseMatrix bezier_shape_deriv2(6, size);
+    Core::LinAlg::SerialDenseVector bezier_shape_funct(size);
+    Core::LinAlg::SerialDenseMatrix bezier_shape_deriv(3, size);
+    Core::LinAlg::SerialDenseMatrix bezier_shape_deriv2(6, size);
 
     // allocate bspline polynomials for both direction
-    CORE::FE::NURBS::BsplinePolynomial bspline_xi(degree, knots[0]);
-    CORE::FE::NURBS::BsplinePolynomial bspline_eta(degree, knots[1]);
-    CORE::FE::NURBS::BsplinePolynomial bspline_nu(degree, knots[2]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_xi(degree, knots[0]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_eta(degree, knots[1]);
+    Core::FE::Nurbs::BsplinePolynomial bspline_nu(degree, knots[2]);
 
     // get temporary doubles for derivatives and
     // values of the above declared polynomials
@@ -3812,17 +3812,17 @@ namespace CORE::FE::NURBS
   template <class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_3D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
+      const Core::FE::CellType& distype)
   {
     switch (distype)
     {
-      case CORE::FE::CellType::nurbs8:
+      case Core::FE::CellType::nurbs8:
       {
         return nurbs_get_3D_funct_deriv_deriv2<1>(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights);
       }
-      case CORE::FE::CellType::nurbs27:
+      case Core::FE::CellType::nurbs27:
       {
         return nurbs_get_3D_funct_deriv_deriv2<2>(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights);
@@ -3839,24 +3839,24 @@ namespace CORE::FE::NURBS
   template <class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
       MSD& nurbs_shape_deriv2, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
+      const Core::FE::CellType& distype)
   {
-    switch (CORE::FE::getDimension(distype))
+    switch (Core::FE::getDimension(distype))
     {
       case 3:
       {
-        return CORE::FE::NURBS::nurbs_get_3D_funct_deriv_deriv2(
+        return Core::FE::Nurbs::nurbs_get_3D_funct_deriv_deriv2(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights, distype);
       }
       case 2:
       {
-        return CORE::FE::NURBS::nurbs_get_2D_funct_deriv_deriv2(
+        return Core::FE::Nurbs::nurbs_get_2D_funct_deriv_deriv2(
             nurbs_shape_funct, nurbs_shape_deriv, nurbs_shape_deriv2, uv, knots, weights, distype);
       }
       case 1:
       {
-        return CORE::FE::NURBS::nurbs_get_1D_funct_deriv_deriv2(nurbs_shape_funct,
+        return Core::FE::Nurbs::nurbs_get_1D_funct_deriv_deriv2(nurbs_shape_funct,
             nurbs_shape_deriv, nurbs_shape_deriv2, uv(0), knots[0], weights, distype);
       }
       default:
@@ -3868,24 +3868,24 @@ namespace CORE::FE::NURBS
   //! Evaluate basis functions and first derivatives of nurbs basis functions.
   template <class VF, class MD, class UV, class WG>
   bool nurbs_get_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
+      const Core::FE::CellType& distype)
   {
-    switch (CORE::FE::getDimension(distype))
+    switch (Core::FE::getDimension(distype))
     {
       case 3:
       {
-        return CORE::FE::NURBS::nurbs_get_3D_funct_deriv(
+        return Core::FE::Nurbs::nurbs_get_3D_funct_deriv(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights, distype);
       }
       case 2:
       {
-        return CORE::FE::NURBS::nurbs_get_2D_funct_deriv(
+        return Core::FE::Nurbs::nurbs_get_2D_funct_deriv(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights, distype);
       }
       case 1:
       {
-        return CORE::FE::NURBS::nurbs_get_1D_funct_deriv(
+        return Core::FE::Nurbs::nurbs_get_1D_funct_deriv(
             nurbs_shape_funct, nurbs_shape_deriv, uv(0), knots[0], weights, distype);
       }
       default:
@@ -3897,22 +3897,22 @@ namespace CORE::FE::NURBS
   //! Evaluate basis functions of nurbs basis functions.
   template <class VF, class UV, class WG>
   bool nurbs_shape_function_dim(VF& nurbs_shape_funct, const UV& uv,
-      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
-      const CORE::FE::CellType& distype)
+      const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
+      const Core::FE::CellType& distype)
   {
-    switch (CORE::FE::getDimension(distype))
+    switch (Core::FE::getDimension(distype))
     {
       case 3:
       {
-        return CORE::FE::NURBS::nurbs_get_3D_funct(nurbs_shape_funct, uv, knots, weights, distype);
+        return Core::FE::Nurbs::nurbs_get_3D_funct(nurbs_shape_funct, uv, knots, weights, distype);
       }
       case 2:
       {
-        return CORE::FE::NURBS::nurbs_get_2D_funct(nurbs_shape_funct, uv, knots, weights, distype);
+        return Core::FE::Nurbs::nurbs_get_2D_funct(nurbs_shape_funct, uv, knots, weights, distype);
       }
       case 1:
       {
-        return CORE::FE::NURBS::nurbs_get_1D_funct(
+        return Core::FE::Nurbs::nurbs_get_1D_funct(
             nurbs_shape_funct, uv(0), knots[0], weights, distype);
       }
       default:
@@ -3921,7 +3921,7 @@ namespace CORE::FE::NURBS
     }
   }
 
-}  // namespace CORE::FE::NURBS
+}  // namespace Core::FE::Nurbs
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -57,86 +57,86 @@ namespace GEOMETRYPAIR
    * hexahedron (linear, quadratic, ...) this structure "returns" the correct type depending on the
    * DRT discretization type of the element.
    */
-  template <CORE::FE::CellType discretization>
+  template <Core::FE::CellType discretization>
   struct ElementDiscretizationToGeometryType
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::none;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::line2>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::line2>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::line;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::tri3>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::tri3>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::triangle;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::tri6>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::tri6>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::triangle;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::quad4>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::quad4>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::quad8>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::quad8>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::quad9>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::quad9>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::nurbs9>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::nurbs9>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::hex8>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::hex8>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::hex20>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::hex20>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::hex27>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::hex27>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::tet4>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::tet4>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::tetraeder;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::tet10>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::tet10>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::tetraeder;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<CORE::FE::CellType::nurbs27>
+  struct ElementDiscretizationToGeometryType<Core::FE::CellType::nurbs27>
   {
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
@@ -151,22 +151,22 @@ namespace GEOMETRYPAIR
    * @tparam spatial_dim Number of spatial dimensions. This affects the number of degrees of freedom
    * of the element
    */
-  template <CORE::FE::CellType discretization, unsigned int values_per_node,
+  template <Core::FE::CellType discretization, unsigned int values_per_node,
       unsigned int spatial_dim = 3>
   class ElementDiscretizationBase
   {
    public:
     //! Type of shape function that will be used when evaluating the shape functions.
-    static constexpr CORE::FE::CellType discretization_ = discretization;
+    static constexpr Core::FE::CellType discretization_ = discretization;
 
     //! Dimension of element (curve=1, surface=2, volume=3).
-    static constexpr unsigned int element_dim_ = CORE::FE::dim<discretization_>;
+    static constexpr unsigned int element_dim_ = Core::FE::dim<discretization_>;
 
     //! Number of values per node.
     static constexpr unsigned int n_val_ = values_per_node;
 
     //! Number of nodes for this element.
-    static constexpr unsigned int n_nodes_ = CORE::FE::num_nodes<discretization_>;
+    static constexpr unsigned int n_nodes_ = Core::FE::num_nodes<discretization_>;
 
     //! Number of spatial dimensions.
     static const unsigned int spatial_dim_ = spatial_dim;
@@ -185,26 +185,26 @@ namespace GEOMETRYPAIR
    */
 
   //! 1D elements
-  using t_hermite = ElementDiscretizationBase<CORE::FE::CellType::line2, 2>;
-  using t_line2 = ElementDiscretizationBase<CORE::FE::CellType::line2, 1>;
-  using t_line3 = ElementDiscretizationBase<CORE::FE::CellType::line3, 1>;
-  using t_line4 = ElementDiscretizationBase<CORE::FE::CellType::line4, 1>;
+  using t_hermite = ElementDiscretizationBase<Core::FE::CellType::line2, 2>;
+  using t_line2 = ElementDiscretizationBase<Core::FE::CellType::line2, 1>;
+  using t_line3 = ElementDiscretizationBase<Core::FE::CellType::line3, 1>;
+  using t_line4 = ElementDiscretizationBase<Core::FE::CellType::line4, 1>;
 
   //! 2D elements
-  using t_tri3 = ElementDiscretizationBase<CORE::FE::CellType::tri3, 1>;
-  using t_tri6 = ElementDiscretizationBase<CORE::FE::CellType::tri6, 1>;
-  using t_quad4 = ElementDiscretizationBase<CORE::FE::CellType::quad4, 1>;
-  using t_quad8 = ElementDiscretizationBase<CORE::FE::CellType::quad8, 1>;
-  using t_quad9 = ElementDiscretizationBase<CORE::FE::CellType::quad9, 1>;
-  using t_nurbs9 = ElementDiscretizationBase<CORE::FE::CellType::nurbs9, 1>;
+  using t_tri3 = ElementDiscretizationBase<Core::FE::CellType::tri3, 1>;
+  using t_tri6 = ElementDiscretizationBase<Core::FE::CellType::tri6, 1>;
+  using t_quad4 = ElementDiscretizationBase<Core::FE::CellType::quad4, 1>;
+  using t_quad8 = ElementDiscretizationBase<Core::FE::CellType::quad8, 1>;
+  using t_quad9 = ElementDiscretizationBase<Core::FE::CellType::quad9, 1>;
+  using t_nurbs9 = ElementDiscretizationBase<Core::FE::CellType::nurbs9, 1>;
 
   //! 3D elements
-  using t_hex8 = ElementDiscretizationBase<CORE::FE::CellType::hex8, 1>;
-  using t_hex20 = ElementDiscretizationBase<CORE::FE::CellType::hex20, 1>;
-  using t_hex27 = ElementDiscretizationBase<CORE::FE::CellType::hex27, 1>;
-  using t_tet4 = ElementDiscretizationBase<CORE::FE::CellType::tet4, 1>;
-  using t_tet10 = ElementDiscretizationBase<CORE::FE::CellType::tet10, 1>;
-  using t_nurbs27 = ElementDiscretizationBase<CORE::FE::CellType::nurbs27, 1>;
+  using t_hex8 = ElementDiscretizationBase<Core::FE::CellType::hex8, 1>;
+  using t_hex20 = ElementDiscretizationBase<Core::FE::CellType::hex20, 1>;
+  using t_hex27 = ElementDiscretizationBase<Core::FE::CellType::hex27, 1>;
+  using t_tet4 = ElementDiscretizationBase<Core::FE::CellType::tet4, 1>;
+  using t_tet10 = ElementDiscretizationBase<Core::FE::CellType::tet10, 1>;
+  using t_nurbs27 = ElementDiscretizationBase<Core::FE::CellType::nurbs27, 1>;
 
 
   /**
@@ -353,8 +353,8 @@ namespace GEOMETRYPAIR
   template <>
   struct ShapeFunctionData<t_nurbs9>
   {
-    CORE::LINALG::Matrix<t_nurbs9::n_nodes_, 1, double> weights_;
-    std::vector<CORE::LINALG::SerialDenseVector> myknots_;
+    Core::LinAlg::Matrix<t_nurbs9::n_nodes_, 1, double> weights_;
+    std::vector<Core::LinAlg::SerialDenseVector> myknots_;
     double surface_normal_factor_;
   };
 
@@ -364,8 +364,8 @@ namespace GEOMETRYPAIR
   template <>
   struct ShapeFunctionData<t_nurbs27>
   {
-    CORE::LINALG::Matrix<t_nurbs27::n_nodes_, 1, double> weights_;
-    std::vector<CORE::LINALG::SerialDenseVector> myknots_;
+    Core::LinAlg::Matrix<t_nurbs27::n_nodes_, 1, double> weights_;
+    std::vector<Core::LinAlg::SerialDenseVector> myknots_;
   };
 
   /**
@@ -375,7 +375,7 @@ namespace GEOMETRYPAIR
   struct SetShapeFunctionData
   {
     static void Set(ShapeFunctionData<element_type>& shape_function_data,
-        const CORE::Elements::Element* element)
+        const Core::Elements::Element* element)
     {
       // Per default this is empty, for all shape functions which don't need additional data
     }
@@ -392,24 +392,24 @@ namespace GEOMETRYPAIR
   struct SetShapeFunctionData<t_nurbs9>
   {
     static void Set(
-        ShapeFunctionData<t_nurbs9>& shape_function_data, const CORE::Elements::Element* element)
+        ShapeFunctionData<t_nurbs9>& shape_function_data, const Core::Elements::Element* element)
     {
-      const auto* discretization = GLOBAL::Problem::Instance()->GetDis("structure").get();
-      if (dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(discretization) == nullptr)
+      const auto* discretization = Global::Problem::Instance()->GetDis("structure").get();
+      if (dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(discretization) == nullptr)
         FOUR_C_THROW(
             "Evaluation of the shape function data for nurbs requires a valid nurbs "
             "discretization "
             "pointer");
 
-      auto face_element = dynamic_cast<const CORE::Elements::FaceElement*>(element);
+      auto face_element = dynamic_cast<const Core::Elements::FaceElement*>(element);
       if (face_element == nullptr)
         FOUR_C_THROW(
             "GEOMETRYPAIR::SetShapeFunctionData<t_nurbs9, scalar_type>::Get needs a face element "
             "pointer.");
 
-      std::vector<CORE::LINALG::SerialDenseVector> my_parent_knots(3);
+      std::vector<Core::LinAlg::SerialDenseVector> my_parent_knots(3);
       shape_function_data.myknots_.resize(2);
-      const bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(face_element,
+      const bool zero_size = Discret::Nurbs::GetKnotVectorAndWeightsForNurbsBoundary(face_element,
           face_element->FaceMasterNumber(), face_element->ParentElementId(), *(discretization),
           my_parent_knots, shape_function_data.myknots_, shape_function_data.weights_,
           shape_function_data.surface_normal_factor_);
@@ -425,15 +425,15 @@ namespace GEOMETRYPAIR
   struct SetShapeFunctionData<t_nurbs27>
   {
     static void Set(
-        ShapeFunctionData<t_nurbs27>& shape_function_data, const CORE::Elements::Element* element)
+        ShapeFunctionData<t_nurbs27>& shape_function_data, const Core::Elements::Element* element)
     {
-      const auto* discretization = GLOBAL::Problem::Instance()->GetDis("structure").get();
-      if (dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(discretization) == nullptr)
+      const auto* discretization = Global::Problem::Instance()->GetDis("structure").get();
+      if (dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(discretization) == nullptr)
         FOUR_C_THROW(
             "Evaluation of the shape function data for nurbs requires a valid nurbs "
             "discretization pointer");
 
-      const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
+      const bool zero_size = Discret::Nurbs::GetMyNurbsKnotsAndWeights(
           *discretization, element, shape_function_data.myknots_, shape_function_data.weights_);
       if (zero_size) FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size.");
     }
@@ -445,7 +445,7 @@ namespace GEOMETRYPAIR
   template <typename element_type, typename scalar_type, typename enable = void>
   struct ElementData
   {
-    CORE::LINALG::Matrix<element_type::n_dof_, 1, scalar_type> element_position_;
+    Core::LinAlg::Matrix<element_type::n_dof_, 1, scalar_type> element_position_;
     ShapeFunctionData<element_type> shape_function_data_;
   };
 
@@ -457,8 +457,8 @@ namespace GEOMETRYPAIR
   struct ElementData<element_type, scalar_type,
       typename std::enable_if<IsSurfaceAveragedNormalsElement<element_type>::value_>::type>
   {
-    CORE::LINALG::Matrix<element_type::n_dof_, 1, scalar_type> element_position_;
-    CORE::LINALG::Matrix<element_type::n_dof_, 1, scalar_type> nodal_normals_;
+    Core::LinAlg::Matrix<element_type::n_dof_, 1, scalar_type> element_position_;
+    Core::LinAlg::Matrix<element_type::n_dof_, 1, scalar_type> nodal_normals_;
     ShapeFunctionData<element_type> shape_function_data_;
   };
 
@@ -469,7 +469,7 @@ namespace GEOMETRYPAIR
   struct InitializeElementData
   {
     static GEOMETRYPAIR::ElementData<element_type, scalar_type> Initialize(
-        const CORE::Elements::Element* element)
+        const Core::Elements::Element* element)
     {
       GEOMETRYPAIR::ElementData<element_type, scalar_type> element_data;
       SetShapeFunctionData<element_type>::Set(element_data.shape_function_data_, element);
@@ -491,7 +491,7 @@ namespace GEOMETRYPAIR
       auto element_data_double = ElementData<element_type, double>();
       element_data_double.shape_function_data_ = element_data.shape_function_data_;
       element_data_double.element_position_ =
-          CORE::FADUTILS::CastToDouble(element_data.element_position_);
+          Core::FADUtils::CastToDouble(element_data.element_position_);
       return element_data_double;
     }
   };
@@ -510,9 +510,9 @@ namespace GEOMETRYPAIR
       auto element_data_double = ElementData<element_type, double>();
       element_data_double.shape_function_data_ = element_data.shape_function_data_;
       element_data_double.element_position_ =
-          CORE::FADUTILS::CastToDouble(element_data.element_position_);
+          Core::FADUtils::CastToDouble(element_data.element_position_);
       element_data_double.nodal_normals_ =
-          CORE::FADUTILS::CastToDouble(element_data.nodal_normals_);
+          Core::FADUtils::CastToDouble(element_data.nodal_normals_);
       return element_data_double;
     }
   };

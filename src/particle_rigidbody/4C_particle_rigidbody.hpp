@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationReader;
 }
@@ -40,17 +40,17 @@ namespace PARTICLEENGINE
   class UniqueGlobalIdHandler;
 }  // namespace PARTICLEENGINE
 
-namespace PARTICLERIGIDBODY
+namespace ParticleRigidBody
 {
   class RigidBodyDataState;
   class RigidBodyRuntimeVtpWriter;
   class RigidBodyAffiliationPairs;
-}  // namespace PARTICLERIGIDBODY
+}  // namespace ParticleRigidBody
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLERIGIDBODY
+namespace ParticleRigidBody
 {
   /*!
    * \brief rigid body handler for particle problem
@@ -109,7 +109,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] reader discretization reader
      */
-    void read_restart(const std::shared_ptr<CORE::IO::DiscretizationReader> reader);
+    void read_restart(const std::shared_ptr<Core::IO::DiscretizationReader> reader);
 
     /*!
      * \brief insert rigid body handler dependent states of all particle types
@@ -279,7 +279,7 @@ namespace PARTICLERIGIDBODY
     void evaluate_rigid_body_phase_change(
         const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
 
-    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> get_rigid_body_data_state()
+    std::shared_ptr<ParticleRigidBody::RigidBodyDataState> get_rigid_body_data_state()
         const override
     {
       return rigidbodydatastate_;
@@ -662,13 +662,13 @@ namespace PARTICLERIGIDBODY
     std::unique_ptr<PARTICLEENGINE::UniqueGlobalIdHandler> rigidbodyuniqueglobalidhandler_;
 
     //! rigid body data state container
-    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> rigidbodydatastate_;
+    std::shared_ptr<ParticleRigidBody::RigidBodyDataState> rigidbodydatastate_;
 
     //! rigid body runtime vtp writer
-    std::unique_ptr<PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter> rigidbodyvtpwriter_;
+    std::unique_ptr<ParticleRigidBody::RigidBodyRuntimeVtpWriter> rigidbodyvtpwriter_;
 
     //! affiliation pair handler
-    std::unique_ptr<PARTICLERIGIDBODY::RigidBodyAffiliationPairs> affiliationpairs_;
+    std::unique_ptr<ParticleRigidBody::RigidBodyAffiliationPairs> affiliationpairs_;
 
     //! rigid bodies owned by this processor
     std::vector<int> ownedrigidbodies_;
@@ -682,7 +682,7 @@ namespace PARTICLERIGIDBODY
     //! owned rigid bodies related to hosting processors (without this processor)
     std::vector<std::vector<int>> ownedrigidbodiestohostingprocs_;
   };
-}  // namespace PARTICLERIGIDBODY
+}  // namespace ParticleRigidBody
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | Utils                                                    farah 01/14 |
  *----------------------------------------------------------------------*/
-namespace MORTAR
+namespace Mortar
 {
   class Element;
   class Node;
@@ -38,17 +38,17 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get global coords for given local coords                 farah 01/14|
      *----------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
-    bool LocalToGlobal(MORTAR::Element& ele, const double* xi, double* globcoord, int inttype)
+    template <Core::FE::CellType distype>
+    bool LocalToGlobal(Mortar::Element& ele, const double* xi, double* globcoord, int inttype)
     {
       // check input
       if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
       if (!globcoord) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
 
-      static constexpr int n = CORE::FE::num_nodes<distype>;
-      static constexpr int ndim = CORE::FE::dim<distype> + 1;
+      static constexpr int n = Core::FE::num_nodes<distype>;
+      static constexpr int ndim = Core::FE::dim<distype> + 1;
 
-      CORE::Nodes::Node** mynodes = ele.Points();
+      Core::Nodes::Node** mynodes = ele.Points();
       if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       std::fill(globcoord, globcoord + ndim, 0.0);
@@ -59,18 +59,18 @@ namespace MORTAR
       {
         case 0:
         {
-          CORE::LINALG::Matrix<n, 1> val;
+          Core::LinAlg::Matrix<n, 1> val;
           switch (ndim)
           {
             case 2:
             {
               switch (distype)
               {
-                case CORE::FE::CellType::nurbs2:
-                case CORE::FE::CellType::nurbs3:
+                case Core::FE::CellType::nurbs2:
+                case Core::FE::CellType::nurbs3:
                 {
-                  CORE::LINALG::SerialDenseVector auxval(n);
-                  CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
+                  Core::LinAlg::SerialDenseVector auxval(n);
+                  Core::LinAlg::SerialDenseMatrix auxderiv(n, 1);
                   ele.evaluate_shape(xi, auxval, auxderiv, ele.num_node());
 
                   for (int i = 0; i < n; ++i) val(i) = auxval(i);
@@ -79,7 +79,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  CORE::FE::shape_function_1D(val, xi[0], distype);
+                  Core::FE::shape_function_1D(val, xi[0], distype);
                   break;
                 }
               }
@@ -89,12 +89,12 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case CORE::FE::CellType::nurbs4:
-                case CORE::FE::CellType::nurbs8:
-                case CORE::FE::CellType::nurbs9:
+                case Core::FE::CellType::nurbs4:
+                case Core::FE::CellType::nurbs8:
+                case Core::FE::CellType::nurbs9:
                 {
-                  CORE::LINALG::SerialDenseVector auxval(n);
-                  CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
+                  Core::LinAlg::SerialDenseVector auxval(n);
+                  Core::LinAlg::SerialDenseMatrix auxderiv(n, 2);
                   ele.evaluate_shape(xi, auxval, auxderiv, ele.num_node());
 
                   for (int i = 0; i < n; ++i) val(i) = auxval(i);
@@ -103,7 +103,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  CORE::FE::shape_function_2D(val, xi[0], xi[1], distype);
+                  Core::FE::shape_function_2D(val, xi[0], xi[1], distype);
                   break;
                 }
               }
@@ -134,7 +134,7 @@ namespace MORTAR
         // First Derivation (xi)
         case 1:
         {
-          CORE::LINALG::Matrix<ndim - 1, n> deriv1;
+          Core::LinAlg::Matrix<ndim - 1, n> deriv1;
 
           switch (ndim)
           {
@@ -142,11 +142,11 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case CORE::FE::CellType::nurbs2:
-                case CORE::FE::CellType::nurbs3:
+                case Core::FE::CellType::nurbs2:
+                case Core::FE::CellType::nurbs3:
                 {
-                  CORE::LINALG::SerialDenseVector auxval(n);
-                  CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
+                  Core::LinAlg::SerialDenseVector auxval(n);
+                  Core::LinAlg::SerialDenseMatrix auxderiv(n, 1);
                   ele.evaluate_shape(xi, auxval, auxderiv, ele.num_node());
 
                   for (int i = 0; i < n; ++i) deriv1(0, i) = auxderiv(i, 0);
@@ -155,7 +155,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  CORE::FE::shape_function_1D_deriv1(deriv1, xi[0], distype);
+                  Core::FE::shape_function_1D_deriv1(deriv1, xi[0], distype);
                   break;
                 }
               }
@@ -166,12 +166,12 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case CORE::FE::CellType::nurbs4:
-                case CORE::FE::CellType::nurbs8:
-                case CORE::FE::CellType::nurbs9:
+                case Core::FE::CellType::nurbs4:
+                case Core::FE::CellType::nurbs8:
+                case Core::FE::CellType::nurbs9:
                 {
-                  CORE::LINALG::SerialDenseVector auxval(n);
-                  CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
+                  Core::LinAlg::SerialDenseVector auxval(n);
+                  Core::LinAlg::SerialDenseMatrix auxderiv(n, 2);
                   ele.evaluate_shape(xi, auxval, auxderiv, ele.num_node());
 
                   for (int i = 0; i < n; ++i) deriv1(0, i) = auxderiv(i, 0);
@@ -180,7 +180,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  CORE::FE::shape_function_2D_deriv1(deriv1, xi[0], xi[1], distype);
+                  Core::FE::shape_function_2D_deriv1(deriv1, xi[0], xi[1], distype);
                   break;
                 }
               }
@@ -210,18 +210,18 @@ namespace MORTAR
         // Second Derivation (eta)
         case 2:
         {
-          CORE::LINALG::Matrix<ndim - 1, n> deriv2(true);
+          Core::LinAlg::Matrix<ndim - 1, n> deriv2(true);
           switch (ndim)
           {
             case 2:
             {
               switch (distype)
               {
-                case CORE::FE::CellType::nurbs2:
-                case CORE::FE::CellType::nurbs3:
+                case Core::FE::CellType::nurbs2:
+                case Core::FE::CellType::nurbs3:
                 {
-                  CORE::LINALG::SerialDenseVector auxval(n);
-                  CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
+                  Core::LinAlg::SerialDenseVector auxval(n);
+                  Core::LinAlg::SerialDenseMatrix auxderiv(n, 1);
                   ele.evaluate_shape(xi, auxval, auxderiv, ele.num_node());
 
                   for (int i = 0; i < n; ++i) deriv2(0, i) = auxderiv(i, 0);
@@ -230,7 +230,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  CORE::FE::shape_function_1D_deriv1(deriv2, xi[0], distype);
+                  Core::FE::shape_function_1D_deriv1(deriv2, xi[0], distype);
                   break;
                 }
               }
@@ -241,12 +241,12 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case CORE::FE::CellType::nurbs4:
-                case CORE::FE::CellType::nurbs8:
-                case CORE::FE::CellType::nurbs9:
+                case Core::FE::CellType::nurbs4:
+                case Core::FE::CellType::nurbs8:
+                case Core::FE::CellType::nurbs9:
                 {
-                  CORE::LINALG::SerialDenseVector auxval(n);
-                  CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
+                  Core::LinAlg::SerialDenseVector auxval(n);
+                  Core::LinAlg::SerialDenseMatrix auxderiv(n, 2);
                   ele.evaluate_shape(xi, auxval, auxderiv, ele.num_node());
 
                   for (int i = 0; i < n; ++i) deriv2(1, i) = auxderiv(i, 1);
@@ -255,7 +255,7 @@ namespace MORTAR
                 }
                 default:
                 {
-                  CORE::FE::shape_function_2D_deriv1(deriv2, xi[0], xi[1], distype);
+                  Core::FE::shape_function_2D_deriv1(deriv2, xi[0], xi[1], distype);
                   break;
                 }
               }
@@ -300,28 +300,28 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get global coords for given local coords (ref pos)       farah 01/14|
      *----------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
-    bool LocalToGlobal(CORE::Elements::Element& ele, const double* xi, double* globcoord)
+    template <Core::FE::CellType distype>
+    bool LocalToGlobal(Core::Elements::Element& ele, const double* xi, double* globcoord)
     {
       // check input
       if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
       if (!globcoord) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
 
-      static constexpr int n = CORE::FE::num_nodes<distype>;
-      static constexpr int ndim = CORE::FE::dim<distype> + 1;
+      static constexpr int n = Core::FE::num_nodes<distype>;
+      static constexpr int ndim = Core::FE::dim<distype> + 1;
 
-      CORE::Nodes::Node** mynodes = ele.Nodes();
+      Core::Nodes::Node** mynodes = ele.Nodes();
       if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       for (int i = 0; i < ndim; ++i) globcoord[i] = 0.0;
 
-      CORE::LINALG::Matrix<ndim, n> coord;
+      Core::LinAlg::Matrix<ndim, n> coord;
 
-      CORE::LINALG::Matrix<n, 1> val;
+      Core::LinAlg::Matrix<n, 1> val;
       if (ndim == 2)
-        CORE::FE::shape_function_1D(val, xi[0], distype);
+        Core::FE::shape_function_1D(val, xi[0], distype);
       else if (ndim == 3)
-        CORE::FE::shape_function_2D(val, xi[0], xi[1], distype);
+        Core::FE::shape_function_2D(val, xi[0], xi[1], distype);
       else
         FOUR_C_THROW("Wrong Dimension");
 
@@ -352,35 +352,35 @@ namespace MORTAR
      |                                                                           |
      |  globcoord (out): global xyz coordinate in current configuration of "xi"  |
      *---------------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
-    bool LocalToCurrentGlobal(CORE::Elements::Element& ele, const int globdim, const double* xi,
+    template <Core::FE::CellType distype>
+    bool LocalToCurrentGlobal(Core::Elements::Element& ele, const int globdim, const double* xi,
         const std::vector<double> edisp, double* globcoord)
     {
       // check input
       if (!xi) FOUR_C_THROW("ERROR: LocalToGlobal called with xi=nullptr");
       if (!globcoord) FOUR_C_THROW("ERROR: LocalToGlobal called with globcoord=nullptr");
 
-      static constexpr int n = CORE::FE::num_nodes<distype>;
-      static constexpr int ndim = CORE::FE::dim<distype>;
+      static constexpr int n = Core::FE::num_nodes<distype>;
+      static constexpr int ndim = Core::FE::dim<distype>;
 
       if ((int)edisp.size() != n * globdim)
         FOUR_C_THROW("ERROR: vector of element displacements has wrong dimension (%d != %d)",
             n * globdim, edisp.size());
 
-      CORE::Nodes::Node** mynodes = ele.Nodes();
+      Core::Nodes::Node** mynodes = ele.Nodes();
       if (!mynodes) FOUR_C_THROW("ERROR: LocalToGlobal: Null pointer!");
 
       for (int i = 0; i < globdim; ++i) globcoord[i] = 0.0;
 
-      CORE::LINALG::Matrix<ndim + 1, n> coord;
+      Core::LinAlg::Matrix<ndim + 1, n> coord;
 
-      CORE::LINALG::Matrix<n, 1> val;
+      Core::LinAlg::Matrix<n, 1> val;
       if (ndim == 1)
-        CORE::FE::shape_function_1D(val, xi[0], distype);
+        Core::FE::shape_function_1D(val, xi[0], distype);
       else if (ndim == 2)
-        CORE::FE::shape_function_2D(val, xi[0], xi[1], distype);
+        Core::FE::shape_function_2D(val, xi[0], xi[1], distype);
       else if (ndim == 3)
-        CORE::FE::shape_function_3D(val, xi[0], xi[1], xi[2], distype);
+        Core::FE::shape_function_3D(val, xi[0], xi[1], xi[2], distype);
 
       else
         FOUR_C_THROW("Wrong Dimension");
@@ -401,18 +401,18 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get local coords for given global coords (ref position)  farah 01/14|
      *----------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
-    void GlobalToLocal(CORE::Elements::Element& ele,  // element (input)
+    template <Core::FE::CellType distype>
+    void GlobalToLocal(Core::Elements::Element& ele,  // element (input)
         double* xgl,                                  // global position (input)
         double* xi)                                   // local position  (output)
     {
-      static constexpr int numnod = CORE::FE::num_nodes<distype>;
-      static constexpr int ndim = CORE::FE::dim<distype>;
+      static constexpr int numnod = Core::FE::num_nodes<distype>;
+      static constexpr int ndim = Core::FE::dim<distype>;
 
-      CORE::LINALG::Matrix<numnod, 1> funct(true);
-      CORE::LINALG::Matrix<ndim, numnod> xref(true);
-      CORE::LINALG::Matrix<ndim, ndim> xjm(true);
-      CORE::LINALG::Matrix<ndim, numnod> deriv(true);
+      Core::LinAlg::Matrix<numnod, 1> funct(true);
+      Core::LinAlg::Matrix<ndim, numnod> xref(true);
+      Core::LinAlg::Matrix<ndim, ndim> xjm(true);
+      Core::LinAlg::Matrix<ndim, numnod> deriv(true);
 
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)
@@ -421,18 +421,18 @@ namespace MORTAR
       // first estimation for parameter space coordinates
       for (int p = 0; p < ndim; ++p)
       {
-        if (distype == CORE::FE::CellType::quad4 or distype == CORE::FE::CellType::quad8 or
-            distype == CORE::FE::CellType::quad9 or distype == CORE::FE::CellType::hex8 or
-            distype == CORE::FE::CellType::hex20 or distype == CORE::FE::CellType::hex27)
+        if (distype == Core::FE::CellType::quad4 or distype == Core::FE::CellType::quad8 or
+            distype == Core::FE::CellType::quad9 or distype == Core::FE::CellType::hex8 or
+            distype == Core::FE::CellType::hex20 or distype == Core::FE::CellType::hex27)
         {
           xi[p] = 0.0;
         }
-        else if (distype == CORE::FE::CellType::tri3 or distype == CORE::FE::CellType::tri6 or
-                 distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
+        else if (distype == Core::FE::CellType::tri3 or distype == Core::FE::CellType::tri6 or
+                 distype == Core::FE::CellType::tet4 or distype == Core::FE::CellType::tet10)
         {
           xi[p] = 1.0 / 3.0;
         }
-        else if (distype == CORE::FE::CellType::pyramid5)
+        else if (distype == Core::FE::CellType::pyramid5)
         {
           if (p < 2)
             xi[p] = 0.0;
@@ -462,13 +462,13 @@ namespace MORTAR
 
         if (ndim == 2)
         {
-          CORE::FE::shape_function_2D(funct, xi[0], xi[1], distype);
-          CORE::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          Core::FE::shape_function_2D(funct, xi[0], xi[1], distype);
+          Core::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
         }
         else if (ndim == 3)
         {
-          CORE::FE::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
-          CORE::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
+          Core::FE::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
+          Core::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
           FOUR_C_THROW("ERROR");
@@ -528,22 +528,22 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get local coords for given global coords (ref position)  farah 01/14|
      *----------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
-    void GlobalToLocal(CORE::Elements::Element& ele,  // element (input)
+    template <Core::FE::CellType distype>
+    void GlobalToLocal(Core::Elements::Element& ele,  // element (input)
         double* xgl,                                  // global position (input)
         double* xi,
         bool& converged)  // converged solution ?
     {
-      static constexpr int numnod = CORE::FE::num_nodes<distype>;
-      static constexpr int ndim = CORE::FE::dim<distype>;
+      static constexpr int numnod = Core::FE::num_nodes<distype>;
+      static constexpr int ndim = Core::FE::dim<distype>;
 
       // converged
       converged = false;
 
-      CORE::LINALG::Matrix<numnod, 1> funct;
-      CORE::LINALG::Matrix<ndim, numnod> xref;
-      CORE::LINALG::Matrix<ndim, ndim> xjm;
-      CORE::LINALG::Matrix<ndim, numnod> deriv;
+      Core::LinAlg::Matrix<numnod, 1> funct;
+      Core::LinAlg::Matrix<ndim, numnod> xref;
+      Core::LinAlg::Matrix<ndim, ndim> xjm;
+      Core::LinAlg::Matrix<ndim, numnod> deriv;
 
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)
@@ -552,18 +552,18 @@ namespace MORTAR
       // first estimation for parameter space coordinates
       for (int p = 0; p < ndim; ++p)
       {
-        if (distype == CORE::FE::CellType::quad4 or distype == CORE::FE::CellType::quad8 or
-            distype == CORE::FE::CellType::quad9 or distype == CORE::FE::CellType::hex8 or
-            distype == CORE::FE::CellType::hex20 or distype == CORE::FE::CellType::hex27)
+        if (distype == Core::FE::CellType::quad4 or distype == Core::FE::CellType::quad8 or
+            distype == Core::FE::CellType::quad9 or distype == Core::FE::CellType::hex8 or
+            distype == Core::FE::CellType::hex20 or distype == Core::FE::CellType::hex27)
         {
           xi[p] = 0.0;
         }
-        else if (distype == CORE::FE::CellType::tri3 or distype == CORE::FE::CellType::tri6 or
-                 distype == CORE::FE::CellType::tet4 or distype == CORE::FE::CellType::tet10)
+        else if (distype == Core::FE::CellType::tri3 or distype == Core::FE::CellType::tri6 or
+                 distype == Core::FE::CellType::tet4 or distype == Core::FE::CellType::tet10)
         {
           xi[p] = 1.0 / 3.0;
         }
-        else if (distype == CORE::FE::CellType::pyramid5)
+        else if (distype == Core::FE::CellType::pyramid5)
         {
           if (p < 2)
             xi[p] = 0.0;
@@ -589,13 +589,13 @@ namespace MORTAR
 
         if (ndim == 2)
         {
-          CORE::FE::shape_function_2D(funct, xi[0], xi[1], distype);
-          CORE::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          Core::FE::shape_function_2D(funct, xi[0], xi[1], distype);
+          Core::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
         }
         else if (ndim == 3)
         {
-          CORE::FE::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
-          CORE::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
+          Core::FE::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
+          Core::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
           FOUR_C_THROW("ERROR");
@@ -653,23 +653,23 @@ namespace MORTAR
     /*----------------------------------------------------------------------*
      |  Get local coords for given global coords (curr position) rauch 08/14|
      *----------------------------------------------------------------------*/
-    template <CORE::FE::CellType distype>
-    void GlobalToCurrentLocal(CORE::Elements::Element& ele,  // element (input)
+    template <Core::FE::CellType distype>
+    void GlobalToCurrentLocal(Core::Elements::Element& ele,  // element (input)
         const double* targetdisp,
         double* xgl,  // global position (input)
         double* xi, bool& converged,
         double& residual)  // converged solution ?
     {
-      static constexpr int numnod = CORE::FE::num_nodes<distype>;
-      static constexpr int ndim = CORE::FE::dim<distype>;
+      static constexpr int numnod = Core::FE::num_nodes<distype>;
+      static constexpr int ndim = Core::FE::dim<distype>;
 
       // converged
       converged = false;
 
-      CORE::LINALG::Matrix<numnod, 1> funct;
-      CORE::LINALG::Matrix<ndim, numnod> xref;
-      CORE::LINALG::Matrix<ndim, ndim> xjm;
-      CORE::LINALG::Matrix<ndim, numnod> deriv;
+      Core::LinAlg::Matrix<numnod, 1> funct;
+      Core::LinAlg::Matrix<ndim, numnod> xref;
+      Core::LinAlg::Matrix<ndim, ndim> xjm;
+      Core::LinAlg::Matrix<ndim, numnod> deriv;
 
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)
@@ -693,13 +693,13 @@ namespace MORTAR
 
         if (ndim == 2)
         {
-          CORE::FE::shape_function_2D(funct, xi[0], xi[1], distype);
-          CORE::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
+          Core::FE::shape_function_2D(funct, xi[0], xi[1], distype);
+          Core::FE::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
         }
         else if (ndim == 3)
         {
-          CORE::FE::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
-          CORE::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
+          Core::FE::shape_function_3D(funct, xi[0], xi[1], xi[2], distype);
+          Core::FE::shape_function_3D_deriv1(deriv, xi[0], xi[1], xi[2], distype);
         }
         else
           FOUR_C_THROW("ERROR");
@@ -752,7 +752,7 @@ namespace MORTAR
     };
 
   }  // namespace UTILS
-}  // namespace MORTAR
+}  // namespace Mortar
 
 
 

@@ -57,9 +57,9 @@ void FS3I::PartFS3I1Wc::Timeloop()
   SetFSISolution();
 
   // calculate inital time derivative, when restart was done from a part. FSI simulation
-  if (GLOBAL::Problem::Instance()->Restart() and
-      CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
+  if (Global::Problem::Instance()->Restart() and
+      Core::UTILS::IntegralValue<int>(
+          Global::Problem::Instance()->FS3IDynamicParams(), "RESTART_FROM_PART_FSI"))
   {
     scatravec_[0]->ScaTraField()->prepare_first_time_step();
     scatravec_[1]->ScaTraField()->prepare_first_time_step();
@@ -145,7 +145,7 @@ void FS3I::PartFS3I1Wc::prepare_time_step()
   // prepare time step for both fluid- and structure-based scatra field
   for (unsigned i = 0; i < scatravec_.size(); ++i)
   {
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[i];
     scatra->ScaTraField()->prepare_time_step();
   }
 }
@@ -155,9 +155,9 @@ void FS3I::PartFS3I1Wc::prepare_time_step()
 /*----------------------------------------------------------------------*/
 bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
 {
-  const Teuchos::ParameterList& fs3idyn = GLOBAL::Problem::Instance()->FS3IDynamicParams();
-  INPAR::SCATRA::SolverType scatra_solvtype =
-      CORE::UTILS::IntegralValue<INPAR::SCATRA::SolverType>(fs3idyn, "SCATRA_SOLVERTYPE");
+  const Teuchos::ParameterList& fs3idyn = Global::Problem::Instance()->FS3IDynamicParams();
+  Inpar::ScaTra::SolverType scatra_solvtype =
+      Core::UTILS::IntegralValue<Inpar::ScaTra::SolverType>(fs3idyn, "SCATRA_SOLVERTYPE");
 
   double conresnorm(0.0);
   scatrarhs_->Norm2(&conresnorm);
@@ -166,7 +166,7 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
 
   switch (scatra_solvtype)
   {
-    case INPAR::SCATRA::solvertype_linear_incremental:
+    case Inpar::ScaTra::solvertype_linear_incremental:
     {
       // print the screen info
       if (Comm().MyPID() == 0)
@@ -180,11 +180,11 @@ bool FS3I::PartFS3I1Wc::scatra_convergence_check(const int itnum)
       return true;
     }
     break;
-    case INPAR::SCATRA::solvertype_nonlinear:
+    case Inpar::ScaTra::solvertype_nonlinear:
     {
       // some input parameters for the scatra fields
       const Teuchos::ParameterList& scatradyn =
-          GLOBAL::Problem::Instance()->scalar_transport_dynamic_params();
+          Global::Problem::Instance()->scalar_transport_dynamic_params();
       const int itemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
       const double ittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
       const double abstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");

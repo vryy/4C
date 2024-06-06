@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -24,7 +24,7 @@ namespace DRT
     class ScaTraEleDiffManagerElchElectrode;
 
     // class implementation
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleUtilsElchElectrode : public ScaTraEleUtilsElch<distype>
     {
       //! abbreviation
@@ -41,7 +41,7 @@ namespace DRT
 
 
       //! evaluate electrode material
-      void mat_electrode(Teuchos::RCP<const CORE::MAT::Material> material,  //!< electrode material
+      void mat_electrode(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrode material
           double concentration,                                             //!< concentration
           double temperature,                                               //!< temperature
           Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> diffmanager       //!< diffusion manager
@@ -56,7 +56,7 @@ namespace DRT
       );
     };  // class ScaTraEleUtilsElchElectrode
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -43,11 +43,11 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 
     /*! Evaluate the current right-hand-side vector and tangential stiffness matrix at \f$t_{n+1}\f$
      */
-    bool evaluate_force_stiff(Teuchos::RCP<CORE::LINALG::SparseMatrix> me_stiff_ptr,
+    bool evaluate_force_stiff(Teuchos::RCP<Core::LinAlg::SparseMatrix> me_stiff_ptr,
         Teuchos::RCP<Epetra_Vector> me_force_ptr);
 
     //! Evaluate the matrices of the saddle-point system
-    virtual void evaluate_coupling_terms(STR::TIMINT::BaseDataGlobalState& gstate);
+    virtual void evaluate_coupling_terms(STR::TimeInt::BaseDataGlobalState& gstate);
 
     //! Reset the sub model evaluator
     virtual void Reset() = 0;
@@ -67,23 +67,22 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     std::vector<Teuchos::RCP<MultiPointConstraintEquationBase>> listMPCs_;
 
     //! Pointer to the structural stiffness matrix \f$ K_{sys} \f$
-    CORE::LINALG::SparseMatrix* stiff_ptr_;
+    Core::LinAlg::SparseMatrix* stiff_ptr_;
 
     //! Enforcement Strategy
-    enum INPAR::RVE_MPC::EnforcementStrategy strategy_ =
-        INPAR::RVE_MPC::EnforcementStrategy::penalty;
+    enum Inpar::RveMpc::EnforcementStrategy strategy_ = Inpar::RveMpc::EnforcementStrategy::penalty;
 
     //! Pointer to the discretization
-    Teuchos::RCP<const DRT::Discretization> discret_ptr_ = Teuchos::null;
+    Teuchos::RCP<const Discret::Discretization> discret_ptr_ = Teuchos::null;
 
     //! System Matrix \f$ Q_{dd} \f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> Q_dd_ = Teuchos::null;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> Q_dd_ = Teuchos::null;
 
     //! System Matrix \f$ Q_{dL} \f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> Q_dL_ = Teuchos::null;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> Q_dL_ = Teuchos::null;
 
     //! System Matrix \f$ Q_{Ld} \f$
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> Q_Ld_ = Teuchos::null;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> Q_Ld_ = Teuchos::null;
 
     //! coupling conditions evaluated at current displacements
     Teuchos::RCP<Epetra_Vector> constraint_vector_;

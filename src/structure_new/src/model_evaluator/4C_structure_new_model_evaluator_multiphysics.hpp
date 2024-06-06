@@ -27,28 +27,28 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
-}  // namespace CORE::LINALG
-namespace CORE::IO
+}  // namespace Core::LinAlg
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace CORE::IO
-namespace DRT
+}  // namespace Core::IO
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 namespace STR
 {
   class Integrator;
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataGlobalState;
     class BaseDataIO;
     class Base;
-  }  // namespace TIMINT
+  }  // namespace TimeInt
   namespace MODELEVALUATOR
   {
     class Data;
@@ -79,10 +79,10 @@ namespace STR
 
       //! initialize the class variables
       void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
-          const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
+          const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
           const Teuchos::RCP<STR::Integrator>& int_ptr,
-          const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr, const int& dof_offset) override;
+          const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset) override;
 
       //! setup class variables
       void Setup() override;
@@ -103,7 +103,7 @@ namespace STR
       //! @name Functions which are derived from the base generic class
       //! @{
       //! [derived]
-      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_partitioned_coupling; }
+      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_partitioned_coupling; }
 
       //! reset class variables (without jacobian) [derived]
       void Reset(const Epetra_Vector& x) override;
@@ -128,21 +128,21 @@ namespace STR
 
       //! Assemble the jacobian at \f$t_{n+1}\f$ not needed in partitioned scheme
       bool assemble_jacobian(
-          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
+          Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override;
 
       //! [derived]
-      void write_restart(CORE::IO::DiscretizationWriter& iowriter,
+      void write_restart(Core::IO::DiscretizationWriter& iowriter,
           const bool& forced_writerestart) const override{};
 
       //! [derived]
-      void read_restart(CORE::IO::DiscretizationReader& ioreader) override{};
+      void read_restart(Core::IO::DiscretizationReader& ioreader) override{};
 
       //! [derived]
-      void Predict(const INPAR::STR::PredEnum& pred_type) override{};
+      void Predict(const Inpar::STR::PredEnum& pred_type) override{};
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) override{};
+          const NOX::Nln::Group& curr_grp) override{};
 
       //! recover condensed Lagrange multipliers
       void run_post_compute_x(const Epetra_Vector& xold, const Epetra_Vector& dir,
@@ -167,7 +167,7 @@ namespace STR
       void determine_optional_quantity() override{};
 
       //! [derived]
-      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override{};
+      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override{};
 
       //! derived
       void ResetStepState() override{};

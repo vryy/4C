@@ -24,15 +24,15 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class ParObject;
   class PackBuffer;
-}  // namespace DRT
+}  // namespace Discret
 // forward declaration
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataGlobalState;
   }
@@ -76,13 +76,13 @@ namespace BEAMINTERACTION
     }
 
     /// number of crosslinkers per type
-    INPAR::BEAMINTERACTION::RepartitionStrategy get_repartition_strategy() const
+    Inpar::BEAMINTERACTION::RepartitionStrategy get_repartition_strategy() const
     {
       check_init_setup();
       return rep_strategy_;
     };
 
-    INPAR::BEAMINTERACTION::SearchStrategy GetSearchStrategy() const
+    Inpar::BEAMINTERACTION::SearchStrategy GetSearchStrategy() const
     {
       check_init_setup();
       return search_strategy_;
@@ -95,15 +95,15 @@ namespace BEAMINTERACTION
     bool issetup_;
 
     /// number of crosslinker that are initially set
-    INPAR::BEAMINTERACTION::RepartitionStrategy rep_strategy_;
+    Inpar::BEAMINTERACTION::RepartitionStrategy rep_strategy_;
 
     /// search strategy for beam coupling
-    INPAR::BEAMINTERACTION::SearchStrategy search_strategy_;
+    Inpar::BEAMINTERACTION::SearchStrategy search_strategy_;
   };
 
 
 
-  namespace DATA
+  namespace Data
   {
     //! struct to store crosslinker data and enable parallel redistribution
     struct CrosslinkerData
@@ -121,7 +121,7 @@ namespace BEAMINTERACTION
 
       int get_id() const { return id_; };
 
-      CORE::LINALG::Matrix<3, 1> const& GetPosition() const { return pos_; };
+      Core::LinAlg::Matrix<3, 1> const& GetPosition() const { return pos_; };
 
       int GetNumberOfBonds() const { return numbond_; };
 
@@ -129,7 +129,7 @@ namespace BEAMINTERACTION
 
       void SetId(int id) { id_ = id; };
 
-      void SetPosition(CORE::LINALG::Matrix<3, 1> const& clpos) { pos_ = clpos; };
+      void SetPosition(Core::LinAlg::Matrix<3, 1> const& clpos) { pos_ = clpos; };
 
       void SetNumberOfBonds(int clnumbond) { numbond_ = clnumbond; };
 
@@ -144,7 +144,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(CORE::COMM::PackBuffer& data) const;
+      void Pack(Core::Communication::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
@@ -161,7 +161,7 @@ namespace BEAMINTERACTION
       int id_;
 
       /// current position of crosslinker
-      CORE::LINALG::Matrix<3, 1> pos_;
+      Core::LinAlg::Matrix<3, 1> pos_;
 
       /// number of active bonds
       int numbond_;
@@ -189,46 +189,46 @@ namespace BEAMINTERACTION
 
       int get_id() const { return id_; };
 
-      std::map<INPAR::BEAMINTERACTION::CrosslinkerType,
-          std::map<int, CORE::LINALG::Matrix<3, 1>>> const&
+      std::map<Inpar::BEAMINTERACTION::CrosslinkerType,
+          std::map<int, Core::LinAlg::Matrix<3, 1>>> const&
       GetBSpotPositions() const
       {
         return bspotpos_;
       };
 
-      CORE::LINALG::Matrix<3, 1> const& GetBSpotPosition(
-          INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid) const
+      Core::LinAlg::Matrix<3, 1> const& GetBSpotPosition(
+          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid) const
       {
         return bspotpos_.at(linkertype).at(bspotid);
       };
 
-      std::map<INPAR::BEAMINTERACTION::CrosslinkerType,
-          std::map<int, CORE::LINALG::Matrix<3, 3>>> const&
+      std::map<Inpar::BEAMINTERACTION::CrosslinkerType,
+          std::map<int, Core::LinAlg::Matrix<3, 3>>> const&
       GetBSpotTriads() const
       {
         return bspottriad_;
       };
-      CORE::LINALG::Matrix<3, 3> const& GetBSpotTriad(
-          INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid) const
+      Core::LinAlg::Matrix<3, 3> const& GetBSpotTriad(
+          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid) const
       {
         return bspottriad_.at(linkertype).at(bspotid);
       };
 
-      std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::map<int, std::set<int>>> const&
+      std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::map<int, std::set<int>>> const&
       GetBSpotStatus() const
       {
         return bspotstatus_;
       };
 
       std::set<int> const& GetBSpotStatusAt(
-          INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid) const
+          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid) const
       {
         return bspotstatus_.at(linkertype).at(bspotid);
       };
 
       // not [] necessary here in case element has no binding spot of certain type
       unsigned int get_number_of_binding_spots_of_type(
-          INPAR::BEAMINTERACTION::CrosslinkerType linkertype)
+          Inpar::BEAMINTERACTION::CrosslinkerType linkertype)
       {
         return bspotstatus_[linkertype].size();
       };
@@ -236,47 +236,47 @@ namespace BEAMINTERACTION
 
       void SetId(int id) { id_ = id; };
 
-      void SetBSpotPositions(std::map<INPAR::BEAMINTERACTION::CrosslinkerType,
-          std::map<int, CORE::LINALG::Matrix<3, 1>>> const& bspotpos)
+      void SetBSpotPositions(std::map<Inpar::BEAMINTERACTION::CrosslinkerType,
+          std::map<int, Core::LinAlg::Matrix<3, 1>>> const& bspotpos)
       {
         bspotpos_ = bspotpos;
       };
-      void SetBSpotPosition(INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid,
-          CORE::LINALG::Matrix<3, 1> const& bspotpos)
+      void SetBSpotPosition(Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid,
+          Core::LinAlg::Matrix<3, 1> const& bspotpos)
       {
         bspotpos_[linkertype][bspotid] = bspotpos;
       };
 
-      void SetBSpotTriads(std::map<INPAR::BEAMINTERACTION::CrosslinkerType,
-          std::map<int, CORE::LINALG::Matrix<3, 3>>> const& bspottriad)
+      void SetBSpotTriads(std::map<Inpar::BEAMINTERACTION::CrosslinkerType,
+          std::map<int, Core::LinAlg::Matrix<3, 3>>> const& bspottriad)
       {
         bspottriad_ = bspottriad;
       };
-      void SetBSpotTriad(INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid,
-          CORE::LINALG::Matrix<3, 3> const& bspottriad)
+      void SetBSpotTriad(Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid,
+          Core::LinAlg::Matrix<3, 3> const& bspottriad)
       {
         bspottriad_[linkertype][bspotid] = bspottriad;
       };
 
       void SetBSpotStatus(
-          std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::map<int, std::set<int>>> const&
+          std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::map<int, std::set<int>>> const&
               bspotstatus)
       {
         bspotstatus_ = bspotstatus;
       };
       void SetBSpotStatus(
-          INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid, std::set<int> clgids)
+          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid, std::set<int> clgids)
       {
         bspotstatus_[linkertype][bspotid] = clgids;
       };
 
       void erase_bond_from_binding_spot(
-          INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotid, int clgid)
+          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotid, int clgid)
       {
         bspotstatus_.at(linkertype).at(locbspotid).erase(clgid);
       }
       void add_bond_to_binding_spot(
-          INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotid, int clgid)
+          Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotid, int clgid)
       {
         bspotstatus_.at(linkertype).at(locbspotid).insert(clgid);
       }
@@ -290,7 +290,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(CORE::COMM::PackBuffer& data) const;
+      void Pack(Core::Communication::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
@@ -307,15 +307,15 @@ namespace BEAMINTERACTION
       int id_;
 
       /// current position at bindingspots (xi) (key is local number of binding spot)
-      std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::map<int, CORE::LINALG::Matrix<3, 1>>>
+      std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::map<int, Core::LinAlg::Matrix<3, 1>>>
           bspotpos_;
 
       /// current triad at bindingspots (xi) (key is local number of binding spot)
-      std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::map<int, CORE::LINALG::Matrix<3, 3>>>
+      std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::map<int, Core::LinAlg::Matrix<3, 3>>>
           bspottriad_;
 
       /// key is locn of bspot, holds gid of crosslinker to which it is bonded
-      std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::map<int, std::set<int>>> bspotstatus_;
+      std::map<Inpar::BEAMINTERACTION::CrosslinkerType, std::map<int, std::set<int>>> bspotstatus_;
 
       //! @}
     };
@@ -363,7 +363,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(CORE::COMM::PackBuffer& data) const;
+      void Pack(Core::Communication::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
@@ -409,14 +409,14 @@ namespace BEAMINTERACTION
 
       std::pair<int, int> const& GetEleToUpdate() const { return eletoupdate_; };
 
-      INPAR::BEAMINTERACTION::CrosslinkerType GetLinkerType() const { return linkertype_; };
+      Inpar::BEAMINTERACTION::CrosslinkerType GetLinkerType() const { return linkertype_; };
 
 
       void SetClId(int clgid) { clgid_ = clgid; };
 
       void SetEleToUpdate(std::pair<int, int> eletoupdate) { eletoupdate_ = eletoupdate; };
 
-      void SetLinkerType(INPAR::BEAMINTERACTION::CrosslinkerType linkertype)
+      void SetLinkerType(Inpar::BEAMINTERACTION::CrosslinkerType linkertype)
       {
         linkertype_ = linkertype;
       };
@@ -431,7 +431,7 @@ namespace BEAMINTERACTION
       /*!
       \brief Pack this class so it can be communicated
       */
-      void Pack(CORE::COMM::PackBuffer& data) const;
+      void Pack(Core::Communication::PackBuffer& data) const;
 
       /*!
       \brief Unpack data from a char vector into this container
@@ -451,7 +451,7 @@ namespace BEAMINTERACTION
       std::pair<int, int> eletoupdate_;
 
       /// type of binding spot where unbinding takes place
-      INPAR::BEAMINTERACTION::CrosslinkerType linkertype_;
+      Inpar::BEAMINTERACTION::CrosslinkerType linkertype_;
 
 
       //! @}
@@ -534,7 +534,7 @@ namespace BEAMINTERACTION
       return new_container;
     };
 
-  }  // namespace DATA
+  }  // namespace Data
 }  // namespace BEAMINTERACTION
 
 FOUR_C_NAMESPACE_CLOSE

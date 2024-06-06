@@ -31,23 +31,23 @@ namespace PARTICLEENGINE
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class MaterialHandler;
 }
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     class ParticleMaterialThermo;
   }
-}  // namespace MAT
+}  // namespace Mat
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHHeatLossEvaporation
   {
@@ -61,7 +61,7 @@ namespace PARTICLEINTERACTION
     //! setup evaporation induced heat loss handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial);
+        const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial);
 
     //! evaluate evaporation induced heat loss
     void evaluate_evaporation_induced_heat_loss() const;
@@ -77,10 +77,10 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+    std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial_;
 
     //! pointer to thermo material of particle types
-    std::vector<const MAT::PAR::ParticleMaterialThermo*> thermomaterial_;
+    std::vector<const Mat::PAR::ParticleMaterialThermo*> thermomaterial_;
 
     //! evaporating phase
     PARTICLEENGINE::TypeEnum evaporatingphase_;
@@ -107,7 +107,7 @@ namespace PARTICLEINTERACTION
     double heatloss_tfac_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

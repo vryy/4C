@@ -24,7 +24,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace ADAPTER
+namespace Adapter
 {
   class CouplingMortar;
 }
@@ -60,9 +60,9 @@ namespace THR
     TimIntImpl(const Teuchos::ParameterList& ioparams,       //!< ioflags
         const Teuchos::ParameterList& tdynparams,            //!< input parameters
         const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretization
-        Teuchos::RCP<CORE::LINALG::Solver> solver,           //!< the solver
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
+        Teuchos::RCP<Discret::Discretization> actdis,        //!< current discretization
+        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Resize #TimIntMStep<T> multi-step quantities
@@ -160,20 +160,20 @@ namespace THR
     //! Solve dynamic equilibrium
     //!
     //! This is a general wrapper around the specific techniques.
-    INPAR::THR::ConvergenceStatus Solve() override;
+    Inpar::THR::ConvergenceStatus Solve() override;
 
     //! Do full Newton-Raphson iteration
     //!
     //! This routines expects a prepared negative reisdual force #fres_
     //! and associated effective tangent matrix #tang_
-    virtual INPAR::THR::ConvergenceStatus NewtonFull();
+    virtual Inpar::THR::ConvergenceStatus NewtonFull();
 
     //! Blank Dirichlet dofs form residual and reactions
     //! calculate norms for convergence checks
     void blank_dirichlet_and_calc_norms();
 
     // check for success of nonlinear solve
-    INPAR::THR::ConvergenceStatus newton_full_error_check();
+    Inpar::THR::ConvergenceStatus newton_full_error_check();
 
     //! Do (so-called) modified Newton-Raphson iteration in which
     //! the initial tangent is kept and not adapted to the current
@@ -282,7 +282,7 @@ namespace THR
     //@{
 
     //! Return time integrator name
-    enum INPAR::THR::DynamicType MethodName() const override = 0;
+    enum Inpar::THR::DynamicType MethodName() const override = 0;
 
     //! These time integrators are all implicit (mark their name)
     bool MethodImplicit() override { return true; }
@@ -323,7 +323,7 @@ namespace THR
     void ReadRestartForce() override = 0;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) override = 0;
+    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
 
     //! Return residual temperatures \f$\Delta T_{n+1}^{<k>}\f$
     Teuchos::RCP<const Epetra_Vector> TempRes() const { return tempi_; }
@@ -358,23 +358,23 @@ namespace THR
 
     //! @name General purpose algorithm parameters
     //@{
-    enum INPAR::THR::PredEnum pred_;  //!< predictor
+    enum Inpar::THR::PredEnum pred_;  //!< predictor
     //@}
 
     //! @name Iterative solution technique
     //@{
-    enum INPAR::THR::NonlinSolTech itertype_;  //!< kind of iteration technique
+    enum Inpar::THR::NonlinSolTech itertype_;  //!< kind of iteration technique
                                                //!< or non-linear solution technique
-    enum INPAR::THR::ConvNorm normtypetempi_;  //!< convergence check for residual temperatures
-    enum INPAR::THR::ConvNorm normtypefres_;   //!< convergence check for residual forces
+    enum Inpar::THR::ConvNorm normtypetempi_;  //!< convergence check for residual temperatures
+    enum Inpar::THR::ConvNorm normtypefres_;   //!< convergence check for residual forces
 
-    enum INPAR::THR::BinaryOp
+    enum Inpar::THR::BinaryOp
         combtempifres_;  //!< binary operator to combine temperatures and forces
 
-    enum INPAR::THR::VectorNorm iternorm_;    //!< vector norm to check with
+    enum Inpar::THR::VectorNorm iternorm_;    //!< vector norm to check with
     int itermax_;                             //!< maximally permitted iterations
     int itermin_;                             //!< minimally requested iterations
-    enum INPAR::THR::DivContAct divcontype_;  // what to do when nonlinear solution fails
+    enum Inpar::THR::DivContAct divcontype_;  // what to do when nonlinear solution fails
     int divcontrefinelevel_;                  //!< refinement level of adaptive time stepping
     int divcontfinesteps_;  //!< number of time steps already performed at current refinement level
     double toltempi_;       //!< tolerance residual temperatures
@@ -390,7 +390,7 @@ namespace THR
     Teuchos::RCP<Epetra_Vector> tempinc_;  //!< sum of temperature vectors already applied,
                                            //!< i.e. the incremental temperature
     Teuchos::Time timer_;                  //!< timer for solution technique
-    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> adaptermeshtying_;  //!< mortar coupling adapter
+    Teuchos::RCP<Core::Adapter::CouplingMortar> adaptermeshtying_;  //!< mortar coupling adapter
     //@}
 
     //! @name Various global forces

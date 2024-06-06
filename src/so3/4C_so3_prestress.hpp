@@ -16,11 +16,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    class PreStressType : public CORE::COMM::ParObjectType
+    class PreStressType : public Core::Communication::ParObjectType
     {
      public:
       std::string Name() const override { return "PreStressType"; }
@@ -35,7 +35,7 @@ namespace DRT
     \brief A class for handling the prestressing in finite deformations
 
     */
-    class PreStress : public CORE::COMM::ParObject
+    class PreStress : public Core::Communication::ParObject
     {
      public:
       /*!
@@ -46,7 +46,7 @@ namespace DRT
       /*!
       \brief Copy Constructor
       */
-      PreStress(const DRT::ELEMENTS::PreStress& old);
+      PreStress(const Discret::ELEMENTS::PreStress& old);
 
       /*!
       \brief Return unique ParObject id
@@ -61,7 +61,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this node
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -72,38 +72,38 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
       /// get history of deformation gradient
-      inline CORE::LINALG::SerialDenseMatrix& FHistory() const { return *fhist_; }
+      inline Core::LinAlg::SerialDenseMatrix& FHistory() const { return *fhist_; }
 
       /// get history of of reference configuration (inverse of Jacobian)
-      inline CORE::LINALG::SerialDenseMatrix& JHistory() const { return *inv_jhist_; }
+      inline Core::LinAlg::SerialDenseMatrix& JHistory() const { return *inv_jhist_; }
 
       /// put a matrix to storage
-      inline void MatrixtoStorage(const int gp, const CORE::LINALG::Matrix<3, 3>& Mat,
-          CORE::LINALG::SerialDenseMatrix& gpMat) const
+      inline void MatrixtoStorage(const int gp, const Core::LinAlg::Matrix<3, 3>& Mat,
+          Core::LinAlg::SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.numCols(); ++i) gpMat(gp, i) = Mat.A()[i];
         return;
       }
 
       /// put a matrix to storage
-      inline void MatrixtoStorage(const int gp, const CORE::LINALG::Matrix<4, 3>& Mat,
-          CORE::LINALG::SerialDenseMatrix& gpMat) const
+      inline void MatrixtoStorage(const int gp, const Core::LinAlg::Matrix<4, 3>& Mat,
+          Core::LinAlg::SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.numCols(); ++i) gpMat(gp, i) = Mat.A()[i];
         return;
       }
 
       /// get matrix from storage
-      inline void StoragetoMatrix(const int gp, CORE::LINALG::Matrix<3, 3>& Mat,
-          const CORE::LINALG::SerialDenseMatrix& gpMat) const
+      inline void StoragetoMatrix(const int gp, Core::LinAlg::Matrix<3, 3>& Mat,
+          const Core::LinAlg::SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.numCols(); ++i) Mat.A()[i] = gpMat(gp, i);
         return;
       }
 
       /// get matrix from storage
-      inline void StoragetoMatrix(const int gp, CORE::LINALG::Matrix<4, 3>& Mat,
-          const CORE::LINALG::SerialDenseMatrix& gpMat) const
+      inline void StoragetoMatrix(const int gp, Core::LinAlg::Matrix<4, 3>& Mat,
+          const Core::LinAlg::SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.numCols(); ++i) Mat.A()[i] = gpMat(gp, i);
         return;
@@ -120,10 +120,10 @@ namespace DRT
       int numnode_;
 
       /// history of deformation gradient
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> fhist_;
+      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> fhist_;
 
       /// updated Lagrange inverse of Jacobian
-      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> inv_jhist_;
+      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> inv_jhist_;
 
       /// get number of gaussian points considered
       inline int num_gp() const { return fhist_->numRows(); }
@@ -133,7 +133,7 @@ namespace DRT
 
     };  // class PreStress
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

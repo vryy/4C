@@ -30,7 +30,7 @@ functionality
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -42,10 +42,10 @@ namespace DRT
     p1 (mixed) approach including scatra functionality
 
     */
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class Wall1PoroP1Scatra : public Wall1PoroP1<distype>
     {
-      typedef DRT::ELEMENTS::Wall1PoroP1<distype> my;
+      typedef Discret::ELEMENTS::Wall1PoroP1<distype> my;
 
      public:
       //@}
@@ -79,7 +79,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -95,7 +95,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -112,7 +112,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override;
+      Core::Elements::ElementType& ElementType() const override;
 
       //@}
 
@@ -122,22 +122,22 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       /// @name params
-      /// return SCATRA::ImplType
-      const INPAR::SCATRA::ImplType& ImplType() const { return impltype_; };
+      /// return ScaTra::ImplType
+      const Inpar::ScaTra::ImplType& ImplType() const { return impltype_; };
 
      private:
       //! scalar transport implementation type (physics)
-      INPAR::SCATRA::ImplType impltype_;
+      Inpar::ScaTra::ImplType impltype_;
 
      protected:
       //! don't want = operator
       Wall1PoroP1Scatra& operator=(const Wall1PoroP1Scatra& old);
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

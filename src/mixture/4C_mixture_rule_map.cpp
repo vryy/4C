@@ -61,7 +61,7 @@ namespace
   }
 }  // namespace
 
-MIXTURE::PAR::MapMixtureRule::MapMixtureRule(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+MIXTURE::PAR::MapMixtureRule::MapMixtureRule(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : MixtureRule(matdata),
       initial_reference_density_(matdata->Get<double>("DENS")),
       num_constituents_(matdata->Get<int>("NUMCONST")),
@@ -89,14 +89,14 @@ void MIXTURE::MapMixtureRule::UnpackMixtureRule(
   MIXTURE::MixtureRule::UnpackMixtureRule(position, data);
 }
 
-void MIXTURE::MapMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
-    const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp,
+void MIXTURE::MapMixtureRule::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+    const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
 {
   // define temporary matrices
-  CORE::LINALG::Matrix<6, 1> cstress;
-  CORE::LINALG::Matrix<6, 6> ccmat;
+  Core::LinAlg::Matrix<6, 1> cstress;
+  Core::LinAlg::Matrix<6, 6> ccmat;
 
   // evaluate the mass fractions at the given element id (one based entires in the csv file)
   auto massfracs =

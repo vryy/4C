@@ -25,7 +25,7 @@ class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class KrylovProjector;
 
@@ -59,7 +59,7 @@ namespace CORE::LINALG
 
     */
     LinalgPrecondOperator(Teuchos::RCP<Epetra_Operator> precond, bool project,
-        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
+        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
 
 
 
@@ -196,10 +196,10 @@ namespace CORE::LINALG
     Teuchos::RCP<Epetra_Operator> precond_;
 
     //! Krylov space projector
-    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;
+    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;
   };
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

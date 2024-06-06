@@ -29,7 +29,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace LIBB64
+namespace LibB64
 {
   /**
    * Do a base64 encoding of the given data.
@@ -90,7 +90,7 @@ namespace LIBB64
     return digits;
   }
 
-}  // namespace LIBB64
+}  // namespace LibB64
 
 
 /*
@@ -136,7 +136,7 @@ class VtkWriterBase
 
   //! write given field data, including time and cycle for vtk file.
   void write_vtk_field_data_and_or_time_and_or_cycle(
-      const std::map<std::string, CORE::IO::visualization_vector_type_variant>& field_data_map);
+      const std::map<std::string, Core::IO::visualization_vector_type_variant>& field_data_map);
 
   //! write field data for time and cycle for vtk file.
   void write_vtk_time_and_or_cycle();
@@ -153,7 +153,7 @@ class VtkWriterBase
  protected:
   //! write a data vector as DataArray to corresponding vtk files
   // Todo template <typename T>
-  void write_data_array(const CORE::IO::visualization_vector_type_variant& data,
+  void write_data_array(const Core::IO::visualization_vector_type_variant& data,
       const int num_components, const std::string& name);
 
   //! generate the part of the filename that expresses the processor ID

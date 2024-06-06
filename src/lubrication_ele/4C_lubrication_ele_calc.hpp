@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -68,7 +68,7 @@ namespace DRT
       Lubrication object.
     */
 
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
     class LubricationEleCalc : public LubricationEleInterface
     {
      protected:
@@ -85,60 +85,60 @@ namespace DRT
       /// since only derived child classes are free to be allocated!!
 
       /// Setup element evaluation
-      int SetupCalc(CORE::Elements::Element* ele, DRT::Discretization& discretization) override;
+      int SetupCalc(Core::Elements::Element* ele, Discret::Discretization& discretization) override;
 
       /// Evaluate the element
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      int Evaluate(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
       // Evaluate the off-diagonal coupling block of monotlitic EHL matrix
-      int EvaluateEHLMon(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int EvaluateEHLMon(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate action
-      virtual int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, const LUBRICATION::Action& action,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+      virtual int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, const LUBRICATION::Action& action,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra);
 
       //! evaluate service routine
-      int EvaluateService(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int EvaluateService(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
       /*========================================================================*/
       //! @name static member variables
       /*========================================================================*/
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-      static constexpr int nen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int nen_ = Core::FE::num_nodes<distype>;
 
       //! number of space dimensions
       static constexpr int nsd_ = probdim;
 
       //! space dimension of Lubrication element (only for flat domains nsd_ele_ = nsd_)
-      static constexpr int nsd_ele_ = CORE::FE::dim<distype>;
+      static constexpr int nsd_ele_ = Core::FE::dim<distype>;
 
      protected:
       /*========================================================================*/
@@ -147,22 +147,22 @@ namespace DRT
 
       //! extract element based or nodal values
       //  return extracted values of prenp
-      virtual void extract_element_and_node_values(CORE::Elements::Element* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la);
+      virtual void extract_element_and_node_values(Core::Elements::Element* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la);
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
-      virtual void sysmat(CORE::Elements::Element* ele,  //!< the element we are dealing with
-          CORE::LINALG::SerialDenseMatrix& emat,         //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs          //!< element rhs to calculate
+      virtual void sysmat(Core::Elements::Element* ele,  //!< the element we are dealing with
+          Core::LinAlg::SerialDenseMatrix& emat,         //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs          //!< element rhs to calculate
       );
 
       //! calculate element off-diagonal-matrix for height-linearization in monolithic EHL
       virtual void matrixfor_ehl_mon(
-          CORE::Elements::Element* ele,  //!< the element we are dealing with
-          CORE::LINALG::SerialDenseMatrix&
+          Core::Elements::Element* ele,  //!< the element we are dealing with
+          Core::LinAlg::SerialDenseMatrix&
               ematheight,  //!< element matrix associated with the linearization of the film height
-          CORE::LINALG::SerialDenseMatrix&
+          Core::LinAlg::SerialDenseMatrix&
               ematvel  //!< element matrix associated with the linearization of the velocities
       );
 
@@ -177,20 +177,20 @@ namespace DRT
 
       //! Calculate the average velocity of the contacting bodies at the Int point
       virtual void calc_avr_vel_at_int_point(
-          CORE::LINALG::Matrix<nsd_, 1>& avrvel  //!< average surface velocity at Int point
+          Core::LinAlg::Matrix<nsd_, 1>& avrvel  //!< average surface velocity at Int point
       );
 
       //! Calculate the relative velocity of the contacting bodies at the Int point
       virtual void calc_rel_vel_at_int_point(
-          CORE::LINALG::Matrix<nsd_, 1>& relvel  //!< relative surface velocity at Int point
+          Core::LinAlg::Matrix<nsd_, 1>& relvel  //!< relative surface velocity at Int point
       );
 
       //! read element coordinates
-      virtual void read_element_coordinates(const CORE::Elements::Element* ele);
+      virtual void read_element_coordinates(const Core::Elements::Element* ele);
 
       //! evaluate shape functions and their derivatives at current integration point
       double eval_shape_func_and_derivs_at_int_point(
-          const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
+          const Core::FE::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
           const int iquad                                            //!< id of current Gauss point
       );
 
@@ -201,8 +201,8 @@ namespace DRT
       virtual void set_internal_variables_for_mat_and_rhs();
 
       //! evaluate pressure and shear flow factors for modified reynolds equation
-      virtual void calc_p_flow_fac_at_int_point(CORE::LINALG::Matrix<nsd_, 1>& pflowfac,
-          CORE::LINALG::Matrix<nsd_, 1>& pflowfacderiv, const double heightint);
+      virtual void calc_p_flow_fac_at_int_point(Core::LinAlg::Matrix<nsd_, 1>& pflowfac,
+          Core::LinAlg::Matrix<nsd_, 1>& pflowfacderiv, const double heightint);
 
       //! evaluate pressure and shear flow factors for modified reynolds equation
       virtual void calc_s_flow_fac_at_int_point(
@@ -214,15 +214,15 @@ namespace DRT
 
       //! calculate error of numerical solution with respect to analytical solution
       void cal_error_compared_to_analyt_solution(
-          const CORE::Elements::Element* ele,      //!< the element we are dealing with
+          const Core::Elements::Element* ele,      //!< the element we are dealing with
           Teuchos::ParameterList& params,          //!< parameter list
-          CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2-error norm
+          Core::LinAlg::SerialDenseVector& errors  //!< vector containing L2-error norm
       );
 
       //! calculate pressure(s) and domain integral
       virtual void calculate_pressures(
-          const CORE::Elements::Element* ele,          //!< the element we are dealing with
-          CORE::LINALG::SerialDenseVector& pressures,  //!< pressure to be computed
+          const Core::Elements::Element* ele,          //!< the element we are dealing with
+          Core::LinAlg::SerialDenseVector& pressures,  //!< pressure to be computed
           const bool inverting                         //!< bool indicating inversion
       );
 
@@ -233,7 +233,7 @@ namespace DRT
 
       //! get the material parameters
       virtual void get_material_params(
-          const CORE::Elements::Element* ele,  //!< the element we are dealing with
+          const Core::Elements::Element* ele,  //!< the element we are dealing with
           double& densn,                       //!< density at t_(n)
           double& densnp,                      //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam,                      //!< density at t_(n+alpha_M)
@@ -244,7 +244,7 @@ namespace DRT
 
       //! evaluate material
       virtual void materials(
-          const Teuchos::RCP<CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<Core::Mat::Material> material,  //!< pointer to current material
           double& densn,                                     //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam,       //!< density at t_(n+alpha_M)
@@ -255,7 +255,7 @@ namespace DRT
 
       //! material Lubrication
       virtual void mat_lubrication(
-          const Teuchos::RCP<CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<Core::Mat::Material> material,  //!< pointer to current material
           double& densn,                                     //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam,       //!< density at t_(n+alpha_M)
@@ -271,97 +271,97 @@ namespace DRT
       virtual void get_laplacian_weak_form(double& val, const int vi, const int ui);
       //! calculate linearization of the Laplacian (weak form) for element integration
       virtual void get_laplacian_weak_form(
-          double& val, const int vi, const int ui, const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
+          double& val, const int vi, const int ui, const Core::LinAlg::Matrix<nsd_, 1> pflowfac);
       //! calculate the Laplacian (weak form)
       virtual void get_laplacian_weak_form_rhs(
-          double& val, const CORE::LINALG::Matrix<nsd_, 1>& gradpre, const int vi);
+          double& val, const Core::LinAlg::Matrix<nsd_, 1>& gradpre, const int vi);
       //! calculate the Laplacian (weak form)
       virtual void get_laplacian_weak_form_rhs(double& val,
-          const CORE::LINALG::Matrix<nsd_, 1>& gradpre, const int vi,
-          const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
+          const Core::LinAlg::Matrix<nsd_, 1>& gradpre, const int vi,
+          const Core::LinAlg::Matrix<nsd_, 1> pflowfac);
       //! calculation of Poiseuille contribution to element matrix
-      virtual void calc_mat_psl(CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
+      virtual void calc_mat_psl(Core::LinAlg::SerialDenseMatrix& emat, const double timefacfac,
           const double viscosity, const double height);
 
       //! calculation of Poiseuille contribution to element matrix in modified Rey. Equ.
-      virtual void calc_mat_psl(CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
+      virtual void calc_mat_psl(Core::LinAlg::SerialDenseMatrix& emat, const double timefacfac,
           const double viscosity, const double height,
-          const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
+          const Core::LinAlg::Matrix<nsd_, 1> pflowfac);
 
       //! calculation of Poiseuille-Viscosity contribution to element matrix in modified Rey. Equ.
-      virtual void calc_mat_psl_vis(CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
+      virtual void calc_mat_psl_vis(Core::LinAlg::SerialDenseMatrix& emat, const double timefacfac,
           const double viscosity, const double height, const double dviscosity_dp);
 
       //! calculation of Poiseuille contribution to RHS matrix
-      virtual void calc_rhs_psl(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
+      virtual void calc_rhs_psl(Core::LinAlg::SerialDenseVector& erhs, const double rhsfac,
           const double viscosity, const double height);
 
       //! calculation of Poiseuille contribution to RHS matrix in modified Rey. Equ.
-      virtual void calc_rhs_psl(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
+      virtual void calc_rhs_psl(Core::LinAlg::SerialDenseVector& erhs, const double rhsfac,
           const double viscosity, const double height,
-          const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
+          const Core::LinAlg::Matrix<nsd_, 1> pflowfac);
 
       //! calculation of Wedge contribution to RHS matrix
-      virtual void calc_rhs_wdg(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
-          const double height, const CORE::LINALG::Matrix<nsd_, 1> velocity);
+      virtual void calc_rhs_wdg(Core::LinAlg::SerialDenseVector& erhs, const double rhsfac,
+          const double height, const Core::LinAlg::Matrix<nsd_, 1> velocity);
 
       //! calculation of Squeeze contribution to RHS matrix
       virtual void calc_rhs_sqz(
-          CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double heightdot);
+          Core::LinAlg::SerialDenseVector& erhs, const double rhsfac, const double heightdot);
 
       //! calculation of Shear contribution to RHS matrix
-      virtual void calc_rhs_shear(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
-          const CORE::LINALG::Matrix<nsd_, 1> velocity, const double sflowfac);
+      virtual void calc_rhs_shear(Core::LinAlg::SerialDenseVector& erhs, const double rhsfac,
+          const Core::LinAlg::Matrix<nsd_, 1> velocity, const double sflowfac);
 
       /*========================================================================*/
       //! @name parameter lists
       /*========================================================================*/
 
       //! pointer to general lubrication parameter class
-      DRT::ELEMENTS::LubricationEleParameter* lubricationpara_;
+      Discret::ELEMENTS::LubricationEleParameter* lubricationpara_;
 
       /*========================================================================*/
       //! @name pressure degrees of freedom and related
       /*========================================================================*/
 
       //! state variables at t_(n+1) or t_(n+alpha_F)
-      CORE::LINALG::Matrix<nen_, 1> eprenp_;
+      Core::LinAlg::Matrix<nen_, 1> eprenp_;
 
       /*========================================================================*/
       //! @name Galerkin approximation and related
       /*========================================================================*/
 
       //! coordinates of current integration point in reference coordinates
-      CORE::LINALG::Matrix<nsd_ele_, 1> xsi_;
+      Core::LinAlg::Matrix<nsd_ele_, 1> xsi_;
       //! node coordinates
-      CORE::LINALG::Matrix<nsd_, nen_> xyze_;
+      Core::LinAlg::Matrix<nsd_, nen_> xyze_;
       //! array for shape functions
-      CORE::LINALG::Matrix<nen_, 1> funct_;
+      Core::LinAlg::Matrix<nen_, 1> funct_;
       //! array for shape function derivatives w.r.t r,s,t
-      CORE::LINALG::Matrix<nsd_, nen_> deriv_;
+      Core::LinAlg::Matrix<nsd_, nen_> deriv_;
       //! global derivatives of shape functions w.r.t x,y,z
-      CORE::LINALG::Matrix<nsd_, nen_> derxy_;
+      Core::LinAlg::Matrix<nsd_, nen_> derxy_;
 
       //! transposed jacobian "dx/ds"
-      CORE::LINALG::Matrix<nsd_, nsd_> xjm_;
+      Core::LinAlg::Matrix<nsd_, nsd_> xjm_;
       //! inverse of transposed jacobian "ds/dx"
-      CORE::LINALG::Matrix<nsd_, nsd_> xij_;
+      Core::LinAlg::Matrix<nsd_, nsd_> xij_;
 
       //!  array for element nodal film height at time n+1, (same scalar value for all space
       //!  dimensions)
-      CORE::LINALG::Matrix<nsd_, nen_> eheinp_;
+      Core::LinAlg::Matrix<nsd_, nen_> eheinp_;
 
       //! array for the element nodal film height time derivative at time n+1,
-      CORE::LINALG::Matrix<nsd_, nen_> eheidotnp_;
+      Core::LinAlg::Matrix<nsd_, nen_> eheidotnp_;
 
       //! Average tangential interface velocity
-      CORE::LINALG::Matrix<nsd_, nen_> eAvTangVel_;
+      Core::LinAlg::Matrix<nsd_, nen_> eAvTangVel_;
 
       //! Relative tangential interface velocity
-      CORE::LINALG::Matrix<nsd_, nen_> eRelTangVel_;
+      Core::LinAlg::Matrix<nsd_, nen_> eRelTangVel_;
 
       //!  array of element nodal displacement at time n+1
-      CORE::LINALG::Matrix<nsd_, nen_> edispnp_;
+      Core::LinAlg::Matrix<nsd_, nen_> edispnp_;
 
       /*========================================================================*/
       //! @name manager classes for efficient application to various problems
@@ -380,15 +380,15 @@ namespace DRT
       //! global element id
       int eid_;
       //! current element
-      CORE::Elements::Element* ele_;
+      Core::Elements::Element* ele_;
       //! time step
       double Dt_;
 
       /// Pressure flow factor, initialized to zero
-      CORE::LINALG::Matrix<nsd_, 1> pflowfac_;
+      Core::LinAlg::Matrix<nsd_, 1> pflowfac_;
 
       /// Pressure flow factor derivative, initialized to zero
-      CORE::LINALG::Matrix<nsd_, 1> pflowfacderiv_;
+      Core::LinAlg::Matrix<nsd_, 1> pflowfacderiv_;
 
       /// shear flow factor
       double sflowfac_;
@@ -414,10 +414,10 @@ namespace DRT
 
       // compute and set internal variables
       void set_internal_variables(
-          CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
-          CORE::LINALG::Matrix<NSD, NEN>&
+          Core::LinAlg::Matrix<NEN, 1>& funct,  //! array for shape functions
+          Core::LinAlg::Matrix<NSD, NEN>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          CORE::LINALG::Matrix<NEN, 1>& eprenp  //! pressure at t_(n+1) or t_(n+alpha_F)
+          Core::LinAlg::Matrix<NEN, 1>& eprenp  //! pressure at t_(n+1) or t_(n+alpha_F)
       )
       {
         // calculate pressure at t_(n+1) or t_(n+alpha_F)
@@ -435,7 +435,7 @@ namespace DRT
       //! return pressure values at t_(n+1) or t_(n+alpha_F)
       virtual const double& Prenp() const { return prenp_; };
       //! return spatial gradient of all pressure values
-      virtual const CORE::LINALG::Matrix<NSD, 1>& GradPre() const { return gradpre_; };
+      virtual const Core::LinAlg::Matrix<NSD, 1>& GradPre() const { return gradpre_; };
 
      protected:
       /*========================================================================*/
@@ -445,7 +445,7 @@ namespace DRT
       //! pressure
       double prenp_;
       //! spatial gradient of current pressure value
-      CORE::LINALG::Matrix<NSD, 1> gradpre_;
+      Core::LinAlg::Matrix<NSD, 1> gradpre_;
     };
 
     /// Lubrication diffusion manager
@@ -481,7 +481,7 @@ namespace DRT
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

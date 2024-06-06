@@ -54,10 +54,10 @@ STR::MODELEVALUATOR::Meshtying::Meshtying() : strategy_ptr_(Teuchos::null)
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::Init(
     const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
-    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
+    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
     const Teuchos::RCP<STR::Integrator>& int_ptr,
-    const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr, const int& dof_offset)
+    const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset)
 {
   STR::MODELEVALUATOR::Generic::Init(
       eval_data_ptr, gstate_ptr, gio_ptr, int_ptr, timint_ptr, dof_offset);
@@ -70,7 +70,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   check_init();
 
   // create the meshtying factory
-  MORTAR::STRATEGY::FactoryMT factory;
+  Mortar::STRATEGY::FactoryMT factory;
   factory.Init(g_state_ptr());
   factory.Setup();
 
@@ -78,7 +78,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   factory.CheckDimension();
 
   // create some local variables (later to be stored in strategy)
-  std::vector<Teuchos::RCP<MORTAR::Interface>> interfaces;
+  std::vector<Teuchos::RCP<Mortar::Interface>> interfaces;
   Teuchos::ParameterList cparams;
 
   // read and check contact input parameters
@@ -107,7 +107,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   // final touches to the meshtying strategy
   // ---------------------------------------------------------------------
   strategy_ptr_->store_dirichlet_status(Int().GetDbc().GetDBCMapExtractor());
-  strategy_ptr_->set_state(MORTAR::state_new_displacement, Int().GetDbc().GetZeros());
+  strategy_ptr_->set_state(Mortar::state_new_displacement, Int().GetDbc().GetZeros());
   strategy_ptr_->SaveReferenceState(Int().GetDbc().GetZerosPtr());
   strategy_ptr_->evaluate_reference_state();
   strategy_ptr_->Inttime_init();
@@ -122,13 +122,13 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
   if (!g_state().GetRestartStep())
   {
     // perform mesh initialization if required by input parameter MESH_RELOCATION
-    auto mesh_relocation_parameter = CORE::UTILS::IntegralValue<INPAR::MORTAR::MeshRelocation>(
-        GLOBAL::Problem::Instance()->mortar_coupling_params(), "MESH_RELOCATION");
+    auto mesh_relocation_parameter = Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(
+        Global::Problem::Instance()->mortar_coupling_params(), "MESH_RELOCATION");
 
-    if (mesh_relocation_parameter == INPAR::MORTAR::relocation_initial)
+    if (mesh_relocation_parameter == Inpar::Mortar::relocation_initial)
     {
       Teuchos::RCP<const Epetra_Vector> Xslavemod =
-          dynamic_cast<MORTAR::StrategyBase&>(*strategy_ptr_).MeshInitialization();
+          dynamic_cast<Mortar::StrategyBase&>(*strategy_ptr_).MeshInitialization();
       if (Xslavemod != Teuchos::null)
       {
         mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map()));
@@ -144,7 +144,7 @@ void STR::MODELEVALUATOR::Meshtying::Setup()
         apply_mesh_initialization(Xslavemod);
       }
     }
-    else if (mesh_relocation_parameter == INPAR::MORTAR::relocation_timestep)
+    else if (mesh_relocation_parameter == Inpar::Mortar::relocation_timestep)
     {
       FOUR_C_THROW(
           "Meshtying with MESH_RELOCATION every_timestep not permitted. Change to MESH_RELOCATION "
@@ -162,14 +162,14 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
-  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
-          INPAR::MORTAR::algorithm_gpts ||
+  if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
+          Inpar::Mortar::algorithm_gpts ||
       Strategy().IsPenalty())
   {
     block_vec_ptr = Strategy().GetRhsBlockPtr(CONTACT::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
     FOUR_C_ASSERT(!block_vec_ptr.is_null(), "force not available");
-    CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
   else if (Strategy().IsCondensedSystem())
   {
@@ -178,7 +178,7 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_force(
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
 
-    CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
   else if (Strategy().IsSaddlePointSystem())
   {
@@ -187,7 +187,7 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_force(
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
 
-    CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
 
   return true;
@@ -196,20 +196,20 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_force(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Meshtying::assemble_jacobian(
-    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
+    Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> block_ptr = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> block_ptr = Teuchos::null;
   int err = 0;
   // ---------------------------------------------------------------------
   // Penalty / gpts / Nitsche system: no additional/condensed dofs
   // ---------------------------------------------------------------------
-  if (CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
-          INPAR::MORTAR::algorithm_gpts ||
+  if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
+          Inpar::Mortar::algorithm_gpts ||
       Strategy().IsPenalty())
   {
     block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
     if (Strategy().IsPenalty() && block_ptr.is_null()) return true;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = GState().ExtractDisplBlock(jac);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd = GState().ExtractDisplBlock(jac);
     jac_dd->Add(*block_ptr, false, timefac_np, 1.0);
   }
   // ---------------------------------------------------------------------
@@ -221,7 +221,7 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_jacobian(
     block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
     if (not block_ptr.is_null())
     {
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
       jac_dd_ptr->Add(*block_ptr, false, timefac_np, 1.0);
       // reset the block pointers, just to be on the safe side
       block_ptr = Teuchos::null;
@@ -230,13 +230,13 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_jacobian(
   // ---------------------------------------------------------------------
   // saddle-point system of equations or no contact contributions
   // ---------------------------------------------------------------------
-  else if (Strategy().SystemType() == INPAR::CONTACT::system_saddlepoint)
+  else if (Strategy().SystemType() == Inpar::CONTACT::system_saddlepoint)
   {
     // --- Kdd - block ---------------------------------------------------
     block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
     if (not block_ptr.is_null())
     {
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
       jac_dd_ptr->Add(*block_ptr, false, timefac_np, 1.0);
       // reset the block pointers, just to be on the safe side
       block_ptr = Teuchos::null;
@@ -308,10 +308,10 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Meshtying::get_block_dof_row
     return GState().dof_row_map();
   else
   {
-    enum INPAR::CONTACT::SystemType systype =
-        CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(Strategy().Params(), "SYSTEM");
+    enum Inpar::CONTACT::SystemType systype =
+        Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(Strategy().Params(), "SYSTEM");
 
-    if (systype == INPAR::CONTACT::system_saddlepoint)
+    if (systype == Inpar::CONTACT::system_saddlepoint)
       return Strategy().LMDoFRowMapPtr(true);
     else
       return GState().dof_row_map();
@@ -323,11 +323,11 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Meshtying::get_block_dof_row
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_current_solution_ptr() const
 {
   //  //TODO: this should be removed!
-  //  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
-  //  enum INPAR::CONTACT::SystemType systype =
-  //      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+  //  Global::Problem* problem = Global::Problem::Instance();
+  //  enum Inpar::CONTACT::SystemType systype =
+  //      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
   //          problem->contact_dynamic_params(),"SYSTEM");
-  //  if (systype == INPAR::CONTACT::system_condensed)
+  //  if (systype == Inpar::CONTACT::system_condensed)
   //    return Teuchos::null;
   //
   //  if (Strategy().GetLagrMultNp(false)!=Teuchos::null)
@@ -350,11 +350,11 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_current_so
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_last_time_step_solution_ptr()
     const
 {
-  //  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
-  //  enum INPAR::CONTACT::SystemType systype =
-  //      CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+  //  Global::Problem* problem = Global::Problem::Instance();
+  //  enum Inpar::CONTACT::SystemType systype =
+  //      Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
   //          problem->contact_dynamic_params(),"SYSTEM");
-  //  if (systype == INPAR::CONTACT::system_condensed)
+  //  if (systype == Inpar::CONTACT::system_condensed)
   //    return Teuchos::null;
   //
   //  if (Strategy().GetLagrMultN(false).is_null())
@@ -374,9 +374,9 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_last_time_
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs,
-    Epetra_Vector& result, const Epetra_Vector& xold, const NOX::NLN::Group& grp)
+    Epetra_Vector& result, const Epetra_Vector& xold, const NOX::Nln::Group& grp)
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = g_state().JacobianDisplBlock();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd = g_state().JacobianDisplBlock();
   const_cast<CONTACT::MtAbstractStrategy&>(Strategy())
       .run_pre_apply_jacobian_inverse(jac_dd, const_cast<Epetra_Vector&>(rhs));
 }
@@ -384,14 +384,14 @@ void STR::MODELEVALUATOR::Meshtying::run_pre_apply_jacobian_inverse(const Epetra
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::run_post_apply_jacobian_inverse(const Epetra_Vector& rhs,
-    Epetra_Vector& result, const Epetra_Vector& xold, const NOX::NLN::Group& grp)
+    Epetra_Vector& result, const Epetra_Vector& xold, const NOX::Nln::Group& grp)
 {
   const_cast<CONTACT::MtAbstractStrategy&>(Strategy()).run_post_apply_jacobian_inverse(result);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::MODELEVALUATOR::Meshtying::GetJacobianBlock(
+Teuchos::RCP<const Core::LinAlg::SparseMatrix> STR::MODELEVALUATOR::Meshtying::GetJacobianBlock(
     const STR::MatBlockType bt) const
 {
   return GState().GetJacobianBlock(Type(), bt);
@@ -428,16 +428,16 @@ void STR::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
 
   // create fully overlapping slave node map
   Teuchos::RCP<Epetra_Map> slavemap = strategy_ptr_->SlaveRowNodes();
-  Teuchos::RCP<Epetra_Map> allreduceslavemap = CORE::LINALG::AllreduceEMap(*slavemap);
+  Teuchos::RCP<Epetra_Map> allreduceslavemap = Core::LinAlg::AllreduceEMap(*slavemap);
 
   // export modified node positions to column map of problem discretization
   const Epetra_Map* dof_colmap = discret_ptr()->DofColMap();
   const Epetra_Map* node_colmap = discret_ptr()->NodeColMap();
-  Teuchos::RCP<Epetra_Vector> Xslavemodcol = CORE::LINALG::CreateVector(*dof_colmap, false);
-  CORE::LINALG::Export(*Xslavemod, *Xslavemodcol);
+  Teuchos::RCP<Epetra_Vector> Xslavemodcol = Core::LinAlg::CreateVector(*dof_colmap, false);
+  Core::LinAlg::Export(*Xslavemod, *Xslavemodcol);
 
   const int numnode = allreduceslavemap->NumMyElements();
-  const int numdim = GLOBAL::Problem::Instance()->NDim();
+  const int numdim = Global::Problem::Instance()->NDim();
   const Epetra_Vector& gvector = *Xslavemodcol;
 
   // loop over all slave nodes (for all procs)
@@ -449,7 +449,7 @@ void STR::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
     int ilid = node_colmap->LID(gid);
     if (ilid < 0) continue;
 
-    CORE::Nodes::Node* mynode = discret_ptr()->gNode(gid);
+    Core::Nodes::Node* mynode = discret_ptr()->gNode(gid);
 
     // get degrees of freedom associated with this fluid/structure node
     std::vector<int> nodedofs = discret_ptr()->Dof(0, mynode);
@@ -472,7 +472,7 @@ void STR::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
   }
 
   // re-initialize finite elements
-  CORE::COMM::ParObjectFactory::Instance().initialize_elements(discret());
+  Core::Communication::ParObjectFactory::Instance().initialize_elements(discret());
 }
 
 /*----------------------------------------------------------------------*
@@ -497,7 +497,7 @@ void STR::MODELEVALUATOR::Meshtying::remove_condensed_contributions_from_rhs(Epe
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Meshtying::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   if (mesh_relocation_ != Teuchos::null)
     iowriter.WriteVector("mesh_relocation", mesh_relocation_);
@@ -511,12 +511,12 @@ void STR::MODELEVALUATOR::Meshtying::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::read_restart(CORE::IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::Meshtying::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map(), true));
   ioreader.ReadVector(mesh_relocation_, "mesh_relocation");
 
-  strategy_ptr_->set_state(MORTAR::state_new_displacement, *mesh_relocation_);
+  strategy_ptr_->set_state(Mortar::state_new_displacement, *mesh_relocation_);
   strategy_ptr_->MortarCoupling(mesh_relocation_);
 }
 
@@ -525,7 +525,7 @@ void STR::MODELEVALUATOR::Meshtying::read_restart(CORE::IO::DiscretizationReader
 void STR::MODELEVALUATOR::Meshtying::set_time_integration_info(
     CONTACT::MtAbstractStrategy& strategy) const
 {
-  const INPAR::STR::DynamicType dyntype = TimInt().GetDataSDyn().GetDynamicType();
+  const Inpar::STR::DynamicType dyntype = TimInt().GetDataSDyn().GetDynamicType();
   const double time_fac = Int().GetIntParam();
 
   strategy.set_time_integration_info(time_fac, dyntype);

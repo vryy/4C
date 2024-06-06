@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
   /*!
   \brief concentrations-el.potential split strategy
@@ -28,7 +28,7 @@ namespace SCATRA
   {
    public:
     /// construct with a block matrix base
-    explicit SplitStrategy(CORE::LINALG::BlockSparseMatrixBase& mat)
+    explicit SplitStrategy(Core::LinAlg::BlockSparseMatrixBase& mat)
         : mat_(mat),
           matrix00_(mat_.Matrix(0, 0)),
           matrix01_(mat_.Matrix(0, 1)),
@@ -63,7 +63,7 @@ namespace SCATRA
      * Effects: Faster assembly and a more sparse global matrix (and graph)
      */
     void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
     {
       const int lrowdim = (int)lmrow.size();
@@ -244,7 +244,7 @@ namespace SCATRA
               int cgid = lmcol[lcol];
               int cblock = ColBlock(rblock, lcol, cgid);
 
-              CORE::LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+              Core::LinAlg::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
               matrix.Assemble(val, rgid, cgid);
             }
             // values for block matrix A01:
@@ -254,7 +254,7 @@ namespace SCATRA
               int cgid = lmcol[lcol];
               int cblock = ColBlock(rblock, lcol, cgid);
 
-              CORE::LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+              Core::LinAlg::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
               matrix.Assemble(val, rgid, cgid);
             }
           }
@@ -266,7 +266,7 @@ namespace SCATRA
               int cgid = lmcol[lcol];
               int cblock = ColBlock(rblock, lcol, cgid);
 
-              CORE::LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+              Core::LinAlg::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
               matrix.Assemble(val, rgid, cgid);
             }
           }
@@ -279,7 +279,7 @@ namespace SCATRA
     {
       int rblock = RowBlock(0, rgid);
       int cblock = ColBlock(rblock, 0, cgid);
-      CORE::LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+      Core::LinAlg::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
       matrix.Assemble(val, rgid, cgid);
     }
 
@@ -295,13 +295,13 @@ namespace SCATRA
 
    private:
     /// my block matrix base
-    CORE::LINALG::BlockSparseMatrixBase& mat_;
+    Core::LinAlg::BlockSparseMatrixBase& mat_;
 
     // the four sub-matrices of the whole matrix
-    CORE::LINALG::SparseMatrix& matrix00_;
-    CORE::LINALG::SparseMatrix& matrix01_;
-    CORE::LINALG::SparseMatrix& matrix10_;
-    CORE::LINALG::SparseMatrix& matrix11_;
+    Core::LinAlg::SparseMatrix& matrix00_;
+    Core::LinAlg::SparseMatrix& matrix01_;
+    Core::LinAlg::SparseMatrix& matrix10_;
+    Core::LinAlg::SparseMatrix& matrix11_;
 
     /// number of concentration dofs
     int numscal_;
@@ -311,7 +311,7 @@ namespace SCATRA
 
   };  // class SplitStrategy
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

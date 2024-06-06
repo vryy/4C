@@ -46,11 +46,11 @@ namespace
         "integrated with a Simpson's rule if we remove point i (0 < i < size-2)");
 
     Number full_integration =
-        CORE::UTILS::IntegrateSimpsonStep<std::tuple<double, Number>>(
+        Core::UTILS::IntegrateSimpsonStep<std::tuple<double, Number>>(
             evaluated_integrand[i - 1], evaluated_integrand[i], evaluated_integrand[i + 1]) +
-        CORE::UTILS::IntegrateSimpsonStepBC<std::tuple<double, Number>>(
+        Core::UTILS::IntegrateSimpsonStepBC<std::tuple<double, Number>>(
             evaluated_integrand[i + 0], evaluated_integrand[i + 1], evaluated_integrand[i + 2]);
-    Number skipped_integration = CORE::UTILS::IntegrateSimpsonStep<std::tuple<double, Number>>(
+    Number skipped_integration = Core::UTILS::IntegrateSimpsonStep<std::tuple<double, Number>>(
         evaluated_integrand[i - 1], evaluated_integrand[i + 1], evaluated_integrand[i + 2]);
 
     return std::abs(full_integration - skipped_integration);
@@ -91,7 +91,7 @@ namespace
     Number integration_result = 0;
     for (const auto& interval : history)
     {
-      integration_result += CORE::UTILS::IntegrateSimpsonTrapezoidal(interval.timesteps,
+      integration_result += Core::UTILS::IntegrateSimpsonTrapezoidal(interval.timesteps,
           [&](const MIXTURE::MassIncrement<Number>& increment)
           { return std::make_tuple(increment.deposition_time, integrand(increment)); });
     }
@@ -111,14 +111,14 @@ namespace
     {
       // can only apply trapezoidal rule
       const auto [integration, derivative] =
-          CORE::UTILS::IntegrateTrapezoidalStepAndReturnDerivativeB<std::tuple<double, Number>>(
+          Core::UTILS::IntegrateTrapezoidalStepAndReturnDerivativeB<std::tuple<double, Number>>(
               {interval.timesteps[0].deposition_time, integrand(interval.timesteps[0])},
               {current_increment.deposition_time, integrand(current_increment)});
       return std::make_tuple(integration + history_integration, derivative);
     }
 
     const auto [integration, derivative] =
-        CORE::UTILS::IntegrateSimpsonStepBCAndReturnDerivativeC<std::tuple<double, Number>>(
+        Core::UTILS::IntegrateSimpsonStepBCAndReturnDerivativeC<std::tuple<double, Number>>(
             {interval.timesteps[size - 2].deposition_time, integrand(interval.timesteps[size - 2])},
             {interval.timesteps[size - 1].deposition_time, integrand(interval.timesteps[size - 1])},
             {current_increment.deposition_time, integrand(current_increment)});
@@ -217,13 +217,13 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::FullConstrainedMixtureFiber(
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::Pack(CORE::COMM::PackBuffer& data) const
+void MIXTURE::FullConstrainedMixtureFiber<Number>::Pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("Packing and Unpacking is currently only implemented for the double-specialization");
 }
 
 template <>
-void MIXTURE::FullConstrainedMixtureFiber<double>::Pack(CORE::COMM::PackBuffer& data) const
+void MIXTURE::FullConstrainedMixtureFiber<double>::Pack(Core::Communication::PackBuffer& data) const
 {
   data.AddtoPack(sig_h_);
   data.AddtoPack(lambda_pre_);
@@ -268,43 +268,45 @@ template <>
 void MIXTURE::FullConstrainedMixtureFiber<double>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  CORE::COMM::ParObject::ExtractfromPack(position, data, sig_h_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, lambda_pre_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, current_state_.lambda_f);
+  Core::Communication::ParObject::ExtractfromPack(position, data, sig_h_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, lambda_pre_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, current_state_.lambda_f);
 
-  CORE::COMM::ParObject::ExtractfromPack(position, data, reference_time_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, current_time_shift_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, reference_time_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, current_time_shift_);
 
   std::size_t size_of_history;
-  CORE::COMM::ParObject::ExtractfromPack(position, data, size_of_history);
+  Core::Communication::ParObject::ExtractfromPack(position, data, size_of_history);
   history_.resize(size_of_history);
 
   for (auto& interval : history_)
   {
     std::size_t size_of_interval;
-    CORE::COMM::ParObject::ExtractfromPack(position, data, size_of_interval);
+    Core::Communication::ParObject::ExtractfromPack(position, data, size_of_interval);
     interval.timesteps.resize(size_of_interval);
     for (auto& item : interval.timesteps)
     {
-      CORE::COMM::ParObject::ExtractfromPack(position, data, item.reference_stretch);
-      CORE::COMM::ParObject::ExtractfromPack(position, data, item.growth_scalar);
-      CORE::COMM::ParObject::ExtractfromPack(position, data, item.growth_scalar_production_rate);
-      CORE::COMM::ParObject::ExtractfromPack(position, data, item.deposition_time);
+      Core::Communication::ParObject::ExtractfromPack(position, data, item.reference_stretch);
+      Core::Communication::ParObject::ExtractfromPack(position, data, item.growth_scalar);
+      Core::Communication::ParObject::ExtractfromPack(
+          position, data, item.growth_scalar_production_rate);
+      Core::Communication::ParObject::ExtractfromPack(position, data, item.deposition_time);
     }
 
-    CORE::COMM::ParObject::ExtractfromPack(position, data, interval.base_dt);
+    Core::Communication::ParObject::ExtractfromPack(position, data, interval.base_dt);
 
     interval.adaptivity_info.Unpack(position, data);
   }
 
 
-  CORE::COMM::ParObject::ExtractfromPack(position, data, current_time_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, current_time_);
 
 
-  CORE::COMM::ParObject::ExtractfromPack(position, data, computed_growth_scalar_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, computed_sigma_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, computed_dgrowth_scalar_dlambda_f_sq_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, computed_dsigma_dlambda_f_sq_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, computed_growth_scalar_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, computed_sigma_);
+  Core::Communication::ParObject::ExtractfromPack(
+      position, data, computed_dgrowth_scalar_dlambda_f_sq_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, computed_dsigma_dlambda_f_sq_);
 }
 
 template <typename Number>
@@ -445,8 +447,8 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d
 }
 
 template <typename Number>
-std::function<std::tuple<CORE::LINALG::Matrix<2, 1, Number>, CORE::LINALG::Matrix<2, 2, Number>>(
-    const CORE::LINALG::Matrix<2, 1, Number>&)>
+std::function<std::tuple<Core::LinAlg::Matrix<2, 1, Number>, Core::LinAlg::Matrix<2, 2, Number>>(
+    const Core::LinAlg::Matrix<2, 1, Number>&)>
 MIXTURE::FullConstrainedMixtureFiber<Number>::get_local_newton_evaluator() const
 {
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
@@ -497,7 +499,7 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::get_local_newton_evaluator() const
               *fiber_material_, lambda_pre_ * current_state_.lambda_f) +
       IntegrateOverDepositionHistory<Number>(history_, current_scaled_cauchy_stress_integrand);
 
-  return [=](const CORE::LINALG::Matrix<2, 1, Number>& growth_scalar_and_cauchy_stress)
+  return [=](const Core::LinAlg::Matrix<2, 1, Number>& growth_scalar_and_cauchy_stress)
   {
     const Number growth_scalar = growth_scalar_and_cauchy_stress(0);
     const Number cauchy_stress = growth_scalar_and_cauchy_stress(1);
@@ -534,11 +536,11 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::get_local_newton_evaluator() const
         dmy_scaled_cauchy_stress_dintegrand *
         current_dscaled_cauchy_stress_integrand_dgrowth_scalar(current_increment);
 
-    CORE::LINALG::Matrix<2, 1, Number> residua;
+    Core::LinAlg::Matrix<2, 1, Number> residua;
     residua(0) = my_growth_scalar - growth_scalar;
     residua(1) = my_scaled_cauchy_stress / growth_scalar - cauchy_stress;
 
-    CORE::LINALG::Matrix<2, 2, Number> derivative;
+    Core::LinAlg::Matrix<2, 2, Number> derivative;
     derivative(0, 0) =
         dmy_growth_scalar_dgrowth_scalar - 1.0;  // d residuum growth scalar d growth scalar
     derivative(0, 1) = dmy_growth_scalar_dsig;   // d residuum growth scalar d sig
@@ -675,10 +677,10 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::compute_internal_variables()
   constexpr auto tolerance = 1e-10;
   constexpr auto max_iterations = 500;
 
-  CORE::LINALG::Matrix<2, 1, Number> initial_guess;
+  Core::LinAlg::Matrix<2, 1, Number> initial_guess;
   initial_guess(0) = computed_growth_scalar_;
   initial_guess(1) = computed_sigma_;
-  auto [growth_scalar_and_sigma, K] = CORE::UTILS::SolveLocalNewtonAndReturnJacobian(
+  auto [growth_scalar_and_sigma, K] = Core::UTILS::SolveLocalNewtonAndReturnJacobian(
       EvaluateCurrentLocalNewtonLinearSystem, initial_guess, tolerance, max_iterations);
 
   computed_growth_scalar_ = growth_scalar_and_sigma(0);
@@ -860,7 +862,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::Update()
                           }
 
                           return std::abs(
-                              CORE::UTILS::IntegrateSimpsonStep(values[0], values[2], values[4]) -
+                              Core::UTILS::IntegrateSimpsonStep(values[0], values[2], values[4]) -
                               IntegrateBooleStep(values));
                         };
 

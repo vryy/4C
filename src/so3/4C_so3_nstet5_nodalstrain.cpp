@@ -32,29 +32,29 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::element_deformation_gradient(DRT::Discretization& dis)
+void Discret::ELEMENTS::NStet5Type::element_deformation_gradient(Discret::Discretization& dis)
 {
   // current displacement
   Teuchos::RCP<const Epetra_Vector> disp = dis.GetState("displacement");
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
   // loop elements
-  std::map<int, DRT::ELEMENTS::NStet5*>::iterator ele;
+  std::map<int, Discret::ELEMENTS::NStet5*>::iterator ele;
   for (ele = elecids_.begin(); ele != elecids_.end(); ++ele)
   {
-    DRT::ELEMENTS::NStet5* e = ele->second;
+    Discret::ELEMENTS::NStet5* e = ele->second;
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
     e->LocationVector(dis, lm, lmowner, lmstride);
     std::vector<double> mydisp(lm.size());
-    CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+    Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
     //------------------------------------subelement F
-    CORE::LINALG::Matrix<5, 3> subdisp(false);
+    Core::LinAlg::Matrix<5, 3> subdisp(false);
     for (int j = 0; j < 3; ++j)
       for (int i = 0; i < 5; ++i) subdisp(i, j) = mydisp[i * 3 + j];
 
-    CORE::LINALG::Matrix<4, 3> disp(false);
+    Core::LinAlg::Matrix<4, 3> disp(false);
     for (int k = 0; k < 4; ++k)  // subelement k
     {
       for (int i = 0; i < 4; ++i)
@@ -74,13 +74,13 @@ void DRT::ELEMENTS::NStet5Type::element_deformation_gradient(DRT::Discretization
 /*----------------------------------------------------------------------*
  |  pre-evaluation of elements (public)                        gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+void Discret::ELEMENTS::NStet5Type::pre_evaluate(Discret::Discretization& dis,
+    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::pre_evaluate");
+  TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::NStet5Type::pre_evaluate");
 
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates/mass matrix)
@@ -111,8 +111,8 @@ void DRT::ELEMENTS::NStet5Type::pre_evaluate(DRT::Discretization& dis, Teuchos::
 
   //-----------------------------------------------------------------
   // nodal stiffness and force (we don't do mass here)
-  CORE::LINALG::SerialDenseMatrix stiff;
-  CORE::LINALG::SerialDenseVector force;
+  Core::LinAlg::SerialDenseMatrix stiff;
+  Core::LinAlg::SerialDenseVector force;
 
   //-------------------------------------- construct F for each NStet5
   element_deformation_gradient(dis);
@@ -124,12 +124,12 @@ void DRT::ELEMENTS::NStet5Type::pre_evaluate(DRT::Discretization& dis, Teuchos::
   const Epetra_Map* dmap = nullptr;
 
   Teuchos::RCP<Epetra_FECrsMatrix> stifftmp;
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix;
   if (systemmatrix1 != Teuchos::null)
   {
     rmap = &(systemmatrix1->OperatorRangeMap());
     dmap = rmap;
-    systemmatrix = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(systemmatrix1);
+    systemmatrix = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(systemmatrix1);
     if (systemmatrix != Teuchos::null && systemmatrix->Filled())
       stifftmp =
           Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, systemmatrix->EpetraMatrix()->Graph()));
@@ -154,16 +154,16 @@ void DRT::ELEMENTS::NStet5Type::pre_evaluate(DRT::Discretization& dis, Teuchos::
   Teuchos::RCP<const Epetra_Vector> disp = dis.GetState("displacement");
 
   //================================================== do nodal stiffness
-  std::map<int, CORE::Nodes::Node*>::iterator node;
+  std::map<int, Core::Nodes::Node*>::iterator node;
   for (node = noderids_.begin(); node != noderids_.end(); ++node)
   {
-    CORE::Nodes::Node* nodeL = node->second;  // row node
+    Core::Nodes::Node* nodeL = node->second;  // row node
     const int nodeLid = nodeL->Id();
 
     // standard quantities for all nodes
-    std::vector<DRT::ELEMENTS::NStet5*>& adjele = adjele_[nodeLid];
+    std::vector<Discret::ELEMENTS::NStet5*>& adjele = adjele_[nodeLid];
     std::map<int, std::vector<int>>& adjsubele = adjsubele_[nodeLid];
-    std::map<int, CORE::Nodes::Node*>& adjnode = adjnode_[nodeLid];
+    std::map<int, Core::Nodes::Node*>& adjnode = adjnode_[nodeLid];
     std::vector<int>& lm = adjlm_[nodeLid];
     std::vector<std::vector<std::vector<int>>>& lmlm = lmlm_[nodeLid];
     const auto ndofperpatch = (int)lm.size();
@@ -174,18 +174,18 @@ void DRT::ELEMENTS::NStet5Type::pre_evaluate(DRT::Discretization& dis, Teuchos::
       // do nodal integration of stiffness and internal force
       stiff.shape(ndofperpatch, ndofperpatch);
       force.size(ndofperpatch);
-      CORE::LINALG::SerialDenseMatrix* stiffptr = &stiff;
+      Core::LinAlg::SerialDenseMatrix* stiffptr = &stiff;
       if (action == "calc_struct_internalforce") stiffptr = nullptr;
-      TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::nodal_integration");
+      TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::NStet5Type::nodal_integration");
       nodal_integration(stiffptr, &force, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis, nullptr,
-          nullptr, INPAR::STR::stress_none, INPAR::STR::strain_none);
+          nullptr, Inpar::STR::stress_none, Inpar::STR::strain_none);
     }
     else if (action == "calc_struct_stress")
     {
       auto iostress =
-          CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(p, "iostress", INPAR::STR::stress_none);
+          Core::UTILS::GetAsEnum<Inpar::STR::StressType>(p, "iostress", Inpar::STR::stress_none);
       auto iostrain =
-          CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(p, "iostrain", INPAR::STR::strain_none);
+          Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(p, "iostrain", Inpar::STR::strain_none);
       std::vector<double> nodalstress(6);
       std::vector<double> nodalstrain(6);
       nodal_integration(nullptr, nullptr, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis,
@@ -212,7 +212,7 @@ void DRT::ELEMENTS::NStet5Type::pre_evaluate(DRT::Discretization& dis, Teuchos::
 
     if (assemblemat1)
     {
-      TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::pre_evaluate Assembly");
+      TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::NStet5Type::pre_evaluate Assembly");
       std::vector<int> lrlm;
       std::vector<int> lclm;
 
@@ -321,10 +321,10 @@ void DRT::ELEMENTS::NStet5Type::pre_evaluate(DRT::Discretization& dis, Teuchos::
     // so they can be written by the elements
     Teuchos::RCP<Epetra_MultiVector> tmp =
         Teuchos::rcp(new Epetra_MultiVector(*dis.NodeColMap(), 6, false));
-    CORE::LINALG::Export(*nstress_, *tmp);
+    Core::LinAlg::Export(*nstress_, *tmp);
     nstress_ = tmp;
     tmp = Teuchos::rcp(new Epetra_MultiVector(*dis.NodeColMap(), 6, false));
-    CORE::LINALG::Export(*nstrain_, *tmp);
+    Core::LinAlg::Export(*nstrain_, *tmp);
     nstrain_ = tmp;
   }
 
@@ -388,15 +388,15 @@ void DRT::ELEMENTS::NStet5Type::pre_evaluate(DRT::Discretization& dis, Teuchos::
 /*----------------------------------------------------------------------*
  |  do nodal integration (public)                              gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatrix* stiff,
-    CORE::LINALG::SerialDenseVector* force, std::map<int, CORE::Nodes::Node*>& adjnode,
-    std::vector<DRT::ELEMENTS::NStet5*>& adjele, std::map<int, std::vector<int>>& adjsubele,
+void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseMatrix* stiff,
+    Core::LinAlg::SerialDenseVector* force, std::map<int, Core::Nodes::Node*>& adjnode,
+    std::vector<Discret::ELEMENTS::NStet5*>& adjele, std::map<int, std::vector<int>>& adjsubele,
     std::vector<int>& lm, std::vector<std::vector<std::vector<int>>>& lmlm,
-    const Epetra_Vector& disp, DRT::Discretization& dis, std::vector<double>* nodalstress,
-    std::vector<double>* nodalstrain, const INPAR::STR::StressType iostress,
-    const INPAR::STR::StrainType iostrain)
+    const Epetra_Vector& disp, Discret::Discretization& dis, std::vector<double>* nodalstress,
+    std::vector<double>* nodalstrain, const Inpar::STR::StressType iostress,
+    const Inpar::STR::StrainType iostrain)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::nodal_integration");
+  TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::NStet5Type::nodal_integration");
   //  typedef Sacado::Fad::DFad<double> FAD; // for first derivs
   //  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> > FADFAD; // for second derivs
 
@@ -433,19 +433,19 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
   //-----------------------------------------------------------------------
   // build averaged F and volume of node
   double Vnode = 0.0;
-  CORE::LINALG::Matrix<3, 3> Fnode(true);
-  //  CORE::LINALG::Matrix<3,3,FADFAD> tFnode(true);
+  Core::LinAlg::Matrix<3, 3> Fnode(true);
+  //  Core::LinAlg::Matrix<3,3,FADFAD> tFnode(true);
 
   for (int i = 0; i < neleinpatch; ++i)
   {
-    DRT::ELEMENTS::NStet5* ele = adjele[i];
+    Discret::ELEMENTS::NStet5* ele = adjele[i];
     std::vector<int>& subele = adjsubele[ele->Id()];
 
     for (int subeleid : subele)
     {
       // copy subelement displacements to 4x3 format
-      //      CORE::LINALG::Matrix<4,3> eledispmat(false);
-      //      CORE::LINALG::Matrix<4,3,FADFAD> teledispmat(false);
+      //      Core::LinAlg::Matrix<4,3> eledispmat(false);
+      //      Core::LinAlg::Matrix<4,3,FADFAD> teledispmat(false);
       //      for (int k=0; k<4; ++k)
       //        for (int l=0; l<3; ++l)
       //        {
@@ -454,10 +454,10 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
       //        }
 
       // build F from this subelement
-      //     CORE::LINALG::Matrix<3,3> F(false);
-      //     CORE::LINALG::Matrix<3,3,FADFAD> tF(true);
+      //     Core::LinAlg::Matrix<3,3> F(false);
+      //     Core::LinAlg::Matrix<3,3,FADFAD> tF(true);
       //     F = ele->BuildF(eledispmat,ele->SubNxyz(subeleid));
-      CORE::LINALG::Matrix<3, 3> F = ele->sub_f(subeleid);
+      Core::LinAlg::Matrix<3, 3> F = ele->sub_f(subeleid);
       //     tF = t_build_f(teledispmat,ele->SubNxyz(subeleid));
 
       // add 1/3 of subelement material volume to this node
@@ -481,14 +481,14 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
   //-----------------------------------------------------------------------
   // build B operator
 
-  CORE::LINALG::SerialDenseMatrix bopbar(6, ndofinpatch);
-  CORE::LINALG::SerialDenseMatrix nxyzbar(9, ndofinpatch);
+  Core::LinAlg::SerialDenseMatrix bopbar(6, ndofinpatch);
+  Core::LinAlg::SerialDenseMatrix nxyzbar(9, ndofinpatch);
 
   // loop elements in patch
   for (int ele = 0; ele < neleinpatch; ++ele)
   {
     // current element
-    DRT::ELEMENTS::NStet5* actele = adjele[ele];
+    Discret::ELEMENTS::NStet5* actele = adjele[ele];
     std::vector<int>& subele = adjsubele[actele->Id()];
     // loop subelements in this element
     for (unsigned j = 0; j < subele.size(); ++j)
@@ -498,7 +498,7 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
       V = V / Vnode;
 
       // get derivatives with respect to X
-      const CORE::LINALG::Matrix<4, 3>& nxyz = actele->sub_nxyz(subeleid);
+      const Core::LinAlg::Matrix<4, 3>& nxyz = actele->sub_nxyz(subeleid);
       for (int k = 0; k < 4; ++k)
       {
         for (int l = 0; l < 3; ++l)
@@ -553,14 +553,14 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
   //-------------------------------------------------------------- averaged strain
   // right cauchy green
 
-  CORE::LINALG::Matrix<3, 3> cauchygreen;
-  //  CORE::LINALG::Matrix<3,3,FADFAD> tcauchygreen;
+  Core::LinAlg::Matrix<3, 3> cauchygreen;
+  //  Core::LinAlg::Matrix<3,3,FADFAD> tcauchygreen;
   cauchygreen.MultiplyTN(Fnode, Fnode);
   //  tcauchygreen.MultiplyTN(tFnode,tFnode);
 
   // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-  CORE::LINALG::Matrix<6, 1> glstrain(true);
+  Core::LinAlg::Matrix<6, 1> glstrain(true);
   glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
   glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
   glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -570,7 +570,7 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
 
 
   //-------------------------------------------------------- output of strain
-  if (iostrain != INPAR::STR::strain_none)
+  if (iostrain != Inpar::STR::strain_none)
   {
 #ifndef PUSO_NSTET5
     strain_output(iostrain, *nodalstrain, Fnode, Fnode.Determinant(), 1.0, 1.0 - ALPHA_NSTET5);
@@ -580,38 +580,38 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
   }
 
   //----------------------------------------- averaged material and stresses
-  CORE::LINALG::Matrix<6, 6> cmat(true);
-  CORE::LINALG::Matrix<6, 1> stress(true);
+  Core::LinAlg::Matrix<6, 6> cmat(true);
+  Core::LinAlg::Matrix<6, 1> stress(true);
 
   //-----------------------------------------------------------------------
   // material law
   if (matequal)  // element patch has single material
   {
     double density;  // just a dummy density
-    Teuchos::RCP<CORE::MAT::Material> mat = adjele[0]->Material();
+    Teuchos::RCP<Core::Mat::Material> mat = adjele[0]->Material();
     // EleGID is set to -1 errorcheck is performed in
-    // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
+    // Mat::Evaluate. I.e if we have elementwise mat params you will catch an error
     select_material(mat, stress, cmat, density, glstrain, Fnode, 0, -1);
   }
   else
   {
     double density;  // just a dummy density
-    CORE::LINALG::Matrix<6, 6> cmatele;
-    CORE::LINALG::Matrix<6, 1> stressele;
+    Core::LinAlg::Matrix<6, 6> cmatele;
+    Core::LinAlg::Matrix<6, 1> stressele;
     for (int ele = 0; ele < neleinpatch; ++ele)
     {
       cmatele = 0.0;
       stressele = 0.0;
       // current element
-      DRT::ELEMENTS::NStet5* actele = adjele[ele];
+      Discret::ELEMENTS::NStet5* actele = adjele[ele];
       // volume of that element assigned to node L
       double V = 0.0;
       for (unsigned j = 0; j < adjsubele[actele->Id()].size(); ++j)
         V += (actele->sub_v(adjsubele[actele->Id()][j]) / 3.0);
       // material of the element
-      Teuchos::RCP<CORE::MAT::Material> mat = actele->Material();
+      Teuchos::RCP<Core::Mat::Material> mat = actele->Material();
       // EleGID is set to -1 errorcheck is performed in
-      // MAT::Evaluate. I.e if we have elementwise mat params you will catch an error
+      // Mat::Evaluate. I.e if we have elementwise mat params you will catch an error
       select_material(mat, stressele, cmatele, density, glstrain, Fnode, 0, -1);
       cmat.Update(V, cmatele, 1.0);
       stress.Update(V, stressele, 1.0);
@@ -625,10 +625,10 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
   // stress = vol_node + (1-alpha) * dev_node + alpha * dev_ele
 #ifndef PUSO_NSTET5
   {
-    CORE::LINALG::Matrix<6, 1> stressdev(true);
-    CORE::LINALG::Matrix<6, 6> cmatdev(true);
-    CORE::LINALG::Matrix<6, 1> stressvol(true);
-    CORE::LINALG::Matrix<6, 6> cmatvol(true);
+    Core::LinAlg::Matrix<6, 1> stressdev(true);
+    Core::LinAlg::Matrix<6, 6> cmatdev(true);
+    Core::LinAlg::Matrix<6, 1> stressvol(true);
+    Core::LinAlg::Matrix<6, 6> cmatvol(true);
 
     // compute deviatoric stress and tangent from total stress and tangent
     dev_stress_tangent(stressdev, cmatdev, cmat, stress, cauchygreen);
@@ -649,24 +649,24 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
 #endif
   //-----------------------------------------------------------------------
   // stress output
-  if (iostress != INPAR::STR::stress_none)
+  if (iostress != Inpar::STR::stress_none)
   {
     stress_output(iostress, *nodalstress, stress, Fnode, Fnode.Determinant());
   }
   //----------------------------------------------------- internal forces
   if (force)
   {
-    CORE::LINALG::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.numRows());
-    CORE::LINALG::multiplyTN(0.0, *force, Vnode, bopbar, stress_epetra);
+    Core::LinAlg::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.numRows());
+    Core::LinAlg::multiplyTN(0.0, *force, Vnode, bopbar, stress_epetra);
   }
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
-    CORE::LINALG::SerialDenseMatrix cmat_epetra(
+    Core::LinAlg::SerialDenseMatrix cmat_epetra(
         Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
-    CORE::LINALG::SerialDenseMatrix cb(6, ndofinpatch);
-    CORE::LINALG::multiply(cb, cmat_epetra, bopbar);
-    CORE::LINALG::multiplyTN(0.0, *stiff, Vnode, bopbar, cb);
+    Core::LinAlg::SerialDenseMatrix cb(6, ndofinpatch);
+    Core::LinAlg::multiply(cb, cmat_epetra, bopbar);
+    Core::LinAlg::multiplyTN(0.0, *stiff, Vnode, bopbar, cb);
   }
 
   //----------------------------------------------------- geom. stiffness
@@ -674,7 +674,7 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
   {
     if (!force) FOUR_C_THROW("Cannot compute stiffness matrix without computing internal force");
 
-    CORE::LINALG::SerialDenseMatrix kg(ndofinpatch, ndofinpatch, true);
+    Core::LinAlg::SerialDenseMatrix kg(ndofinpatch, ndofinpatch, true);
     for (int m = 0; m < ndofinpatch; ++m)
     {
       for (int n = 0; n < ndofinpatch; ++n)
@@ -706,34 +706,34 @@ void DRT::ELEMENTS::NStet5Type::nodal_integration(CORE::LINALG::SerialDenseMatri
 /*----------------------------------------------------------------------*
  | material laws for NStet5 (protected)                        gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::select_material(const Teuchos::RCP<CORE::MAT::Material>& mat,
-    CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat, double& density,
-    CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& defgrd, const int gp,
+void Discret::ELEMENTS::NStet5Type::select_material(const Teuchos::RCP<Core::Mat::Material>& mat,
+    Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmat, double& density,
+    Core::LinAlg::Matrix<6, 1>& glstrain, Core::LinAlg::Matrix<3, 3>& defgrd, const int gp,
     const int eleGID)
 {
   switch (mat->MaterialType())
   {
-    case CORE::Materials::m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    case Core::Materials::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
-      auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(mat.get());
+      auto* stvk = dynamic_cast<Mat::StVenantKirchhoff*>(mat.get());
       Teuchos::ParameterList params;
-      CORE::LINALG::Matrix<3, 3> defgrd(true);
+      Core::LinAlg::Matrix<3, 3> defgrd(true);
       stvk->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = stvk->Density();
     }
     break;
-    case CORE::Materials::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
+    case Core::Materials::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
                                        Raghavan, Vorp */
     {
-      auto* aaa = dynamic_cast<MAT::AAAneohooke*>(mat.get());
+      auto* aaa = dynamic_cast<Mat::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
       aaa->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = aaa->Density();
     }
     break;
-    case CORE::Materials::m_elasthyper: /*----------- general hyperelastic matrial */
+    case Core::Materials::m_elasthyper: /*----------- general hyperelastic matrial */
     {
-      auto* hyper = dynamic_cast<MAT::ElastHyper*>(mat.get());
+      auto* hyper = dynamic_cast<Mat::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
       hyper->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = hyper->Density();
@@ -747,24 +747,24 @@ void DRT::ELEMENTS::NStet5Type::select_material(const Teuchos::RCP<CORE::MAT::Ma
 
   /*--------------------------------------------------------------------*/
   return;
-}  // DRT::ELEMENTS::NStet5::select_material
+}  // Discret::ELEMENTS::NStet5::select_material
 
 /*----------------------------------------------------------------------*
  |  compute deviatoric tangent and stresses (private/static)   gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::dev_stress_tangent(CORE::LINALG::Matrix<6, 1>& Sdev,
-    CORE::LINALG::Matrix<6, 6>& CCdev, CORE::LINALG::Matrix<6, 6>& CC,
-    const CORE::LINALG::Matrix<6, 1>& S, const CORE::LINALG::Matrix<3, 3>& C)
+void Discret::ELEMENTS::NStet5Type::dev_stress_tangent(Core::LinAlg::Matrix<6, 1>& Sdev,
+    Core::LinAlg::Matrix<6, 6>& CCdev, Core::LinAlg::Matrix<6, 6>& CC,
+    const Core::LinAlg::Matrix<6, 1>& S, const Core::LinAlg::Matrix<3, 3>& C)
 {
   //---------------------------------- things that we'll definitely need
   // inverse of C
-  CORE::LINALG::Matrix<3, 3> Cinv;
+  Core::LinAlg::Matrix<3, 3> Cinv;
   const double detC = Cinv.Invert(C);
   // J = det(F) = sqrt(detC)
   const double J = sqrt(detC);
 
   // S as a 3x3 matrix
-  CORE::LINALG::Matrix<3, 3> Smat;
+  Core::LinAlg::Matrix<3, 3> Smat;
   Smat(0, 0) = S(0);
   Smat(0, 1) = S(3);
   Smat(0, 2) = S(5);
@@ -792,18 +792,18 @@ void DRT::ELEMENTS::NStet5Type::dev_stress_tangent(CORE::LINALG::Matrix<6, 1>& S
   Sdev(5) = Smat(0, 2) - fac * Cinv(0, 2);
 
   //======================================== volumetric tangent matrix CCvol
-  CORE::LINALG::Matrix<6, 6> CCvol(true);  // fill with zeros
+  Core::LinAlg::Matrix<6, 6> CCvol(true);  // fill with zeros
 
   //--------------------------------------- CCvol += 2pJ (Cinv boeppel Cinv)
-  MAT::ElastSymTensor_o_Multiply(CCvol, -2.0 * fac, Cinv, Cinv, 0.0);
+  Mat::ElastSymTensor_o_Multiply(CCvol, -2.0 * fac, Cinv, Cinv, 0.0);
 
   //------------------------------------------ CCvol += 2/3 * Cinv dyad S
-  MAT::ElastSymTensorMultiply(CCvol, 2.0 / 3.0, Cinv, Smat, 1.0);
+  Mat::ElastSymTensorMultiply(CCvol, 2.0 / 3.0, Cinv, Smat, 1.0);
 
   //-------------------------------------- CCvol += 1/3 Cinv dyad ( CC : C )
   {
     // C as Voigt vector
-    CORE::LINALG::Matrix<6, 1> Cvec;
+    Core::LinAlg::Matrix<6, 1> Cvec;
     Cvec(0) = C(0, 0);
     Cvec(1) = C(1, 1);
     Cvec(2) = C(2, 2);
@@ -811,10 +811,10 @@ void DRT::ELEMENTS::NStet5Type::dev_stress_tangent(CORE::LINALG::Matrix<6, 1>& S
     Cvec(4) = 2.0 * C(1, 2);
     Cvec(5) = 2.0 * C(0, 2);
 
-    CORE::LINALG::Matrix<6, 1> CCcolonC;
+    Core::LinAlg::Matrix<6, 1> CCcolonC;
     CCcolonC.Multiply(CC, Cvec);
 
-    CORE::LINALG::Matrix<3, 3> CCcC;
+    Core::LinAlg::Matrix<3, 3> CCcC;
     CCcC(0, 0) = CCcolonC(0);
     CCcC(0, 1) = CCcolonC(3);
     CCcC(0, 2) = CCcolonC(5);
@@ -824,7 +824,7 @@ void DRT::ELEMENTS::NStet5Type::dev_stress_tangent(CORE::LINALG::Matrix<6, 1>& S
     CCcC(2, 0) = CCcC(0, 2);
     CCcC(2, 1) = CCcC(1, 2);
     CCcC(2, 2) = CCcolonC(2);
-    MAT::ElastSymTensorMultiply(CCvol, 1. / 3., Cinv, CCcC, 1.0);
+    Mat::ElastSymTensorMultiply(CCvol, 1. / 3., Cinv, CCcC, 1.0);
   }
 
   //----------------------------------------------------- CCdev = CC - CCvol
@@ -836,26 +836,26 @@ void DRT::ELEMENTS::NStet5Type::dev_stress_tangent(CORE::LINALG::Matrix<6, 1>& S
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostrain,
-    std::vector<double>& nodalstrain, CORE::LINALG::Matrix<3, 3>& F, const double& detF,
+void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType iostrain,
+    std::vector<double>& nodalstrain, Core::LinAlg::Matrix<3, 3>& F, const double& detF,
     const double volweight, const double devweight)
 {
-  CORE::LINALG::Matrix<3, 3> Fiso = F;
+  Core::LinAlg::Matrix<3, 3> Fiso = F;
   Fiso.Scale(pow(detF, -1.0 / 3.0));
 
-  CORE::LINALG::Matrix<3, 3> Fvol(true);
+  Core::LinAlg::Matrix<3, 3> Fvol(true);
   Fvol(0, 0) = 1.0;
   Fvol(1, 1) = 1.0;
   Fvol(2, 2) = 1.0;
   Fvol.Scale(pow(detF, 1.0 / 3.0));
 
-  CORE::LINALG::Matrix<3, 3> cauchygreeniso(false);
+  Core::LinAlg::Matrix<3, 3> cauchygreeniso(false);
   cauchygreeniso.MultiplyTN(Fiso, Fiso);
 
-  CORE::LINALG::Matrix<3, 3> cauchygreenvol(false);
+  Core::LinAlg::Matrix<3, 3> cauchygreenvol(false);
   cauchygreenvol.MultiplyTN(Fvol, Fvol);
 
-  CORE::LINALG::Matrix<3, 3> glstrainiso(false);
+  Core::LinAlg::Matrix<3, 3> glstrainiso(false);
   glstrainiso(0, 0) = 0.5 * (cauchygreeniso(0, 0) - 1.0);
   glstrainiso(0, 1) = 0.5 * cauchygreeniso(0, 1);
   glstrainiso(0, 2) = 0.5 * cauchygreeniso(0, 2);
@@ -866,7 +866,7 @@ void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostr
   glstrainiso(2, 1) = glstrainiso(1, 2);
   glstrainiso(2, 2) = 0.5 * (cauchygreeniso(2, 2) - 1.0);
 
-  CORE::LINALG::Matrix<3, 3> glstrainvol(false);
+  Core::LinAlg::Matrix<3, 3> glstrainvol(false);
   glstrainvol(0, 0) = 0.5 * (cauchygreenvol(0, 0) - 1.0);
   glstrainvol(0, 1) = 0.5 * cauchygreenvol(0, 1);
   glstrainvol(0, 2) = 0.5 * cauchygreenvol(0, 2);
@@ -877,12 +877,12 @@ void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostr
   glstrainvol(2, 1) = glstrainvol(1, 2);
   glstrainvol(2, 2) = 0.5 * (cauchygreenvol(2, 2) - 1.0);
 
-  CORE::LINALG::Matrix<3, 3> glstrainout = glstrainiso;
+  Core::LinAlg::Matrix<3, 3> glstrainout = glstrainiso;
   glstrainout.Update(volweight, glstrainvol, devweight);
 
   switch (iostrain)
   {
-    case INPAR::STR::strain_gl:
+    case Inpar::STR::strain_gl:
     {
       nodalstrain[0] = glstrainout(0, 0);
       nodalstrain[1] = glstrainout(1, 1);
@@ -892,13 +892,13 @@ void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostr
       nodalstrain[5] = glstrainout(0, 2);
     }
     break;
-    case INPAR::STR::strain_ea:
+    case Inpar::STR::strain_ea:
     {
       // inverse of deformation gradient
-      CORE::LINALG::Matrix<3, 3> invdefgrd;
+      Core::LinAlg::Matrix<3, 3> invdefgrd;
       invdefgrd.Invert(F);
-      CORE::LINALG::Matrix<3, 3> temp;
-      CORE::LINALG::Matrix<3, 3> euler_almansi;
+      Core::LinAlg::Matrix<3, 3> temp;
+      Core::LinAlg::Matrix<3, 3> euler_almansi;
       temp.Multiply(glstrainout, invdefgrd);
       euler_almansi.MultiplyTN(invdefgrd, temp);
       nodalstrain[0] = euler_almansi(0, 0);
@@ -909,7 +909,7 @@ void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostr
       nodalstrain[5] = euler_almansi(0, 2);
     }
     break;
-    case INPAR::STR::strain_none:
+    case Inpar::STR::strain_none:
       break;
     default:
       FOUR_C_THROW("requested strain type not available");
@@ -922,11 +922,11 @@ void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostr
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostrain,
-    std::vector<double>& nodalstrain, CORE::LINALG::Matrix<3, 3>& F,
-    CORE::LINALG::Matrix<6, 1>& glstrain, const double weight)
+void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType iostrain,
+    std::vector<double>& nodalstrain, Core::LinAlg::Matrix<3, 3>& F,
+    Core::LinAlg::Matrix<6, 1>& glstrain, const double weight)
 {
-  CORE::LINALG::Matrix<3, 3> glstrainout;
+  Core::LinAlg::Matrix<3, 3> glstrainout;
 
   glstrainout(0, 0) = weight * glstrain(0);
   glstrainout(1, 1) = weight * glstrain(1);
@@ -938,7 +938,7 @@ void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostr
 
   switch (iostrain)
   {
-    case INPAR::STR::strain_gl:
+    case Inpar::STR::strain_gl:
     {
       nodalstrain[0] = glstrainout(0, 0);
       nodalstrain[1] = glstrainout(1, 1);
@@ -948,13 +948,13 @@ void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostr
       nodalstrain[5] = glstrainout(0, 2);
     }
     break;
-    case INPAR::STR::strain_ea:
+    case Inpar::STR::strain_ea:
     {
       // inverse of deformation gradient
-      CORE::LINALG::Matrix<3, 3> invdefgrd;
+      Core::LinAlg::Matrix<3, 3> invdefgrd;
       invdefgrd.Invert(F);
-      CORE::LINALG::Matrix<3, 3> temp;
-      CORE::LINALG::Matrix<3, 3> euler_almansi;
+      Core::LinAlg::Matrix<3, 3> temp;
+      Core::LinAlg::Matrix<3, 3> euler_almansi;
       temp.Multiply(glstrainout, invdefgrd);
       euler_almansi.MultiplyTN(invdefgrd, temp);
       nodalstrain[0] = euler_almansi(0, 0);
@@ -965,7 +965,7 @@ void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostr
       nodalstrain[5] = euler_almansi(0, 2);
     }
     break;
-    case INPAR::STR::strain_none:
+    case Inpar::STR::strain_none:
       break;
     default:
       FOUR_C_THROW("requested strain type not available");
@@ -978,20 +978,20 @@ void DRT::ELEMENTS::NStet5Type::strain_output(const INPAR::STR::StrainType iostr
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::stress_output(const INPAR::STR::StressType iostress,
-    std::vector<double>& nodalstress, CORE::LINALG::Matrix<6, 1>& stress,
-    CORE::LINALG::Matrix<3, 3>& F, const double& detF)
+void Discret::ELEMENTS::NStet5Type::stress_output(const Inpar::STR::StressType iostress,
+    std::vector<double>& nodalstress, Core::LinAlg::Matrix<6, 1>& stress,
+    Core::LinAlg::Matrix<3, 3>& F, const double& detF)
 {
   switch (iostress)
   {
-    case INPAR::STR::stress_2pk:
+    case Inpar::STR::stress_2pk:
     {
       for (int i = 0; i < 6; ++i) nodalstress[i] = stress(i);
     }
     break;
-    case INPAR::STR::stress_cauchy:
+    case Inpar::STR::stress_cauchy:
     {
-      CORE::LINALG::Matrix<3, 3> pkstress;
+      Core::LinAlg::Matrix<3, 3> pkstress;
       pkstress(0, 0) = stress(0);
       pkstress(0, 1) = stress(3);
       pkstress(0, 2) = stress(5);
@@ -1001,8 +1001,8 @@ void DRT::ELEMENTS::NStet5Type::stress_output(const INPAR::STR::StressType iostr
       pkstress(2, 0) = pkstress(0, 2);
       pkstress(2, 1) = pkstress(1, 2);
       pkstress(2, 2) = stress(2);
-      CORE::LINALG::Matrix<3, 3> temp;
-      CORE::LINALG::Matrix<3, 3> cauchystress;
+      Core::LinAlg::Matrix<3, 3> temp;
+      Core::LinAlg::Matrix<3, 3> cauchystress;
       temp.Multiply(1.0 / detF, F, pkstress);
       cauchystress.MultiplyNT(temp, F);
       nodalstress[0] = cauchystress(0, 0);
@@ -1013,7 +1013,7 @@ void DRT::ELEMENTS::NStet5Type::stress_output(const INPAR::STR::StressType iostr
       nodalstress[5] = cauchystress(0, 2);
     }
     break;
-    case INPAR::STR::stress_none:
+    case Inpar::STR::stress_none:
       break;
     default:
       FOUR_C_THROW("requested stress type not available");

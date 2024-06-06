@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 void CONTACT::NitscheStrategyFsi::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
 {
   if (predictor) return;
@@ -28,10 +28,10 @@ void CONTACT::NitscheStrategyFsi::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
 }
 
 void CONTACT::NitscheStrategyFsi::set_state(
-    const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
+    const enum Mortar::StateType& statename, const Epetra_Vector& vec)
 {
   CONTACT::NitscheStrategy::set_state(statename, vec);
-  if (statename == MORTAR::state_new_displacement)
+  if (statename == Mortar::state_new_displacement)
   {
     do_contact_search();
   }
@@ -49,15 +49,15 @@ void CONTACT::NitscheStrategyFsi::do_contact_search()
 }
 
 bool CONTACT::NitscheStrategyFsi::check_nitsche_contact_state(CONTACT::Element* cele,
-    const CORE::LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
+    const Core::LinAlg::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
   return CONTACT::UTILS::check_nitsche_contact_state(
       *ContactInterfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
 }
 
 bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinterface,
-    const double& pen_n, INPAR::CONTACT::NitscheWeighting weighting, CONTACT::Element* cele,
-    const CORE::LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
+    const double& pen_n, Inpar::CONTACT::NitscheWeighting weighting, CONTACT::Element* cele,
+    const Core::LinAlg::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
   // No master elements found
   if (!cele->MoData().NumSearchElements())
@@ -65,8 +65,8 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
     gap = 1.e12;
     return true;
   }
-  if (!(cele->Shape() == CORE::FE::CellType::quad4 || cele->Shape() == CORE::FE::CellType::quad8 ||
-          cele->Shape() == CORE::FE::CellType::quad9))
+  if (!(cele->Shape() == Core::FE::CellType::quad4 || cele->Shape() == Core::FE::CellType::quad8 ||
+          cele->Shape() == Core::FE::CellType::quad9))
     FOUR_C_THROW("This element shape is not yet implemented!");
 
   // find the corresponding master element
@@ -84,14 +84,14 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
     if (!test_ele)
       FOUR_C_THROW("Cannot find element with gid %d", cele->MoData().SearchElements()[m]);
 
-    MORTAR::Projector::Impl(*cele, *test_ele)
+    Mortar::Projector::Impl(*cele, *test_ele)
         ->ProjectGaussPoint3D(*cele, xsi.A(), *test_ele, mxi, projalpha);
     bool is_inside = false;
     switch (test_ele->Shape())
     {
-      case CORE::FE::CellType::quad4:
-      case CORE::FE::CellType::quad8:
-      case CORE::FE::CellType::quad9:
+      case Core::FE::CellType::quad4:
+      case Core::FE::CellType::quad8:
+      case Core::FE::CellType::quad9:
         if (abs(mxi[0]) < 1. + tol && abs(mxi[1]) < 1. + tol) is_inside = true;
         break;
       default:
@@ -102,7 +102,7 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
     if (other_cele)
     {
       double center[2] = {0., 0.};
-      CORE::LINALG::Matrix<3, 1> sc, mc;
+      Core::LinAlg::Matrix<3, 1> sc, mc;
       cele->LocalToGlobal(center, sc.A(), 0);
       other_cele->LocalToGlobal(center, mc.A(), 0);
       near = 2. * std::max(cele->MaxEdgeSize(), other_cele->MaxEdgeSize());
@@ -114,7 +114,7 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
   if (other_cele)
   {
     double center[2] = {0., 0.};
-    CORE::LINALG::Matrix<3, 1> sn, mn;
+    Core::LinAlg::Matrix<3, 1> sn, mn;
     cele->compute_unit_normal_at_xi(center, sn.A());
     other_cele->compute_unit_normal_at_xi(center, mn.A());
     if (sn.Dot(mn) > 0.) other_cele = nullptr;
@@ -126,20 +126,20 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
     return true;
   }
 
-  CORE::LINALG::Matrix<2, 1> mxi_m(mxi, true);
+  Core::LinAlg::Matrix<2, 1> mxi_m(mxi, true);
   double mx_glob[3];
   double sx_glob[3];
   cele->LocalToGlobal(xsi.A(), sx_glob, 0);
   other_cele->LocalToGlobal(mxi, mx_glob, 0);
-  CORE::LINALG::Matrix<3, 1> mx(mx_glob, true);
-  CORE::LINALG::Matrix<3, 1> sx(sx_glob, true);
+  Core::LinAlg::Matrix<3, 1> mx(mx_glob, true);
+  Core::LinAlg::Matrix<3, 1> sx(sx_glob, true);
 
-  CORE::LINALG::Matrix<3, 1> n(mx);
+  Core::LinAlg::Matrix<3, 1> n(mx);
   n.Update(-1., sx, 1.);
-  CORE::LINALG::Matrix<3, 1> diff(n);
+  Core::LinAlg::Matrix<3, 1> diff(n);
   n.Scale(1. / n.Norm2());
   gap = diff.Dot(n);
-  CORE::LINALG::Matrix<3, 1> myN;
+  Core::LinAlg::Matrix<3, 1> myN;
   cele->compute_unit_normal_at_xi(xsi.A(), myN.A());
   double dir = n.Dot(myN);
   if (dir > 0)
@@ -162,7 +162,7 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
   CONTACT::UTILS::NitscheWeightsAndScaling(
       *cele, *other_cele, weighting, 1., ws, wm, my_pen, my_pen_t);
 
-  CORE::LINALG::Matrix<3, 1> ele_n;
+  Core::LinAlg::Matrix<3, 1> ele_n;
   cele->compute_unit_normal_at_xi(xsi.A(), ele_n.A());
 
   double stress_plus_penalty =

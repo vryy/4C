@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace StatusTest
     {
@@ -41,7 +41,7 @@ namespace NOX
 
        Nevertheless, I want to give you the possibility to check the absolute and relative norm
        of the solution increment corresponding to the different quantities as well. This class is
-       leaned on the NOX::NLN::StatusTest::NormF and NOX::NLN::StatusTest::NormWRMS test and has
+       leaned on the NOX::Nln::StatusTest::NormF and NOX::Nln::StatusTest::NormWRMS test and has
        an equivalent structure. It is capable to handle a std::vector of increment norms. In this
        way it's easily possible to check the norms of different quantities at once in a very
        general way.
@@ -75,7 +75,7 @@ namespace NOX
 
        public:
         //! Constructor.
-        NormUpdate(const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
+        NormUpdate(const std::vector<NOX::Nln::StatusTest::QuantityType>& checkList,
             const std::vector<NormUpdate::ToleranceType>& toltype,
             const std::vector<double>& tolerance,
             const std::vector<::NOX::Abstract::Vector::NormType>& ntype,
@@ -88,10 +88,10 @@ namespace NOX
         /*! \brief Returns the norm type as <int> of the desired quantity
          *
          *  If the given quantity cannot be found a default value of -100 is returned. */
-        int GetNormType(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        int GetNormType(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! Check for the given quantity
-        bool IsQuantity(const NOX::NLN::StatusTest::QuantityType& qType) const;
+        bool IsQuantity(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! NOTE: returns the global status of all normF tests
         ::NOX::StatusTest::StatusType getStatus() const override;
@@ -127,7 +127,7 @@ namespace NOX
         double beta_;
 
         //! enums of the quantities we want check
-        std::vector<NOX::NLN::StatusTest::QuantityType> checkList_;
+        std::vector<NOX::Nln::StatusTest::QuantityType> checkList_;
 
         //! global status
         ::NOX::StatusTest::StatusType gStatus_;
@@ -191,7 +191,7 @@ namespace NOX
       {
        public:
         //! Constructor.
-        NormUpdateSkipFirstIter(const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
+        NormUpdateSkipFirstIter(const std::vector<NOX::Nln::StatusTest::QuantityType>& checkList,
             const std::vector<NormUpdate::ToleranceType>& toltype,
             const std::vector<double>& tolerance,
             const std::vector<::NOX::Abstract::Vector::NormType>& ntype,
@@ -208,7 +208,7 @@ namespace NOX
         ::NOX::StatusTest::StatusType check_status_first_iter() override;
       };  // class NormUpdateSkipFirstIter
     }     // namespace StatusTest
-  }       // namespace NLN
+  }       // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

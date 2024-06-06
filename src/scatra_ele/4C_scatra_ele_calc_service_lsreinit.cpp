@@ -23,30 +23,30 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, unsigned probDim>
-int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_action(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, const SCATRA::Action& action,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype, unsigned probDim>
+int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_action(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   const std::vector<int>& lm = la[0].lm_;
 
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::Action::calc_mat_and_rhs_lsreinit_correction_step:
+    case ScaTra::Action::calc_mat_and_rhs_lsreinit_correction_step:
     {
       // extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
 
       //------------------------------------------------------
       // Step 1: precompute element penalty parameter
@@ -75,15 +75,15 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_action(
 
       break;
     }
-    case SCATRA::Action::calc_node_based_reinit_velocity:
+    case ScaTra::Action::calc_node_based_reinit_velocity:
     {
       // extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
 
       // get current direction
       const int dir = params.get<int>("direction");
@@ -107,9 +107,9 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_action(
 /*----------------------------------------------------------------------*
  | setup element evaluation                                  fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, unsigned probDim>
-int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
-    CORE::Elements::Element* ele, DRT::Discretization& discretization)
+template <Core::FE::CellType distype, unsigned probDim>
+int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
+    Core::Elements::Element* ele, Discret::Discretization& discretization)
 {
   // reset all managers to their default values (I feel better this way)
   diff_manager()->Reset();
@@ -130,19 +130,19 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
 /*----------------------------------------------------------------------*
  | calculate system matrix and rhs for correction step  rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correction(
+template <Core::FE::CellType distype, unsigned probDim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correction(
     const double penalty,                   ///< element penalty parameter
-    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
-    CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
+    Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
+    Core::LinAlg::SerialDenseVector& erhs   ///< element rhs to calculate
 )
 {
   //----------------------------------------------------------------------
   // calculation of element volume for characteristic element length
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
-      SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
+      ScaTra::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -153,7 +153,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correction(
   //----------------------------------------------------------------------
 
   // get gradient of initial phi at element center
-  CORE::LINALG::Matrix<nsd_, 1> gradphizero(true);
+  Core::LinAlg::Matrix<nsd_, 1> gradphizero(true);
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
@@ -163,7 +163,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correction(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -183,10 +183,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correction(
 
     // scalar at integration point at time step n+1
     const double phinp = my::funct_.Dot(my::ephinp_[0]);
-    Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
+    Teuchos::rcp_dynamic_cast<
+        Discret::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
         my::scatravarmanager_)
         ->SetPhinp(0, phinp);
-    Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
+    Teuchos::rcp_dynamic_cast<
+        Discret::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
         my::scatravarmanager_)
         ->SetHist(0, 0.0);
 
@@ -218,12 +220,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correction(
 /*-------------------------------------------------------------------------------*
  | calculation of element-wise denominator of penalty parameter  rasthofer 12/13 |
  *-------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalty_parameter(
+template <Core::FE::CellType distype, unsigned probDim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalty_parameter(
     double& penalty)
 {
   // safety check
-  if (lsreinitparams_->SignType() != INPAR::SCATRA::signtype_SussmanFatemi1999)
+  if (lsreinitparams_->SignType() != Inpar::ScaTra::signtype_SussmanFatemi1999)
     FOUR_C_THROW("Penalty method only for smoothed sign function: SussmanFatemi1999!");
 
   // denominator
@@ -235,8 +237,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalty_pa
   // calculation of element volume for characteristic element length
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
-      SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
+      ScaTra::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -247,7 +249,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalty_pa
   //----------------------------------------------------------------------
 
   // get gradient of initial phi at element center
-  CORE::LINALG::Matrix<nsd_, 1> gradphizero(true);
+  Core::LinAlg::Matrix<nsd_, 1> gradphizero(true);
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
@@ -257,7 +259,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalty_pa
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -282,14 +284,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalty_pa
     // get sign function
     double signphi = 0.0;
     // gradient of current scalar
-    CORE::LINALG::Matrix<nsd_, 1> gradphi(true);
+    Core::LinAlg::Matrix<nsd_, 1> gradphi(true);
     gradphi.Multiply(my::derxy_, my::ephinp_[0]);
     // get norm
     const double gradphi_norm = gradphi.Norm2();
     sign_function(signphi, charelelength, phizero, gradphizero, phinp, gradphi);
 
     // get velocity at element center
-    CORE::LINALG::Matrix<nsd_, 1> convelint(true);
+    Core::LinAlg::Matrix<nsd_, 1> convelint(true);
     if (gradphi_norm > 1e-8) convelint.Update(signphi / gradphi_norm, gradphi);
     // convective term
     //    double conv_phi = convelint.Dot(gradphi);
@@ -311,9 +313,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalty_pa
 /*------------------------------------------------------------------- *
  |  calculation of penalty term on rhs                rasthofer 12/13 |
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_rhs_penalty(
-    CORE::LINALG::SerialDenseVector& erhs, const double fac, const double penalty,
+template <Core::FE::CellType distype, unsigned probDim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_rhs_penalty(
+    Core::LinAlg::SerialDenseVector& erhs, const double fac, const double penalty,
     const double deriv_sign, const double norm_gradphizero)
 {
   double vpenalty = fac * my::scatraparatimint_->Dt() * penalty * deriv_sign * norm_gradphizero;
@@ -332,19 +334,19 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_rhs_penalty(
 /*-------------------------------------------------------------------------*
  | calculate system matrix and rhs for velocity projection rasthofer 12/13 |
  *-------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, unsigned probDim>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_vel(
+template <Core::FE::CellType distype, unsigned probDim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_vel(
     const int dir,                          ///< current spatial direction
-    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
-    CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
+    Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
+    Core::LinAlg::SerialDenseVector& erhs   ///< element rhs to calculate
 )
 {
   //----------------------------------------------------------------------
   // calculation of element volume for characteristic element length
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints_center(
-      SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_ele_> intpoints_center(
+      ScaTra::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -355,7 +357,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_vel(
   //----------------------------------------------------------------------
 
   // get gradient of initial phi at element center
-  CORE::LINALG::Matrix<nsd_, 1> gradphizero(true);
+  Core::LinAlg::Matrix<nsd_, 1> gradphizero(true);
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
@@ -365,7 +367,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_vel(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -382,7 +384,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_vel(
     double phinp = 0.0;
     phinp = my::funct_.Dot(my::ephinp_[0]);
     // gradient of current scalar
-    CORE::LINALG::Matrix<nsd_, 1> gradphi(true);
+    Core::LinAlg::Matrix<nsd_, 1> gradphi(true);
     gradphi.Multiply(my::derxy_, my::ephinp_[0]);
     // get norm
     const double gradphi_norm = gradphi.Norm2();
@@ -398,8 +400,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_vel(
     //    }
 
     // get velocity at element center
-    CORE::LINALG::Matrix<nsd_, 1> convelint(true);
-    if (lsreinitparams_->ReinitType() == INPAR::SCATRA::reinitaction_sussman)
+    Core::LinAlg::Matrix<nsd_, 1> convelint(true);
+    if (lsreinitparams_->ReinitType() == Inpar::ScaTra::reinitaction_sussman)
     {
       // get sign function
       double signphi = 0.0;
@@ -431,12 +433,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_vel(
     // distinguish reinitialization
     switch (lsreinitparams_->ReinitType())
     {
-      case INPAR::SCATRA::reinitaction_sussman:
+      case Inpar::ScaTra::reinitaction_sussman:
       {
         my::calc_rhs_hist_and_source(erhs, 0, fac, convelint(dir, 0));
         break;
       }
-      case INPAR::SCATRA::reinitaction_ellipticeq:
+      case Inpar::ScaTra::reinitaction_ellipticeq:
       {
         my::calc_rhs_hist_and_source(erhs, 0, fac, gradphi(dir, 0));
         break;
@@ -474,29 +476,29 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_vel(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::line3, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::line2, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::quad8,2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::nurbs9, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::tri3, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::tri6, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::quad4, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::quad4, 3>;
+// template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::quad8,2>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::quad9, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::hex20,3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::wedge6,3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<CORE::FE::CellType::nurbs27,3>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::hex8, 3>;
+// template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::hex20,3>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::hex27, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::tet4, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::tet10, 3>;
+// template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::wedge6,3>;
+template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::pyramid5, 3>;
+// template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::nurbs27,3>;
 
 FOUR_C_NAMESPACE_CLOSE

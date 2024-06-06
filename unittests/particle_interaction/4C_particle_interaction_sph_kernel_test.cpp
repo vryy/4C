@@ -22,9 +22,9 @@ namespace
   class SPHKernelCubicSplineTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline> kernel_1D_;
-    std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline> kernel_2D_;
-    std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline> kernel_3D_;
+    std::unique_ptr<ParticleInteraction::SPHKernelCubicSpline> kernel_1D_;
+    std::unique_ptr<ParticleInteraction::SPHKernelCubicSpline> kernel_2D_;
+    std::unique_ptr<ParticleInteraction::SPHKernelCubicSpline> kernel_3D_;
 
     SPHKernelCubicSplineTest()
     {
@@ -32,22 +32,22 @@ namespace
       Teuchos::ParameterList params_sph_1D;
       Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel1D",
           "kernel space dimension number", Teuchos::tuple<std::string>("Kernel1D"),
-          Teuchos::tuple<int>(INPAR::PARTICLE::Kernel1D), &params_sph_1D);
+          Teuchos::tuple<int>(Inpar::PARTICLE::Kernel1D), &params_sph_1D);
 
       Teuchos::ParameterList params_sph_2D;
       Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel2D",
           "kernel space dimension number", Teuchos::tuple<std::string>("Kernel2D"),
-          Teuchos::tuple<int>(INPAR::PARTICLE::Kernel2D), &params_sph_2D);
+          Teuchos::tuple<int>(Inpar::PARTICLE::Kernel2D), &params_sph_2D);
 
       Teuchos::ParameterList params_sph_3D;
       Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel3D",
           "kernel space dimension number", Teuchos::tuple<std::string>("Kernel3D"),
-          Teuchos::tuple<int>(INPAR::PARTICLE::Kernel3D), &params_sph_3D);
+          Teuchos::tuple<int>(Inpar::PARTICLE::Kernel3D), &params_sph_3D);
 
       // create kernel handler
-      kernel_1D_ = std::make_unique<PARTICLEINTERACTION::SPHKernelCubicSpline>(params_sph_1D);
-      kernel_2D_ = std::make_unique<PARTICLEINTERACTION::SPHKernelCubicSpline>(params_sph_2D);
-      kernel_3D_ = std::make_unique<PARTICLEINTERACTION::SPHKernelCubicSpline>(params_sph_3D);
+      kernel_1D_ = std::make_unique<ParticleInteraction::SPHKernelCubicSpline>(params_sph_1D);
+      kernel_2D_ = std::make_unique<ParticleInteraction::SPHKernelCubicSpline>(params_sph_2D);
+      kernel_3D_ = std::make_unique<ParticleInteraction::SPHKernelCubicSpline>(params_sph_3D);
 
       // init kernel handler
       kernel_1D_->Init();
@@ -94,8 +94,8 @@ namespace
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
     const double normalizationconstant_2D =
-        10.0 * M_1_PI / (7.0 * PARTICLEINTERACTION::UTILS::Pow<2>(h));
-    const double normalizationconstant_3D = M_1_PI / PARTICLEINTERACTION::UTILS::Pow<3>(h);
+        10.0 * M_1_PI / (7.0 * ParticleInteraction::UTILS::Pow<2>(h));
+    const double normalizationconstant_3D = M_1_PI / ParticleInteraction::UTILS::Pow<3>(h);
 
     EXPECT_NEAR(kernel_1D_->normalization_constant(inv_h), normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(kernel_2D_->normalization_constant(inv_h), normalizationconstant_2D, 1.0e-10);
@@ -109,8 +109,8 @@ namespace
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
     const double normalizationconstant_2D =
-        10.0 * M_1_PI / (7.0 * PARTICLEINTERACTION::UTILS::Pow<2>(h));
-    const double normalizationconstant_3D = M_1_PI / PARTICLEINTERACTION::UTILS::Pow<3>(h);
+        10.0 * M_1_PI / (7.0 * ParticleInteraction::UTILS::Pow<2>(h));
+    const double normalizationconstant_3D = M_1_PI / ParticleInteraction::UTILS::Pow<3>(h);
 
     double w_unnormalized = 1.0;
     EXPECT_NEAR(kernel_1D_->W0(support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
@@ -125,8 +125,8 @@ namespace
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
     const double normalizationconstant_2D =
-        10.0 * M_1_PI / (7.0 * PARTICLEINTERACTION::UTILS::Pow<2>(h));
-    const double normalizationconstant_3D = M_1_PI / PARTICLEINTERACTION::UTILS::Pow<3>(h);
+        10.0 * M_1_PI / (7.0 * ParticleInteraction::UTILS::Pow<2>(h));
+    const double normalizationconstant_3D = M_1_PI / ParticleInteraction::UTILS::Pow<3>(h);
 
     double rij = 0.0;
     double q = rij / h;
@@ -137,15 +137,15 @@ namespace
 
     rij = 0.2;
     q = rij / h;
-    w_unnormalized = 1.0 - 1.5 * PARTICLEINTERACTION::UTILS::Pow<2>(q) +
-                     0.75 * PARTICLEINTERACTION::UTILS::Pow<3>(q);
+    w_unnormalized = 1.0 - 1.5 * ParticleInteraction::UTILS::Pow<2>(q) +
+                     0.75 * ParticleInteraction::UTILS::Pow<3>(q);
     EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.6;
     q = rij / h;
-    w_unnormalized = PARTICLEINTERACTION::UTILS::Pow<3>(2.0 - q) / 4.0;
+    w_unnormalized = ParticleInteraction::UTILS::Pow<3>(2.0 - q) / 4.0;
     EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
@@ -165,8 +165,8 @@ namespace
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
     const double normalizationconstant_2D =
-        10.0 * M_1_PI / (7.0 * PARTICLEINTERACTION::UTILS::Pow<2>(h));
-    const double normalizationconstant_3D = M_1_PI / PARTICLEINTERACTION::UTILS::Pow<3>(h);
+        10.0 * M_1_PI / (7.0 * ParticleInteraction::UTILS::Pow<2>(h));
+    const double normalizationconstant_3D = M_1_PI / ParticleInteraction::UTILS::Pow<3>(h);
 
     double rij = 0.0;
     double q = rij / h;
@@ -180,7 +180,7 @@ namespace
 
     rij = 0.2;
     q = rij / h;
-    w_unnormalized = (-3.0 * q + 2.25 * PARTICLEINTERACTION::UTILS::Pow<2>(q)) * (1.0 / h);
+    w_unnormalized = (-3.0 * q + 2.25 * ParticleInteraction::UTILS::Pow<2>(q)) * (1.0 / h);
     EXPECT_NEAR(
         kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
@@ -190,7 +190,7 @@ namespace
 
     rij = 0.6;
     q = rij / h;
-    w_unnormalized = (-0.75 * PARTICLEINTERACTION::UTILS::Pow<2>(2.0 - q)) * (1.0 / h);
+    w_unnormalized = (-0.75 * ParticleInteraction::UTILS::Pow<2>(2.0 - q)) * (1.0 / h);
     EXPECT_NEAR(
         kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
@@ -216,12 +216,12 @@ namespace
 
     const double normalizationconstant_1D = 2.0 / (3.0 * h);
     const double normalizationconstant_2D =
-        10.0 * M_1_PI / (7.0 * PARTICLEINTERACTION::UTILS::Pow<2>(h));
-    const double normalizationconstant_3D = M_1_PI / PARTICLEINTERACTION::UTILS::Pow<3>(h);
+        10.0 * M_1_PI / (7.0 * ParticleInteraction::UTILS::Pow<2>(h));
+    const double normalizationconstant_3D = M_1_PI / ParticleInteraction::UTILS::Pow<3>(h);
 
     double rij = 0.0;
     double q = rij / h;
-    double w_unnormalized = -3.0 * (1.0 / PARTICLEINTERACTION::UTILS::Pow<2>(h));
+    double w_unnormalized = -3.0 * (1.0 / ParticleInteraction::UTILS::Pow<2>(h));
     EXPECT_NEAR(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
@@ -231,7 +231,7 @@ namespace
 
     rij = 0.2;
     q = rij / h;
-    w_unnormalized = (-3.0 + 4.5 * q) * (1.0 / PARTICLEINTERACTION::UTILS::Pow<2>(h));
+    w_unnormalized = (-3.0 + 4.5 * q) * (1.0 / ParticleInteraction::UTILS::Pow<2>(h));
     EXPECT_NEAR(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
@@ -241,7 +241,7 @@ namespace
 
     rij = 0.6;
     q = rij / h;
-    w_unnormalized = (1.5 * (2.0 - q)) * (1.0 / PARTICLEINTERACTION::UTILS::Pow<2>(h));
+    w_unnormalized = (1.5 * (2.0 - q)) * (1.0 / ParticleInteraction::UTILS::Pow<2>(h));
     EXPECT_NEAR(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
@@ -270,10 +270,10 @@ namespace
     eij[2] = 0.0;
 
     const double h = 0.4;
-    const double normalizationconstant_3D = M_1_PI / PARTICLEINTERACTION::UTILS::Pow<3>(h);
+    const double normalizationconstant_3D = M_1_PI / ParticleInteraction::UTILS::Pow<3>(h);
     const double q = rij / h;
     const double w_unnormalized =
-        (-3.0 * q + 2.25 * PARTICLEINTERACTION::UTILS::Pow<2>(q)) * (1.0 / h);
+        (-3.0 * q + 2.25 * ParticleInteraction::UTILS::Pow<2>(q)) * (1.0 / h);
 
     double gradWij_reference[3];
     for (int i = 0; i < 3; ++i)
@@ -290,9 +290,9 @@ namespace
   class SPHKernelQuinticSplineTest : public ::testing::Test
   {
    protected:
-    std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline> kernel_1D_;
-    std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline> kernel_2D_;
-    std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline> kernel_3D_;
+    std::unique_ptr<ParticleInteraction::SPHKernelQuinticSpline> kernel_1D_;
+    std::unique_ptr<ParticleInteraction::SPHKernelQuinticSpline> kernel_2D_;
+    std::unique_ptr<ParticleInteraction::SPHKernelQuinticSpline> kernel_3D_;
 
     SPHKernelQuinticSplineTest()
     {
@@ -300,22 +300,22 @@ namespace
       Teuchos::ParameterList params_sph_1D;
       Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel1D",
           "kernel space dimension number", Teuchos::tuple<std::string>("Kernel1D"),
-          Teuchos::tuple<int>(INPAR::PARTICLE::Kernel1D), &params_sph_1D);
+          Teuchos::tuple<int>(Inpar::PARTICLE::Kernel1D), &params_sph_1D);
 
       Teuchos::ParameterList params_sph_2D;
       Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel2D",
           "kernel space dimension number", Teuchos::tuple<std::string>("Kernel2D"),
-          Teuchos::tuple<int>(INPAR::PARTICLE::Kernel2D), &params_sph_2D);
+          Teuchos::tuple<int>(Inpar::PARTICLE::Kernel2D), &params_sph_2D);
 
       Teuchos::ParameterList params_sph_3D;
       Teuchos::setStringToIntegralParameter<int>("KERNEL_SPACE_DIM", "Kernel3D",
           "kernel space dimension number", Teuchos::tuple<std::string>("Kernel3D"),
-          Teuchos::tuple<int>(INPAR::PARTICLE::Kernel3D), &params_sph_3D);
+          Teuchos::tuple<int>(Inpar::PARTICLE::Kernel3D), &params_sph_3D);
 
       // create kernel handler
-      kernel_1D_ = std::make_unique<PARTICLEINTERACTION::SPHKernelQuinticSpline>(params_sph_1D);
-      kernel_2D_ = std::make_unique<PARTICLEINTERACTION::SPHKernelQuinticSpline>(params_sph_2D);
-      kernel_3D_ = std::make_unique<PARTICLEINTERACTION::SPHKernelQuinticSpline>(params_sph_3D);
+      kernel_1D_ = std::make_unique<ParticleInteraction::SPHKernelQuinticSpline>(params_sph_1D);
+      kernel_2D_ = std::make_unique<ParticleInteraction::SPHKernelQuinticSpline>(params_sph_2D);
+      kernel_3D_ = std::make_unique<ParticleInteraction::SPHKernelQuinticSpline>(params_sph_3D);
 
       // init kernel handler
       kernel_1D_->Init();
@@ -362,9 +362,9 @@ namespace
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
     const double normalizationconstant_2D =
-        7.0 * M_1_PI / (478.0 * PARTICLEINTERACTION::UTILS::Pow<2>(h));
+        7.0 * M_1_PI / (478.0 * ParticleInteraction::UTILS::Pow<2>(h));
     const double normalizationconstant_3D =
-        3.0 * M_1_PI / (359.0 * PARTICLEINTERACTION::UTILS::Pow<3>(h));
+        3.0 * M_1_PI / (359.0 * ParticleInteraction::UTILS::Pow<3>(h));
 
     EXPECT_NEAR(kernel_1D_->normalization_constant(inv_h), normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(kernel_2D_->normalization_constant(inv_h), normalizationconstant_2D, 1.0e-10);
@@ -378,9 +378,9 @@ namespace
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
     const double normalizationconstant_2D =
-        7.0 * M_1_PI / (478.0 * PARTICLEINTERACTION::UTILS::Pow<2>(h));
+        7.0 * M_1_PI / (478.0 * ParticleInteraction::UTILS::Pow<2>(h));
     const double normalizationconstant_3D =
-        3.0 * M_1_PI / (359.0 * PARTICLEINTERACTION::UTILS::Pow<3>(h));
+        3.0 * M_1_PI / (359.0 * ParticleInteraction::UTILS::Pow<3>(h));
 
     double w_unnormalized = 66.0;
     EXPECT_NEAR(kernel_1D_->W0(support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
@@ -395,9 +395,9 @@ namespace
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
     const double normalizationconstant_2D =
-        7.0 * M_1_PI / (478.0 * PARTICLEINTERACTION::UTILS::Pow<2>(h));
+        7.0 * M_1_PI / (478.0 * ParticleInteraction::UTILS::Pow<2>(h));
     const double normalizationconstant_3D =
-        3.0 * M_1_PI / (359.0 * PARTICLEINTERACTION::UTILS::Pow<3>(h));
+        3.0 * M_1_PI / (359.0 * ParticleInteraction::UTILS::Pow<3>(h));
 
     double rij = 0.0;
     double q = rij / h;
@@ -408,24 +408,24 @@ namespace
 
     rij = 0.2;
     q = rij / h;
-    w_unnormalized = PARTICLEINTERACTION::UTILS::Pow<5>(3.0 - q) -
-                     6.0 * PARTICLEINTERACTION::UTILS::Pow<5>(2.0 - q) +
-                     15.0 * PARTICLEINTERACTION::UTILS::Pow<5>(1.0 - q);
+    w_unnormalized = ParticleInteraction::UTILS::Pow<5>(3.0 - q) -
+                     6.0 * ParticleInteraction::UTILS::Pow<5>(2.0 - q) +
+                     15.0 * ParticleInteraction::UTILS::Pow<5>(1.0 - q);
     EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.5;
     q = rij / h;
-    w_unnormalized = PARTICLEINTERACTION::UTILS::Pow<5>(3.0 - q) -
-                     6.0 * PARTICLEINTERACTION::UTILS::Pow<5>(2.0 - q);
+    w_unnormalized = ParticleInteraction::UTILS::Pow<5>(3.0 - q) -
+                     6.0 * ParticleInteraction::UTILS::Pow<5>(2.0 - q);
     EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
 
     rij = 0.8;
     q = rij / h;
-    w_unnormalized = PARTICLEINTERACTION::UTILS::Pow<5>(3.0 - q);
+    w_unnormalized = ParticleInteraction::UTILS::Pow<5>(3.0 - q);
     EXPECT_NEAR(kernel_1D_->W(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(kernel_2D_->W(rij, support), w_unnormalized * normalizationconstant_2D, 1.0e-10);
     EXPECT_NEAR(kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
@@ -445,9 +445,9 @@ namespace
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
     const double normalizationconstant_2D =
-        7.0 * M_1_PI / (478.0 * PARTICLEINTERACTION::UTILS::Pow<2>(h));
+        7.0 * M_1_PI / (478.0 * ParticleInteraction::UTILS::Pow<2>(h));
     const double normalizationconstant_3D =
-        3.0 * M_1_PI / (359.0 * PARTICLEINTERACTION::UTILS::Pow<3>(h));
+        3.0 * M_1_PI / (359.0 * ParticleInteraction::UTILS::Pow<3>(h));
 
     double rij = 0.0;
     double q = rij / h;
@@ -461,9 +461,9 @@ namespace
 
     rij = 0.2;
     q = rij / h;
-    w_unnormalized = (-5.0 * PARTICLEINTERACTION::UTILS::Pow<4>(3.0 - q) +
-                         30.0 * PARTICLEINTERACTION::UTILS::Pow<4>(2.0 - q) -
-                         75.0 * PARTICLEINTERACTION::UTILS::Pow<4>(1.0 - q)) *
+    w_unnormalized = (-5.0 * ParticleInteraction::UTILS::Pow<4>(3.0 - q) +
+                         30.0 * ParticleInteraction::UTILS::Pow<4>(2.0 - q) -
+                         75.0 * ParticleInteraction::UTILS::Pow<4>(1.0 - q)) *
                      (1.0 / h);
     EXPECT_NEAR(
         kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
@@ -474,8 +474,8 @@ namespace
 
     rij = 0.5;
     q = rij / h;
-    w_unnormalized = (-5.0 * PARTICLEINTERACTION::UTILS::Pow<4>(3.0 - q) +
-                         30.0 * PARTICLEINTERACTION::UTILS::Pow<4>(2.0 - q)) *
+    w_unnormalized = (-5.0 * ParticleInteraction::UTILS::Pow<4>(3.0 - q) +
+                         30.0 * ParticleInteraction::UTILS::Pow<4>(2.0 - q)) *
                      (1.0 / h);
     EXPECT_NEAR(
         kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
@@ -486,7 +486,7 @@ namespace
 
     rij = 0.8;
     q = rij / h;
-    w_unnormalized = (-5.0 * PARTICLEINTERACTION::UTILS::Pow<4>(3.0 - q)) * (1.0 / h);
+    w_unnormalized = (-5.0 * ParticleInteraction::UTILS::Pow<4>(3.0 - q)) * (1.0 / h);
     EXPECT_NEAR(
         kernel_1D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
@@ -512,9 +512,9 @@ namespace
 
     const double normalizationconstant_1D = 1.0 / (120.0 * h);
     const double normalizationconstant_2D =
-        7.0 * M_1_PI / (478.0 * PARTICLEINTERACTION::UTILS::Pow<2>(h));
+        7.0 * M_1_PI / (478.0 * ParticleInteraction::UTILS::Pow<2>(h));
     const double normalizationconstant_3D =
-        3.0 * M_1_PI / (359.0 * PARTICLEINTERACTION::UTILS::Pow<3>(h));
+        3.0 * M_1_PI / (359.0 * ParticleInteraction::UTILS::Pow<3>(h));
 
     double rij = 0.0;
     double q = rij / h;
@@ -528,10 +528,10 @@ namespace
 
     rij = 0.2;
     q = rij / h;
-    w_unnormalized = (20.0 * PARTICLEINTERACTION::UTILS::Pow<3>(3.0 - q) -
-                         120.0 * PARTICLEINTERACTION::UTILS::Pow<3>(2.0 - q) +
-                         300.0 * PARTICLEINTERACTION::UTILS::Pow<3>(1.0 - q)) *
-                     (1.0 / PARTICLEINTERACTION::UTILS::Pow<2>(h));
+    w_unnormalized = (20.0 * ParticleInteraction::UTILS::Pow<3>(3.0 - q) -
+                         120.0 * ParticleInteraction::UTILS::Pow<3>(2.0 - q) +
+                         300.0 * ParticleInteraction::UTILS::Pow<3>(1.0 - q)) *
+                     (1.0 / ParticleInteraction::UTILS::Pow<2>(h));
     EXPECT_NEAR(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
@@ -541,9 +541,9 @@ namespace
 
     rij = 0.5;
     q = rij / h;
-    w_unnormalized = (20.0 * PARTICLEINTERACTION::UTILS::Pow<3>(3.0 - q) -
-                         120.0 * PARTICLEINTERACTION::UTILS::Pow<3>(2.0 - q)) *
-                     (1.0 / PARTICLEINTERACTION::UTILS::Pow<2>(h));
+    w_unnormalized = (20.0 * ParticleInteraction::UTILS::Pow<3>(3.0 - q) -
+                         120.0 * ParticleInteraction::UTILS::Pow<3>(2.0 - q)) *
+                     (1.0 / ParticleInteraction::UTILS::Pow<2>(h));
     EXPECT_NEAR(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
@@ -553,8 +553,8 @@ namespace
 
     rij = 0.8;
     q = rij / h;
-    w_unnormalized = (20.0 * PARTICLEINTERACTION::UTILS::Pow<3>(3.0 - q)) *
-                     (1.0 / PARTICLEINTERACTION::UTILS::Pow<2>(h));
+    w_unnormalized = (20.0 * ParticleInteraction::UTILS::Pow<3>(3.0 - q)) *
+                     (1.0 / ParticleInteraction::UTILS::Pow<2>(h));
     EXPECT_NEAR(
         kernel_1D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_1D, 1.0e-10);
     EXPECT_NEAR(
@@ -584,11 +584,11 @@ namespace
 
     const double h = 0.3;
     const double normalizationconstant_3D =
-        3.0 * M_1_PI / (359.0 * PARTICLEINTERACTION::UTILS::Pow<3>(h));
+        3.0 * M_1_PI / (359.0 * ParticleInteraction::UTILS::Pow<3>(h));
     const double q = rij / h;
-    const double w_unnormalized = (-5.0 * PARTICLEINTERACTION::UTILS::Pow<4>(3.0 - q) +
-                                      30.0 * PARTICLEINTERACTION::UTILS::Pow<4>(2.0 - q) -
-                                      75.0 * PARTICLEINTERACTION::UTILS::Pow<4>(1.0 - q)) *
+    const double w_unnormalized = (-5.0 * ParticleInteraction::UTILS::Pow<4>(3.0 - q) +
+                                      30.0 * ParticleInteraction::UTILS::Pow<4>(2.0 - q) -
+                                      75.0 * ParticleInteraction::UTILS::Pow<4>(1.0 - q)) *
                                   (1.0 / h);
 
     double gradWij_reference[3];

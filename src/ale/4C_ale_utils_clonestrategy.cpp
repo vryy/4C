@@ -44,30 +44,30 @@ void ALE::UTILS::AleCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  CORE::Materials::MaterialType mtype =
-      GLOBAL::Problem::Instance()->Materials()->ParameterById(matid)->Type();
-  if (mtype != CORE::Materials::m_stvenant && mtype != CORE::Materials::m_elasthyper)
+  Core::Materials::MaterialType mtype =
+      Global::Problem::Instance()->Materials()->ParameterById(matid)->Type();
+  if (mtype != Core::Materials::m_stvenant && mtype != Core::Materials::m_elasthyper)
     FOUR_C_THROW("Material with ID %d is not admissible for ALE elements", matid);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
-    CORE::Elements::Element* oldele, const int matid, const bool nurbsdis)
+void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+    Core::Elements::Element* oldele, const int matid, const bool nurbsdis)
 {
   if (nurbsdis == false)
   {
-    DRT::ELEMENTS::Ale2* ale2 = dynamic_cast<DRT::ELEMENTS::Ale2*>(newele.get());
+    Discret::ELEMENTS::Ale2* ale2 = dynamic_cast<Discret::ELEMENTS::Ale2*>(newele.get());
     if (ale2 != nullptr)
     {
-      ale2->SetMaterial(0, MAT::Factory(matid));
+      ale2->SetMaterial(0, Mat::Factory(matid));
     }
     else
     {
-      DRT::ELEMENTS::Ale3* ale3 = dynamic_cast<DRT::ELEMENTS::Ale3*>(newele.get());
+      Discret::ELEMENTS::Ale3* ale3 = dynamic_cast<Discret::ELEMENTS::Ale3*>(newele.get());
       if (ale3 != nullptr)
       {
-        ale3->SetMaterial(0, MAT::Factory(matid));
+        ale3->SetMaterial(0, Mat::Factory(matid));
       }
       else
       {
@@ -77,20 +77,20 @@ void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<CORE::Elements:
   }
   else
   {
-    DRT::ELEMENTS::NURBS::Ale2Nurbs* ale2 =
-        dynamic_cast<DRT::ELEMENTS::NURBS::Ale2Nurbs*>(newele.get());
+    Discret::ELEMENTS::Nurbs::Ale2Nurbs* ale2 =
+        dynamic_cast<Discret::ELEMENTS::Nurbs::Ale2Nurbs*>(newele.get());
     if (ale2 != nullptr)
     {
-      ale2->SetMaterial(0, MAT::Factory(matid));
+      ale2->SetMaterial(0, Mat::Factory(matid));
     }
     else
     {
-      DRT::ELEMENTS::NURBS::Ale3Nurbs* ale3 =
-          dynamic_cast<DRT::ELEMENTS::NURBS::Ale3Nurbs*>(newele.get());
+      Discret::ELEMENTS::Nurbs::Ale3Nurbs* ale3 =
+          dynamic_cast<Discret::ELEMENTS::Nurbs::Ale3Nurbs*>(newele.get());
 
       if (ale3 != nullptr)
       {
-        ale3->SetMaterial(0, MAT::Factory(matid));
+        ale3->SetMaterial(0, Mat::Factory(matid));
       }
       else
       {
@@ -105,14 +105,14 @@ void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<CORE::Elements:
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 bool ALE::UTILS::AleCloneStrategy::determine_ele_type(
-    CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+    Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   bool cloneit = true;
 
   // Fluid meshes may be split into Eulerian and ALE regions.
   // Check, whether actele is a fluid element in order to account for
   // the possible split in Eulerian an ALE regions
-  DRT::ELEMENTS::Fluid* f3 = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
+  Discret::ELEMENTS::Fluid* f3 = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
   if (f3 != nullptr)
   {
     cloneit = f3->IsAle();  // if not ALE, element will not be cloned
@@ -122,7 +122,7 @@ bool ALE::UTILS::AleCloneStrategy::determine_ele_type(
   // Clone it now.
   if (cloneit and ismyele)
   {
-    const int nsd = CORE::FE::getDimension(actele->Shape());
+    const int nsd = Core::FE::getDimension(actele->Shape());
     if (nsd == 3)
       eletype.push_back("ALE3");
     else if (nsd == 2)

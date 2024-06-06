@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -25,13 +25,13 @@ namespace DRT
 
     namespace UTILS
     {
-      template <CORE::FE::CellType distype>
-      void CalcR(const CORE::Elements::Element* ele, const std::vector<double>& disp,
-          CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& R);
+      template <Core::FE::CellType distype>
+      void CalcR(const Core::Elements::Element* ele, const std::vector<double>& disp,
+          Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& R);
 
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       void get_temperature_for_structural_material(
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, 1>& shapefctsGP,
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, 1>& shapefctsGP,
           Teuchos::ParameterList& params);
 
       /*!
@@ -44,10 +44,10 @@ namespace DRT
        * @param[in] xsi      position of the gauss point in parameter space
        * @param[in] xdisp    nodal displacements of the element
        */
-      template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
-      void compute_deformation_gradient(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
-          CORE::Nodes::Node** nodes, const CORE::LINALG::Matrix<probdim, 1>& xsi,
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xdisp);
+      template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
+      void compute_deformation_gradient(Core::LinAlg::Matrix<probdim, probdim>& defgrd,
+          Core::Nodes::Node** nodes, const Core::LinAlg::Matrix<probdim, 1>& xsi,
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xdisp);
 
       /*!
        * @brief compute the deformation gradient of the element at a specific Gauss point
@@ -59,9 +59,9 @@ namespace DRT
        * @param[in] xsi           position of the gauss point in parameter space
        * @param[in] displacement  displacement vector of the element
        */
-      template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
-      void compute_deformation_gradient(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
-          CORE::Nodes::Node** nodes, const CORE::LINALG::Matrix<probdim, 1>& xsi,
+      template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
+      void compute_deformation_gradient(Core::LinAlg::Matrix<probdim, probdim>& defgrd,
+          Core::Nodes::Node** nodes, const Core::LinAlg::Matrix<probdim, 1>& xsi,
           const std::vector<double>& displacement);
 
       /*!
@@ -79,17 +79,17 @@ namespace DRT
        * \param mulfHistory [in] : Internal MULF history variables
        * \param gp [in] : Gauss point
        */
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       void compute_deformation_gradient(
-          CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& defgrd,
-          INPAR::STR::KinemType kinemType,
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, CORE::FE::dim<distype>>& xdisp,
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, CORE::FE::dim<distype>>& xcurr,
-          const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>&
+          Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& defgrd,
+          Inpar::STR::KinemType kinemType,
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xdisp,
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xcurr,
+          const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>&
               inverseJacobian,
-          const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& derivs,
-          const INPAR::STR::PreStress prestressType,
-          const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, int gp);
+          const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
+          const Inpar::STR::PreStress prestressType,
+          const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, int gp);
 
       /*!
        * \brief Compute the deformation gradient in the case of MULF
@@ -103,12 +103,12 @@ namespace DRT
        * \param mulfHistory [in] : Internal MULF history variables
        * \param gp [in] : Gauss point
        */
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       void ComputeDeformationGradientMulf(
-          CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& defgrd,
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, CORE::FE::dim<distype>>& xdisp,
-          const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& derivs,
-          const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, int gp);
+          Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& defgrd,
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xdisp,
+          const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
+          const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, int gp);
 
       /*!
        * \brief Compute the deformation gradient in case of no prestressing
@@ -120,11 +120,11 @@ namespace DRT
        * \param derivs : Derivatives of the shape functions with respect to the reference
        * \param inverseJacobian [in] : Inverse jacobian at the point of evaluation
        */
-      template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
-      void ComputeDeformationGradientStandard(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xcurr,
-          const CORE::LINALG::Matrix<probdim, CORE::FE::num_nodes<distype>>& derivs,
-          const CORE::LINALG::Matrix<probdim, probdim>& inverseJacobian);
+      template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
+      void ComputeDeformationGradientStandard(Core::LinAlg::Matrix<probdim, probdim>& defgrd,
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xcurr,
+          const Core::LinAlg::Matrix<probdim, Core::FE::num_nodes<distype>>& derivs,
+          const Core::LinAlg::Matrix<probdim, probdim>& inverseJacobian);
 
       /*!
        * \brief Evaluate the nodal coordinates of an element
@@ -134,9 +134,9 @@ namespace DRT
        * \param nodes [in] : List of nodes of the element
        * \param xrefe [out] : reference coordinates of the element
        */
-      template <CORE::FE::CellType distype, int probdim = 3>
-      void EvaluateNodalCoordinates(CORE::Nodes::Node** nodes,
-          CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xrefe);
+      template <Core::FE::CellType distype, int probdim = 3>
+      void EvaluateNodalCoordinates(Core::Nodes::Node** nodes,
+          Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xrefe);
 
       /*!
        * \brief Evaluate the nodal displacement of the element
@@ -146,9 +146,9 @@ namespace DRT
        * \param disp [in] : Local displacement vector
        * \param xdisp [out] : Nodal displacements
        */
-      template <CORE::FE::CellType distype, int probdim = 3>
+      template <Core::FE::CellType distype, int probdim = 3>
       void EvaluateNodalDisplacements(const std::vector<double>& disp,
-          CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xdisp);
+          Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xdisp);
 
       /*!
        * \brief Compute the current nodal coordinates of the element
@@ -159,11 +159,11 @@ namespace DRT
        * \param xdisp [in] : Nodal displacements of the element
        * \param xcurr [out] : Current coordinates of the element
        */
-      template <CORE::FE::CellType distype, int probdim = 3>
+      template <Core::FE::CellType distype, int probdim = 3>
       void EvaluateCurrentNodalCoordinates(
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xrefe,
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xdisp,
-          CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, probdim>& xcurr);
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xrefe,
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xdisp,
+          Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xcurr);
 
       /*!
        * \brief Evaluates the inverse jacobian of the element
@@ -173,11 +173,11 @@ namespace DRT
        * \param derivs [in] : Derivatives of the shape functions w.r.t. the reference coordinates
        * \param inverseJacobian [out] : inverse jacobian
        */
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       void EvaluateInverseJacobian(
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype>, CORE::FE::dim<distype>>& xrefe,
-          const CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::num_nodes<distype>>& derivs,
-          CORE::LINALG::Matrix<CORE::FE::dim<distype>, CORE::FE::dim<distype>>& inverseJacobian);
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xrefe,
+          const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
+          Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& inverseJacobian);
 
       /*!
        * \brief Checks whether maerial tangent should be computed via finite difference. If so,
@@ -191,7 +191,7 @@ namespace DRT
 
     }  // namespace UTILS
   }    // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

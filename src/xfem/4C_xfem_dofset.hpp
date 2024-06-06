@@ -22,23 +22,24 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   class CutWizard;
 }
 
 namespace XFEM
 {
-  class XFEMDofSet : public CORE::Dofsets::FixedSizeDofSet
+  class XFEMDofSet : public Core::DOFSets::FixedSizeDofSet
   {
    public:
     /// constructor
-    XFEMDofSet(CORE::GEO::CutWizard& wizard, int numMyReservedDofsperNode, DRT::Discretization& dis)
+    XFEMDofSet(
+        Core::Geo::CutWizard& wizard, int numMyReservedDofsperNode, Discret::Discretization& dis)
         : FixedSizeDofSet(numMyReservedDofsperNode,
               dis.NodeRowMap()->MaxAllGID() - dis.NodeRowMap()->MinAllGID() + 1),
           wizard_(wizard),
@@ -54,7 +55,7 @@ namespace XFEM
       for (int lid = 0; lid < numnode; lid++)
       {
         int gid = dis_.NodeRowMap()->GID(lid);
-        CORE::Nodes::Node* node = dis_.gNode(gid);
+        Core::Nodes::Node* node = dis_.gNode(gid);
         if (NumDofPerNode(*node) != other.NumDofPerNode(*node))
           return false;  // dofsets not equal if at least one node has a different number of nodal
                          // dofsets
@@ -82,19 +83,19 @@ namespace XFEM
     \param node            (in) : the node
     \param nodal_dofset_id (in) : id of the nodal dofset
     */
-    void Dof(std::vector<int>& dofs, const CORE::Nodes::Node* node,
+    void Dof(std::vector<int>& dofs, const Core::Nodes::Node* node,
         unsigned nodal_dofset_id) const override;
 
    protected:
     /// get number of nodal dofs for this element at this node
-    int NumDofPerNode(const CORE::Nodes::Node& node) const override;
+    int NumDofPerNode(const Core::Nodes::Node& node) const override;
 
    private:
     /// the cut wizard, holds information about the number of XFEM dofsets per node
-    CORE::GEO::CutWizard& wizard_;
+    Core::Geo::CutWizard& wizard_;
 
     /// background discretization
-    DRT::Discretization&
+    Discret::Discretization&
         dis_;  ///< use reference instead of RCP to avoid Ringschluss in discretization
   };
 }  // namespace XFEM

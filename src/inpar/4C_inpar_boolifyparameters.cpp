@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 // Auxiliar routine to boolify integral Yes/No data
-void INPUT::BoolifyValidInputParameters(
+void Input::BoolifyValidInputParameters(
     Teuchos::ParameterList& list  ///< the valid input parameter list
 )
 {

@@ -74,7 +74,7 @@ CONTACT::PenaltyStrategy::PenaltyStrategy(
 void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // initialize the displacement field
-  set_state(MORTAR::state_new_displacement, *dis);
+  set_state(Mortar::state_new_displacement, *dis);
 
   // kappa will be the shape function integral on the slave sides
   // (1) build the nodal information
@@ -92,7 +92,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vect
     for (int j = 0; j < interface_[i]->SlaveColElements()->NumMyElements(); ++j)
     {
       int gid1 = interface_[i]->SlaveColElements()->GID(j);
-      CORE::Elements::Element* ele1 = interface_[i]->Discret().gElement(gid1);
+      Core::Elements::Element* ele1 = interface_[i]->Discret().gElement(gid1);
       if (!ele1) FOUR_C_THROW("Cannot find slave element with gid %", gid1);
       Element* selement = dynamic_cast<Element*>(ele1);
 
@@ -103,7 +103,7 @@ void CONTACT::PenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vect
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+      Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -141,16 +141,16 @@ void CONTACT::PenaltyStrategy::Initialize()
 {
   // (re)setup global matrices containing fc derivatives
   // must use FE_MATRIX type here, as we will do non-local assembly!
-  lindmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *gsdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
-  linmmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *gmdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
+  lindmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *gsdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  linmmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
   // (re)setup global vector containing lagrange multipliers
-  z_ = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
+  z_ = Core::LinAlg::CreateVector(*gsdofrowmap_, true);
 
   // (re)setup global matrix containing lagrange multiplier derivatives
-  linzmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100));
+  linzmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100));
 
   return;
 }
@@ -159,7 +159,7 @@ void CONTACT::PenaltyStrategy::Initialize()
  | evaluate contact and create linear system                  popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::EvaluateContact(
-    Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // in the beginning of this function, the regularized contact forces
   // in normal and tangential direction are evaluated from geometric
@@ -180,14 +180,14 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
     interface_[i]->assemble_reg_normal_forces(localisincontact, localactivesetchange);
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
-    INPAR::CONTACT::SolvingStrategy soltype =
-        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
+    Inpar::CONTACT::SolvingStrategy soltype =
+        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
-    if (friction_ and (soltype == INPAR::CONTACT::solution_penalty or
-                          soltype == INPAR::CONTACT::solution_multiscale))
+    if (friction_ and (soltype == Inpar::CONTACT::solution_penalty or
+                          soltype == Inpar::CONTACT::solution_multiscale))
       interface_[i]->assemble_reg_tangent_forces_penalty();
 
-    if (friction_ and soltype == INPAR::CONTACT::solution_uzawa)
+    if (friction_ and soltype == Inpar::CONTACT::solution_uzawa)
       interface_[i]->assemble_reg_tangent_forces_uzawa();
 
     isincontact = isincontact || localisincontact;
@@ -226,9 +226,9 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     interface_[i]->BuildActiveSet();
-    gactivenodes_ = CORE::LINALG::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
-    gactivedofs_ = CORE::LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
-    gslipnodes_ = CORE::LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
+    gactivenodes_ = Core::LinAlg::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
+    gactivedofs_ = Core::LinAlg::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
+    gslipnodes_ = Core::LinAlg::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
   }
 
   // check if contact contributions are present,
@@ -265,29 +265,29 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
   if (Dualquadslavetrafo())
   {
     // modify lindmatrix_ and dmatrix_
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> temp1 =
-        CORE::LINALG::MLMultiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> temp2 =
-        CORE::LINALG::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
+        Core::LinAlg::MLMultiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
+        Core::LinAlg::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     lindmatrix_ = temp1;
     dmatrix_ = temp2;
   }
 
 #ifdef CONTACTFDPENALTYTRAC
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(Params(), "FRICTION");
 
   // check derivatives of penalty traction
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     if (IsInContact())
     {
-      if (ftype == INPAR::CONTACT::friction_coulomb)
+      if (ftype == Inpar::CONTACT::friction_coulomb)
       {
         std::cout << "LINZMATRIX" << *linzmatrix_ << std::endl;
         interface_[i]->fd_check_penalty_trac_fric();
       }
-      else if (ftype == INPAR::CONTACT::friction_none)
+      else if (ftype == Inpar::CONTACT::friction_none)
       {
         std::cout << "-- CONTACTFDDERIVZ --------------------" << std::endl;
         interface_[i]->fd_check_penalty_trac_nor();
@@ -308,8 +308,8 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
   // transform if necessary
   if (ParRedist())
   {
-    lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
-    linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
+    lindmatrix_ = Mortar::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
+    linmmatrix_ = Mortar::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
   }
 
   // add to kteff
@@ -323,16 +323,16 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
   //  Kc,2= [ 0 -M(transpose) D] * deltaLM
 
   // multiply Mortar matrices D and M with LinZ
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dtilde =
-      CORE::LINALG::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> mtilde =
-      CORE::LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dtilde =
+      Core::LinAlg::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> mtilde =
+      Core::LinAlg::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
 
   // transform if necessary
   if (ParRedist())
   {
-    dtilde = MORTAR::MatrixRowTransform(dtilde, pgsdofrowmap_);
-    mtilde = MORTAR::MatrixRowTransform(mtilde, pgmdofrowmap_);
+    dtilde = Mortar::MatrixRowTransform(dtilde, pgsdofrowmap_);
+    mtilde = Mortar::MatrixRowTransform(mtilde, pgmdofrowmap_);
   }
 
   // add to kteff
@@ -351,7 +351,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
     Teuchos::RCP<Epetra_Vector> fcmdold = Teuchos::rcp(new Epetra_Vector(dold_->RowMap()));
     dold_->Multiply(true, *zold_, *fcmdold);
     Teuchos::RCP<Epetra_Vector> fcmdoldtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    CORE::LINALG::Export(*fcmdold, *fcmdoldtemp);
+    Core::LinAlg::Export(*fcmdold, *fcmdoldtemp);
     feff->Update(-alphaf_, *fcmdoldtemp, 1.0);
   }
 
@@ -362,7 +362,7 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
     Teuchos::RCP<Epetra_Vector> fcmmold = Teuchos::rcp(new Epetra_Vector(mold_->DomainMap()));
     mold_->Multiply(true, *zold_, *fcmmold);
     Teuchos::RCP<Epetra_Vector> fcmmoldtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    CORE::LINALG::Export(*fcmmold, *fcmmoldtemp);
+    Core::LinAlg::Export(*fcmmold, *fcmmoldtemp);
     feff->Update(alphaf_, *fcmmoldtemp, 1.0);
   }
 
@@ -370,15 +370,15 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
     Teuchos::RCP<Epetra_Vector> fcmd = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     dmatrix_->Multiply(true, *z_, *fcmd);
     Teuchos::RCP<Epetra_Vector> fcmdtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    CORE::LINALG::Export(*fcmd, *fcmdtemp);
+    Core::LinAlg::Export(*fcmd, *fcmdtemp);
     feff->Update(-(1 - alphaf_), *fcmdtemp, 1.0);
   }
 
   {
-    Teuchos::RCP<Epetra_Vector> fcmm = CORE::LINALG::CreateVector(*gmdofrowmap_, true);
+    Teuchos::RCP<Epetra_Vector> fcmm = Core::LinAlg::CreateVector(*gmdofrowmap_, true);
     mmatrix_->Multiply(true, *z_, *fcmm);
     Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    CORE::LINALG::Export(*fcmm, *fcmmtemp);
+    Core::LinAlg::Export(*fcmm, *fcmmtemp);
     feff->Update(1 - alphaf_, *fcmmtemp, 1.0);
   }
 
@@ -398,22 +398,22 @@ void CONTACT::PenaltyStrategy::EvaluateContact(
  | evaluate frictional contact and create linear system gitterle   10/09|
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::EvaluateFriction(
-    Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // this is almost the same as in the frictionless contact
   // whereas we chose the EvaluateContact routine with
   // one difference
 
   // check if friction should be applied
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(Params(), "FRICTION");
 
   // coulomb friction case
-  if (ftype == INPAR::CONTACT::friction_coulomb || ftype == INPAR::CONTACT::friction_stick)
+  if (ftype == Inpar::CONTACT::friction_coulomb || ftype == Inpar::CONTACT::friction_stick)
   {
     EvaluateContact(kteff, feff);
   }
-  else if (ftype == INPAR::CONTACT::friction_tresca)
+  else if (ftype == Inpar::CONTACT::friction_tresca)
   {
     FOUR_C_THROW(
         "Error in AbstractStrategy::Evaluate: Penalty Strategy for"
@@ -471,7 +471,7 @@ void CONTACT::PenaltyStrategy::ModifyPenalty()
  | intialize second, third,... Uzawa step                     popp 01/10|
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::InitializeUzawa(
-    Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // remove old stiffness terms
   // (FIXME: redundant code to EvaluateContact(), expect for minus sign)
@@ -485,16 +485,16 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(
   kteff->Add(*linmmatrix_, false, -(1.0 - alphaf_), 1.0);
 
   // multiply Mortar matrices D and M with LinZ
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dtilde =
-      CORE::LINALG::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> mtilde =
-      CORE::LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dtilde =
+      Core::LinAlg::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> mtilde =
+      Core::LinAlg::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
 
   // transform if necessary
   if (ParRedist())
   {
-    dtilde = MORTAR::MatrixRowTransform(dtilde, pgsdofrowmap_);
-    mtilde = MORTAR::MatrixRowTransform(mtilde, pgmdofrowmap_);
+    dtilde = Mortar::MatrixRowTransform(dtilde, pgsdofrowmap_);
+    mtilde = Mortar::MatrixRowTransform(mtilde, pgmdofrowmap_);
   }
 
   // remove contact stiffness #2 from kteff
@@ -507,33 +507,33 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(
   Teuchos::RCP<Epetra_Vector> fcmdold = Teuchos::rcp(new Epetra_Vector(dold_->RowMap()));
   dold_->Multiply(true, *zold_, *fcmdold);
   Teuchos::RCP<Epetra_Vector> fcmdoldtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  CORE::LINALG::Export(*fcmdold, *fcmdoldtemp);
+  Core::LinAlg::Export(*fcmdold, *fcmdoldtemp);
   feff->Update(alphaf_, *fcmdoldtemp, 1.0);
 
   Teuchos::RCP<Epetra_Vector> fcmmold = Teuchos::rcp(new Epetra_Vector(mold_->DomainMap()));
   mold_->Multiply(true, *zold_, *fcmmold);
   Teuchos::RCP<Epetra_Vector> fcmmoldtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  CORE::LINALG::Export(*fcmmold, *fcmmoldtemp);
+  Core::LinAlg::Export(*fcmmold, *fcmmoldtemp);
   feff->Update(-alphaf_, *fcmmoldtemp, 1.0);
 
   Teuchos::RCP<Epetra_Vector> fcmd = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(true, *z_, *fcmd);
   Teuchos::RCP<Epetra_Vector> fcmdtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  CORE::LINALG::Export(*fcmd, *fcmdtemp);
+  Core::LinAlg::Export(*fcmd, *fcmdtemp);
   feff->Update(1 - alphaf_, *fcmdtemp, 1.0);
 
-  Teuchos::RCP<Epetra_Vector> fcmm = CORE::LINALG::CreateVector(*gmdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> fcmm = Core::LinAlg::CreateVector(*gmdofrowmap_, true);
   mmatrix_->Multiply(true, *z_, *fcmm);
   Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  CORE::LINALG::Export(*fcmm, *fcmmtemp);
+  Core::LinAlg::Export(*fcmm, *fcmmtemp);
   feff->Update(-(1 - alphaf_), *fcmmtemp, 1.0);
 
   // reset some matrices
   // must use FE_MATRIX type here, as we will do non-local assembly!
-  lindmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *gsdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
-  linmmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
-      *gmdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
+  lindmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *gsdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  linmmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
   // reset nodal derivZ values
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -541,7 +541,7 @@ void CONTACT::PenaltyStrategy::InitializeUzawa(
     for (int j = 0; j < interface_[i]->SlaveColNodesBound()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveColNodesBound()->GID(j);
-      CORE::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
+      Core::Nodes::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       Node* cnode = dynamic_cast<Node*>(node);
 
@@ -596,15 +596,15 @@ void CONTACT::PenaltyStrategy::update_constraint_norm(int uzawaiter)
   {
     // export weighted gap vector to gactiveN-map
     Teuchos::RCP<Epetra_Vector> gact;
-    if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+    if (constr_direction_ == Inpar::CONTACT::constr_xyz)
     {
-      gact = CORE::LINALG::CreateVector(*gactivedofs_, true);
-      CORE::LINALG::Export(*g_, *gact);
+      gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
+      Core::LinAlg::Export(*g_, *gact);
     }
     else
     {
-      gact = CORE::LINALG::CreateVector(*gactivenodes_, true);
-      if (gact->GlobalLength()) CORE::LINALG::Export(*g_, *gact);
+      gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
+      if (gact->GlobalLength()) Core::LinAlg::Export(*g_, *gact);
     }
 
     // compute constraint norm
@@ -622,10 +622,10 @@ void CONTACT::PenaltyStrategy::update_constraint_norm(int uzawaiter)
     // adaptive update of penalty parameter
     // (only for Uzawa Augmented Lagrange strategy)
     //********************************************************************
-    INPAR::CONTACT::SolvingStrategy soltype =
-        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
+    Inpar::CONTACT::SolvingStrategy soltype =
+        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
-    if (soltype == INPAR::CONTACT::solution_uzawa)
+    if (soltype == Inpar::CONTACT::solution_uzawa)
     {
       // check convergence of cnorm and update penalty parameter
       // only do this for second, third, ... Uzawa iteration
@@ -698,7 +698,7 @@ void CONTACT::PenaltyStrategy::update_uzawa_augmented_lagrange()
   // time step and thus also gives the guess for the initial
   // Lagrange multiplier lambda_0 of the next time step)
   zuzawa_ = Teuchos::rcp(new Epetra_Vector(*z_));
-  store_nodal_quantities(MORTAR::StrategyBase::lmuzawa);
+  store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
 
   return;
 }
@@ -750,7 +750,7 @@ void CONTACT::PenaltyStrategy::eval_force(CONTACT::ParamsInterface& cparams)
 void CONTACT::PenaltyStrategy::Assemble()
 {
   fc_ = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  kc_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ProblemDofs(), 100, true, true));
+  kc_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*ProblemDofs(), 100, true, true));
 
   // in the beginning of this function, the regularized contact forces
   // in normal and tangential direction are evaluated from geometric
@@ -771,14 +771,14 @@ void CONTACT::PenaltyStrategy::Assemble()
     interface_[i]->assemble_reg_normal_forces(localisincontact, localactivesetchange);
 
     // evaluate lagrange multipliers (regularized forces) in tangential direction
-    INPAR::CONTACT::SolvingStrategy soltype =
-        CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
+    Inpar::CONTACT::SolvingStrategy soltype =
+        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(Params(), "STRATEGY");
 
-    if (friction_ and (soltype == INPAR::CONTACT::solution_penalty or
-                          soltype == INPAR::CONTACT::solution_multiscale))
+    if (friction_ and (soltype == Inpar::CONTACT::solution_penalty or
+                          soltype == Inpar::CONTACT::solution_multiscale))
       interface_[i]->assemble_reg_tangent_forces_penalty();
 
-    if (friction_ and soltype == INPAR::CONTACT::solution_uzawa)
+    if (friction_ and soltype == Inpar::CONTACT::solution_uzawa)
       interface_[i]->assemble_reg_tangent_forces_uzawa();
 
     isincontact = isincontact || localisincontact;
@@ -817,9 +817,9 @@ void CONTACT::PenaltyStrategy::Assemble()
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     interface_[i]->BuildActiveSet();
-    gactivenodes_ = CORE::LINALG::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
-    gactivedofs_ = CORE::LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
-    gslipnodes_ = CORE::LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
+    gactivenodes_ = Core::LinAlg::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
+    gactivedofs_ = Core::LinAlg::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
+    gslipnodes_ = Core::LinAlg::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
   }
 
   // check if contact contributions are present,
@@ -852,10 +852,10 @@ void CONTACT::PenaltyStrategy::Assemble()
   if (Dualquadslavetrafo())
   {
     // modify lindmatrix_ and dmatrix_
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> temp1 =
-        CORE::LINALG::MLMultiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> temp2 =
-        CORE::LINALG::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
+        Core::LinAlg::MLMultiply(*invtrafo_, true, *lindmatrix_, false, false, false, true);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
+        Core::LinAlg::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
     lindmatrix_ = temp1;
     dmatrix_ = temp2;
   }
@@ -869,8 +869,8 @@ void CONTACT::PenaltyStrategy::Assemble()
   // transform if necessary
   if (ParRedist())
   {
-    lindmatrix_ = MORTAR::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
-    linmmatrix_ = MORTAR::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
+    lindmatrix_ = Mortar::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
+    linmmatrix_ = Mortar::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
   }
 
   // add to kteff
@@ -884,16 +884,16 @@ void CONTACT::PenaltyStrategy::Assemble()
   //  Kc,2= [ 0 -M(transpose) D] * deltaLM
 
   // multiply Mortar matrices D and M with LinZ
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dtilde =
-      CORE::LINALG::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> mtilde =
-      CORE::LINALG::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dtilde =
+      Core::LinAlg::MLMultiply(*dmatrix_, true, *linzmatrix_, false, false, false, true);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> mtilde =
+      Core::LinAlg::MLMultiply(*mmatrix_, true, *linzmatrix_, false, false, false, true);
 
   // transform if necessary
   if (ParRedist())
   {
-    dtilde = MORTAR::MatrixRowTransform(dtilde, pgsdofrowmap_);
-    mtilde = MORTAR::MatrixRowTransform(mtilde, pgmdofrowmap_);
+    dtilde = Mortar::MatrixRowTransform(dtilde, pgsdofrowmap_);
+    mtilde = Mortar::MatrixRowTransform(mtilde, pgmdofrowmap_);
   }
 
   // add to kteff
@@ -908,15 +908,15 @@ void CONTACT::PenaltyStrategy::Assemble()
     Teuchos::RCP<Epetra_Vector> fcmd = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     dmatrix_->Multiply(true, *z_, *fcmd);
     Teuchos::RCP<Epetra_Vector> fcmdtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    CORE::LINALG::Export(*fcmd, *fcmdtemp);
+    Core::LinAlg::Export(*fcmd, *fcmdtemp);
     fc_->Update(-(1.), *fcmdtemp, 1.0);
   }
 
   {
-    Teuchos::RCP<Epetra_Vector> fcmm = CORE::LINALG::CreateVector(*gmdofrowmap_, true);
+    Teuchos::RCP<Epetra_Vector> fcmm = Core::LinAlg::CreateVector(*gmdofrowmap_, true);
     mmatrix_->Multiply(true, *z_, *fcmm);
     Teuchos::RCP<Epetra_Vector> fcmmtemp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    CORE::LINALG::Export(*fcmm, *fcmmtemp);
+    Core::LinAlg::Export(*fcmm, *fcmmtemp);
     fc_->Update(1, *fcmmtemp, 1.0);
   }
 
@@ -975,14 +975,14 @@ void CONTACT::PenaltyStrategy::eval_force_stiff(CONTACT::ParamsInterface& cparam
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::pre_evaluate(CONTACT::ParamsInterface& cparams)
 {
-  const enum MORTAR::ActionType& act = cparams.GetActionType();
+  const enum Mortar::ActionType& act = cparams.GetActionType();
 
   switch (act)
   {
       // -------------------------------------------------------------------
       // reset force evaluation flag for predictor step
       // -------------------------------------------------------------------
-    case MORTAR::eval_force_stiff:
+    case Mortar::eval_force_stiff:
     {
       if (cparams.IsPredictor()) evalForceCalled_ = false;
       break;
@@ -1005,14 +1005,14 @@ void CONTACT::PenaltyStrategy::pre_evaluate(CONTACT::ParamsInterface& cparams)
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::post_evaluate(CONTACT::ParamsInterface& cparams)
 {
-  const enum MORTAR::ActionType& act = cparams.GetActionType();
+  const enum Mortar::ActionType& act = cparams.GetActionType();
 
   switch (act)
   {
     // -------------------------------------------------------------------
     // set flag to false after force stiff evaluation
     // -------------------------------------------------------------------
-    case MORTAR::eval_force_stiff:
+    case Mortar::eval_force_stiff:
     {
       evalForceCalled_ = false;
       break;
@@ -1020,7 +1020,7 @@ void CONTACT::PenaltyStrategy::post_evaluate(CONTACT::ParamsInterface& cparams)
     // -------------------------------------------------------------------
     // set flag for force evaluation to true
     // -------------------------------------------------------------------
-    case MORTAR::eval_force:
+    case Mortar::eval_force:
     {
       evalForceCalled_ = true;
       break;
@@ -1041,13 +1041,13 @@ void CONTACT::PenaltyStrategy::post_evaluate(CONTACT::ParamsInterface& cparams)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::PenaltyStrategy::GetMatrixBlockPtr(
+Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::PenaltyStrategy::GetMatrixBlockPtr(
     const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   // if there are no active contact contributions
   if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return Teuchos::null;
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
     case CONTACT::MatBlockType::displ_displ:
@@ -1070,7 +1070,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::PenaltyStrategy::GetMatrixBloc
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultN(const bool& redist) const
 {
-  if (GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
+  if (Global::Problem::Instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
       "Old")
     return CONTACT::AbstractStrategy::GetLagrMultN(redist);
   else
@@ -1081,7 +1081,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultN(const b
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultNp(const bool& redist) const
 {
-  if (GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
+  if (Global::Problem::Instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
       "Old")
     return CONTACT::AbstractStrategy::GetLagrMultNp(redist);
   else
@@ -1092,7 +1092,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::PenaltyStrategy::GetLagrMultNp(const 
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> CONTACT::PenaltyStrategy::LagrMultOld()
 {
-  if (GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
+  if (Global::Problem::Instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
       "Old")
     return CONTACT::AbstractStrategy::LagrMultOld();
   else
@@ -1103,7 +1103,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::PenaltyStrategy::LagrMultOld()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> CONTACT::PenaltyStrategy::LMDoFRowMapPtr(const bool& redist) const
 {
-  if (GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
+  if (Global::Problem::Instance()->structural_dynamic_params().get<std::string>("INT_STRATEGY") ==
       "Old")
     return CONTACT::AbstractStrategy::LMDoFRowMapPtr(redist);
   else

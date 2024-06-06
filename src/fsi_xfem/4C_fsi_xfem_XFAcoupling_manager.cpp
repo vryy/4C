@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 | Constructor                                                                 ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
 XFEM::XfaCouplingManager::XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
-    Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale, std::vector<int> idx,
-    Teuchos::RCP<ADAPTER::Structure> structure)
+    Teuchos::RCP<Adapter::AleFpsiWrapper> ale, std::vector<int> idx,
+    Teuchos::RCP<Adapter::Structure> structure)
     : CouplingCommManager(xfluid->discretization(), ale->discretization(), "", 0, 3),
       ale_(ale),
       xfluid_(xfluid),
@@ -112,21 +112,21 @@ void XFEM::XfaCouplingManager::SetCouplingStates()
 | Add the coupling matrixes to the global systemmatrix                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
 void XFEM::XfaCouplingManager::AddCouplingMatrix(
-    CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling)
+    Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling)
 {
   // Get Idx of fluid and ale field map extractors
   const int& aidx_other = ALE::UTILS::MapExtractor::cond_other;
-  const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = ale_->BlockSystemMatrix();
+  const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_->BlockSystemMatrix();
 
   // ALE Condensation
-  CORE::LINALG::SparseMatrix& aii = a->Matrix(aidx_other, aidx_other);
+  Core::LinAlg::SparseMatrix& aii = a->Matrix(aidx_other, aidx_other);
 
-  systemmatrix.Assign(idx_[1], idx_[1], CORE::LINALG::View, aii);
+  systemmatrix.Assign(idx_[1], idx_[1], Core::LinAlg::View, aii);
 
   if (ale_struct_coupling_ != Teuchos::null)
   {
     const int& aidx_as = ALE::UTILS::MapExtractor::cond_lung_asi;
-    CORE::LINALG::SparseMatrix& ai_gau = a->Matrix(aidx_other, aidx_as);
+    Core::LinAlg::SparseMatrix& ai_gau = a->Matrix(aidx_other, aidx_as);
     ale_struct_coupling_->InsertMatrix(0, 0, ai_gau, 1, systemmatrix.Matrix(idx_[1], idx_[2]),
         XFEM::CouplingCommManager::col, 1.0, true, false);
   }
@@ -147,7 +147,7 @@ void XFEM::XfaCouplingManager::AddCouplingMatrix(
 | Add the coupling rhs                                                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
 void XFEM::XfaCouplingManager::AddCouplingRHS(
-    Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me, double scaling)
+    Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
   Teuchos::RCP<const Epetra_Vector> av = ale_->RHS();
   Teuchos::RCP<Epetra_Vector> aov = ale_->Interface()->ExtractOtherVector(av);

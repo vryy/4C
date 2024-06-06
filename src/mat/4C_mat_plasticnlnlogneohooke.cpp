@@ -36,8 +36,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   std::pair<double, double> ResiduumAndJacobianFromFunction(
-      MAT::PAR::PlasticNlnLogNeoHooke* matparameter, double Dgamma, double dt, double accplstrain,
-      double abs_dev_KH_trial, const CORE::UTILS::FunctionOfAnything& hardeningfunction)
+      Mat::PAR::PlasticNlnLogNeoHooke* matparameter, double Dgamma, double dt, double accplstrain,
+      double abs_dev_KH_trial, const Core::UTILS::FunctionOfAnything& hardeningfunction)
   {
     const double ym = matparameter->youngs_;        // Young's modulus
     const double nu = matparameter->poissonratio_;  // Poisson's ratio
@@ -62,7 +62,7 @@ namespace
     return {residuum, tangent};
   }
 
-  std::pair<double, double> ResiduumAndJacobian(MAT::PAR::PlasticNlnLogNeoHooke* matparameter,
+  std::pair<double, double> ResiduumAndJacobian(Mat::PAR::PlasticNlnLogNeoHooke* matparameter,
       double Dgamma, double dt, double accplstrain_last, double abs_dev_KH_trial)
   {
     const double ym = matparameter->youngs_;        // Young's modulus
@@ -92,8 +92,8 @@ namespace
   }
 
   std::pair<double, double> SolveNewtonWithHardeningFunc(
-      MAT::PAR::PlasticNlnLogNeoHooke* matparameter, double abs_dev_KH_trial,
-      double accplstrain_last, double dt, const CORE::UTILS::FunctionOfAnything& hardening_function,
+      Mat::PAR::PlasticNlnLogNeoHooke* matparameter, double abs_dev_KH_trial,
+      double accplstrain_last, double dt, const Core::UTILS::FunctionOfAnything& hardening_function,
       bool error_tol)
   {
     const double visc = matparameter->visc_;            // viscosity
@@ -110,7 +110,7 @@ namespace
     };
 
     const double Dgamma =
-        CORE::UTILS::SolveLocalNewton(residuumAndJacobianFromFunction, 0.0, tol, maxiter);
+        Core::UTILS::SolveLocalNewton(residuumAndJacobianFromFunction, 0.0, tol, maxiter);
 
     //! vector for input of accumulated strain to function
     std::vector<std::pair<std::string, double>> dp;
@@ -124,7 +124,7 @@ namespace
     return {Dgamma, dy_d_dgamma};
   }
 
-  std::pair<double, double> SolveNewtonWithParameters(MAT::PAR::PlasticNlnLogNeoHooke* matparameter,
+  std::pair<double, double> SolveNewtonWithParameters(Mat::PAR::PlasticNlnLogNeoHooke* matparameter,
       double abs_dev_KH_trial, double accplstrain_last, double dt, bool error_tol)
   {
     // plastic material data
@@ -142,7 +142,7 @@ namespace
     auto residuumAndJacobian = [&](double Dgamma)
     { return ResiduumAndJacobian(matparameter, Dgamma, dt, accplstrain_last, abs_dev_KH_trial); };
 
-    const double Dgamma = CORE::UTILS::SolveLocalNewton(residuumAndJacobian, 0.0, tol, maxiter);
+    const double Dgamma = Core::UTILS::SolveLocalNewton(residuumAndJacobian, 0.0, tol, maxiter);
 
     const double accplstrain_curr = accplstrain_last + Dgamma;
 
@@ -163,8 +163,8 @@ namespace
 /*----------------------------------------------------------------------*
  | constructor (public)                                                 |
  *----------------------------------------------------------------------*/
-MAT::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       youngs_(matdata->Get<double>("YOUNG")),
       poissonratio_(matdata->Get<double>("NUE")),
@@ -189,21 +189,22 @@ MAT::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()                  |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::PlasticNlnLogNeoHooke::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticNlnLogNeoHooke::create_material()
 {
-  return Teuchos::rcp(new MAT::PlasticNlnLogNeoHooke(this));
+  return Teuchos::rcp(new Mat::PlasticNlnLogNeoHooke(this));
 }
 
 
-MAT::PlasticNlnLogNeoHookeType MAT::PlasticNlnLogNeoHookeType::instance_;
+Mat::PlasticNlnLogNeoHookeType Mat::PlasticNlnLogNeoHookeType::instance_;
 
 
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()                  |
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* MAT::PlasticNlnLogNeoHookeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::PlasticNlnLogNeoHookeType::Create(
+    const std::vector<char>& data)
 {
-  MAT::PlasticNlnLogNeoHooke* plasticneo = new MAT::PlasticNlnLogNeoHooke();
+  Mat::PlasticNlnLogNeoHooke* plasticneo = new Mat::PlasticNlnLogNeoHooke();
   plasticneo->Unpack(data);
   return plasticneo;
 }
@@ -212,13 +213,13 @@ CORE::COMM::ParObject* MAT::PlasticNlnLogNeoHookeType::Create(const std::vector<
 /*----------------------------------------------------------------------*
  | constructor (public)                                                 |
  *----------------------------------------------------------------------*/
-MAT::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke() : params_(nullptr) {}
+Mat::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
  | copy-constructor (public)                                            |
  *----------------------------------------------------------------------*/
-MAT::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(MAT::PAR::PlasticNlnLogNeoHooke* params)
+Mat::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(Mat::PAR::PlasticNlnLogNeoHooke* params)
     : params_(params)
 {
 }
@@ -227,9 +228,9 @@ MAT::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(MAT::PAR::PlasticNlnLogNeoHook
 /*----------------------------------------------------------------------*
  | pack (public)                                                        |
  *----------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::PlasticNlnLogNeoHooke::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -268,25 +269,25 @@ void MAT::PlasticNlnLogNeoHooke::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack (public)                                                      |
  *----------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
+void Mat::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::PlasticNlnLogNeoHooke*>(mat);
+        params_ = static_cast<Mat::PAR::PlasticNlnLogNeoHooke*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -306,7 +307,7 @@ void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
     ExtractfromPack(position, data, tmp1);
     accplstrainlast_.push_back(tmp1);
 
-    CORE::LINALG::Matrix<3, 3> tmp(true);
+    Core::LinAlg::Matrix<3, 3> tmp(true);
     // vectors of last converged state are unpacked
     ExtractfromPack(position, data, tmp);
     invplrcglast_.push_back(tmp);
@@ -327,7 +328,7 @@ void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal variables (public)                   |
  *---------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::PlasticNlnLogNeoHooke::Setup(int numgp, Input::LineDefinition* linedef)
 {
   // Extract the function for hardening only once because this is expensive.
   const int functionID_hardening =
@@ -335,7 +336,7 @@ void MAT::PlasticNlnLogNeoHooke::Setup(int numgp, INPUT::LineDefinition* linedef
   if (functionID_hardening != 0)
   {
     hardening_function_ =
-        &GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfAnything>(
+        &Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfAnything>(
             functionID_hardening - 1);
   }
 
@@ -345,7 +346,7 @@ void MAT::PlasticNlnLogNeoHooke::Setup(int numgp, INPUT::LineDefinition* linedef
   accplstrainlast_.resize(numgp);
   accplstraincurr_.resize(numgp);
 
-  CORE::LINALG::Matrix<3, 3> emptymat(true);
+  Core::LinAlg::Matrix<3, 3> emptymat(true);
   for (int i = 0; i < 3; i++) emptymat(i, i) = 1.0;
 
   for (int i = 0; i < numgp; i++)
@@ -364,7 +365,7 @@ void MAT::PlasticNlnLogNeoHooke::Setup(int numgp, INPUT::LineDefinition* linedef
 /*----------------------------------------------------------------------*
  | update internal variables                                            |
  *----------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::Update()
+void Mat::PlasticNlnLogNeoHooke::Update()
 {
   // make current values at time step t_n+1 to values of last step t_n
   invplrcglast_ = invplrcgcurr_;
@@ -379,7 +380,7 @@ void MAT::PlasticNlnLogNeoHooke::Update()
   invplrcgcurr_.resize(histsize);
   accplstraincurr_.resize(histsize);
 
-  CORE::LINALG::Matrix<3, 3> emptymat(true);
+  Core::LinAlg::Matrix<3, 3> emptymat(true);
   for (int i = 0; i < 3; i++) emptymat(i, i) = 1.0;
 
   for (int i = 0; i < histsize; i++)
@@ -394,9 +395,9 @@ void MAT::PlasticNlnLogNeoHooke::Update()
 /*----------------------------------------------------------------------*
  | calculate stress and constitutive tensor                             |
  *----------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::PlasticNlnLogNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   // elastic material data
@@ -425,17 +426,17 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   double Dgamma = 0.0;
   double dy_d_dgamma = 0.0;
 
-  CORE::LINALG::Matrix<3, 3> invdefgrd(*defgrd);
+  Core::LinAlg::Matrix<3, 3> invdefgrd(*defgrd);
   invdefgrd.Invert();
 
   // matrices for temporary stuff
-  CORE::LINALG::Matrix<3, 3> tmp1;
-  CORE::LINALG::Matrix<3, 3> tmp2;
+  Core::LinAlg::Matrix<3, 3> tmp1;
+  Core::LinAlg::Matrix<3, 3> tmp2;
 
   // 3x3 2nd-order identity matrix
-  CORE::LINALG::Matrix<3, 3> id2(true);
+  Core::LinAlg::Matrix<3, 3> id2(true);
   // 3x3 2nd-order deviatoric identity matrix in principal directions
-  CORE::LINALG::Matrix<3, 3> Idev;
+  Core::LinAlg::Matrix<3, 3> Idev;
   for (int i = 0; i < 3; i++)
   {
     id2(i, i) = 1.0;
@@ -449,7 +450,7 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   }
 
   // linear elasticity tensor in principal directions
-  CORE::LINALG::Matrix<3, 3> D_ep_principal(Idev);
+  Core::LinAlg::Matrix<3, 3> D_ep_principal(Idev);
   D_ep_principal.Scale(2.0 * G);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++) D_ep_principal(i, j) += kappa;
@@ -457,12 +458,12 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   // ------------------------------------------------------- trial strain
   // elastic left Cauchy-Green deformation tensor (LCG) at trial state
   // Be_trial = b_{e,n+1}^{trial} = F_{n+1} C_{p,n}^{-1} F_{n+1}
-  CORE::LINALG::Matrix<3, 3> Be_trial;
+  Core::LinAlg::Matrix<3, 3> Be_trial;
   tmp1.Multiply(*defgrd, invplrcglast_.at(gp));
   Be_trial.MultiplyNT(tmp1, *defgrd);
 
   // elastic LCG at final state
-  CORE::LINALG::Matrix<3, 3> Be;
+  Core::LinAlg::Matrix<3, 3> Be;
 
   // ***************************************************
   // Here we start the principal stress based algorithm
@@ -471,21 +472,21 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   // convert to epetra format and solve eigenvalue problem
   // this matrix contains spatial eigen directions (the second
   // index corresponds to the eigenvalue)
-  CORE::LINALG::SerialDenseMatrix n(3, 3);
-  CORE::LINALG::SerialDenseVector lambda_trial_square(3);
+  Core::LinAlg::SerialDenseMatrix n(3, 3);
+  Core::LinAlg::SerialDenseVector lambda_trial_square(3);
 
   // convert Input Matrix in Epetra format
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++) n(i, j) = Be_trial(i, j);
 
   // calculate eigenvectors and eigenvalues
-  CORE::LINALG::SymmetricEigenProblem(n, lambda_trial_square);
+  Core::LinAlg::SymmetricEigenProblem(n, lambda_trial_square);
   // eigenvectors are stored in n, i.e. original matrix inserted in method is
   // destroyed.
   // eigenvalues correspond to the square of the stretches
 
-  // spatial principal direction n_alpha (in CORE::LINALG format)
-  std::vector<CORE::LINALG::Matrix<3, 1>> spatial_principal_directions;
+  // spatial principal direction n_alpha (in Core::LINALG format)
+  std::vector<Core::LinAlg::Matrix<3, 1>> spatial_principal_directions;
   spatial_principal_directions.resize(3);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++) (spatial_principal_directions.at(i))(j) = n(j, i);
@@ -494,21 +495,21 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   // note, that for convenience in the later programming this is NOT
   // based on the correct pull-back N_alpha = lambda_alpha * F^-1 * n_alpha
   // Instead we just do N_alpha = F^{-1} * n_alpha
-  std::vector<CORE::LINALG::Matrix<3, 1>> material_principal_directions;
+  std::vector<Core::LinAlg::Matrix<3, 1>> material_principal_directions;
   material_principal_directions.resize(3);
   for (int i = 0; i < 3; i++)
     material_principal_directions.at(i).Multiply(invdefgrd, spatial_principal_directions.at(i));
 
   // deviatoric Kirchhoff stress at trial state
   // tau^{trial} = 2 * G * log(sqrt(lambda^2)) - 2/3 * G * log(detF)
-  CORE::LINALG::Matrix<3, 1> dev_KH_trial;
+  Core::LinAlg::Matrix<3, 1> dev_KH_trial;
   for (int i = 0; i < 3; i++)
     dev_KH_trial(i) = G * std::log(lambda_trial_square(i)) - 2.0 / 3.0 * G * std::log(detF);
 
   // deviatoric Kirchhoff stress at final state
   // For now we store the trial states. In case of plastic
   // material reaction, we will update it later
-  CORE::LINALG::Matrix<3, 1> dev_KH;
+  Core::LinAlg::Matrix<3, 1> dev_KH;
 
   // pressure (equal at trial state and final state) for the use with tau
   // tau = tau'_aa + p = tau'_aa + kappa * log(detF)
@@ -560,7 +561,7 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
       return;
     }
     // flow vector (7.77) in de Souza Neta
-    CORE::LINALG::Matrix<3, 1> flow_vector(dev_KH_trial);
+    Core::LinAlg::Matrix<3, 1> flow_vector(dev_KH_trial);
     flow_vector.Scale(1.0 / (sqrt(2.0 / 3.0) * abs_dev_KH_trial));
 
     // stress return mapping (7.89) in de Souza Neto
@@ -592,7 +593,7 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   // or tau_ij = tau'_ii + kappa ln(J)
   // S_ij   = F^-1 tau_ij F^-T
   //        = tau_ij (F^-1 n_i) \otimes (F^-1 n_i)
-  CORE::LINALG::Matrix<3, 3> PK2(true);
+  Core::LinAlg::Matrix<3, 3> PK2(true);
   for (int i = 0; i < 3; i++)
   {
     tmp1.MultiplyNT(material_principal_directions.at(i), material_principal_directions.at(i));
@@ -670,7 +671,7 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::VisNames(std::map<std::string, int>& names)
+void Mat::PlasticNlnLogNeoHooke::VisNames(std::map<std::string, int>& names)
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1;  // scalar
@@ -681,7 +682,7 @@ void MAT::PlasticNlnLogNeoHooke::VisNames(std::map<std::string, int>& names)
 /*---------------------------------------------------------------------*
  | return names of visualization data for direct VTK output            |
  *---------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::register_output_data_names(
+void Mat::PlasticNlnLogNeoHooke::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   names_and_size["accumulated_plastic_strain"] = 1;
@@ -693,7 +694,7 @@ void MAT::PlasticNlnLogNeoHooke::register_output_data_names(
 /*---------------------------------------------------------------------*
  | return visualization data (public)                                  |
  *---------------------------------------------------------------------*/
-bool MAT::PlasticNlnLogNeoHooke::VisData(
+bool Mat::PlasticNlnLogNeoHooke::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "accumulatedstrain")
@@ -708,8 +709,8 @@ bool MAT::PlasticNlnLogNeoHooke::VisData(
 }  // VisData()
 
 
-bool MAT::PlasticNlnLogNeoHooke::EvaluateOutputData(
-    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
+bool Mat::PlasticNlnLogNeoHooke::EvaluateOutputData(
+    const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (name == "accumulated_plastic_strain")
   {

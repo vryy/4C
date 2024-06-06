@@ -19,11 +19,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype, int probdim>
+    template <Core::FE::CellType distype, int probdim>
     class ScaTraEleCalcCardiacMonodomain : public ScaTraEleCalcAniso<distype, probdim>,
                                            public ScaTraEleCalcAdvReac<distype, probdim>
     {
@@ -48,14 +48,14 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate the element
-      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, const SCATRA::Action& action,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
      protected:
       /*========================================================================*/
@@ -63,13 +63,13 @@ namespace DRT
       /*========================================================================*/
 
       //! extract element based or nodal values
-      void extract_element_and_node_values(CORE::Elements::Element* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la) override;
+      void extract_element_and_node_values(Core::Elements::Element* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la) override;
 
       //! evaluate material
       void materials(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -80,7 +80,7 @@ namespace DRT
 
       //! material ScaTra
       void mat_myocard(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -90,16 +90,16 @@ namespace DRT
       );
 
       //! calculate matrix and rhs for ep
-      void sysmat(CORE::Elements::Element* ele,       ///< the element whose matrix is calculated
-          CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
-          CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
+      void sysmat(Core::Elements::Element* ele,       ///< the element whose matrix is calculated
+          Core::LinAlg::SerialDenseMatrix& emat,      ///< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs,      ///< element rhs to calculate
+          Core::LinAlg::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
           ) override;
     };
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

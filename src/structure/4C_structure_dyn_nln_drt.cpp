@@ -38,20 +38,20 @@ FOUR_C_NAMESPACE_OPEN
 void caldyn_drt()
 {
   // get input lists
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
   // major switch to different time integrators
-  switch (CORE::UTILS::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
-    case INPAR::STR::dyna_statics:
-    case INPAR::STR::dyna_genalpha:
-    case INPAR::STR::dyna_genalpha_liegroup:
-    case INPAR::STR::dyna_onesteptheta:
-    case INPAR::STR::dyna_expleuler:
-    case INPAR::STR::dyna_centrdiff:
-    case INPAR::STR::dyna_ab2:
-    case INPAR::STR::dyna_ab4:
-    case INPAR::STR::dyna_euma:
-    case INPAR::STR::dyna_euimsto:
+    case Inpar::STR::dyna_statics:
+    case Inpar::STR::dyna_genalpha:
+    case Inpar::STR::dyna_genalpha_liegroup:
+    case Inpar::STR::dyna_onesteptheta:
+    case Inpar::STR::dyna_expleuler:
+    case Inpar::STR::dyna_centrdiff:
+    case Inpar::STR::dyna_ab2:
+    case Inpar::STR::dyna_ab4:
+    case Inpar::STR::dyna_euma:
+    case Inpar::STR::dyna_euimsto:
       dyn_nlnstructural_drt();
       break;
     default:
@@ -70,13 +70,14 @@ void caldyn_drt()
 void dyn_nlnstructural_drt()
 {
   // get input lists
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
   // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = GLOBAL::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Discret::Discretization> structdis =
+      Global::Problem::Instance()->GetDis("structure");
 
   // connect degrees of freedom for periodic boundary conditions
   {
-    CORE::Conditions::PeriodicBoundaryConditions pbc_struct(structdis);
+    Core::Conditions::PeriodicBoundaryConditions pbc_struct(structdis);
 
     if (pbc_struct.HasPBC())
     {
@@ -85,20 +86,20 @@ void dyn_nlnstructural_drt()
   }
 
   // create an adapterbase and adapter
-  Teuchos::RCP<ADAPTER::Structure> structadapter = Teuchos::null;
+  Teuchos::RCP<Adapter::Structure> structadapter = Teuchos::null;
   // FixMe The following switch is just a temporal hack, such we can jump between the new and the
   // old structure implementation. Has to be deleted after the clean-up has been finished!
-  const enum INPAR::STR::IntegrationStrategy intstrat =
-      CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+  const enum Inpar::STR::IntegrationStrategy intstrat =
+      Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
   switch (intstrat)
   {
     // -------------------------------------------------------------------
     // old implementation
     // -------------------------------------------------------------------
-    case INPAR::STR::int_old:
+    case Inpar::STR::int_old:
     {
-      Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> adapterbase_old_ptr =
-          Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
+      Teuchos::RCP<Adapter::StructureBaseAlgorithm> adapterbase_old_ptr =
+          Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
               sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
       structadapter = adapterbase_old_ptr->structure_field();
       structadapter->Setup();
@@ -109,8 +110,8 @@ void dyn_nlnstructural_drt()
     // -------------------------------------------------------------------
     default:
     {
-      Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
-          ADAPTER::build_structure_algorithm(sdyn);
+      Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
+          Adapter::build_structure_algorithm(sdyn);
       adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
       adapterbase_ptr->Setup();
       structadapter = adapterbase_ptr->structure_field();
@@ -118,13 +119,13 @@ void dyn_nlnstructural_drt()
     }
   }
 
-  const bool write_initial_state = CORE::UTILS::IntegralValue<int>(
-      GLOBAL::Problem::Instance()->IOParams(), "WRITE_INITIAL_STATE");
+  const bool write_initial_state = Core::UTILS::IntegralValue<int>(
+      Global::Problem::Instance()->IOParams(), "WRITE_INITIAL_STATE");
   const bool write_final_state =
-      CORE::UTILS::IntegralValue<int>(GLOBAL::Problem::Instance()->IOParams(), "WRITE_FINAL_STATE");
+      Core::UTILS::IntegralValue<int>(Global::Problem::Instance()->IOParams(), "WRITE_FINAL_STATE");
 
   // do restart
-  const int restart = GLOBAL::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->Restart();
   if (restart)
   {
     structadapter->read_restart(restart);
@@ -154,12 +155,12 @@ void dyn_nlnstructural_drt()
   }
 
   // test results
-  GLOBAL::Problem::Instance()->AddFieldTest(structadapter->CreateFieldTest());
-  GLOBAL::Problem::Instance()->TestAll(structadapter->dof_row_map()->Comm());
+  Global::Problem::Instance()->AddFieldTest(structadapter->CreateFieldTest());
+  Global::Problem::Instance()->TestAll(structadapter->dof_row_map()->Comm());
 
   // print monitoring of time consumption
   Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-      CORE::COMM::toTeuchosComm<int>(structdis->Comm());
+      Core::Communication::toTeuchosComm<int>(structdis->Comm());
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, true);
 
   // time to go home...

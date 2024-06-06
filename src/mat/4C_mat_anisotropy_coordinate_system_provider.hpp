@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   // forward declaration
 
@@ -59,7 +59,7 @@ namespace MAT
     Teuchos::RCP<const CylinderCoordinateSystemProvider> cylinder_coordinate_system_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

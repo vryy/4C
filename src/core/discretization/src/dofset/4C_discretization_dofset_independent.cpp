@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Dofsets::IndependentDofSet::IndependentDofSet(bool ignoreminnodegid /*=false*/)
-    : CORE::Dofsets::DofSet(), ignoreminnodegid_(ignoreminnodegid)
+Core::DOFSets::IndependentDofSet::IndependentDofSet(bool ignoreminnodegid /*=false*/)
+    : Core::DOFSets::DofSet(), ignoreminnodegid_(ignoreminnodegid)
 {
   return;
 }
@@ -26,8 +26,8 @@ CORE::Dofsets::IndependentDofSet::IndependentDofSet(bool ignoreminnodegid /*=fal
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Dofsets::IndependentDofSet::IndependentDofSet(const IndependentDofSet& old)
-    : CORE::Dofsets::DofSet(old), ignoreminnodegid_(old.ignoreminnodegid_)
+Core::DOFSets::IndependentDofSet::IndependentDofSet(const IndependentDofSet& old)
+    : Core::DOFSets::DofSet(old), ignoreminnodegid_(old.ignoreminnodegid_)
 {
   return;
 }
@@ -36,7 +36,7 @@ CORE::Dofsets::IndependentDofSet::IndependentDofSet(const IndependentDofSet& old
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::IndependentDofSet::AddDofSettoList()
+void Core::DOFSets::IndependentDofSet::AddDofSettoList()
 {
   // We do nothing here as an independent DofSet should not show up in the dof set list.
   return;
@@ -45,8 +45,8 @@ void CORE::Dofsets::IndependentDofSet::AddDofSettoList()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::IndependentDofSet::get_first_gid_number_to_be_used(
-    const DRT::Discretization& dis) const
+int Core::DOFSets::IndependentDofSet::get_first_gid_number_to_be_used(
+    const Discret::Discretization& dis) const
 {
   // always start from zero here, as this is an independent DofSet
   return 0;
@@ -55,8 +55,8 @@ int CORE::Dofsets::IndependentDofSet::get_first_gid_number_to_be_used(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::IndependentDofSet::get_minimal_node_gid_if_relevant(
-    const DRT::Discretization& dis) const
+int Core::DOFSets::IndependentDofSet::get_minimal_node_gid_if_relevant(
+    const Discret::Discretization& dis) const
 {
   return ignoreminnodegid_ ? 0 : dis.NodeRowMap()->MinAllGID();
 }

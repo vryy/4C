@@ -17,12 +17,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace SCATRA
+namespace ScaTra
 {
   /*!
   \brief Solution strategy for heterogeneous reactions
@@ -41,7 +41,7 @@ namespace SCATRA
   {
    public:
     //! constructor
-    explicit HeterogeneousReactionStrategy(SCATRA::ScaTraTimIntImpl* scatratimint);
+    explicit HeterogeneousReactionStrategy(ScaTra::ScaTraTimIntImpl* scatratimint);
 
 
     //! compute residual terms and their linearizations
@@ -59,7 +59,7 @@ namespace SCATRA
      Evaluate terms of your weak formulation on elements marked with a given condition.
 
     \note The implementation of evaluate_condition in this class, calls
-          \ref DRT::Discretization::evaluate_condition on the auxiliary
+          \ref Discret::Discretization::evaluate_condition on the auxiliary
           discretization. Since, this discretization has the dofs of both,
           the volume-bound scalars and the surface bound scalars, every
           term involving one or both kinds of scalars can easily be evaluated.
@@ -76,8 +76,8 @@ namespace SCATRA
     \author rauch
     */
     void evaluate_condition(Teuchos::ParameterList& params,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
         const int condid) override;
@@ -101,7 +101,7 @@ namespace SCATRA
 
    private:
     //! the discretization for the reaction
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! private copy constructor
     HeterogeneousReactionStrategy(const HeterogeneousReactionStrategy& old);
@@ -143,7 +143,7 @@ namespace SCATRA
     void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
 
   };  // class MeshtyingStrategyStd
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 
 

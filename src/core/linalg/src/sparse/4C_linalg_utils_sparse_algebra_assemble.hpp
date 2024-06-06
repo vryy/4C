@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of algebraic assemble methods for namespace CORE::LINALG
+\brief A collection of algebraic assemble methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -26,10 +26,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
-   \brief Assemble an CORE::LINALG::SerialDenseMatrix into an Epetra_CrsMatrix
+   \brief Assemble an Core::LinAlg::SerialDenseMatrix into an Epetra_CrsMatrix
 
    This is an individual call.
    Will only assemble locally and will never do any commmunication.
@@ -49,12 +49,12 @@ namespace CORE::LINALG
    \param lmrowowner (in) : vector with owner procs of row gids
    \param lmcol (in)      : vector with column gids
    */
-  void Assemble(Epetra_CrsMatrix& A, const CORE::LINALG::SerialDenseMatrix& Aele,
+  void Assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDenseMatrix& Aele,
       const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
       const std::vector<int>& lmcol);
 
   /*!
-   \brief Assemble an CORE::LINALG::SerialDenseVector into an Epetra_Vector
+   \brief Assemble an Core::LinAlg::SerialDenseVector into an Epetra_Vector
 
    This is an individual call.
    Will only assemble locally and will never do any commmunication.
@@ -66,36 +66,36 @@ namespace CORE::LINALG
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
-  void Assemble(Epetra_Vector& V, const CORE::LINALG::SerialDenseVector& Vele,
+  void Assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVector& Vele,
       const std::vector<int>& lm, const std::vector<int>& lmowner);
 
   /*!
-   \brief Assemble a CORE::LINALG::Matrix<3,1> into an Epetra_Vector
+   \brief Assemble a Core::LinAlg::Matrix<3,1> into an Epetra_Vector
 
-   This is a wrapper that converts CORE::LINALG::Matrix<3,1> to
-   CORE::LINALG::SerialDenseVector (view version)
+   This is a wrapper that converts Core::LinAlg::Matrix<3,1> to
+   Core::LinAlg::SerialDenseVector (view version)
 
    \param V (out)   : Vector to be assembled on
    \param Vele (in) : dense vector to be assembled
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
-  void Assemble(Epetra_Vector& V, CORE::LINALG::Matrix<3, 1>& Vele, const std::vector<int>& lm,
+  void Assemble(Epetra_Vector& V, Core::LinAlg::Matrix<3, 1>& Vele, const std::vector<int>& lm,
       const std::vector<int>& lmowner);
 
   /*!
-   \brief Assemble a CORE::LINALG::Matrix<3,1> into an Epetra_Vector in case the
+   \brief Assemble a Core::LinAlg::Matrix<3,1> into an Epetra_Vector in case the
    owner is always the same
 
-   This is a wrapper that converts CORE::LINALG::Matrix<3,1> to
-   CORE::LINALG::SerialDenseVector (view version)
+   This is a wrapper that converts Core::LinAlg::Matrix<3,1> to
+   Core::LinAlg::SerialDenseVector (view version)
 
    \param V (out)   : Vector to be assembled on
    \param Vele (in) : dense vector to be assembled
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
-  void Assemble(Epetra_Vector& V, CORE::LINALG::Matrix<3, 1>& Vele, const std::vector<int>& lm,
+  void Assemble(Epetra_Vector& V, Core::LinAlg::Matrix<3, 1>& Vele, const std::vector<int>& lm,
       const int& lmowner);
 
   /*!
@@ -111,7 +111,7 @@ namespace CORE::LINALG
   void Assemble(Epetra_Vector& V, double& Vele, const int& lm, const int& lmowner);
 
   /*!
-   \brief Assemble a CORE::LINALG::SerialDenseVector into a Epetra_MultiVector
+   \brief Assemble a Core::LinAlg::SerialDenseVector into a Epetra_MultiVector
 
    This is an individual call.
    Will only assemble locally and will never do any commmunication.
@@ -124,7 +124,7 @@ namespace CORE::LINALG
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
-  void Assemble(Epetra_MultiVector& V, const int n, const CORE::LINALG::SerialDenseVector& Vele,
+  void Assemble(Epetra_MultiVector& V, const int n, const Core::LinAlg::SerialDenseVector& Vele,
       const std::vector<int>& lm, const std::vector<int>& lmowner);
 
   /*! \brief Assemble a source Epetra_Vector into a target Epetra_Vector
@@ -187,7 +187,7 @@ namespace CORE::LINALG
    \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
    and 0.0 everywhere else
      */
-  void apply_dirichlet_to_system(CORE::LINALG::SparseOperator& A, Epetra_Vector& x,
+  void apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Epetra_Vector& x,
       Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle);
 
   /*!
@@ -207,7 +207,7 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void apply_dirichlet_to_system(CORE::LINALG::SparseOperator& A, Epetra_Vector& x,
+  void apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Epetra_Vector& x,
       Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!
@@ -233,8 +233,8 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void apply_dirichlet_to_system(CORE::LINALG::SparseMatrix& A, Epetra_Vector& x, Epetra_Vector& b,
-      const CORE::LINALG::SparseMatrix& trafo, const Epetra_Vector& dbcval,
+  void apply_dirichlet_to_system(Core::LinAlg::SparseMatrix& A, Epetra_Vector& x, Epetra_Vector& b,
+      const Core::LinAlg::SparseMatrix& trafo, const Epetra_Vector& dbcval,
       const Epetra_Map& dbcmap);
 
   /*!
@@ -305,10 +305,10 @@ namespace CORE::LINALG
    \author bborn
    \date 10/08
    */
-  Teuchos::RCP<CORE::LINALG::MapExtractor> ConvertDirichletToggleVectorToMaps(
+  Teuchos::RCP<Core::LinAlg::MapExtractor> ConvertDirichletToggleVectorToMaps(
       const Teuchos::RCP<const Epetra_Vector>& dbctoggle);
 
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

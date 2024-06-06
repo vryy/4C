@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR
+namespace Inpar
 {
   namespace FBI
   {
@@ -26,7 +26,7 @@ namespace INPAR
     enum class BeamToFluidDiscretization;
     enum class BeamToFluidMeshtingMortarShapefunctions;
   }  // namespace FBI
-}  // namespace INPAR
+}  // namespace Inpar
 namespace FBI
 {
   /**
@@ -94,7 +94,7 @@ namespace FBI
     /**
      * \brief Returns the contact discretization method.
      */
-    inline INPAR::FBI::BeamToFluidConstraintEnforcement get_constraint_enforcement() const
+    inline Inpar::FBI::BeamToFluidConstraintEnforcement get_constraint_enforcement() const
     {
       return constraint_enforcement_;
     }
@@ -102,7 +102,7 @@ namespace FBI
     /**
      * \brief Returns constraints enforcement strategy.
      */
-    inline INPAR::FBI::BeamToFluidDiscretization get_contact_discretization() const
+    inline Inpar::FBI::BeamToFluidDiscretization get_contact_discretization() const
     {
       return meshtying_discretization_;
     }
@@ -117,7 +117,7 @@ namespace FBI
      * \brief Returns the Gauss rule.
      * \returns gauss rule.
      */
-    inline CORE::FE::GaussRule1D get_gauss_rule() const { return gauss_rule_; }
+    inline Core::FE::GaussRule1D get_gauss_rule() const { return gauss_rule_; }
 
     /**
      * \brief Returns a pointer to the visualization output parameters.
@@ -132,7 +132,7 @@ namespace FBI
     /**
      * \brief Returns the shape function for the mortar Lagrange-multiplicators.
      */
-    inline INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions get_mortar_shape_function_type()
+    inline Inpar::FBI::BeamToFluidMeshtingMortarShapefunctions get_mortar_shape_function_type()
         const
     {
       return mortar_shape_function_;
@@ -147,16 +147,16 @@ namespace FBI
     bool issetup_;
 
     /// Enforcement strategy for constraints.
-    INPAR::FBI::BeamToFluidConstraintEnforcement constraint_enforcement_;
+    Inpar::FBI::BeamToFluidConstraintEnforcement constraint_enforcement_;
 
     /// discretization used for the contact.
-    INPAR::FBI::BeamToFluidDiscretization meshtying_discretization_;
+    Inpar::FBI::BeamToFluidDiscretization meshtying_discretization_;
 
     /// Penalty parameter.
     double penalty_parameter_;
 
     /// Gauss rule to be used.
-    CORE::FE::GaussRule1D gauss_rule_;
+    Core::FE::GaussRule1D gauss_rule_;
 
     /**
      * \brief Flag to keep track if the RHS contribution for the weak Dirichlet enforcement of the
@@ -173,7 +173,7 @@ namespace FBI
     Teuchos::RCP<FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_;
 
     //! Shape function for the mortar Lagrange-multiplicators
-    INPAR::FBI::BeamToFluidMeshtingMortarShapefunctions mortar_shape_function_;
+    Inpar::FBI::BeamToFluidMeshtingMortarShapefunctions mortar_shape_function_;
   };
 
 }  // namespace FBI

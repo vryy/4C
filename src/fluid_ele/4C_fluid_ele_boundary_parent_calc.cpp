@@ -33,56 +33,56 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(
-    CORE::Elements::FaceElement* ele)
+Discret::ELEMENTS::FluidBoundaryParentInterface*
+Discret::ELEMENTS::FluidBoundaryParentInterface::Impl(Core::Elements::FaceElement* ele)
 {
   switch (ele->Shape())
   {
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      return FluidBoundaryParent<CORE::FE::CellType::line2>::Instance(
-          CORE::UTILS::SingletonAction::create);
+      return FluidBoundaryParent<Core::FE::CellType::line2>::Instance(
+          Core::UTILS::SingletonAction::create);
     }
-    /*case CORE::FE::CellType::line3:
+    /*case Core::FE::CellType::line3:
     {
-      return FluidBoundaryParent<CORE::FE::CellType::line3>::Instance();
+      return FluidBoundaryParent<Core::FE::CellType::line3>::Instance();
     }*/
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      return FluidBoundaryParent<CORE::FE::CellType::tri3>::Instance();
+      return FluidBoundaryParent<Core::FE::CellType::tri3>::Instance();
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      return FluidBoundaryParent<CORE::FE::CellType::tri6>::Instance();
+      return FluidBoundaryParent<Core::FE::CellType::tri6>::Instance();
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      return FluidBoundaryParent<CORE::FE::CellType::quad4>::Instance(
-          CORE::UTILS::SingletonAction::create);
+      return FluidBoundaryParent<Core::FE::CellType::quad4>::Instance(
+          Core::UTILS::SingletonAction::create);
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
-      return FluidBoundaryParent<CORE::FE::CellType::quad8>::Instance();
+      return FluidBoundaryParent<Core::FE::CellType::quad8>::Instance();
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      return FluidBoundaryParent<CORE::FE::CellType::quad9>::Instance();
+      return FluidBoundaryParent<Core::FE::CellType::quad9>::Instance();
     }
-    /*case CORE::FE::CellType::nurbs2:    // 1D nurbs boundary element
+    /*case Core::FE::CellType::nurbs2:    // 1D nurbs boundary element
     {
-      return FluidBoundaryParent<CORE::FE::CellType::nurbs2>::Instance();
+      return FluidBoundaryParent<Core::FE::CellType::nurbs2>::Instance();
     }
-    case CORE::FE::CellType::nurbs3:    // 1D nurbs boundary element
+    case Core::FE::CellType::nurbs3:    // 1D nurbs boundary element
     {
-      return FluidBoundaryParent<CORE::FE::CellType::nurbs3>::Instance();
+      return FluidBoundaryParent<Core::FE::CellType::nurbs3>::Instance();
     }
-    case CORE::FE::CellType::nurbs4:    // 2D nurbs boundary element
+    case Core::FE::CellType::nurbs4:    // 2D nurbs boundary element
     {
-      return FluidBoundaryParent<CORE::FE::CellType::nurbs4>::Instance();
+      return FluidBoundaryParent<Core::FE::CellType::nurbs4>::Instance();
     }
-    case CORE::FE::CellType::nurbs9:    // 2D nurbs boundary element
+    case Core::FE::CellType::nurbs9:    // 2D nurbs boundary element
     {
-      return FluidBoundaryParent<CORE::FE::CellType::nurbs9>::Instance();
+      return FluidBoundaryParent<Core::FE::CellType::nurbs9>::Instance();
     }*/
     default:
       FOUR_C_THROW(
@@ -94,15 +94,15 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentI
   return nullptr;
 }
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParent<distype>::Instance(
-    CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidBoundaryParentInterface*
+Discret::ELEMENTS::FluidBoundaryParent<distype>::Instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::FluidBoundaryParent<distype>>(
-            new DRT::ELEMENTS::FluidBoundaryParent<distype>());
+        return std::unique_ptr<Discret::ELEMENTS::FluidBoundaryParent<distype>>(
+            new Discret::ELEMENTS::FluidBoundaryParent<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -111,13 +111,17 @@ DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParent<
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidBoundaryParent<distype>::FluidBoundaryParent()
-    : DRT::ELEMENTS::FluidBoundaryParentInterface(), drs_(0.0), fac_(0.0), visc_(0.0), densaf_(1.0)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidBoundaryParent<distype>::FluidBoundaryParent()
+    : Discret::ELEMENTS::FluidBoundaryParentInterface(),
+      drs_(0.0),
+      fac_(0.0),
+      visc_(0.0),
+      densaf_(1.0)
 {
   // pointer to class FluidParentParameter (access to the general parameter)
-  fldpara_ = DRT::ELEMENTS::FluidEleParameterStd::Instance();
-  fldparatimint_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
+  fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::Instance();
+  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::Instance();
 
   return;
 }
@@ -126,20 +130,20 @@ DRT::ELEMENTS::FluidBoundaryParent<distype>::FluidBoundaryParent()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
-    DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat, CORE::LINALG::SerialDenseVector::Base& elevec)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
+    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        FlowDepPressureBC<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
+        FlowDepPressureBC<Core::FE::CellType::line2, Core::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -147,11 +151,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::tet4)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::tet4)
       {
-        FlowDepPressureBC<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4>(
+        FlowDepPressureBC<Core::FE::CellType::tri3, Core::FE::CellType::tet4>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -159,11 +163,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        FlowDepPressureBC<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
+        FlowDepPressureBC<Core::FE::CellType::quad4, Core::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -171,11 +175,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex20)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::hex20)
       {
-        FlowDepPressureBC<CORE::FE::CellType::quad8, CORE::FE::CellType::hex20>(
+        FlowDepPressureBC<Core::FE::CellType::quad8, Core::FE::CellType::hex20>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -183,11 +187,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex27)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::hex27)
       {
-        FlowDepPressureBC<CORE::FE::CellType::quad9, CORE::FE::CellType::hex27>(
+        FlowDepPressureBC<Core::FE::CellType::quad9, Core::FE::CellType::hex27>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -205,19 +209,20 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::FluidBoundary* surfele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat, CORE::LINALG::SerialDenseVector::Base& elevec)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(
+    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        SlipSuppBC<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
+        SlipSuppBC<Core::FE::CellType::line2, Core::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -225,11 +230,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        SlipSuppBC<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
+        SlipSuppBC<Core::FE::CellType::quad4, Core::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -246,20 +251,20 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
-    DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat, CORE::LINALG::SerialDenseVector::Base& elevec)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
+    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        NavierSlipBC<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
+        NavierSlipBC<Core::FE::CellType::line2, Core::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -267,11 +272,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        NavierSlipBC<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
+        NavierSlipBC<Core::FE::CellType::quad4, Core::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -288,20 +293,20 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
-    DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat, CORE::LINALG::SerialDenseVector::Base& elevec)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
+    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        EvaluateWeakDBC<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
+        EvaluateWeakDBC<Core::FE::CellType::line2, Core::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -309,11 +314,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::tet4)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::tet4)
       {
-        EvaluateWeakDBC<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4>(
+        EvaluateWeakDBC<Core::FE::CellType::tri3, Core::FE::CellType::tet4>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -321,11 +326,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        EvaluateWeakDBC<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
+        EvaluateWeakDBC<Core::FE::CellType::quad4, Core::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -333,11 +338,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex20)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::hex20)
       {
-        EvaluateWeakDBC<CORE::FE::CellType::quad8, CORE::FE::CellType::hex20>(
+        EvaluateWeakDBC<Core::FE::CellType::quad8, Core::FE::CellType::hex20>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -345,11 +350,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex27)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::hex27)
       {
-        EvaluateWeakDBC<CORE::FE::CellType::quad9, CORE::FE::CellType::hex27>(
+        EvaluateWeakDBC<Core::FE::CellType::quad9, Core::FE::CellType::hex27>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -367,20 +372,20 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
-    CORE::Elements::FaceElement* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat1, CORE::LINALG::SerialDenseMatrix::Base& elemat2)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
+    Core::Elements::FaceElement* surfele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat1, Core::LinAlg::SerialDenseMatrix::Base& elemat2)
 {
   switch (surfele->Shape())
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
+        estimate_nitsche_trace_max_eigenvalue<Core::FE::CellType::line2, Core::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
@@ -388,55 +393,55 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
       break;
     }
     // 3D:
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::tet4)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::tet4)
       {
-        estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::tri3, CORE::FE::CellType::tet4>(
+        estimate_nitsche_trace_max_eigenvalue<Core::FE::CellType::tri3, Core::FE::CellType::tet4>(
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
         FOUR_C_THROW("expected combination tri3/tet4 for surface/parent pair");
       break;
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::tet10)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::tet10)
       {
-        estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::tri6, CORE::FE::CellType::tet10>(
+        estimate_nitsche_trace_max_eigenvalue<Core::FE::CellType::tri6, Core::FE::CellType::tet10>(
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
         FOUR_C_THROW("expected combination tri6/tet10 for surface/parent pair");
       break;
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
+        estimate_nitsche_trace_max_eigenvalue<Core::FE::CellType::quad4, Core::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
         FOUR_C_THROW("expected combination quad4/hex8 for surface/parent pair");
       break;
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex20)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::hex20)
       {
-        estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::quad8, CORE::FE::CellType::hex20>(
+        estimate_nitsche_trace_max_eigenvalue<Core::FE::CellType::quad8, Core::FE::CellType::hex20>(
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
         FOUR_C_THROW("expected combination quad8/hex20 for surface/parent pair");
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex27)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::hex27)
       {
-        estimate_nitsche_trace_max_eigenvalue<CORE::FE::CellType::quad9, CORE::FE::CellType::hex27>(
+        estimate_nitsche_trace_max_eigenvalue<Core::FE::CellType::quad9, Core::FE::CellType::hex27>(
             surfele, params, discretization, lm, elemat1, elemat2);
       }
       else
@@ -454,20 +459,20 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
-    DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat, CORE::LINALG::SerialDenseVector::Base& elevec)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
+    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
   {
     // 2D:
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::quad4)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::quad4)
       {
-        MixHybDirichlet<CORE::FE::CellType::line2, CORE::FE::CellType::quad4>(
+        MixHybDirichlet<Core::FE::CellType::line2, Core::FE::CellType::quad4>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -475,11 +480,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       break;
     }
     // 3D:
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      if (surfele->parent_element()->Shape() == CORE::FE::CellType::hex8)
+      if (surfele->parent_element()->Shape() == Core::FE::CellType::hex8)
       {
-        MixHybDirichlet<CORE::FE::CellType::quad4, CORE::FE::CellType::hex8>(
+        MixHybDirichlet<Core::FE::CellType::quad4, Core::FE::CellType::hex8>(
             surfele, params, discretization, lm, elemat, elevec);
       }
       else
@@ -496,13 +501,13 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
-    DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra,
-    CORE::LINALG::SerialDenseVector::Base& elevec_epetra)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
+    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
+    Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
 {
   // initialize pressure value and pressure derivative at boundary
   double pressure = 0.0;
@@ -511,8 +516,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
   //---------------------------------------------------------------------
   // get condition information
   //---------------------------------------------------------------------
-  Teuchos::RCP<CORE::Conditions::Condition> fdp_cond =
-      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
+  Teuchos::RCP<Core::Conditions::Condition> fdp_cond =
+      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
 
   // find out whether there is a time curve and get factor:
   // usable as a time-curve factor for fixed pressure as well as
@@ -531,7 +536,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
   double curvefac = 1.0;
   if (curvenum >= 0 and usetime)
     curvefac =
-        GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).Evaluate(
             time);
 
   // (temporarily) switch off any flow-dependent pressure condition in case of zero
@@ -594,32 +599,32 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     //---------------------------------------------------------------------
     // get parent element data
     //---------------------------------------------------------------------
-    CORE::Elements::Element* parent = surfele->parent_element();
+    Core::Elements::Element* parent = surfele->parent_element();
 
     // parent element id
     int pid = parent->Id();
 
     // number of parent spatial dimensions
-    static const int nsd = CORE::FE::dim<pdistype>;
+    static const int nsd = Core::FE::dim<pdistype>;
 
     // number of parent element nodes
-    static const int piel = CORE::FE::num_nodes<pdistype>;
+    static const int piel = Core::FE::num_nodes<pdistype>;
 
     // reshape element matrices and vectors and init to zero, construct views
     const int peledim = (nsd + 1) * piel;
     elemat_epetra.shape(peledim, peledim);
     elevec_epetra.size(peledim);
-    CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
-    CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
+    Core::LinAlg::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
+    Core::LinAlg::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
 
     // get local node coordinates
-    CORE::LINALG::Matrix<nsd, piel> pxyze(true);
-    CORE::GEO::fillInitialPositionArray<pdistype, nsd, CORE::LINALG::Matrix<nsd, piel>>(
+    Core::LinAlg::Matrix<nsd, piel> pxyze(true);
+    Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
         parent, pxyze);
 
     // get Gaussian integration points
-    const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
-        DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+    const Core::FE::IntPointsAndWeights<nsd> pintpoints(
+        Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
     //---------------------------------------------------------------------
     // get boundary element data
@@ -628,32 +633,32 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     int bid = surfele->SurfaceNumber();
 
     // number of boundary spatial dimensions
-    static const int bnsd = CORE::FE::dim<bdistype>;
+    static const int bnsd = Core::FE::dim<bdistype>;
 
     // number of boundary element nodes
-    static const int biel = CORE::FE::num_nodes<bdistype>;
+    static const int biel = Core::FE::num_nodes<bdistype>;
 
     // get local node coordinates
-    CORE::LINALG::Matrix<nsd, biel> bxyze(true);
-    CORE::GEO::fillInitialPositionArray<bdistype, nsd, CORE::LINALG::Matrix<nsd, biel>>(
+    Core::LinAlg::Matrix<nsd, biel> bxyze(true);
+    Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
         surfele, bxyze);
 
     // get Gaussian integration points
-    const CORE::FE::IntPointsAndWeights<bnsd> bintpoints(
-        DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+    const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
+        Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
     // get location vector and ownerships for boundary element
     std::vector<int> blm;
     std::vector<int> blmowner;
     std::vector<int> blmstride;
-    surfele->CORE::Elements::Element::LocationVector(discretization, blm, blmowner, blmstride);
+    surfele->Core::Elements::Element::LocationVector(discretization, blm, blmowner, blmstride);
 
     //---------------------------------------------------------------------
     // map Gaussian integration points to parent element for one-sided
     // derivatives on boundary
     //---------------------------------------------------------------------
     // coordinates of current integration point
-    CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+    Core::LinAlg::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
     for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
     {
       const double* gpcoord = (bintpoints.IP().qxg)[iquad];
@@ -664,11 +669,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     }
 
     // distinguish 2- and 3-D case
-    CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+    Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
     if (nsd == 2)
-      CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+      Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
     else if (nsd == 3)
-      CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+      Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
 
     //---------------------------------------------------------------------
     // extract parent and boundary values from global distributed vectors
@@ -681,11 +686,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 
     std::vector<double> mypvelaf(plm.size());
     std::vector<double> mypscaaf(plm.size());
-    CORE::FE::ExtractMyValues(*velaf, mypvelaf, plm);
-    CORE::FE::ExtractMyValues(*scaaf, mypscaaf, plm);
+    Core::FE::ExtractMyValues(*velaf, mypvelaf, plm);
+    Core::FE::ExtractMyValues(*scaaf, mypscaaf, plm);
 
-    CORE::LINALG::Matrix<nsd, piel> pevelaf(true);
-    CORE::LINALG::Matrix<piel, 1> pescaaf(true);
+    Core::LinAlg::Matrix<nsd, piel> pevelaf(true);
+    Core::LinAlg::Matrix<piel, 1> pescaaf(true);
     for (int inode = 0; inode < piel; ++inode)
     {
       for (int idim = 0; idim < nsd; ++idim)
@@ -703,8 +708,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
-      CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
-      CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
+      Core::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
+      Core::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
 
       // add parent and boundary displacement at n+1
       for (int idim = 0; idim < nsd; ++idim)
@@ -723,19 +728,19 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     //---------------------------------------------------------------------
     // definitions and initializations for parent and boundary element
     //---------------------------------------------------------------------
-    CORE::LINALG::Matrix<nsd, 1> pxsi(true);
-    CORE::LINALG::Matrix<piel, 1> pfunct(true);
-    CORE::LINALG::Matrix<nsd, piel> pderiv(true);
-    CORE::LINALG::Matrix<nsd, nsd> pxjm(true);
-    CORE::LINALG::Matrix<nsd, nsd> pxji(true);
-    CORE::LINALG::Matrix<nsd, 1> unitnormal(true);
-    CORE::LINALG::Matrix<nsd, piel> pderxy(true);
-    CORE::LINALG::Matrix<nsd, 1> pvelaf(true);
-    CORE::LINALG::Matrix<nsd, nsd> pvderxyaf(true);
+    Core::LinAlg::Matrix<nsd, 1> pxsi(true);
+    Core::LinAlg::Matrix<piel, 1> pfunct(true);
+    Core::LinAlg::Matrix<nsd, piel> pderiv(true);
+    Core::LinAlg::Matrix<nsd, nsd> pxjm(true);
+    Core::LinAlg::Matrix<nsd, nsd> pxji(true);
+    Core::LinAlg::Matrix<nsd, 1> unitnormal(true);
+    Core::LinAlg::Matrix<nsd, piel> pderxy(true);
+    Core::LinAlg::Matrix<nsd, 1> pvelaf(true);
+    Core::LinAlg::Matrix<nsd, nsd> pvderxyaf(true);
 
-    CORE::LINALG::Matrix<bnsd, 1> xsi(true);
-    CORE::LINALG::Matrix<biel, 1> funct(true);
-    CORE::LINALG::Matrix<bnsd, biel> deriv(true);
+    Core::LinAlg::Matrix<bnsd, 1> xsi(true);
+    Core::LinAlg::Matrix<biel, 1> funct(true);
+    Core::LinAlg::Matrix<bnsd, biel> deriv(true);
 
     //---------------------------------------------------------------------
     // integration loop
@@ -755,12 +760,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       }
 
       // shape functions and derivatives of parent element at integration point
-      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
+      Core::FE::shape_function<pdistype>(pxsi, pfunct);
+      Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
       // shape functions and derivatives of boundary element at integration point
-      CORE::FE::shape_function<bdistype>(xsi, funct);
-      CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
+      Core::FE::shape_function<bdistype>(xsi, funct);
+      Core::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
       // compute (inverse of) Jacobian matrix and determinant for parent element
       // and check its value
@@ -772,8 +777,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       // compute measure tensor, infinitesimal area and outward unit normal
       // for boundary element
       drs_ = 0.0;
-      CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
-      CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+      Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
+      Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
           bxyze, deriv, metrictensor, drs_, &unitnormal);
 
       // compute integration factor for boundary element
@@ -793,13 +798,13 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 
       // evaluate material at integration point
       double rateofstrain = 0.0;
-      Teuchos::RCP<CORE::MAT::Material> material = parent->Material();
+      Teuchos::RCP<Core::Mat::Material> material = parent->Material();
 
       // compute measure for rate of strain at n+alpha_F or n+1 if required
       // for non-Newtonian fluid
-      if (material->MaterialType() == CORE::Materials::m_carreauyasuda or
-          material->MaterialType() == CORE::Materials::m_modpowerlaw or
-          material->MaterialType() == CORE::Materials::m_herschelbulkley)
+      if (material->MaterialType() == Core::Materials::m_carreauyasuda or
+          material->MaterialType() == Core::Materials::m_modpowerlaw or
+          material->MaterialType() == Core::Materials::m_herschelbulkley)
       {
         //-------------------------------------------------------------------
         //
@@ -811,7 +816,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
         //
         //-------------------------------------------------------------------
         // compute (two times) strain-rate tensor
-        CORE::LINALG::Matrix<nsd, nsd> two_epsilon;
+        Core::LinAlg::Matrix<nsd, nsd> two_epsilon;
         for (int rr = 0; rr < nsd; ++rr)
         {
           for (int mm = 0; mm < nsd; ++mm)
@@ -841,7 +846,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       double pscaaf = 0.0;
       double pvdiv = 0.0;
       double prefac = 0.0;
-      if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+      if (fldpara_->PhysicalType() == Inpar::FLUID::loma)
       {
         pscaaf = pfunct.Dot(pescaaf);
         if (pscaaf < 0.0)
@@ -987,7 +992,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
             const double timefacfacdens = timefac * fac_ * densaf_;
 
             // dyadic product of unit normal vector and velocity vector
-            CORE::LINALG::Matrix<nsd, nsd> n_x_u(true);
+            Core::LinAlg::Matrix<nsd, nsd> n_x_u(true);
             n_x_u.MultiplyNT(pvelaf, unitnormal);
 
             for (int ui = 0; ui < piel; ++ui)
@@ -1164,7 +1169,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
             const double timefacfacdens = timefac * fac_ * densaf_;
 
             // dyadic product of unit normal vector and velocity vector
-            CORE::LINALG::Matrix<nsd, nsd> n_x_u(true);
+            Core::LinAlg::Matrix<nsd, nsd> n_x_u(true);
             n_x_u.MultiplyNT(pvelaf, unitnormal);
 
             for (int ui = 0; ui < piel; ++ui)
@@ -1232,17 +1237,18 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
        // conditions for zero time-curve factor
 
   return;
-}  // DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC
+}  // Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::FluidBoundary* surfele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra,
-    CORE::LINALG::SerialDenseVector::Base& elevec_epetra)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(
+    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
+    Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
 {
   //---------------------------------------------------------------------
   // get time-integration parameters
@@ -1253,32 +1259,32 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   //---------------------------------------------------------------------
   // get parent element data
   //---------------------------------------------------------------------
-  CORE::Elements::Element* parent = surfele->parent_element();
+  Core::Elements::Element* parent = surfele->parent_element();
 
   // parent element id
   int pid = parent->Id();
 
   // number of parent spatial dimensions
-  static const int nsd = CORE::FE::dim<pdistype>;
+  static const int nsd = Core::FE::dim<pdistype>;
 
   // number of parent element nodes
-  static const int piel = CORE::FE::num_nodes<pdistype>;
+  static const int piel = Core::FE::num_nodes<pdistype>;
 
   // reshape element matrices and vectors and init to zero, construct views
   const int peledim = (nsd + 1) * piel;
   elemat_epetra.shape(peledim, peledim);
   elevec_epetra.size(peledim);
-  CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
-  CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
+  Core::LinAlg::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
+  Core::LinAlg::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
 
   // get local node coordinates
-  CORE::LINALG::Matrix<nsd, piel> pxyze(true);
-  CORE::GEO::fillInitialPositionArray<pdistype, nsd, CORE::LINALG::Matrix<nsd, piel>>(
+  Core::LinAlg::Matrix<nsd, piel> pxyze(true);
+  Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
       parent, pxyze);
 
   // get Gaussian integration points
-  const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd> pintpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
   //---------------------------------------------------------------------
   // get boundary element data
@@ -1287,32 +1293,32 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   int bid = surfele->SurfaceNumber();
 
   // number of boundary spatial dimensions
-  static const int bnsd = CORE::FE::dim<bdistype>;
+  static const int bnsd = Core::FE::dim<bdistype>;
 
   // number of boundary element nodes
-  static const int biel = CORE::FE::num_nodes<bdistype>;
+  static const int biel = Core::FE::num_nodes<bdistype>;
 
   // get local node coordinates
-  CORE::LINALG::Matrix<nsd, biel> bxyze(true);
-  CORE::GEO::fillInitialPositionArray<bdistype, nsd, CORE::LINALG::Matrix<nsd, biel>>(
+  Core::LinAlg::Matrix<nsd, biel> bxyze(true);
+  Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
       surfele, bxyze);
 
   // get Gaussian integration points
-  const CORE::FE::IntPointsAndWeights<bnsd> bintpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+  const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
   // get location vector and ownerships for boundary element
   std::vector<int> blm;
   std::vector<int> blmowner;
   std::vector<int> blmstride;
-  surfele->CORE::Elements::Element::LocationVector(discretization, blm, blmowner, blmstride);
+  surfele->Core::Elements::Element::LocationVector(discretization, blm, blmowner, blmstride);
 
   //---------------------------------------------------------------------
   // map Gaussian integration points to parent element for one-sided
   // derivatives on boundary
   //---------------------------------------------------------------------
   // coordinates of current integration point
-  CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+  Core::LinAlg::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
   for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
   {
     const double* gpcoord = (bintpoints.IP().qxg)[iquad];
@@ -1323,11 +1329,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   }
 
   // distinguish 2- and 3-D case
-  CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+  Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
   if (nsd == 2)
-    CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 3)
-    CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
 
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
@@ -1337,9 +1343,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
-  CORE::FE::ExtractMyValues(*velaf, mypvelaf, plm);
+  Core::FE::ExtractMyValues(*velaf, mypvelaf, plm);
 
-  CORE::LINALG::Matrix<nsd, piel> pevelaf(true);
+  Core::LinAlg::Matrix<nsd, piel> pevelaf(true);
   for (int inode = 0; inode < piel; ++inode)
   {
     for (int idim = 0; idim < nsd; ++idim)
@@ -1350,9 +1356,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
 
   // boundary pressure
   std::vector<double> mybvelaf(blm.size());
-  CORE::FE::ExtractMyValues(*velaf, mybvelaf, blm);
+  Core::FE::ExtractMyValues(*velaf, mybvelaf, blm);
 
-  CORE::LINALG::Matrix<1, biel> epressnp(true);
+  Core::LinAlg::Matrix<1, biel> epressnp(true);
 
   for (int inode = 0; inode < biel; ++inode)
   {
@@ -1367,8 +1373,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
-    CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
-    CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
+    Core::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
+    Core::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
 
     // add parent and boundary displacement at n+1
     for (int idim = 0; idim < nsd; ++idim)
@@ -1387,21 +1393,21 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   //---------------------------------------------------------------------
   // definitions and initializations for parent and boundary element
   //---------------------------------------------------------------------
-  CORE::LINALG::Matrix<nsd, 1> pxsi(true);
-  CORE::LINALG::Matrix<piel, 1> pfunct(true);
-  CORE::LINALG::Matrix<nsd, piel> pderiv(true);
-  CORE::LINALG::Matrix<nsd, nsd> pxjm(true);
-  CORE::LINALG::Matrix<nsd, nsd> pxji(true);
-  CORE::LINALG::Matrix<nsd, 1> boundaryNormal(
+  Core::LinAlg::Matrix<nsd, 1> pxsi(true);
+  Core::LinAlg::Matrix<piel, 1> pfunct(true);
+  Core::LinAlg::Matrix<nsd, piel> pderiv(true);
+  Core::LinAlg::Matrix<nsd, nsd> pxjm(true);
+  Core::LinAlg::Matrix<nsd, nsd> pxji(true);
+  Core::LinAlg::Matrix<nsd, 1> boundaryNormal(
       true);  // outward unit ('surface/line') normal of boundary element at integration point
-  CORE::LINALG::Matrix<nsd, piel> pderxy(true);    // nabla of parent element at integration point
-  CORE::LINALG::Matrix<nsd, nsd> pvderxyaf(true);  // nabla*u of parent element at integration point
-  CORE::LINALG::Matrix<1, 1> pressint(
+  Core::LinAlg::Matrix<nsd, piel> pderxy(true);    // nabla of parent element at integration point
+  Core::LinAlg::Matrix<nsd, nsd> pvderxyaf(true);  // nabla*u of parent element at integration point
+  Core::LinAlg::Matrix<1, 1> pressint(
       true);  // pressure of boundary element at integration point (N_C * p_C)
 
-  CORE::LINALG::Matrix<bnsd, 1> xsi(true);
-  CORE::LINALG::Matrix<biel, 1> funct(true);
-  CORE::LINALG::Matrix<bnsd, biel> deriv(true);
+  Core::LinAlg::Matrix<bnsd, 1> xsi(true);
+  Core::LinAlg::Matrix<biel, 1> funct(true);
+  Core::LinAlg::Matrix<bnsd, biel> deriv(true);
 
   //---------------------------------------------------------------------
   // integration loop
@@ -1421,12 +1427,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
     }
 
     // shape functions and derivatives of parent element at integration point
-    CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-    CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
+    Core::FE::shape_function<pdistype>(pxsi, pfunct);
+    Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // shape functions and derivatives of boundary element at integration point
-    CORE::FE::shape_function<bdistype>(xsi, funct);
-    CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
+    Core::FE::shape_function<bdistype>(xsi, funct);
+    Core::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
     // Compute pressure of boundary element at integration point
     pressint.Multiply(epressnp, funct);
@@ -1441,8 +1447,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
     // compute measure tensor, infinitesimal area and outward unit normal
     // for boundary element
     drs_ = 0.0;
-    CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
-    CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+    Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
+    Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
         bxyze, deriv, metrictensor, drs_, &boundaryNormal);
 
     // compute integration factor for boundary element
@@ -1456,7 +1462,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
 
     // evaluate material at integration point
     double rateofstrain = 0.0;  // Only Newtonian-fluids supported
-    Teuchos::RCP<CORE::MAT::Material> material = parent->Material();
+    Teuchos::RCP<Core::Mat::Material> material = parent->Material();
 
     // get viscosity at integration point
     get_density_and_viscosity(material, 0.0, 0.0, rateofstrain);
@@ -1562,18 +1568,18 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   }  // end of integration loop
 
   return;
-}  // DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC
+}  // Discret::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
-    DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra,
-    CORE::LINALG::SerialDenseVector::Base& elevec_epetra)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
+    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
+    Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
 {
   //---------------------------------------------------------------------
   // get time-integration parameters
@@ -1584,32 +1590,32 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   //---------------------------------------------------------------------
   // get parent element data
   //---------------------------------------------------------------------
-  CORE::Elements::Element* parent = surfele->parent_element();
+  Core::Elements::Element* parent = surfele->parent_element();
 
   // parent element id
   int pid = parent->Id();
 
   // number of parent spatial dimensions
-  static const int nsd = CORE::FE::dim<pdistype>;
+  static const int nsd = Core::FE::dim<pdistype>;
 
   // number of parent element nodes
-  static const int piel = CORE::FE::num_nodes<pdistype>;
+  static const int piel = Core::FE::num_nodes<pdistype>;
 
   // reshape element matrices and vectors and init to zero, construct views
   const int peledim = (nsd + 1) * piel;
   elemat_epetra.shape(peledim, peledim);
   elevec_epetra.size(peledim);
-  CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
-  CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
+  Core::LinAlg::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
+  Core::LinAlg::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
 
   // get local node coordinates
-  CORE::LINALG::Matrix<nsd, piel> pxyze(true);
-  CORE::GEO::fillInitialPositionArray<pdistype, nsd, CORE::LINALG::Matrix<nsd, piel>>(
+  Core::LinAlg::Matrix<nsd, piel> pxyze(true);
+  Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
       parent, pxyze);
 
   // get Gaussian integration points
-  const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd> pintpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
   //---------------------------------------------------------------------
   // get boundary element data
@@ -1618,25 +1624,25 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   int bid = surfele->SurfaceNumber();
 
   // number of boundary spatial dimensions
-  static const int bnsd = CORE::FE::dim<bdistype>;
+  static const int bnsd = Core::FE::dim<bdistype>;
 
   // number of boundary element nodes
-  static const int biel = CORE::FE::num_nodes<bdistype>;
+  static const int biel = Core::FE::num_nodes<bdistype>;
 
   // get local node coordinates
-  CORE::LINALG::Matrix<nsd, biel> bxyze(true);
-  CORE::GEO::fillInitialPositionArray<bdistype, nsd, CORE::LINALG::Matrix<nsd, biel>>(
+  Core::LinAlg::Matrix<nsd, biel> bxyze(true);
+  Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
       surfele, bxyze);
 
   // get Gaussian integration points
-  const CORE::FE::IntPointsAndWeights<bnsd> bintpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+  const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
   // get location vector and ownerships for boundary element
   std::vector<int> blm;
   std::vector<int> blmowner;
   std::vector<int> blmstride;
-  surfele->CORE::Elements::Element::LocationVector(discretization, blm, blmowner, blmstride);
+  surfele->Core::Elements::Element::LocationVector(discretization, blm, blmowner, blmstride);
 
   // get slip coefficient
   const double beta = params.get<double>("beta");
@@ -1646,7 +1652,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   // derivatives on boundary
   //---------------------------------------------------------------------
   // coordinates of current integration point
-  CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+  Core::LinAlg::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
   for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
   {
     const double* gpcoord = (bintpoints.IP().qxg)[iquad];
@@ -1657,11 +1663,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   }
 
   // distinguish 2- and 3-D case
-  CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+  Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
   if (nsd == 2)
-    CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 3)
-    CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
 
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
@@ -1671,9 +1677,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
-  CORE::FE::ExtractMyValues(*velaf, mypvelaf, plm);
+  Core::FE::ExtractMyValues(*velaf, mypvelaf, plm);
 
-  CORE::LINALG::Matrix<nsd, piel> pevelaf(true);
+  Core::LinAlg::Matrix<nsd, piel> pevelaf(true);
   for (int inode = 0; inode < piel; ++inode)
   {
     for (int idim = 0; idim < nsd; ++idim)
@@ -1690,8 +1696,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
-    CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
-    CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
+    Core::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
+    Core::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
 
     // add parent and boundary displacement at n+1
     for (int idim = 0; idim < nsd; ++idim)
@@ -1710,23 +1716,23 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   //---------------------------------------------------------------------
   // definitions and initializations for parent and boundary element
   //---------------------------------------------------------------------
-  CORE::LINALG::Matrix<nsd, 1> pxsi(true);
-  CORE::LINALG::Matrix<piel, 1> pfunct(true);
-  CORE::LINALG::Matrix<nsd, piel> pderiv(true);
-  CORE::LINALG::Matrix<nsd, nsd> pxjm(true);
-  CORE::LINALG::Matrix<nsd, nsd> pxji(true);
-  CORE::LINALG::Matrix<nsd, 1> boundaryNormal(
+  Core::LinAlg::Matrix<nsd, 1> pxsi(true);
+  Core::LinAlg::Matrix<piel, 1> pfunct(true);
+  Core::LinAlg::Matrix<nsd, piel> pderiv(true);
+  Core::LinAlg::Matrix<nsd, nsd> pxjm(true);
+  Core::LinAlg::Matrix<nsd, nsd> pxji(true);
+  Core::LinAlg::Matrix<nsd, 1> boundaryNormal(
       true);  // outward unit ('surface/line') normal of boundary element at integration point
-  CORE::LINALG::Matrix<nsd, piel> pderxy(true);    // nabla of parent element at integration point
-  CORE::LINALG::Matrix<nsd, nsd> pvderxyaf(true);  // nabla*u of parent element at integration point
-  CORE::LINALG::Matrix<1, 1> pressint(
+  Core::LinAlg::Matrix<nsd, piel> pderxy(true);    // nabla of parent element at integration point
+  Core::LinAlg::Matrix<nsd, nsd> pvderxyaf(true);  // nabla*u of parent element at integration point
+  Core::LinAlg::Matrix<1, 1> pressint(
       true);  // pressure of boundary element at integration point (N_C * p_C)
-  CORE::LINALG::Matrix<nsd, 1> pvelint(
+  Core::LinAlg::Matrix<nsd, 1> pvelint(
       true);  // velocity of parent element at integration point (N_B * U_B_i)
 
-  CORE::LINALG::Matrix<bnsd, 1> xsi(true);
-  CORE::LINALG::Matrix<biel, 1> funct(true);
-  CORE::LINALG::Matrix<bnsd, biel> deriv(true);
+  Core::LinAlg::Matrix<bnsd, 1> xsi(true);
+  Core::LinAlg::Matrix<biel, 1> funct(true);
+  Core::LinAlg::Matrix<bnsd, biel> deriv(true);
 
   //---------------------------------------------------------------------
   // integration loop
@@ -1746,12 +1752,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     }
 
     // shape functions and derivatives of parent element at integration point
-    CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-    CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
+    Core::FE::shape_function<pdistype>(pxsi, pfunct);
+    Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // shape functions and derivatives of boundary element at integration point
-    CORE::FE::shape_function<bdistype>(xsi, funct);
-    CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
+    Core::FE::shape_function<bdistype>(xsi, funct);
+    Core::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
     // Compute velocity of parent element at integration point
     pvelint.Multiply(pevelaf, pfunct);
@@ -1766,8 +1772,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     // compute measure tensor, infinitesimal area and outward unit normal
     // for boundary element
     drs_ = 0.0;
-    CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
-    CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+    Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
+    Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
         bxyze, deriv, metrictensor, drs_, &boundaryNormal);
 
     // compute integration factor for boundary element
@@ -1819,23 +1825,23 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   }  // end of integration loop
 
   return;
-}  // DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC
+}  // Discret::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
-    DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra,
-    CORE::LINALG::SerialDenseVector::Base& elevec_epetra)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
+    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
+    Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
 {
   //---------------------------------------------------------------------
   // get condition information
   //---------------------------------------------------------------------
-  Teuchos::RCP<CORE::Conditions::Condition> wdbc_cond =
-      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
+  Teuchos::RCP<Core::Conditions::Condition> wdbc_cond =
+      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
 
   // type of consistency (default: adjoint-consistent)
   const std::string& consistency =
@@ -1926,32 +1932,32 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   //---------------------------------------------------------------------
   // get parent element data
   //---------------------------------------------------------------------
-  CORE::Elements::Element* parent = surfele->parent_element();
+  Core::Elements::Element* parent = surfele->parent_element();
 
   // parent element id
   int pid = parent->Id();
 
   // number of parent spatial dimensions
-  static const int nsd = CORE::FE::dim<pdistype>;
+  static const int nsd = Core::FE::dim<pdistype>;
 
   // number of parent element nodes
-  static const int piel = CORE::FE::num_nodes<pdistype>;
+  static const int piel = Core::FE::num_nodes<pdistype>;
 
   // reshape element matrices and vectors and init to zero, construct views
   const int peledim = (nsd + 1) * piel;
   elemat_epetra.shape(peledim, peledim);
   elevec_epetra.size(peledim);
-  CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
-  CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
+  Core::LinAlg::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
+  Core::LinAlg::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
 
   // get local node coordinates
-  CORE::LINALG::Matrix<nsd, piel> pxyze(true);
-  CORE::GEO::fillInitialPositionArray<pdistype, nsd, CORE::LINALG::Matrix<nsd, piel>>(
+  Core::LinAlg::Matrix<nsd, piel> pxyze(true);
+  Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
       parent, pxyze);
 
   // get Gaussian integration points
-  const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd> pintpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
   //---------------------------------------------------------------------
   // get boundary element data
@@ -1960,32 +1966,32 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   int bid = surfele->SurfaceNumber();
 
   // number of boundary spatial dimensions
-  static const int bnsd = CORE::FE::dim<bdistype>;
+  static const int bnsd = Core::FE::dim<bdistype>;
 
   // number of boundary element nodes
-  static const int biel = CORE::FE::num_nodes<bdistype>;
+  static const int biel = Core::FE::num_nodes<bdistype>;
 
   // get local node coordinates
-  CORE::LINALG::Matrix<nsd, biel> bxyze(true);
-  CORE::GEO::fillInitialPositionArray<bdistype, nsd, CORE::LINALG::Matrix<nsd, biel>>(
+  Core::LinAlg::Matrix<nsd, biel> bxyze(true);
+  Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
       surfele, bxyze);
 
   // get Gaussian integration points
-  const CORE::FE::IntPointsAndWeights<bnsd> bintpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+  const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
   // get location vector and ownerships for boundary element
   std::vector<int> blm;
   std::vector<int> blmowner;
   std::vector<int> blmstride;
-  surfele->CORE::Elements::Element::LocationVector(discretization, blm, blmowner, blmstride);
+  surfele->Core::Elements::Element::LocationVector(discretization, blm, blmowner, blmstride);
 
   //---------------------------------------------------------------------
   // map Gaussian integration points to parent element for one-sided
   // derivatives on boundary
   //---------------------------------------------------------------------
   // coordinates of current integration point
-  CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+  Core::LinAlg::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
   for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
   {
     const double* gpcoord = (bintpoints.IP().qxg)[iquad];
@@ -1996,11 +2002,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   }
 
   // distinguish 2- and 3-D case
-  CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+  Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
   if (nsd == 2)
-    CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 3)
-    CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
 
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
@@ -2010,9 +2016,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
-  CORE::FE::ExtractMyValues(*velaf, mypvelaf, plm);
+  Core::FE::ExtractMyValues(*velaf, mypvelaf, plm);
 
-  CORE::LINALG::Matrix<nsd, piel> pevelaf(true);
+  Core::LinAlg::Matrix<nsd, piel> pevelaf(true);
   for (int inode = 0; inode < piel; ++inode)
   {
     for (int idim = 0; idim < nsd; ++idim)
@@ -2024,18 +2030,18 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   // parent velocity at n+1
   std::vector<double> mypvelnp(plm.size());
 
-  if (fldparatimint_->TimeAlgo() == INPAR::FLUID::timeint_npgenalpha)
+  if (fldparatimint_->TimeAlgo() == Inpar::FLUID::timeint_npgenalpha)
   {
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
     if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
-    CORE::FE::ExtractMyValues(*velnp, mypvelnp, plm);
+    Core::FE::ExtractMyValues(*velnp, mypvelnp, plm);
   }
   else
-    CORE::FE::ExtractMyValues(*velaf, mypvelnp, plm);
+    Core::FE::ExtractMyValues(*velaf, mypvelnp, plm);
 
-  CORE::LINALG::Matrix<nsd, piel> pevelnp(true);
-  CORE::LINALG::Matrix<piel, 1> peprenp(true);
+  Core::LinAlg::Matrix<nsd, piel> pevelnp(true);
+  Core::LinAlg::Matrix<piel, 1> peprenp(true);
   for (int inode = 0; inode < piel; ++inode)
   {
     for (int idim = 0; idim < nsd; ++idim)
@@ -2053,8 +2059,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
-    CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
-    CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
+    Core::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
+    Core::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
 
     // add parent and boundary displacement at n+1
     for (int idim = 0; idim < nsd; ++idim)
@@ -2073,20 +2079,20 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   //---------------------------------------------------------------------
   // definitions and initializations for parent and boundary element
   //---------------------------------------------------------------------
-  CORE::LINALG::Matrix<nsd, 1> pxsi(true);
-  CORE::LINALG::Matrix<piel, 1> pfunct(true);
-  CORE::LINALG::Matrix<nsd, piel> pderiv(true);
-  CORE::LINALG::Matrix<nsd, nsd> pxjm(true);
-  CORE::LINALG::Matrix<nsd, nsd> pxji(true);
-  CORE::LINALG::Matrix<nsd, 1> unitnormal(true);
-  CORE::LINALG::Matrix<nsd, piel> pderxy(true);
-  CORE::LINALG::Matrix<nsd, 1> pvelintaf(true);
-  CORE::LINALG::Matrix<nsd, 1> pvelintnp(true);
-  CORE::LINALG::Matrix<nsd, nsd> pvderxyaf(true);
+  Core::LinAlg::Matrix<nsd, 1> pxsi(true);
+  Core::LinAlg::Matrix<piel, 1> pfunct(true);
+  Core::LinAlg::Matrix<nsd, piel> pderiv(true);
+  Core::LinAlg::Matrix<nsd, nsd> pxjm(true);
+  Core::LinAlg::Matrix<nsd, nsd> pxji(true);
+  Core::LinAlg::Matrix<nsd, 1> unitnormal(true);
+  Core::LinAlg::Matrix<nsd, piel> pderxy(true);
+  Core::LinAlg::Matrix<nsd, 1> pvelintaf(true);
+  Core::LinAlg::Matrix<nsd, 1> pvelintnp(true);
+  Core::LinAlg::Matrix<nsd, nsd> pvderxyaf(true);
 
-  CORE::LINALG::Matrix<bnsd, 1> xsi(true);
-  CORE::LINALG::Matrix<biel, 1> funct(true);
-  CORE::LINALG::Matrix<bnsd, biel> deriv(true);
+  Core::LinAlg::Matrix<bnsd, 1> xsi(true);
+  Core::LinAlg::Matrix<biel, 1> funct(true);
+  Core::LinAlg::Matrix<bnsd, biel> deriv(true);
 
   //---------------------------------------------------------------------
   // integration loop
@@ -2106,19 +2112,19 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     }
 
     // shape functions and derivatives of parent element at integration point
-    CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-    CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
+    Core::FE::shape_function<pdistype>(pxsi, pfunct);
+    Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // NURBS shape functions and derivatives of parent element at integration point
     // (currently not activated)
-    /*if (pdistype == CORE::FE::CellType::nurbs27)
-      CORE::FE::NURBS::nurbs_get_3D_funct_deriv(pfunct,pderiv,pxsi,mypknots,pweights,pdistype);
-    else if (pdistype == CORE::FE::CellType::nurbs9)
-      CORE::FE::NURBS::nurbs_get_2D_funct_deriv(pfunct,pderiv,pxsi,mypknots,pweights,pdistype);*/
+    /*if (pdistype == Core::FE::CellType::nurbs27)
+      Core::FE::Nurbs::nurbs_get_3D_funct_deriv(pfunct,pderiv,pxsi,mypknots,pweights,pdistype);
+    else if (pdistype == Core::FE::CellType::nurbs9)
+      Core::FE::Nurbs::nurbs_get_2D_funct_deriv(pfunct,pderiv,pxsi,mypknots,pweights,pdistype);*/
 
     // shape functions and derivatives of boundary element at integration point
-    CORE::FE::shape_function<bdistype>(xsi, funct);
-    CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
+    Core::FE::shape_function<bdistype>(xsi, funct);
+    Core::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
     // compute (inverse of) Jacobian matrix and determinant for parent element
     // and check its value
@@ -2130,8 +2136,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     // compute measure tensor, infinitesimal area and outward unit normal
     // for boundary element
     drs_ = 0.0;
-    CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
-    CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+    Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
+    Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
         bxyze, deriv, metrictensor, drs_, &unitnormal);
 
     // compute integration factor for boundary element
@@ -2146,7 +2152,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
                   |    i     j  |   |    i     j  |   |    i     j  |
                   +-           -+   +-           -+   +-           -+
     */
-    CORE::LINALG::Matrix<nsd, nsd> G;
+    Core::LinAlg::Matrix<nsd, nsd> G;
     for (int nn = 0; nn < nsd; ++nn)
     {
       for (int rr = 0; rr < nsd; ++rr)
@@ -2181,14 +2187,14 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     const double h = 2.0 / sqrt(nGn);
 
     // compute factor due to spatial function
-    CORE::LINALG::Matrix<nsd, 1> functionfac;
+    Core::LinAlg::Matrix<nsd, 1> functionfac;
     for (int i = 0; i < nsd; ++i)
     {
       functionfac(i) = 1.0;
     }
 
     // determine global coordinates of integration point
-    CORE::LINALG::Matrix<nsd, 1> coordgp(true);
+    Core::LinAlg::Matrix<nsd, 1> coordgp(true);
     for (int i = 0; i < biel; ++i)
     {
       for (int idim = 0; idim < nsd; idim++)
@@ -2208,8 +2214,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
         {
           // evaluate function at current gauss point
           // (important: requires 3D position vector)
-          functionfac(idim) = GLOBAL::Problem::Instance()
-                                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+          functionfac(idim) = Global::Problem::Instance()
+                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                   .Evaluate(coordgp.A(), time, idim);
         }
         else
@@ -2234,13 +2240,13 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 
     // evaluate material at integration point
     double rateofstrain = 0.0;
-    Teuchos::RCP<CORE::MAT::Material> material = parent->Material();
+    Teuchos::RCP<Core::Mat::Material> material = parent->Material();
 
     // compute measure for rate of strain at n+alpha_F or n+1 if required
     // for non-Newtonian fluid
-    if (material->MaterialType() == CORE::Materials::m_carreauyasuda or
-        material->MaterialType() == CORE::Materials::m_modpowerlaw or
-        material->MaterialType() == CORE::Materials::m_herschelbulkley)
+    if (material->MaterialType() == Core::Materials::m_carreauyasuda or
+        material->MaterialType() == Core::Materials::m_modpowerlaw or
+        material->MaterialType() == Core::Materials::m_herschelbulkley)
     {
       //-------------------------------------------------------------------
       //
@@ -2252,7 +2258,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       //
       //-------------------------------------------------------------------
       // compute (two times) strain-rate tensor
-      CORE::LINALG::Matrix<nsd, nsd> two_epsilon;
+      Core::LinAlg::Matrix<nsd, nsd> two_epsilon;
       for (int rr = 0; rr < nsd; ++rr)
       {
         for (int mm = 0; mm < nsd; ++mm)
@@ -2416,7 +2422,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     // normal velocity and residual (i.e., difference between velocity and
     // prescribed value) on boundary
     double normvel = 0.0;
-    CORE::LINALG::Matrix<nsd, 1> bvres;
+    Core::LinAlg::Matrix<nsd, 1> bvres;
     for (int idim = 0; idim < nsd; idim++)
     {
       normvel += pvelintaf(idim) * unitnormal(idim);
@@ -2612,7 +2618,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
         */
         const double consistencytimefac = fac_ * 2.0 * visc_ * wd_gamma * timefac;
 
-        CORE::LINALG::Matrix<3, 3> nabla_s_w_o_n;
+        Core::LinAlg::Matrix<3, 3> nabla_s_w_o_n;
         for (int vi = 0; vi < piel; ++vi)
         {
           nabla_s_w_o_n(0, 0) = consistencytimefac * (unitnormal(0) * (pderxy(0, vi)) +
@@ -3292,7 +3298,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
         */
         const double consistencytimefac = fac_ * 2.0 * visc_ * wd_gamma * timefac;
 
-        CORE::LINALG::Matrix<2, 2> nabla_s_w_o_n;
+        Core::LinAlg::Matrix<2, 2> nabla_s_w_o_n;
         for (int vi = 0; vi < piel; ++vi)
         {
           nabla_s_w_o_n(0, 0) = consistencytimefac * (unitnormal(0) * (pderxy(0, vi)) +
@@ -3724,49 +3730,49 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
-    CORE::Elements::FaceElement* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& blm,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra1,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra2)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
+    Core::Elements::FaceElement* surfele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& blm,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra1,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra2)
 {
   //---------------------------------------------------------------------
   // get parent element data
   //---------------------------------------------------------------------
-  CORE::Elements::Element* parent = surfele->parent_element();
+  Core::Elements::Element* parent = surfele->parent_element();
 
   // parent element id
   int pid = parent->Id();
 
   // number of parent spatial dimensions
-  static const int nsd = CORE::FE::dim<pdistype>;
+  static const int nsd = Core::FE::dim<pdistype>;
 
   // number of parent element nodes
-  static const int piel = CORE::FE::num_nodes<pdistype>;
+  static const int piel = Core::FE::num_nodes<pdistype>;
 
   // reshape element matrices and vectors and init to zero, construct views
   const int peledim = nsd * piel;
   elemat_epetra1.shape(peledim, peledim);
   elemat_epetra2.shape(peledim, peledim);
-  CORE::LINALG::Matrix<peledim, peledim> Amat(elemat_epetra1.values(), true);
-  CORE::LINALG::Matrix<peledim, peledim> Bmat(elemat_epetra2.values(), true);
+  Core::LinAlg::Matrix<peledim, peledim> Amat(elemat_epetra1.values(), true);
+  Core::LinAlg::Matrix<peledim, peledim> Bmat(elemat_epetra2.values(), true);
 
   // get local node coordinates
-  CORE::LINALG::Matrix<nsd, piel> pxyze(true);
-  CORE::GEO::fillInitialPositionArray<pdistype, nsd, CORE::LINALG::Matrix<nsd, piel>>(
+  Core::LinAlg::Matrix<nsd, piel> pxyze(true);
+  Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
       parent, pxyze);
 
   // get Gaussian integration points
-  const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd> pintpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
   // get location vector and ownerships for parent element
   std::vector<int> plm;
   std::vector<int> plmowner;
   std::vector<int> plmstride;
-  parent->CORE::Elements::Element::LocationVector(discretization, plm, plmowner, plmstride);
+  parent->Core::Elements::Element::LocationVector(discretization, plm, plmowner, plmstride);
 
   //---------------------------------------------------------------------
   // get boundary element data
@@ -3775,26 +3781,26 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
   int bid = surfele->FaceMasterNumber();
 
   // number of boundary spatial dimensions
-  static const int bnsd = CORE::FE::dim<bdistype>;
+  static const int bnsd = Core::FE::dim<bdistype>;
 
   // number of boundary element nodes
-  static const int biel = CORE::FE::num_nodes<bdistype>;
+  static const int biel = Core::FE::num_nodes<bdistype>;
 
   // get local node coordinates
-  CORE::LINALG::Matrix<nsd, biel> bxyze(true);
-  CORE::GEO::fillInitialPositionArray<bdistype, nsd, CORE::LINALG::Matrix<nsd, biel>>(
+  Core::LinAlg::Matrix<nsd, biel> bxyze(true);
+  Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
       surfele, bxyze);
 
   // get Gaussian integration points
-  const CORE::FE::IntPointsAndWeights<bnsd> bintpoints(
-      DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+  const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
   //---------------------------------------------------------------------
   // map Gaussian integration points to parent element for one-sided
   // derivatives on boundary
   //---------------------------------------------------------------------
   // coordinates of current integration point
-  CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+  Core::LinAlg::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
   for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
   {
     const double* gpcoord = (bintpoints.IP().qxg)[iquad];
@@ -3804,17 +3810,18 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
     }
   }
 
-  CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+  Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
   if (nsd == 3)
-    CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 2)
-    CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
+    Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
   else
     FOUR_C_THROW("only 2D and 3D");
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
   //---------------------------------------------------------------------
-  DRT::ELEMENTS::Fluid* fele = dynamic_cast<DRT::ELEMENTS::Fluid*>(surfele->parent_element());
+  Discret::ELEMENTS::Fluid* fele =
+      dynamic_cast<Discret::ELEMENTS::Fluid*>(surfele->parent_element());
   if (fele)
     if (fele->IsAle())
     {
@@ -3824,8 +3831,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
-      CORE::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
-      CORE::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
+      Core::FE::ExtractMyValues(*dispnp, mypedispnp, plm);
+      Core::FE::ExtractMyValues(*dispnp, mybedispnp, blm);
 
       // add parent and boundary displacement at n+1
       for (int idim = 0; idim < nsd; ++idim)
@@ -3844,20 +3851,20 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
   //---------------------------------------------------------------------
   // definitions and initializations for parent and boundary element
   //---------------------------------------------------------------------
-  CORE::LINALG::Matrix<nsd, 1> pxsi(true);
-  CORE::LINALG::Matrix<piel, 1> pfunct(true);
-  CORE::LINALG::Matrix<nsd, piel> pderiv(true);
-  CORE::LINALG::Matrix<nsd, nsd> pxjm(true);
-  CORE::LINALG::Matrix<nsd, nsd> pxji(true);
-  CORE::LINALG::Matrix<nsd, 1> unitnormal(true);
-  CORE::LINALG::Matrix<nsd, piel> pderxy(true);
-  CORE::LINALG::Matrix<nsd, 1> pvelintaf(true);
-  CORE::LINALG::Matrix<nsd, 1> pvelintnp(true);
-  CORE::LINALG::Matrix<nsd, nsd> pvderxyaf(true);
+  Core::LinAlg::Matrix<nsd, 1> pxsi(true);
+  Core::LinAlg::Matrix<piel, 1> pfunct(true);
+  Core::LinAlg::Matrix<nsd, piel> pderiv(true);
+  Core::LinAlg::Matrix<nsd, nsd> pxjm(true);
+  Core::LinAlg::Matrix<nsd, nsd> pxji(true);
+  Core::LinAlg::Matrix<nsd, 1> unitnormal(true);
+  Core::LinAlg::Matrix<nsd, piel> pderxy(true);
+  Core::LinAlg::Matrix<nsd, 1> pvelintaf(true);
+  Core::LinAlg::Matrix<nsd, 1> pvelintnp(true);
+  Core::LinAlg::Matrix<nsd, nsd> pvderxyaf(true);
 
-  CORE::LINALG::Matrix<bnsd, 1> xsi(true);
-  CORE::LINALG::Matrix<biel, 1> funct(true);
-  CORE::LINALG::Matrix<bnsd, biel> deriv(true);
+  Core::LinAlg::Matrix<bnsd, 1> xsi(true);
+  Core::LinAlg::Matrix<biel, 1> funct(true);
+  Core::LinAlg::Matrix<bnsd, biel> deriv(true);
 
   //  double meas_surf = 0.0;
   //  double meas_vol = 0.0;
@@ -3880,12 +3887,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
     }
 
     // shape functions and derivatives of parent element at integration point
-    CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-    CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
+    Core::FE::shape_function<pdistype>(pxsi, pfunct);
+    Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // shape functions and derivatives of boundary element at integration point
-    CORE::FE::shape_function<bdistype>(xsi, funct);
-    CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
+    Core::FE::shape_function<bdistype>(xsi, funct);
+    Core::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
     // compute (inverse of) Jacobian matrix and determinant for parent element
     // and check its value
@@ -3897,8 +3904,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
     // compute measure tensor, infinitesimal area and outward unit normal
     // for boundary element
     drs_ = 0.0;
-    CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
-    CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+    Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
+    Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
         bxyze, deriv, metrictensor, drs_, &unitnormal);
 
     // compute integration factor for boundary element
@@ -4150,8 +4157,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
     }
 
     // shape functions and derivatives of parent element at integration point
-    CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-    CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
+    Core::FE::shape_function<pdistype>(pxsi, pfunct);
+    Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // compute (inverse of) Jacobian matrix and determinant for parent element
     // and check its value
@@ -4261,12 +4268,12 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
   // std::ostringstream sb;
   // sb << "sparsematrixB" << surfele->parent_element()->Id() << ".mtl";
   // std::string fname2(sb.str());
-  // CORE::LINALG::PrintSerialDenseMatrixInMatlabFormat(fname2,(elemat_epetra2));
-  // CORE::LINALG::PrintSerialDenseMatrixInMatlabFormat(fname1,(elemat_epetra1));
+  // Core::LinAlg::PrintSerialDenseMatrixInMatlabFormat(fname2,(elemat_epetra2));
+  // Core::LinAlg::PrintSerialDenseMatrixInMatlabFormat(fname1,(elemat_epetra1));
 
   // Solve the local eigen value problem Ax = lambda Bx. The function GeneralizedEigen
   // returns the maximum Eigenvalue of the problem.
-  const double maxeigenvalue = CORE::LINALG::GeneralizedEigen(elemat_epetra1, elemat_epetra2);
+  const double maxeigenvalue = Core::LinAlg::GeneralizedEigen(elemat_epetra1, elemat_epetra2);
 
   // fill the map: every side id has it's own parameter beta
   (*params.get<Teuchos::RCP<std::map<int, double>>>(
@@ -4285,25 +4292,25 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eig
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-template <CORE::FE::CellType bdistype, CORE::FE::CellType pdistype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
-    DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm,
-    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra,
-    CORE::LINALG::SerialDenseVector::Base& elevec_epetra)
+template <Core::FE::CellType distype>
+template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
+    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& plm,
+    Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
+    Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
 {
   //--------------------------------------------------
   // get my parent element
-  CORE::Elements::Element* parent = surfele->parent_element();
+  Core::Elements::Element* parent = surfele->parent_element();
 
   // evaluate material at integration point
   const double rateofstrain = 0.0;
-  Teuchos::RCP<CORE::MAT::Material> material = parent->Material();
+  Teuchos::RCP<Core::Mat::Material> material = parent->Material();
 
-  if (material->MaterialType() == CORE::Materials::m_carreauyasuda or
-      material->MaterialType() == CORE::Materials::m_modpowerlaw or
-      material->MaterialType() == CORE::Materials::m_herschelbulkley)
+  if (material->MaterialType() == Core::Materials::m_carreauyasuda or
+      material->MaterialType() == Core::Materials::m_modpowerlaw or
+      material->MaterialType() == Core::Materials::m_herschelbulkley)
     FOUR_C_THROW("No non-Newtonian fluid allowed for mixed/hybrid DBCs so far!");
 
   // get viscosity
@@ -4314,20 +4321,20 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     FOUR_C_THROW("Only incompressible flow with density 1.0 allowed for weak DBCs so far!");
 
   /// number of parentnodes
-  static const int piel = CORE::FE::num_nodes<pdistype>;
+  static const int piel = Core::FE::num_nodes<pdistype>;
 
   /// number of surfacenodes
-  static const int biel = CORE::FE::num_nodes<bdistype>;
+  static const int biel = Core::FE::num_nodes<bdistype>;
 
   /// number of spatial dimensions
-  static const int nsd = CORE::FE::dim<pdistype>;
+  static const int nsd = Core::FE::dim<pdistype>;
 
-  static const int bnsd = CORE::FE::dim<bdistype>;
+  static const int bnsd = Core::FE::dim<bdistype>;
 
   // number of internal stress dofs is equivalent to number of second derivatives
-  static const int numstressdof_ = CORE::FE::DisTypeToNumDeriv2<pdistype>::numderiv2;
+  static const int numstressdof_ = Core::FE::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
-  if (fldparatimint_->TimeAlgo() == INPAR::FLUID::timeint_afgenalpha)
+  if (fldparatimint_->TimeAlgo() == Inpar::FLUID::timeint_afgenalpha)
     FOUR_C_THROW(
         "The use of mixed hybrid boundary conditions and Afgenalpha has not been verified so far!");
 
@@ -4338,13 +4345,13 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   elemat_epetra.shape(peledim, peledim);
   elevec_epetra.size(peledim);
 
-  CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
-  CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
+  Core::LinAlg::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
+  Core::LinAlg::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
 
   //--------------------------------------------------
   // get the condition information
-  Teuchos::RCP<CORE::Conditions::Condition> hixhybdbc_cond =
-      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
+  Teuchos::RCP<Core::Conditions::Condition> hixhybdbc_cond =
+      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
 
   // get value for boundary condition
   const auto& val = (*hixhybdbc_cond).parameters().Get<std::vector<double>>("val");
@@ -4392,7 +4399,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   // (assumed to be constant on element boundary)
   const auto* functions = &hixhybdbc_cond->parameters().Get<std::vector<int>>("funct");
 
-  CORE::LINALG::Matrix<nsd, 1> u_dirich(true);
+  Core::LinAlg::Matrix<nsd, 1> u_dirich(true);
 
   for (int rr = 0; rr < nsd; ++rr)
   {
@@ -4413,19 +4420,19 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
   // for volume integrals
 
-  CORE::LINALG::Matrix<numstressdof_ * piel, piel> mat_r_p(true);
-  CORE::LINALG::Matrix<numstressdof_ * piel, numstressdof_ * piel> mat_r_sigma(true);
-  CORE::LINALG::Matrix<numstressdof_ * piel, nsd * piel> mat_r_epsu(true);
+  Core::LinAlg::Matrix<numstressdof_ * piel, piel> mat_r_p(true);
+  Core::LinAlg::Matrix<numstressdof_ * piel, numstressdof_ * piel> mat_r_sigma(true);
+  Core::LinAlg::Matrix<numstressdof_ * piel, nsd * piel> mat_r_epsu(true);
 
   // for boundary integrals
 
-  CORE::LINALG::Matrix<nsd * piel, numstressdof_ * piel> mat_v_sigma_o_n(true);
-  CORE::LINALG::Matrix<numstressdof_ * piel, nsd * piel> mat_r_o_n_u(true);
+  Core::LinAlg::Matrix<nsd * piel, numstressdof_ * piel> mat_v_sigma_o_n(true);
+  Core::LinAlg::Matrix<numstressdof_ * piel, nsd * piel> mat_r_o_n_u(true);
 
   // rearranging and computational arrays
 
-  CORE::LINALG::Matrix<numstressdof_ * piel, (nsd + 1) * piel> mat_r_up_block(true);
-  CORE::LINALG::Matrix<numstressdof_ * piel, numstressdof_ * piel> inv_r_sigma(true);
+  Core::LinAlg::Matrix<numstressdof_ * piel, (nsd + 1) * piel> mat_r_up_block(true);
+  Core::LinAlg::Matrix<numstressdof_ * piel, numstressdof_ * piel> inv_r_sigma(true);
 
 
   // --------------------------------------------------
@@ -4433,21 +4440,21 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
   // for volume integrals
 
-  CORE::LINALG::Matrix<numstressdof_ * piel, 1> vec_r_p(true);
-  CORE::LINALG::Matrix<numstressdof_ * piel, 1> vec_r_epsu(true);
+  Core::LinAlg::Matrix<numstressdof_ * piel, 1> vec_r_p(true);
+  Core::LinAlg::Matrix<numstressdof_ * piel, 1> vec_r_epsu(true);
 
   // for boundary integrals
-  CORE::LINALG::Matrix<numstressdof_ * piel, 1> vec_r_o_n_u_minus_g(true);
+  Core::LinAlg::Matrix<numstressdof_ * piel, 1> vec_r_o_n_u_minus_g(true);
 
   // extract local velocities and pressure from the global vectors
-  CORE::LINALG::Matrix<nsd, piel> pevel(true);
-  CORE::LINALG::Matrix<piel, 1> pepres(true);
+  Core::LinAlg::Matrix<nsd, piel> pevel(true);
+  Core::LinAlg::Matrix<piel, 1> pepres(true);
 
   Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velaf");
   if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   // extract local node values for pressure and velocities from global vectors
-  if (fldparatimint_->TimeAlgo() == INPAR::FLUID::timeint_npgenalpha)
+  if (fldparatimint_->TimeAlgo() == Inpar::FLUID::timeint_npgenalpha)
   {
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
     if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
@@ -4457,8 +4464,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     std::vector<double> mypvelaf((plm).size());
     std::vector<double> mypvelnp((plm).size());
 
-    CORE::FE::ExtractMyValues(*vel, mypvelaf, plm);
-    CORE::FE::ExtractMyValues(*velnp, mypvelnp, plm);
+    Core::FE::ExtractMyValues(*vel, mypvelaf, plm);
+    Core::FE::ExtractMyValues(*velnp, mypvelnp, plm);
 
     for (int inode = 0; inode < piel; ++inode)
     {
@@ -4490,7 +4497,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   {
     std::vector<double> mypvel((plm).size());
 
-    CORE::FE::ExtractMyValues(*vel, mypvel, plm);
+    Core::FE::ExtractMyValues(*vel, mypvel, plm);
 
 
     for (int inode = 0; inode < piel; ++inode)
@@ -4509,37 +4516,37 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
   {
     // allocate vector for shape functions and matrix for derivatives
-    CORE::LINALG::Matrix<piel, 1> pfunct(true);
-    CORE::LINALG::Matrix<nsd, piel> pderiv(true);
+    Core::LinAlg::Matrix<piel, 1> pfunct(true);
+    Core::LinAlg::Matrix<nsd, piel> pderiv(true);
 
     // get local node coordinates
-    CORE::LINALG::Matrix<nsd, piel> pxyze(true);
-    CORE::GEO::fillInitialPositionArray<pdistype, nsd, CORE::LINALG::Matrix<nsd, piel>>(
+    Core::LinAlg::Matrix<nsd, piel> pxyze(true);
+    Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
         parent, pxyze);
 
     //--------------------------------------------------
     // Gaussian integration points
-    const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
-        DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+    const Core::FE::IntPointsAndWeights<nsd> pintpoints(
+        Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
     //--------------------------------------------------
     // vectors/scalars for Gausspoint values
 
     // velocity at gausspoint
-    CORE::LINALG::Matrix<nsd, 1> pvelint(true);
+    Core::LinAlg::Matrix<nsd, 1> pvelint(true);
     // velocity derivatives at gausspoint
-    CORE::LINALG::Matrix<nsd, nsd> pvderxy(true);
+    Core::LinAlg::Matrix<nsd, nsd> pvderxy(true);
     // pressure at gausspoint
     double ppressure = 0.0;
 
     // global derivatives of shape functions w.r.t x,y,z
-    CORE::LINALG::Matrix<nsd, piel> pderxy(true);
+    Core::LinAlg::Matrix<nsd, piel> pderxy(true);
     // transposed jacobian "dx/ds"
-    CORE::LINALG::Matrix<nsd, nsd> pxjm(true);
+    Core::LinAlg::Matrix<nsd, nsd> pxjm(true);
     // inverse of transposed jacobian "ds/dx"
-    CORE::LINALG::Matrix<nsd, nsd> pxji(true);
+    Core::LinAlg::Matrix<nsd, nsd> pxji(true);
 
-    CORE::LINALG::Matrix<nsd, 1> pxsi(true);
+    Core::LinAlg::Matrix<nsd, 1> pxsi(true);
 
     //--------------------------------------------------
     // the actual loop
@@ -4553,8 +4560,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       }
 
       // get parent elements shape functions
-      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
+      Core::FE::shape_function<pdistype>(pxsi, pfunct);
+      Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
       // get Jacobian matrix and determinant
       // actually compute its transpose....
@@ -4713,7 +4720,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       }
       else if (nsd == 3)
       {
-        CORE::LINALG::Matrix<numstressdof_, 1> temp(true);
+        Core::LinAlg::Matrix<numstressdof_, 1> temp(true);
 
         temp(0) = fac_ * pvderxy(0, 0);
         temp(1) = fac_ * pvderxy(1, 1);
@@ -4743,7 +4750,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   // matrix inversion of stress-stress block
   inv_r_sigma = mat_r_sigma;
 
-  CORE::LINALG::FixedSizeSerialDenseSolver<numstressdof_ * piel, numstressdof_ * piel> solver;
+  Core::LinAlg::FixedSizeSerialDenseSolver<numstressdof_ * piel, numstressdof_ * piel> solver;
 
   solver.SetMatrix(inv_r_sigma);
   solver.Invert();
@@ -4757,44 +4764,44 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     if (nsd == 3)
     {
       // for boundary integrals
-      CORE::LINALG::Matrix<numstressdof_ * piel, 1> vec_r_o_n_u_minus_g_SPALDING(true);
-      CORE::LINALG::Matrix<numstressdof_ * piel, 1> SPALDING_stresses(true);
+      Core::LinAlg::Matrix<numstressdof_ * piel, 1> vec_r_o_n_u_minus_g_SPALDING(true);
+      Core::LinAlg::Matrix<numstressdof_ * piel, 1> SPALDING_stresses(true);
 
       // allocate vector/matrix for shape functions and derivatives
-      CORE::LINALG::Matrix<biel, 1> funct(true);
-      CORE::LINALG::Matrix<bnsd, biel> deriv(true);
+      Core::LinAlg::Matrix<biel, 1> funct(true);
+      Core::LinAlg::Matrix<bnsd, biel> deriv(true);
 
       // allocate vector for parents shape functions and matrix for derivatives
-      CORE::LINALG::Matrix<piel, 1> pfunct(true);
-      CORE::LINALG::Matrix<nsd, piel> pderiv(true);
+      Core::LinAlg::Matrix<piel, 1> pfunct(true);
+      Core::LinAlg::Matrix<nsd, piel> pderiv(true);
 
       // get local node coordinates
-      CORE::LINALG::Matrix<nsd, biel> bxyze(true);
-      CORE::GEO::fillInitialPositionArray<bdistype, nsd, CORE::LINALG::Matrix<nsd, biel>>(
+      Core::LinAlg::Matrix<nsd, biel> bxyze(true);
+      Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
           surfele, bxyze);
 
       // get local node coordinates
-      CORE::LINALG::Matrix<nsd, piel> pxyze(true);
-      CORE::GEO::fillInitialPositionArray<pdistype, nsd, CORE::LINALG::Matrix<nsd, piel>>(
+      Core::LinAlg::Matrix<nsd, piel> pxyze(true);
+      Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
           parent, pxyze);
 
       //--------------------------------------------------
       // Gaussian integration points
-      const CORE::FE::IntPointsAndWeights<bnsd> intpoints(
-          DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+      const Core::FE::IntPointsAndWeights<bnsd> intpoints(
+          Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
-      const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
-          DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+      const Core::FE::IntPointsAndWeights<nsd> pintpoints(
+          Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
       // coordinates of current integration point in reference coordinates
-      CORE::LINALG::Matrix<bnsd, 1> xsi(true);
-      CORE::LINALG::Matrix<nsd, 1> pxsi(true);
+      Core::LinAlg::Matrix<bnsd, 1> xsi(true);
+      Core::LinAlg::Matrix<nsd, 1> pxsi(true);
 
 
-      CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+      Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
 
       {
-        CORE::LINALG::SerialDenseMatrix gps(intpoints.IP().nquad, bnsd);
+        Core::LinAlg::SerialDenseMatrix gps(intpoints.IP().nquad, bnsd);
 
 
         // coordinates of the current integration point
@@ -4807,7 +4814,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             gps(iquad, idim) = gpcoord[idim];
           }
         }
-        CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, surfele->SurfaceNumber());
+        Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, surfele->SurfaceNumber());
       }
 
 
@@ -4815,19 +4822,19 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       // vectors/scalars for Gausspoint values
 
       // the element's normal vector
-      CORE::LINALG::Matrix<nsd, 1> unitnormal(true);
+      Core::LinAlg::Matrix<nsd, 1> unitnormal(true);
       // velocity at gausspoint
-      CORE::LINALG::Matrix<nsd, 1> velint(true);
+      Core::LinAlg::Matrix<nsd, 1> velint(true);
 
       // transposed jacobian "dx/ds"
-      CORE::LINALG::Matrix<nsd, nsd> xjm(true);
+      Core::LinAlg::Matrix<nsd, nsd> xjm(true);
       // inverse of transposed jacobian "ds/dx"
-      CORE::LINALG::Matrix<nsd, nsd> xji(true);
+      Core::LinAlg::Matrix<nsd, nsd> xji(true);
 
       // transposed jacobian "dx/ds" for parent
-      CORE::LINALG::Matrix<nsd, nsd> pxjm(true);
+      Core::LinAlg::Matrix<nsd, nsd> pxjm(true);
       // inverse of transposed jacobian "ds/dx" for parent
-      CORE::LINALG::Matrix<nsd, nsd> pxji(true);
+      Core::LinAlg::Matrix<nsd, nsd> pxji(true);
 
 
       //--------------------------------------------------
@@ -4841,24 +4848,24 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           xsi(idim) = gpcoord[idim];
         }
 
-        CORE::FE::shape_function<bdistype>(xsi, funct);
-        CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
+        Core::FE::shape_function<bdistype>(xsi, funct);
+        Core::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
         for (int idim = 0; idim < nsd; idim++)
         {
           pxsi(idim) = pqxg(iquad, idim);
         }
 
-        CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-        CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
+        Core::FE::shape_function<pdistype>(pxsi, pfunct);
+        Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
         drs_ = 0.0;
 
         // compute measure tensor for surface element and the infinitesimal
         // area element drs for the integration
-        CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
+        Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
 
-        CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+        Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
             bxyze, deriv, metrictensor, drs_, &unitnormal);
 
         // compute integration factor
@@ -4869,14 +4876,14 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
         // ------------------------------------------------
         // factor given by spatial function
-        CORE::LINALG::Matrix<nsd, 1> functionfac(true);
+        Core::LinAlg::Matrix<nsd, 1> functionfac(true);
         for (int i = 0; i < nsd; ++i)
         {
           functionfac(i) = 1.0;
         }
 
         // determine coordinates of current Gauss point
-        CORE::LINALG::Matrix<3, 1> coordgp(true);
+        Core::LinAlg::Matrix<3, 1> coordgp(true);
 
         for (int A = 0; A < biel; ++A)
         {
@@ -4897,8 +4904,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             if (functnum > 0)
             {
               // evaluate function at current gauss point (important: requires 3D position vector)
-              functionfac(dim) = GLOBAL::Problem::Instance()
-                                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+              functionfac(dim) = Global::Problem::Instance()
+                                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                      .Evaluate(coordgp.A(), time, dim);
             }
             else
@@ -4908,7 +4915,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           }
         }
 
-        CORE::LINALG::Matrix<nsd, 1> delta_vel(true);
+        Core::LinAlg::Matrix<nsd, 1> delta_vel(true);
 
         for (int rr = 0; rr < nsd; ++rr)
         {
@@ -4980,8 +4987,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
       {
         // traction and stress at gausspoint
-        CORE::LINALG::Matrix<numstressdof_, 1> GP_stress(true);
-        CORE::LINALG::Matrix<nsd, 1> traction(true);
+        Core::LinAlg::Matrix<numstressdof_, 1> GP_stress(true);
+        Core::LinAlg::Matrix<nsd, 1> traction(true);
 
         // coordinates of the current integration point
         const double* gpcoord = (intpoints.IP().qxg)[iquad];
@@ -4990,24 +4997,24 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           xsi(idim) = gpcoord[idim];
         }
 
-        CORE::FE::shape_function<bdistype>(xsi, funct);
-        CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
+        Core::FE::shape_function<bdistype>(xsi, funct);
+        Core::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
         for (int idim = 0; idim < nsd; idim++)
         {
           pxsi(idim) = pqxg(iquad, idim);
         }
 
-        CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-        CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
+        Core::FE::shape_function<pdistype>(pxsi, pfunct);
+        Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
         drs_ = 0.0;
 
         // compute measure tensor for surface element and the infinitesimal
         // area element drs for the integration
-        CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
+        Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
 
-        CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+        Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
             bxyze, deriv, metrictensor, drs_, &unitnormal);
 
         // compute integration factor
@@ -5057,41 +5064,41 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
   {
     // allocate vector/matrix for shape functions and derivatives
-    CORE::LINALG::Matrix<biel, 1> funct(true);
-    CORE::LINALG::Matrix<bnsd, biel> deriv(true);
+    Core::LinAlg::Matrix<biel, 1> funct(true);
+    Core::LinAlg::Matrix<bnsd, biel> deriv(true);
 
     // allocate vector for parents shape functions and matrix for derivatives
-    CORE::LINALG::Matrix<piel, 1> pfunct(true);
-    CORE::LINALG::Matrix<nsd, piel> pderiv(true);
+    Core::LinAlg::Matrix<piel, 1> pfunct(true);
+    Core::LinAlg::Matrix<nsd, piel> pderiv(true);
 
 
     // get local node coordinates
-    CORE::LINALG::Matrix<nsd, biel> bxyze(true);
-    CORE::GEO::fillInitialPositionArray<bdistype, nsd, CORE::LINALG::Matrix<nsd, biel>>(
+    Core::LinAlg::Matrix<nsd, biel> bxyze(true);
+    Core::Geo::fillInitialPositionArray<bdistype, nsd, Core::LinAlg::Matrix<nsd, biel>>(
         surfele, bxyze);
 
     // get local node coordinates
-    CORE::LINALG::Matrix<nsd, piel> pxyze(true);
-    CORE::GEO::fillInitialPositionArray<pdistype, nsd, CORE::LINALG::Matrix<nsd, piel>>(
+    Core::LinAlg::Matrix<nsd, piel> pxyze(true);
+    Core::Geo::fillInitialPositionArray<pdistype, nsd, Core::LinAlg::Matrix<nsd, piel>>(
         parent, pxyze);
 
     //--------------------------------------------------
     // Gaussian integration points
-    const CORE::FE::IntPointsAndWeights<bnsd> intpoints(
-        DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+    const Core::FE::IntPointsAndWeights<bnsd> intpoints(
+        Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
-    const CORE::FE::IntPointsAndWeights<nsd> pintpoints(
-        DRT::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+    const Core::FE::IntPointsAndWeights<nsd> pintpoints(
+        Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
 
     // coordinates of current integration point in reference coordinates
-    CORE::LINALG::Matrix<bnsd, 1> xsi(true);
-    CORE::LINALG::Matrix<nsd, 1> pxsi(true);
+    Core::LinAlg::Matrix<bnsd, 1> xsi(true);
+    Core::LinAlg::Matrix<nsd, 1> pxsi(true);
 
 
-    CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+    Core::LinAlg::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
 
     {
-      CORE::LINALG::SerialDenseMatrix gps(intpoints.IP().nquad, bnsd);
+      Core::LinAlg::SerialDenseMatrix gps(intpoints.IP().nquad, bnsd);
 
 
       // coordinates of the current integration point
@@ -5106,11 +5113,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       }
       if (nsd == 2)
       {
-        CORE::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, surfele->SurfaceNumber());
+        Core::FE::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, surfele->SurfaceNumber());
       }
       else if (nsd == 3)
       {
-        CORE::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, surfele->SurfaceNumber());
+        Core::FE::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, surfele->SurfaceNumber());
       }
     }
 
@@ -5119,19 +5126,19 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     // vectors/scalars for Gausspoint values
 
     // the element's normal vector
-    CORE::LINALG::Matrix<nsd, 1> unitnormal(true);
+    Core::LinAlg::Matrix<nsd, 1> unitnormal(true);
     // velocity at gausspoint
-    CORE::LINALG::Matrix<nsd, 1> velint(true);
+    Core::LinAlg::Matrix<nsd, 1> velint(true);
 
     // transposed jacobian "dx/ds"
-    CORE::LINALG::Matrix<nsd, nsd> xjm(true);
+    Core::LinAlg::Matrix<nsd, nsd> xjm(true);
     // inverse of transposed jacobian "ds/dx"
-    CORE::LINALG::Matrix<nsd, nsd> xji(true);
+    Core::LinAlg::Matrix<nsd, nsd> xji(true);
 
     // transposed jacobian "dx/ds" for parent
-    CORE::LINALG::Matrix<nsd, nsd> pxjm(true);
+    Core::LinAlg::Matrix<nsd, nsd> pxjm(true);
     // inverse of transposed jacobian "ds/dx" for parent
-    CORE::LINALG::Matrix<nsd, nsd> pxji(true);
+    Core::LinAlg::Matrix<nsd, nsd> pxji(true);
 
 
     //--------------------------------------------------
@@ -5145,24 +5152,24 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
         xsi(idim) = gpcoord[idim];
       }
 
-      CORE::FE::shape_function<bdistype>(xsi, funct);
-      CORE::FE::shape_function_deriv1<bdistype>(xsi, deriv);
+      Core::FE::shape_function<bdistype>(xsi, funct);
+      Core::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
       for (int idim = 0; idim < nsd; idim++)
       {
         pxsi(idim) = pqxg(iquad, idim);
       }
 
-      CORE::FE::shape_function<pdistype>(pxsi, pfunct);
-      CORE::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
+      Core::FE::shape_function<pdistype>(pxsi, pfunct);
+      Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
       drs_ = 0.0;
 
       // compute measure tensor for surface element and the infinitesimal
       // area element drs for the integration
-      CORE::LINALG::Matrix<bnsd, bnsd> metrictensor(true);
+      Core::LinAlg::Matrix<bnsd, bnsd> metrictensor(true);
 
-      CORE::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
+      Core::FE::ComputeMetricTensorForBoundaryEle<bdistype>(
           bxyze, deriv, metrictensor, drs_, &unitnormal);
 
       // compute integration factor
@@ -5201,7 +5208,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
                   |    i     j  |   |    i     j  |   |    i     j  |
                   +-           -+   +-           -+   +-           -+
       */
-      CORE::LINALG::Matrix<nsd, nsd> G;
+      Core::LinAlg::Matrix<nsd, nsd> G;
 
       for (int nn = 0; nn < nsd; ++nn)
       {
@@ -5240,14 +5247,14 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
       // ------------------------------------------------
       // factor given by spatial function
-      CORE::LINALG::Matrix<nsd, 1> functionfac(true);
+      Core::LinAlg::Matrix<nsd, 1> functionfac(true);
       for (int i = 0; i < nsd; ++i)
       {
         functionfac(i) = 1.0;
       }
 
       // determine coordinates of current Gauss point
-      CORE::LINALG::Matrix<3, 1> coordgp(true);
+      Core::LinAlg::Matrix<3, 1> coordgp(true);
 
       for (int A = 0; A < biel; ++A)
       {
@@ -5268,8 +5275,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
           if (functnum > 0)
           {
             // evaluate function at current gauss point (important: requires 3D position vector)
-            functionfac(dim) = GLOBAL::Problem::Instance()
-                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            functionfac(dim) = Global::Problem::Instance()
+                                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                                    .Evaluate(coordgp.A(), time, dim);
           }
           else
@@ -5279,7 +5286,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
         }
       }
 
-      CORE::LINALG::Matrix<nsd, 1> delta_vel(true);
+      Core::LinAlg::Matrix<nsd, 1> delta_vel(true);
 
       for (int rr = 0; rr < nsd; ++rr)
       {
@@ -5314,8 +5321,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       }
       else if (nsd == 3)
       {
-        CORE::LINALG::Matrix<nsd, 1> temp(true);
-        CORE::LINALG::Matrix<nsd, 1> tempA(true);
+        Core::LinAlg::Matrix<nsd, 1> temp(true);
+        Core::LinAlg::Matrix<nsd, 1> tempA(true);
 
         for (int dim = 0; dim < nsd; ++dim)
         {
@@ -5492,8 +5499,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       }
       else if (nsd == 3)
       {
-        CORE::LINALG::Matrix<nsd, 1> temp;
-        CORE::LINALG::Matrix<nsd, 1> tempA;
+        Core::LinAlg::Matrix<nsd, 1> temp;
+        Core::LinAlg::Matrix<nsd, 1> tempA;
 
         for (int dim = 0; dim < nsd; ++dim)
         {
@@ -5587,8 +5594,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       }
       else if (nsd == 3)
       {
-        CORE::LINALG::Matrix<numstressdof_, nsd> temp;
-        CORE::LINALG::Matrix<numstressdof_, nsd> tempA;
+        Core::LinAlg::Matrix<numstressdof_, nsd> temp;
+        Core::LinAlg::Matrix<numstressdof_, nsd> tempA;
 
         temp(0, 0) = fac_ * C2 * unitnormal(0) * unitnormal(0) * unitnormal(0);
         temp(0, 1) = fac_ * C2 * unitnormal(0) * unitnormal(0) * unitnormal(1);
@@ -5760,32 +5767,32 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   }
 
   return;
-}  // DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet
+}  // Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet
 
 
 /*----------------------------------------------------------------------*
  |  get density and viscosity                                  vg 07/13 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidBoundaryParent<distype>::get_density_and_viscosity(
-    Teuchos::RCP<const CORE::MAT::Material> material, const double pscaaf,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidBoundaryParent<distype>::get_density_and_viscosity(
+    Teuchos::RCP<const Core::Mat::Material> material, const double pscaaf,
     const double thermpressaf, const double rateofstrain)
 {
   // initially set density to 1.0
   densaf_ = 1.0;
 
-  if (material->MaterialType() == CORE::Materials::m_fluid)
+  if (material->MaterialType() == Core::Materials::m_fluid)
   {
-    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+    const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(material.get());
 
     densaf_ = actmat->Density();
 
     // get constant viscosity
     visc_ = actmat->Viscosity();
   }
-  else if (material->MaterialType() == CORE::Materials::m_carreauyasuda)
+  else if (material->MaterialType() == Core::Materials::m_carreauyasuda)
   {
-    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
+    const Mat::CarreauYasuda* actmat = static_cast<const Mat::CarreauYasuda*>(material.get());
 
     densaf_ = actmat->Density();
 
@@ -5803,9 +5810,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::get_density_and_viscosity(
     // dynamic viscosity
     visc_ *= densaf_;
   }
-  else if (material->MaterialType() == CORE::Materials::m_modpowerlaw)
+  else if (material->MaterialType() == Core::Materials::m_modpowerlaw)
   {
-    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
+    const Mat::ModPowerLaw* actmat = static_cast<const Mat::ModPowerLaw*>(material.get());
 
     densaf_ = actmat->Density();
 
@@ -5821,9 +5828,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::get_density_and_viscosity(
     // dynamic viscosity
     visc_ *= densaf_;
   }
-  else if (material->MaterialType() == CORE::Materials::m_herschelbulkley)
+  else if (material->MaterialType() == Core::Materials::m_herschelbulkley)
   {
-    const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(material.get());
+    const Mat::HerschelBulkley* actmat = static_cast<const Mat::HerschelBulkley*>(material.get());
 
     densaf_ = actmat->Density();
 
@@ -5846,9 +5853,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::get_density_and_viscosity(
       visc_ = tau0 * ((1.0 - exp(-mexp * rateofstrain)) / rateofstrain) +
               kfac * pow(rateofstrain, (nexp - 1.0));
   }
-  else if (material->MaterialType() == CORE::Materials::m_sutherland)
+  else if (material->MaterialType() == Core::Materials::m_sutherland)
   {
-    const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
+    const Mat::Sutherland* actmat = static_cast<const Mat::Sutherland*>(material.get());
 
     // compute viscosity according to Sutherland law
     visc_ = actmat->ComputeViscosity(pscaaf);
@@ -5857,9 +5864,9 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::get_density_and_viscosity(
     // and thermodynamic pressure
     densaf_ = actmat->ComputeDensity(pscaaf, thermpressaf);
   }
-  else if (material->MaterialType() == CORE::Materials::m_fluidporo)
+  else if (material->MaterialType() == Core::Materials::m_fluidporo)
   {
-    const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
+    const Mat::FluidPoro* actmat = static_cast<const Mat::FluidPoro*>(material.get());
 
     densaf_ = actmat->Density();
 

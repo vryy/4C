@@ -25,7 +25,7 @@ class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Exporter;
 }
@@ -37,7 +37,7 @@ namespace STR
     class GaussPointDataOutputManager
     {
      public:
-      explicit GaussPointDataOutputManager(INPAR::STR::GaussPointDataOutputType output_type);
+      explicit GaussPointDataOutputManager(Inpar::STR::GaussPointDataOutputType output_type);
 
       void add_quantity_if_not_existant(const std::string& name, int size);
 
@@ -105,19 +105,20 @@ namespace STR
         return quantities_;
       }
 
-      inline INPAR::STR::GaussPointDataOutputType GetOutputType() const { return output_type_; }
+      inline Inpar::STR::GaussPointDataOutputType GetOutputType() const { return output_type_; }
 
 
      private:
       static constexpr int MPI_TAG = 545;
       static constexpr char MPI_DELIMITER = '!';
 
-      void send_my_quantities_to_proc(const CORE::COMM::Exporter& exporter, int to_proc) const;
+      void send_my_quantities_to_proc(
+          const Core::Communication::Exporter& exporter, int to_proc) const;
 
       std::unique_ptr<std::unordered_map<std::string, int>> receive_quantities_from_proc(
-          const CORE::COMM::Exporter& exporter, int from_proc) const;
+          const Core::Communication::Exporter& exporter, int from_proc) const;
 
-      void broadcast_my_quantitites(const CORE::COMM::Exporter& exporter);
+      void broadcast_my_quantitites(const Core::Communication::Exporter& exporter);
 
       void pack_my_quantities(std::vector<char>& data) const;
 
@@ -131,7 +132,7 @@ namespace STR
       void prepare_gauss_point_data_vectors(const Epetra_Map& element_col_map);
 
       //! output type of the data
-      INPAR::STR::GaussPointDataOutputType output_type_;
+      Inpar::STR::GaussPointDataOutputType output_type_;
 
       //! maximum number of Gauss points of all elements
       int max_num_gp_;

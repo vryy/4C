@@ -40,22 +40,22 @@ void STR::EXPLICIT::Generic::Setup()
   Teuchos::ParameterList& p_grp_opt = s_dyn().GetNoxParams().sublist("Group Options");
 
   // create the new generic pre/post operator
-  Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prepost_generic_ptr =
-      Teuchos::rcp(new NOX::NLN::PrePostOp::EXPLICIT::Generic(*this));
+  Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> prepost_generic_ptr =
+      Teuchos::rcp(new NOX::Nln::PrePostOp::EXPLICIT::Generic(*this));
 
   // Get the current map. If there is no map, return a new empty one. (reference)
-  NOX::NLN::GROUP::PrePostOperator::Map& prepostgroup_map =
-      NOX::NLN::GROUP::PrePostOp::GetMap(p_grp_opt);
+  NOX::Nln::GROUP::PrePostOperator::Map& prepostgroup_map =
+      NOX::Nln::GROUP::PrePostOp::GetMap(p_grp_opt);
 
   // insert/replace the old pointer in the map
-  prepostgroup_map[NOX::NLN::GROUP::prepost_impl_generic] = prepost_generic_ptr;
+  prepostgroup_map[NOX::Nln::GROUP::prepost_impl_generic] = prepost_generic_ptr;
 
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln solver in the parameter list
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList& p_sol_opt = s_dyn().GetNoxParams().sublist("Solver Options");
 
-  NOX::NLN::AUX::AddToPrePostOpVector(p_sol_opt, prepost_generic_ptr);
+  NOX::Nln::Aux::AddToPrePostOpVector(p_sol_opt, prepost_generic_ptr);
 
   // No issetup_ = true, since the Setup() functions of the derived classes
   // have to be called and finished first!
@@ -78,7 +78,7 @@ bool STR::EXPLICIT::Generic::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::EXPLICIT::Generic::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
+bool STR::EXPLICIT::Generic::ApplyStiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
 
@@ -99,7 +99,7 @@ bool STR::EXPLICIT::Generic::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::Sp
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::EXPLICIT::Generic::ApplyForceStiff(
-    const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
+    const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
   // ---------------------------------------------------------------------------
@@ -128,7 +128,7 @@ double STR::EXPLICIT::Generic::CalcRefNormForce(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::Generic::compute_jacobian_contributions_from_element_level_for_ptc(
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr)
 {
   FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
 }
@@ -136,7 +136,7 @@ void STR::EXPLICIT::Generic::compute_jacobian_contributions_from_element_level_f
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::EXPLICIT::Generic::assemble_force(
-    Epetra_Vector& f, const std::vector<INPAR::STR::ModelType>* without_these_models) const
+    Epetra_Vector& f, const std::vector<Inpar::STR::ModelType>* without_these_models) const
 {
   FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
   return false;
@@ -181,35 +181,35 @@ void STR::EXPLICIT::Generic::reset_eval_params()
   EvalData().SetTotalTime(global_state().GetTimeNp());
   EvalData().SetDeltaTime((*global_state().GetDeltaTime())[0]);
   EvalData().SetIsTolerateError(true);
-  EvalData().set_function_manager(GLOBAL::Problem::Instance()->FunctionManager());
+  EvalData().set_function_manager(Global::Problem::Instance()->FunctionManager());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::PrePostOp::EXPLICIT::Generic::runPreIterate(const ::NOX::Solver::Generic& nlnSolver)
+void NOX::Nln::PrePostOp::EXPLICIT::Generic::runPreIterate(const ::NOX::Solver::Generic& nlnSolver)
 {
   // For explicit integration this action simply does nothing.
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::PrePostOp::EXPLICIT::Generic::runPreSolve(const ::NOX::Solver::Generic& nlnSolver)
+void NOX::Nln::PrePostOp::EXPLICIT::Generic::runPreSolve(const ::NOX::Solver::Generic& nlnSolver)
 {
   // For explicit integration this action simply does nothing.
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::PrePostOp::EXPLICIT::Generic::runPreComputeX(const NOX::NLN::Group& input_grp,
-    const Epetra_Vector& dir, const double& step, const NOX::NLN::Group& curr_grp)
+void NOX::Nln::PrePostOp::EXPLICIT::Generic::runPreComputeX(const NOX::Nln::Group& input_grp,
+    const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   // For explicit integration this action simply does nothing.
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::PrePostOp::EXPLICIT::Generic::runPostComputeX(const NOX::NLN::Group& input_grp,
-    const Epetra_Vector& dir, const double& step, const NOX::NLN::Group& curr_grp)
+void NOX::Nln::PrePostOp::EXPLICIT::Generic::runPostComputeX(const NOX::Nln::Group& input_grp,
+    const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   // For explicit integration this action simply does nothing.
 }

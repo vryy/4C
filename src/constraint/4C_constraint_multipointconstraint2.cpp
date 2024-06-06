@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<DRT::Discretization> discr,
+CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<Discret::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : MPConstraint(discr, conditionname, minID, maxID)
 {
@@ -38,10 +38,10 @@ CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<DRT::Discretization> disc
     constraintdis_ = create_discretization_from_condition(
         actdisc_, constrcond_, "ConstrDisc", "CONSTRELE2", dummy);
     Teuchos::RCP<Epetra_Map> newcolnodemap =
-        CORE::REBALANCE::ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
+        Core::Rebalance::ComputeNodeColMap(actdisc_, constraintdis_.find(0)->second);
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-    Teuchos::RCP<CORE::Dofsets::DofSet> newdofset =
-        Teuchos::rcp(new CORE::Dofsets::TransparentDofSet(actdisc_));
+    Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
+        Teuchos::rcp(new Core::DOFSets::TransparentDofSet(actdisc_));
     (constraintdis_.find(0)->second)->ReplaceDofSet(newdofset);
     newdofset = Teuchos::null;
     (constraintdis_.find(0)->second)->fill_complete();
@@ -90,7 +90,7 @@ void CONSTRAINTS::MPConstraint2::Initialize(
   // read data of the input files
   for (unsigned int i = 0; i < constrcond_.size(); i++)
   {
-    CORE::Conditions::Condition& cond = *(constrcond_[i]);
+    Core::Conditions::Condition& cond = *(constrcond_[i]);
     int condID = cond.parameters().Get<int>("ConditionID");
     if (inittimes_.find(condID)->second <= time)
     {
@@ -120,8 +120,8 @@ void CONSTRAINTS::MPConstraint2::Initialize(
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void CONSTRAINTS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
@@ -143,16 +143,16 @@ void CONSTRAINTS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
  |(private)                                                   tk 04/08    |
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
-std::map<int, Teuchos::RCP<DRT::Discretization>>
+std::map<int, Teuchos::RCP<Discret::Discretization>>
 CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
-    Teuchos::RCP<DRT::Discretization> actdisc,
-    std::vector<CORE::Conditions::Condition*> constrcondvec, const std::string& discret_name,
+    Teuchos::RCP<Discret::Discretization> actdisc,
+    std::vector<Core::Conditions::Condition*> constrcondvec, const std::string& discret_name,
     const std::string& element_name, int& startID)
 {
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(actdisc->Comm().Clone());
 
-  Teuchos::RCP<DRT::Discretization> newdis =
-      Teuchos::rcp(new DRT::Discretization(discret_name, com, actdisc->n_dim()));
+  Teuchos::RCP<Discret::Discretization> newdis =
+      Teuchos::rcp(new Discret::Discretization(discret_name, com, actdisc->n_dim()));
 
   if (!actdisc->Filled())
   {
@@ -179,7 +179,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
     reorder_constraint_nodes(ngid, constrcondvec[j]);
 
     remove_copy_if(ngid.data(), ngid.data() + numnodes, inserter(rownodeset, rownodeset.begin()),
-        std::not_fn(CORE::Conditions::MyGID(actnoderowmap)));
+        std::not_fn(Core::Conditions::MyGID(actnoderowmap)));
     // copy node ids specified in condition to colnodeset
     copy(ngid.data(), ngid.data() + numnodes, inserter(colnodeset, colnodeset.begin()));
 
@@ -189,15 +189,15 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
       const int gid = actnoderowmap->GID(i);
       if (rownodeset.find(gid) != rownodeset.end())
       {
-        const CORE::Nodes::Node* standardnode = actdisc->lRowNode(i);
-        newdis->AddNode(Teuchos::rcp(new CORE::Nodes::Node(gid, standardnode->X(), myrank)));
+        const Core::Nodes::Node* standardnode = actdisc->lRowNode(i);
+        newdis->AddNode(Teuchos::rcp(new Core::Nodes::Node(gid, standardnode->X(), myrank)));
       }
     }
 
     if (myrank == 0)
     {
-      Teuchos::RCP<CORE::Elements::Element> constraintele =
-          CORE::COMM::Factory(element_name, "Polynomial", j, myrank);
+      Teuchos::RCP<Core::Elements::Element> constraintele =
+          Core::Communication::Factory(element_name, "Polynomial", j, myrank);
       // set the same global node ids to the ale element
       constraintele->SetNodeIds(ngid.size(), ngid.data());
 
@@ -225,7 +225,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
 
   newdis->Redistribute(*constraintnoderowmap, *constraintnodecolmap);
 
-  std::map<int, Teuchos::RCP<DRT::Discretization>> newdismap;
+  std::map<int, Teuchos::RCP<Discret::Discretization>> newdismap;
   newdismap[startID] = newdis;
   return newdismap;
 }
@@ -235,7 +235,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
  |reorder MPC nodes based on condition input                            |
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::MPConstraint2::reorder_constraint_nodes(
-    std::vector<int>& nodeids, const CORE::Conditions::Condition* cond)
+    std::vector<int>& nodeids, const Core::Conditions::Condition* cond)
 {
   // get this condition's nodes
   std::vector<int> temp = nodeids;
@@ -256,9 +256,9 @@ void CONSTRAINTS::MPConstraint2::reorder_constraint_nodes(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<DRT::Discretization> disc,
-    Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Discret::Discretization> disc,
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
     Teuchos::RCP<Epetra_Vector> systemvector3)
 {
@@ -273,11 +273,11 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<DRT::Discretiz
   bool assemblevec3 = systemvector3 != Teuchos::null;
 
   // define element matrices and vectors
-  CORE::LINALG::SerialDenseMatrix elematrix1;
-  CORE::LINALG::SerialDenseMatrix elematrix2;
-  CORE::LINALG::SerialDenseVector elevector1;
-  CORE::LINALG::SerialDenseVector elevector2;
-  CORE::LINALG::SerialDenseVector elevector3;
+  Core::LinAlg::SerialDenseMatrix elematrix1;
+  Core::LinAlg::SerialDenseMatrix elematrix2;
+  Core::LinAlg::SerialDenseVector elevector1;
+  Core::LinAlg::SerialDenseVector elevector2;
+  Core::LinAlg::SerialDenseVector elevector3;
 
 
   const double time = params.get("total time", -1.0);
@@ -290,8 +290,8 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<DRT::Discretiz
   // loop over column elements
   for (int i = 0; i < numcolele; ++i)
   {
-    CORE::Elements::Element* actele = disc->lColElement(i);
-    CORE::Conditions::Condition& cond = *(constrcond_[actele->Id()]);
+    Core::Elements::Element* actele = disc->lColElement(i);
+    Core::Conditions::Condition& cond = *(constrcond_[actele->Id()]);
     int condID = cond.parameters().Get<int>("ConditionID");
 
     // computation only if time is larger or equal than initialization time for constraint
@@ -330,7 +330,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<DRT::Discretiz
       if (assemblevec3) elevector3.size(1);  // elevector3 always contains a scalar
 
       params.set("ConditionID", condID);
-      params.set<Teuchos::RCP<CORE::Conditions::Condition>>(
+      params.set<Teuchos::RCP<Core::Conditions::Condition>>(
           "condition", Teuchos::rcp(&cond, false));
       // call the element evaluate method
       int err = actele->Evaluate(
@@ -358,7 +358,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<DRT::Discretiz
       if (assemblevec1)
       {
         elevector1.scale(lagraval);
-        CORE::LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
+        Core::LinAlg::Assemble(*systemvector1, elevector1, lm, lmowner);
       }
       if (assemblevec3)
       {
@@ -366,7 +366,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<DRT::Discretiz
         std::vector<int> constrowner;
         constrlm.push_back(gindex);
         constrowner.push_back(actele->Owner());
-        CORE::LINALG::Assemble(*systemvector3, elevector3, constrlm, constrowner);
+        Core::LinAlg::Assemble(*systemvector3, elevector3, constrlm, constrowner);
       }
 
       // Load curve business
@@ -377,8 +377,8 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<DRT::Discretiz
       bool usetime = true;
       if (time < 0.0) usetime = false;
       if (curvenum >= 0 && usetime)
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum)
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curvenum)
                        .Evaluate(time);
       Teuchos::RCP<Epetra_Vector> timefact =
           params.get<Teuchos::RCP<Epetra_Vector>>("vector curve factors");

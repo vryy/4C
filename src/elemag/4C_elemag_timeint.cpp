@@ -32,15 +32,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                               gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> &actdis,
-    const Teuchos::RCP<CORE::LINALG::Solver> &solver,
+EleMag::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<Discret::DiscretizationHDG> &actdis,
+    const Teuchos::RCP<Core::LinAlg::Solver> &solver,
     const Teuchos::RCP<Teuchos::ParameterList> &params,
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter> &output)
+    const Teuchos::RCP<Core::IO::DiscretizationWriter> &output)
     : discret_(actdis),
       solver_(solver),
       params_(params),
       output_(output),
-      elemagdyna_(CORE::UTILS::IntegralValue<INPAR::ELEMAG::DynamicType>(*params_, "TIMEINT")),
+      elemagdyna_(Core::UTILS::IntegralValue<Inpar::EleMag::DynamicType>(*params_, "TIMEINT")),
       myrank_(actdis->Comm().MyPID()),
       time_(0.0),
       step_(0),
@@ -49,17 +49,17 @@ ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> 
       stepmax_(params_->get<int>("NUMSTEP")),
       uprestart_(params_->get<int>("RESTARTEVRY", -1)),
       upres_(params_->get<int>("RESULTSEVRY", -1)),
-      numdim_(GLOBAL::Problem::Instance()->NDim()),
+      numdim_(Global::Problem::Instance()->NDim()),
       dtp_(params_->get<double>("TIMESTEP")),
       tau_(params_->get<double>("TAU")),
       dtele_(0.0),
       dtsolve_(0.0),
-      calcerr_(CORE::UTILS::IntegralValue<bool>(*params_, "CALCERR")),
-      postprocess_(CORE::UTILS::IntegralValue<bool>(*params_, "POSTPROCESS")),
+      calcerr_(Core::UTILS::IntegralValue<bool>(*params_, "CALCERR")),
+      postprocess_(Core::UTILS::IntegralValue<bool>(*params_, "POSTPROCESS")),
       errfunct_(params_->get<int>("ERRORFUNCNO", -1)),
       sourcefuncno_(params_->get<int>("SOURCEFUNCNO", -1)),
       equilibration_method_(
-          Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(*params, "EQUILIBRATION"))
+          Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(*params, "EQUILIBRATION"))
 {
   // constructor supposed to be empty!
 
@@ -70,7 +70,7 @@ ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> 
 /*----------------------------------------------------------------------*
  |  initialization routine (public)                    berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::Init()
+void EleMag::ElemagTimeInt::Init()
 {
   // get dof row map
   Teuchos::RCP<const Epetra_Map> dofrowmap = Teuchos::rcp(discret_->dof_row_map(), false);
@@ -88,19 +88,19 @@ void ELEMAG::ElemagTimeInt::Init()
   permeability = Teuchos::rcp(new Epetra_Vector(*discret_->ElementRowMap()));
 
   // create vector of zeros to be used for enforcing zero Dirichlet boundary conditions
-  zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  zeros_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
-  trace_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  trace_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // Map of the dirichlet conditions
-  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
+  dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
   // Why is this in a new scope?
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    eleparams.set<const CORE::UTILS::FunctionManager *>(
-        "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
+    eleparams.set<const Core::UTILS::FunctionManager *>(
+        "function_manager", &Global::Problem::Instance()->FunctionManager());
 
     // Evaluation of the dirichlet conditions (why is it here and also later?)
     discret_->evaluate_dirichlet(
@@ -113,17 +113,17 @@ void ELEMAG::ElemagTimeInt::Init()
 
   // create system matrix and set to zero
   // the 108 comes from line 282 of /fluid/fluidimplicitintegration.cpp
-  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 108, false, true));
+  sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 108, false, true));
   // Is it possible to avoid this passage? It is a sparse matrix so it should
   // only contain non-zero entries that have to be initialized
   sysmat_->Zero();
 
   // create residual vector
-  residual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  residual_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // instantiate equilibration class
   equilibration_ =
-      Teuchos::rcp(new CORE::LINALG::EquilibrationSparse(equilibration_method_, dofrowmap));
+      Teuchos::rcp(new Core::LinAlg::EquilibrationSparse(equilibration_method_, dofrowmap));
 
   // write mesh
   output_->WriteMesh(0, 0.0);
@@ -135,7 +135,7 @@ void ELEMAG::ElemagTimeInt::Init()
 /*----------------------------------------------------------------------*
  |  Print information to screen (public)               berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::print_information_to_screen()
+void EleMag::ElemagTimeInt::print_information_to_screen()
 {
   if (!myrank_)
   {
@@ -173,7 +173,7 @@ void ELEMAG::ElemagTimeInt::print_information_to_screen()
 /*----------------------------------------------------------------------*
  |  Time integration (public)                          berardocco 03/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::Integrate()
+void EleMag::ElemagTimeInt::Integrate()
 {
   // Fancy printing
   if (!myrank_)
@@ -187,7 +187,7 @@ void ELEMAG::ElemagTimeInt::Integrate()
         << std::endl;
   }
   // time measurement: integration
-  TEUCHOS_FUNC_TIME_MONITOR("ELEMAG::ElemagTimeInt::Integrate");
+  TEUCHOS_FUNC_TIME_MONITOR("EleMag::ElemagTimeInt::Integrate");
 
   InitializeAlgorithm();
 
@@ -230,19 +230,19 @@ void ELEMAG::ElemagTimeInt::Integrate()
   return;
 }  // Integrate
 
-void ELEMAG::ElemagTimeInt::ElementsInit()
+void EleMag::ElemagTimeInt::ElementsInit()
 {
   // Initializing siome vectors and parameters
-  CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
-  CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
+  Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
+  Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
 
   // loop over all elements on the processor
-  CORE::Elements::Element::LocationArray la(2);
+  Core::Elements::Element::LocationArray la(2);
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
     // Selecting the elements
-    CORE::Elements::Element *ele = discret_->lColElement(el);
+    Core::Elements::Element *ele = discret_->lColElement(el);
 
     // This function is a void function and therefore the input goes to the vector "la"
     ele->LocationVector(*discret_, la, true);
@@ -253,10 +253,10 @@ void ELEMAG::ElemagTimeInt::ElementsInit()
     else
       initParams.remove("dirichdof", false);
 
-    initParams.set<int>("action", ELEMAG::ele_init);
-    initParams.set<INPAR::ELEMAG::DynamicType>("dyna", elemagdyna_);
-    CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
-    CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
+    initParams.set<int>("action", EleMag::ele_init);
+    initParams.set<Inpar::EleMag::DynamicType>("dyna", elemagdyna_);
+    Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
+    Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
     ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
   }
   return;
@@ -265,11 +265,11 @@ void ELEMAG::ElemagTimeInt::ElementsInit()
 /*----------------------------------------------------------------------*
  |  Set initial field by given function (public)       berardocco 03/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField init, int startfuncno)
+void EleMag::ElemagTimeInt::SetInitialField(const Inpar::EleMag::InitialField init, int startfuncno)
 {
 // time measurement: SetInitialField just in the debug phase
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  TEUCHOS_FUNC_TIME_MONITOR("ELEMAG::ElemagTimeInt::SetInitialField");
+  TEUCHOS_FUNC_TIME_MONITOR("EleMag::ElemagTimeInt::SetInitialField");
 #endif
 
   // Fancy printing
@@ -285,7 +285,7 @@ void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField in
   // Core of the routine
   switch (init)
   {
-    case INPAR::ELEMAG::initfield_zero_field:
+    case Inpar::EleMag::initfield_zero_field:
     {
       // Fancy printing to help debugging
       if (!myrank_)
@@ -295,7 +295,7 @@ void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField in
 
       break;
     }
-    case INPAR::ELEMAG::initfield_field_by_function:
+    case Inpar::EleMag::initfield_field_by_function:
     {
       if (!myrank_)
       {
@@ -303,20 +303,20 @@ void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField in
       }
 
       // Initializing siome vectors and parameters
-      CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
-      CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
+      Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
+      Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
       Teuchos::ParameterList initParams;
-      initParams.set<int>("action", ELEMAG::project_field);
+      initParams.set<int>("action", EleMag::project_field);
       initParams.set("startfuncno", startfuncno);
       initParams.set<double>("time", time_);
       initParams.set<double>("dt", dtp_);
-      initParams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+      initParams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
       // loop over all elements on the processor
-      CORE::Elements::Element::LocationArray la(2);
+      Core::Elements::Element::LocationArray la(2);
       for (int el = 0; el < discret_->NumMyColElements(); ++el)
       {
         // Selecting the elements
-        CORE::Elements::Element *ele = discret_->lColElement(el);
+        Core::Elements::Element *ele = discret_->lColElement(el);
 
         // This function is a void function and therefore the input goes to the vector "la"
         ele->LocationVector(*discret_, la, false);
@@ -329,7 +329,7 @@ void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField in
             initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
       }
       break;
-    }  // case INPAR::ELEMAG::initfield_field_by_function
+    }  // case Inpar::EleMag::initfield_field_by_function
     default:
       FOUR_C_THROW("Option for initial field not implemented: %d", init);
       break;
@@ -350,22 +350,22 @@ void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField in
 /*----------------------------------------------------------------------*
  |  Set initial field by scatra solution (public)      berardocco 05/20 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::set_initial_electric_field(
-    Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<DRT::Discretization> &scatradis)
+void EleMag::ElemagTimeInt::set_initial_electric_field(
+    Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<Discret::Discretization> &scatradis)
 {
   // we have to call an init for the elements first!
   Teuchos::ParameterList initParams;
-  CORE::Elements::Element::LocationArray la(2);
+  Core::Elements::Element::LocationArray la(2);
 
-  CORE::LINALG::SerialDenseVector elevec1, elevec2;  //, elevec3;
-  CORE::LINALG::SerialDenseMatrix elemat;            //, elemat2;
+  Core::LinAlg::SerialDenseVector elevec1, elevec2;  //, elevec3;
+  Core::LinAlg::SerialDenseMatrix elemat;            //, elemat2;
 
-  initParams.set<int>("action", ELEMAG::project_electric_from_scatra_field);
-  initParams.set<INPAR::ELEMAG::DynamicType>("dyna", elemagdyna_);
+  initParams.set<int>("action", EleMag::project_electric_from_scatra_field);
+  initParams.set<Inpar::EleMag::DynamicType>("dyna", elemagdyna_);
 
   Teuchos::RCP<Epetra_Vector> phicol;
   bool ishdg = false;
-  if (Teuchos::rcp_dynamic_cast<DRT::DiscretizationHDG>(scatradis) != Teuchos::null)
+  if (Teuchos::rcp_dynamic_cast<Discret::DiscretizationHDG>(scatradis) != Teuchos::null)
   {
     phicol = Teuchos::rcp(new Epetra_Vector(*(scatradis->DofColMap(2))));
     ishdg = true;
@@ -374,14 +374,14 @@ void ELEMAG::ElemagTimeInt::set_initial_electric_field(
   else
     phicol = Teuchos::rcp(new Epetra_Vector(*(scatradis->DofColMap())));
 
-  CORE::LINALG::Export(*phi, *phicol);
+  Core::LinAlg::Export(*phi, *phicol);
 
   // Loop MyColElements
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
     // determine owner of the scatra element
-    CORE::Elements::Element *scatraele = scatradis->lColElement(el);
-    CORE::Elements::Element *elemagele = discret_->lColElement(el);
+    Core::Elements::Element *scatraele = scatradis->lColElement(el);
+    Core::Elements::Element *elemagele = discret_->lColElement(el);
 
     elemagele->LocationVector(*discret_, la, false);
     if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
@@ -389,13 +389,13 @@ void ELEMAG::ElemagTimeInt::set_initial_electric_field(
     if (elevec2.numRows() != discret_->NumDof(1, elemagele))
       elevec2.size(discret_->NumDof(1, elemagele));
 
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> nodevals_phi =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> nodevals_phi =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector);
 
     if (ishdg)
     {
       std::vector<int> localDofs = scatradis->Dof(2, scatraele);
-      CORE::FE::ExtractMyValues(*phicol, (*nodevals_phi), localDofs);
+      Core::FE::ExtractMyValues(*phicol, (*nodevals_phi), localDofs);
       // Obtain scatra ndofs knowing that the vector contains the values of the transported scalar
       // plus numdim_ components of its gradient
       initParams.set<unsigned int>("ndofs", localDofs.size() / (numdim_ + 1));
@@ -405,7 +405,7 @@ void ELEMAG::ElemagTimeInt::set_initial_electric_field(
       int numscatranode = scatraele->num_node();
       (*nodevals_phi).resize(numscatranode);
       // fill nodevals with node coords and nodebased solution values
-      CORE::Nodes::Node **scatranodes = scatraele->Nodes();
+      Core::Nodes::Node **scatranodes = scatraele->Nodes();
       for (int i = 0; i < numscatranode; ++i)
       {
         int dof = scatradis->Dof(0, scatranodes[i], 0);
@@ -417,7 +417,7 @@ void ELEMAG::ElemagTimeInt::set_initial_electric_field(
       }
     }
 
-    initParams.set<Teuchos::RCP<CORE::LINALG::SerialDenseVector>>("nodevals_phi", nodevals_phi);
+    initParams.set<Teuchos::RCP<Core::LinAlg::SerialDenseVector>>("nodevals_phi", nodevals_phi);
 
     // evaluate the element
     elemagele->Evaluate(
@@ -433,21 +433,21 @@ void ELEMAG::ElemagTimeInt::set_initial_electric_field(
 /*----------------------------------------------------------------------*
  |  Compute error routine (public)                     berardocco 08/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SerialDenseVector> ELEMAG::ElemagTimeInt::compute_error()
+Teuchos::RCP<Core::LinAlg::SerialDenseVector> EleMag::ElemagTimeInt::compute_error()
 {
   // Initializing siome vectors and parameters
-  CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
-  CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
+  Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
+  Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList params;
-  params.set<int>("action", ELEMAG::compute_error);
+  params.set<int>("action", EleMag::compute_error);
   params.set<int>("funcno", errfunct_);
   params.set<double>("time", time_);
-  params.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+  params.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
   params.set<bool>("postprocess", postprocess_);
 
   const int numberOfErrorMeasures = 11;
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(numberOfErrorMeasures));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(numberOfErrorMeasures));
 
   // call loop over elements (assemble nothing)
   discret_->EvaluateScalars(params, errors);
@@ -456,7 +456,7 @@ Teuchos::RCP<CORE::LINALG::SerialDenseVector> ELEMAG::ElemagTimeInt::compute_err
   return errors;
 }
 
-void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<CORE::LINALG::SerialDenseVector> &errors)
+void EleMag::ElemagTimeInt::PrintErrors(Teuchos::RCP<Core::LinAlg::SerialDenseVector> &errors)
 {
   if (myrank_ == 0)
   {
@@ -520,24 +520,24 @@ void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<CORE::LINALG::SerialDenseVe
 /*----------------------------------------------------------------------*
  |  Project interior variables for testing purposes     berardocco 07/18|
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::ProjectFieldTest(const int startfuncno)
+void EleMag::ElemagTimeInt::ProjectFieldTest(const int startfuncno)
 {
   // Initializing siome vectors and parameters
-  CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
-  CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
+  Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
+  Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
-  initParams.set<int>("action", ELEMAG::project_field_test);
+  initParams.set<int>("action", EleMag::project_field_test);
   initParams.set("startfuncno", startfuncno);
   initParams.set<double>("time", time_);
   initParams.set<bool>("padaptivity", false);
-  initParams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+  initParams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
 
   // loop over all elements on the processor
-  CORE::Elements::Element::LocationArray la(2);
+  Core::Elements::Element::LocationArray la(2);
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
     // Selecting the elements
-    CORE::Elements::Element *ele = discret_->lColElement(el);
+    Core::Elements::Element *ele = discret_->lColElement(el);
 
     // This function is a void function and therefore the input goes to the vector "la"
     ele->LocationVector(*discret_, la, false);
@@ -554,26 +554,26 @@ void ELEMAG::ElemagTimeInt::ProjectFieldTest(const int startfuncno)
 /*----------------------------------------------------------------------*
  |  Project trace variable for testing purposes        berardocco 07/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::project_field_test_trace(const int startfuncno)
+void EleMag::ElemagTimeInt::project_field_test_trace(const int startfuncno)
 {
   // This map contains the trace values
   const Epetra_Map *dofrowmap = discret_->dof_row_map();
 
   // Initializing siome vectors and parameters
-  CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
-  CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
+  Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
+  Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
-  initParams.set<int>("action", ELEMAG::project_field_test_trace);
+  initParams.set<int>("action", EleMag::project_field_test_trace);
   initParams.set("startfuncno", startfuncno);
   initParams.set<double>("time", time_);
   initParams.set<bool>("padaptivity", false);
-  initParams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+  initParams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
   // loop over all elements on the processor
-  CORE::Elements::Element::LocationArray la(2);
+  Core::Elements::Element::LocationArray la(2);
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
   {
     // Selecting the elements
-    CORE::Elements::Element *ele = discret_->lColElement(el);
+    Core::Elements::Element *ele = discret_->lColElement(el);
 
     // This function is a void function and therefore the input goes to the vector "la"
     ele->LocationVector(*discret_, la, false);
@@ -599,14 +599,14 @@ void ELEMAG::ElemagTimeInt::project_field_test_trace(const int startfuncno)
 /*----------------------------------------------------------------------*
  |  Run the first step with BDF1 (public)              berardocco 10/19 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::InitializeAlgorithm()
+void EleMag::ElemagTimeInt::InitializeAlgorithm()
 {
   // In case We don't have BDF1 we initialize the method with BDF1 and then go back
-  if (elemagdyna_ == INPAR::ELEMAG::DynamicType::elemag_bdf2 && restart_ == 0)
+  if (elemagdyna_ == Inpar::EleMag::DynamicType::elemag_bdf2 && restart_ == 0)
   {
-    INPAR::ELEMAG::DynamicType temp_dyna = elemagdyna_;
+    Inpar::EleMag::DynamicType temp_dyna = elemagdyna_;
     // First step with a BDF1
-    elemagdyna_ = INPAR::ELEMAG::DynamicType::elemag_bdf1;
+    elemagdyna_ = Inpar::EleMag::DynamicType::elemag_bdf1;
 
     // call elements to calculate system matrix/rhs and assemble
     assemble_mat_and_rhs();
@@ -641,9 +641,9 @@ void ELEMAG::ElemagTimeInt::InitializeAlgorithm()
 /*----------------------------------------------------------------------*
  |  Assemble matrix and right-hand side (public)       berardocco 04/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::assemble_mat_and_rhs()
+void EleMag::ElemagTimeInt::assemble_mat_and_rhs()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("ELEMAG::ElemagTimeInt::assemble_mat_and_rhs");
+  TEUCHOS_FUNC_TIME_MONITOR("EleMag::ElemagTimeInt::assemble_mat_and_rhs");
 
   // Fancy printing to help debugging
   if (!myrank_)
@@ -677,8 +677,8 @@ void ELEMAG::ElemagTimeInt::assemble_mat_and_rhs()
   // set information needed by the elements
   eleparams.set<int>("sourcefuncno", sourcefuncno_);
   eleparams.set<bool>("resonly", resonly);
-  eleparams.set<int>("action", ELEMAG::calc_systemmat_and_residual);
-  eleparams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+  eleparams.set<int>("action", EleMag::calc_systemmat_and_residual);
+  eleparams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
   eleparams.set<double>("time", time_);
   eleparams.set<double>("timep", time_ + dtp_);
   eleparams.set<int>("step", step_);
@@ -702,9 +702,9 @@ void ELEMAG::ElemagTimeInt::assemble_mat_and_rhs()
 /*----------------------------------------------------------------------*
  | Updates interior variables and compute RHS (public)  berardocco 06/18|
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::update_interior_variables_and_assemble_rhs()
+void EleMag::ElemagTimeInt::update_interior_variables_and_assemble_rhs()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("ELEMAG::ElemagTimeInt::update_interior_variables_and_assemble_rhs");
+  TEUCHOS_FUNC_TIME_MONITOR("EleMag::ElemagTimeInt::update_interior_variables_and_assemble_rhs");
 
   // create parameterlist
   Teuchos::ParameterList eleparams;
@@ -713,8 +713,8 @@ void ELEMAG::ElemagTimeInt::update_interior_variables_and_assemble_rhs()
   eleparams.set<double>("tau", tau_);
   eleparams.set<double>("time", time_);
   eleparams.set<double>("timep", time_ + dtp_);
-  eleparams.set<int>("action", ELEMAG::update_secondary_solution_and_calc_residual);
-  eleparams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+  eleparams.set<int>("action", EleMag::update_secondary_solution_and_calc_residual);
+  eleparams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
   eleparams.set<int>("step", step_);
   eleparams.set<bool>("resonly", true);
 
@@ -733,19 +733,19 @@ void ELEMAG::ElemagTimeInt::update_interior_variables_and_assemble_rhs()
 /*----------------------------------------------------------------------*
  |  Apply Dirichlet b.c. to system (public)            gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::apply_dirichlet_to_system(bool resonly)
+void EleMag::ElemagTimeInt::apply_dirichlet_to_system(bool resonly)
 {
   TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
   Teuchos::ParameterList params;
   params.set<double>("total time", time_);
-  params.set<const CORE::UTILS::FunctionManager *>(
-      "function_manager", &GLOBAL::Problem::Instance()->FunctionManager());
+  params.set<const Core::UTILS::FunctionManager *>(
+      "function_manager", &Global::Problem::Instance()->FunctionManager());
   discret_->evaluate_dirichlet(
       params, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   if (resonly)
-    CORE::LINALG::apply_dirichlet_to_system(*residual_, *zeros_, *(dbcmaps_->CondMap()));
+    Core::LinAlg::apply_dirichlet_to_system(*residual_, *zeros_, *(dbcmaps_->CondMap()));
   else
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *sysmat_, *trace_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
   return;
@@ -754,13 +754,13 @@ void ELEMAG::ElemagTimeInt::apply_dirichlet_to_system(bool resonly)
 /*----------------------------------------------------------------------*
  |  Compute Silver-Mueller         (public)            berardocco 10/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::compute_silver_mueller(bool do_rhs)
+void EleMag::ElemagTimeInt::compute_silver_mueller(bool do_rhs)
 {
   TEUCHOS_FUNC_TIME_MONITOR("      + Compute Silver-Mueller BC");
 
   // absorbing boundary conditions
   std::string condname = "Silver-Mueller";
-  std::vector<CORE::Conditions::Condition *> absorbingBC;
+  std::vector<Core::Conditions::Condition *> absorbingBC;
   discret_->GetCondition(condname, absorbingBC);
 
   // Check if there are Silver-Mueller BC
@@ -769,7 +769,7 @@ void ELEMAG::ElemagTimeInt::compute_silver_mueller(bool do_rhs)
     Teuchos::ParameterList eleparams;
     eleparams.set<double>("time", time_);
     eleparams.set<bool>("do_rhs", do_rhs);
-    eleparams.set<int>("action", ELEMAG::calc_abc);
+    eleparams.set<int>("action", EleMag::calc_abc);
     // Evaluate the boundary condition
     if (do_rhs)
       discret_->evaluate_condition(eleparams, residual_, condname);
@@ -784,7 +784,7 @@ void ELEMAG::ElemagTimeInt::compute_silver_mueller(bool do_rhs)
 /*----------------------------------------------------------------------*
  |  Solve system for trace (public)                    berardocco 06/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::Solve()
+void EleMag::ElemagTimeInt::Solve()
 {
   // Equilibrate RHS
   equilibration_->equilibrate_rhs(residual_);
@@ -794,7 +794,7 @@ void ELEMAG::ElemagTimeInt::Solve()
 
   discret_->compute_null_space_if_necessary(solver_->Params(), true);
   // solve for trace
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_->Solve(sysmat_->EpetraOperator(), trace_, residual_, solver_params);
 
@@ -809,7 +809,7 @@ void ELEMAG::ElemagTimeInt::Solve()
 /*----------------------------------------------------------------------*
  |  Output to screen (public)                          berardocco 07/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::OutputToScreen()
+void EleMag::ElemagTimeInt::OutputToScreen()
 {
   if (myrank_ == 0)
   {
@@ -824,11 +824,12 @@ namespace
   |  Interpolate discontinous values to nodal values     berardocco 03/18 |
   *----------------------------------------------------------------------*/
   // internal helper function for output
-  void getNodeVectorsHDG(DRT::Discretization &dis, const Teuchos::RCP<Epetra_Vector> &traceValues,
-      const int ndim, Teuchos::RCP<Epetra_MultiVector> &electric,
-      Teuchos::RCP<Epetra_MultiVector> &electric_post, Teuchos::RCP<Epetra_MultiVector> &magnetic,
-      Teuchos::RCP<Epetra_MultiVector> &trace, Teuchos::RCP<Epetra_Vector> &conductivity,
-      Teuchos::RCP<Epetra_Vector> &permittivity, Teuchos::RCP<Epetra_Vector> &permeability)
+  void getNodeVectorsHDG(Discret::Discretization &dis,
+      const Teuchos::RCP<Epetra_Vector> &traceValues, const int ndim,
+      Teuchos::RCP<Epetra_MultiVector> &electric, Teuchos::RCP<Epetra_MultiVector> &electric_post,
+      Teuchos::RCP<Epetra_MultiVector> &magnetic, Teuchos::RCP<Epetra_MultiVector> &trace,
+      Teuchos::RCP<Epetra_Vector> &conductivity, Teuchos::RCP<Epetra_Vector> &permittivity,
+      Teuchos::RCP<Epetra_Vector> &permeability)
   {
     // create dofsets for electric and pressure at nodes
     // if there is no pressure vector it means that the vectors have not yet
@@ -848,21 +849,21 @@ namespace
     // call element routine for interpolate HDG to elements
     // Here it is used the function that acts in the elements, Evaluate().
     Teuchos::ParameterList params;
-    params.set<int>("action", ELEMAG::interpolate_hdg_to_node);
+    params.set<int>("action", EleMag::interpolate_hdg_to_node);
     // Setting a name to the dofs maps
     dis.set_state(0, "trace", traceValues);
     // Declaring all the necessary entry for Evaluate()
-    CORE::Elements::Element::LocationArray la(2);
-    CORE::LINALG::SerialDenseMatrix dummyMat;
-    CORE::LINALG::SerialDenseVector dummyVec;
-    CORE::LINALG::SerialDenseVector interpolVec;
+    Core::Elements::Element::LocationArray la(2);
+    Core::LinAlg::SerialDenseMatrix dummyMat;
+    Core::LinAlg::SerialDenseVector dummyVec;
+    Core::LinAlg::SerialDenseVector interpolVec;
     std::vector<unsigned char> touchCount(dis.NumMyRowNodes());
 
     // For every element of the processor
     for (int el = 0; el < dis.NumMyColElements(); ++el)
     {
       // Opening the element
-      CORE::Elements::Element *ele = dis.lColElement(el);
+      Core::Elements::Element *ele = dis.lColElement(el);
 
       // Making sure the vector is not a zero dimensional vector and in case
       // resizing it. The interpolVec has to contain all the unknown of the
@@ -887,7 +888,7 @@ namespace
       for (int i = 0; i < ele->num_node(); ++i)
       {
         // Get the i-th node of the element
-        CORE::Nodes::Node *node = ele->Nodes()[i];
+        Core::Nodes::Node *node = ele->Nodes()[i];
         // Get the local ID starting from the node's global id
         const int localIndex = dis.NodeRowMap()->LID(node->Id());
         ////If the local index is less than zero skip the for loop
@@ -926,7 +927,7 @@ namespace
   /*----------------------------------------------------------------------*
   |  Reads material properties from element for output   berardocco 03/18 |
   *----------------------------------------------------------------------*/
-  void getElementMaterialProperties(DRT::Discretization &dis,
+  void getElementMaterialProperties(Discret::Discretization &dis,
       Teuchos::RCP<Epetra_Vector> &conductivity, Teuchos::RCP<Epetra_Vector> &permittivity,
       Teuchos::RCP<Epetra_Vector> &permeability)
   {
@@ -934,10 +935,10 @@ namespace
     for (int el = 0; el < dis.NumMyRowElements(); ++el)
     {
       // Opening the element
-      CORE::Elements::Element *ele = dis.lRowElement(el);
+      Core::Elements::Element *ele = dis.lRowElement(el);
 
-      const MAT::ElectromagneticMat *elemagmat =
-          static_cast<const MAT::ElectromagneticMat *>(ele->Material().get());
+      const Mat::ElectromagneticMat *elemagmat =
+          static_cast<const Mat::ElectromagneticMat *>(ele->Material().get());
       (*conductivity)[dis.ElementRowMap()->LID(ele->Id())] = elemagmat->sigma(ele->Id());
       (*permittivity)[dis.ElementRowMap()->LID(ele->Id())] = elemagmat->epsilon(ele->Id());
       (*permeability)[dis.ElementRowMap()->LID(ele->Id())] = elemagmat->mu(ele->Id());
@@ -950,9 +951,9 @@ namespace
 /*----------------------------------------------------------------------*
  |  Output (public)                                    berardocco 03/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::Output()
+void EleMag::ElemagTimeInt::Output()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("ELEMAG::ElemagTimeInt::Output");
+  TEUCHOS_FUNC_TIME_MONITOR("EleMag::ElemagTimeInt::Output");
   // Preparing the vectors that are going to be written in the output file
   electric.reset(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
   electric_post.reset(new Epetra_MultiVector(*discret_->NodeRowMap(), numdim_));
@@ -979,10 +980,10 @@ void ELEMAG::ElemagTimeInt::Output()
   }
 
   // Output the reuslts
-  output_->WriteVector("magnetic", magnetic, CORE::IO::nodevector);
-  output_->WriteVector("trace", trace, CORE::IO::nodevector);
-  output_->WriteVector("electric", electric, CORE::IO::nodevector);
-  output_->WriteVector("electric_post", electric_post, CORE::IO::nodevector);
+  output_->WriteVector("magnetic", magnetic, Core::IO::nodevector);
+  output_->WriteVector("trace", trace, Core::IO::nodevector);
+  output_->WriteVector("electric", electric, Core::IO::nodevector);
+  output_->WriteVector("electric_post", electric_post, Core::IO::nodevector);
 
   // add restart data
 
@@ -998,7 +999,7 @@ void ELEMAG::ElemagTimeInt::Output()
 /*----------------------------------------------------------------------*
  |  Write restart vectors (public)                     berardocco 11/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::write_restart()
+void EleMag::ElemagTimeInt::write_restart()
 {
   if (myrank_ == 0) std::cout << "======= Restart written in step " << step_ << std::endl;
 
@@ -1013,16 +1014,16 @@ void ELEMAG::ElemagTimeInt::write_restart()
   discret_->set_state(1, "intVarnm", intVarnm);
 
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", ELEMAG::fill_restart_vecs);
-  eleparams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+  eleparams.set<int>("action", EleMag::fill_restart_vecs);
+  eleparams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
 
   discret_->Evaluate(eleparams);
 
   Teuchos::RCP<const Epetra_Vector> matrix_state = discret_->GetState(1, "intVar");
-  CORE::LINALG::Export(*matrix_state, *intVar);
+  Core::LinAlg::Export(*matrix_state, *intVar);
 
   matrix_state = discret_->GetState(1, "intVarnm");
-  CORE::LINALG::Export(*matrix_state, *intVarnm);
+  Core::LinAlg::Export(*matrix_state, *intVarnm);
 
   output_->WriteVector("intVar", intVar);
   output_->WriteVector("intVarnm", intVarnm);
@@ -1036,10 +1037,10 @@ void ELEMAG::ElemagTimeInt::write_restart()
 /*----------------------------------------------------------------------*
  |  read_restart (public)                               berardocco 11/18 |
  *----------------------------------------------------------------------*/
-void ELEMAG::ElemagTimeInt::read_restart(int step)
+void EleMag::ElemagTimeInt::read_restart(int step)
 {
-  CORE::IO::DiscretizationReader reader(
-      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader reader(
+      discret_, Global::Problem::Instance()->InputControlFile(), step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
   Teuchos::RCP<Epetra_Vector> intVar = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map(1))));
@@ -1055,8 +1056,8 @@ void ELEMAG::ElemagTimeInt::read_restart(int step)
   discret_->set_state(1, "intVar", intVar);
 
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action", ELEMAG::ele_init_from_restart);
-  eleparams.set<INPAR::ELEMAG::DynamicType>("dynamic type", elemagdyna_);
+  eleparams.set<int>("action", EleMag::ele_init_from_restart);
+  eleparams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
 
   Teuchos::RCP<Epetra_Vector> intVarnm =
       Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map(1))));
@@ -1070,8 +1071,8 @@ void ELEMAG::ElemagTimeInt::read_restart(int step)
     //{
     //  std::cout << "=========== Only one time step was found. Switch to BDF1." << std::endl;
     //}
-    // eleparams.set<INPAR::ELEMAG::DynamicType>(
-    //    "dynamic type", INPAR::ELEMAG::DynamicType::elemag_bdf1);
+    // eleparams.set<Inpar::EleMag::DynamicType>(
+    //    "dynamic type", Inpar::EleMag::DynamicType::elemag_bdf1);
     FOUR_C_THROW(
         "Impossible to find the additional vector of unknown necessary for the BDF2 integration. "
         "Consider fixing the code or restart a simulation that used BDF2 since the beginning.");
@@ -1092,16 +1093,16 @@ void ELEMAG::ElemagTimeInt::read_restart(int step)
   return;
 }  // read_restart
 
-void ELEMAG::ElemagTimeInt::SpySysmat(std::ostream &out)
+void EleMag::ElemagTimeInt::SpySysmat(std::ostream &out)
 {
-  Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_, true)->EpetraMatrix()->Print(out);
+  Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_, true)->EpetraMatrix()->Print(out);
   std::cout << "Routine has to be implemented. In the meanwhile the Print() method from the "
                "Epetra_CsrMatrix is used."
             << std::endl;
   /*
   //Dynamic casting of the sysmat
   Epetra_CrsMatrix *matrix =
-  Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_,true)->EpetraMatrix().get(); int r =
+  Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_,true)->EpetraMatrix().get(); int r =
   matrix->NumMyRows(); int c = matrix->NumMyCols(); int numentries;
   //double*& values = nullptr;
   double* values;
@@ -1126,7 +1127,7 @@ void ELEMAG::ElemagTimeInt::SpySysmat(std::ostream &out)
 /*----------------------------------------------------------------------*
  |  Return discretization (public)                     berardocco 08/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ELEMAG::ElemagTimeInt::discretization()
+Teuchos::RCP<Discret::Discretization> EleMag::ElemagTimeInt::discretization()
 {
   return discret_;
 }  // discretization
@@ -1134,7 +1135,7 @@ Teuchos::RCP<DRT::Discretization> ELEMAG::ElemagTimeInt::discretization()
 /*----------------------------------------------------------------------*
  |  Create test field (public)                         berardocco 08/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::UTILS::ResultTest> ELEMAG::ElemagTimeInt::CreateFieldTest()
+Teuchos::RCP<Core::UTILS::ResultTest> EleMag::ElemagTimeInt::CreateFieldTest()
 {
   return Teuchos::rcp(new ElemagResultTest(*this));
 }  // CreateFieldTest

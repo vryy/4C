@@ -19,12 +19,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace FSI
 {
@@ -44,7 +44,7 @@ namespace FSI
     void SetupSystem() override;
 
     /// setup composed system matrix from field solvers
-    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override;
 
     /// Extract initial guess from fields
     void initial_guess(Teuchos::RCP<Epetra_Vector> ig) override;
@@ -98,21 +98,21 @@ namespace FSI
     /// setup RHS contributions based on terms for first nonlinear iteration
     void setup_rhs_firstiter(Epetra_Vector& f) override;
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> scon_t_;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> scon_t_;
 
     /// transformation of fluid matrix
-    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fggtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgitransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> figtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> fggtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> fgitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> figtransform_;
 
     /// transformation of shape derivative matrix
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fmgitransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmigtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fmggtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> fmgitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmigtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> fmggtransform_;
 
     /// transformation of ale matrix
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> aigtransform_;
   };
 }  // namespace FSI
 

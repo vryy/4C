@@ -18,22 +18,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   /*!
    * @brief A small container storing information needed to compute the linearization of an element
    * with FBAR
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct FBarLinearizationContainer
   {
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>*(CORE::FE::dim<celltype> + 1) / 2,
-        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+    Core::LinAlg::Matrix<Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2,
+        Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
         Bop{};
 
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, 1> Hop{};
+    Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>, 1> Hop{};
 
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> cauchygreen{};
+    Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> cauchygreen{};
 
     double fbar_factor = 1.0;
   };
@@ -66,35 +66,35 @@ namespace DRT::ELEMENTS
    * @param spatial_material_mapping_centroid (in) : An object holding quantities of the spatial
    * material mapping (deformation_gradient, inverse_deformation_gradient,
    * determinant_deformation_gradient) evaluated at the element centroid
-   * @return CORE::LINALG::Matrix<num_dof_per_ele, 1> : H-Operator
+   * @return Core::LinAlg::Matrix<num_dof_per_ele, 1> : H-Operator
    */
-  template <CORE::FE::CellType celltype, std::enable_if_t<CORE::FE::dim<celltype> == 3, int> = 0>
-  inline CORE::LINALG::Matrix<CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>, 1>
+  template <Core::FE::CellType celltype, std::enable_if_t<Core::FE::dim<celltype> == 3, int> = 0>
+  inline Core::LinAlg::Matrix<Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>, 1>
   EvaluateFbarHOperator(
-      const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::num_nodes<celltype>>&
+      const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::num_nodes<celltype>>&
           shape_function_derivs,
-      const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::num_nodes<celltype>>&
+      const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::num_nodes<celltype>>&
           shape_function_derivs_centroid,
-      const DRT::ELEMENTS::SpatialMaterialMapping<celltype>& spatial_material_mapping,
-      const DRT::ELEMENTS::SpatialMaterialMapping<celltype>& spatial_material_mapping_centroid)
+      const Discret::ELEMENTS::SpatialMaterialMapping<celltype>& spatial_material_mapping,
+      const Discret::ELEMENTS::SpatialMaterialMapping<celltype>& spatial_material_mapping_centroid)
   {
     // inverse deformation gradient at centroid
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> invdefgrd_centroid;
+    Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> invdefgrd_centroid;
     invdefgrd_centroid.Invert(spatial_material_mapping_centroid.deformation_gradient_);
 
     // inverse deformation gradient at gp
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> invdefgrd;
+    Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> invdefgrd;
     invdefgrd.Invert(spatial_material_mapping.deformation_gradient_);
 
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>, 1> Hop(true);
-    for (int idof = 0; idof < CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>; idof++)
+    Core::LinAlg::Matrix<Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>, 1> Hop(true);
+    for (int idof = 0; idof < Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>; idof++)
     {
-      for (int idim = 0; idim < CORE::FE::dim<celltype>; idim++)
+      for (int idim = 0; idim < Core::FE::dim<celltype>; idim++)
       {
-        Hop(idof) += invdefgrd_centroid(idim, idof % CORE::FE::dim<celltype>) *
-                     shape_function_derivs_centroid(idim, idof / CORE::FE::dim<celltype>);
-        Hop(idof) -= invdefgrd(idim, idof % CORE::FE::dim<celltype>) *
-                     shape_function_derivs(idim, idof / CORE::FE::dim<celltype>);
+        Hop(idof) += invdefgrd_centroid(idim, idof % Core::FE::dim<celltype>) *
+                     shape_function_derivs_centroid(idim, idof / Core::FE::dim<celltype>);
+        Hop(idof) -= invdefgrd(idim, idof % Core::FE::dim<celltype>) *
+                     shape_function_derivs(idim, idof / Core::FE::dim<celltype>);
       }
     }
 
@@ -115,31 +115,31 @@ namespace DRT::ELEMENTS
    * @param stress_bar (in) : Deviatoric part of stress measures
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   inline void AddFbarStiffnessMatrix(
-      const CORE::LINALG::Matrix<CORE::FE::dim<celltype>*(CORE::FE::dim<celltype> + 1) / 2,
-          CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>>& Bop,
-      const CORE::LINALG::Matrix<CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>, 1>& Hop,
+      const Core::LinAlg::Matrix<Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2,
+          Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>>& Bop,
+      const Core::LinAlg::Matrix<Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>, 1>& Hop,
       const double f_bar_factor, const double integration_fac,
-      const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> cauchyGreen,
-      const DRT::ELEMENTS::Stress<celltype> stress_bar,
-      CORE::LINALG::Matrix<CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>,
-          CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>>& stiffness_matrix)
+      const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> cauchyGreen,
+      const Discret::ELEMENTS::Stress<celltype> stress_bar,
+      Core::LinAlg::Matrix<Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>,
+          Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>>& stiffness_matrix)
   {
-    constexpr int num_dof_per_ele = CORE::FE::dim<celltype> * CORE::FE::num_nodes<celltype>;
+    constexpr int num_dof_per_ele = Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>;
 
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>*(CORE::FE::dim<celltype> + 1) / 2, 1>
+    Core::LinAlg::Matrix<Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2, 1>
         rcg_bar_voigt;
-    CORE::LINALG::VOIGT::Strains::MatrixToVector(cauchyGreen, rcg_bar_voigt);
+    Core::LinAlg::Voigt::Strains::MatrixToVector(cauchyGreen, rcg_bar_voigt);
 
-    CORE::LINALG::Matrix<CORE::FE::dim<celltype>*(CORE::FE::dim<celltype> + 1) / 2, 1> ccg;
+    Core::LinAlg::Matrix<Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2, 1> ccg;
     ccg.MultiplyNN(stress_bar.cmat_, rcg_bar_voigt);
 
     // auxiliary integrated stress_bar
-    CORE::LINALG::Matrix<num_dof_per_ele, 1> bopccg(false);
+    Core::LinAlg::Matrix<num_dof_per_ele, 1> bopccg(false);
     bopccg.MultiplyTN(integration_fac * f_bar_factor / 3.0, Bop, ccg);
 
-    CORE::LINALG::Matrix<num_dof_per_ele, 1> bops(false);
+    Core::LinAlg::Matrix<num_dof_per_ele, 1> bops(false);
     bops.MultiplyTN(-integration_fac / f_bar_factor / 3.0, Bop, stress_bar.pk2_);
 
     for (int idof = 0; idof < num_dof_per_ele; idof++)
@@ -150,7 +150,7 @@ namespace DRT::ELEMENTS
       }
     }
   }
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 #endif

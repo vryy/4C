@@ -17,17 +17,17 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::NStet5::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::NStet5::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
-  if (Material()->MaterialType() == CORE::Materials::m_elasthyper)
+  if (Material()->MaterialType() == Core::Materials::m_elasthyper)
   {
-    MAT::ElastHyper* elahy = dynamic_cast<MAT::ElastHyper*>(Material().get());
+    Mat::ElastHyper* elahy = dynamic_cast<Mat::ElastHyper*>(Material().get());
     elahy->Setup(0, linedef);
   }
 

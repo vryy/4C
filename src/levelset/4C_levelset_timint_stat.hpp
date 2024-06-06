@@ -20,17 +20,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace SCATRA
+namespace ScaTra
 {
   class LevelSetTimIntStationary : public LevelSetAlgorithm, public TimIntStationary
   {
    public:
     /// Standard Constructor
-    LevelSetTimIntStationary(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    LevelSetTimIntStationary(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
 
     /// initialize time-integration scheme
@@ -41,7 +41,7 @@ namespace SCATRA
 
     /// read restart data
     void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override
     {
       FOUR_C_THROW("You should not need this function!");
       return;
@@ -81,7 +81,7 @@ namespace SCATRA
    private:
   };  // class TimIntStationary
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

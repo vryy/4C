@@ -18,26 +18,26 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
-SCATRA::MeshtyingStrategyStdElch::MeshtyingStrategyStdElch(SCATRA::ScaTraTimIntElch* elchtimint)
+ScaTra::MeshtyingStrategyStdElch::MeshtyingStrategyStdElch(ScaTra::ScaTraTimIntElch* elchtimint)
     : MeshtyingStrategyStd(elchtimint)
 {
-}  // SCATRA::MeshtyingStrategyStdElch::MeshtyingStrategyStdElch
+}  // ScaTra::MeshtyingStrategyStdElch::MeshtyingStrategyStdElch
 
 
 /*----------------------------------------------------------------------*
  | initialize system matrix for electrochemistry problems    fang 12/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::init_system_matrix()
+Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyStdElch::init_system_matrix()
     const
 {
-  Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix;
+  Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix;
 
-  if (CORE::UTILS::IntegralValue<int>(*(elch_tim_int()->ElchParameterList()), "BLOCKPRECOND"))
+  if (Core::UTILS::IntegralValue<int>(*(elch_tim_int()->ElchParameterList()), "BLOCKPRECOND"))
   {
     // safety checks
-    if (elch_tim_int()->EquPot() == INPAR::ELCH::equpot_undefined)
+    if (elch_tim_int()->EquPot() == Inpar::ElCh::equpot_undefined)
       FOUR_C_THROW("Type of closing equation for electric potential not correctly set!");
-    if (elch_tim_int()->EquPot() != INPAR::ELCH::equpot_enc)
+    if (elch_tim_int()->EquPot() != Inpar::ElCh::equpot_enc)
       FOUR_C_THROW("Special ELCH assemble strategy for block-matrix will not assemble A_11 block!");
     if (scatratimint_->NumScal() < 1)
       FOUR_C_THROW("Number of transported scalars not correctly set!");
@@ -47,12 +47,12 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::ini
     // A more precise guess for every submatrix would read:
     // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal due to electroneutrality, A_11: EMPTY matrix !!!!!
     // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
-    CORE::LINALG::MapExtractor splitter;
-    CORE::LINALG::CreateMapExtractorFromDiscretization(
+    Core::LinAlg::MapExtractor splitter;
+    Core::LinAlg::CreateMapExtractorFromDiscretization(
         *(scatratimint_->discretization()), scatratimint_->NumScal(), splitter);
-    systemmatrix = Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(
+    systemmatrix = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<ScaTra::SplitStrategy>(
         splitter, splitter, 27, false, true));
-    Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>>(systemmatrix)
+    Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrix<ScaTra::SplitStrategy>>(systemmatrix)
         ->SetNumScal(scatratimint_->NumScal());
   }
 
@@ -61,18 +61,18 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::ini
     // initialize standard (stabilized) system matrix (and save its graph)
     switch (scatratimint_->MatrixType())
     {
-      case CORE::LINALG::MatrixType::sparse:
+      case Core::LinAlg::MatrixType::sparse:
       {
-        systemmatrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+        systemmatrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
             *scatratimint_->discretization()->dof_row_map(), 27, false, true));
         break;
       }
 
-      case CORE::LINALG::MatrixType::block_condition:
-      case CORE::LINALG::MatrixType::block_condition_dof:
+      case Core::LinAlg::MatrixType::block_condition:
+      case Core::LinAlg::MatrixType::block_condition_dof:
       {
         systemmatrix = Teuchos::rcp(
-            new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+            new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
                 *scatratimint_->BlockMaps(), *scatratimint_->BlockMaps(), 81, false, true));
 
         break;
@@ -87,24 +87,24 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::ini
   }
 
   return systemmatrix;
-}  // SCATRA::MeshtyingStrategyStdElch::init_system_matrix
+}  // ScaTra::MeshtyingStrategyStdElch::init_system_matrix
 
 
 /*------------------------------------------------------------------------*
  | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
  *------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyStdElch::init_conv_check_strategy()
+void ScaTra::MeshtyingStrategyStdElch::init_conv_check_strategy()
 {
   if (elch_tim_int()->MacroScale())
   {
-    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMacroScaleElch(
+    convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStdMacroScaleElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   }
   else
   {
-    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(
+    convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStdElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   }
-}  // SCATRA::MeshtyingStrategyStdElch::init_conv_check_strategy
+}  // ScaTra::MeshtyingStrategyStdElch::init_conv_check_strategy
 
 FOUR_C_NAMESPACE_CLOSE

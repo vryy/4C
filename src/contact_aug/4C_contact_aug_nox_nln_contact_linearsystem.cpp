@@ -24,17 +24,17 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Nln::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-    const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+    const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
-    const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector,
+    const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector,
     const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject)
-    : NOX::NLN::LinearSystem(printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M,
+    : NOX::Nln::LinearSystem(printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M,
           cloneVector, scalingObject),
       i_constr_(iConstr),
       i_constr_prec_(iConstrPrec),
@@ -45,16 +45,16 @@ NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParam
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Nln::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-    const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+    const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
-    const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-    const Teuchos::RCP<CORE::LINALG::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector)
-    : NOX::NLN::LinearSystem(
+    const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& M, const ::NOX::Epetra::Vector& cloneVector)
+    : NOX::Nln::LinearSystem(
           printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M, cloneVector),
       i_constr_(iConstr),
       i_constr_prec_(iConstrPrec),
@@ -65,11 +65,11 @@ NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParam
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::set_solver_options(
-    Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
-    const NOX::NLN::SolutionType& solverType)
+Core::LinAlg::SolverParams NOX::Nln::CONTACT::LinearSystem::set_solver_options(
+    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::Solver>& solverPtr,
+    const NOX::Nln::SolutionType& solverType)
 {
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
 
   bool isAdaptiveControl = p.get<bool>("Adaptive Control");
   double adaptiveControlObjective = p.get<double>("Adaptive Control Objective");
@@ -83,8 +83,8 @@ CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::set_solver_options(
   if (isAdaptiveControl)
   {
     // dynamic cast of the required/rhs interface
-    Teuchos::RCP<NOX::NLN::Interface::Required> iNlnReq =
-        Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(reqInterfacePtr_);
+    Teuchos::RCP<NOX::Nln::Interface::Required> iNlnReq =
+        Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Required>(reqInterfacePtr_);
     if (iNlnReq.is_null()) throw_error("setSolverOptions", "required interface cast failed");
 
     double worst = iNlnReq->CalcRefNormForce();
@@ -97,7 +97,7 @@ CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::set_solver_options(
   }
 
   // nothing more to do for a pure structural solver
-  if (solverType == NOX::NLN::sol_structure) return solver_params;
+  if (solverType == NOX::Nln::sol_structure) return solver_params;
 
   // update information about active slave dofs
   // ---------------------------------------------------------------------
@@ -128,11 +128,11 @@ CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::set_solver_options(
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact innerDofMap", prec_maps[2]);
       mueluParams.set<Teuchos::RCP<Epetra_Map>>("contact activeDofMap", prec_maps[3]);
       // contact or contact/meshtying
-      if (i_constr_prec_.begin()->first == NOX::NLN::sol_contact)
-        mueluParams.set<std::string>("CORE::ProblemType", "contact");
+      if (i_constr_prec_.begin()->first == NOX::Nln::sol_contact)
+        mueluParams.set<std::string>("Core::ProblemType", "contact");
       // only meshtying
-      else if (i_constr_prec_.begin()->first == NOX::NLN::sol_meshtying)
-        mueluParams.set<std::string>("CORE::ProblemType", "meshtying");
+      else if (i_constr_prec_.begin()->first == NOX::Nln::sol_meshtying)
+        mueluParams.set<std::string>("Core::ProblemType", "meshtying");
       else
         FOUR_C_THROW("Currently we support only a pure meshtying OR a pure contact problem!");
 
@@ -147,20 +147,20 @@ CORE::LINALG::SolverParams NOX::NLN::CONTACT::LinearSystem::set_solver_options(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::set_linear_problem_for_solve(
-    Epetra_LinearProblem& linear_problem, CORE::LINALG::SparseOperator& jac, Epetra_Vector& lhs,
+void NOX::Nln::CONTACT::LinearSystem::set_linear_problem_for_solve(
+    Epetra_LinearProblem& linear_problem, Core::LinAlg::SparseOperator& jac, Epetra_Vector& lhs,
     Epetra_Vector& rhs) const
 {
   switch (jacType_)
   {
-    case NOX::NLN::LinSystem::LinalgSparseMatrix:
-      NOX::NLN::LinearSystem::set_linear_problem_for_solve(linear_problem, jac, lhs, rhs);
+    case NOX::Nln::LinSystem::LinalgSparseMatrix:
+      NOX::Nln::LinearSystem::set_linear_problem_for_solve(linear_problem, jac, lhs, rhs);
 
       break;
-    case NOX::NLN::LinSystem::LinalgBlockSparseMatrix:
+    case NOX::Nln::LinSystem::LinalgBlockSparseMatrix:
     {
       p_lin_prob_.ExtractActiveBlocks(jac, lhs, rhs);
-      NOX::NLN::LinearSystem::set_linear_problem_for_solve(
+      NOX::Nln::LinearSystem::set_linear_problem_for_solve(
           linear_problem, *p_lin_prob_.p_jac_, *p_lin_prob_.p_lhs_, *p_lin_prob_.p_rhs_);
 
       break;
@@ -168,7 +168,7 @@ void NOX::NLN::CONTACT::LinearSystem::set_linear_problem_for_solve(
     default:
     {
       FOUR_C_THROW("Unsupported matrix type! Type = %s",
-          NOX::NLN::LinSystem::OperatorType2String(jacType_).c_str());
+          NOX::Nln::LinSystem::OperatorType2String(jacType_).c_str());
 
       exit(EXIT_FAILURE);
     }
@@ -177,7 +177,7 @@ void NOX::NLN::CONTACT::LinearSystem::set_linear_problem_for_solve(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::complete_solution_after_solve(
+void NOX::Nln::CONTACT::LinearSystem::complete_solution_after_solve(
     const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const
 {
   p_lin_prob_.InsertIntoGlobalLhs(lhs);
@@ -186,16 +186,16 @@ void NOX::NLN::CONTACT::LinearSystem::complete_solution_after_solve(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::get_active_lin_solver(
-    const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
-    Teuchos::RCP<CORE::LINALG::Solver>& currSolver)
+NOX::Nln::SolutionType NOX::Nln::CONTACT::LinearSystem::get_active_lin_solver(
+    const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
+    Teuchos::RCP<Core::LinAlg::Solver>& currSolver)
 {
   // ---------------------------------------------------------------------
   // Solving a saddle point system
   // (1) Standard / Dual Lagrange multipliers -> SaddlePoint
   // (2) Direct Augmented Lagrange strategy
   // ---------------------------------------------------------------------
-  NOX::NLN::CONSTRAINT::PrecInterfaceMap::const_iterator cit;
+  NOX::Nln::CONSTRAINT::PrecInterfaceMap::const_iterator cit;
   bool issaddlepoint = false;
   for (cit = i_constr_prec_.begin(); cit != i_constr_prec_.end(); ++cit)
   {
@@ -223,7 +223,7 @@ NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::get_active_lin_solver(
   if (issaddlepoint or iscondensed)
   {
     currSolver = get_linear_contact_solver(solvers);
-    return NOX::NLN::sol_contact;
+    return NOX::Nln::sol_contact;
   }
   // ----------------------------------------------------------------------
   // check if contact contributions are present,
@@ -231,28 +231,28 @@ NOX::NLN::SolutionType NOX::NLN::CONTACT::LinearSystem::get_active_lin_solver(
   // ----------------------------------------------------------------------
   if (!issaddlepoint and !iscondensed)
   {
-    currSolver = solvers.at(NOX::NLN::sol_structure);
-    return NOX::NLN::sol_structure;
+    currSolver = solvers.at(NOX::Nln::sol_structure);
+    return NOX::Nln::sol_structure;
   }
 
   // default return
   currSolver = get_linear_contact_solver(solvers);
-  return NOX::NLN::sol_contact;
+  return NOX::Nln::sol_contact;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> NOX::NLN::CONTACT::LinearSystem::get_linear_contact_solver(
-    const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers) const
+Teuchos::RCP<Core::LinAlg::Solver> NOX::Nln::CONTACT::LinearSystem::get_linear_contact_solver(
+    const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers) const
 {
-  auto cs_iter = solvers.find(NOX::NLN::sol_contact);
+  auto cs_iter = solvers.find(NOX::Nln::sol_contact);
   if (cs_iter != solvers.end() and not cs_iter->second.is_null()) return cs_iter->second;
 
   /* If no general linear solver is provided we ask the currently active
    * strategy for a meaningful linear solver. This is a small work around
    * to enable different linear solvers for changing contact solving strategies.
    *                                                       06/18 -- hiermeier */
-  CORE::LINALG::Solver* linsolver = i_constr_prec_.begin()->second->GetLinearSolver();
+  Core::LinAlg::Solver* linsolver = i_constr_prec_.begin()->second->GetLinearSolver();
 
   if (not linsolver)
     FOUR_C_THROW(
@@ -264,18 +264,18 @@ Teuchos::RCP<CORE::LINALG::Solver> NOX::NLN::CONTACT::LinearSystem::get_linear_c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::InsertIntoGlobalLhs(
+void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::InsertIntoGlobalLhs(
     Epetra_Vector& glhs) const
 {
   if (p_lhs_.is_null() or p_lhs_.get() == &glhs) return;
 
-  CORE::LINALG::AssembleMyVector(0.0, glhs, 1.0, *p_lhs_);
+  Core::LinAlg::AssembleMyVector(0.0, glhs, 1.0, *p_lhs_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::SetOriginalSystem(
-    CORE::LINALG::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs)
+void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::SetOriginalSystem(
+    Core::LinAlg::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs)
 {
   p_jac_ = Teuchos::rcpFromRef(mat);
   p_rhs_ = Teuchos::rcpFromRef(rhs);
@@ -284,11 +284,11 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::SetOriginalSystem(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
-    CORE::LINALG::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs)
+void NOX::Nln::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
+    Core::LinAlg::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs)
 {
-  CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>& block_mat =
-      dynamic_cast<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>&>(mat);
+  Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>& block_mat =
+      dynamic_cast<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>&>(mat);
 
   const int numrows = block_mat.Rows();
   const int numcols = block_mat.Cols();
@@ -383,24 +383,24 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
       const unsigned rc_id = keep_row_col_index[0];
       p_jac_ = Teuchos::rcpFromRef(block_mat(rc_id, rc_id));
 
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> active_sparse_mat =
-          Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(p_jac_, true);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> active_sparse_mat =
+          Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(p_jac_, true);
 
-      p_rhs_ = CORE::LINALG::ExtractMyVector(rhs, active_sparse_mat->RangeMap());
-      p_lhs_ = CORE::LINALG::ExtractMyVector(lhs, active_sparse_mat->DomainMap());
+      p_rhs_ = Core::LinAlg::ExtractMyVector(rhs, active_sparse_mat->RangeMap());
+      p_lhs_ = Core::LinAlg::ExtractMyVector(lhs, active_sparse_mat->DomainMap());
 
       break;
     }
     default:
     {
-      p_jac_ = block_mat.Clone(CORE::LINALG::View, keep_row_col_index, keep_row_col_index);
+      p_jac_ = block_mat.Clone(Core::LinAlg::View, keep_row_col_index, keep_row_col_index);
       p_jac_->Complete();
 
-      Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> active_block_mat =
-          Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(p_jac_, true);
+      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> active_block_mat =
+          Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(p_jac_, true);
 
-      p_rhs_ = CORE::LINALG::ExtractMyVector(rhs, active_block_mat->FullRangeMap());
-      p_lhs_ = CORE::LINALG::ExtractMyVector(lhs, active_block_mat->FullDomainMap());
+      p_rhs_ = Core::LinAlg::ExtractMyVector(rhs, active_block_mat->FullRangeMap());
+      p_lhs_ = Core::LinAlg::ExtractMyVector(lhs, active_block_mat->FullDomainMap());
 
       break;
     }
@@ -409,17 +409,17 @@ void NOX::NLN::CONTACT::LinearSystem::LinearSubProblem::ExtractActiveBlocks(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::apply_diagonal_inverse(
-    CORE::LINALG::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const
+void NOX::Nln::CONTACT::LinearSystem::apply_diagonal_inverse(
+    Core::LinAlg::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const
 {
   if (mat.EpetraMatrix()->NumGlobalDiagonals() != mat.EpetraMatrix()->NumGlobalNonzeros())
     FOUR_C_THROW("The given matrix seems to be no diagonal matrix!");
 
   Epetra_Vector lhs_block(mat.DomainMap(), true);
-  CORE::LINALG::ExtractMyVector(lhs, lhs_block);
+  Core::LinAlg::ExtractMyVector(lhs, lhs_block);
 
   Epetra_Vector rhs_block(mat.RangeMap(), true);
-  CORE::LINALG::ExtractMyVector(rhs, rhs_block);
+  Core::LinAlg::ExtractMyVector(rhs, rhs_block);
 
   Epetra_Vector diag_mat(mat.RangeMap(), true);
   int err = mat.ExtractDiagonalCopy(diag_mat);
@@ -428,12 +428,12 @@ void NOX::NLN::CONTACT::LinearSystem::apply_diagonal_inverse(
   err = lhs_block.ReciprocalMultiply(1.0, diag_mat, rhs_block, 0.0);
   if (err) FOUR_C_THROW("ReciprocalMultiply failed! (err=%d)", err);
 
-  CORE::LINALG::AssembleMyVector(0.0, lhs, 1.0, lhs_block);
+  Core::LinAlg::AssembleMyVector(0.0, lhs, 1.0, lhs_block);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::throw_error(
+void NOX::Nln::CONTACT::LinearSystem::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(::NOX::Utils::Error))

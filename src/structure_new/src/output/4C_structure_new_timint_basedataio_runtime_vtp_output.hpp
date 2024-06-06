@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     /** \brief Input data container for VTP output at runtime for the structural (time) integration
      *
@@ -80,7 +80,7 @@ namespace STR
           };*/
 
       /*    /// get the data container for parameters regarding beams
-          Teuchos::RCP<const DRT::ELEMENTS::BeamRuntimeOutputParams> GetBeamParams() const
+          Teuchos::RCP<const Discret::ELEMENTS::BeamRuntimeOutputParams> GetBeamParams() const
           {
             check_init_setup();
             return params_runtime_output_beams_;
@@ -132,14 +132,14 @@ namespace STR
           bool output_displacement_state_;*/
 
       /*    /// data container for input parameters related to output of beams at runtime
-          Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeOutputParams>
+          Teuchos::RCP<Discret::ELEMENTS::BeamRuntimeOutputParams>
          params_runtime_output_beams_;*/
 
 
       //@}
     };
 
-  }  // namespace TIMINT
+  }  // namespace TimeInt
 }  // namespace STR
 
 FOUR_C_NAMESPACE_CLOSE

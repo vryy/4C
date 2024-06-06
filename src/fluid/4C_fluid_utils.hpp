@@ -24,17 +24,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   class DofSet;
   class DofSetInterface;
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MultiMapExtractor;
   class MapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace FLD
 {
@@ -45,7 +45,7 @@ namespace FLD
     {
      public:
       /// construct with a block matrix base
-      explicit VelPressSplitStrategy(CORE::LINALG::BlockSparseMatrixBase& mat)
+      explicit VelPressSplitStrategy(Core::LinAlg::BlockSparseMatrixBase& mat)
           : mat_(mat),
             matrix00_(mat_.Matrix(0, 0)),
             matrix01_(mat_.Matrix(0, 1)),
@@ -72,7 +72,7 @@ namespace FLD
 
       /// assemble into the given block
       void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
-          const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+          const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
           const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
       {
         const int lrowdim = (int)lmrow.size();
@@ -223,7 +223,7 @@ namespace FLD
               int cgid = lmcol[lcol];
               int cblock = ColBlock(rblock, lcol, cgid);
 
-              CORE::LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+              Core::LinAlg::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
               matrix.Assemble(val, rgid, cgid);
             }
           }
@@ -235,7 +235,7 @@ namespace FLD
       {
         int rblock = RowBlock(0, rgid);
         int cblock = ColBlock(rblock, 0, cgid);
-        CORE::LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+        Core::LinAlg::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
         matrix.Assemble(val, rgid, cgid);
       }
 
@@ -251,13 +251,13 @@ namespace FLD
 
      private:
       /// my block matrix base
-      CORE::LINALG::BlockSparseMatrixBase& mat_;
+      Core::LinAlg::BlockSparseMatrixBase& mat_;
 
       // the four sub-matrices of the whole matrix
-      CORE::LINALG::SparseMatrix& matrix00_;
-      CORE::LINALG::SparseMatrix& matrix01_;
-      CORE::LINALG::SparseMatrix& matrix10_;
-      CORE::LINALG::SparseMatrix& matrix11_;
+      Core::LinAlg::SparseMatrix& matrix00_;
+      Core::LinAlg::SparseMatrix& matrix01_;
+      Core::LinAlg::SparseMatrix& matrix10_;
+      Core::LinAlg::SparseMatrix& matrix11_;
 
       /// number of velocity dofs
       int numdim_;
@@ -268,31 +268,31 @@ namespace FLD
 
 
     /// (FSI) interface block matrix split strategy
-    class InterfaceSplitStrategy : public CORE::LINALG::DefaultBlockMatrixStrategy
+    class InterfaceSplitStrategy : public Core::LinAlg::DefaultBlockMatrixStrategy
     {
      public:
-      explicit InterfaceSplitStrategy(CORE::LINALG::BlockSparseMatrixBase& mat)
-          : CORE::LINALG::DefaultBlockMatrixStrategy(mat)
+      explicit InterfaceSplitStrategy(Core::LinAlg::BlockSparseMatrixBase& mat)
+          : Core::LinAlg::DefaultBlockMatrixStrategy(mat)
       {
       }
 
       /// assemble into the given block
       void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
-          const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+          const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
           const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
       {
         if (condelements_->find(eid) != condelements_->end())
         {
           // if we have an element with conditioned nodes, we have to do the
           // default assembling
-          CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(
+          Core::LinAlg::DefaultBlockMatrixStrategy::Assemble(
               eid, myrank, lmstride, Aele, lmrow, lmrowowner, lmcol);
         }
         else
         {
           // if there are no conditioned nodes we can simply assemble to the
           // internal matrix
-          CORE::LINALG::SparseMatrix& matrix = mat().Matrix(0, 0);
+          Core::LinAlg::SparseMatrix& matrix = mat().Matrix(0, 0);
           matrix.Assemble(eid, lmstride, Aele, lmrow, lmrowowner, lmcol);
         }
       }
@@ -300,7 +300,7 @@ namespace FLD
       void Assemble(double val, int rgid, int cgid)
       {
         // forward single value assembling
-        CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(val, rgid, cgid);
+        Core::LinAlg::DefaultBlockMatrixStrategy::Assemble(val, rgid, cgid);
       }
 
       void SetCondElements(Teuchos::RCP<std::set<int>> condelements)
@@ -318,11 +318,11 @@ namespace FLD
     {
      public:
       /// constructor
-      StressManager(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> dispnp,
-          const bool alefluid, const int numdim);
+      StressManager(Teuchos::RCP<Discret::Discretization> discret,
+          Teuchos::RCP<Epetra_Vector> dispnp, const bool alefluid, const int numdim);
 
       /// initialize smoothing of stresses
-      void InitAggr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat);
+      void InitAggr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat);
 
       /// update and return WSS vector
       Teuchos::RCP<Epetra_Vector> get_wall_shear_stresses(
@@ -372,10 +372,10 @@ namespace FLD
           Teuchos::RCP<const Epetra_Vector> wss, double dt);
 
       /// Calculate Aggregation Matrix
-      void calc_sep_enr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat);
+      void calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat);
 
       /// fluid discretization
-      const Teuchos::RCP<DRT::Discretization> discret_;
+      const Teuchos::RCP<Discret::Discretization> discret_;
 
       /// displacement at time \f$t^{n+1}\f$
       const Teuchos::RCP<Epetra_Vector> dispnp_;
@@ -387,10 +387,10 @@ namespace FLD
       const int numdim_;
 
       /// filtering matrix for wall shear stress
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> sep_enr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> sep_enr_;
 
       /// wss calculation type
-      const INPAR::FLUID::WSSType wss_type_;
+      const Inpar::FLUID::WSSType wss_type_;
 
       /// weighted sum of all prior stresses
       Teuchos::RCP<Epetra_Vector> sum_stresses_;
@@ -408,8 +408,8 @@ namespace FLD
     };
 
 
-    void SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis, int ndim,
-        const DRT::Discretization& alefluiddis, CORE::LINALG::MapExtractor& extractor,
+    void SetupFluidFluidVelPresSplit(const Discret::Discretization& fluiddis, int ndim,
+        const Discret::Discretization& alefluiddis, Core::LinAlg::MapExtractor& extractor,
         Teuchos::RCP<Epetra_Map> fullmap);
 
     /*!
@@ -424,7 +424,7 @@ namespace FLD
 
     create
 
-    map< label, std::set<CORE::Nodes::Node*> >
+    map< label, std::set<Core::Nodes::Node*> >
 
     which is a set of nodes to each L&D Id
     nodal forces of all the nodes within one set are added to one L&D force
@@ -436,7 +436,7 @@ namespace FLD
           \author chfoe
       \date 11/07
      */
-    void LiftDrag(const Teuchos::RCP<const DRT::Discretization>
+    void LiftDrag(const Teuchos::RCP<const Discret::Discretization>
                       dis,  //! fluid discretization (node distribution, conditions)
         const Teuchos::RCP<const Epetra_Vector> trueresidual,  //! vector of nodalforces
         const Teuchos::RCP<const Epetra_Vector>
@@ -473,7 +473,7 @@ namespace FLD
       \date 10/08
      */
     // std::map<int,double> ComputeSurfaceFlowRates(
-    //    DRT::Discretization&       dis  ,      ///< the discretisation (node distribution,
+    //    Discret::Discretization&       dis  ,      ///< the discretisation (node distribution,
     //    conditions) const Teuchos::RCP<Epetra_Vector>   velnp       ///< solution vector with
     //    velocities and pressure
     ///< (only velocities are used)
@@ -492,32 +492,32 @@ namespace FLD
       \date 10/08
      */
     std::map<int, double> ComputeFlowRates(
-        DRT::Discretization& dis,  ///< the discretisation (node distribution, conditions)
+        Discret::Discretization& dis,  ///< the discretisation (node distribution, conditions)
         const Teuchos::RCP<Epetra_Vector>&
             velnp,                      ///< solution vector with velocities (and pressure)
         const std::string& condstring,  ///< name of the condition (LineFlowRate or SurfaceFlowRate)
-        const INPAR::FLUID::PhysicalType physicaltype  ///< physical type of flow
+        const Inpar::FLUID::PhysicalType physicaltype  ///< physical type of flow
     );
 
     std::map<int, double> ComputeFlowRates(
-        DRT::Discretization& dis,  ///< the discretisation (node distribution, conditions)
+        Discret::Discretization& dis,  ///< the discretisation (node distribution, conditions)
         const Teuchos::RCP<Epetra_Vector>&
             velnp,  ///< solution vector with velocities (and pressure)
         const Teuchos::RCP<Epetra_Vector>& gridvel,  ///< solution vector with grid velocities (ALE)
         const Teuchos::RCP<Epetra_Vector>&
             dispnp,                     ///< solution vector with mesh displacements (ALE)
         const std::string& condstring,  ///< name of the condition (LineFlowRate or SurfaceFlowRate)
-        const INPAR::FLUID::PhysicalType physicaltype  ///< physical type of flow
+        const Inpar::FLUID::PhysicalType physicaltype  ///< physical type of flow
     );
 
     std::map<int, double> compute_volume(
-        DRT::Discretization& dis,  ///< the discretisation (node distribution, conditions)
+        Discret::Discretization& dis,  ///< the discretisation (node distribution, conditions)
         const Teuchos::RCP<Epetra_Vector>&
             velnp,  ///< solution vector with velocities (and pressure)
         const Teuchos::RCP<Epetra_Vector>& gridvel,  ///< solution vector with grid velocities (ALE)
         const Teuchos::RCP<Epetra_Vector>&
             dispnp,  ///< solution vector with mesh displacements (ALE)
-        const INPAR::FLUID::PhysicalType physicaltype  ///< physical type of flow
+        const Inpar::FLUID::PhysicalType physicaltype  ///< physical type of flow
     );
 
     /*!
@@ -537,7 +537,7 @@ namespace FLD
     \brief Project gradient and store vector in param list
 
     */
-    void ProjectGradientAndSetParam(Teuchos::RCP<DRT::Discretization> discret,
+    void ProjectGradientAndSetParam(Teuchos::RCP<Discret::Discretization> discret,
         Teuchos::ParameterList& eleparams, Teuchos::RCP<const Epetra_Vector> vel,
         const std::string paraname, bool alefluid);
 
@@ -545,7 +545,7 @@ namespace FLD
     \brief Project velocity gradient, depends on time integrator used
 
     */
-    Teuchos::RCP<Epetra_MultiVector> ProjectGradient(Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<Epetra_MultiVector> ProjectGradient(Teuchos::RCP<Discret::Discretization> discret,
         Teuchos::RCP<const Epetra_Vector> vel, bool alefluid);
 
     /*!
@@ -562,8 +562,8 @@ namespace FLD
       \author Axel Gerstenberger
       \date 10/08
      */
-    std::map<int, CORE::LINALG::Matrix<3, 1>> ComputeSurfaceImpulsRates(
-        DRT::Discretization& dis,  ///< the discretisation (node distribution, conditions)
+    std::map<int, Core::LinAlg::Matrix<3, 1>> ComputeSurfaceImpulsRates(
+        Discret::Discretization& dis,  ///< the discretisation (node distribution, conditions)
         const Teuchos::RCP<Epetra_Vector> velnp  ///< solution vector with velocities and pressure
                                                  ///< (only velocities are used)
     );

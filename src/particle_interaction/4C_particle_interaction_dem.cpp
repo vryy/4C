@@ -30,18 +30,18 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::ParticleInteractionDEM::ParticleInteractionDEM(
+ParticleInteraction::ParticleInteractionDEM::ParticleInteractionDEM(
     const Epetra_Comm& comm, const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::ParticleInteractionBase(comm, params),
+    : ParticleInteraction::ParticleInteractionBase(comm, params),
       params_dem_(params.sublist("DEM")),
-      writeparticleenergy_(CORE::UTILS::IntegralValue<int>(params_dem_, "WRITE_PARTICLE_ENERGY"))
+      writeparticleenergy_(Core::UTILS::IntegralValue<int>(params_dem_, "WRITE_PARTICLE_ENERGY"))
 {
   // empty constructor
 }
 
-PARTICLEINTERACTION::ParticleInteractionDEM::~ParticleInteractionDEM() = default;
+ParticleInteraction::ParticleInteractionDEM::~ParticleInteractionDEM() = default;
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::Init()
+void ParticleInteraction::ParticleInteractionDEM::Init()
 {
   // call base class init
   ParticleInteractionBase::Init();
@@ -59,7 +59,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Init()
   init_adhesion_handler();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
+void ParticleInteraction::ParticleInteractionDEM::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
@@ -85,7 +85,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::Setup(
   setup_particle_interaction_writer();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::write_restart() const
+void ParticleInteraction::ParticleInteractionDEM::write_restart() const
 {
   // call base class function
   ParticleInteractionBase::write_restart();
@@ -94,8 +94,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::write_restart() const
   historypairs_->write_restart();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::read_restart(
-    const std::shared_ptr<CORE::IO::DiscretizationReader> reader)
+void ParticleInteraction::ParticleInteractionDEM::read_restart(
+    const std::shared_ptr<Core::IO::DiscretizationReader> reader)
 {
   // call base class function
   ParticleInteractionBase::read_restart(reader);
@@ -104,7 +104,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::read_restart(
   historypairs_->read_restart(reader);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::insert_particle_states_of_particle_types(
+void ParticleInteraction::ParticleInteractionDEM::insert_particle_states_of_particle_types(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
 {
   // iterate over particle types
@@ -121,7 +121,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::insert_particle_states_of_part
   contact_->insert_particle_states_of_particle_types(particlestatestotypes);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
+void ParticleInteraction::ParticleInteractionDEM::SetInitialStates()
 {
   // set initial radius
   set_initial_radius();
@@ -133,14 +133,14 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
   set_initial_inertia();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::pre_evaluate_time_step()
+void ParticleInteraction::ParticleInteractionDEM::pre_evaluate_time_step()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::pre_evaluate_time_step");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::ParticleInteractionDEM::pre_evaluate_time_step");
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_interactions()
+void ParticleInteraction::ParticleInteractionDEM::evaluate_interactions()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_interactions");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::ParticleInteractionDEM::evaluate_interactions");
 
   // clear force and moment states of particles
   clear_force_and_moment_states();
@@ -167,17 +167,17 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_interactions()
   historypairs_->UpdateHistoryPairs();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::post_evaluate_time_step(
+void ParticleInteraction::ParticleInteractionDEM::post_evaluate_time_step(
     std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::post_evaluate_time_step");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::ParticleInteractionDEM::post_evaluate_time_step");
 
   // evaluate particle energy
   if (particleinteractionwriter_->get_current_write_result_flag() and writeparticleenergy_)
     evaluate_particle_energy();
 }
 
-double PARTICLEINTERACTION::ParticleInteractionDEM::max_interaction_distance() const
+double ParticleInteraction::ParticleInteractionDEM::max_interaction_distance() const
 {
   // particle contact interaction distance
   double interactiondistance = 2.0 * max_particle_radius();
@@ -188,19 +188,19 @@ double PARTICLEINTERACTION::ParticleInteractionDEM::max_interaction_distance() c
   return interactiondistance;
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::distribute_interaction_history() const
+void ParticleInteraction::ParticleInteractionDEM::distribute_interaction_history() const
 {
   // distribute history pairs
   historypairs_->distribute_history_pairs();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::communicate_interaction_history() const
+void ParticleInteraction::ParticleInteractionDEM::communicate_interaction_history() const
 {
   // communicate history pairs
   historypairs_->communicate_history_pairs();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::set_current_step_size(
+void ParticleInteraction::ParticleInteractionDEM::set_current_step_size(
     const double currentstepsize)
 {
   // call base class method
@@ -210,50 +210,50 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::set_current_step_size(
   contact_->set_current_step_size(currentstepsize);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::init_neighbor_pair_handler()
+void ParticleInteraction::ParticleInteractionDEM::init_neighbor_pair_handler()
 {
   // create neighbor pair handler
-  neighborpairs_ = std::make_shared<PARTICLEINTERACTION::DEMNeighborPairs>();
+  neighborpairs_ = std::make_shared<ParticleInteraction::DEMNeighborPairs>();
 
   // init neighbor pair handler
   neighborpairs_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::init_history_pair_handler()
+void ParticleInteraction::ParticleInteractionDEM::init_history_pair_handler()
 {
   // create history pair handler
-  historypairs_ = std::make_shared<PARTICLEINTERACTION::DEMHistoryPairs>(comm_);
+  historypairs_ = std::make_shared<ParticleInteraction::DEMHistoryPairs>(comm_);
 
   // init history pair handler
   historypairs_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::init_contact_handler()
+void ParticleInteraction::ParticleInteractionDEM::init_contact_handler()
 {
   // create contact handler
-  contact_ = std::unique_ptr<PARTICLEINTERACTION::DEMContact>(
-      new PARTICLEINTERACTION::DEMContact(params_dem_));
+  contact_ = std::unique_ptr<ParticleInteraction::DEMContact>(
+      new ParticleInteraction::DEMContact(params_dem_));
 
   // init contact handler
   contact_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::init_adhesion_handler()
+void ParticleInteraction::ParticleInteractionDEM::init_adhesion_handler()
 {
   // get type of adhesion law
-  INPAR::PARTICLE::AdhesionLaw adhesionlaw =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::AdhesionLaw>(params_dem_, "ADHESIONLAW");
+  Inpar::PARTICLE::AdhesionLaw adhesionlaw =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::AdhesionLaw>(params_dem_, "ADHESIONLAW");
 
   // create adhesion handler
-  if (adhesionlaw != INPAR::PARTICLE::NoAdhesion)
-    adhesion_ = std::unique_ptr<PARTICLEINTERACTION::DEMAdhesion>(
-        new PARTICLEINTERACTION::DEMAdhesion(params_dem_));
+  if (adhesionlaw != Inpar::PARTICLE::NoAdhesion)
+    adhesion_ = std::unique_ptr<ParticleInteraction::DEMAdhesion>(
+        new ParticleInteraction::DEMAdhesion(params_dem_));
 
   // init adhesion handler
   if (adhesion_) adhesion_->Init();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::setup_particle_interaction_writer()
+void ParticleInteraction::ParticleInteractionDEM::setup_particle_interaction_writer()
 {
   if (writeparticleenergy_)
   {
@@ -261,7 +261,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::setup_particle_interaction_wri
     particleinteractionwriter_->register_specific_runtime_csv_writer("particle-energy");
 
     // get specific runtime csv writer
-    CORE::IO::RuntimeCsvWriter* runtime_csv_writer =
+    Core::IO::RuntimeCsvWriter* runtime_csv_writer =
         particleinteractionwriter_->get_specific_runtime_csv_writer("particle-energy");
 
     // register all data vectors
@@ -271,7 +271,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::setup_particle_interaction_wri
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_radius()
+void ParticleInteraction::ParticleInteractionDEM::set_initial_radius()
 {
   // get allowed bounds for particle radius
   double r_min = params_dem_.get<double>("MIN_RADIUS");
@@ -284,14 +284,14 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_radius()
     FOUR_C_THROW("minimum allowed particle radius larger than maximum allowed particle radius!");
 
   // get type of initial particle radius assignment
-  INPAR::PARTICLE::InitialRadiusAssignment radiusdistributiontype =
-      CORE::UTILS::IntegralValue<INPAR::PARTICLE::InitialRadiusAssignment>(
+  Inpar::PARTICLE::InitialRadiusAssignment radiusdistributiontype =
+      Core::UTILS::IntegralValue<Inpar::PARTICLE::InitialRadiusAssignment>(
           params_dem_, "INITIAL_RADIUS");
 
   switch (radiusdistributiontype)
   {
     // particle radius from particle material
-    case INPAR::PARTICLE::RadiusFromParticleMaterial:
+    case Inpar::PARTICLE::RadiusFromParticleMaterial:
     {
       // iterate over particle types
       for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
@@ -307,7 +307,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_radius()
         if (particlestored <= 0) continue;
 
         // get material for current particle type
-        const MAT::PAR::ParticleMaterialBase* material =
+        const Mat::PAR::ParticleMaterialBase* material =
             particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
         // safety checks
@@ -328,7 +328,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_radius()
       break;
     }
     // particle radius from particle input
-    case INPAR::PARTICLE::RadiusFromParticleInput:
+    case Inpar::PARTICLE::RadiusFromParticleInput:
     {
       // note: particle radius set as read in from input file, only safety checks here
 
@@ -356,8 +356,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_radius()
       break;
     }
     // normal or log-normal random particle radius distribution
-    case INPAR::PARTICLE::NormalRadiusDistribution:
-    case INPAR::PARTICLE::LogNormalRadiusDistribution:
+    case Inpar::PARTICLE::NormalRadiusDistribution:
+    case Inpar::PARTICLE::LogNormalRadiusDistribution:
     {
       // get sigma of random particle radius distribution
       double sigma = params_dem_.get<double>("RADIUSDISTRIBUTION_SIGMA");
@@ -380,28 +380,28 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_radius()
         if (particlestored <= 0) continue;
 
         // get material for current particle type
-        const MAT::PAR::ParticleMaterialBase* material =
+        const Mat::PAR::ParticleMaterialBase* material =
             particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
         // get pointer to particle state
         double* radius = container->GetPtrToState(PARTICLEENGINE::Radius, 0);
 
         // determine mu of random particle radius distribution
-        const double mu = (radiusdistributiontype == INPAR::PARTICLE::NormalRadiusDistribution)
+        const double mu = (radiusdistributiontype == Inpar::PARTICLE::NormalRadiusDistribution)
                               ? material->initRadius_
                               : std::log(material->initRadius_);
 
         // initialize random number generator
-        GLOBAL::Problem::Instance()->Random()->SetMeanVariance(mu, sigma);
+        Global::Problem::Instance()->Random()->SetMeanVariance(mu, sigma);
 
         // iterate over particles stored in container
         for (int i = 0; i < particlestored; ++i)
         {
           // generate random value
-          const double randomvalue = GLOBAL::Problem::Instance()->Random()->Normal();
+          const double randomvalue = Global::Problem::Instance()->Random()->Normal();
 
           // set normal or log-normal distributed random value for particle radius
-          radius[i] = (radiusdistributiontype == INPAR::PARTICLE::NormalRadiusDistribution)
+          radius[i] = (radiusdistributiontype == Inpar::PARTICLE::NormalRadiusDistribution)
                           ? randomvalue
                           : std::exp(randomvalue);
 
@@ -422,7 +422,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_radius()
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_mass()
+void ParticleInteraction::ParticleInteractionDEM::set_initial_mass()
 {
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
@@ -438,7 +438,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_mass()
     if (particlestored <= 0) continue;
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialBase* material =
+    const Mat::PAR::ParticleMaterialBase* material =
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
     // get pointer to particle states
@@ -451,7 +451,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_mass()
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_inertia()
+void ParticleInteraction::ParticleInteractionDEM::set_initial_inertia()
 {
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
@@ -479,7 +479,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::set_initial_inertia()
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::clear_force_and_moment_states() const
+void ParticleInteraction::ParticleInteractionDEM::clear_force_and_moment_states() const
 {
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
@@ -497,9 +497,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::clear_force_and_moment_states(
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::compute_acceleration() const
+void ParticleInteraction::ParticleInteractionDEM::compute_acceleration() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::compute_acceleration");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::ParticleInteractionDEM::compute_acceleration");
 
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
@@ -539,10 +539,10 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::compute_acceleration() const
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_particle_energy() const
+void ParticleInteraction::ParticleInteractionDEM::evaluate_particle_energy() const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_particle_energy");
+      "ParticleInteraction::ParticleInteractionDEM::evaluate_particle_energy");
 
   // evaluate particle kinetic energy contribution
   std::vector<double> kinenergy(1, 0.0);
@@ -569,7 +569,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_particle_energy() con
   }
 
   // get specific runtime csv writer
-  CORE::IO::RuntimeCsvWriter* runtime_csv_writer =
+  Core::IO::RuntimeCsvWriter* runtime_csv_writer =
       particleinteractionwriter_->get_specific_runtime_csv_writer("particle-energy");
 
   // append data vector
@@ -578,11 +578,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_particle_energy() con
   runtime_csv_writer->AppendDataVector("elast_pot_energy", elastpotenergy);
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_particle_kinetic_energy(
+void ParticleInteraction::ParticleInteractionDEM::evaluate_particle_kinetic_energy(
     double& kineticenergy) const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_particle_kinetic_energy");
+      "ParticleInteraction::ParticleInteractionDEM::evaluate_particle_kinetic_energy");
 
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
@@ -620,11 +620,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_particle_kinetic_ener
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_particle_gravitational_potential_energy(
+void ParticleInteraction::ParticleInteractionDEM::evaluate_particle_gravitational_potential_energy(
     double& gravitationalpotentialenergy) const
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::ParticleInteractionDEM::evaluate_particle_gravitational_potential_"
+      "ParticleInteraction::ParticleInteractionDEM::evaluate_particle_gravitational_potential_"
       "energy");
 
   // iterate over particle types

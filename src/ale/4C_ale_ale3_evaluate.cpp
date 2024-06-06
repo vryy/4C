@@ -23,50 +23,51 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale3ImplInterface* DRT::ELEMENTS::Ale3ImplInterface::Impl(DRT::ELEMENTS::Ale3* ele)
+Discret::ELEMENTS::Ale3ImplInterface* Discret::ELEMENTS::Ale3ImplInterface::Impl(
+    Discret::ELEMENTS::Ale3* ele)
 {
   switch (ele->Shape())
   {
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
-      return Ale3Impl<CORE::FE::CellType::hex8>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::hex8>::Instance(Core::UTILS::SingletonAction::create);
     }
-    case CORE::FE::CellType::hex20:
+    case Core::FE::CellType::hex20:
     {
-      return Ale3Impl<CORE::FE::CellType::hex20>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::hex20>::Instance(Core::UTILS::SingletonAction::create);
     }
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex27:
     {
-      return Ale3Impl<CORE::FE::CellType::hex27>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::hex27>::Instance(Core::UTILS::SingletonAction::create);
     }
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
     {
-      return Ale3Impl<CORE::FE::CellType::tet4>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::tet4>::Instance(Core::UTILS::SingletonAction::create);
     }
-    case CORE::FE::CellType::tet10:
+    case Core::FE::CellType::tet10:
     {
-      return Ale3Impl<CORE::FE::CellType::tet10>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::tet10>::Instance(Core::UTILS::SingletonAction::create);
     }
-    case CORE::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge6:
     {
-      return Ale3Impl<CORE::FE::CellType::wedge6>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::wedge6>::Instance(Core::UTILS::SingletonAction::create);
     }
-      /*  case CORE::FE::CellType::wedge15:
+      /*  case Core::FE::CellType::wedge15:
         {
           return
-        Ale3Impl<CORE::FE::CellType::wedge15>::Instance(CORE::UTILS::SingletonAction::create);
+        Ale3Impl<Core::FE::CellType::wedge15>::Instance(Core::UTILS::SingletonAction::create);
         }*/
-    case CORE::FE::CellType::pyramid5:
+    case Core::FE::CellType::pyramid5:
     {
-      return Ale3Impl<CORE::FE::CellType::pyramid5>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::pyramid5>::Instance(Core::UTILS::SingletonAction::create);
     }
-    case CORE::FE::CellType::nurbs8:
+    case Core::FE::CellType::nurbs8:
     {
-      return Ale3Impl<CORE::FE::CellType::nurbs8>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::nurbs8>::Instance(Core::UTILS::SingletonAction::create);
     }
-    case CORE::FE::CellType::nurbs27:
+    case Core::FE::CellType::nurbs27:
     {
-      return Ale3Impl<CORE::FE::CellType::nurbs27>::Instance(CORE::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::nurbs27>::Instance(Core::UTILS::SingletonAction::create);
     }
     default:
       FOUR_C_THROW("shape %d (%d nodes) not supported", ele->Shape(), ele->num_node());
@@ -75,15 +76,15 @@ DRT::ELEMENTS::Ale3ImplInterface* DRT::ELEMENTS::Ale3ImplInterface::Impl(DRT::EL
   return nullptr;
 }
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Ale3Impl<distype>* DRT::ELEMENTS::Ale3Impl<distype>::Instance(
-    CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::Ale3Impl<distype>* Discret::ELEMENTS::Ale3Impl<distype>::Instance(
+    Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::Ale3Impl<distype>>(
-            new DRT::ELEMENTS::Ale3Impl<distype>());
+        return std::unique_ptr<Discret::ELEMENTS::Ale3Impl<distype>>(
+            new Discret::ELEMENTS::Ale3Impl<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -92,13 +93,13 @@ DRT::ELEMENTS::Ale3Impl<distype>* DRT::ELEMENTS::Ale3Impl<distype>::Instance(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::Ale3::ActionType act = Ale3::none;
+  Discret::ELEMENTS::Ale3::ActionType act = Ale3::none;
 
   // get the action required
   std::string action = params.get<std::string>("action", "none");
@@ -126,7 +127,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     FOUR_C_THROW("Unknown type of action for Ale3");
 
   // get the material
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
   switch (act)
   {
@@ -135,7 +136,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp;
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       my_dispnp.resize(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::Impl(this)->static_ke_laplace(
           this, discretization, elemat1, elevec1, my_dispnp, mat, false);
@@ -147,7 +148,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp;
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       my_dispnp.resize(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::Impl(this)->static_ke_laplace(
           this, discretization, elemat1, elevec1, my_dispnp, mat, true);
@@ -158,7 +159,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::Impl(this)->static_ke_nonlinear(
           this, discretization, lm, elemat1, elevec1, my_dispnp, params, true);
@@ -169,7 +170,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::Impl(this)->static_ke_nonlinear(
           this, discretization, lm, elemat1, elevec1, my_dispnp, params, false);
@@ -180,7 +181,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::Impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, false);
 
@@ -190,7 +191,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::Impl(this)->static_ke_spring(this, elemat1, elevec1, my_dispnp, true);
 
@@ -200,7 +201,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
-      CORE::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
+      Core::FE::ExtractMyValues(*dispnp, my_dispnp, lm);
 
       Ale3ImplInterface::Impl(this)->ElementNodeNormal(this, elevec1, my_dispnp);
 
@@ -209,12 +210,12 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     case setup_material:
     {
       // get material
-      Teuchos::RCP<MAT::So3Material> so3mat =
-          Teuchos::rcp_dynamic_cast<MAT::So3Material>(mat, true);
+      Teuchos::RCP<Mat::So3Material> so3mat =
+          Teuchos::rcp_dynamic_cast<Mat::So3Material>(mat, true);
 
-      if (so3mat->MaterialType() != CORE::Materials::m_elasthyper and
+      if (so3mat->MaterialType() != Core::Materials::m_elasthyper and
           so3mat->MaterialType() !=
-              CORE::Materials::m_stvenant)  // ToDo (mayr): allow only materials without history
+              Core::Materials::m_stvenant)  // ToDo (mayr): allow only materials without history
       {
         FOUR_C_THROW(
             "Illegal material type for ALE. Only materials allowed that do "
@@ -222,9 +223,9 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
             "element line definition.");
       }
 
-      if (so3mat->MaterialType() == CORE::Materials::m_elasthyper)
+      if (so3mat->MaterialType() == Core::Materials::m_elasthyper)
       {
-        so3mat = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(mat, true);
+        so3mat = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(mat, true);
         so3mat->Setup(0, nullptr);
       }
       break;  // no setup for St-Venant
@@ -243,29 +244,29 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale3::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::Ale3::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3Impl<distype>::ElementNodeNormal(
-    Ale3* ele, CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& my_dispnp)
+template <Core::FE::CellType distype>
+inline void Discret::ELEMENTS::Ale3Impl<distype>::ElementNodeNormal(
+    Ale3* ele, Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& my_dispnp)
 {
-  if (distype == CORE::FE::CellType::nurbs8 or distype == CORE::FE::CellType::nurbs27)
+  if (distype == Core::FE::CellType::nurbs8 or distype == Core::FE::CellType::nurbs27)
   {
     FOUR_C_THROW("not implemented!");
   }
 
-  CORE::LINALG::Matrix<3, iel> xyze;
+  Core::LinAlg::Matrix<3, iel> xyze;
 
   // get node coordinates
-  CORE::Nodes::Node** nodes = ele->Nodes();
+  Core::Nodes::Node** nodes = ele->Nodes();
   for (int i = 0; i < iel; i++)
   {
     const auto& x = nodes[i]->X();
@@ -282,14 +283,14 @@ inline void DRT::ELEMENTS::Ale3Impl<distype>::ElementNodeNormal(
   }
 
   /*----------------------------------------- declaration of variables ---*/
-  CORE::LINALG::Matrix<iel, 1> funct;
-  CORE::LINALG::Matrix<3, iel> deriv;
-  CORE::LINALG::Matrix<3, 3> xjm;
-  CORE::LINALG::Matrix<3, 3> xji;
+  Core::LinAlg::Matrix<iel, 1> funct;
+  Core::LinAlg::Matrix<3, iel> deriv;
+  Core::LinAlg::Matrix<3, 3> xjm;
+  Core::LinAlg::Matrix<3, 3> xji;
 
   // gaussian points
-  const CORE::FE::GaussRule3D gaussrule = get_optimal_gaussrule();
-  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
+  const Core::FE::GaussRule3D gaussrule = get_optimal_gaussrule();
+  const Core::FE::IntegrationPoints3D intpoints(gaussrule);
 
   // integration loops
   for (int iquad = 0; iquad < intpoints.nquad; iquad++)
@@ -299,8 +300,8 @@ inline void DRT::ELEMENTS::Ale3Impl<distype>::ElementNodeNormal(
     const double e3 = intpoints.qxg[iquad][2];
 
     // get values of shape functions and derivatives in the gausspoint
-    CORE::FE::shape_function_3D(funct, e1, e2, e3, distype);
-    CORE::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+    Core::FE::shape_function_3D(funct, e1, e2, e3, distype);
+    Core::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
 
     // compute jacobian matrix
     // determine jacobian at point r,s,t
@@ -327,9 +328,9 @@ inline void DRT::ELEMENTS::Ale3Impl<distype>::ElementNodeNormal(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_edge_geometry(int i, int j,
-    const CORE::LINALG::Matrix<3, iel>& xyze, double& length, double& dx, double& dy, double& dz)
+template <Core::FE::CellType distype>
+inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_edge_geometry(int i, int j,
+    const Core::LinAlg::Matrix<3, iel>& xyze, double& length, double& dx, double& dy, double& dz)
 {
   /*---------------------------------------------- x-, y- and z-difference ---*/
   dx = xyze(0, j) - xyze(0, i);
@@ -344,15 +345,15 @@ inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_edge_geometry(int i, int j,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, int node_q, int node_r,
-    int node_s, const CORE::LINALG::Matrix<3, 1>& sq, const double len_sq,
-    const CORE::LINALG::Matrix<3, 1>& rp, const double len_rp, const CORE::LINALG::Matrix<3, 1>& qp,
-    const CORE::LINALG::Matrix<3, 1>& local_x, CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, int node_q,
+    int node_r, int node_s, const Core::LinAlg::Matrix<3, 1>& sq, const double len_sq,
+    const Core::LinAlg::Matrix<3, 1>& rp, const double len_rp, const Core::LinAlg::Matrix<3, 1>& qp,
+    const Core::LinAlg::Matrix<3, 1>& local_x, Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat)
 {
   // Positions for dynamic triangle (2D)
   // sequence: s,j,q
-  CORE::LINALG::Matrix<2, 3> xyze_dyn_tria;
+  Core::LinAlg::Matrix<2, 3> xyze_dyn_tria;
 
   // Some matrices that can be found in the paper are not assembled
   // here, because it can be done with less memory. I use only one
@@ -362,18 +363,18 @@ void DRT::ELEMENTS::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, int n
   // transformation matrix from the plane of the triangle to the
   // three-dimensional global frame.
   // This corresponds to (R(sjq) x r(sjq) x S^T)^T from Farhat et al.
-  CORE::LINALG::Matrix<12, 3> trans_matrix;
+  Core::LinAlg::Matrix<12, 3> trans_matrix;
 
   // rotational stiffness matrix for tetrahedron with given dynamic triangle
-  CORE::LINALG::Matrix<12, 12> k_dyn_tet;
+  Core::LinAlg::Matrix<12, 12> k_dyn_tet;
 
   // local x,y in the plane of the dynamic triangle
   // these are the 3d-vectors that span this plane
-  CORE::LINALG::Matrix<3, 1> local_y;
+  Core::LinAlg::Matrix<3, 1> local_y;
 
   // the point p relativ to the point (0,0) in the triangle plane
   // transformed into 3d space
-  CORE::LINALG::Matrix<3, 1> p;
+  Core::LinAlg::Matrix<3, 1> p;
 
   // local x-value of s xyze_dyn_tria(0,0) := (-1.0)*sq*local_x (local origin lies on plane pqr)
   // local y-value of s xyze_dyn_tria(1,0 := 0.0
@@ -653,15 +654,15 @@ void DRT::ELEMENTS::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, int n
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Ale3Impl<distype>::ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2,
-    int tet_3, CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
-    const CORE::LINALG::Matrix<3, iel>& xyze)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Ale3Impl<distype>::ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2,
+    int tet_3, Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat,
+    const Core::LinAlg::Matrix<3, iel>& xyze)
 {
   // according to Farhat et al.
   // twelve-triangle configuration
 
-  CORE::LINALG::Matrix<3, 1> e01, e02, e03, e10, e12, e13, e20, e21, e23, e30, e31, e32, local_x;
+  Core::LinAlg::Matrix<3, 1> e01, e02, e03, e10, e12, e13, e20, e21, e23, e30, e31, e32, local_x;
   double l01, l02, l03, l12, l13, l23;
   ale3_edge_geometry(tet_0, tet_1, xyze, l01, e01(0), e01(1), e01(2));
   ale3_edge_geometry(tet_0, tet_2, xyze, l02, e02(0), e02(1), e02(2));
@@ -723,18 +724,18 @@ void DRT::ELEMENTS::Ale3Impl<distype>::ale3_add_tetra_stiffness(int tet_0, int t
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_tet4(
-    CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
+template <Core::FE::CellType distype>
+inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_tet4(
+    Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat, const Core::LinAlg::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(0, 1, 2, 3, sys_mat, xyze);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_pyramid5(
-    CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
+template <Core::FE::CellType distype>
+inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_pyramid5(
+    Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat, const Core::LinAlg::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(0, 1, 3, 4, sys_mat, xyze);
   ale3_add_tetra_stiffness(0, 1, 2, 4, sys_mat, xyze);
@@ -744,9 +745,9 @@ inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_pyramid5(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_wedge6(
-    CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
+template <Core::FE::CellType distype>
+inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_wedge6(
+    Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat, const Core::LinAlg::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(2, 0, 1, 3, sys_mat, xyze);
   ale3_add_tetra_stiffness(2, 0, 1, 4, sys_mat, xyze);
@@ -766,9 +767,9 @@ inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_wedge6(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_hex8(
-    CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
+template <Core::FE::CellType distype>
+inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_hex8(
+    Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat, const Core::LinAlg::Matrix<3, iel>& xyze)
 {
   // Use 8 tetrahedra to prevent node-face-penetration
   ale3_add_tetra_stiffness(0, 1, 3, 4, sys_mat, xyze);
@@ -784,9 +785,9 @@ inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_hex8(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_nurbs27(
-    CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
+template <Core::FE::CellType distype>
+inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_nurbs27(
+    Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat, const Core::LinAlg::Matrix<3, iel>& xyze)
 {
   //                          v
   //                         /
@@ -914,22 +915,22 @@ inline void DRT::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_nurbs27(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
-    CORE::LINALG::SerialDenseMatrix& sys_mat_epetra,
-    CORE::LINALG::SerialDenseVector& residual_epetra, const std::vector<double>& displacements,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
+    Core::LinAlg::SerialDenseMatrix& sys_mat_epetra,
+    Core::LinAlg::SerialDenseVector& residual_epetra, const std::vector<double>& displacements,
     const bool spatialconfiguration)
 {
-  CORE::LINALG::Matrix<3 * iel, 3 * iel> sys_mat(sys_mat_epetra.values(), true);
-  CORE::LINALG::Matrix<3 * iel, 1> residual(residual_epetra.values(), true);
+  Core::LinAlg::Matrix<3 * iel, 3 * iel> sys_mat(sys_mat_epetra.values(), true);
+  Core::LinAlg::Matrix<3 * iel, 1> residual(residual_epetra.values(), true);
   int node_i, node_j;  // end nodes of spring
   double length;       // length of edge
   double dx, dy, dz;   // deltas in each direction
   double factor;
 
   // get node coordinates
-  CORE::LINALG::Matrix<3, iel> xyze;
-  CORE::Nodes::Node** nodes = ele->Nodes();
+  Core::LinAlg::Matrix<3, iel> xyze;
+  Core::Nodes::Node** nodes = ele->Nodes();
   for (int i = 0; i < iel; i++)
   {
     const auto& x = nodes[i]->X();
@@ -1047,7 +1048,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
   // and put edge nodes on the middle of the respective edge
   switch (distype)
   {
-    case CORE::FE::CellType::tet10:
+    case Core::FE::CellType::tet10:
 
       sys_mat(12, 0) = -0.5;
       sys_mat(12, 3) = -0.5;
@@ -1112,15 +1113,15 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
       ale3_tors_spring_tet4(sys_mat, xyze);
       break;
 
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
       ale3_tors_spring_tet4(sys_mat, xyze);
       break;
 
-    case CORE::FE::CellType::pyramid5:
+    case Core::FE::CellType::pyramid5:
       ale3_tors_spring_pyramid5(sys_mat, xyze);
       break;
 
-    case CORE::FE::CellType::wedge15:
+    case Core::FE::CellType::wedge15:
 
       for (int k = 0; k < 3; k++)
       {
@@ -1173,12 +1174,12 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
       ale3_tors_spring_wedge6(sys_mat, xyze);
       break;
 
-    case CORE::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge6:
       ale3_tors_spring_wedge6(sys_mat, xyze);
       break;
 
 
-    case CORE::FE::CellType::hex20:
+    case Core::FE::CellType::hex20:
 
       for (int k = 0; k < 4; k++)
       {
@@ -1231,7 +1232,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
       ale3_tors_spring_hex8(sys_mat, xyze);
       break;
 
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex27:
 
       for (int k = 0; k < 4; k++)
       {
@@ -1330,7 +1331,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
       ale3_tors_spring_hex8(sys_mat, xyze);
       break;
 
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
       ale3_tors_spring_hex8(sys_mat, xyze);
       break;
 
@@ -1349,18 +1350,19 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discretization& dis,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& sys_mat_epetra,
-    CORE::LINALG::SerialDenseVector& residual_epetra, std::vector<double>& my_dispnp,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
+    Discret::Discretization& dis, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& sys_mat_epetra,
+    Core::LinAlg::SerialDenseVector& residual_epetra, std::vector<double>& my_dispnp,
     Teuchos::ParameterList& params, const bool spatialconfiguration)
 {
   const int numdof = NODDOF_ALE3 * iel;
   // A view to sys_mat_epetra
-  CORE::LINALG::Matrix<numdof, numdof> sys_mat(sys_mat_epetra.values(), true);
+  Core::LinAlg::Matrix<numdof, numdof> sys_mat(sys_mat_epetra.values(), true);
   // update element geometry
-  CORE::LINALG::Matrix<iel, NUMDIM_ALE3> xrefe;  // material coord. of element
-  CORE::LINALG::Matrix<iel, NUMDIM_ALE3> xcurr;  // current  coord. of element
+  Core::LinAlg::Matrix<iel, NUMDIM_ALE3> xrefe;  // material coord. of element
+  Core::LinAlg::Matrix<iel, NUMDIM_ALE3> xcurr;  // current  coord. of element
   for (int i = 0; i < iel; ++i)
   {
     xrefe(i, 0) = ele->Nodes()[i]->X()[0];
@@ -1380,13 +1382,13 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discr
   }
   // --------------------------------------------------
   // Now do the nurbs specific stuff
-  std::vector<CORE::LINALG::SerialDenseVector> myknots;
-  CORE::LINALG::Matrix<iel, 1> weights(iel);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots;
+  Core::LinAlg::Matrix<iel, 1> weights(iel);
 
-  if (distype == CORE::FE::CellType::nurbs8 || distype == CORE::FE::CellType::nurbs27)
+  if (distype == Core::FE::CellType::nurbs8 || distype == Core::FE::CellType::nurbs27)
   {
-    DRT::NURBS::NurbsDiscretization* nurbsdis =
-        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+    Discret::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(dis));
 
     myknots.resize(3);
     bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
@@ -1398,21 +1400,22 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discr
 
     for (int inode = 0; inode < iel; ++inode)
     {
-      DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(ele->Nodes()[inode]);
+      Discret::Nurbs::ControlPoint* cp =
+          dynamic_cast<Discret::Nurbs::ControlPoint*>(ele->Nodes()[inode]);
       weights(inode) = cp->W();
     }
   }
   /*----------------------------------------- declaration of variables ---*/
-  CORE::LINALG::Matrix<iel, 1> funct;
-  CORE::LINALG::Matrix<NUMDIM_ALE3, iel> deriv;
-  // CORE::LINALG::Matrix<3,  iel> deriv;
-  CORE::LINALG::Matrix<3, 3> xjm;
-  CORE::LINALG::Matrix<3, 3> xji;
-  CORE::LINALG::Matrix<6, numdof> bop;
-  CORE::LINALG::Matrix<6, 6> D(true);
+  Core::LinAlg::Matrix<iel, 1> funct;
+  Core::LinAlg::Matrix<NUMDIM_ALE3, iel> deriv;
+  // Core::LinAlg::Matrix<3,  iel> deriv;
+  Core::LinAlg::Matrix<3, 3> xjm;
+  Core::LinAlg::Matrix<3, 3> xji;
+  Core::LinAlg::Matrix<6, numdof> bop;
+  Core::LinAlg::Matrix<6, 6> D(true);
   // gaussian points
-  const CORE::FE::GaussRule3D gaussrule = get_optimal_gaussrule();
-  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
+  const Core::FE::GaussRule3D gaussrule = get_optimal_gaussrule();
+  const Core::FE::IntegrationPoints3D intpoints(gaussrule);
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -1423,28 +1426,28 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discr
     const double e2 = intpoints.qxg[iquad][1];
     const double e3 = intpoints.qxg[iquad][2];
     // get values of shape functions and derivatives in the gausspoint
-    if (distype != CORE::FE::CellType::nurbs8 && distype != CORE::FE::CellType::nurbs27)
+    if (distype != Core::FE::CellType::nurbs8 && distype != Core::FE::CellType::nurbs27)
     {
       // shape functions and their derivatives for polynomials
-      CORE::FE::shape_function_3D(funct, e1, e2, e3, distype);
-      CORE::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+      Core::FE::shape_function_3D(funct, e1, e2, e3, distype);
+      Core::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
     }
     else
     {
       // nurbs version
-      CORE::LINALG::SerialDenseVector gp(3);
+      Core::LinAlg::SerialDenseVector gp(3);
       gp(0) = e1;
       gp(1) = e2;
       gp(2) = e3;
 
-      CORE::FE::NURBS::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      Core::FE::Nurbs::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
     /* compute the Jacobian matrix which looks like:
     **         [ x_,r  y_,r  z_,r ]
     **     J = [ x_,s  y_,s  z_,s ]
     **         [ x_,t  y_,t  z_,t ]
     */
-    CORE::LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> jac, jacinv;
+    Core::LinAlg::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> jac, jacinv;
     jac.MultiplyNN(deriv, xrefe);
     const double detJ = jac.Invert();
 
@@ -1457,19 +1460,19 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discr
     ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
     ** Inverse of Jacobian is therefore not explicitly computed
     */
-    CORE::LINALG::Matrix<NUMDIM_ALE3, iel> N_XYZ;
+    Core::LinAlg::Matrix<NUMDIM_ALE3, iel> N_XYZ;
     N_XYZ.MultiplyNN(jac, deriv);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    CORE::LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> defgrd;
+    Core::LinAlg::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> defgrd;
     defgrd.MultiplyTT(xcurr, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
-    CORE::LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> cauchygreen;
+    Core::LinAlg::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain;
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -1497,7 +1500,7 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discr
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, numdof> bop;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, numdof> bop;
     for (int i = 0; i < iel; ++i)
     {
       bop(0, NODDOF_ALE3 * i + 0) = defgrd(0, 0) * N_XYZ(0, i);
@@ -1521,28 +1524,28 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discr
       bop(5, NODDOF_ALE3 * i + 2) = defgrd(2, 2) * N_XYZ(0, i) + defgrd(2, 0) * N_XYZ(2, i);
     }
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat_f(true);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress_f(true);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain_f(glstrain.A());
-    // QUICK HACK until so_disp exclusively uses CORE::LINALG::Matrix!!!!!
-    CORE::LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> fixed_defgrd(defgrd);
-    Teuchos::RCP<MAT::So3Material> so3mat =
-        Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat_f(true);
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress_f(true);
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain_f(glstrain.A());
+    // QUICK HACK until so_disp exclusively uses Core::LinAlg::Matrix!!!!!
+    Core::LinAlg::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> fixed_defgrd(defgrd);
+    Teuchos::RCP<Mat::So3Material> so3mat =
+        Teuchos::rcp_dynamic_cast<Mat::So3Material>(ele->Material());
     so3mat->Evaluate(&fixed_defgrd, &glstrain_f, params, &stress_f, &cmat_f, iquad, ele->Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-    CORE::LINALG::Matrix<numdof, 1> residual(residual_epetra, true);
+    Core::LinAlg::Matrix<numdof, 1> residual(residual_epetra, true);
     residual.MultiplyTN(detJ * intpoints.qwgt[iquad], bop, stress_f, 1.0);
 
     // integrate `elastic' and `initial-displacement' stiffness matrix
     // keu = keu + (B^T . C . B) * detJ * w(gp)
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, numdof> cb;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, numdof> cb;
     cb.MultiplyNN(cmat_f, bop);  // temporary C . B
     sys_mat.MultiplyTN(detJ * intpoints.qwgt[iquad], bop, cb, 1.0);
 
     // integrate `geometric' stiffness matrix and add to keu *****************
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> sfac(stress_f);  // auxiliary integrated stress
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> sfac(stress_f);  // auxiliary integrated stress
     sfac.Scale(detJ * intpoints.qwgt[iquad]);  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
     double SmB_L[NUMDIM_ALE3];                 // intermediate Sm.B_L
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
@@ -1570,11 +1573,11 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discr
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discretization& dis,
-    CORE::LINALG::SerialDenseMatrix& sys_mat_epetra, CORE::LINALG::SerialDenseVector& residual,
-    std::vector<double>& my_dispnp, Teuchos::RCP<CORE::MAT::Material> material,
-    const bool spatialconfiguration)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
+    Discret::Discretization& dis, Core::LinAlg::SerialDenseMatrix& sys_mat_epetra,
+    Core::LinAlg::SerialDenseVector& residual, std::vector<double>& my_dispnp,
+    Teuchos::RCP<Core::Mat::Material> material, const bool spatialconfiguration)
 {
   //  FOUR_C_THROW("We don't know what is really done in the element evaluation"
   //      "of the Laplace smoothing strategy. Check this CAREFULLY before"
@@ -1582,17 +1585,17 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discret
 
   const int nd = 3 * iel;
   // A view to sys_mat_epetra
-  CORE::LINALG::Matrix<nd, nd> sys_mat(sys_mat_epetra.values(), true);
+  Core::LinAlg::Matrix<nd, nd> sys_mat(sys_mat_epetra.values(), true);
 
   //  get material using class StVenantKirchhoff
-  //  if (material->MaterialType()!=CORE::Materials::m_stvenant)
+  //  if (material->MaterialType()!=Core::Materials::m_stvenant)
   //    FOUR_C_THROW("stvenant material expected but got type %d", material->MaterialType());
-  //  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
+  //  Mat::StVenantKirchhoff* actmat = static_cast<Mat::StVenantKirchhoff*>(material.get());
 
-  CORE::LINALG::Matrix<3, iel> xyze;
+  Core::LinAlg::Matrix<3, iel> xyze;
 
   // get node coordinates
-  CORE::Nodes::Node** nodes = ele->Nodes();
+  Core::Nodes::Node** nodes = ele->Nodes();
   for (int i = 0; i < iel; i++)
   {
     const auto& x = nodes[i]->X();
@@ -1614,13 +1617,13 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discret
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
-  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
-  CORE::LINALG::Matrix<iel, 1> weights(iel);
+  std::vector<Core::LinAlg::SerialDenseVector> myknots(3);
+  Core::LinAlg::Matrix<iel, 1> weights(iel);
 
-  if (distype == CORE::FE::CellType::nurbs8 or distype == CORE::FE::CellType::nurbs27)
+  if (distype == Core::FE::CellType::nurbs8 or distype == Core::FE::CellType::nurbs27)
   {
-    DRT::NURBS::NurbsDiscretization* nurbsdis =
-        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+    Discret::Nurbs::NurbsDiscretization* nurbsdis =
+        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(dis));
 
     bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
 
@@ -1628,24 +1631,25 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discret
 
     for (int inode = 0; inode < iel; ++inode)
     {
-      DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(ele->Nodes()[inode]);
+      Discret::Nurbs::ControlPoint* cp =
+          dynamic_cast<Discret::Nurbs::ControlPoint*>(ele->Nodes()[inode]);
 
       weights(inode) = cp->W();
     }
   }
 
   /*----------------------------------------- declaration of variables ---*/
-  CORE::LINALG::Matrix<iel, 1> funct(true);
-  CORE::LINALG::Matrix<3, iel> deriv(true);
-  CORE::LINALG::Matrix<3, 3> xjm(true);
-  CORE::LINALG::Matrix<3, 3> xji(true);
-  CORE::LINALG::Matrix<3, iel> deriv_xy(true);
-  CORE::LINALG::Matrix<iel, iel> tempmat(true);
-  CORE::LINALG::Matrix<3 * iel, 1> tempmat2(true);
+  Core::LinAlg::Matrix<iel, 1> funct(true);
+  Core::LinAlg::Matrix<3, iel> deriv(true);
+  Core::LinAlg::Matrix<3, 3> xjm(true);
+  Core::LinAlg::Matrix<3, 3> xji(true);
+  Core::LinAlg::Matrix<3, iel> deriv_xy(true);
+  Core::LinAlg::Matrix<iel, iel> tempmat(true);
+  Core::LinAlg::Matrix<3 * iel, 1> tempmat2(true);
 
   // gaussian points
-  const CORE::FE::GaussRule3D gaussrule = get_optimal_gaussrule();
-  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
+  const Core::FE::GaussRule3D gaussrule = get_optimal_gaussrule();
+  const Core::FE::IntegrationPoints3D intpoints(gaussrule);
 
   // This whole method was copied from the ALE2 element and extended to 3D.
   // ToDo: proper computation and usage of min_detF. Is there any detailed literature
@@ -1660,21 +1664,21 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discret
 
 
     // get values of shape functions and derivatives in the gausspoint
-    if (distype != CORE::FE::CellType::nurbs8 && distype != CORE::FE::CellType::nurbs27)
+    if (distype != Core::FE::CellType::nurbs8 && distype != Core::FE::CellType::nurbs27)
     {
       // shape functions and their derivatives for polynomials
-      CORE::FE::shape_function_3D(funct, e1, e2, e3, distype);
-      CORE::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+      Core::FE::shape_function_3D(funct, e1, e2, e3, distype);
+      Core::FE::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
     }
     else
     {
       // nurbs version
-      CORE::LINALG::SerialDenseVector gp(3);
+      Core::LinAlg::SerialDenseVector gp(3);
       gp(0) = e1;
       gp(1) = e2;
       gp(2) = e3;
 
-      CORE::FE::NURBS::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
+      Core::FE::Nurbs::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots, weights, distype);
     }
 
     // determine jacobian matrix at point r,s,t
@@ -1721,31 +1725,31 @@ void DRT::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discret
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-inline CORE::FE::GaussRule3D DRT::ELEMENTS::Ale3Impl<distype>::get_optimal_gaussrule()
+template <Core::FE::CellType distype>
+inline Core::FE::GaussRule3D Discret::ELEMENTS::Ale3Impl<distype>::get_optimal_gaussrule()
 {
   switch (distype)
   {
-    case CORE::FE::CellType::hex8:
-    case CORE::FE::CellType::nurbs8:
-      return CORE::FE::GaussRule3D::hex_8point;
-    case CORE::FE::CellType::hex20:
-    case CORE::FE::CellType::hex27:
-    case CORE::FE::CellType::nurbs27:
-      return CORE::FE::GaussRule3D::hex_27point;
-    case CORE::FE::CellType::tet4:
-      return CORE::FE::GaussRule3D::tet_4point;
-    case CORE::FE::CellType::tet10:
-      return CORE::FE::GaussRule3D::tet_5point;
-    case CORE::FE::CellType::wedge6:
-      return CORE::FE::GaussRule3D::wedge_6point;
-    case CORE::FE::CellType::wedge15:
-      return CORE::FE::GaussRule3D::wedge_9point;
-    case CORE::FE::CellType::pyramid5:
-      return CORE::FE::GaussRule3D::pyramid_8point;
+    case Core::FE::CellType::hex8:
+    case Core::FE::CellType::nurbs8:
+      return Core::FE::GaussRule3D::hex_8point;
+    case Core::FE::CellType::hex20:
+    case Core::FE::CellType::hex27:
+    case Core::FE::CellType::nurbs27:
+      return Core::FE::GaussRule3D::hex_27point;
+    case Core::FE::CellType::tet4:
+      return Core::FE::GaussRule3D::tet_4point;
+    case Core::FE::CellType::tet10:
+      return Core::FE::GaussRule3D::tet_5point;
+    case Core::FE::CellType::wedge6:
+      return Core::FE::GaussRule3D::wedge_6point;
+    case Core::FE::CellType::wedge15:
+      return Core::FE::GaussRule3D::wedge_9point;
+    case Core::FE::CellType::pyramid5:
+      return Core::FE::GaussRule3D::pyramid_8point;
     default:
       FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
-      return CORE::FE::GaussRule3D::undefined;
+      return Core::FE::GaussRule3D::undefined;
   }
 }
 

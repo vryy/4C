@@ -55,7 +55,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::post_setup()
 {
   check_init_setup();
 
-  if (s_dyn().GetMassLinType() != INPAR::STR::ml_rotations and !s_dyn().NeglectInertia())
+  if (s_dyn().GetMassLinType() != Inpar::STR::ml_rotations and !s_dyn().NeglectInertia())
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */
@@ -129,7 +129,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::set_state(const Epetra_Vector& x)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlphaLieGroup::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
   // write modified acceleration vector
@@ -140,7 +140,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::read_restart(CORE::IO::DiscretizationReader& ioreader)
+void STR::IMPLICIT::GenAlphaLieGroup::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.ReadVector(accn_mod_, "accn_mod");
@@ -210,23 +210,23 @@ double STR::IMPLICIT::GenAlphaLieGroup::GetIntParam() const
 void STR::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
-  CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
   // inertia forces at t_{n+1}
-  CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *finertianp_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *finertianp_ptr_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
-    CORE::LINALG::SparseOperator& jac) const
+    Core::LinAlg::SparseOperator& jac) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
   const double& dt = (*global_state().GetDeltaTime())[0];
   // add inertial contributions to structural stiffness block
   stiff_ptr->Add(*global_state().GetMassMatrix(), false,
       (1.0 - alpham_) / (beta_ * dt * dt * (1.0 - alphaf_)), 1.0);
   // add Rayleigh damping contributions
-  if (tim_int().GetDataSDyn().GetDampingType() == INPAR::STR::damp_rayleigh)
+  if (tim_int().GetDataSDyn().GetDampingType() == Inpar::STR::damp_rayleigh)
     stiff_ptr->Add(*global_state().GetDampMatrix(), false, gamma_ / (beta_ * dt), 1.0);
 }
 
@@ -295,7 +295,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::reset_eval_params()
 
   /* in case we have non-additive rotation (pseudo-)vector DOFs, we need to pass
    * the GenAlpha parameters to the beam elements via beam parameter interface */
-  if (tim_int().GetDataSDyn().GetMassLinType() == INPAR::STR::ml_rotations)
+  if (tim_int().GetDataSDyn().GetMassLinType() == Inpar::STR::ml_rotations)
   {
     EvalData().GetBeamData().SetBeta(beta_);
     EvalData().GetBeamData().SetGamma(gamma_);

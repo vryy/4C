@@ -57,12 +57,12 @@ namespace CONTACT
     /*!
     \brief Get problem discretization
     */
-    virtual const DRT::Discretization& ProblemDiscret() const = 0;
+    virtual const Discret::Discretization& ProblemDiscret() const = 0;
 
     /*!
     \brief Get beam contact discretization
     */
-    virtual const DRT::Discretization& ContactDiscret() const = 0;
+    virtual const Discret::Discretization& ContactDiscret() const = 0;
 
     /*!
     \brief Get offset of dofs between cdiscret and pdiscret
@@ -72,13 +72,13 @@ namespace CONTACT
     /*!
     \brief Get first element
     */
-    virtual const CORE::Elements::Element* Element1() = 0;
-    // inline const CORE::Elements::Element* Element1() { return element1_;};
+    virtual const Core::Elements::Element* Element1() = 0;
+    // inline const Core::Elements::Element* Element1() { return element1_;};
 
     /*!
     \brief Get first element
     */
-    virtual const CORE::Elements::Element* Element2() = 0;
+    virtual const Core::Elements::Element* Element2() = 0;
 
     /*!
     \brief Get number of contact points on this element pair
@@ -131,13 +131,13 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element1 and element2
     */
-    virtual std::vector<CORE::LINALG::Matrix<3, 1>> GetX1() = 0;
+    virtual std::vector<Core::LinAlg::Matrix<3, 1>> GetX1() = 0;
 
-    virtual std::vector<CORE::LINALG::Matrix<3, 1>> GetX2() = 0;
+    virtual std::vector<Core::LinAlg::Matrix<3, 1>> GetX2() = 0;
 
-    virtual CORE::LINALG::SerialDenseVector GetNormal() = 0;
+    virtual Core::LinAlg::SerialDenseVector GetNormal() = 0;
 
-    virtual CORE::LINALG::Matrix<3, 1, TYPE>* GetNormalOld() = 0;
+    virtual Core::LinAlg::Matrix<3, 1, TYPE>* GetNormalOld() = 0;
 
     /*!
       \Check, if there is a difference between the result of the new and old gap definition, i.e. if
@@ -179,16 +179,16 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    virtual bool Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
+    virtual bool Evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
         const double& pp,
         std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
         Teuchos::ParameterList& timeintparams, bool fdcheck = false) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
     static Teuchos::RCP<Beam3contactinterface> Impl(const int numnodes, const int numnodalvalues,
-        const DRT::Discretization& pdiscret, const DRT::Discretization& cdiscret,
-        const std::map<int, int>& dofoffsetmap, CORE::Elements::Element* element1,
-        CORE::Elements::Element* element2, Teuchos::ParameterList& beamcontactparams);
+        const Discret::Discretization& pdiscret, const Discret::Discretization& cdiscret,
+        const std::map<int, int>& dofoffsetmap, Core::Elements::Element* element1,
+        Core::Elements::Element* element2, Teuchos::ParameterList& beamcontactparams);
 
     /*!
     \brief Change the sign of the normal vector: This has to be done at the end of a time step when
@@ -206,14 +206,14 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
     */
-    virtual void UpdateElePos(CORE::LINALG::SerialDenseMatrix& newele1pos,
-        CORE::LINALG::SerialDenseMatrix& newele2pos) = 0;
+    virtual void UpdateElePos(Core::LinAlg::SerialDenseMatrix& newele1pos,
+        Core::LinAlg::SerialDenseMatrix& newele2pos) = 0;
 
     /*
     \brief Update interpolated nodal tangents for tangent smoothing
     */
     virtual void update_ele_smooth_tangents(
-        std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) = 0;
+        std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions) = 0;
 
   };  // class Beam3contactinterface
 }  // namespace CONTACT

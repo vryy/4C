@@ -35,12 +35,12 @@ namespace NOX
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
@@ -54,7 +54,7 @@ namespace STR
 }  // namespace STR
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace CONSTRAINT
     {
@@ -64,9 +64,9 @@ namespace NOX
     {
       enum MeritFctName : int;
     }  // namespace MeritFunction
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
-namespace INPAR
+namespace Inpar
 {
   namespace CONTACT
   {
@@ -79,11 +79,11 @@ namespace INPAR
     enum class PlotDirection : char;
     enum class PlotDirectionSplit : char;
   }  // namespace CONTACT
-}  // namespace INPAR
+}  // namespace Inpar
 namespace CONTACT
 {
   class AbstractStrategy;
-  namespace AUG
+  namespace Aug
   {
     enum class WGapGradientType : char;
     enum class SideType : char;
@@ -115,26 +115,26 @@ namespace CONTACT
       void lin_space(
           const double a, const double b, const unsigned n, std::vector<double>& res) const;
 
-      const CONTACT::AUG::Strategy& strategy() const;
+      const CONTACT::Aug::Strategy& strategy() const;
 
-      void get_support_points(enum INPAR::CONTACT::PlotSupportType stype,
-          CORE::LINALG::SerialDenseMatrix& support_mat_x);
+      void get_support_points(enum Inpar::CONTACT::PlotSupportType stype,
+          Core::LinAlg::SerialDenseMatrix& support_mat_x);
 
       void compute_angle_position();
 
       void compute_distance_position();
 
-      void plot_scalar(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
-          NOX::NLN::CONSTRAINT::Group& plot_grp);
+      void plot_scalar(const NOX::Nln::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
+          NOX::Nln::CONSTRAINT::Group& plot_grp);
 
-      void plot_line(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
-          NOX::NLN::CONSTRAINT::Group& plot_grp);
+      void plot_line(const NOX::Nln::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
+          NOX::Nln::CONSTRAINT::Group& plot_grp);
 
-      void plot_surface(const NOX::NLN::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
-          NOX::NLN::CONSTRAINT::Group& plot_grp);
+      void plot_surface(const NOX::Nln::CONSTRAINT::Group& ref_grp, const Epetra_Vector& dir,
+          NOX::Nln::CONSTRAINT::Group& plot_grp);
 
-      void plot_vector_field2_d(const NOX::NLN::CONSTRAINT::Group& ref_grp,
-          const Epetra_Vector& dir, NOX::NLN::CONSTRAINT::Group& plot_grp);
+      void plot_vector_field2_d(const NOX::Nln::CONSTRAINT::Group& ref_grp,
+          const Epetra_Vector& dir, NOX::Nln::CONSTRAINT::Group& plot_grp);
 
       void write_surface_data_to_file() const;
 
@@ -144,27 +144,27 @@ namespace CONTACT
 
       void add_file_name_to_path();
 
-      enum NOX::NLN::MeritFunction::MeritFctName convert_plot_func_name2_merit_func_name(
-          const enum INPAR::CONTACT::PlotFuncName pfunc_name) const;
+      enum NOX::Nln::MeritFunction::MeritFctName convert_plot_func_name2_merit_func_name(
+          const enum Inpar::CONTACT::PlotFuncName pfunc_name) const;
 
-      enum CONTACT::AUG::WGapGradientType convert_plot_func_name2_w_gap_gradient_type(
-          const enum INPAR::CONTACT::PlotFuncName pfunc_name) const;
+      enum CONTACT::Aug::WGapGradientType convert_plot_func_name2_w_gap_gradient_type(
+          const enum Inpar::CONTACT::PlotFuncName pfunc_name) const;
 
-      const NOX::NLN::CONSTRAINT::Group* get_reference_group(
+      const NOX::Nln::CONSTRAINT::Group* get_reference_group(
           const ::NOX::Solver::Generic& solver) const;
 
-      double get_value(const enum INPAR::CONTACT::PlotFuncName functype,
-          NOX::NLN::CONSTRAINT::Group& plot_grp, const double* curr_xy = nullptr,
+      double get_value(const enum Inpar::CONTACT::PlotFuncName functype,
+          NOX::Nln::CONSTRAINT::Group& plot_grp, const double* curr_xy = nullptr,
           const Epetra_Vector* curr_dir = nullptr) const;
 
       double get_nodal_error_at_position(
           const double* pos, const std::vector<std::pair<int, double>>& nodal_error) const;
 
-      void get_vector_values(const enum INPAR::CONTACT::PlotFuncName functype,
-          NOX::NLN::CONSTRAINT::Group& plot_grp, const std::vector<const Epetra_Vector*>& dirs,
+      void get_vector_values(const enum Inpar::CONTACT::PlotFuncName functype,
+          NOX::Nln::CONSTRAINT::Group& plot_grp, const std::vector<const Epetra_Vector*>& dirs,
           std::vector<double>& vec_vals) const;
 
-      void get_w_gap_direction_gradients(const enum CONTACT::AUG::WGapGradientType wgap_type,
+      void get_w_gap_direction_gradients(const enum CONTACT::Aug::WGapGradientType wgap_type,
           const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& grad_vals) const;
 
       void get_energy_direction_gradients(
@@ -172,9 +172,9 @@ namespace CONTACT
 
       int map_sl_node_gi_d2_n_dof_gid(int node_gid) const;
 
-      double characteristic_interface_element_length(const enum CONTACT::AUG::SideType stype) const;
+      double characteristic_interface_element_length(const enum CONTACT::Aug::SideType stype) const;
 
-      void modify_step_length(const INPAR::CONTACT::PlotSupportType stype, const double alpha,
+      void modify_step_length(const Inpar::CONTACT::PlotSupportType stype, const double alpha,
           const Epetra_Vector& full_x_dir, Epetra_Vector& mod_step) const;
 
       void read_ref_points(const Teuchos::ParameterList& plot_params);
@@ -203,8 +203,8 @@ namespace CONTACT
 
         Teuchos::RCP<const Epetra_Vector> Get(const ::NOX::Solver::Generic& solver) const;
 
-        enum INPAR::CONTACT::PlotDirection type_;
-        enum INPAR::CONTACT::PlotDirectionSplit split_;
+        enum Inpar::CONTACT::PlotDirection type_;
+        enum Inpar::CONTACT::PlotDirectionSplit split_;
         Teuchos::RCP<Epetra_Vector> from_file_;
 
        private:
@@ -223,7 +223,7 @@ namespace CONTACT
         bool extend_file_name(std::string& file_name, const std::string& file_path) const;
 
         Teuchos::RCP<Epetra_Map> find_connected_dofs(
-            const CORE::Nodes::Node* node, const DRT::Discretization& discret) const;
+            const Core::Nodes::Node* node, const Discret::Discretization& discret) const;
       };
 
       struct Options
@@ -253,10 +253,10 @@ namespace CONTACT
 
       std::string filepath_;
 
-      const CONTACT::AUG::Strategy* strat_ = nullptr;
+      const CONTACT::Aug::Strategy* strat_ = nullptr;
 
       /// full discretization
-      const DRT::Discretization* discret_ = nullptr;
+      const Discret::Discretization* discret_ = nullptr;
 
       STR::MODELEVALUATOR::Contact* model_ = nullptr;
 
@@ -264,28 +264,28 @@ namespace CONTACT
 
       std::ios_base::openmode file_open_mode_;
 
-      INPAR::CONTACT::PlotMode mode_;
+      Inpar::CONTACT::PlotMode mode_;
 
-      INPAR::CONTACT::PlotFuncName func_type_;
+      Inpar::CONTACT::PlotFuncName func_type_;
 
-      INPAR::CONTACT::PlotType type_;
+      Inpar::CONTACT::PlotType type_;
 
-      INPAR::CONTACT::PlotReferenceType reference_type_;
+      Inpar::CONTACT::PlotReferenceType reference_type_;
 
-      INPAR::CONTACT::PlotFileFormat format_;
+      Inpar::CONTACT::PlotFileFormat format_;
 
-      INPAR::CONTACT::PlotSupportType x_type_;
-      INPAR::CONTACT::PlotSupportType y_type_;
+      Inpar::CONTACT::PlotSupportType x_type_;
+      Inpar::CONTACT::PlotSupportType y_type_;
 
       int wgap_node_gid_ = -1;
 
       std::map<double, int> position_node_id_map_;
 
-      std::vector<CORE::LINALG::Matrix<3, 1>> ref_points_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> ref_points_;
 
-      CORE::LINALG::SerialDenseMatrix x_;
-      CORE::LINALG::SerialDenseMatrix y_;
-      std::vector<CORE::LINALG::SerialDenseMatrix> z_;
+      Core::LinAlg::SerialDenseMatrix x_;
+      Core::LinAlg::SerialDenseMatrix y_;
+      std::vector<Core::LinAlg::SerialDenseMatrix> z_;
     };  // class Plot
 
     template <typename T>
@@ -294,12 +294,12 @@ namespace CONTACT
     template <typename T>
     void WriteColumnDataToFile(std::ofstream& outputfile, const std::vector<const T*>& columndata,
         const unsigned precision);
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace Solver
     {
@@ -310,19 +310,19 @@ namespace NOX
           class Plot : public ::NOX::Observer
           {
            public:
-            Plot(const Teuchos::RCP<FourC::CONTACT::AUG::Plot>& plot_ptr);
+            Plot(const Teuchos::RCP<FourC::CONTACT::Aug::Plot>& plot_ptr);
 
             void runPreIterate(const ::NOX::Solver::Generic& solver) override;
             void runPostIterate(const ::NOX::Solver::Generic& solver) override;
 
            private:
-            Teuchos::RCP<FourC::CONTACT::AUG::Plot> plot_ptr_;
-            FourC::CONTACT::AUG::Plot& plot_;
+            Teuchos::RCP<FourC::CONTACT::Aug::Plot> plot_ptr_;
+            FourC::CONTACT::Aug::Plot& plot_;
           };  // class Plot
         }     // namespace CONTACT
       }       // namespace PrePostOp
     }         // namespace Solver
-  }           // namespace NLN
+  }           // namespace Nln
 }  // namespace NOX
 
 

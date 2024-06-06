@@ -29,8 +29,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    const CORE::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
+Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
+    const Core::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
     const std::string& outputname, const int ndim, const int restart_step, const int filesteps,
     const bool write_binary_output)
     : problemtype_(std::move(problemtype)),
@@ -94,8 +94,8 @@ CORE::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string prob
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    const CORE::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
+Core::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
+    const Core::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
     const std::string& restartname, std::string outputname, const int ndim, const int restart_step,
     const int filesteps, const bool write_binary_output, const bool adaptname)
     : problemtype_(std::move(problemtype)),
@@ -177,7 +177,7 @@ CORE::IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string prob
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::IO::OutputControl::OutputControl(const OutputControl& ocontrol, const char* new_prefix)
+Core::IO::OutputControl::OutputControl(const OutputControl& ocontrol, const char* new_prefix)
     : problemtype_(ocontrol.problemtype_),
       inputfile_(ocontrol.inputfile_),
       ndim_(ocontrol.ndim_),
@@ -219,7 +219,7 @@ CORE::IO::OutputControl::OutputControl(const OutputControl& ocontrol, const char
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::OutputControl::OverwriteResultFile(const CORE::FE::ShapeFunctionType& spatial_approx)
+void Core::IO::OutputControl::OverwriteResultFile(const Core::FE::ShapeFunctionType& spatial_approx)
 {
   std::stringstream name;
   name << filename_ << ".control";
@@ -230,8 +230,8 @@ void CORE::IO::OutputControl::OverwriteResultFile(const CORE::FE::ShapeFunctionT
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::OutputControl::new_result_file(
-    int numb_run, const CORE::FE::ShapeFunctionType& spatial_approx)
+void Core::IO::OutputControl::new_result_file(
+    int numb_run, const Core::FE::ShapeFunctionType& spatial_approx)
 {
   if (filename_.rfind("_run_") != std::string::npos)
   {
@@ -251,8 +251,8 @@ void CORE::IO::OutputControl::new_result_file(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::OutputControl::new_result_file(const std::string& name_appendix, int numb_run,
-    const CORE::FE::ShapeFunctionType& spatial_approx)
+void Core::IO::OutputControl::new_result_file(const std::string& name_appendix, int numb_run,
+    const Core::FE::ShapeFunctionType& spatial_approx)
 {
   std::stringstream name;
   name << name_appendix;
@@ -263,8 +263,8 @@ void CORE::IO::OutputControl::new_result_file(const std::string& name_appendix, 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::OutputControl::new_result_file(
-    std::string name, const CORE::FE::ShapeFunctionType& spatial_approx)
+void Core::IO::OutputControl::new_result_file(
+    std::string name, const Core::FE::ShapeFunctionType& spatial_approx)
 {
   filename_ = name;
   name += ".control";
@@ -274,8 +274,8 @@ void CORE::IO::OutputControl::new_result_file(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::IO::OutputControl::write_header(
-    const std::string& control_file_name, const CORE::FE::ShapeFunctionType& spatial_approx)
+void Core::IO::OutputControl::write_header(
+    const std::string& control_file_name, const Core::FE::ShapeFunctionType& spatial_approx)
 {
   if (myrank_ == 0)
   {
@@ -300,7 +300,7 @@ void CORE::IO::OutputControl::write_header(
                  << "input_file = \"" << inputfile_ << "\"\n"
                  << "problem_type = \"" << problemtype_ << "\"\n"
                  << "spatial_approximation = \""
-                 << CORE::FE::ShapeFunctionTypeToString(spatial_approx) << "\"\n"
+                 << Core::FE::ShapeFunctionTypeToString(spatial_approx) << "\"\n"
                  << "ndim = " << ndim_ << "\n"
                  << "\n";
 
@@ -310,7 +310,7 @@ void CORE::IO::OutputControl::write_header(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::IO::OutputControl::insert_restart_back_reference(
+void Core::IO::OutputControl::insert_restart_back_reference(
     int restart, const std::string& outputname)
 {
   if (myrank_ != 0) return;
@@ -329,7 +329,7 @@ void CORE::IO::OutputControl::insert_restart_back_reference(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string CORE::IO::OutputControl::FileNameOnlyPrefix() const
+std::string Core::IO::OutputControl::FileNameOnlyPrefix() const
 {
   std::string filenameonlyprefix = filename_;
 
@@ -344,7 +344,7 @@ std::string CORE::IO::OutputControl::FileNameOnlyPrefix() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string CORE::IO::OutputControl::DirectoryName() const
+std::string Core::IO::OutputControl::DirectoryName() const
 {
   std::filesystem::path path(filename_);
   return path.parent_path();
@@ -352,7 +352,7 @@ std::string CORE::IO::OutputControl::DirectoryName() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::IO::InputControl::InputControl(const std::string& filename, const bool serial)
+Core::IO::InputControl::InputControl(const std::string& filename, const bool serial)
     : filename_(filename)
 {
   std::stringstream name;
@@ -366,7 +366,7 @@ CORE::IO::InputControl::InputControl(const std::string& filename, const bool ser
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::IO::InputControl::InputControl(const std::string& filename, const Epetra_Comm& comm)
+Core::IO::InputControl::InputControl(const std::string& filename, const Epetra_Comm& comm)
     : filename_(filename)
 {
   std::stringstream name;
@@ -384,12 +384,12 @@ CORE::IO::InputControl::InputControl(const std::string& filename, const Epetra_C
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-CORE::IO::InputControl::~InputControl() { destroy_map(&table_); }
+Core::IO::InputControl::~InputControl() { destroy_map(&table_); }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-size_t CORE::IO::RestartFinder(const std::string& filename)
+size_t Core::IO::RestartFinder(const std::string& filename)
 {
   size_t pos;
   for (pos = filename.size(); pos > 0; --pos)
@@ -403,7 +403,7 @@ size_t CORE::IO::RestartFinder(const std::string& filename)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int CORE::IO::GetLastPossibleRestartStep(CORE::IO::InputControl& inputcontrol)
+int Core::IO::GetLastPossibleRestartStep(Core::IO::InputControl& inputcontrol)
 {
   /* Go to the first symbol under the name "field" and get the
    * corresponding step. Note that it will find the last "field"

@@ -38,14 +38,14 @@ getCodeForCpp[list_,name_,type_:"double"]:=Module[{code,dim},
 dim=Dimensions[list];
 If[Length[dim]==1,
 (*if*)
-code="CORE::LINALG::Matrix<"<>ToString[Length@list]<>", 1, "<>type<>"> "<>name<>";";
+code="Core::LinAlg::Matrix<"<>ToString[Length@list]<>", 1, "<>type<>"> "<>name<>";";
 Do[
 code=code<>"\n"<>name<>"("<>ToString[i-1]<>")="<>ToString[NumberForm[N[list[[i]]],40]]<>";"
 ,{i,Length@list}];
 ,
 
 (*else*)
-code="CORE::LINALG::Matrix<"<>ToString[dim[[1]]]<>", "<>ToString[dim[[2]]]<>", "<>type<>"> "<>name<>";";
+code="Core::LinAlg::Matrix<"<>ToString[dim[[1]]]<>", "<>ToString[dim[[2]]]<>", "<>type<>"> "<>name<>";";
 Do[
 code=code<>"\n"<>name<>"("<>ToString[i-1]<>","<>ToString[j-1]<>")="<>ToString[NumberForm[N[list[[i,j]]],40]]<>";"
 ,{i,dim[[1]]},{j,dim[[2]]}];

@@ -14,14 +14,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::StructuralLineType DRT::ELEMENTS::StructuralLineType::instance_;
+Discret::ELEMENTS::StructuralLineType Discret::ELEMENTS::StructuralLineType::instance_;
 
-DRT::ELEMENTS::StructuralLineType& DRT::ELEMENTS::StructuralLineType::Instance()
+Discret::ELEMENTS::StructuralLineType& Discret::ELEMENTS::StructuralLineType::Instance()
 {
   return instance_;
 }
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::StructuralLineType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::StructuralLineType::Create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new StructuralLine( id, owner ) );
@@ -32,9 +32,9 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::StructuralLineType::Create(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              gee 04/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, const int* nodeids,
-    CORE::Nodes::Node** nodes, CORE::Elements::Element* parent, const int lline)
-    : CORE::Elements::FaceElement(id, owner)
+Discret::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Core::Elements::Element* parent, const int lline)
+    : Core::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -42,11 +42,11 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, cons
   // type of gaussian integration
   switch (Shape())
   {
-    case CORE::FE::CellType::line2:
-      gaussrule_ = CORE::FE::GaussRule1D::line_2point;
+    case Core::FE::CellType::line2:
+      gaussrule_ = Core::FE::GaussRule1D::line_2point;
       break;
-    case CORE::FE::CellType::line3:
-      gaussrule_ = CORE::FE::GaussRule1D::line_3point;
+    case Core::FE::CellType::line3:
+      gaussrule_ = Core::FE::GaussRule1D::line_3point;
       break;
     default:
       FOUR_C_THROW("shape type unknown!\n");
@@ -57,8 +57,8 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, cons
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         gee 04/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::StructuralLine::StructuralLine(const DRT::ELEMENTS::StructuralLine& old)
-    : CORE::Elements::FaceElement(old), gaussrule_(old.gaussrule_)
+Discret::ELEMENTS::StructuralLine::StructuralLine(const Discret::ELEMENTS::StructuralLine& old)
+    : Core::Elements::FaceElement(old), gaussrule_(old.gaussrule_)
 {
   return;
 }
@@ -66,23 +66,23 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(const DRT::ELEMENTS::StructuralLin
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it               gee 04/08|
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::StructuralLine::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::StructuralLine::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::StructuralLine(*this);
+  auto* newelement = new Discret::ELEMENTS::StructuralLine(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::StructuralLine::Shape() const
+Core::FE::CellType Discret::ELEMENTS::StructuralLine::Shape() const
 {
   switch (num_node())
   {
     case 2:
-      return CORE::FE::CellType::line2;
+      return Core::FE::CellType::line2;
     case 3:
-      return CORE::FE::CellType::line3;
+      return Core::FE::CellType::line3;
     default:
       FOUR_C_THROW("unexpected number of nodes %d", num_node());
   }
@@ -91,7 +91,7 @@ CORE::FE::CellType DRT::ELEMENTS::StructuralLine::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralLine::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::StructuralLine::Pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("StructuralLine element does not support communication");
   return;
@@ -100,7 +100,7 @@ void DRT::ELEMENTS::StructuralLine::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data                                                gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralLine::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::StructuralLine::Unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("StructuralLine element does not support communication");
   return;
@@ -110,7 +110,7 @@ void DRT::ELEMENTS::StructuralLine::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralLine::Print(std::ostream& os) const
+void Discret::ELEMENTS::StructuralLine::Print(std::ostream& os) const
 {
   os << "StructuralLine ";
   Element::Print(os);

@@ -31,13 +31,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
 }
 
 
-namespace ADAPTER
+namespace Adapter
 {
   class StructureLung : public FSIStructureWrapper
   {
@@ -54,7 +54,7 @@ namespace ADAPTER
         const int offsetID);                  ///< ID of first volume constraint -> offset
 
     /// Evaluate structural part of lung volume constraint
-    void EvaluateVolCon(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> StructMatrix,
+    void EvaluateVolCon(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> StructMatrix,
         Teuchos::RCP<Epetra_Vector> StructRHS, Teuchos::RCP<Epetra_Vector> CurrVols,
         Teuchos::RCP<Epetra_Vector> SignVols, Teuchos::RCP<Epetra_Vector> lagrMultVecRed,
         const int offsetID);
@@ -71,17 +71,17 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Vector> OldVolsRed, Teuchos::RCP<Epetra_Vector> OldLagrMultRed);
 
     /// Get MapExtractor for fsi <-> full map
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> FSIInterface() { return fsiinterface_; }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> FSIInterface() { return fsiinterface_; }
 
     /// Get map of volume coupling dofs
     Teuchos::RCP<const Epetra_Map> LungConstrMap() { return lungconstraintmap_; }
 
    private:
     /// conditions that define the lung volume constraints
-    std::vector<CORE::Conditions::Condition*> constrcond_;
+    std::vector<Core::Conditions::Condition*> constrcond_;
 
     /// conditions that define the structure ale coupling at the outlets
-    std::vector<CORE::Conditions::Condition*> asicond_;
+    std::vector<Core::Conditions::Condition*> asicond_;
 
     /// map containing all dofs related to volume coupling (i.e. dofs of the
     /// enclosing boundary)
@@ -91,10 +91,10 @@ namespace ADAPTER
     /// this is needed since otherwise "OtherMap" contains only dofs
     /// which are not part of a condition. however, asi dofs are of
     /// course also "inner" dofs for the structural field.
-    Teuchos::RCP<CORE::LINALG::MapExtractor> fsiinterface_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> fsiinterface_;
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

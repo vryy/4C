@@ -20,17 +20,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// parameters for material with temperature dependence according to Sutherland law
-    class Sutherland : public CORE::MAT::PAR::Parameter
+    class Sutherland : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      Sutherland(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Sutherland(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -53,20 +53,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class Sutherland
 
   }  // namespace PAR
 
-  class SutherlandType : public CORE::COMM::ParObjectType
+  class SutherlandType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "SutherlandType"; }
 
     static SutherlandType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static SutherlandType instance_;
@@ -74,14 +74,14 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// material with temperature dependence according to Sutherland law
-  class Sutherland : public CORE::MAT::Material
+  class Sutherland : public Core::Mat::Material
   {
    public:
     /// construct empty material object
     Sutherland();
 
     /// construct the material object given material parameters
-    explicit Sutherland(MAT::PAR::Sutherland* params);
+    explicit Sutherland(Mat::PAR::Sutherland* params);
 
     //! @name Packing and Unpacking
 
@@ -107,7 +107,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -126,13 +126,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_sutherland;
+      return Core::Materials::m_sutherland;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new Sutherland(*this));
     }
@@ -167,14 +167,14 @@ namespace MAT
     //@}
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
-    MAT::PAR::Sutherland* params_;
+    Mat::PAR::Sutherland* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

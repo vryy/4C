@@ -28,7 +28,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEN
+namespace Core::Gen
 {
   /// copy types
   enum CopyType : char
@@ -105,7 +105,7 @@ namespace CORE::GEN
      *  @param[in] type   Apply this copy type.
      *
      *  \author hiermeier \date 05/17 */
-    Pairedvector(const Pairedvector& source, enum GEN::CopyType type = DeepCopy)
+    Pairedvector(const Pairedvector& source, enum Gen::CopyType type = DeepCopy)
         : m_(0, pair_type()), entries_(0)
 
     {
@@ -265,7 +265,7 @@ namespace CORE::GEN
      *  @param  k  The key for which data should be retrieved.
      *  @return A reference to the data whose key is equivalent to @a k, if
      *          such a data is present in the %Pairedvector.
-     *  @throw  CORE::Exception("invalid key")  If no such data is present.
+     *  @throw  Core::Exception("invalid key")  If no such data is present.
      */
     T& at(const Key k) { return base_type::at(k, m_, entries_); }
 
@@ -274,7 +274,7 @@ namespace CORE::GEN
      *  @param  k  The key for which data should be retrieved.
      *  @return A reference to the data whose key is equivalent to @a k, if
      *          such a data is present in the %Pairedvector.
-     *  @throw  CORE::Exception("invalid key")  If no such data is present.
+     *  @throw  Core::Exception("invalid key")  If no such data is present.
      */
     const T& at(const Key k) const { return base_type::at(k, m_, entries_); }
 
@@ -393,7 +393,7 @@ namespace CORE::GEN
       pairedvector_type sorted_m(m_.begin(), m_.begin() + entries_);
       if (sort) std::sort(sorted_m.begin(), sorted_m.end(), pair_comp<pair_type>);
 
-      os << "CORE::GEN::Pairedvector [size= " << size() << ", capacity=" << capacity() << "]\n";
+      os << "Core::Gen::Pairedvector [size= " << size() << ", capacity=" << capacity() << "]\n";
       if (sort) os << "sorted ";
       os << "entries {KEY, T}:\n";
       for (auto& p : sorted_m) os << "{" << p.first << ", " << p.second << "}\n";
@@ -475,7 +475,7 @@ namespace CORE::GEN
   template <typename Key, typename T>
   using quick_pairedvector = Pairedvector<Key, T, QuickInsertPolicy<Key, T>>;
 
-}  // namespace CORE::GEN
+}  // namespace Core::Gen
 
 FOUR_C_NAMESPACE_CLOSE
 

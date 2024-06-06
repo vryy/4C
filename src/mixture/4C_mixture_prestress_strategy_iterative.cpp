@@ -22,7 +22,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : PrestressStrategy(matdata),
       isochoric_(matdata->Get<bool>("ISOCHORIC")),
       is_active_(matdata->Get<bool>("ACTIVE"))
@@ -50,24 +50,24 @@ void MIXTURE::IterativePrestressStrategy::Setup(
 }
 
 void MIXTURE::IterativePrestressStrategy::EvaluatePrestress(const MixtureRule& mixtureRule,
-    const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
-    MIXTURE::MixtureConstituent& constituent, CORE::LINALG::Matrix<3, 3>& G,
+    const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+    MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // Start with zero prestretch
-  G = CORE::LINALG::IdentityMatrix<3>();
+  G = Core::LinAlg::IdentityMatrix<3>();
 }
 
 void MIXTURE::IterativePrestressStrategy::Update(
-    const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
-    MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
-    CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
+    const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+    MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
+    Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // only update prestress if it is active
   if (!params_->is_active_) return;
 
   // Compute isochoric part of the deformation
-  CORE::LINALG::Matrix<3, 3> F_bar;
+  Core::LinAlg::Matrix<3, 3> F_bar;
   if (params_->isochoric_)
   {
     F_bar.Update(std::pow(F.Determinant(), -1.0 / 3.0), F);
@@ -78,21 +78,21 @@ void MIXTURE::IterativePrestressStrategy::Update(
   }
 
   // Compute new predeformation gradient
-  CORE::LINALG::Matrix<3, 3> G_old(G);
+  Core::LinAlg::Matrix<3, 3> G_old(G);
   G.MultiplyNN(F_bar, G_old);
 
 
   // Compute polar decomposition of the prestretch deformation gradient
 
   // Singular value decomposition of F = RU
-  CORE::LINALG::Matrix<3, 3> Q(true);
-  CORE::LINALG::Matrix<3, 3> S(true);
-  CORE::LINALG::Matrix<3, 3> VT(true);
+  Core::LinAlg::Matrix<3, 3> Q(true);
+  Core::LinAlg::Matrix<3, 3> S(true);
+  Core::LinAlg::Matrix<3, 3> VT(true);
 
-  CORE::LINALG::SVD<3, 3>(G, Q, S, VT);
+  Core::LinAlg::SVD<3, 3>(G, Q, S, VT);
 
   // Compute stretch tensor G = U = V * S * VT
-  CORE::LINALG::Matrix<3, 3> VS;
+  Core::LinAlg::Matrix<3, 3> VS;
 
   VS.MultiplyTN(VT, S);
   G.MultiplyNN(VS, VT);

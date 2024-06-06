@@ -36,7 +36,7 @@ namespace PARTICLEENGINE
   class ParticleObject;
 }  // namespace PARTICLEENGINE
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -105,7 +105,7 @@ namespace PARTICLEENGINE
   using BinsToColWallEles = std::vector<std::vector<int>>;
 
   //! potential particle wall neighbor pairs
-  using PotentialWallNeighbors = std::vector<std::pair<LocalIndexTuple, CORE::Elements::Element*>>;
+  using PotentialWallNeighbors = std::vector<std::pair<LocalIndexTuple, Core::Elements::Element*>>;
 
   //! relate particle source to target type after phase change
   using ParticleTypeToType = std::tuple<ParticleType, ParticleType, int>;

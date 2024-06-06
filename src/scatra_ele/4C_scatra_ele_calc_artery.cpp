@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ScaTraEleCalcArtery(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ScaTraEleCalcArtery(
     const int numdofpernode, const int numscal, const std::string& disname)
     : my::ScaTraEleCalc(numdofpernode, numscal, disname)
 {
@@ -43,12 +43,12 @@ DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ScaTraEleCalcArtery(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>*
+Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcArtery<distype, probdim>>(
@@ -56,15 +56,15 @@ DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*
  | setup element evaluation                            kremheller 03/18 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetupCalc(
-    CORE::Elements::Element* ele, DRT::Discretization& discretization)
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetupCalc(
+    Core::Elements::Element* ele, Discret::Discretization& discretization)
 {
   // base class
   my::SetupCalc(ele, discretization);
@@ -78,9 +78,9 @@ int DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::SetupCalc(
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)              kremheller 04/18 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::materials(
-    const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::materials(
+    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -92,10 +92,10 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::materials(
 {
   switch (material->MaterialType())
   {
-    case CORE::Materials::m_scatra:
+    case Core::Materials::m_scatra:
     {
-      const Teuchos::RCP<const MAT::ScatraMat>& actmat =
-          Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
+      const Teuchos::RCP<const Mat::ScatraMat>& actmat =
+          Teuchos::rcp_dynamic_cast<const Mat::ScatraMat>(material);
 
       densn = 1.0;
       densam = 1.0;
@@ -118,8 +118,9 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::materials(
 /*----------------------------------------------------------------------*
  | set internal variables                              kremheller 03/18 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::set_internal_variables_for_mat_and_rhs()
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcArtery<distype,
+    probdim>::set_internal_variables_for_mat_and_rhs()
 {
   var_manager()->set_internal_variables_artery(my::funct_, my::derxy_, my::deriv_, my::xjm_,
       my::ephinp_, my::ephin_, my::ehist_, earterypressurenp_);
@@ -130,10 +131,10 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::set_internal_variable
 /*----------------------------------------------------------------------*
  | extract element based or nodal values               kremheller 03/18 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_and_node_values(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_and_node_values(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   //---------------------------------------------------------------------------------------------
   //                                 SCATRA
@@ -147,15 +148,15 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_and_n
 
   // values of scatra field are always in first dofset
   const std::vector<int>& lm = la[0].lm_;
-  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
-  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
+  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
   if (my::scatraparatimint_->IsGenAlpha() and not my::scatraparatimint_->IsIncremental())
   {
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
     if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
-    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
+    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
   }
 
   //---------------------------------------------------------------------------------------------
@@ -168,16 +169,16 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_and_n
         discretization.GetState(1, "curr_seg_lengths");
     std::vector<double> seglengths(la[1].lm_.size());
 
-    CORE::FE::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
+    Core::FE::ExtractMyValues(*curr_seg_lengths, seglengths, la[1].lm_);
 
     const double curr_ele_length = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
 
-    static CORE::LINALG::Matrix<probdim, 1> arteryrefpos0;
+    static Core::LinAlg::Matrix<probdim, 1> arteryrefpos0;
     for (unsigned int d = 0; d < probdim; ++d) arteryrefpos0(d) = my::xyze_(d, 0);
-    static CORE::LINALG::Matrix<probdim, 1> arteryrefpos1;
+    static Core::LinAlg::Matrix<probdim, 1> arteryrefpos1;
     for (unsigned int d = 0; d < probdim; ++d) arteryrefpos1(d) = my::xyze_(d, 1);
 
-    static CORE::LINALG::Matrix<probdim, 1> dist0;
+    static Core::LinAlg::Matrix<probdim, 1> dist0;
     dist0.Update(-1.0, arteryrefpos0, 1.0, arteryrefpos1, 0.0);
     const double arteryreflength = dist0.Norm2();
 
@@ -206,7 +207,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_and_n
         discretization.GetState(ndsscatra_artery, "one_d_artery_pressure");
     // values of scatra field are always in first dofset
     const std::vector<int>& lm_artery = la[ndsscatra_artery].lm_;
-    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(
+    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(
         *arterypn, earterypressurenp_, lm_artery);
   }
   else
@@ -228,10 +229,10 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_and_n
  |  calculation of convective element matrix                                    |
  |  in convective form (OD fluid)                              kremheller 05/18 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::calc_mat_conv_od_fluid(
-    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
-    const double timefacfac, const double densnp, const CORE::LINALG::Matrix<nsd_, 1>& gradphi)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::calc_mat_conv_od_fluid(
+    Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
+    const double timefacfac, const double densnp, const Core::LinAlg::Matrix<nsd_, 1>& gradphi)
 {
   const double prefac = timefacfac * var_manager()->Diam() * var_manager()->Diam() / 32.0 /
                         var_manager()->Visc() * (-1.0);
@@ -256,33 +257,33 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::calc_mat_conv_od_flui
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::line3, 1>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::line3,2>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::line3,3>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::line2, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::line3, 1>;
+// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::line3,2>;
+// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::line3,3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::quad9, 2>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::quad9,3>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::nurbs9, 2>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::nurbs9,3>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::tri3, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::tri6, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::quad4, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::quad4, 3>;
+// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::quad9, 2>;
+// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::quad9,3>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::nurbs9, 2>;
+// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::nurbs9,3>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcArtery<CORE::FE::CellType::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcStd<CORE::FE::CellType::nurbs27>;s
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::hex8, 3>;
+// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::hex27, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::tet4, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::tet10, 3>;
+// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleCalcArtery<Core::FE::CellType::pyramid5, 3>;
+// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::nurbs27>;s
 
 FOUR_C_NAMESPACE_CLOSE

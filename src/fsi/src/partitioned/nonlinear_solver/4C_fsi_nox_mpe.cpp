@@ -61,9 +61,9 @@ bool NOX::FSI::MinimalPolynomial::compute(
   const ::NOX::Abstract::Vector& x = group.getX();
 
   std::vector<Teuchos::RCP<::NOX::Epetra::Vector>> q;
-  CORE::LINALG::SerialDenseMatrix r(kmax_ + 1, kmax_ + 1, true);
-  CORE::LINALG::SerialDenseVector c(kmax_ + 1, true);
-  CORE::LINALG::SerialDenseVector gamma(kmax_ + 1, true);
+  Core::LinAlg::SerialDenseMatrix r(kmax_ + 1, kmax_ + 1, true);
+  Core::LinAlg::SerialDenseVector c(kmax_ + 1, true);
+  Core::LinAlg::SerialDenseVector gamma(kmax_ + 1, true);
 
   int k;
   for (k = 0; k < kmax_; ++k)
@@ -128,7 +128,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
         throw_error("compute", "sum(c) equals zero");
       }
 
-      CORE::LINALG::Update(1 / sc, c, 0.0, gamma);
+      Core::LinAlg::Update(1 / sc, c, 0.0, gamma);
       res = r(k, k) * fabs(gamma(k));
 
       if (utils_->isPrintType(::NOX::Utils::InnerIteration))
@@ -190,7 +190,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
   }
 
   // calc extrapolated vector
-  CORE::LINALG::SerialDenseVector xi(kmax_, true);
+  Core::LinAlg::SerialDenseVector xi(kmax_, true);
   xi(0) = 1. - gamma(0);
   for (int j = 1; j < k; ++j)
   {

@@ -33,7 +33,7 @@ struct Periodicstruct
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   /// class that defines the main properties of a time dependent variable
   class FunctionVariable
@@ -80,7 +80,7 @@ namespace CORE::UTILS
 
    private:
     /// parsed function
-    Teuchos::RCP<CORE::UTILS::SymbolicExpression<double>> timefunction_;
+    Teuchos::RCP<Core::UTILS::SymbolicExpression<double>> timefunction_;
   };
 
 
@@ -143,7 +143,7 @@ namespace CORE::UTILS
     const std::vector<double> times_;
 
     /// vector of parsed functions
-    std::vector<Teuchos::RCP<CORE::UTILS::SymbolicExpression<double>>> timefunction_;
+    std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<double>>> timefunction_;
 
 
     /// flag for periodic repetition
@@ -227,9 +227,9 @@ namespace CORE::UTILS
   namespace INTERNAL
   {
     //! Internal helper to figure out the correct time points from input.
-    std::vector<double> ExtractTimeVector(const INPUT::LineDefinition& timevar);
+    std::vector<double> ExtractTimeVector(const Input::LineDefinition& timevar);
   }  // namespace INTERNAL
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

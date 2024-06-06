@@ -22,20 +22,20 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace POROMULTIPHASESCATRA
+namespace PoroMultiPhaseScaTra
 {
   //! base class for coupling between artery network and poromultiphasescatra algorithm
   class PoroMultiPhaseScaTraArtCouplBase
   {
    public:
     //! constructor
-    PoroMultiPhaseScaTraArtCouplBase(Teuchos::RCP<DRT::Discretization> arterydis,
-        Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
+    PoroMultiPhaseScaTraArtCouplBase(Teuchos::RCP<Discret::Discretization> arterydis,
+        Teuchos::RCP<Discret::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
         const std::string& condname, const std::string& artcoupleddofname,
         const std::string& contcoupleddofname);
 
@@ -47,10 +47,10 @@ namespace POROMULTIPHASESCATRA
 
     //! Recompute the CouplingDOFs for each CouplingNode if ntp-coupling active
     void recompute_coupled_do_fs_for_ntp(
-        std::vector<CORE::Conditions::Condition*> coupcond, unsigned int couplingnode);
+        std::vector<Core::Conditions::Condition*> coupcond, unsigned int couplingnode);
 
     //! get global extractor
-    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor>& GlobalExtractor() const;
+    const Teuchos::RCP<Core::LinAlg::MultiMapExtractor>& GlobalExtractor() const;
 
     //! check if initial fields on coupled DOFs are equal
     virtual void CheckInitialFields(
@@ -66,16 +66,16 @@ namespace POROMULTIPHASESCATRA
     virtual void print_out_coupling_method() const = 0;
 
     //! Evaluate the 1D-3D coupling
-    virtual void Evaluate(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+    virtual void Evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) = 0;
 
     //! set-up of global system of equations of coupled problem
-    virtual void SetupSystem(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art,
+    virtual void SetupSystem(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
         Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
-        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
-        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art) = 0;
+        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
+        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art) = 0;
 
     //! set solution vectors of single fields
     virtual void SetSolutionVectors(Teuchos::RCP<const Epetra_Vector> phinp_cont,
@@ -122,10 +122,10 @@ namespace POROMULTIPHASESCATRA
     const Epetra_Comm& comm() const { return comm_; }
 
     //! artery (1D) discretization
-    Teuchos::RCP<DRT::Discretization> arterydis_;
+    Teuchos::RCP<Discret::Discretization> arterydis_;
 
     //! continous field (2D, 3D) discretization
-    Teuchos::RCP<DRT::Discretization> contdis_;
+    Teuchos::RCP<Discret::Discretization> contdis_;
 
     //! coupled dofs of artery field
     std::vector<int> coupleddofs_art_;
@@ -140,7 +140,7 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<Epetra_Map> fullmap_;
 
     //! global extractor
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> globalex_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> globalex_;
 
     //! myrank
     const int myrank_;
@@ -160,7 +160,7 @@ namespace POROMULTIPHASESCATRA
     const Epetra_Comm& comm_;
   };
 
-}  // namespace POROMULTIPHASESCATRA
+}  // namespace PoroMultiPhaseScaTra
 
 
 

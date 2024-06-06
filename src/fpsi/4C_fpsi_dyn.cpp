@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  *------------------------------------------------------------------------------------------------*/
 void fpsi_drt()
 {
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // 1.- Get Communicator
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();

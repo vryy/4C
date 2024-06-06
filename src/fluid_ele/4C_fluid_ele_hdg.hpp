@@ -21,12 +21,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPUT
+namespace Input
 {
   class LineDefinition;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -39,21 +39,21 @@ namespace DRT
 
       static FluidHDGType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
+      virtual void ComputeNullSpace(Discret::Discretization& dis, std::vector<double>& ns,
           const double* x0, int numdf, int dimns);
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -91,7 +91,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
 
       /*!
@@ -111,7 +111,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -124,7 +124,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -134,7 +134,7 @@ namespace DRT
 
       HDG element: No dofs are associated with nodes
       */
-      int NumDofPerNode(const CORE::Nodes::Node&) const override { return 0; }
+      int NumDofPerNode(const Core::Nodes::Node&) const override { return 0; }
 
       /*!
       \brief Get number of degrees of freedom per face
@@ -142,7 +142,7 @@ namespace DRT
       */
       int num_dof_per_face(const unsigned face) const override
       {
-        return CORE::FE::getDimension(distype_) * NumDofPerComponent(face);
+        return Core::FE::getDimension(distype_) * NumDofPerComponent(face);
       }
 
       /*!
@@ -150,8 +150,8 @@ namespace DRT
       */
       int NumDofPerComponent(const unsigned face) const override
       {
-        return CORE::FE::getBasisSize(
-            CORE::FE::getEleFaceShapeType(distype_), this->Degree(), completepol_);
+        return Core::FE::getBasisSize(
+            Core::FE::getEleFaceShapeType(distype_), this->Degree(), completepol_);
       }
 
       /*!
@@ -175,8 +175,8 @@ namespace DRT
        */
       int num_dof_per_element_auxiliary() const
       {
-        const int nsd_ = CORE::FE::getDimension(distype_);
-        return (nsd_ * (nsd_ + 1) + 1) * CORE::FE::getBasisSize(distype_, degree_, completepol_) +
+        const int nsd_ = Core::FE::getDimension(distype_);
+        return (nsd_ * (nsd_ + 1) + 1) * Core::FE::getBasisSize(distype_, degree_, completepol_) +
                1;
       }
 
@@ -207,11 +207,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -220,7 +220,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override { return FluidHDGType::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return FluidHDGType::Instance(); }
 
      private:
       // don't want = operator
@@ -235,7 +235,7 @@ namespace DRT
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 

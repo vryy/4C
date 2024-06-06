@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -61,7 +61,7 @@ namespace DRT
       double AlphaC() const { return alphac_; }
       double Capacitance() const { return capacitance_; }
       double charge_transfer_constant() const { return kr_; }
-      CORE::Conditions::ConditionType ConditionType() const { return conditiontype_; }
+      Core::Conditions::ConditionType ConditionType() const { return conditiontype_; }
       double ConvtolimplicitBV() const { return convtolimplicit_bv_; }
       double Density() const { return density_; }
       bool IsPseudoContact() const { return is_pseudo_contact_; }
@@ -75,7 +75,7 @@ namespace DRT
       double Peltier() const { return peltier_; }
       const std::vector<double>* Permeabilities() const { return permeabilities_; }
       double regularization_parameter() const { return regularizationparameter_; }
-      INPAR::S2I::RegularizationType RegularizationType() const { return regularizationtype_; }
+      Inpar::S2I::RegularizationType RegularizationType() const { return regularizationtype_; }
       double Resistance() const { return resistance_; }
       double Resistivity() const { return resistivity_; }
       const std::vector<int>* Stoichiometries() const { return stoichiometries_; }
@@ -94,7 +94,7 @@ namespace DRT
       double alphac_;
 
       /// condition type of stored condition
-      CORE::Conditions::ConditionType conditiontype_;
+      Core::Conditions::ConditionType conditiontype_;
 
       /// convergence tolerance of local Newton-Raphson iteration for modified Butler-Volmer
       /// equation
@@ -142,7 +142,7 @@ namespace DRT
       double regularizationparameter_;
 
       /// type of regularization for S2IKineticsGrowth condition
-      INPAR::S2I::RegularizationType regularizationtype_;
+      Inpar::S2I::RegularizationType regularizationtype_;
 
       /// interface resistance associated with S2ICoupling condition
       double resistance_;
@@ -160,7 +160,7 @@ namespace DRT
       double thermoperm_;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

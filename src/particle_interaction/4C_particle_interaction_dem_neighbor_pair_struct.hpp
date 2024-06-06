@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -27,7 +27,7 @@ namespace CORE::Elements
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   //! struct to store quantities of interacting particles
   struct DEMParticlePair final
@@ -53,7 +53,7 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::LocalIndexTuple tuple_i_;
 
     //! pointer to column wall element
-    CORE::Elements::Element* ele_;
+    Core::Elements::Element* ele_;
 
     //! gap between particle and wall contact point
     double gap_;
@@ -67,7 +67,7 @@ namespace PARTICLEINTERACTION
     //! global ids of relevant wall elements in penetration volume for interaction history
     std::set<int> histeles_;
   };
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

@@ -29,7 +29,8 @@ namespace CONSTRAINTS
     /*!
     \brief Standard Constructor
     */
-    MPConstraint(Teuchos::RCP<DRT::Discretization> discr,  ///< discretization constraint lives on
+    MPConstraint(
+        Teuchos::RCP<Discret::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname,  ///< Name of condition to create constraint from
         int& minID,                        ///< minimum constraint or monitor ID so far
         int& maxID                         ///< maximum constraint or monitor ID so far
@@ -38,7 +39,8 @@ namespace CONSTRAINTS
     /*!
         \brief Alternative Constructor
     */
-    MPConstraint(Teuchos::RCP<DRT::Discretization> discr,  ///< discretization constraint lives on
+    MPConstraint(
+        Teuchos::RCP<Discret::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname  ///< Name of condition to create constraint from
     );
 
@@ -70,10 +72,10 @@ namespace CONSTRAINTS
     virtual void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
         Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by
@@ -93,17 +95,17 @@ namespace CONSTRAINTS
 
 
     //! additional discretization consisting of constraint elements
-    std::map<int, Teuchos::RCP<DRT::Discretization>> constraintdis_;
+    std::map<int, Teuchos::RCP<Discret::Discretization>> constraintdis_;
 
     //! Evaluate constraint discretization and assemble the results
     virtual void evaluate_constraint(
-        Teuchos::RCP<DRT::Discretization> disc,  ///< discretization to evaluate
+        Teuchos::RCP<Discret::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<CORE::LINALG::SparseOperator>
+        Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
         Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by
@@ -115,9 +117,9 @@ namespace CONSTRAINTS
         ) = 0;
 
     //! creating a new discretization based on conditions containing constraint elements
-    virtual std::map<int, Teuchos::RCP<DRT::Discretization>> create_discretization_from_condition(
-        Teuchos::RCP<DRT::Discretization> actdisc,
-        std::vector<CORE::Conditions::Condition*>
+    virtual std::map<int, Teuchos::RCP<Discret::Discretization>>
+    create_discretization_from_condition(Teuchos::RCP<Discret::Discretization> actdisc,
+        std::vector<Core::Conditions::Condition*>
             constrcond,                   ///< conditions as discretization basis
         const std::string& discret_name,  ///< name of new discretization
         const std::string& element_name,  ///< name of element type to create
@@ -126,8 +128,9 @@ namespace CONSTRAINTS
 
     //    /// find col node map so that we can evaluate the constraint elements
     //    Teuchos::RCP<Epetra_Map> ComputeNodeColMap(
-    //             const Teuchos::RCP<DRT::Discretization> sourcedis,  ///< standard discretization
-    //             we want to redistribute const Teuchos::RCP<DRT::Discretization> constraintdis
+    //             const Teuchos::RCP<Discret::Discretization> sourcedis,  ///< standard
+    //             discretization we want to redistribute const
+    //             Teuchos::RCP<Discret::Discretization> constraintdis
     //             ///< constraint discretization prescribing ghosting ) const;
 
   };  // class

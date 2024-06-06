@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -24,11 +24,11 @@ namespace DRT
     class ScaTraEleDiffManagerElchScl;
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerElchScl;
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleUtilsElchScl;
 
     // class implementation
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
     class ScaTraEleCalcElchScl : public ScaTraEleCalcElchDiffCond<distype, probdim>
     {
      protected:
@@ -49,11 +49,11 @@ namespace DRT
       //! @name general framework
       /*========================================================================*/
 
-      void calc_mat_and_rhs(CORE::LINALG::SerialDenseMatrix& emat,
-          CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac,
+      void calc_mat_and_rhs(Core::LinAlg::SerialDenseMatrix& emat,
+          Core::LinAlg::SerialDenseVector& erhs, const int k, const double fac,
           const double timefacfac, const double rhsfac, const double taufac,
           const double timetaufac, const double rhstaufac,
-          CORE::LINALG::Matrix<my::nen_, 1>& tauderpot, double& rhsint) override;
+          Core::LinAlg::Matrix<my::nen_, 1>& tauderpot, double& rhsint) override;
 
       //! CalcMat: Coulomb's equation (no source)
       //!
@@ -64,8 +64,8 @@ namespace DRT
       //! \param gradpot  spatial gradient of electric potential
       //! \param epsilon  dielectric permittivity of bulk electrolyte
 
-      void calc_mat_pot_coulomb(CORE::LINALG::SerialDenseMatrix& emat, double timefacfac,
-          double invf, double scalefac, const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot,
+      void calc_mat_pot_coulomb(Core::LinAlg::SerialDenseMatrix& emat, double timefacfac,
+          double invf, double scalefac, const Core::LinAlg::Matrix<my::nsd_, 1>& gradpot,
           double epsilon);
 
       //! CalcRhs: Coulomb's equation (no source)
@@ -77,8 +77,8 @@ namespace DRT
       //! micro-macro-coupling
       //! \param gradpot  gradient of electric potential
       //! \param epsilon dielectric permittitivity of bulk electrolyte
-      void calc_rhs_pot_coulomb(CORE::LINALG::SerialDenseVector& erhs, double fac, double invf,
-          double cond_invperm, const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot, double epsilon);
+      void calc_rhs_pot_coulomb(Core::LinAlg::SerialDenseVector& erhs, double fac, double invf,
+          double cond_invperm, const Core::LinAlg::Matrix<my::nsd_, 1>& gradpot, double epsilon);
 
       //! CalcRhs: Source contribution to electric potential (free charge)
       //!
@@ -89,7 +89,7 @@ namespace DRT
       //! \param cond_invperm  conductivity / permitivity to scale pot. equations for consistent
       //! micro-macro-coupling
       //! \param z_k_F  transference number times Faraday constant
-      void calc_mat_pot_src(CORE::LINALG::SerialDenseMatrix& emat, int k, double fac, double invf,
+      void calc_mat_pot_src(Core::LinAlg::SerialDenseMatrix& emat, int k, double fac, double invf,
           double cond_invperm, double z_k_F);
 
       //! CalcRhs: Source contribution to electric potential (free charge)
@@ -101,7 +101,7 @@ namespace DRT
       //! \param cond_invperm  conductivity / permitivity to scale pot. equations for consistent
       //! micro-macro-coupling
       //! \param q_f  free charge density
-      void calc_rhs_pot_src(CORE::LINALG::SerialDenseVector& erhs, int k, double fac, double invf,
+      void calc_rhs_pot_src(Core::LinAlg::SerialDenseVector& erhs, int k, double fac, double invf,
           double cond_invperm, double q_f);
 
       //! CalcRhs: Calculate diffusion contribution to current
@@ -110,9 +110,9 @@ namespace DRT
       //! \param rhsfac  time-integration factor for rhs times domain-integration factor
       //! \param invfval  transference number time Faraday const. inverted
       //! \param gradphi  ector of scalar gradients at t_(n+1)
-      void calc_rhs_diff_cur(CORE::LINALG::SerialDenseVector& erhs, double rhsfac,
+      void calc_rhs_diff_cur(Core::LinAlg::SerialDenseVector& erhs, double rhsfac,
           const std::vector<double>& invfval,
-          const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi);
+          const std::vector<Core::LinAlg::Matrix<my::nsd_, 1>>& gradphi);
 
       //! CalcMat: Calculate diffusion contribution to current
       //!
@@ -120,19 +120,19 @@ namespace DRT
       //! \param timefacfac  domain-integration factor times time-integration factor
       //! \param invfval  transference number time Faraday const. inverted
       //! \param gradphi  vector of scalar gradients at t_(n+1)
-      void calc_mat_diff_cur(CORE::LINALG::SerialDenseMatrix& emat, double timefacfac,
+      void calc_mat_diff_cur(Core::LinAlg::SerialDenseMatrix& emat, double timefacfac,
           const std::vector<double>& invfval,
-          const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi);
+          const std::vector<Core::LinAlg::Matrix<my::nsd_, 1>>& gradphi);
 
-      void calc_mat_and_rhs_outside_scalar_loop(CORE::LINALG::SerialDenseMatrix& emat,
-          CORE::LINALG::SerialDenseVector& erhs, const double fac, const double timefacfac,
+      void calc_mat_and_rhs_outside_scalar_loop(Core::LinAlg::SerialDenseMatrix& emat,
+          Core::LinAlg::SerialDenseVector& erhs, const double fac, const double timefacfac,
           const double rhsfac) override;
 
       /*========================================================================*/
       //! @name material and related and related functions
       /*========================================================================*/
 
-      void get_material_params(const CORE::Elements::Element* ele, std::vector<double>& densn,
+      void get_material_params(const Core::Elements::Element* ele, std::vector<double>& densn,
           std::vector<double>& densnp, std::vector<double>& densam, double& visc,
           const int iquad = -1) override;
 
@@ -170,7 +170,7 @@ namespace DRT
       }
 
       //! flag for used element formulation (material based)
-      INPAR::ELCH::DiffCondMat diffcondmat_;
+      Inpar::ElCh::DiffCondMat diffcondmat_;
 
       //! parameter class for diffusion-conduction formulation
       const ScaTraEleParameterElchDiffCond* diffcondparams_;
@@ -304,8 +304,8 @@ namespace DRT
       using vm = ScaTraEleInternalVariableManager<NSD, NEN>;
 
       ScaTraEleInternalVariableManagerElchScl(int numscal,
-          const DRT::ELEMENTS::ScaTraEleParameterElch* elchparams,
-          const DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* diffcondparams)
+          const Discret::ELEMENTS::ScaTraEleParameterElch* elchparams,
+          const Discret::ELEMENTS::ScaTraEleParameterElchDiffCond* diffcondparams)
           : ScaTraEleInternalVariableManagerElchDiffCond<NSD, NEN>(
                 numscal, elchparams, diffcondparams),
             curint_(true)
@@ -318,10 +318,10 @@ namespace DRT
       /*========================================================================*/
 
       //! current density at Gauss point
-      CORE::LINALG::Matrix<NSD, 1> curint_;
+      Core::LinAlg::Matrix<NSD, 1> curint_;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

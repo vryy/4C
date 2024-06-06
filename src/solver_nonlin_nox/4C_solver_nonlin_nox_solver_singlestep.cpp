@@ -31,8 +31,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Solver::SingleStep::SingleStep(const Teuchos::RCP<::NOX::Abstract::Group>& grp,
-    const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
+NOX::Nln::Solver::SingleStep::SingleStep(const Teuchos::RCP<::NOX::Abstract::Group>& grp,
+    const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,
     const Teuchos::RCP<Teuchos::ParameterList>& params)
     : ::NOX::Solver::SingleStep(grp, params)
 {
@@ -42,8 +42,8 @@ NOX::NLN::Solver::SingleStep::SingleStep(const Teuchos::RCP<::NOX::Abstract::Gro
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::SingleStep::init(
-    const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests)
+void NOX::Nln::Solver::SingleStep::init(
+    const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests)
 {
   nIter = 0;
   status = ::NOX::StatusTest::Unconverged;
@@ -51,16 +51,16 @@ void NOX::NLN::Solver::SingleStep::init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::StatusTest::StatusType NOX::NLN::Solver::SingleStep::getStatus() const { return status; }
+::NOX::StatusTest::StatusType NOX::Nln::Solver::SingleStep::getStatus() const { return status; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const ::NOX::Utils& NOX::NLN::Solver::SingleStep::GetUtils() const { return *utilsPtr; }
+const ::NOX::Utils& NOX::Nln::Solver::SingleStep::GetUtils() const { return *utilsPtr; }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Solver::SingleStep::printUpdate()
+void NOX::Nln::Solver::SingleStep::printUpdate()
 {
   if (utilsPtr->isPrintType(::NOX::Utils::OuterIteration))
   {

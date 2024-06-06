@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::FE::DiscretizationCreatorBase::initial_checks(
-    const DRT::Discretization& sourcedis, const DRT::Discretization& targetdis) const
+void Core::FE::DiscretizationCreatorBase::initial_checks(
+    const Discret::Discretization& sourcedis, const Discret::Discretization& targetdis) const
 {
   // are the source and target discretizations ready?
   if (!sourcedis.Filled()) FOUR_C_THROW("The source discretization is not filled!");
@@ -40,8 +40,8 @@ void CORE::FE::DiscretizationCreatorBase::initial_checks(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::FE::DiscretizationCreatorBase::create_nodes(const DRT::Discretization& sourcedis,
-    DRT::Discretization& targetdis, const std::set<int>& rownodeset,
+void Core::FE::DiscretizationCreatorBase::create_nodes(const Discret::Discretization& sourcedis,
+    Discret::Discretization& targetdis, const std::set<int>& rownodeset,
     const std::set<int>& colnodeset, const bool isnurbsdis, const bool buildimmersednode) const
 {
   // prepare some variables we need
@@ -56,12 +56,12 @@ void CORE::FE::DiscretizationCreatorBase::create_nodes(const DRT::Discretization
       int gid = sourcenoderowmap->GID(i);
       if (rownodeset.find(gid) != rownodeset.end())
       {
-        CORE::Nodes::Node* node_to_create = sourcedis.lRowNode(i);
+        Core::Nodes::Node* node_to_create = sourcedis.lRowNode(i);
         if (!buildimmersednode)
-          targetdis.AddNode(Teuchos::rcp(new CORE::Nodes::Node(gid, node_to_create->X(), myrank)));
+          targetdis.AddNode(Teuchos::rcp(new Core::Nodes::Node(gid, node_to_create->X(), myrank)));
         else
           targetdis.AddNode(
-              Teuchos::rcp(new CORE::Nodes::ImmersedNode(gid, node_to_create->X(), myrank)));
+              Teuchos::rcp(new Core::Nodes::ImmersedNode(gid, node_to_create->X(), myrank)));
       }
     }
   }
@@ -72,10 +72,10 @@ void CORE::FE::DiscretizationCreatorBase::create_nodes(const DRT::Discretization
       const int gid = sourcenoderowmap->GID(i);
       if (rownodeset.find(gid) != rownodeset.end())
       {
-        DRT::NURBS::ControlPoint* node_to_create =
-            dynamic_cast<DRT::NURBS::ControlPoint*>(sourcedis.lRowNode(i));
-        targetdis.AddNode(Teuchos::rcp(
-            new DRT::NURBS::ControlPoint(gid, node_to_create->X(), node_to_create->W(), myrank)));
+        Discret::Nurbs::ControlPoint* node_to_create =
+            dynamic_cast<Discret::Nurbs::ControlPoint*>(sourcedis.lRowNode(i));
+        targetdis.AddNode(Teuchos::rcp(new Discret::Nurbs::ControlPoint(
+            gid, node_to_create->X(), node_to_create->W(), myrank)));
       }
     }
   }
@@ -84,12 +84,12 @@ void CORE::FE::DiscretizationCreatorBase::create_nodes(const DRT::Discretization
   targetdis.CheckFilledGlobally();
 
   return;
-}  // CORE::FE::DiscretizationCreatorBase::CreateNodes
+}  // Core::FE::DiscretizationCreatorBase::CreateNodes
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> CORE::FE::DiscretizationCreatorBase::create_map(
-    std::set<int>& gidset, const DRT::Discretization& targetdis) const
+Teuchos::RCP<Epetra_Map> Core::FE::DiscretizationCreatorBase::create_map(
+    std::set<int>& gidset, const Discret::Discretization& targetdis) const
 {
   // we get the node maps almost for free
   std::vector<int> targetgidvec(gidset.begin(), gidset.end());
@@ -100,18 +100,18 @@ Teuchos::RCP<Epetra_Map> CORE::FE::DiscretizationCreatorBase::create_map(
   targetgidvec.clear();
 
   return map;
-}  // CORE::FE::DiscretizationCreatorBase::CreateMap
+}  // Core::FE::DiscretizationCreatorBase::CreateMap
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::FE::DiscretizationCreatorBase::CopyConditions(const DRT::Discretization& sourcedis,
-    DRT::Discretization& targetdis,
+void Core::FE::DiscretizationCreatorBase::CopyConditions(const Discret::Discretization& sourcedis,
+    Discret::Discretization& targetdis,
     const std::map<std::string, std::string>& conditions_to_copy) const
 {
   // copy selected conditions to the new discretization (and rename them if desired)
   for (const auto& condition_pair : conditions_to_copy)
   {
-    std::vector<CORE::Conditions::Condition*> conds;
+    std::vector<Core::Conditions::Condition*> conds;
     sourcedis.GetCondition(condition_pair.first, conds);
     for (const auto& cond : conds)
     {
@@ -122,35 +122,35 @@ void CORE::FE::DiscretizationCreatorBase::CopyConditions(const DRT::Discretizati
     }
     conds.clear();
   }
-}  // CORE::FE::DiscretizationCreatorBase::CopyConditions
+}  // Core::FE::DiscretizationCreatorBase::CopyConditions
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization>
-CORE::FE::DiscretizationCreatorBase::create_matching_discretization(
-    const Teuchos::RCP<DRT::Discretization>& sourcedis, const std::string& targetdisname,
+Teuchos::RCP<Discret::Discretization>
+Core::FE::DiscretizationCreatorBase::create_matching_discretization(
+    const Teuchos::RCP<Discret::Discretization>& sourcedis, const std::string& targetdisname,
     bool clonedofs, bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions) const
 {
   // initialize identical clone discretization
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(sourcedis->Comm().Clone());
-  Teuchos::RCP<DRT::Discretization> targetdis =
-      Teuchos::rcp(new DRT::Discretization(targetdisname, comm, sourcedis->n_dim()));
+  Teuchos::RCP<Discret::Discretization> targetdis =
+      Teuchos::rcp(new Discret::Discretization(targetdisname, comm, sourcedis->n_dim()));
 
   // clone nodes
   for (int i = 0; i < sourcedis->NodeColMap()->NumMyElements(); ++i)
   {
-    CORE::Nodes::Node* node = sourcedis->lColNode(i);
+    Core::Nodes::Node* node = sourcedis->lColNode(i);
     if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
-    Teuchos::RCP<CORE::Nodes::Node> newnode = Teuchos::rcp(node->Clone());
+    Teuchos::RCP<Core::Nodes::Node> newnode = Teuchos::rcp(node->Clone());
     targetdis->AddNode(newnode);
   }
 
   // clone elements
   for (int i = 0; i < sourcedis->ElementColMap()->NumMyElements(); ++i)
   {
-    CORE::Elements::Element* ele = sourcedis->lColElement(i);
+    Core::Elements::Element* ele = sourcedis->lColElement(i);
     if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
-    Teuchos::RCP<CORE::Elements::Element> newele = Teuchos::rcp(ele->Clone());
+    Teuchos::RCP<Core::Elements::Element> newele = Teuchos::rcp(ele->Clone());
     targetdis->add_element(newele);
   }
 
@@ -161,7 +161,7 @@ CORE::FE::DiscretizationCreatorBase::create_matching_discretization(
   for (unsigned numcond = 0; numcond < allcond.size(); ++numcond)
   {
     // get condition
-    std::vector<CORE::Conditions::Condition*> actcond;
+    std::vector<Core::Conditions::Condition*> actcond;
     sourcedis->GetCondition(allcond[numcond], actcond);
 
     // loop all condition of the current type
@@ -171,7 +171,7 @@ CORE::FE::DiscretizationCreatorBase::create_matching_discretization(
 
   // make auxiliary discretization have the same dofs as the coupling discretization
   if (clonedofs)
-    targetdis->ReplaceDofSet(Teuchos::rcp(new CORE::Dofsets::IndependentDofSet()), false);
+    targetdis->ReplaceDofSet(Teuchos::rcp(new Core::DOFSets::IndependentDofSet()), false);
   targetdis->fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
   // at the end, we do several checks to ensure that we really have generated
@@ -195,12 +195,12 @@ CORE::FE::DiscretizationCreatorBase::create_matching_discretization(
   // return identical dis
   return targetdis;
 
-}  // CORE::FE::DiscretizationCreatorBase::create_matching_discretization
+}  // Core::FE::DiscretizationCreatorBase::create_matching_discretization
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::FE::DiscretizationCreatorBase::finalize(
-    const DRT::Discretization& sourcedis, DRT::Discretization& targetdis) const
+void Core::FE::DiscretizationCreatorBase::finalize(
+    const Discret::Discretization& sourcedis, Discret::Discretization& targetdis) const
 {
   // export according to previously filled maps
   targetdis.ExportRowNodes(*targetnoderowmap_);
@@ -212,21 +212,21 @@ void CORE::FE::DiscretizationCreatorBase::finalize(
   // extra work for NURBS discretizations
 
   // try to cast sourcedis to NurbsDiscretisation
-  const DRT::NURBS::NurbsDiscretization* nurbsdis_ptr =
-      dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&sourcedis);
+  const Discret::Nurbs::NurbsDiscretization* nurbsdis_ptr =
+      dynamic_cast<const Discret::Nurbs::NurbsDiscretization*>(&sourcedis);
 
   if (nurbsdis_ptr != nullptr)
   {
-    DRT::NURBS::NurbsDiscretization* targetnurbsdis_ptr =
-        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&targetdis);
+    Discret::Nurbs::NurbsDiscretization* targetnurbsdis_ptr =
+        dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&targetdis);
 
     if (targetnurbsdis_ptr == nullptr)
     {
       FOUR_C_THROW("Nurbs source discretization but no nurbs target discretization\n");
     }
 
-    Teuchos::RCP<DRT::NURBS::Knotvector> knots =
-        Teuchos::rcp(new DRT::NURBS::Knotvector(*(nurbsdis_ptr->GetKnotVector())));
+    Teuchos::RCP<Discret::Nurbs::Knotvector> knots =
+        Teuchos::rcp(new Discret::Nurbs::Knotvector(*(nurbsdis_ptr->GetKnotVector())));
 
     // reset offsets
     int smallest_gid_in_dis = targetnurbsdis_ptr->ElementRowMap()->MinAllGID();
@@ -255,13 +255,13 @@ void CORE::FE::DiscretizationCreatorBase::finalize(
     if (not sourcedis.ElementColMap()->SameAs(*(targetdis.ElementColMap())))
       FOUR_C_THROW("ElementColMaps of source and target discretization are different!");
   }
-}  // CORE::FE::DiscretizationCreatorBase::Finalize
+}  // Core::FE::DiscretizationCreatorBase::Finalize
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<INPUT::LineDefinition> CORE::FE::valid_cloning_material_map_lines()
+std::vector<Input::LineDefinition> Core::FE::valid_cloning_material_map_lines()
 {
-  return {INPUT::LineDefinition::Builder()
+  return {Input::LineDefinition::Builder()
               .AddNamedString("SRC_FIELD")
               .AddNamedInt("SRC_MAT")
               .AddNamedString("TAR_FIELD")

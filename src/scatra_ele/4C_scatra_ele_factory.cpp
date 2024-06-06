@@ -46,82 +46,82 @@ FOUR_C_NAMESPACE_OPEN
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
-    CORE::FE::CellType distype, INPAR::SCATRA::ImplType problem, const int numdofpernode,
+Discret::ELEMENTS::ScaTraEleInterface* Discret::ELEMENTS::ScaTraFactory::ProvideImpl(
+    Core::FE::CellType distype, Inpar::ScaTra::ImplType problem, const int numdofpernode,
     const int numscal, const std::string& disname)
 {
   // number of space dimensions
   const int ndim = disname != "scatra_micro"
-                       ? GLOBAL::Problem::Instance(
-                             DRT::ELEMENTS::ScaTraEleParameterStd::Instance(disname)->ProbNum())
+                       ? Global::Problem::Instance(
+                             Discret::ELEMENTS::ScaTraEleParameterStd::Instance(disname)->ProbNum())
                              ->NDim()
                        : 1;
 
   switch (distype)
   {
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
       if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::hex8, 3>(
+        return define_problem_type<Core::FE::CellType::hex8, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for HEX8 transport element!");
       break;
     }
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex27:
     {
       if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::hex27, 3>(
+        return define_problem_type<Core::FE::CellType::hex27, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for HEX27 transport element!");
       break;
     }
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
     {
       if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::tet4, 3>(
+        return define_problem_type<Core::FE::CellType::tet4, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for TET4 transport element!");
       break;
     }
-    case CORE::FE::CellType::tet10:
+    case Core::FE::CellType::tet10:
     {
       if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::tet10, 3>(
+        return define_problem_type<Core::FE::CellType::tet10, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for TET10 transport element!");
       break;
     }
-    case CORE::FE::CellType::pyramid5:
+    case Core::FE::CellType::pyramid5:
     {
       if (ndim == 3)
       {
-        return define_problem_type<CORE::FE::CellType::pyramid5, 3>(
+        return define_problem_type<Core::FE::CellType::pyramid5, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
         FOUR_C_THROW("invalid problem dimension for PYRAMID5 transport element!");
       break;
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
       if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::quad4, 2>(
+        return define_problem_type<Core::FE::CellType::quad4, 2>(
             problem, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::quad4, 3>(
+        return define_problem_type<Core::FE::CellType::quad4, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for quad4 transport element!");
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
       if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::quad9, 2>(
+        return define_problem_type<Core::FE::CellType::quad9, 2>(
             problem, numdofpernode, numscal, disname);
       else
       {
@@ -131,10 +131,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
       }
       break;
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
       if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::nurbs9, 2>(
+        return define_problem_type<Core::FE::CellType::nurbs9, 2>(
             problem, numdofpernode, numscal, disname);
       else
       {
@@ -145,22 +145,22 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
       }
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
       if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::tri3, 2>(
+        return define_problem_type<Core::FE::CellType::tri3, 2>(
             problem, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::tri3, 3>(
+        return define_problem_type<Core::FE::CellType::tri3, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for tri3 transport element!");
       break;
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
       if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::tri6, 2>(
+        return define_problem_type<Core::FE::CellType::tri6, 2>(
             problem, numdofpernode, numscal, disname);
       else
       {
@@ -170,22 +170,22 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
       }
       break;
     }
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
       if (ndim == 1)
-        return define_problem_type<CORE::FE::CellType::line2, 1>(
+        return define_problem_type<Core::FE::CellType::line2, 1>(
             problem, numdofpernode, numscal, disname);
       else if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::line2, 2>(
+        return define_problem_type<Core::FE::CellType::line2, 2>(
             problem, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::line2, 3>(
+        return define_problem_type<Core::FE::CellType::line2, 3>(
             problem, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension for LINE2 transport element!");
       break;
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
       if (ndim != 1)
       {
@@ -194,13 +194,13 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
             ndim);
       }
       else
-        return define_problem_type<CORE::FE::CellType::line3, 1>(
+        return define_problem_type<Core::FE::CellType::line3, 1>(
             problem, numdofpernode, numscal, disname);
       break;
     }
     default:
       FOUR_C_THROW("Element shape %s not activated. Just do it.",
-          CORE::FE::CellTypeToString(distype).c_str());
+          Core::FE::CellTypeToString(distype).c_str());
       break;
   }
   return nullptr;
@@ -208,84 +208,84 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
-    CORE::FE::CellType distype, INPAR::SCATRA::ImplType problem, const int numdofpernode,
+Discret::ELEMENTS::ScaTraEleInterface* Discret::ELEMENTS::ScaTraFactory::ProvideImplHDG(
+    Core::FE::CellType distype, Inpar::ScaTra::ImplType problem, const int numdofpernode,
     const int numscal, const std::string& disname)
 {
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
-  static const int ndim = GLOBAL::Problem::Instance()->NDim();
+  static const int ndim = Global::Problem::Instance()->NDim();
 
   switch (distype)
   {
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
       if (ndim == 3)
       {
-        return define_problem_type_hdg<CORE::FE::CellType::hex8, 3>(
+        return define_problem_type_hdg<Core::FE::CellType::hex8, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
         FOUR_C_THROW("invalid problem dimension for HEX8 transport element!");
       break;
     }
-    case CORE::FE::CellType::tet4:
+    case Core::FE::CellType::tet4:
     {
       if (ndim == 3)
       {
-        return define_problem_type_hdg<CORE::FE::CellType::tet4, 3>(
+        return define_problem_type_hdg<Core::FE::CellType::tet4, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
         FOUR_C_THROW("invalid problem dimension for TET4 transport element!");
       break;
     }
-    case CORE::FE::CellType::tet10:
+    case Core::FE::CellType::tet10:
     {
       if (ndim == 3)
       {
-        return define_problem_type_hdg<CORE::FE::CellType::tet10, 3>(
+        return define_problem_type_hdg<Core::FE::CellType::tet10, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
         FOUR_C_THROW("invalid problem dimension for TET10 transport element!");
       break;
     }
-    case CORE::FE::CellType::pyramid5:
+    case Core::FE::CellType::pyramid5:
     {
       if (ndim == 3)
       {
-        return define_problem_type_hdg<CORE::FE::CellType::pyramid5, 3>(
+        return define_problem_type_hdg<Core::FE::CellType::pyramid5, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
         FOUR_C_THROW("invalid problem dimension for PYRAMID5 transport element!");
       break;
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
       if (ndim == 2)
       {
-        return define_problem_type_hdg<CORE::FE::CellType::quad4, 2>(
+        return define_problem_type_hdg<Core::FE::CellType::quad4, 2>(
             problem, numdofpernode, numscal, disname);
       }
       else if (ndim == 3)
       {
-        return define_problem_type_hdg<CORE::FE::CellType::quad4, 3>(
+        return define_problem_type_hdg<Core::FE::CellType::quad4, 3>(
             problem, numdofpernode, numscal, disname);
       }
       else
         FOUR_C_THROW("invalid problem dimension for quad4 transport element!");
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      return define_problem_type_hdg<CORE::FE::CellType::tri3, 2>(
+      return define_problem_type_hdg<Core::FE::CellType::tri3, 2>(
           problem, numdofpernode, numscal, disname);
     }
     default:
       FOUR_C_THROW("Element shape %s not activated. Just do it.",
-          CORE::FE::CellTypeToString(distype).c_str());
+          Core::FE::CellTypeToString(distype).c_str());
       break;
   }
   return nullptr;
@@ -293,145 +293,149 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::define_problem_type(
-    INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleInterface* Discret::ELEMENTS::ScaTraFactory::define_problem_type(
+    Inpar::ScaTra::ImplType problem, const int numdofpernode, const int numscal,
     const std::string& disname)
 {
-  if ((probdim - CORE::FE::dim<distype>) == 1)
+  if ((probdim - Core::FE::dim<distype>) == 1)
   {
-    if (problem != INPAR::SCATRA::impltype_std and
-        problem != INPAR::SCATRA::impltype_cardiac_monodomain and
-        problem != INPAR::SCATRA::impltype_advreac and
-        problem != INPAR::SCATRA::impltype_lsreinit and
-        problem != INPAR::SCATRA::impltype_one_d_artery and
-        problem != INPAR::SCATRA::impltype_no_physics and
-        problem != INPAR::SCATRA::impltype_elch_electrode and
-        problem != INPAR::SCATRA::impltype_elch_diffcond)
+    if (problem != Inpar::ScaTra::impltype_std and
+        problem != Inpar::ScaTra::impltype_cardiac_monodomain and
+        problem != Inpar::ScaTra::impltype_advreac and
+        problem != Inpar::ScaTra::impltype_lsreinit and
+        problem != Inpar::ScaTra::impltype_one_d_artery and
+        problem != Inpar::ScaTra::impltype_no_physics and
+        problem != Inpar::ScaTra::impltype_elch_electrode and
+        problem != Inpar::ScaTra::impltype_elch_diffcond)
       FOUR_C_THROW("ImplType '%s' not implemented for transport on manifolds!",
-          SCATRA::ImplTypeToString(problem).c_str());
+          ScaTra::ImplTypeToString(problem).c_str());
   }
 
   switch (problem)
   {
-    case INPAR::SCATRA::impltype_std:
+    case Inpar::ScaTra::impltype_std:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_thermo_elch_electrode:
+    case Inpar::ScaTra::impltype_thermo_elch_electrode:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_thermo_elch_diffcond:
+    case Inpar::ScaTra::impltype_thermo_elch_diffcond:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_levelset:
+    case Inpar::ScaTra::impltype_levelset:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcLS<distype>::Instance(numdofpernode, numscal, disname);
+      return Discret::ELEMENTS::ScaTraEleCalcLS<distype>::Instance(numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_lsreinit:
+    case Inpar::ScaTra::impltype_lsreinit:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_loma:
+    case Inpar::ScaTra::impltype_loma:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(numdofpernode, numscal, disname);
-    }
-    case INPAR::SCATRA::impltype_elch_NP:
-    {
-      return DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Instance(numdofpernode, numscal, disname);
-    }
-    case INPAR::SCATRA::impltype_elch_electrode:
-    case INPAR::SCATRA::impltype_elch_electrode_growth:
-    {
-      return DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_elch_electrode_thermo:
+    case Inpar::ScaTra::impltype_elch_NP:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_elch_diffcond:
+    case Inpar::ScaTra::impltype_elch_electrode:
+    case Inpar::ScaTra::impltype_elch_electrode_growth:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_elch_diffcond_multiscale:
+    case Inpar::ScaTra::impltype_elch_electrode_thermo:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_elch_diffcond_thermo:
+    case Inpar::ScaTra::impltype_elch_diffcond:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_elch_scl:
+    case Inpar::ScaTra::impltype_elch_diffcond_multiscale:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_poro:
+    case Inpar::ScaTra::impltype_elch_diffcond_thermo:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(numdofpernode, numscal, disname);
-    }
-    case INPAR::SCATRA::impltype_advreac:
-    {
-      return DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_refconcreac:
+    case Inpar::ScaTra::impltype_elch_scl:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_chemo:
+    case Inpar::ScaTra::impltype_poro:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcChemo<distype>::Instance(numdofpernode, numscal, disname);
-    }
-    case INPAR::SCATRA::impltype_chemoreac:
-    {
-      return DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_multipororeac:
+    case Inpar::ScaTra::impltype_advreac:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_pororeac:
+    case Inpar::ScaTra::impltype_refconcreac:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_pororeacECM:
+    case Inpar::ScaTra::impltype_chemo:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcChemo<distype>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_aniso:
+    case Inpar::ScaTra::impltype_chemoreac:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcChemoReac<distype>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_cardiac_monodomain:
+    case Inpar::ScaTra::impltype_multipororeac:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_one_d_artery:
+    case Inpar::ScaTra::impltype_pororeac:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_no_physics:
-      return DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(
+    case Inpar::ScaTra::impltype_pororeacECM:
+    {
+      return Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
+          numdofpernode, numscal, disname);
+    }
+    case Inpar::ScaTra::impltype_aniso:
+    {
+      return Discret::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
+          numdofpernode, numscal, disname);
+    }
+    case Inpar::ScaTra::impltype_cardiac_monodomain:
+    {
+      return Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
+          numdofpernode, numscal, disname);
+    }
+    case Inpar::ScaTra::impltype_one_d_artery:
+    {
+      return Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
+          numdofpernode, numscal, disname);
+    }
+    case Inpar::ScaTra::impltype_no_physics:
+      return Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
 
     default:
@@ -446,29 +450,29 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::define_problem_
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::define_problem_type_hdg(
-    INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleInterface* Discret::ELEMENTS::ScaTraFactory::define_problem_type_hdg(
+    Inpar::ScaTra::ImplType problem, const int numdofpernode, const int numscal,
     const std::string& disname)
 {
-  if (CORE::FE::dim<distype> != probdim)
+  if (Core::FE::dim<distype> != probdim)
   {
-    if (problem != INPAR::SCATRA::impltype_std and
-        problem != INPAR::SCATRA::impltype_cardiac_monodomain)
+    if (problem != Inpar::ScaTra::impltype_std and
+        problem != Inpar::ScaTra::impltype_cardiac_monodomain)
       FOUR_C_THROW("ImplType '%s' not implemented for transport on manifolds!",
-          SCATRA::ImplTypeToString(problem).c_str());
+          ScaTra::ImplTypeToString(problem).c_str());
   }
 
   switch (problem)
   {
-    case INPAR::SCATRA::impltype_std_hdg:
+    case Inpar::ScaTra::impltype_std_hdg:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
     }
-    case INPAR::SCATRA::impltype_cardiac_monodomain_hdg:
+    case Inpar::ScaTra::impltype_cardiac_monodomain_hdg:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
     }
     default:

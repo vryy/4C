@@ -35,18 +35,18 @@ FOUR_C_NAMESPACE_OPEN
 void loma_dyn(int restart)
 {
   // create a communicator
-  const Epetra_Comm& comm = GLOBAL::Problem::Instance()->GetDis("fluid")->Comm();
+  const Epetra_Comm& comm = Global::Problem::Instance()->GetDis("fluid")->Comm();
 
   // print warning to screen
   if (comm.MyPID() == 0)
     std::cout << "You are now about to enter the module for low-Mach-number flow!" << std::endl;
 
   // define abbreviation
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // access fluid and (typically empty) scatra discretization
-  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
-  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<Discret::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<Discret::Discretization> scatradis = problem->GetDis("scatra");
 
   // ensure that all dofs are assigned in the right order such that
   // dof numbers are created with fluid dof < scatra/elch dof
@@ -63,14 +63,14 @@ void loma_dyn(int restart)
   const Teuchos::ParameterList& fdyn = problem->FluidDynamicParams();
 
   // identify type of velocity field
-  const INPAR::SCATRA::VelocityField veltype =
-      CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn, "VELOCITYFIELD");
+  const Inpar::ScaTra::VelocityField veltype =
+      Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(scatradyn, "VELOCITYFIELD");
 
   // choose algorithm depending on type of velocity field
   switch (veltype)
   {
-    case INPAR::SCATRA::velocity_zero:      // zero velocity field (see case 1)
-    case INPAR::SCATRA::velocity_function:  // velocity field prescribed by function
+    case Inpar::ScaTra::velocity_zero:      // zero velocity field (see case 1)
+    case Inpar::ScaTra::velocity_function:  // velocity field prescribed by function
     {
       // directly use elements from input section 'transport elements'
       if (scatradis->NumGlobalNodes() == 0)
@@ -84,14 +84,14 @@ void loma_dyn(int restart)
             "TRANSPORT DYNAMIC to a valid number!");
 
       // create instance of scalar transport basis algorithm (no fluid discretization)
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
-          Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
-              lomacontrol, scatradyn, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
+      Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatraonly =
+          Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
+              lomacontrol, scatradyn, Global::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      Teuchos::RCP<CORE::Dofsets::DofSetInterface> dofsetaux =
-          Teuchos::rcp(new CORE::Dofsets::DofSetPredefinedDoFNumber(
-              GLOBAL::Problem::Instance()->NDim() + 1, 0, 0, true));
+      Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
+          Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+              Global::Problem::Instance()->NDim() + 1, 0, 0, true));
       if (scatradis->AddDofSet(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->ScaTraField()->set_number_of_dof_set_velocity(1);
@@ -123,7 +123,7 @@ void loma_dyn(int restart)
 
       break;
     }
-    case INPAR::SCATRA::velocity_Navier_Stokes:  // Navier_Stokes
+    case Inpar::ScaTra::velocity_Navier_Stokes:  // Navier_Stokes
     {
       // use fluid discretization as layout for scatra discretization
       if (fluiddis->NumGlobalNodes() == 0) FOUR_C_THROW("Fluid discretization is empty!");
@@ -131,7 +131,7 @@ void loma_dyn(int restart)
       // to generate turbulent flow in the inflow section only, it is not necessary to
       // solve the transport equation for the temperature
       // therefore, use problem type fluid
-      if ((CORE::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
+      if ((Core::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
               true) and
           (restart < fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
         FOUR_C_THROW("Choose problem type fluid to generate turbulent flow in the inflow section!");
@@ -140,18 +140,18 @@ void loma_dyn(int restart)
       if (scatradis->NumGlobalNodes() == 0)
       {
         // fill scatra discretization by cloning fluid discretization
-        CORE::FE::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(
-            fluiddis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
+        Core::FE::CloneDiscretization<ScaTra::ScatraFluidCloneStrategy>(
+            fluiddis, scatradis, Global::Problem::Instance()->CloningMaterialMap());
 
         // set implementation type of cloned scatra elements to loma
         for (int i = 0; i < scatradis->NumMyColElements(); ++i)
         {
-          DRT::ELEMENTS::Transport* element =
-              dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
+          Discret::ELEMENTS::Transport* element =
+              dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->lColElement(i));
           if (element == nullptr)
             FOUR_C_THROW("Invalid element type!");
           else
-            element->SetImplType(INPAR::SCATRA::impltype_loma);
+            element->SetImplType(Inpar::ScaTra::impltype_loma);
         }
       }
       else
@@ -164,9 +164,9 @@ void loma_dyn(int restart)
             "no linear solver defined for LOMA problem. Please set LINEAR_SOLVER in SCALAR "
             "TRANSPORT DYNAMIC to a valid number!");
 
-      // create a LOMA::Algorithm instance
-      Teuchos::RCP<LOMA::Algorithm> loma = Teuchos::rcp(new LOMA::Algorithm(
-          comm, lomacontrol, GLOBAL::Problem::Instance()->SolverParams(linsolvernumber)));
+      // create a LowMach::Algorithm instance
+      Teuchos::RCP<LowMach::Algorithm> loma = Teuchos::rcp(new LowMach::Algorithm(
+          comm, lomacontrol, Global::Problem::Instance()->SolverParams(linsolvernumber)));
 
       // add proxy of fluid transport degrees of freedom to scatra discretization
       if (scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
@@ -182,7 +182,7 @@ void loma_dyn(int restart)
       // scatra results available and the initial field is used
       if (restart)
       {
-        if ((CORE::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
+        if ((Core::UTILS::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"), "TURBULENTINFLOW") ==
                 true) and
             (restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
           loma->ReadInflowRestart(restart);

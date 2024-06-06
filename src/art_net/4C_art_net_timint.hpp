@@ -26,23 +26,23 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 /*==========================================================================*/
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
 }
 
-namespace DRT
+namespace Discret
 {
   class ResultTest;
 }
 
-namespace ART
+namespace Arteries
 {
   /*!
    * \brief time integration for artery network problems
    */
 
-  class TimInt : public ADAPTER::ArtNet
+  class TimInt : public Adapter::ArtNet
   {
    public:
     /*========================================================================*/
@@ -50,9 +50,9 @@ namespace ART
     /*========================================================================*/
 
     //! Standard Constructor
-    TimInt(Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
+    TimInt(Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-        CORE::IO::DiscretizationWriter& output);
+        Core::IO::DiscretizationWriter& output);
 
 
     //! initialize time integration
@@ -60,7 +60,7 @@ namespace ART
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     //! get discretization
-    Teuchos::RCP<DRT::Discretization> discretization() override { return discret_; }
+    Teuchos::RCP<Discret::Discretization> discretization() override { return discret_; }
 
     double Dt() const override { return dta_; }
 
@@ -90,7 +90,7 @@ namespace ART
     void TimeLoop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
     //! set the initial field on the artery discretization
-    virtual void SetInitialField(const INPAR::ARTDYN::InitialField init,  //!< type of initial field
+    virtual void SetInitialField(const Inpar::ArtDyn::InitialField init,  //!< type of initial field
         const int startfuncno  //!< number of spatial function
     )
     {
@@ -117,9 +117,9 @@ namespace ART
     }
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
     {
-      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
+      return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
     };
 
     //! right-hand side alias the dynamic force residual
@@ -159,36 +159,36 @@ namespace ART
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const override
     {
       return dbcmaps_;
     }
 
     // create field test
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override = 0;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override = 0;
 
    protected:
     //! @name general algorithm parameters
     //! arterial network discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
     //! linear solver
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
     const Teuchos::ParameterList& params_;
-    CORE::IO::DiscretizationWriter& output_;
+    Core::IO::DiscretizationWriter& output_;
     //! the processor ID from the communicator
     int myrank_;
 
     /// (standard) system matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     /// rhs: right hand side vector
     Teuchos::RCP<Epetra_Vector> rhs_;
 
     /// (scatra) system matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_sysmat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_sysmat_;
 
     /// rhs: right hand side vector of scatra
     Teuchos::RCP<Epetra_Vector> scatra_rhs_;
@@ -223,7 +223,7 @@ namespace ART
 
 
   };  // class TimInt
-}  // namespace ART
+}  // namespace Arteries
 
 
 

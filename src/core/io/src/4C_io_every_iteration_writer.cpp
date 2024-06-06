@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::IO::EveryIterationWriter::EveryIterationWriter()
+Core::IO::EveryIterationWriter::EveryIterationWriter()
     : isinit_(false),
       issetup_(false),
       isnewton_initialized_(false),
@@ -41,8 +41,8 @@ CORE::IO::EveryIterationWriter::EveryIterationWriter()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::IO::EveryIterationWriter::Init(const CORE::IO::DiscretizationWriter* parent_writer,
-    CORE::IO::EveryIterationWriterInterface* interface, const Teuchos::ParameterList& params)
+void Core::IO::EveryIterationWriter::Init(const Core::IO::DiscretizationWriter* parent_writer,
+    Core::IO::EveryIterationWriterInterface* interface, const Teuchos::ParameterList& params)
 {
   issetup_ = false;
 
@@ -55,14 +55,14 @@ void CORE::IO::EveryIterationWriter::Init(const CORE::IO::DiscretizationWriter* 
   run_number_ = params.get<int>("RUN_NUMBER");
   write_only_this_step_ = params.get<int>("STEP_NP_NUMBER");
   write_owner_each_newton_iteration_ =
-      CORE::UTILS::IntegralValue<bool>(params, "WRITE_OWNER_EACH_NEWTON_ITER");
+      Core::UTILS::IntegralValue<bool>(params, "WRITE_OWNER_EACH_NEWTON_ITER");
 
   isinit_ = true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::IO::EveryIterationWriter::Setup()
+void Core::IO::EveryIterationWriter::Setup()
 {
   throw_if_not_initialized(__LINE__);
 
@@ -81,16 +81,16 @@ void CORE::IO::EveryIterationWriter::Setup()
   std::string prefix;
   prefix = dir_name + "/" + create_run_directory(file_dir_path);
 
-  Teuchos::RCP<CORE::IO::OutputControl> control_iteration = Teuchos::null;
+  Teuchos::RCP<Core::IO::OutputControl> control_iteration = Teuchos::null;
   control_iteration =
-      Teuchos::rcp(new CORE::IO::OutputControl(*parent_writer().Output(), prefix.c_str()));
+      Teuchos::rcp(new Core::IO::OutputControl(*parent_writer().Output(), prefix.c_str()));
 
   // adjust steps per file
   adjust_steps_per_file(*control_iteration);
 
   // create new output writer object
-  every_iter_writer_ = Teuchos::rcp(new CORE::IO::DiscretizationWriter(
-      parent_writer(), control_iteration, CORE::IO::CopyType::shape));
+  every_iter_writer_ = Teuchos::rcp(new Core::IO::DiscretizationWriter(
+      parent_writer(), control_iteration, Core::IO::CopyType::shape));
 
   // save base file name
   base_filename_ = every_iter_writer_->Output()->FileName();
@@ -100,7 +100,7 @@ void CORE::IO::EveryIterationWriter::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string CORE::IO::EveryIterationWriter::create_run_directory(
+std::string Core::IO::EveryIterationWriter::create_run_directory(
     const std::string& file_dir_path) const
 {
   if (run_number_ < 0) return "";
@@ -116,14 +116,14 @@ std::string CORE::IO::EveryIterationWriter::create_run_directory(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::IO::EveryIterationWriter::create_directory(const std::string& dir_path) const
+void Core::IO::EveryIterationWriter::create_directory(const std::string& dir_path) const
 {
-  CORE::IO::create_directory(dir_path, myrank_);
+  Core::IO::create_directory(dir_path, myrank_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::IO::create_directory(const std::string& dir_path, const int myrank)
+void Core::IO::create_directory(const std::string& dir_path, const int myrank)
 {
   if (myrank != 0) return;
 
@@ -135,7 +135,7 @@ void CORE::IO::create_directory(const std::string& dir_path, const int myrank)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string CORE::IO::ExtractPath(const std::string& full_filename)
+std::string Core::IO::ExtractPath(const std::string& full_filename)
 {
   std::string filename_path;
   size_t pos = full_filename.rfind('/');
@@ -147,7 +147,7 @@ std::string CORE::IO::ExtractPath(const std::string& full_filename)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string CORE::IO::ExtractFileName(const std::string& full_filename)
+std::string Core::IO::ExtractFileName(const std::string& full_filename)
 {
   std::string filenameonly = full_filename;
 
@@ -162,7 +162,7 @@ std::string CORE::IO::ExtractFileName(const std::string& full_filename)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string CORE::IO::RemoveRestartStepFromFileName(
+std::string Core::IO::RemoveRestartStepFromFileName(
     const std::string& filename, const int restart_step)
 {
   if (restart_step == 0) return filename;
@@ -183,14 +183,14 @@ std::string CORE::IO::RemoveRestartStepFromFileName(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::IO::EveryIterationWriter::write_this_step() const
+bool Core::IO::EveryIterationWriter::write_this_step() const
 {
   return (write_only_this_step_ < 0 or write_only_this_step_ == interface_->GetStepNp());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::IO::EveryIterationWriter::adjust_steps_per_file(CORE::IO::OutputControl& control) const
+void Core::IO::EveryIterationWriter::adjust_steps_per_file(Core::IO::OutputControl& control) const
 {
   int new_file_steps = control.FileSteps() * MAX_NUMBER_LINE_SEARCH_ITERATIONS_;
   if (new_file_steps > std::numeric_limits<int>::max())
@@ -201,14 +201,14 @@ void CORE::IO::EveryIterationWriter::adjust_steps_per_file(CORE::IO::OutputContr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::IO::EveryIterationWriter::print_path2_screen(const std::string& path) const
+void Core::IO::EveryIterationWriter::print_path2_screen(const std::string& path) const
 {
-  CORE::IO::cout << "every iteration output path: \"" << path << "\"" << CORE::IO::endl;
+  Core::IO::cout << "every iteration output path: \"" << path << "\"" << Core::IO::endl;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::IO::EveryIterationWriter::InitNewtonIteration()
+void Core::IO::EveryIterationWriter::InitNewtonIteration()
 {
   throw_if_not_setup(__LINE__);
 
@@ -236,7 +236,7 @@ void CORE::IO::EveryIterationWriter::InitNewtonIteration()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::IO::EveryIterationWriter::AddNewtonIteration(const int newton_iteration)
+void Core::IO::EveryIterationWriter::AddNewtonIteration(const int newton_iteration)
 {
   throw_if_not_setup(__LINE__);
 
@@ -255,7 +255,7 @@ void CORE::IO::EveryIterationWriter::AddNewtonIteration(const int newton_iterati
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::IO::EveryIterationWriter::add_line_search_iteration(
+void Core::IO::EveryIterationWriter::add_line_search_iteration(
     const int newton_iteration, const int linesearch_iteration)
 {
   throw_if_not_setup(__LINE__);
@@ -281,7 +281,7 @@ void CORE::IO::EveryIterationWriter::add_line_search_iteration(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CORE::IO::CountLinesInFile(const std::string& filepath)
+int Core::IO::CountLinesInFile(const std::string& filepath)
 {
   std::ifstream myfile(filepath);
 

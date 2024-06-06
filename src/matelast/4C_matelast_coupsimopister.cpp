@@ -14,20 +14,20 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupSimoPister::CoupSimoPister(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupSimoPister::CoupSimoPister(
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), mue_(matdata->Get<double>("MUE"))
 {
 }
 
-MAT::ELASTIC::CoupSimoPister::CoupSimoPister(MAT::ELASTIC::PAR::CoupSimoPister* params)
+Mat::Elastic::CoupSimoPister::CoupSimoPister(Mat::Elastic::PAR::CoupSimoPister* params)
     : params_(params)
 {
 }
 
-void MAT::ELASTIC::CoupSimoPister::AddStrainEnergy(double& psi,
-    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
-    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
+void Mat::Elastic::CoupSimoPister::AddStrainEnergy(double& psi,
+    const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
+    const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   // material Constant mu
   const double mue = params_->mue_;
@@ -37,8 +37,8 @@ void MAT::ELASTIC::CoupSimoPister::AddStrainEnergy(double& psi,
   psi += 0.5 * mue * (prinv(0) - 3.) - mue * log(std::pow(prinv(2), 0.5));
 }
 
-void MAT::ELASTIC::CoupSimoPister::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>& dPI,
-    CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+void Mat::Elastic::CoupSimoPister::add_derivatives_principal(Core::LinAlg::Matrix<3, 1>& dPI,
+    Core::LinAlg::Matrix<6, 1>& ddPII, const Core::LinAlg::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {
   const double mue = params_->mue_;

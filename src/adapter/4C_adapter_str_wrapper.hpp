@@ -18,11 +18,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
-  /// This class is a wrapper of ADAPTER::Structure. It follows the "decorator" design pattern. This
-  /// approach allows to dynamically add functionalities to an instance of ADAPTER::Structure. For
-  /// example, ADAPTER::StructureTimeLoop implements the Integrate function for sequential time
+  /// This class is a wrapper of Adapter::Structure. It follows the "decorator" design pattern. This
+  /// approach allows to dynamically add functionalities to an instance of Adapter::Structure. For
+  /// example, Adapter::StructureTimeLoop implements the Integrate function for sequential time
   /// marching.
   class StructureWrapper : public Structure
   {
@@ -133,20 +133,20 @@ namespace ADAPTER
     [[nodiscard]] const Epetra_Map& DomainMap() const override { return structure_->DomainMap(); }
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
     {
       return structure_->SystemMatrix();
     }
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       return structure_->BlockSystemMatrix();
     }
 
     /// switch structure field to block matrix
-    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override
+    void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override
     {
       structure_->use_block_matrix(domainmaps, rangemaps);
     }
@@ -158,19 +158,19 @@ namespace ADAPTER
     }
 
     // access to locsys manager
-    Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() override
+    Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override
     {
       return structure_->LocsysManager();
     }
 
     /// direct access to discretization
-    Teuchos::RCP<DRT::Discretization> discretization() override
+    Teuchos::RCP<Discret::Discretization> discretization() override
     {
       return structure_->discretization();
     }
 
     /// read only access to discretization
-    [[nodiscard]] virtual Teuchos::RCP<const DRT::Discretization> GetDiscretization() const
+    [[nodiscard]] virtual Teuchos::RCP<const Discret::Discretization> GetDiscretization() const
     {
       return structure_->discretization();
     }
@@ -194,16 +194,16 @@ namespace ADAPTER
     }
 
     /// get type of thickness scaling for thin shell structures
-    INPAR::STR::StcScale GetSTCAlgo() override { return structure_->GetSTCAlgo(); }
+    Inpar::STR::StcScale GetSTCAlgo() override { return structure_->GetSTCAlgo(); }
 
     /// access to scaling matrix for STC
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override
     {
       return structure_->GetSTCMat();
     }
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
     {
       return structure_->GetDBCMapExtractor();
     }
@@ -275,8 +275,8 @@ namespace ADAPTER
     int Integrate() override { return structure_->Integrate(); }
 
     //! do something in case nonlinear solution does not converge for some reason
-    INPAR::STR::ConvergenceStatus PerformErrorAction(
-        INPAR::STR::ConvergenceStatus nonlinsoldiv) override
+    Inpar::STR::ConvergenceStatus PerformErrorAction(
+        Inpar::STR::ConvergenceStatus nonlinsoldiv) override
     {
       return structure_->PerformErrorAction(nonlinsoldiv);
     }
@@ -332,7 +332,7 @@ namespace ADAPTER
     }
 
     /// access to output object
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() override
+    Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() override
     {
       return structure_->DiscWriter();
     }
@@ -377,7 +377,7 @@ namespace ADAPTER
     void set_state(const Teuchos::RCP<Epetra_Vector>& x) override { structure_->set_state(x); }
 
     /// set evaluation action
-    void SetActionType(const CORE::Elements::ActionType& action) override
+    void SetActionType(const Core::Elements::ActionType& action) override
     {
       structure_->SetActionType(action);
     }
@@ -407,7 +407,7 @@ namespace ADAPTER
     //@{
 
     /// nonlinear solve
-    INPAR::STR::ConvergenceStatus Solve() override { return structure_->Solve(); }
+    Inpar::STR::ConvergenceStatus Solve() override { return structure_->Solve(); }
 
     //! linear structure solve with just an interface load
     Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override
@@ -416,7 +416,7 @@ namespace ADAPTER
     }
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override
+    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override
     {
       return structure_->LinearSolver();
     }
@@ -488,7 +488,7 @@ namespace ADAPTER
 
 
     /// create result test for encapsulated structure algorithm
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override
     {
       return structure_->CreateFieldTest();
     }
@@ -507,10 +507,10 @@ namespace ADAPTER
     bool HaveMicroMat() override { return structure_->HaveMicroMat(); }
 
     /// do we have this model
-    bool HaveModel(INPAR::STR::ModelType model) override { return structure_->HaveModel(model); }
+    bool HaveModel(Inpar::STR::ModelType model) override { return structure_->HaveModel(model); }
 
     /// return model evaluator
-    STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override
+    STR::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::STR::ModelType mtype) override
     {
       return structure_->ModelEvaluator(mtype);
     }
@@ -550,7 +550,7 @@ namespace ADAPTER
     /// x^n+1_i+1 = x^n     + disstepinc
     Teuchos::RCP<Epetra_Vector> disstepinc_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

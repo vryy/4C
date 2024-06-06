@@ -31,7 +31,7 @@ namespace PARTICLEENGINE
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHKernelBase;
   class MaterialHandler;
@@ -40,12 +40,12 @@ namespace PARTICLEINTERACTION
   class SPHInterfaceViscosity;
   class SPHRecoilPressureEvaporation;
   class SPHBarrierForce;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHSurfaceTension
   {
@@ -69,10 +69,10 @@ namespace PARTICLEINTERACTION
     //! setup surface tension handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+        const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
+        const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+        const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle,
+        const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs);
 
     //! set current time
     void set_current_time(const double currenttime);
@@ -129,22 +129,22 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! kernel handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
+    std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel_;
 
     //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+    std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial_;
 
     //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+    std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs_;
 
     //! interface viscosity handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHInterfaceViscosity> interfaceviscosity_;
+    std::unique_ptr<ParticleInteraction::SPHInterfaceViscosity> interfaceviscosity_;
 
     //! evaporation induced recoil pressure handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHRecoilPressureEvaporation> recoilpressureevaporation_;
+    std::unique_ptr<ParticleInteraction::SPHRecoilPressureEvaporation> recoilpressureevaporation_;
 
     //! barrier force handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHBarrierForce> barrierforce_;
+    std::unique_ptr<ParticleInteraction::SPHBarrierForce> barrierforce_;
 
     //! liquid particle type
     PARTICLEENGINE::TypeEnum liquidtype_;
@@ -204,7 +204,7 @@ namespace PARTICLEINTERACTION
     const double trans_d_t_wet_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

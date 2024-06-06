@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   // forward declaration
   class MatListReactions;
@@ -233,17 +233,17 @@ namespace MAT
 
     /*----------------------------------------------------------------------*/
     /// parameters for scalar transport material
-    class ScatraReactionMat : public CORE::MAT::PAR::Parameter
+    class ScatraReactionMat : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ScatraReactionMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// returns the enum of the current coupling type
-      MAT::PAR::ReactionCoupling set_coupling_type(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Mat::PAR::ReactionCoupling set_coupling_type(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// Initialize
       void Initialize();
@@ -261,7 +261,7 @@ namespace MAT
       const int distrfunctreaccoeffid_;
 
       /// type of coupling
-      const MAT::PAR::ReactionCoupling coupling_;
+      const Mat::PAR::ReactionCoupling coupling_;
 
       /// specifies scalar type in reaction
       const std::vector<double> couprole_;
@@ -285,14 +285,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ScatraReactionMatType : public CORE::COMM::ParObjectType
+  class ScatraReactionMatType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ScatraReactionMatType"; }
 
     static ScatraReactionMatType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraReactionMatType instance_;
@@ -300,16 +300,16 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material
-  class ScatraReactionMat : public CORE::MAT::Material
+  class ScatraReactionMat : public Core::Mat::Material
   {
-    friend class MAT::MatListReactions;
+    friend class Mat::MatListReactions;
 
    public:
     /// construct empty material object
     ScatraReactionMat();
 
     /// construct the material object given material parameters
-    explicit ScatraReactionMat(MAT::PAR::ScatraReactionMat* params);
+    explicit ScatraReactionMat(Mat::PAR::ScatraReactionMat* params);
 
     //! @name Packing and Unpacking
 
@@ -334,7 +334,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -356,13 +356,13 @@ namespace MAT
     virtual void Initialize() { params_->Initialize(); }
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_scatra_reaction;
+      return Core::Materials::m_scatra_reaction;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraReactionMat(*this));
     }
@@ -392,10 +392,10 @@ namespace MAT
     //! Return reaction coefficient at Gauss-point
     /*!
          Depending on whether the reaction coefficient is defined as spatially varying
-         or not (see MAT::PAR::ScatraReactionMat::isdistrfunctreaccoeff_ ), the reaction coefficient
-       defined by <CODE> REACCOEFF </CODE> (see MAT::PAR::ScatraReactionMat::reaccoeff_ ) is either
+         or not (see Mat::PAR::ScatraReactionMat::isdistrfunctreaccoeff_ ), the reaction coefficient
+       defined by <CODE> REACCOEFF </CODE> (see Mat::PAR::ScatraReactionMat::reaccoeff_ ) is either
        updated by evaluating the distribution function <CODE> DISTRFUNCT </CODE> (see
-       MAT::PAR::ScatraReactionMat::distrfunctreaccoeffid_ ) at the Gauss-point coodinates, or left
+       Mat::PAR::ScatraReactionMat::distrfunctreaccoeffid_ ) at the Gauss-point coodinates, or left
        as is.
 
          \return reaction coefficient at Gauss-point (double)
@@ -408,7 +408,7 @@ namespace MAT
     const std::vector<int>* stoich() const { return &params_->stoich_; }
 
     /// return type of coupling
-    MAT::PAR::ReactionCoupling coupling() const { return params_->coupling_; }
+    Mat::PAR::ReactionCoupling coupling() const { return params_->coupling_; }
 
     /// return role in coupling
     const std::vector<double>* couprole() const { return &params_->couprole_; }
@@ -423,7 +423,7 @@ namespace MAT
     bool get_is_distr_funct_reac_coeff() const { return params_->isdistrfunctreaccoeff_; }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// calculate advanced reaction terms
     double calc_rea_body_force_term(const int k,  //!< current scalar id
@@ -494,10 +494,10 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::ScatraReactionMat* params_;
+    Mat::PAR::ScatraReactionMat* params_;
   };  // class ScatraReactionMat
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

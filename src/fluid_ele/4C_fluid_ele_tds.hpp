@@ -25,14 +25,17 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FLD
 {
-  class TDSEleDataType : public CORE::COMM::ParObjectType
+  class TDSEleDataType : public Core::Communication::ParObjectType
   {
     // friend class ParObjectFactory;
    public:
     static TDSEleDataType& Instance() { return instance_; };
 
     /// Create ParObject from packed data
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override { return nullptr; }
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override
+    {
+      return nullptr;
+    }
 
     /// internal name of this ParObjectType.
     std::string Name() const override { return "TDSEleData"; }
@@ -43,7 +46,7 @@ namespace FLD
 
 
 
-  class TDSEleData : public CORE::COMM::ParObject
+  class TDSEleData : public Core::Communication::ParObject
   {
    public:
     /*!
@@ -57,7 +60,7 @@ namespace FLD
     \ref Pack and \ref Unpack are used to communicate this class object
 
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -110,24 +113,24 @@ namespace FLD
     /*!
     \brief Returns the subgrid velocity at time n (sveln_)
     */
-    CORE::LINALG::SerialDenseMatrix Sveln() const { return sveln_; }
+    Core::LinAlg::SerialDenseMatrix Sveln() const { return sveln_; }
 
     /*!
     \brief Returns the subgrid velocity at time n+1 (svelnp_)
     */
-    CORE::LINALG::SerialDenseMatrix Svelnp() const { return svelnp_; }
+    Core::LinAlg::SerialDenseMatrix Svelnp() const { return svelnp_; }
 
    private:
     //! matrices of subgrid-scale acceleration values at integration points of this element
-    CORE::LINALG::SerialDenseMatrix saccn_;
+    Core::LinAlg::SerialDenseMatrix saccn_;
 
     //! matrices of subgrid-scale velocity values, current iteration value, at integration points of
     //! this element
-    CORE::LINALG::SerialDenseMatrix svelnp_;
+    Core::LinAlg::SerialDenseMatrix svelnp_;
 
     //! matrices of subgrid-scale velocity values, last timestep, at integration points of this
     //! element
-    CORE::LINALG::SerialDenseMatrix sveln_;
+    Core::LinAlg::SerialDenseMatrix sveln_;
   };
 
 }  // namespace FLD

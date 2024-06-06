@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods for namespace DRT
+\brief A collection of helper methods for namespace Discret
 
 \level 1
 
@@ -22,12 +22,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   //! Update material configuration of @p dis with @p disp
   void update_reference_config_with_disp(
-      Teuchos::RCP<const DRT::Discretization> dis, Teuchos::RCP<const Epetra_Vector> disp);
-}  // namespace CORE::GEO
+      Teuchos::RCP<const Discret::Discretization> dis, Teuchos::RCP<const Epetra_Vector> disp);
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

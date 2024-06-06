@@ -12,7 +12,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-CORE::GEO::NearestObject::NearestObject()
+Core::Geo::NearestObject::NearestObject()
     : object_type_(NOTYPE_OBJECT), node_id_(-1), line_id_(-1), surf_id_(-1), label_(-1)
 {
   physcoord_.PutScalar(0.0);
@@ -20,7 +20,7 @@ CORE::GEO::NearestObject::NearestObject()
 }
 
 
-CORE::GEO::NearestObject::NearestObject(const CORE::GEO::NearestObject& old)
+Core::Geo::NearestObject::NearestObject(const Core::Geo::NearestObject& old)
     : object_type_(old.object_type_),
       node_id_(old.node_id_),
       line_id_(old.line_id_),
@@ -32,7 +32,7 @@ CORE::GEO::NearestObject::NearestObject(const CORE::GEO::NearestObject& old)
 }
 
 
-CORE::GEO::NearestObject& CORE::GEO::NearestObject::operator=(const CORE::GEO::NearestObject& old)
+Core::Geo::NearestObject& Core::Geo::NearestObject::operator=(const Core::Geo::NearestObject& old)
 {
   object_type_ = old.object_type_;
   node_id_ = old.node_id_;
@@ -44,7 +44,7 @@ CORE::GEO::NearestObject& CORE::GEO::NearestObject::operator=(const CORE::GEO::N
 }
 
 
-void CORE::GEO::NearestObject::clear()
+void Core::Geo::NearestObject::clear()
 {
   object_type_ = NOTYPE_OBJECT;
   node_id_ = -1;
@@ -56,8 +56,8 @@ void CORE::GEO::NearestObject::clear()
 }
 
 
-void CORE::GEO::NearestObject::setNodeObjectType(
-    const int nodeId, const int label, const CORE::LINALG::Matrix<3, 1>& physcoord)
+void Core::Geo::NearestObject::setNodeObjectType(
+    const int nodeId, const int label, const Core::LinAlg::Matrix<3, 1>& physcoord)
 {
   object_type_ = NODE_OBJECT;
   node_id_ = nodeId;
@@ -70,8 +70,8 @@ void CORE::GEO::NearestObject::setNodeObjectType(
 }
 
 
-void CORE::GEO::NearestObject::setLineObjectType(const int lineId, const int surfId,
-    const int label, const CORE::LINALG::Matrix<3, 1>& physcoord)
+void Core::Geo::NearestObject::setLineObjectType(const int lineId, const int surfId,
+    const int label, const Core::LinAlg::Matrix<3, 1>& physcoord)
 {
   object_type_ = LINE_OBJECT;
   line_id_ = lineId;
@@ -84,8 +84,8 @@ void CORE::GEO::NearestObject::setLineObjectType(const int lineId, const int sur
 }
 
 
-void CORE::GEO::NearestObject::set_surface_object_type(
-    const int surfId, const int label, const CORE::LINALG::Matrix<3, 1>& physcoord)
+void Core::Geo::NearestObject::set_surface_object_type(
+    const int surfId, const int label, const Core::LinAlg::Matrix<3, 1>& physcoord)
 {
   object_type_ = SURFACE_OBJECT;
   surf_id_ = surfId;

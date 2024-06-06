@@ -20,17 +20,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class BlockSparseMatrixBase;
-}  // namespace CORE::LINALG
-namespace DRT
+}  // namespace Core::LinAlg
+namespace Discret
 {
   class Discretization;
 }
 
-namespace MORTAR
+namespace Mortar
 {
   class MultiFieldCoupling
   {
@@ -40,13 +40,13 @@ namespace MORTAR
 
 
     /// add a new discretization to perform coupling on
-    void PushBackCoupling(const Teuchos::RCP<DRT::Discretization>& dis,  ///< discretization
-        const int nodeset,                                               ///< nodeset to couple
-        const std::vector<int> dofs_to_couple                            ///< dofs to couple
+    void PushBackCoupling(const Teuchos::RCP<Discret::Discretization>& dis,  ///< discretization
+        const int nodeset,                                                   ///< nodeset to couple
+        const std::vector<int> dofs_to_couple                                ///< dofs to couple
     );
 
     /// Perform condensation in all blocks of the matrix
-    void CondenseMatrix(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat);
+    void CondenseMatrix(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat);
 
     /// Perform condensation in the right-hand side
     void CondenseRhs(Teuchos::RCP<Epetra_Vector>& rhs);
@@ -55,9 +55,9 @@ namespace MORTAR
     void RecoverIncr(Teuchos::RCP<Epetra_Vector>& incr);
 
    private:
-    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> p_;
+    std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> p_;
   };
-}  // namespace MORTAR
+}  // namespace Mortar
 
 
 

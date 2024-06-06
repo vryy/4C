@@ -28,13 +28,13 @@ FOUR_C_NAMESPACE_OPEN
 
 // Constructor of the mixture constituent parameters
 MIXTURE::PAR::MixtureConstituent::MixtureConstituent(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
-    : CORE::MAT::PAR::Parameter(matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
+    : Core::Mat::PAR::Parameter(matdata)
 {
 }
 
 // Create an instance of the constituent from the parameters
-Teuchos::RCP<CORE::MAT::Material> MIXTURE::PAR::MixtureConstituent::create_material()
+Teuchos::RCP<Core::Mat::Material> MIXTURE::PAR::MixtureConstituent::create_material()
 {
   FOUR_C_THROW(
       "Cannot create mixture constituent from this method. Use CreateConstituent() instead.");
@@ -45,49 +45,49 @@ Teuchos::RCP<CORE::MAT::Material> MIXTURE::PAR::MixtureConstituent::create_mater
 MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int matnum)
 {
   // for the sake of safety
-  if (GLOBAL::Problem::Instance()->Materials() == Teuchos::null)
+  if (Global::Problem::Instance()->Materials() == Teuchos::null)
   {
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   }
 
   // yet another safety check
-  if (GLOBAL::Problem::Instance()->Materials()->Num() == 0)
+  if (Global::Problem::Instance()->Materials()->Num() == 0)
   {
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
   }
 
   // retrieve problem instance to read from
-  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question
-  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matnum);
+  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(matnum);
 
   switch (curmat->Type())
   {
-    case CORE::Materials::mix_elasthyper:
+    case Core::Materials::mix_elasthyper:
     {
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
-    case CORE::Materials::mix_elasthyper_damage:
+    case Core::Materials::mix_elasthyper_damage:
     {
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
-    case CORE::Materials::mix_elasthyper_elastin_membrane:
+    case Core::Materials::mix_elasthyper_elastin_membrane:
     {
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
-    case CORE::Materials::mix_remodelfiber_expl:
+    case Core::Materials::mix_remodelfiber_expl:
     {
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
-    case CORE::Materials::mix_full_constrained_mixture_fiber:
+    case Core::Materials::mix_full_constrained_mixture_fiber:
     {
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
-    case CORE::Materials::mix_remodelfiber_impl:
+    case Core::Materials::mix_remodelfiber_impl:
     {
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
-    case CORE::Materials::mix_solid_material:
+    case Core::Materials::mix_solid_material:
     {
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
     }
@@ -104,7 +104,7 @@ MIXTURE::MixtureConstituent::MixtureConstituent(MIXTURE::PAR::MixtureConstituent
 }
 
 //! Init is called once at the beginning to setup the number of GPs and the Parameter List
-void MIXTURE::MixtureConstituent::ReadElement(int numgp, INPUT::LineDefinition* linedef)
+void MIXTURE::MixtureConstituent::ReadElement(int numgp, Input::LineDefinition* linedef)
 {
   // Init must only be called once
   if (has_read_element_) FOUR_C_THROW("ReadElement() is called multiple times. Just once allowed.");
@@ -124,11 +124,11 @@ void MIXTURE::MixtureConstituent::Setup(Teuchos::ParameterList& params, const in
 }
 
 // Pack everything for distribution to other processors
-void MIXTURE::MixtureConstituent::PackConstituent(CORE::COMM::PackBuffer& data) const
+void MIXTURE::MixtureConstituent::PackConstituent(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::ParObject::AddtoPack(data, numgp_);
-  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(has_read_element_));
-  CORE::COMM::ParObject::AddtoPack(data, static_cast<int>(is_setup_));
+  Core::Communication::ParObject::AddtoPack(data, numgp_);
+  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(has_read_element_));
+  Core::Communication::ParObject::AddtoPack(data, static_cast<int>(is_setup_));
 }
 
 // Unpack base constituent data, need to be called by every derived class
@@ -140,15 +140,15 @@ void MIXTURE::MixtureConstituent::UnpackConstituent(
   numgp_ = 0;
   is_setup_ = false;
 
-  CORE::COMM::ParObject::ExtractfromPack(position, data, numgp_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, numgp_);
 
-  has_read_element_ = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
-  is_setup_ = (bool)CORE::COMM::ParObject::ExtractInt(position, data);
+  has_read_element_ = (bool)Core::Communication::ParObject::ExtractInt(position, data);
+  is_setup_ = (bool)Core::Communication::ParObject::ExtractInt(position, data);
 }
 
-void MIXTURE::MixtureConstituent::EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
-    const CORE::LINALG::Matrix<3, 3>& F_in, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
+void MIXTURE::MixtureConstituent::EvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
+    const Core::LinAlg::Matrix<3, 3>& F_in, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   FOUR_C_THROW("This constituent cannot handle an additional inelastic part.");
 }

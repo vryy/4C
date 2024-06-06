@@ -32,8 +32,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  * Constructor
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleCalcHDG<distype>::FluidEleCalcHDG() : usescompletepoly_(true)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleCalcHDG<distype>::FluidEleCalcHDG() : usescompletepoly_(true)
 {
 }
 
@@ -42,14 +42,15 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>::FluidEleCalcHDG() : usescompletepoly_(t
 /*----------------------------------------------------------------------*
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra, const CORE::FE::GaussIntegration&,
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, const Core::FE::GaussIntegration&,
     bool offdiag)
 {
   return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
@@ -58,26 +59,28 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMENTS::Fluid* ele)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(
+    const Discret::ELEMENTS::Fluid* ele)
 {
   // Check if this is an HDG element, if yes, can initialize...
-  if (const DRT::ELEMENTS::FluidHDG* hdgele = dynamic_cast<const DRT::ELEMENTS::FluidHDG*>(ele))
+  if (const Discret::ELEMENTS::FluidHDG* hdgele =
+          dynamic_cast<const Discret::ELEMENTS::FluidHDG*>(ele))
   {
     usescompletepoly_ = hdgele->uses_complete_polynomial_space();
     if (shapes_ == Teuchos::null)
-      shapes_ = Teuchos::rcp(new CORE::FE::ShapeValues<distype>(
+      shapes_ = Teuchos::rcp(new Core::FE::ShapeValues<distype>(
           hdgele->Degree(), usescompletepoly_, 2 * ele->Degree()));
     else if (shapes_->degree_ != unsigned(ele->Degree()) ||
              shapes_->usescompletepoly_ != usescompletepoly_)
-      shapes_ = Teuchos::rcp(new CORE::FE::ShapeValues<distype>(
+      shapes_ = Teuchos::rcp(new Core::FE::ShapeValues<distype>(
           hdgele->Degree(), usescompletepoly_, 2 * ele->Degree()));
 
     if (shapesface_ == Teuchos::null)
     {
-      CORE::FE::ShapeValuesFaceParams svfparams(
+      Core::FE::ShapeValuesFaceParams svfparams(
           ele->Degree(), usescompletepoly_, 2 * ele->Degree());
-      shapesface_ = Teuchos::rcp(new CORE::FE::ShapeValuesFace<distype>(svfparams));
+      shapesface_ = Teuchos::rcp(new Core::FE::ShapeValuesFace<distype>(svfparams));
     }
 
     if (local_solver_ == Teuchos::null)
@@ -89,12 +92,13 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
 
 
 
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
-    CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&, bool offdiag)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(Discret::ELEMENTS::Fluid* ele,
+    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector&,
+    Core::LinAlg::SerialDenseVector&, bool offdiag)
 {
   InitializeShapes(ele);
 
@@ -114,12 +118,12 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
   {
     Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "forcing");
     std::vector<int> localDofs = discretization.Dof(1, ele);
-    CORE::FE::ExtractMyValues(*matrix_state, interiorebofoaf_, localDofs);
+    Core::FE::ExtractMyValues(*matrix_state, interiorebofoaf_, localDofs);
   }
 
   // interior correction term for the weakly compressible benchmark if applicable
   interiorecorrectionterm_.resize(shapes_->ndofs_, 0.0);
-  const Teuchos::ParameterList& fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fluidparams = Global::Problem::Instance()->FluidDynamicParams();
   int corrtermfuncnum = fluidparams.get<int>("CORRTERMFUNCNO");
   if (corrtermfuncnum > 0)
     local_solver_->compute_correction_term(interiorecorrectionterm_, corrtermfuncnum);
@@ -177,9 +181,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::read_global_vectors(
-    const CORE::Elements::Element& ele, DRT::Discretization& discretization,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::read_global_vectors(
+    const Core::Elements::Element& ele, Discret::Discretization& discretization,
     const std::vector<int>& lm, const bool updateLocally)
 {
   // read the HDG solution vector (for traces)
@@ -188,23 +192,23 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::read_global_vectors(
   interior_acc_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
   FOUR_C_ASSERT(lm.size() == trace_val_.size(), "Internal error");
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState("velaf");
-  CORE::FE::ExtractMyValues(*matrix_state, trace_val_, lm);
+  Core::FE::ExtractMyValues(*matrix_state, trace_val_, lm);
 
   // read the interior values from solution vector
   matrix_state = discretization.GetState(1, "intvelaf");
   std::vector<int> localDofs = discretization.Dof(1, &ele);
-  CORE::FE::ExtractMyValues(*matrix_state, interior_val_, localDofs);
+  Core::FE::ExtractMyValues(*matrix_state, interior_val_, localDofs);
 
   matrix_state = discretization.GetState(1, "intaccam");
-  CORE::FE::ExtractMyValues(*matrix_state, interior_acc_, localDofs);
+  Core::FE::ExtractMyValues(*matrix_state, interior_acc_, localDofs);
 }
 
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::update_secondary_solution(
-    const CORE::Elements::Element& ele, DRT::Discretization& discretization,
-    const CORE::LINALG::SerialDenseVector& updateG, const CORE::LINALG::SerialDenseVector& updateUp)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::update_secondary_solution(
+    const Core::Elements::Element& ele, Discret::Discretization& discretization,
+    const Core::LinAlg::SerialDenseVector& updateG, const Core::LinAlg::SerialDenseVector& updateUp)
 {
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "intvelnp");
   std::vector<int> localDofs = discretization.Dof(1, &ele);
@@ -252,16 +256,16 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::update_secondary_solution(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(Discret::ELEMENTS::Fluid* ele,
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   // get the action required
-  const FLD::Action act = CORE::UTILS::GetAsEnum<FLD::Action>(params, "action");
+  const FLD::Action act = Core::UTILS::GetAsEnum<FLD::Action>(params, "action");
 
   switch (act)
   {
@@ -311,11 +315,11 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Flui
 
 
 
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::compute_error(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcHDG<distype>::compute_error(Discret::ELEMENTS::Fluid* ele,
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseVector& elevec)
 {
   InitializeShapes(ele);
 
@@ -333,15 +337,15 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::compute_error(DRT::ELEMENTS::Fluid*
   }
 
   // analytic solution
-  CORE::LINALG::Matrix<nsd_, 1> u(true);
+  Core::LinAlg::Matrix<nsd_, 1> u(true);
   double p = 0.0;
-  CORE::LINALG::Matrix<nsd_, nsd_> dervel(true);
-  CORE::LINALG::Matrix<nsd_, 1> xyz(true);
+  Core::LinAlg::Matrix<nsd_, nsd_> dervel(true);
+  Core::LinAlg::Matrix<nsd_, 1> xyz(true);
 
-  const INPAR::FLUID::CalcError calcerr =
-      CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(params, "calculate error");
+  const Inpar::FLUID::CalcError calcerr =
+      Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(params, "calculate error");
   const int calcerrfunctno =
-      CORE::UTILS::GetAsEnum<INPAR::FLUID::CalcError>(params, "error function number");
+      Core::UTILS::GetAsEnum<Inpar::FLUID::CalcError>(params, "error function number");
 
   double err_u = 0., err_p = 0., err_h = 0., norm_u = 0., norm_p = 0., norm_h = 0.;
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
@@ -393,11 +397,11 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::compute_error(DRT::ELEMENTS::Fluid*
 
 
 /// projection of function field
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(Discret::ELEMENTS::Fluid* ele,
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
   // Create the necessary objects to the solution of the problem as the solver
   // and the shape functions for both the interior, shapes_, and the trace, shapesface_.
@@ -423,7 +427,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
   if (elevec2.numRows() > 0)
   {
     // Create the local matrix from starting at the addres where elevec2 is with the right shape
-    CORE::LINALG::SerialDenseMatrix localMat(
+    Core::LinAlg::SerialDenseMatrix localMat(
         Teuchos::View, elevec2.values(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1);
     // Initialize matrix to zeros
     localMat.putScalar(0.0);
@@ -435,12 +439,12 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
       // jfac is a vector containing the jacobian times the weight of the quadrature points
       const double fac = shapes_->jfac(q);
       // xyz is a vector containing the coordiantes of the quadrature points in real coordinates
-      CORE::LINALG::Matrix<nsd_, 1> xyz(false);
+      Core::LinAlg::Matrix<nsd_, 1> xyz(false);
       // Filling xyz with the values take from the element xyzreal matrix
       for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_->xyzreal(d, q);
       // Declaring vectors for velocity and grad(u) as well as the pressure scalar value
-      CORE::LINALG::Matrix<nsd_, 1> u(false);
-      CORE::LINALG::Matrix<nsd_, nsd_> grad(true);  // is not necessarily set in evaluate_all
+      Core::LinAlg::Matrix<nsd_, 1> u(false);
+      Core::LinAlg::Matrix<nsd_, nsd_> grad(true);  // is not necessarily set in evaluate_all
       double p;
 
       FOUR_C_ASSERT(initfield != nullptr && startfunc != nullptr,
@@ -448,7 +452,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
 
       // This function returns the values of velocity, gradient and pressure from the given
       // initial field that can be a know field or a user-defined one
-      evaluate_all(*startfunc, INPAR::FLUID::InitialField(*initfield), xyz, u, grad, p);
+      evaluate_all(*startfunc, Inpar::FLUID::InitialField(*initfield), xyz, u, grad, p);
 
       // now fill the components in the one-sided mass matrix and the right hand side
       // shapes_->ndofs_ gives the number of shape functions present in the element
@@ -500,14 +504,14 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
     // Instead of computing the integral of the product here we are multiplying
     // the previously compute part of the integral to give the same result
     // In this way we avoid a cycle through the shape functions
-    CORE::LINALG::multiplyNT(
+    Core::LinAlg::multiplyNT(
         local_solver_->massMat, local_solver_->massPart, local_solver_->massPartW);
 
     // Creating and solving a system of the form Ax = b where
     // A is a matrix and x and b are vectors
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
-    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+    using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     // Setting A matrix
     inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat));
@@ -522,11 +526,11 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
   // Here we have the projection of the field on the trace
   // mass is the mass matrix for the system to be solved
   // the dimension of the mass matrix is given by the number of shape functions
-  CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+  Core::LinAlg::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
   // TRaceVEC is the vector of the trace values
   // instead of being a vector it is a matrix so that we use the same matrix
   // to solve the projection problem on every component of the field
-  CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
+  Core::LinAlg::SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
   FOUR_C_ASSERT(
       elevec1.numRows() == static_cast<int>(nsd_ * shapesface_->nfdofs_) ||
           elevec1.numRows() == 1 + static_cast<int>(nfaces_ * nsd_ * shapesface_->nfdofs_),
@@ -569,7 +573,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
       const double fac = shapesface_->jfac(q);
       // xyz is the vector containing the coordinates of the quadrature points
       //(in local coordinates)
-      CORE::LINALG::Matrix<nsd_, 1> xyz(false);
+      Core::LinAlg::Matrix<nsd_, 1> xyz(false);
 
       // Taking the real coordinates of quadrature points of the current face
       // from the shapesface_ utility
@@ -578,12 +582,12 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
       // Creating the vector of trace velocities
       // It is a nsd_ dimensional vector because we are working in a quadrature
       // point and therefore we only have nds_ unknowns
-      CORE::LINALG::Matrix<nsd_, 1> u(false);
+      Core::LinAlg::Matrix<nsd_, 1> u(false);
 
       // Deciding if we are initializing a field or if it is a time dependant
       // boundary condition
       if (initfield != nullptr)  // Initial function
-        evaluate_velocity(*startfunc, INPAR::FLUID::InitialField(*initfield), xyz, u);
+        evaluate_velocity(*startfunc, Inpar::FLUID::InitialField(*initfield), xyz, u);
       else
       {
         // This is used to project a function only on the boundary during the
@@ -601,8 +605,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
           // for each component of the velocity field
           const int funct_num = (*functno)[d];
           if (funct_num > 0)
-            u(d) = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+            u(d) = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
                        .Evaluate(xyz.A(), *time, d);
         }
       }
@@ -627,8 +631,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
     }
 
     // Solving step, nothing fancy
-    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+    using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
     // In this cas trVec is a proper vector and not a matrix used as multiple
@@ -660,10 +664,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
 
 
 
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
-    DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& elevec1)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
+    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Core::LinAlg::SerialDenseVector& elevec1)
 {
   InitializeShapes(ele);
   // Check if the vector has the correct size
@@ -672,14 +676,14 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
 
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
-  CORE::LINALG::SerialDenseMatrix locations =
-      CORE::FE::getEleNodeNumbering_nodes_paramspace(distype);
+  Core::LinAlg::SerialDenseMatrix locations =
+      Core::FE::getEleNodeNumbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
   // certain coordinate. In fact the lenght of the vector is given by the number
   // of shape functions, that is the same of the number of degrees of freedom of
   // an element.
-  CORE::LINALG::SerialDenseVector values(shapes_->ndofs_);
+  Core::LinAlg::SerialDenseVector values(shapes_->ndofs_);
 
   // get local solution values
   // The vector "matrix_state" contains the interior velocity values following
@@ -744,21 +748,21 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
   // Same as before bu this time the dimension is nsd_-1 because we went from
   // the interior to the faces. We have to be careful because we are using a
   // part of the previous vector. The coordinates are still in the local frame.
-  locations = CORE::FE::getEleNodeNumbering_nodes_paramspace(
-      CORE::FE::DisTypeToFaceShapeType<distype>::shape);
+  locations = Core::FE::getEleNodeNumbering_nodes_paramspace(
+      Core::FE::DisTypeToFaceShapeType<distype>::shape);
 
   // Storing the number of nodes for each face of the element as vector
   // NumberCornerNodes
-  std::vector<int> ncn = CORE::FE::getNumberOfFaceElementCornerNodes(distype);
+  std::vector<int> ncn = Core::FE::getNumberOfFaceElementCornerNodes(distype);
   // NumberInternalNodes
-  std::vector<int> nin = CORE::FE::getNumberOfFaceElementInternalNodes(distype);
+  std::vector<int> nin = Core::FE::getNumberOfFaceElementInternalNodes(distype);
 
   // Now the vector "matrix_state" contains the trace velocity values following
   // the local id numbers
   matrix_state = discretization.GetState(0, "velnp");
 
   // we have always two dofsets
-  CORE::Elements::Element::LocationArray la(2);
+  Core::Elements::Element::LocationArray la(2);
   ele->LocationVector(discretization, la, false);
   localDofs = la[0].lm_;
   solvalues.resize(localDofs.size());
@@ -769,15 +773,15 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
     solvalues[i] = (*matrix_state)[lid];
   }
 
-  CORE::LINALG::SerialDenseVector fvalues(shapesface_->nfdofs_);
+  Core::LinAlg::SerialDenseVector fvalues(shapesface_->nfdofs_);
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
     // Checking how many nodes the face has
-    const int nfn = CORE::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
+    const int nfn = Core::FE::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
     // As already said, the dimension of the coordinate matrix is now nsd_-1
     // times the number of nodes in the face.
-    CORE::LINALG::Matrix<nsd_ - 1, nfn> xsishuffle(true);
+    Core::LinAlg::Matrix<nsd_ - 1, nfn> xsishuffle(true);
 
     // Cycling throught the nodes of the face to store the node positions in the
     // correct order using xsishuffle as a temporary vector
@@ -847,23 +851,24 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
 /*----------------------------------------------------------------------*
  * interpolate solution for postprocessing of hit              bk 03/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_for_hit(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_for_hit(
+    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Core::LinAlg::SerialDenseVector& elevec1)
 {
   InitializeShapes(ele);
   // get coordinates of hex 8
-  CORE::LINALG::Matrix<nsd_, nen_> xyze(true);
+  Core::LinAlg::Matrix<nsd_, nen_> xyze(true);
 
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze);
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, xyze);
 
   const int numsamppoints = 5;
   FOUR_C_ASSERT(elevec1.numRows() == numsamppoints * numsamppoints * numsamppoints * 6,
       "Vector does not have correct size");
   // sampling locations in 1D in parent domain
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
-  CORE::LINALG::SerialDenseMatrix locations(3, 125);
-  CORE::LINALG::SerialDenseVector values(shapes_->ndofs_);
+  Core::LinAlg::SerialDenseMatrix locations(3, 125);
+  Core::LinAlg::SerialDenseVector values(shapes_->ndofs_);
 
   int l = 0;
   for (int i = 0; i < numsamppoints; i++)
@@ -902,10 +907,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_for_hit(DRT::E
     }
 
     // also save coordinates
-    CORE::LINALG::Matrix<nen_, 1> myfunct;
-    CORE::FE::shape_function<distype>(shapes_->xsi, myfunct);
+    Core::LinAlg::Matrix<nen_, 1> myfunct;
+    Core::FE::shape_function<distype>(shapes_->xsi, myfunct);
 
-    CORE::LINALG::Matrix<nsd_, 1> mypoint(true);
+    Core::LinAlg::Matrix<nsd_, 1> mypoint(true);
     mypoint.MultiplyNN(xyze, myfunct);
 
     for (unsigned int d = 0; d < nsd_; ++d) elevec1(6 * i + d + 3) = mypoint(d);
@@ -917,17 +922,17 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_for_hit(DRT::E
 /*----------------------------------------------------------------------*
  * project force for hit                                       bk 03/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hit(
-    DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hit(
+    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
   const int numsamppoints = 5;
 
   // sampling locations in 1D in parent domain
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
-  CORE::LINALG::SerialDenseMatrix locations;
+  Core::LinAlg::SerialDenseMatrix locations;
 #ifdef FOUR_C_DEBUG
   locations.shape(3, 125);
   int l = 0;
@@ -942,7 +947,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hit(
       }
 #endif
 
-  std::vector<CORE::FE::LagrangePolynomial> poly1d;
+  std::vector<Core::FE::LagrangePolynomial> poly1d;
   const unsigned int degree = 4;
   std::vector<double> points(degree);
   for (unsigned int i = 0; i <= degree; ++i)
@@ -953,10 +958,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hit(
         points[c] = loc1D[j];
         ++c;
       }
-    poly1d.push_back(CORE::FE::LagrangePolynomial(points, loc1D[i]));
+    poly1d.push_back(Core::FE::LagrangePolynomial(points, loc1D[i]));
   }
 
-  CORE::FE::PolynomialSpaceTensor<nsd_, CORE::FE::LagrangePolynomial> poly(poly1d);
+  Core::FE::PolynomialSpaceTensor<nsd_, Core::FE::LagrangePolynomial> poly(poly1d);
 
 #ifdef FOUR_C_DEBUG
   // check if we have the right number of polynomials
@@ -969,17 +974,17 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hit(
 
   if (elevec1.numRows() > 0)
   {
-    CORE::LINALG::SerialDenseMatrix localMat(
+    Core::LinAlg::SerialDenseMatrix localMat(
         Teuchos::View, elevec1.values(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1);
     localMat.putScalar(0.0);
 
     // create mass matrix for interior by looping over quadrature points
     for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
     {
-      CORE::LINALG::Matrix<nsd_, 1> f(false);
+      Core::LinAlg::Matrix<nsd_, 1> f(false);
       const double fac = shapes_->jfac(q);
-      CORE::LINALG::SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
-      CORE::LINALG::Matrix<nsd_, 1> xsi(false);
+      Core::LinAlg::SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
+      Core::LinAlg::Matrix<nsd_, 1> xsi(false);
       for (unsigned int sdm = 0; sdm < nsd_; sdm++) xsi(sdm) = shapes_->quadrature_->Point(q)[sdm];
 
       poly.Evaluate(xsi, values);
@@ -1015,12 +1020,12 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hit(
           localMat(i, nsd_ * nsd_ + d) += shapes_->shfunct(i, q) * f(d) * fac;
       }
     }
-    CORE::LINALG::multiplyNT(
+    Core::LinAlg::multiplyNT(
         local_solver_->massMat, local_solver_->massPart, local_solver_->massPartW);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
-    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+    using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat));
     inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
@@ -1033,18 +1038,18 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hit(
 /*----------------------------------------------------------------------*
  * project force for hit                                       bk 03/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
-    DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
+    Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   const int numsamppoints = 5;
 
   // sampling locations in 1D in parent domain
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
-  CORE::LINALG::SerialDenseMatrix locations;
+  Core::LinAlg::SerialDenseMatrix locations;
 #ifdef FOUR_C_DEBUG
   locations.shape(3, 125);
   int l = 0;
@@ -1059,7 +1064,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
       }
 #endif
 
-  std::vector<CORE::FE::LagrangePolynomial> poly1d;
+  std::vector<Core::FE::LagrangePolynomial> poly1d;
   const unsigned int degree = 4;
   std::vector<double> points(degree);
   for (unsigned int i = 0; i <= degree; ++i)
@@ -1070,10 +1075,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
         points[c] = loc1D[j];
         ++c;
       }
-    poly1d.push_back(CORE::FE::LagrangePolynomial(points, loc1D[i]));
+    poly1d.push_back(Core::FE::LagrangePolynomial(points, loc1D[i]));
   }
 
-  CORE::FE::PolynomialSpaceTensor<nsd_, CORE::FE::LagrangePolynomial> poly(poly1d);
+  Core::FE::PolynomialSpaceTensor<nsd_, Core::FE::LagrangePolynomial> poly(poly1d);
 
   InitializeShapes(ele);
   shapes_->Evaluate(*ele);
@@ -1081,17 +1086,17 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
 
   if (elevec1.numRows() > 0)
   {
-    CORE::LINALG::SerialDenseMatrix localMat(
+    Core::LinAlg::SerialDenseMatrix localMat(
         Teuchos::View, elevec1.values(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1);
     localMat.putScalar(0.0);
 
     // create mass matrix for interior by looping over quadrature points
     for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
     {
-      CORE::LINALG::Matrix<nsd_, 1> f(false);
+      Core::LinAlg::Matrix<nsd_, 1> f(false);
       const double fac = shapes_->jfac(q);
-      CORE::LINALG::SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
-      CORE::LINALG::Matrix<nsd_, 1> xsi(false);
+      Core::LinAlg::SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
+      Core::LinAlg::Matrix<nsd_, 1> xsi(false);
       for (unsigned int sdm = 0; sdm < nsd_; sdm++) xsi(sdm) = shapes_->quadrature_->Point(q)[sdm];
 
       poly.Evaluate(xsi, values);
@@ -1127,12 +1132,12 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
           localMat(i, nsd_ * nsd_ + d) += shapes_->shfunct(i, q) * f(d) * fac;
       }
     }
-    CORE::LINALG::multiplyNT(
+    Core::LinAlg::multiplyNT(
         local_solver_->massMat, local_solver_->massPart, local_solver_->massPartW);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
-    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+    using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     inverseMass.setMatrix(Teuchos::rcpFromRef(local_solver_->massMat));
     inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
@@ -1140,8 +1145,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
   }
 
   // traces
-  CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
-  CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
+  Core::LinAlg::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+  Core::LinAlg::SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
   FOUR_C_ASSERT(
       elevec3.numRows() == static_cast<int>(nsd_ * shapesface_->nfdofs_) ||
           elevec3.numRows() == 1 + static_cast<int>(nfaces_ * nsd_ * shapesface_->nfdofs_),
@@ -1153,22 +1158,22 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
     mass.putScalar(0.0);
     trVec.putScalar(0.0);
 
-    CORE::LINALG::Matrix<nsd_, nsd_> trafo;
-    CORE::LINALG::SerialDenseMatrix faceQPoints;
-    CORE::FE::BoundaryGPToParentGP<nsd_>(faceQPoints, trafo, *shapesface_->quadrature_, distype,
-        CORE::FE::getEleFaceShapeType(distype, face), face);
+    Core::LinAlg::Matrix<nsd_, nsd_> trafo;
+    Core::LinAlg::SerialDenseMatrix faceQPoints;
+    Core::FE::BoundaryGPToParentGP<nsd_>(faceQPoints, trafo, *shapesface_->quadrature_, distype,
+        Core::FE::getEleFaceShapeType(distype, face), face);
 
     for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
     {
       const double fac = shapesface_->jfac(q);
-      CORE::LINALG::Matrix<nsd_, 1> xsi(false);
+      Core::LinAlg::Matrix<nsd_, 1> xsi(false);
 
       // use the location of the quadrature point in the parent element to evaluate the polynomial
       for (unsigned int d = 0; d < nsd_; ++d) xsi(d) = faceQPoints(q, d);
 
-      CORE::LINALG::Matrix<nsd_, 1> u(false);
+      Core::LinAlg::Matrix<nsd_, 1> u(false);
 
-      CORE::LINALG::SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
+      Core::LinAlg::SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
 
       poly.Evaluate(xsi, values);
       // compute values for force and coordinates by summing over all basis functions
@@ -1192,8 +1197,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
       }
     }
 
-    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+    using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
     inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
@@ -1214,13 +1219,13 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_velocity(const int startfunc,
-    const INPAR::FLUID::InitialField initfield, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
-    CORE::LINALG::Matrix<nsd_, 1>& u) const
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_velocity(const int startfunc,
+    const Inpar::FLUID::InitialField initfield, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
+    Core::LinAlg::Matrix<nsd_, 1>& u) const
 {
   // pass on dummy entries (costs a little but will not be significant)
-  CORE::LINALG::Matrix<nsd_, nsd_> grad(true);
+  Core::LinAlg::Matrix<nsd_, nsd_> grad(true);
   double p;
   evaluate_all(startfunc, initfield, xyz, u, grad, p);
 }
@@ -1228,14 +1233,14 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_velocity(const int startf
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_all(const int startfunc,
-    const INPAR::FLUID::InitialField initfield, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
-    CORE::LINALG::Matrix<nsd_, 1>& u, CORE::LINALG::Matrix<nsd_, nsd_>& grad, double& p) const
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_all(const int startfunc,
+    const Inpar::FLUID::InitialField initfield, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
+    Core::LinAlg::Matrix<nsd_, 1>& u, Core::LinAlg::Matrix<nsd_, nsd_>& grad, double& p) const
 {
   switch (initfield)
   {
-    case INPAR::FLUID::initfield_beltrami_flow:
+    case Inpar::FLUID::initfield_beltrami_flow:
       // check whether present flow is indeed three-dimensional
       {
         if (nsd_ != 3) FOUR_C_THROW("Beltrami flow is a three-dimensional flow!");
@@ -1280,7 +1285,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_all(const int startfunc,
       }
       break;
 
-    case INPAR::FLUID::initfield_channel_weakly_compressible:
+    case Inpar::FLUID::initfield_channel_weakly_compressible:
     {
       FLD::ChannelWeaklyCompressibleFunction* channelfunc =
           new FLD::ChannelWeaklyCompressibleFunction;
@@ -1294,15 +1299,15 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_all(const int startfunc,
     }
     break;
 
-    case INPAR::FLUID::initfield_field_by_function:
-    case INPAR::FLUID::initfield_disturbed_field_from_function:
+    case Inpar::FLUID::initfield_field_by_function:
+    case Inpar::FLUID::initfield_disturbed_field_from_function:
     {
       for (unsigned int index = 0; index < nsd_; ++index)
-        u(index) = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfunc - 1)
+        u(index) = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfunc - 1)
                        .Evaluate(xyz.A(), 0, index);
-      p = GLOBAL::Problem::Instance()
-              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfunc - 1)
+      p = Global::Problem::Instance()
+              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfunc - 1)
               .Evaluate(xyz.A(), 0, nsd_);
     }
     break;
@@ -1313,15 +1318,15 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_all(const int startfunc,
   }
 }
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleCalcHDG<distype>* DRT::ELEMENTS::FluidEleCalcHDG<distype>::Instance(
-    CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleCalcHDG<distype>* Discret::ELEMENTS::FluidEleCalcHDG<distype>::Instance(
+    Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::FluidEleCalcHDG<distype>>(
-            new DRT::ELEMENTS::FluidEleCalcHDG<distype>());
+        return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcHDG<distype>>(
+            new Discret::ELEMENTS::FluidEleCalcHDG<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -1330,10 +1335,10 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>* DRT::ELEMENTS::FluidEleCalcHDG<distype>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_pressure_average(DRT::ELEMENTS::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<CORE::MAT::Material>& mat,
-    CORE::LINALG::SerialDenseVector& elevec)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_pressure_average(
+    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+    Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec)
 {
   double pressureint = 0.;
   double volume = 0.;
@@ -1347,15 +1352,15 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_pressure_average(DRT::ELEM
   const double time = local_solver_->fldparatimint_->Time();
 
   // initialize variables
-  CORE::LINALG::Matrix<nsd_, 1> u(true);
+  Core::LinAlg::Matrix<nsd_, 1> u(true);
   double p = 0.0;
-  CORE::LINALG::Matrix<nsd_, nsd_> dervel(true);
-  CORE::LINALG::Matrix<nsd_, 1> xyz(true);
+  Core::LinAlg::Matrix<nsd_, nsd_> dervel(true);
+  Core::LinAlg::Matrix<nsd_, 1> xyz(true);
 
   // get function used to evaluate the error
-  const Teuchos::ParameterList fluidparams = GLOBAL::Problem::Instance()->FluidDynamicParams();
-  const INPAR::FLUID::CalcError calcerr =
-      CORE::UTILS::IntegralValue<INPAR::FLUID::CalcError>(fluidparams, "CALCERROR");
+  const Teuchos::ParameterList fluidparams = Global::Problem::Instance()->FluidDynamicParams();
+  const Inpar::FLUID::CalcError calcerr =
+      Core::UTILS::IntegralValue<Inpar::FLUID::CalcError>(fluidparams, "CALCERROR");
   const int calcerrfunctno = fluidparams.get<int>("CALCERRORFUNCNO");
 
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
@@ -1381,10 +1386,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_pressure_average(DRT::ELEM
 }
 
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(const DRT::ELEMENTS::Fluid* ele,
-    const CORE::FE::ShapeValues<distype>& shapeValues,
-    CORE::FE::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(
+    const Discret::ELEMENTS::Fluid* ele, const Core::FE::ShapeValues<distype>& shapeValues,
+    Core::FE::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly)
     : ndofs_(shapeValues.ndofs_),
       stokes(false),
       weaklycompressible(false),
@@ -1431,27 +1436,27 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(const DRT::ELE
   upUpd.resize((nsd_ + 1) * ndofs_ + 1);
 
   // pointer to class FluidEleParameter (access to the general parameter)
-  fldparatimint_ = Teuchos::rcp(DRT::ELEMENTS::FluidEleParameterTimInt::Instance(), false);
+  fldparatimint_ = Teuchos::rcp(Discret::ELEMENTS::FluidEleParameterTimInt::Instance(), false);
   // initialize also general parameter list, also it will be overwritten in derived subclasses
-  fldpara_ = Teuchos::rcp(DRT::ELEMENTS::FluidEleParameterStd::Instance(), false);
+  fldpara_ = Teuchos::rcp(Discret::ELEMENTS::FluidEleParameterStd::Instance(), false);
 }
 
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_residual(
-    const Teuchos::RCP<CORE::MAT::Material>& mat, const std::vector<double>& val,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_residual(
+    const Teuchos::RCP<Core::Mat::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& accel, const double avgPressure,
-    const CORE::LINALG::Matrix<nsd_, nen_>& ebodyforce, const std::vector<double>& intebodyforce,
-    CORE::LINALG::SerialDenseVector& elevec, const std::vector<double>& interiorecorrectionterm,
+    const Core::LinAlg::Matrix<nsd_, nen_>& ebodyforce, const std::vector<double>& intebodyforce,
+    Core::LinAlg::SerialDenseVector& elevec, const std::vector<double>& interiorecorrectionterm,
     const std::vector<double>& interiorebodyforce)
 {
   // get physical type
-  INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
-  stokes = (physicaltype == INPAR::FLUID::stokes ||
-            physicaltype == INPAR::FLUID::weakly_compressible_stokes);
-  weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
-                        physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+  Inpar::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
+  stokes = (physicaltype == Inpar::FLUID::stokes ||
+            physicaltype == Inpar::FLUID::weakly_compressible_stokes);
+  weaklycompressible = (physicaltype == Inpar::FLUID::weakly_compressible ||
+                        physicaltype == Inpar::FLUID::weakly_compressible_stokes);
 
   gRes.putScalar(0.0);
   upRes.putScalar(0.0);
@@ -1540,16 +1545,16 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_resi
     double RefPressure = 0.0;
     double RefBulkModulus = 0.0;
     double MatParameter = 0.0;
-    if (mat->MaterialType() == CORE::Materials::m_fluid)
+    if (mat->MaterialType() == Core::Materials::m_fluid)
     {
-      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+      const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
       viscosity = actmat->Viscosity();
       density = actmat->Density();
     }
-    else if (mat->MaterialType() == CORE::Materials::m_fluid_murnaghantait)
+    else if (mat->MaterialType() == Core::Materials::m_fluid_murnaghantait)
     {
-      const MAT::MurnaghanTaitFluid* actmat =
-          static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
+      const Mat::MurnaghanTaitFluid* actmat =
+          static_cast<const Mat::MurnaghanTaitFluid*>(mat.get());
       viscosity = actmat->Viscosity();
       density = actmat->ComputeDensity(presnp(q));
       RefPressure = actmat->RefPressure();
@@ -1654,16 +1659,16 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_resi
 
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_matrices(
-    const Teuchos::RCP<CORE::MAT::Material>& mat, const bool evaluateOnlyNonlinear)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_matrices(
+    const Teuchos::RCP<Core::Mat::Material>& mat, const bool evaluateOnlyNonlinear)
 {
   // get physical type
-  INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
-  stokes = (physicaltype == INPAR::FLUID::stokes ||
-            physicaltype == INPAR::FLUID::weakly_compressible_stokes);
-  weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
-                        physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+  Inpar::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
+  stokes = (physicaltype == Inpar::FLUID::stokes ||
+            physicaltype == Inpar::FLUID::weakly_compressible_stokes);
+  weaklycompressible = (physicaltype == Inpar::FLUID::weakly_compressible ||
+                        physicaltype == Inpar::FLUID::weakly_compressible_stokes);
 
   const double invtimefac = 1.0 / (fldparatimint_->TimeFac());
   // Decide if the complete matrix has to be inverted
@@ -1689,13 +1694,13 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_matr
   // If only the convective part has to be recalculated do this
   else
   {
-    CORE::LINALG::Zero(fuMat, fuMat.numRows() * ndofs_ * nsd_);  // clear only velocity part
+    Core::LinAlg::Zero(fuMat, fuMat.numRows() * ndofs_ * nsd_);  // clear only velocity part
     for (int f = 0; f < ufMat.numCols(); ++f)
       for (unsigned int i = 0; i < nsd_ * ndofs_; ++i) ufMat(i, f) = 0.;
   }
 
-  if (mat->MaterialType() != CORE::Materials::m_fluid and
-      mat->MaterialType() != CORE::Materials::m_fluid_murnaghantait)
+  if (mat->MaterialType() != Core::Materials::m_fluid and
+      mat->MaterialType() != Core::Materials::m_fluid_murnaghantait)
     FOUR_C_THROW("Only m_fluid and m_fluid_murnaghantait supported as materials");
 
   double viscosity = 0.0;
@@ -1708,16 +1713,16 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_matr
   for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
   {
     // get material properties
-    if (mat->MaterialType() == CORE::Materials::m_fluid)
+    if (mat->MaterialType() == Core::Materials::m_fluid)
     {
-      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+      const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
       viscosity = actmat->Viscosity();
       density = actmat->Density();
     }
-    else if (mat->MaterialType() == CORE::Materials::m_fluid_murnaghantait)
+    else if (mat->MaterialType() == Core::Materials::m_fluid_murnaghantait)
     {
-      const MAT::MurnaghanTaitFluid* actmat =
-          static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
+      const Mat::MurnaghanTaitFluid* actmat =
+          static_cast<const Mat::MurnaghanTaitFluid*>(mat.get());
       viscosity = actmat->Viscosity();
       density = actmat->ComputeDensity(presnp(q));
       RefPressure = actmat->RefPressure();
@@ -1844,10 +1849,10 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_matr
   if (!evaluateOnlyNonlinear)
   {
     // multiplication of the shapes functions times the shapes functions weighted
-    CORE::LINALG::multiplyNT(massMat, massPart, massPartW);
+    Core::LinAlg::multiplyNT(massMat, massPart, massPartW);
     // multiplication of the shapes functions derivatices
     // times the shapes functions weighted
-    CORE::LINALG::multiplyNT(guMat, gradPart, massPartW);
+    Core::LinAlg::multiplyNT(guMat, gradPart, massPartW);
     ugMat = guMat;
     // scalar multiplication of the matrix times the viscosity
     ugMat.scale(viscosity);
@@ -1855,7 +1860,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_matr
   if (!stokes)
   {
     // this matrix is the nonlinear part of the problem
-    CORE::LINALG::multiplyNT(uuconv, gradPart, uPart);
+    Core::LinAlg::multiplyNT(uuconv, gradPart, uPart);
 
     // compute convection: Need to add diagonal part and transpose off-diagonal blocks
     // (same trick as done when eliminating the velocity gradient)
@@ -1907,17 +1912,17 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_matr
 
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(const int face,
-    const Teuchos::RCP<CORE::MAT::Material>& mat, const std::vector<double>& val,
-    const std::vector<double>& traceval, CORE::LINALG::SerialDenseVector& elevec)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(const int face,
+    const Teuchos::RCP<Core::Mat::Material>& mat, const std::vector<double>& val,
+    const std::vector<double>& traceval, Core::LinAlg::SerialDenseVector& elevec)
 {
   // get physical type
-  INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
-  stokes = (physicaltype == INPAR::FLUID::stokes ||
-            physicaltype == INPAR::FLUID::weakly_compressible_stokes);
-  weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
-                        physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+  Inpar::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
+  stokes = (physicaltype == Inpar::FLUID::stokes ||
+            physicaltype == Inpar::FLUID::weakly_compressible_stokes);
+  weaklycompressible = (physicaltype == Inpar::FLUID::weakly_compressible ||
+                        physicaltype == Inpar::FLUID::weakly_compressible_stokes);
 
   // compute pressure average on element
   double presavg = 0.;
@@ -1979,22 +1984,22 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(c
     }
 
     // get material properties
-    if (mat->MaterialType() != CORE::Materials::m_fluid and
-        mat->MaterialType() != CORE::Materials::m_fluid_murnaghantait)
+    if (mat->MaterialType() != Core::Materials::m_fluid and
+        mat->MaterialType() != Core::Materials::m_fluid_murnaghantait)
       FOUR_C_THROW("Only m_fluid and m_fluid_murnaghantait supported as materials");
 
     double viscosity = 0.0;
     double density = 0.0;
-    if (mat->MaterialType() == CORE::Materials::m_fluid)
+    if (mat->MaterialType() == Core::Materials::m_fluid)
     {
-      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+      const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
       viscosity = actmat->Viscosity();
       density = actmat->Density();
     }
-    else if (mat->MaterialType() == CORE::Materials::m_fluid_murnaghantait)
+    else if (mat->MaterialType() == Core::Materials::m_fluid_murnaghantait)
     {
-      const MAT::MurnaghanTaitFluid* actmat =
-          static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
+      const Mat::MurnaghanTaitFluid* actmat =
+          static_cast<const Mat::MurnaghanTaitFluid*>(mat.get());
       viscosity = actmat->Viscosity();
       density = actmat->ComputeDensity(ifpresnp(q));
     }
@@ -2062,23 +2067,23 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(c
 
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(const int face,
-    const Teuchos::RCP<CORE::MAT::Material>& mat, const bool evaluateOnlyNonlinear,
-    CORE::LINALG::SerialDenseMatrix& elemat)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(const int face,
+    const Teuchos::RCP<Core::Mat::Material>& mat, const bool evaluateOnlyNonlinear,
+    Core::LinAlg::SerialDenseMatrix& elemat)
 {
   // get physical type
-  INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
-  stokes = (physicaltype == INPAR::FLUID::stokes ||
-            physicaltype == INPAR::FLUID::weakly_compressible_stokes);
-  weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
-                        physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+  Inpar::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
+  stokes = (physicaltype == Inpar::FLUID::stokes ||
+            physicaltype == Inpar::FLUID::weakly_compressible_stokes);
+  weaklycompressible = (physicaltype == Inpar::FLUID::weakly_compressible ||
+                        physicaltype == Inpar::FLUID::weakly_compressible_stokes);
 
   trMat.shape(ndofs_ * nsd_, shapesface_.nfdofs_);
   trMatAvg.shape(ndofs_ * nsd_, shapesface_.nfdofs_);
 
-  if (mat->MaterialType() != CORE::Materials::m_fluid and
-      mat->MaterialType() != CORE::Materials::m_fluid_murnaghantait)
+  if (mat->MaterialType() != Core::Materials::m_fluid and
+      mat->MaterialType() != Core::Materials::m_fluid_murnaghantait)
     FOUR_C_THROW("Only m_fluid and m_fluid_murnaghantait supported as materials");
 
   double viscosity = 0.0;
@@ -2088,16 +2093,16 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(c
   for (unsigned int q = 0; q < shapesface_.nqpoints_; ++q)
   {
     // get material properties
-    if (mat->MaterialType() == CORE::Materials::m_fluid)
+    if (mat->MaterialType() == Core::Materials::m_fluid)
     {
-      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+      const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
       viscosity = actmat->Viscosity();
       density = actmat->Density();
     }
-    else if (mat->MaterialType() == CORE::Materials::m_fluid_murnaghantait)
+    else if (mat->MaterialType() == Core::Materials::m_fluid_murnaghantait)
     {
-      const MAT::MurnaghanTaitFluid* actmat =
-          static_cast<const MAT::MurnaghanTaitFluid*>(mat.get());
+      const Mat::MurnaghanTaitFluid* actmat =
+          static_cast<const Mat::MurnaghanTaitFluid*>(mat.get());
       viscosity = actmat->Viscosity();
       density = actmat->ComputeDensity(ifpresnp(q));
     }
@@ -2226,19 +2231,19 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(c
 
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::eliminate_velocity_gradient(
-    CORE::LINALG::SerialDenseMatrix& elemat)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::eliminate_velocity_gradient(
+    Core::LinAlg::SerialDenseMatrix& elemat)
 {
   // get physical type
-  INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
-  weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
-                        physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+  Inpar::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
+  weaklycompressible = (physicaltype == Inpar::FLUID::weakly_compressible ||
+                        physicaltype == Inpar::FLUID::weakly_compressible_stokes);
 
   // invert mass matrix. Inverse will be stored in massMat, too
   {
-    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+    using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     inverseMass.setMatrix(Teuchos::rcpFromRef(massMat));
     inverseMass.invert();
@@ -2248,7 +2253,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::eliminate_velocity_gr
   // create UG * diag(M^{-1}) * GU,
 
   // compute UG * M^{-1}, store result in tmpMatGrad
-  CORE::LINALG::multiply(tmpMatGrad, ugMat, massMat);
+  Core::LinAlg::multiply(tmpMatGrad, ugMat, massMat);
 
   // GU and UG are not fully generated, instead, only three different blocks are kept
   // to compute UG * M^{-1} * GU, therefore compute the product of reduced matrices
@@ -2259,7 +2264,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::eliminate_velocity_gr
   // diagonal blocks.
 
   // compute (UG * M^{-1}) * GU
-  CORE::LINALG::multiplyNT(tmpMat, tmpMatGrad, guMat);
+  Core::LinAlg::multiplyNT(tmpMat, tmpMatGrad, guMat);
   for (unsigned int i = 0; i < ndofs_; ++i)
     for (unsigned int j = 0; j < ndofs_; ++j)
     {
@@ -2284,13 +2289,13 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::eliminate_velocity_gr
 
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
 {
   // get physical type
-  INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
-  weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
-                        physicaltype == INPAR::FLUID::weakly_compressible_stokes);
+  Inpar::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
+  weaklycompressible = (physicaltype == Inpar::FLUID::weakly_compressible ||
+                        physicaltype == Inpar::FLUID::weakly_compressible_stokes);
 
   for (unsigned int i = 0; i < (nsd_ + 1) * ndofs_ + 1; ++i) upUpd(i) = upRes(i);
 
@@ -2340,7 +2345,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
   for (unsigned int i = 0; i < (nsd_ + 1) * ndofs_; ++i)
     uuMatFinal((nsd_ + 1) * ndofs_, i) = uuMat((nsd_ + 1) * ndofs_, i);
 
-  // factorize uuMatFinal and solve. do not use CORE::LINALG::FixedSizeSerialDenseSolver because
+  // factorize uuMatFinal and solve. do not use Core::LinAlg::FixedSizeSerialDenseSolver because
   // we want to solve twice and reuse the factorization
   Teuchos::LAPACK<int, double> lapack;
   const int size = uuMatFinal.numRows();
@@ -2393,9 +2398,9 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
 
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
-    CORE::LINALG::SerialDenseMatrix& eleMat, CORE::LINALG::SerialDenseVector& eleVec)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
+    Core::LinAlg::SerialDenseMatrix& eleMat, Core::LinAlg::SerialDenseVector& eleVec)
 {
   for (unsigned int i = 0; i < nfaces_ * nsd_ * shapesface_.nfdofs_; ++i)
     eleMat(0, 1 + i) = eleMat(1 + i, 0);
@@ -2466,7 +2471,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
       eleMat.numRows());
 
   // update gfMat and apply inverse mass matrix: GF <- M^{-1} (GF - GU * UF)
-  CORE::LINALG::SerialDenseVector gAux;
+  Core::LinAlg::SerialDenseVector gAux;
   gAux.resize(nsd_ * nsd_ * ndofs_);
   for (unsigned int f = 1; f < 1 + nfaces_ * shapesface_.nfdofs_ * nsd_; ++f)
   {
@@ -2501,8 +2506,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
       eleMat.numRows());
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_correction_term(
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_correction_term(
     std::vector<double>& interiorecorrectionterm, int corrtermfuncnum)
 {
   for (unsigned int i = 0; i < ndofs_; ++i)
@@ -2511,14 +2516,14 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_correction_te
     for (unsigned int d = 0; d < nsd_; ++d) x[d] = shapes_.nodexyzreal[i][d];
 
     interiorecorrectionterm[i] =
-        GLOBAL::Problem::Instance()
-            ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(corrtermfuncnum - 1)
+        Global::Problem::Instance()
+            ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(corrtermfuncnum - 1)
             .Evaluate(x, 0.0, 0);
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeBodyForce(
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeBodyForce(
     std::vector<double>& interiorebodyforce, int bodyforcefuncnum)
 {
   for (unsigned int i = 0; i < ndofs_; ++i)
@@ -2528,14 +2533,14 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeBodyForce(
 
     for (unsigned int d = 0; d < nsd_; ++d)
       interiorebodyforce[d * ndofs_ + i] =
-          GLOBAL::Problem::Instance()
-              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(bodyforcefuncnum - 1)
+          Global::Problem::Instance()
+              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(bodyforcefuncnum - 1)
               .Evaluate(x, 0.0, d);
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalResiduals(DRT::ELEMENTS::Fluid* ele)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalResiduals(Discret::ELEMENTS::Fluid* ele)
 {
   std::cout << "ELEMENT ID = " << ele->Id() << " "
             << "---------------------------------------------------------------" << std::endl;
@@ -2576,8 +2581,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalResiduals(DRT::ELEMENTS:
 }
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalVariables(DRT::ELEMENTS::Fluid* ele)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalVariables(Discret::ELEMENTS::Fluid* ele)
 {
   std::cout << "ELEMENT ID = " << ele->Id() << " "
             << "---------------------------------------------------------------" << std::endl;
@@ -2611,9 +2616,9 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalVariables(DRT::ELEMENTS:
 }
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::print_local_correction(
-    DRT::ELEMENTS::Fluid* ele, std::vector<double>& interiorecorrectionterm)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::print_local_correction(
+    Discret::ELEMENTS::Fluid* ele, std::vector<double>& interiorecorrectionterm)
 {
   std::cout << "ELEMENT ID = " << ele->Id() << " "
             << "---------------------------------------------------------------" << std::endl;
@@ -2636,9 +2641,9 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::print_local_correction(
 }
 
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalBodyForce(
-    DRT::ELEMENTS::Fluid* ele, std::vector<double>& interiorebodyforce)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalBodyForce(
+    Discret::ELEMENTS::Fluid* ele, std::vector<double>& interiorebodyforce)
 {
   std::cout << "ELEMENT ID = " << ele->Id() << " "
             << "---------------------------------------------------------------" << std::endl;
@@ -2663,20 +2668,20 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::PrintLocalBodyForce(
 
 
 // explicit instantiation of template classes
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::wedge15>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalcHDG<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::hex8>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::tet10>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::wedge15>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::pyramid5>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

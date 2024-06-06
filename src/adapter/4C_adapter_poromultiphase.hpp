@@ -20,18 +20,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class PoroFluidMultiphaseWrapper;
   class Structure;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class PoroMultiPhase
   {
@@ -139,25 +139,25 @@ namespace ADAPTER
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) = 0;
 
     //! get the extractor
-    virtual Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> Extractor() const = 0;
 
     //! get the monolithic system matrix
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() const = 0;
 
     //! get structure field
-    virtual const Teuchos::RCP<ADAPTER::Structure>& structure_field() = 0;
+    virtual const Teuchos::RCP<Adapter::Structure>& structure_field() = 0;
 
     //! get fluid field
-    virtual const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& fluid_field() = 0;
+    virtual const Teuchos::RCP<Adapter::PoroFluidMultiphaseWrapper>& fluid_field() = 0;
 
     //! build the block null spaces
-    virtual void build_block_null_spaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) = 0;
+    virtual void build_block_null_spaces(Teuchos::RCP<Core::LinAlg::Solver>& solver) = 0;
 
     //! build the block null spaces
     virtual void build_artery_block_null_space(
-        Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum) = 0;
+        Teuchos::RCP<Core::LinAlg::Solver>& solver, const int& arteryblocknum) = 0;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   /**
    * A helper to parse lines as defined in the dat file format into C++ data. This
@@ -58,7 +58,7 @@ namespace CORE::IO
       in >> read_object;
       if (in.fail())
         FOUR_C_THROW("%sCould not read expected value of type '%s'.", user_scope_.c_str(),
-            CORE::UTILS::TryDemangle(typeid(T).name()).c_str());
+            Core::UTILS::TryDemangle(typeid(T).name()).c_str());
       return read_object;
     }
 
@@ -66,7 +66,7 @@ namespace CORE::IO
     //! Prepend a user message for better error messages.
     std::string user_scope_{};
   };
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

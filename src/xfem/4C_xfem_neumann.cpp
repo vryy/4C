@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
 void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
-    Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> systemvector,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix)
+    Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<Epetra_Vector> systemvector,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix)
 {
   if (systemmatrix == Teuchos::null)
     evaluate_neumann(params, discret, *systemvector);
@@ -44,8 +44,8 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
 void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
-    Teuchos::RCP<DRT::Discretization> discret, Epetra_Vector& systemvector,
-    CORE::LINALG::SparseOperator* systemmatrix)
+    Teuchos::RCP<Discret::Discretization> discret, Epetra_Vector& systemvector,
+    Core::LinAlg::SparseOperator* systemmatrix)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 5) evaluate_neumann");
 
@@ -58,11 +58,11 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
   // get the current time
   const double time = params.get("total time", -1.0);
 
-  std::multimap<std::string, CORE::Conditions::Condition*>::iterator fool;
-  std::multimap<std::string, CORE::Conditions::Condition*> condition;
+  std::multimap<std::string, Core::Conditions::Condition*>::iterator fool;
+  std::multimap<std::string, Core::Conditions::Condition*> condition;
 
   // vector for conditions of one special type
-  std::vector<CORE::Conditions::Condition*> condition_vec;
+  std::vector<Core::Conditions::Condition*> condition_vec;
 
   //================================================
   // Load Neumann conditions from discretization
@@ -76,7 +76,7 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
   // copy conditions to a condition multimap
   for (size_t i = 0; i < condition_vec.size(); i++)
   {
-    condition.insert(std::pair<std::string, CORE::Conditions::Condition*>(
+    condition.insert(std::pair<std::string, Core::Conditions::Condition*>(
         std::string("PointNeumann"), condition_vec[i]));
   }
 
@@ -85,7 +85,7 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
   discret->GetCondition("LineNeumann", condition_vec);
   for (size_t i = 0; i < condition_vec.size(); i++)
   {
-    condition.insert(std::pair<std::string, CORE::Conditions::Condition*>(
+    condition.insert(std::pair<std::string, Core::Conditions::Condition*>(
         std::string("LineNeumann"), condition_vec[i]));
   }
 
@@ -94,7 +94,7 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
   discret->GetCondition("SurfaceNeumann", condition_vec);
   for (size_t i = 0; i < condition_vec.size(); i++)
   {
-    condition.insert(std::pair<std::string, CORE::Conditions::Condition*>(
+    condition.insert(std::pair<std::string, Core::Conditions::Condition*>(
         std::string("SurfaceNeumann"), condition_vec[i]));
   }
 
@@ -117,13 +117,13 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
  |  evaluate Neumann for standard conditions (public)       schott 08/11|
  *----------------------------------------------------------------------*/
 void XFEM::EvaluateNeumannStandard(
-    std::multimap<std::string, CORE::Conditions::Condition*>& condition, const double time,
-    bool assemblemat, Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> discret,
-    Epetra_Vector& systemvector, CORE::LINALG::SparseOperator* systemmatrix)
+    std::multimap<std::string, Core::Conditions::Condition*>& condition, const double time,
+    bool assemblemat, Teuchos::ParameterList& params, Teuchos::RCP<Discret::Discretization> discret,
+    Epetra_Vector& systemvector, Core::LinAlg::SparseOperator* systemmatrix)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannStandard" );
 
-  std::multimap<std::string, CORE::Conditions::Condition*>::iterator fool;
+  std::multimap<std::string, Core::Conditions::Condition*>::iterator fool;
 
   //--------------------------------------------------------
   // loop through Point Neumann conditions and evaluate them
@@ -133,7 +133,7 @@ void XFEM::EvaluateNeumannStandard(
     if (fool->first != (std::string) "PointNeumann") continue;
     if (assemblemat && !systemvector.Comm().MyPID())
       std::cout << "WARNING: No linearization of PointNeumann conditions" << std::endl;
-    CORE::Conditions::Condition& cond = *(fool->second);
+    Core::Conditions::Condition& cond = *(fool->second);
     const std::vector<int>* nodeids = cond.GetNodes();
     if (!nodeids) FOUR_C_THROW("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
@@ -147,14 +147,14 @@ void XFEM::EvaluateNeumannStandard(
     if (functnum >= 0)
     {
       functfac =
-          GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(functnum).Evaluate(
+          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(functnum).Evaluate(
               time);
     }
     for (int i = 0; i < nnode; ++i)
     {
       // do only nodes in my row map
       if (!discret->NodeRowMap()->MyGID((*nodeids)[i])) continue;
-      CORE::Nodes::Node* actnode = discret->gNode((*nodeids)[i]);
+      Core::Nodes::Node* actnode = discret->gNode((*nodeids)[i]);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", (*nodeids)[i]);
       // call explicitly the main dofset, i.e. the first column
       std::vector<int> dofs = discret->Dof(0, actnode);
@@ -179,11 +179,11 @@ void XFEM::EvaluateNeumannStandard(
   for (fool = condition.begin(); fool != condition.end(); ++fool)
     if (fool->first == (std::string) "LineNeumann" || fool->first == (std::string) "SurfaceNeumann")
     {
-      CORE::Conditions::Condition& cond = *(fool->second);
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond.Geometry();
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
-      CORE::LINALG::SerialDenseVector elevector;
-      CORE::LINALG::SerialDenseMatrix elematrix;
+      Core::Conditions::Condition& cond = *(fool->second);
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond.Geometry();
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+      Core::LinAlg::SerialDenseVector elevector;
+      Core::LinAlg::SerialDenseMatrix elematrix;
       for (curr = geom.begin(); curr != geom.end(); ++curr)
       {
         // get element location vector, dirichlet flags and ownerships
@@ -195,7 +195,7 @@ void XFEM::EvaluateNeumannStandard(
         if (!assemblemat)
         {
           curr->second->evaluate_neumann(params, *discret, cond, lm, elevector);
-          CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
+          Core::LinAlg::Assemble(systemvector, elevector, lm, lmowner);
         }
         else
         {
@@ -205,7 +205,7 @@ void XFEM::EvaluateNeumannStandard(
           else
             elematrix.putScalar(0.0);
           curr->second->evaluate_neumann(params, *discret, cond, lm, elevector, &elematrix);
-          CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
+          Core::LinAlg::Assemble(systemvector, elevector, lm, lmowner);
           systemmatrix->Assemble(curr->second->Id(), lmstride, elematrix, lm, lmowner);
         }
       }

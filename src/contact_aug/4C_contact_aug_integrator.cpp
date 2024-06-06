@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 \brief A class to perform integrations of Mortar matrices on the overlap
-       of two MORTAR::Elements in 1D and 2D (derived version for
+       of two Mortar::Elements in 1D and 2D (derived version for
        augmented contact)
 
 \level 2
@@ -25,12 +25,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // define and initialize static member
-CONTACT::INTEGRATOR::UniqueProjInfoPair CONTACT::AUG::IntegrationWrapper::projInfo_(0);
+CONTACT::INTEGRATOR::UniqueProjInfoPair CONTACT::Aug::IntegrationWrapper::projInfo_(0);
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::IntegrationWrapper::IntegrationWrapper(
-    Teuchos::ParameterList& params, CORE::FE::CellType eletype, const Epetra_Comm& comm)
+CONTACT::Aug::IntegrationWrapper::IntegrationWrapper(
+    Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm)
     : CONTACT::Integrator::Integrator(params, eletype, comm), integrator_(nullptr)
 
 {
@@ -40,14 +40,14 @@ CONTACT::AUG::IntegrationWrapper::IntegrationWrapper(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sele,
-    MORTAR::Element& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
+void CONTACT::Aug::IntegrationWrapper::integrate_deriv_cell3_d_aux_plane(Mortar::Element& sele,
+    Mortar::Element& mele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   if (cparams_ptr.is_null()) FOUR_C_THROW("The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
-  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == Inpar::Mortar::shape_undefined)
     FOUR_C_THROW(
         "ERROR: integrate_deriv_cell3_d_aux_plane called without specific shape "
         "function defined!");
@@ -59,12 +59,12 @@ void CONTACT::AUG::IntegrationWrapper::integrate_deriv_cell3_d_aux_plane(MORTAR:
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     FOUR_C_THROW(
         "ERROR: integrate_deriv_cell3_d_aux_plane called on a wrong type of "
-        "MORTAR::Element pair!");
+        "Mortar::Element pair!");
   if (cell == Teuchos::null)
     FOUR_C_THROW("integrate_deriv_cell3_d_aux_plane called without integration cell");
 
-  if (shape_fcn() == INPAR::MORTAR::shape_dual ||
-      shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  if (shape_fcn() == Inpar::Mortar::shape_dual ||
+      shape_fcn() == Inpar::Mortar::shape_petrovgalerkin)
     FOUR_C_THROW(
         "ERROR: integrate_deriv_cell3_d_aux_plane supports no Dual shape functions for the "
         "augmented Lagrange solving strategy!");
@@ -81,14 +81,14 @@ void CONTACT::AUG::IntegrationWrapper::integrate_deriv_cell3_d_aux_plane(MORTAR:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele,
-    std::vector<MORTAR::Element*> meles, bool* boundary_ele, bool* proj, const Epetra_Comm& comm,
+void CONTACT::Aug::IntegrationWrapper::IntegrateDerivEle3D(Mortar::Element& sele,
+    std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj, const Epetra_Comm& comm,
     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
   // explicitly defined shape function type needed
-  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == Inpar::Mortar::shape_undefined)
     FOUR_C_THROW(
         "ERROR: integrate_deriv_cell3_d_aux_plane called without specific shape "
         "function defined!");
@@ -97,7 +97,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele
   FOUR_C_ASSERT(Dim() == 3, "ERROR: 3D integration method called for non-3D problem");
 
   // get slave element nodes themselves for normal evaluation
-  CORE::Nodes::Node** mynodes = sele.Nodes();
+  Core::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("IntegrateDerivCell3D: Null pointer!");
 
   // check input data
@@ -106,11 +106,11 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele
     if ((!sele.IsSlave()) || (meles[test]->IsSlave()))
       FOUR_C_THROW(
           "ERROR: IntegrateDerivCell3D called on a wrong type of "
-          "MORTAR::Element pair!");
+          "Mortar::Element pair!");
   }
 
   // contact with wear
-  if (wearlaw_ != INPAR::WEAR::wear_none) FOUR_C_THROW("Wear is not supported!");
+  if (wearlaw_ != Inpar::Wear::wear_none) FOUR_C_THROW("Wear is not supported!");
 
   // Boundary Segmentation check -- HasProj()-check
   //  *boundary_ele = BoundarySegmCheck3D(sele,meles);
@@ -123,7 +123,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele
 
   for (auto& info_pair : projInfo_)
   {
-    MORTAR::Element& mele = *(info_pair.first);
+    Mortar::Element& mele = *(info_pair.first);
     integrator_ = IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
     integrator_->Evaluate(sele, mele, *boundary_ele, info_pair.second);
   }
@@ -142,8 +142,8 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::Element& sele
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::integrate_deriv_slave_element(MORTAR::Element& sele,
-    const Epetra_Comm& comm, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+void CONTACT::Aug::IntegrationWrapper::integrate_deriv_slave_element(Mortar::Element& sele,
+    const Epetra_Comm& comm, const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
       Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr, true);
@@ -153,7 +153,7 @@ void CONTACT::AUG::IntegrationWrapper::integrate_deriv_slave_element(MORTAR::Ele
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::integrate_deriv_slave_element(MORTAR::Element& sele,
+void CONTACT::Aug::IntegrationWrapper::integrate_deriv_slave_element(Mortar::Element& sele,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   if (cparams_ptr.is_null()) FOUR_C_THROW("The contact parameter interface pointer is undefined!");
@@ -166,8 +166,8 @@ void CONTACT::AUG::IntegrationWrapper::integrate_deriv_slave_element(MORTAR::Ele
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::integrate_deriv_segment2_d(MORTAR::Element& sele,
-    double& sxia, double& sxib, MORTAR::Element& mele, double& mxia, double& mxib,
+void CONTACT::Aug::IntegrationWrapper::integrate_deriv_segment2_d(Mortar::Element& sele,
+    double& sxia, double& sxib, Mortar::Element& mele, double& mxia, double& mxib,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // *********************************************************************
@@ -176,12 +176,12 @@ void CONTACT::AUG::IntegrationWrapper::integrate_deriv_segment2_d(MORTAR::Elemen
   if (cparams_ptr.is_null()) FOUR_C_THROW("The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
-  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == Inpar::Mortar::shape_undefined)
     FOUR_C_THROW("integrate_deriv_segment2_d called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
-  if (sele.Shape() == CORE::FE::CellType::line3 ||
-      shape_fcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  if (sele.Shape() == Core::FE::CellType::line3 ||
+      shape_fcn() == Inpar::Mortar::shape_petrovgalerkin)
     FOUR_C_THROW("Petrov-Galerkin / quadratic FE interpolation not yet implemented.");
 
   // check for problem dimension
@@ -189,7 +189,7 @@ void CONTACT::AUG::IntegrationWrapper::integrate_deriv_segment2_d(MORTAR::Elemen
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    FOUR_C_THROW("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
+    FOUR_C_THROW("IntegrateAndDerivSegment called on a wrong type of Mortar::Element pair!");
   if ((sxia < -1.0) || (sxib > 1.0))
     FOUR_C_THROW("IntegrateAndDerivSegment called with infeasible slave limits!");
   if ((mxia < -1.0) || (mxib > 1.0))
@@ -208,8 +208,8 @@ void CONTACT::AUG::IntegrationWrapper::integrate_deriv_segment2_d(MORTAR::Elemen
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele,
-    std::vector<MORTAR::Element*> meles, bool* boundary_ele,
+void CONTACT::Aug::IntegrationWrapper::IntegrateDerivEle2D(Mortar::Element& sele,
+    std::vector<Mortar::Element*> meles, bool* boundary_ele,
     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
@@ -220,21 +220,21 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
   if (cparams_ptr.is_null()) FOUR_C_THROW("The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
-  if (shape_fcn() == INPAR::MORTAR::shape_undefined)
+  if (shape_fcn() == Inpar::Mortar::shape_undefined)
     FOUR_C_THROW("integrate_deriv_segment2_d called without specific shape function defined!");
 
   // check for problem dimension
   if (Dim() != 2) FOUR_C_THROW("2D integration method called for non-2D problem");
 
   // get slave element nodes themselves
-  CORE::Nodes::Node** mynodes = sele.Nodes();
+  Core::Nodes::Node** mynodes = sele.Nodes();
   if (!mynodes) FOUR_C_THROW("IntegrateAndDerivSegment: Null pointer!");
 
   // check input data
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
-      FOUR_C_THROW("IntegrateAndDerivSegment called on a wrong type of MORTAR::Element pair!");
+      FOUR_C_THROW("IntegrateAndDerivSegment called on a wrong type of Mortar::Element pair!");
   }
 
   // number of nodes (slave) and problem dimension
@@ -244,7 +244,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
   // this is element-specific (is there a boundary node in this element?)
   for (int k = 0; k < nrow; ++k)
   {
-    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
+    Mortar::Node* mymrtrnode = dynamic_cast<Mortar::Node*>(mynodes[k]);
     if (!mymrtrnode) FOUR_C_THROW("integrate_deriv_segment2_d: Null pointer!");
   }
 
@@ -252,16 +252,16 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
   timer_ptr->start(GlobalTimeID::IntegrateDerivEle2D);
 
   // Boundary Segmentation check -- HasProj()-check
-  if (IntegrationType() == INPAR::MORTAR::inttype_elements_BS)
+  if (IntegrationType() == Inpar::Mortar::inttype_elements_BS)
     *boundary_ele = BoundarySegmCheck2D(sele, meles);
 
-  if (*boundary_ele == false || IntegrationType() == INPAR::MORTAR::inttype_elements)
+  if (*boundary_ele == false || IntegrationType() == Inpar::Mortar::inttype_elements)
   {
     INTEGRATOR::find_feasible_master_elements(sele, meles, *this, projInfo_);
 
     for (auto& info_pair : projInfo_)
     {
-      MORTAR::Element& mele = *(info_pair.first);
+      Mortar::Element& mele = *(info_pair.first);
       integrator_ =
           IntegratorGeneric::Create(Dim(), sele.Shape(), mele.Shape(), *cparams_ptr, this);
       integrator_->Evaluate(sele, mele, false, info_pair.second);
@@ -282,8 +282,8 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::Element& sele
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create(int probdim,
-    CORE::FE::CellType slavetype, CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
+CONTACT::Aug::IntegratorGeneric* CONTACT::Aug::IntegratorGeneric::Create(int probdim,
+    Core::FE::CellType slavetype, Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
     CONTACT::Integrator* wrapper)
 {
   switch (probdim)
@@ -300,62 +300,62 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create(int pro
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::create2_d(
-    CORE::FE::CellType slavetype, CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
+CONTACT::Aug::IntegratorGeneric* CONTACT::Aug::IntegratorGeneric::create2_d(
+    Core::FE::CellType slavetype, Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
     CONTACT::Integrator* wrapper)
 {
   switch (slavetype)
   {
-    case CORE::FE::CellType::line2:
-      return create2_d<CORE::FE::CellType::line2>(mastertype, cparams, wrapper);
-    case CORE::FE::CellType::nurbs2:
-      return create2_d<CORE::FE::CellType::nurbs2>(mastertype, cparams, wrapper);
-    case CORE::FE::CellType::nurbs3:
-      return create2_d<CORE::FE::CellType::nurbs3>(mastertype, cparams, wrapper);
+    case Core::FE::CellType::line2:
+      return create2_d<Core::FE::CellType::line2>(mastertype, cparams, wrapper);
+    case Core::FE::CellType::nurbs2:
+      return create2_d<Core::FE::CellType::nurbs2>(mastertype, cparams, wrapper);
+    case Core::FE::CellType::nurbs3:
+      return create2_d<Core::FE::CellType::nurbs3>(mastertype, cparams, wrapper);
     default:
       FOUR_C_THROW("Unsupported slave element type %d|\"%s\"", slavetype,
-          CORE::FE::CellTypeToString(slavetype).c_str());
+          Core::FE::CellTypeToString(slavetype).c_str());
       exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <CORE::FE::CellType slavetype>
-CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::create2_d(
-    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper)
+template <Core::FE::CellType slavetype>
+CONTACT::Aug::IntegratorGeneric* CONTACT::Aug::IntegratorGeneric::create2_d(
+    Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper)
 {
   switch (mastertype)
   {
-    case CORE::FE::CellType::line2:
-      return create2_d<slavetype, CORE::FE::CellType::line2>(cparams, wrapper);
-    case CORE::FE::CellType::nurbs2:
-      return create2_d<slavetype, CORE::FE::CellType::nurbs2>(cparams, wrapper);
-    case CORE::FE::CellType::nurbs3:
-      return create2_d<slavetype, CORE::FE::CellType::nurbs3>(cparams, wrapper);
+    case Core::FE::CellType::line2:
+      return create2_d<slavetype, Core::FE::CellType::line2>(cparams, wrapper);
+    case Core::FE::CellType::nurbs2:
+      return create2_d<slavetype, Core::FE::CellType::nurbs2>(cparams, wrapper);
+    case Core::FE::CellType::nurbs3:
+      return create2_d<slavetype, Core::FE::CellType::nurbs3>(cparams, wrapper);
     default:
       FOUR_C_THROW("Unsupported master element type %d|\"%s\"", mastertype,
-          CORE::FE::CellTypeToString(mastertype).c_str());
+          Core::FE::CellTypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::create2_d(
+template <Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+CONTACT::Aug::IntegratorGeneric* CONTACT::Aug::IntegratorGeneric::create2_d(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper)
 {
-  const enum INPAR::CONTACT::VariationalApproach var_type = cparams.get_variational_approach_type();
+  const enum Inpar::CONTACT::VariationalApproach var_type = cparams.get_variational_approach_type();
 
   switch (var_type)
   {
-    case INPAR::CONTACT::var_incomplete:
+    case Inpar::CONTACT::var_incomplete:
     {
       typedef DebugIncompleteIntPolicy<2, slavetype, mastertype> incomplete_policy;
       return Integrator<2, slavetype, mastertype, incomplete_policy>::Instance(&cparams, wrapper);
     }
-    case INPAR::CONTACT::var_complete:
+    case Inpar::CONTACT::var_complete:
     {
       typedef DebugCompleteIntPolicy<2, slavetype, mastertype> complete_policy;
       return Integrator<2, slavetype, mastertype, complete_policy>::Instance(&cparams, wrapper);
@@ -363,7 +363,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::create2_d(
     default:
     {
       FOUR_C_THROW("Unknown variational approach! (var_type= \"%s\" | %d)",
-          INPAR::CONTACT::VariationalApproach2String(var_type).c_str(), var_type);
+          Inpar::CONTACT::VariationalApproach2String(var_type).c_str(), var_type);
       exit(EXIT_FAILURE);
     }
   }
@@ -371,66 +371,66 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::create2_d(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::create3_d(
-    CORE::FE::CellType slavetype, CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
+CONTACT::Aug::IntegratorGeneric* CONTACT::Aug::IntegratorGeneric::create3_d(
+    Core::FE::CellType slavetype, Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams,
     CONTACT::Integrator* wrapper)
 {
   switch (slavetype)
   {
-    case CORE::FE::CellType::quad4:
-      return create3_d<CORE::FE::CellType::quad4>(mastertype, cparams, wrapper);
-    case CORE::FE::CellType::tri3:
-      return create3_d<CORE::FE::CellType::tri3>(mastertype, cparams, wrapper);
-    case CORE::FE::CellType::nurbs4:
-      return create3_d<CORE::FE::CellType::nurbs4>(mastertype, cparams, wrapper);
-    case CORE::FE::CellType::nurbs9:
-      return create3_d<CORE::FE::CellType::nurbs9>(mastertype, cparams, wrapper);
+    case Core::FE::CellType::quad4:
+      return create3_d<Core::FE::CellType::quad4>(mastertype, cparams, wrapper);
+    case Core::FE::CellType::tri3:
+      return create3_d<Core::FE::CellType::tri3>(mastertype, cparams, wrapper);
+    case Core::FE::CellType::nurbs4:
+      return create3_d<Core::FE::CellType::nurbs4>(mastertype, cparams, wrapper);
+    case Core::FE::CellType::nurbs9:
+      return create3_d<Core::FE::CellType::nurbs9>(mastertype, cparams, wrapper);
     default:
       FOUR_C_THROW("Unsupported slave element type %d|\"%s\"",
-          CORE::FE::CellTypeToString(mastertype).c_str());
+          Core::FE::CellTypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <CORE::FE::CellType slavetype>
-CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::create3_d(
-    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper)
+template <Core::FE::CellType slavetype>
+CONTACT::Aug::IntegratorGeneric* CONTACT::Aug::IntegratorGeneric::create3_d(
+    Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper)
 {
   switch (mastertype)
   {
-    case CORE::FE::CellType::quad4:
-      return create3_d<slavetype, CORE::FE::CellType::quad4>(cparams, wrapper);
-    case CORE::FE::CellType::tri3:
-      return create3_d<slavetype, CORE::FE::CellType::tri3>(cparams, wrapper);
-    case CORE::FE::CellType::nurbs4:
-      return create3_d<slavetype, CORE::FE::CellType::nurbs4>(cparams, wrapper);
-    case CORE::FE::CellType::nurbs9:
-      return create3_d<slavetype, CORE::FE::CellType::nurbs9>(cparams, wrapper);
+    case Core::FE::CellType::quad4:
+      return create3_d<slavetype, Core::FE::CellType::quad4>(cparams, wrapper);
+    case Core::FE::CellType::tri3:
+      return create3_d<slavetype, Core::FE::CellType::tri3>(cparams, wrapper);
+    case Core::FE::CellType::nurbs4:
+      return create3_d<slavetype, Core::FE::CellType::nurbs4>(cparams, wrapper);
+    case Core::FE::CellType::nurbs9:
+      return create3_d<slavetype, Core::FE::CellType::nurbs9>(cparams, wrapper);
     default:
       FOUR_C_THROW("Unsupported master element type %d|\"%s\"",
-          CORE::FE::CellTypeToString(mastertype).c_str());
+          Core::FE::CellTypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::create3_d(
+template <Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+CONTACT::Aug::IntegratorGeneric* CONTACT::Aug::IntegratorGeneric::create3_d(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper)
 {
-  const enum INPAR::CONTACT::VariationalApproach var_type = cparams.get_variational_approach_type();
+  const enum Inpar::CONTACT::VariationalApproach var_type = cparams.get_variational_approach_type();
 
   switch (var_type)
   {
-    case INPAR::CONTACT::var_incomplete:
+    case Inpar::CONTACT::var_incomplete:
     {
       typedef DebugIncompleteIntPolicy<3, slavetype, mastertype> incomplete_policy;
       return Integrator<3, slavetype, mastertype, incomplete_policy>::Instance(&cparams, wrapper);
     }
-    case INPAR::CONTACT::var_complete:
+    case Inpar::CONTACT::var_complete:
     {
       typedef DebugCompleteIntPolicy<3, slavetype, mastertype> complete_policy;
       return Integrator<3, slavetype, mastertype, complete_policy>::Instance(&cparams, wrapper);
@@ -438,7 +438,7 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::create3_d(
     default:
     {
       FOUR_C_THROW("Unknown variational approach! (var_type= \"%s\" | %d)",
-          INPAR::CONTACT::VariationalApproach2String(var_type).c_str(), var_type);
+          Inpar::CONTACT::VariationalApproach2String(var_type).c_str(), var_type);
       exit(EXIT_FAILURE);
     }
   }
@@ -446,20 +446,20 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::create3_d(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>*
-CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Instance(
+CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>*
+CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::Instance(
     CONTACT::ParamsInterface* cparams, CONTACT::Integrator* wrapper)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
         return std::unique_ptr<Integrator<probdim, slavetype, mastertype, IntPolicy>>(
             new Integrator<probdim, slavetype, mastertype, IntPolicy>);
       });
 
-  auto instance = singleton_owner.Instance(CORE::UTILS::SingletonAction::create);
+  auto instance = singleton_owner.Instance(Core::UTILS::SingletonAction::create);
   instance->init(cparams, wrapper);
   instance->IntPolicy::timer_.setComm(&wrapper->Comm());
 
@@ -469,9 +469,9 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Instance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator()
+CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator()
     : IntegratorGeneric(), IntPolicy()
 {
   /* empty */
@@ -479,9 +479,9 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator(
+CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator& wrapper)
     : IntegratorGeneric(cparams, wrapper), IntPolicy()
 {
@@ -490,11 +490,11 @@ CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::integrate_deriv_segment2_d(MORTAR::Element& sele, double& sxia, double& sxib,
-    MORTAR::Element& mele, double& mxia, double& mxib)
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
+    IntPolicy>::integrate_deriv_segment2_d(Mortar::Element& sele, double& sxia, double& sxib,
+    Mortar::Element& mele, double& mxia, double& mxib)
 {
   FOUR_C_THROW(
       "Deprecated method! The segmented based integration is no longer "
@@ -503,11 +503,11 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::integrate_deriv_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
-    MORTAR::IntCell& cell, double* auxn)
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
+    IntPolicy>::integrate_deriv_cell3_d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
+    Mortar::IntCell& cell, double* auxn)
 {
   FOUR_C_THROW(
       "Deprecated method! The segmented based integration is no longer "
@@ -516,13 +516,13 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::integrate_deriv_slave_element(MORTAR::Element& sele)
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
+    IntPolicy>::integrate_deriv_slave_element(Mortar::Element& sele)
 {
   // set evaluator
-  const enum MORTAR::ActionType action = c_params().GetActionType();
+  const enum Mortar::ActionType action = c_params().GetActionType();
   set_evaluator(action);
 
   for (int gp = 0; gp < this->wrapper().nGP(); ++gp)
@@ -533,7 +533,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
     // get Gauss point in slave element coordinates
     const double sxi[2] = {eta[0], eta[1]};
-    const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
+    const Core::LinAlg::Matrix<2, 1> sxi_mat(sxi, true);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     sele.evaluate_shape_lag_mult(this->shape_fcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
@@ -545,7 +545,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     const double jac = sele.Jacobian(sxi);
 
     // evaluate the convective slave base vectors
-    CORE::LINALG::Matrix<3, 2> stau;
+    Core::LinAlg::Matrix<3, 2> stau;
     sele.Metrics(sxi, &stau(0, 0), &stau(0, 1));
 
     // evaluate the slave Jacobian 1-st order derivative
@@ -565,16 +565,16 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluate(
-    MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evaluate(
+    Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
-  if (this->wrapper().IntegrationType() != INPAR::MORTAR::inttype_elements)
+  if (this->wrapper().IntegrationType() != Inpar::Mortar::inttype_elements)
     FOUR_C_THROW("How did you come here?");
 
-  const enum MORTAR::ActionType action = c_params().GetActionType();
+  const enum Mortar::ActionType action = c_params().GetActionType();
 
   // set the evaluator: 1-st derivatives only, or 1-st AND 2-nd derivatives
   set_evaluator(action);
@@ -582,18 +582,18 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evalua
   // choose the integration scheme
   switch (action)
   {
-    case MORTAR::eval_static_constraint_rhs:
+    case Mortar::eval_static_constraint_rhs:
     {
       integrate_weighted_gap(sele, mele, boundary_ele, projInfo);
       break;
     }
-    case MORTAR::eval_force_stiff:
-    case MORTAR::eval_force:
+    case Mortar::eval_force_stiff:
+    case Mortar::eval_force:
     {
       integrate_deriv_ele(sele, mele, boundary_ele, projInfo);
       break;
     }
-    case MORTAR::eval_wgap_gradient_error:
+    case Mortar::eval_wgap_gradient_error:
     {
       integrate_weighted_gap_gradient_error(sele, mele, boundary_ele, projInfo);
       break;
@@ -601,7 +601,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evalua
     default:
     {
       FOUR_C_THROW("Unconsidered ActionType = %d | \"%s\" ", action,
-          MORTAR::ActionType2String(action).c_str());
+          Mortar::ActionType2String(action).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -609,20 +609,20 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Evalua
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::set_evaluator(
-    const enum MORTAR::ActionType action)
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::set_evaluator(
+    const enum Mortar::ActionType action)
 {
   switch (action)
   {
-    case MORTAR::eval_static_constraint_rhs:
+    case Mortar::eval_static_constraint_rhs:
     {
       /* do nothing, since no derivatives have to be evaluated */
       break;
     }
-    case MORTAR::eval_force:
-    case MORTAR::eval_wgap_gradient_error:
+    case Mortar::eval_force:
+    case Mortar::eval_wgap_gradient_error:
     {
       if (evaluator_.is_null() or evaluator_->GetType() != Evaluator::Type::deriv1st_only)
         evaluator_ = Teuchos::rcp(new EvaluatorDeriv1stOnly(*this));
@@ -631,7 +631,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::set_ev
       //      std::cout << "eval_force = " << ++count << std::endl;
       break;
     }
-    case MORTAR::eval_force_stiff:
+    case Mortar::eval_force_stiff:
     {
       if (evaluator_.is_null() or evaluator_->GetType() != Evaluator::Type::full)
         evaluator_ = Teuchos::rcp(new EvaluatorFull(*this));
@@ -643,7 +643,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::set_ev
     default:
     {
       FOUR_C_THROW("Unconsidered ActionType = %d | \"%s\" ", action,
-          MORTAR::ActionType2String(action).c_str());
+          Mortar::ActionType2String(action).c_str());
       exit(EXIT_FAILURE);
     }
   }
@@ -651,10 +651,10 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::set_ev
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integrate_deriv_ele(
-    MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::integrate_deriv_ele(
+    Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
   // get slave and master nodal coords for Jacobian / GP evaluation
@@ -682,7 +682,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
 
       // get Gauss point in slave element coordinates
       const double sxi[2] = {eta[0], eta[1]};
-      const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
+      const Core::LinAlg::Matrix<2, 1> sxi_mat(sxi, true);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
       sele.evaluate_shape_lag_mult(
@@ -692,7 +692,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
       shape_function_and_deriv1<slavetype>(sele, sxi_mat, sval_, sderiv_);
 
       // evaluate the convective slave base vectors
-      CORE::LINALG::Matrix<3, 2> stau;
+      Core::LinAlg::Matrix<3, 2> stau;
       sele.Metrics(sxi, &stau(0, 0), &stau(0, 1));
 
       // evaluate the two Jacobians (int. cell and slave element)
@@ -704,7 +704,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
       evaluator_->Deriv_Jacobian(sele, sxi, sderiv_, stau);
 
       const double uniqueProjalpha = projInfo.uniqueProjAlpha_[my::gp_id_];
-      const CORE::LINALG::Matrix<2, 1>& uniqueMxi = projInfo.uniqueMxi_[my::gp_id_];
+      const Core::LinAlg::Matrix<2, 1>& uniqueMxi = projInfo.uniqueMxi_[my::gp_id_];
 
       mele.GetNodalCoords(mcoord_);
 
@@ -712,7 +712,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
       shape_function_and_deriv1_and_deriv2<mastertype>(mele, uniqueMxi, mval_, mderiv_, mderiv2nd_);
 
       // evaluate the convective master base vectors
-      CORE::LINALG::Matrix<3, 2> mtau;
+      Core::LinAlg::Matrix<3, 2> mtau;
       mele.Metrics(uniqueMxi.A(), &mtau(0, 0), &mtau(0, 1));
 
       // evaluate the GP master coordinate 1-st and 2-nd order derivatives
@@ -758,7 +758,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
 
       switch (c_params().GetActionType())
       {
-        case MORTAR::eval_force_stiff:
+        case Mortar::eval_force_stiff:
         {
           get_deriv1st_kappa(sele, lmval_, wgt, derivjac_);
 
@@ -787,10 +787,10 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integrate_weighted_gap(
-    MORTAR::Element& sele, MORTAR::Element& mele, bool boundary_ele,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::integrate_weighted_gap(
+    Mortar::Element& sele, Mortar::Element& mele, bool boundary_ele,
     const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
   // get slave and master nodal coords for Jacobian / GP evaluation
@@ -818,7 +818,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
 
       // get Gauss point in slave element coordinates
       const double sxi[2] = {eta[0], eta[1]};
-      const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
+      const Core::LinAlg::Matrix<2, 1> sxi_mat(sxi, true);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
       sele.evaluate_shape_lag_mult(
@@ -830,7 +830,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
       // evaluate the two Jacobians (int. cell and slave element)
       const double jacslave = sele.Jacobian(sxi);
 
-      const CORE::LINALG::Matrix<2, 1>& uniqueMxi = projInfo.uniqueMxi_[my::gp_id_];
+      const Core::LinAlg::Matrix<2, 1>& uniqueMxi = projInfo.uniqueMxi_[my::gp_id_];
 
       mele.GetNodalCoords(mcoord_);
 
@@ -858,10 +858,10 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::integrate_weighted_gap_gradient_error(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
+    IntPolicy>::integrate_weighted_gap_gradient_error(Mortar::Element& sele, Mortar::Element& mele,
     bool boundary_ele, const CONTACT::INTEGRATOR::UniqueProjInfo& projInfo)
 {
   // access unordered maps
@@ -899,7 +899,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
       // get Gauss point in slave element coordinates
       const double sxi[2] = {eta[0], eta[1]};
-      const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
+      const Core::LinAlg::Matrix<2, 1> sxi_mat(sxi, true);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
       sele.evaluate_shape_lag_mult(
@@ -909,7 +909,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
       shape_function_and_deriv1<slavetype>(sele, sxi_mat, sval_, sderiv_);
 
       // evaluate the convective slave base vectors
-      CORE::LINALG::Matrix<3, 2> stau;
+      Core::LinAlg::Matrix<3, 2> stau;
       sele.Metrics(sxi, &stau(0, 0), &stau(0, 1));
 
       // evaluate the two Jacobians (int. cell and slave element)
@@ -920,7 +920,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
       evaluator_->Deriv_Jacobian(sele, sxi, sderiv_, stau);
 
       const double uniqueProjalpha = projInfo.uniqueProjAlpha_[my::gp_id_];
-      const CORE::LINALG::Matrix<2, 1>& uniqueMxi = projInfo.uniqueMxi_[my::gp_id_];
+      const Core::LinAlg::Matrix<2, 1>& uniqueMxi = projInfo.uniqueMxi_[my::gp_id_];
 
       mele.GetNodalCoords(mcoord_);
 
@@ -928,7 +928,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
       shape_function_and_deriv1<mastertype>(mele, uniqueMxi, mval_, mderiv_);
 
       // evaluate the convective master base vectors
-      CORE::LINALG::Matrix<3, 2> mtau;
+      Core::LinAlg::Matrix<3, 2> mtau;
       mele.Metrics(uniqueMxi.A(), &mtau(0, 0), &mtau(0, 1));
 
       // evaluate the GP master coordinate 1-st and 2-nd order derivatives
@@ -962,13 +962,13 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-int CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_lin_size(
-    MORTAR::Element& sele) const
+int CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_lin_size(
+    Mortar::Element& sele) const
 {
   int linsize = 0;
-  const CORE::Nodes::Node* const* mynodes = sele.Nodes();
+  const Core::Nodes::Node* const* mynodes = sele.Nodes();
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     const Node& cnode = static_cast<const Node&>(*mynodes[i]);
@@ -980,11 +980,11 @@ int CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_lin
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
     IntPolicy>::extract_active_slave_node_li_ds(std::vector<unsigned>& active_nlids,
-    const MORTAR::Element& sele) const
+    const Mortar::Element& sele) const
 {
   const Epetra_Map* active_snode_row_map = this->c_params().template Get<Epetra_Map>(1);
 
@@ -1001,140 +1001,140 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::hard_reset(
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::hard_reset(
     const unsigned linsize)
 {
-  CORE::GEN::reset(my::SLAVEDIM, 0, dsxigp_);
+  Core::Gen::reset(my::SLAVEDIM, 0, dsxigp_);
 
-  CORE::GEN::reset(my::MASTERDIM, linsize + my::MASTERNUMNODE * probdim, dmxigp_);
-  CORE::GEN::reset(linsize + my::MASTERNUMNODE * probdim, dalpha_);
-  CORE::GEN::reset(my::MASTERDIM, linsize + my::MASTERNUMNODE * probdim, ddmxigp_);
+  Core::Gen::reset(my::MASTERDIM, linsize + my::MASTERNUMNODE * probdim, dmxigp_);
+  Core::Gen::reset(linsize + my::MASTERNUMNODE * probdim, dalpha_);
+  Core::Gen::reset(my::MASTERDIM, linsize + my::MASTERNUMNODE * probdim, ddmxigp_);
 
   std::fill(gpn_, gpn_ + 3, 0.0);
-  CORE::GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_non_unit_);
-  CORE::GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, ddn_non_unit_);
-  CORE::GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_unit_);
-  CORE::GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, ddn_unit_);
+  Core::Gen::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_non_unit_);
+  Core::Gen::reset(probdim, linsize + probdim * my::MASTERNUMNODE, ddn_non_unit_);
+  Core::Gen::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_unit_);
+  Core::Gen::reset(probdim, linsize + probdim * my::MASTERNUMNODE, ddn_unit_);
 
-  CORE::GEN::reset(probdim * my::SLAVENUMNODE, deriv_gapn_sl_);
-  CORE::GEN::reset(linsize + probdim * my::MASTERNUMNODE, deriv_gapn_ma_);
+  Core::Gen::reset(probdim * my::SLAVENUMNODE, deriv_gapn_sl_);
+  Core::Gen::reset(linsize + probdim * my::MASTERNUMNODE, deriv_gapn_ma_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::weak_reset(
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::weak_reset(
     const unsigned linsize)
 {
-  CORE::GEN::reset(my::SLAVEDIM, 0, dsxigp_);
+  Core::Gen::reset(my::SLAVEDIM, 0, dsxigp_);
 
-  CORE::GEN::weak_reset(dmxigp_);
-  CORE::GEN::weak_reset(dalpha_);
-  CORE::GEN::weak_reset(ddmxigp_);
+  Core::Gen::weak_reset(dmxigp_);
+  Core::Gen::weak_reset(dalpha_);
+  Core::Gen::weak_reset(ddmxigp_);
 
   std::fill(gpn_, gpn_ + 3, 0.0);
-  CORE::GEN::weak_reset(dn_non_unit_);
-  CORE::GEN::weak_reset(ddn_non_unit_);
-  CORE::GEN::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_unit_);
-  CORE::GEN::weak_reset(ddn_unit_);
+  Core::Gen::weak_reset(dn_non_unit_);
+  Core::Gen::weak_reset(ddn_non_unit_);
+  Core::Gen::reset(probdim, linsize + probdim * my::MASTERNUMNODE, dn_unit_);
+  Core::Gen::weak_reset(ddn_unit_);
 
-  CORE::GEN::reset(probdim * my::SLAVENUMNODE, deriv_gapn_sl_);
-  CORE::GEN::reset(linsize + probdim * my::MASTERNUMNODE, deriv_gapn_ma_);
+  Core::Gen::reset(probdim * my::SLAVENUMNODE, deriv_gapn_sl_);
+  Core::Gen::reset(linsize + probdim * my::MASTERNUMNODE, deriv_gapn_ma_);
 }
 
 /*----------------------------------------------------------------------------*/
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create2_d<CORE::FE::CellType::line2>(
-    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create2_d<CORE::FE::CellType::line2, CORE::FE::CellType::line2>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create2_d<Core::FE::CellType::line2>(
+    Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create2_d<Core::FE::CellType::line2, Core::FE::CellType::line2>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create2_d<CORE::FE::CellType::nurbs2>(
-    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create2_d<CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs2>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create2_d<Core::FE::CellType::nurbs2>(
+    Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create2_d<Core::FE::CellType::nurbs2, Core::FE::CellType::nurbs2>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create2_d<CORE::FE::CellType::nurbs2, CORE::FE::CellType::nurbs3>(
-    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create2_d<CORE::FE::CellType::nurbs3>(
-    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create2_d<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs3>(
-    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create2_d<CORE::FE::CellType::nurbs3, CORE::FE::CellType::nurbs2>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create2_d<Core::FE::CellType::nurbs2, Core::FE::CellType::nurbs3>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::quad4>(
-    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::quad4, CORE::FE::CellType::quad4>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create2_d<Core::FE::CellType::nurbs3>(
+    Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create2_d<Core::FE::CellType::nurbs3, Core::FE::CellType::nurbs3>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::quad4, CORE::FE::CellType::tri3>(
-    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::quad4, CORE::FE::CellType::nurbs4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::quad4, CORE::FE::CellType::nurbs9>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create2_d<Core::FE::CellType::nurbs3, Core::FE::CellType::nurbs2>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::tri3>(
-    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::tri3, CORE::FE::CellType::quad4>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::quad4>(
+    Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::quad4, Core::FE::CellType::quad4>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::tri3, CORE::FE::CellType::tri3>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::quad4, Core::FE::CellType::tri3>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::tri3, CORE::FE::CellType::nurbs4>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::quad4, Core::FE::CellType::nurbs4>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::tri3, CORE::FE::CellType::nurbs9>(
-    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::nurbs4>(
-    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::nurbs4, CORE::FE::CellType::nurbs4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::nurbs4, CORE::FE::CellType::quad4>(
-    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::nurbs4, CORE::FE::CellType::tri3>(
-    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::nurbs4, CORE::FE::CellType::nurbs9>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::quad4, Core::FE::CellType::nurbs9>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::nurbs9>(
-    CORE::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs9>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::tri3>(
+    Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::tri3, Core::FE::CellType::quad4>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::nurbs9, CORE::FE::CellType::quad4>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::tri3, Core::FE::CellType::tri3>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::nurbs9, CORE::FE::CellType::tri3>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::tri3, Core::FE::CellType::nurbs4>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::create3_d<CORE::FE::CellType::nurbs9, CORE::FE::CellType::nurbs4>(
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::tri3, Core::FE::CellType::nurbs9>(
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::nurbs4>(
+    Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::nurbs4, Core::FE::CellType::nurbs4>(
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::nurbs4, Core::FE::CellType::quad4>(
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::nurbs4, Core::FE::CellType::tri3>(
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::nurbs4, Core::FE::CellType::nurbs9>(
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::nurbs9>(
+    Core::FE::CellType mastertype, CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs9>(
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::nurbs9, Core::FE::CellType::quad4>(
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::nurbs9, Core::FE::CellType::tri3>(
+    CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
+template CONTACT::Aug::IntegratorGeneric*
+CONTACT::Aug::IntegratorGeneric::create3_d<Core::FE::CellType::nurbs9, Core::FE::CellType::nurbs4>(
     CONTACT::ParamsInterface& cparams, CONTACT::Integrator* wrapper);
 
 FOUR_C_NAMESPACE_CLOSE

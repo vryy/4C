@@ -40,7 +40,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     \brief Standard Constructor
     */
     RveMultiPointConstraintManager(
-        Teuchos::RCP<const DRT::Discretization> disc_ptr, CORE::LINALG::SparseMatrix* st_ptr);
+        Teuchos::RCP<const Discret::Discretization> disc_ptr, Core::LinAlg::SparseMatrix* st_ptr);
 
     //! @name Public evaluation methods
 
@@ -60,13 +60,13 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     //! @name member variables
 
     //! Map of the Corner Node IDs Ni
-    std::map<std::string, CORE::Nodes::Node*> rve_ref_node_map_;
+    std::map<std::string, Core::Nodes::Node*> rve_ref_node_map_;
 
     //! RVE reference length vectors
     std::array<double, 2> r_xmxp_, r_ymyp_;
 
     //! Vector with all Conditions
-    std::vector<Teuchos::RCP<CORE::Conditions::Condition>>
+    std::vector<Teuchos::RCP<Core::Conditions::Condition>>
         point_linear_coupled_equation_conditions_, point_periodic_rve_ref_conditions_,
         line_periodic_rve_conditions_, surface_periodic_rve_conditions_;
 
@@ -77,10 +77,10 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     Teuchos::ParameterList mpc_parameter_list_;
 
     //! Dimension of the rve boundary
-    enum INPAR::RVE_MPC::RveDimension rve_dim_;
+    enum Inpar::RveMpc::RveDimension rve_dim_;
 
     //! Type of reference vector definition
-    enum INPAR::RVE_MPC::RveReferenceDeformationDefinition rve_ref_type_;
+    enum Inpar::RveMpc::RveReferenceDeformationDefinition rve_ref_type_;
 
     //@}
 
@@ -103,7 +103,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
         const std::vector<int>* surf3);
 
     //! find the nodes containted i a mpc for the pbcs
-    int find_opposite_edge_node(const int nodeID, INPAR::RVE_MPC::RveEdgeIdentifiers edge,
+    int find_opposite_edge_node(const int nodeID, Inpar::RveMpc::RveEdgeIdentifiers edge,
         std::map<std::string, const std::vector<int>*>& rveBoundaryNodeIdMap_);
 
     //! find the corner nodes of the periodic rve

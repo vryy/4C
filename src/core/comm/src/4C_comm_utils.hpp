@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   // forward declaration
   class Communicators;
@@ -40,13 +40,11 @@ namespace CORE::COMM
 
   /*! \brief debug routine to compare vectors from different parallel 4C runs
    *
-   * You can add CORE::COMM::AreDistributedVectorsIdentical in your code which will lead to a
-   * comparison of the given vector for different executables and/or configurations.
-   * Command for using this feature: \n
-   * mpirun -np 1 ./4C -nptype=diffgroup0 input.dat xxx_ser : -np 3 ./other-4C
-   * -nptype=diffgroup1 other-input.dat xxx_par \n
-   * Do not forget to include the header (#include "4C_comm_utils.hpp"), otherwise it won't
-   * compile.
+   * You can add Core::Communication::AreDistributedVectorsIdentical in your code which will lead to
+   * a comparison of the given vector for different executables and/or configurations. Command for
+   * using this feature: \n mpirun -np 1 ./4C -nptype=diffgroup0 input.dat xxx_ser : -np 3
+   * ./other-4C -nptype=diffgroup1 other-input.dat xxx_par \n Do not forget to include the header
+   * (#include "4C_comm_utils.hpp"), otherwise it won't compile.
    *
    * A further nice option is to compare results from different executables used for
    * running the same simulation.
@@ -65,13 +63,11 @@ namespace CORE::COMM
 
   /*! \brief debug routine to compare sparse matrices from different parallel 4C runs
    *
-   * You can add CORE::COMM::AreDistributedSparseMatricesIdentical in your code which will lead to a
-   * comparison of the given sparse matrices for different executables and/or configurations.
-   * Command for using this feature: \n
-   * mpirun -np 1 ./4C -nptype=diffgroup0 input.dat xxx_ser : -np 3 ./other-4C
-   * -nptype=diffgroup1 other-input.dat xxx_par \n
-   * Do not forget to include the header (#include "4C_comm_utils.hpp"), otherwise it won't
-   * compile.
+   * You can add Core::Communication::AreDistributedSparseMatricesIdentical in your code which will
+   * lead to a comparison of the given sparse matrices for different executables and/or
+   * configurations. Command for using this feature: \n mpirun -np 1 ./4C -nptype=diffgroup0
+   * input.dat xxx_ser : -np 3 ./other-4C -nptype=diffgroup1 other-input.dat xxx_par \n Do not
+   * forget to include the header (#include "4C_comm_utils.hpp"), otherwise it won't compile.
    *
    * A further nice option is to compare results from different executables used for
    * running the same simulation.
@@ -79,8 +75,8 @@ namespace CORE::COMM
    * \note You need to add the AreDistributedSparseMatricesIdentical method in both executables at
    * the same position in the code.
    *
-   * \note From CORE::LINALG::SparseOperator to CrsMatrix, just do:
-   * Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(yoursparseoperator)->EpetraMatrix()
+   * \note From Core::LinAlg::SparseOperator to CrsMatrix, just do:
+   * Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(yoursparseoperator)->EpetraMatrix()
    *
    * \param communicators (in): communicators containing local and global comm
    * \param matrix        (in): matrix to compare
@@ -176,7 +172,7 @@ namespace CORE::COMM
   };
 
 
-}  // namespace CORE::COMM
+}  // namespace Core::Communication
 
 FOUR_C_NAMESPACE_CLOSE
 

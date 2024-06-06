@@ -28,7 +28,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   namespace INTERNAL
   {
@@ -46,8 +46,8 @@ namespace CORE::IO
         FOUR_C_THROW(
             "You tried to get the data named %s from the container as type '%s'.\n"
             "Actually, it has type '%s'.",
-            name.c_str(), CORE::UTILS::TryDemangle(typeid(T).name()).c_str(),
-            CORE::UTILS::TryDemangle(data.type().name()).c_str());
+            name.c_str(), Core::UTILS::TryDemangle(typeid(T).name()).c_str(),
+            Core::UTILS::TryDemangle(data.type().name()).c_str());
       }
     }
   }  // namespace INTERNAL
@@ -103,7 +103,7 @@ namespace CORE::IO
         mapdata_[name] = data;
       else if constexpr (std::is_same_v<T, std::string>)
         stringdata_[name] = data;
-      else if constexpr (std::is_same_v<T, CORE::LINALG::SerialDenseMatrix>)
+      else if constexpr (std::is_same_v<T, Core::LinAlg::SerialDenseMatrix>)
         matdata_[name] = data;
       else
         anydata_[name] = data;
@@ -189,7 +189,7 @@ namespace CORE::IO
         return access(mapdata_, name);
       else if constexpr (std::is_same_v<T, std::string>)
         return access(stringdata_, name);
-      else if constexpr (std::is_same_v<T, CORE::LINALG::SerialDenseMatrix>)
+      else if constexpr (std::is_same_v<T, Core::LinAlg::SerialDenseMatrix>)
         return access(matdata_, name);
       else
         return access_any(anydata_, name);
@@ -219,15 +219,15 @@ namespace CORE::IO
     std::map<std::string, std::string> stringdata_;
 
     //! a map to store matrices in
-    std::map<std::string, CORE::LINALG::SerialDenseMatrix> matdata_;
+    std::map<std::string, Core::LinAlg::SerialDenseMatrix> matdata_;
 
     //! a map to store anything
     std::map<std::string, std::any> anydata_;
   };  // class InputParameterContainer
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const CORE::IO::InputParameterContainer& cont);
+std::ostream& operator<<(std::ostream& os, const Core::IO::InputParameterContainer& cont);
 
 
 FOUR_C_NAMESPACE_CLOSE

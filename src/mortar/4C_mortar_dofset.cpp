@@ -17,18 +17,18 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-MORTAR::DofSet::DofSet() : CORE::Dofsets::DofSet() {}
+Mortar::DofSet::DofSet() : Core::DOFSets::DofSet() {}
 
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int MORTAR::DofSet::assign_degrees_of_freedom(
-    const DRT::Discretization& dis, const unsigned dspos, const int start)
+int Mortar::DofSet::assign_degrees_of_freedom(
+    const Discret::Discretization& dis, const unsigned dspos, const int start)
 {
   // first, we call the standard assign_degrees_of_freedom from the base class
-  const int count = CORE::Dofsets::DofSet::assign_degrees_of_freedom(dis, dspos, start);
+  const int count = Core::DOFSets::DofSet::assign_degrees_of_freedom(dis, dspos, start);
   if (pccdofhandling_)
-    FOUR_C_THROW("Point coupling conditions not yet implemented for MORTAR::DofSet");
+    FOUR_C_THROW("Point coupling conditions not yet implemented for Mortar::DofSet");
 
   // we'll get ourselves the row and column dof maps from the base class
   // and later replace them with our own version of them
@@ -41,7 +41,7 @@ int MORTAR::DofSet::assign_degrees_of_freedom(
   const int numMyColumnNodes = dis.NumMyColNodes();
   for (int i = 0; i < numMyColumnNodes; ++i)
   {
-    CORE::Nodes::Node* node = dis.lColNode(i);
+    Core::Nodes::Node* node = dis.lColNode(i);
     if (!node) FOUR_C_THROW("Cannot find local column node %d", i);
 
     // get dofs of node as created by base class DofSet
@@ -49,12 +49,12 @@ int MORTAR::DofSet::assign_degrees_of_freedom(
     const std::size_t numDofsOfNode = gdofs.size();
 
     // get dofs of node as we want them
-    MORTAR::Node* mrtrnode =
+    Mortar::Node* mrtrnode =
 #ifndef FOUR_C_ENABLE_ASSERTIONS
-        static_cast<MORTAR::Node*>(node);
+        static_cast<Mortar::Node*>(node);
 #else
-        dynamic_cast<MORTAR::Node*>(node);
-    if (!mrtrnode) FOUR_C_THROW("dynamic_cast CORE::Nodes::Node -> MORTAR::Node failed");
+        dynamic_cast<Mortar::Node*>(node);
+    if (!mrtrnode) FOUR_C_THROW("dynamic_cast Core::Nodes::Node -> Mortar::Node failed");
 #endif
     const auto& newdofs = mrtrnode->Dofs();
     for (std::size_t j = 0; j < numDofsOfNode; ++j)

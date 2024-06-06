@@ -17,20 +17,21 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MORTAR
+namespace Mortar
 {
   /*!
-  \brief A subclass of CORE::COMM::ParObjectType that adds mortar element type specific methods
+  \brief A subclass of Core::Communication::ParObjectType that adds mortar element type specific
+  methods
 
   */
-  class NodeType : public CORE::COMM::ParObjectType
+  class NodeType : public Core::Communication::ParObjectType
   {
    public:
-    std::string Name() const override { return "MORTAR::NodeType"; }
+    std::string Name() const override { return "Mortar::NodeType"; }
 
     static NodeType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static NodeType instance_;
@@ -70,7 +71,7 @@ namespace MORTAR
      class exists.
 
      */
-    void Pack(CORE::COMM::PackBuffer& data) const;
+    void Pack(Core::Communication::PackBuffer& data) const;
 
     /*!
      \brief Unpack data from a vector into this class
@@ -131,7 +132,7 @@ namespace MORTAR
     /*!
      \brief Return the 'D' map (vector) of this node
      */
-    CORE::GEN::Pairedvector<int, double>& GetD() { return drows_; }
+    Core::Gen::Pairedvector<int, double>& GetD() { return drows_; }
 
     /*!
      \brief Return the 'M' map of this node
@@ -146,7 +147,7 @@ namespace MORTAR
     /*!
      \brief Return the 'D' map (vector) of this node for node-to-segment
      */
-    CORE::GEN::Pairedvector<int, double>& GetDnts() { return drows_nts_; }
+    Core::Gen::Pairedvector<int, double>& GetDnts() { return drows_nts_; }
 
     /*!
      \brief Return the 'M' map of this node for node-to-segment
@@ -161,7 +162,7 @@ namespace MORTAR
     /*!
      \brief Return the 'D' map (vector) of this node for line-to-segment
      */
-    CORE::GEN::Pairedvector<int, double>& GetDlts() { return drows_lts_; }
+    Core::Gen::Pairedvector<int, double>& GetDlts() { return drows_lts_; }
 
     /*!
      \brief Return the 'M' map of this node for line-to-segment
@@ -176,7 +177,7 @@ namespace MORTAR
     /*!
      \brief Return the 'D' map (vector) of this node for line-to-line
      */
-    CORE::GEN::Pairedvector<int, double>& GetDltl() { return drows_ltl_; }
+    Core::Gen::Pairedvector<int, double>& GetDltl() { return drows_ltl_; }
 
     /*!
      \brief Return the 'M' map of this node for line-to-line
@@ -233,7 +234,7 @@ namespace MORTAR
     //! @{
 
     //! Nodal rows of D matrix for segment-to-segment
-    CORE::GEN::Pairedvector<int, double> drows_;
+    Core::Gen::Pairedvector<int, double> drows_;
 
     //! Nodal rows of M matrix for segment-to-segment
     std::map<int, double> mrows_;
@@ -247,7 +248,7 @@ namespace MORTAR
     //! @{
 
     //! Nodal rows of D matrix for node-to-segment
-    CORE::GEN::Pairedvector<int, double> drows_nts_;
+    Core::Gen::Pairedvector<int, double> drows_nts_;
 
     //! Nodal rows of M matrix for node-to-segment
     std::map<int, double> mrows_nts_;
@@ -258,7 +259,7 @@ namespace MORTAR
     //! @{
 
     //! Nodal rows of D matrix for line-to-segment
-    CORE::GEN::Pairedvector<int, double> drows_lts_;
+    Core::Gen::Pairedvector<int, double> drows_lts_;
 
     //! Nodal rows of M matrix for line-to-segment
     std::map<int, double> mrows_lts_;
@@ -269,7 +270,7 @@ namespace MORTAR
     //! @{
 
     //! Nodal rows of D matrix for lts
-    CORE::GEN::Pairedvector<int, double> drows_ltl_;
+    Core::Gen::Pairedvector<int, double> drows_ltl_;
 
     //! Nodal rows of M matrix for lts
     std::map<int, double> mrows_ltl_;
@@ -278,12 +279,12 @@ namespace MORTAR
   };  // class NodeDataContainer
 
   /*!
-   \brief A class for a mortar node derived from CORE::Nodes::Node
+   \brief A class for a mortar node derived from Core::Nodes::Node
 
    This class represents a finite element node capable of mortar coupling.
 
    */
-  class Node : public CORE::Nodes::Node
+  class Node : public Core::Nodes::Node
   {
    public:
     //! @name Enums and Friends
@@ -292,7 +293,7 @@ namespace MORTAR
     /*!
      \brief The discretization is a friend of Node
      */
-    friend class DRT::Discretization;
+    friend class Discret::Discretization;
 
     //! @}
 
@@ -317,13 +318,13 @@ namespace MORTAR
      Makes a deep copy of a Node
 
      */
-    Node(const MORTAR::Node& old);
+    Node(const Mortar::Node& old);
 
     /*!
      \brief Deep copy the derived class and return pointer to it
 
      */
-    MORTAR::Node* Clone() const override;
+    Mortar::Node* Clone() const override;
 
 
 
@@ -342,7 +343,7 @@ namespace MORTAR
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -517,7 +518,7 @@ namespace MORTAR
      contact specific quantities/information are stored.
 
      */
-    inline MORTAR::NodeDataContainer& MoData() const
+    inline Mortar::NodeDataContainer& MoData() const
     {
       if (modata_ == Teuchos::null) FOUR_C_THROW("No mortar data attached. (node-id = %d)", Id());
       return *modata_;
@@ -581,14 +582,14 @@ namespace MORTAR
      \brief Find closest node from given node set and return pointer
 
      This method will compute the distance of the active node to all
-     nodes of the given Epetra_Map on the given DRT::Discretization
+     nodes of the given Epetra_Map on the given Discret::Discretization
 
      \param intdis (in):         Master Node to project
      \param nodesearchmap (in):  Slave Celement to project on
      \param mindist (out):       Distance to closest node
 
      */
-    virtual MORTAR::Node* FindClosestNode(const Teuchos::RCP<DRT::Discretization> intdis,
+    virtual Mortar::Node* FindClosestNode(const Teuchos::RCP<Discret::Discretization> intdis,
         const Teuchos::RCP<Epetra_Map> nodesearchmap, double& mindist);
 
     /*!
@@ -692,7 +693,7 @@ namespace MORTAR
     int dentries_;
 
     //! additional information of proc's mortar nodes
-    Teuchos::RCP<MORTAR::NodeDataContainer> modata_;
+    Teuchos::RCP<Mortar::NodeDataContainer> modata_;
 
     //! @name Nurbs specifics
     //! @{
@@ -703,11 +704,11 @@ namespace MORTAR
     //! @}
 
   };  // class Node
-}  // namespace MORTAR
+}  // namespace Mortar
 
 
 //! << operator
-std::ostream& operator<<(std::ostream& os, const MORTAR::Node& mrtrnode);
+std::ostream& operator<<(std::ostream& os, const Mortar::Node& mrtrnode);
 
 
 FOUR_C_NAMESPACE_CLOSE

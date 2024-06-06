@@ -48,7 +48,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
 
   //--------------------------------------------------------------------------------------
   // create new cut wizard &dofset
-  Teuchos::RCP<CORE::GEO::CutWizard> wizard;
+  Teuchos::RCP<Core::Geo::CutWizard> wizard;
   Teuchos::RCP<XFEM::XFEMDofSet> dofset;
 
   create_new_cut_state(dofset, wizard, xdiscret, back_disp_col, solver_params, step);
@@ -76,8 +76,9 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
  |  Perform the cut and fill state container                kruse 08/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
-    const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,    //!< xfluid background discretization
-    const Teuchos::RCP<DRT::Discretization>& embfluiddiscret,  //!< embedded fluid discretization
+    const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
+    const Teuchos::RCP<Discret::Discretization>&
+        embfluiddiscret,  //!< embedded fluid discretization
     Teuchos::RCP<const Epetra_Vector>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
     Teuchos::ParameterList& solver_params,  //!< solver parameters
@@ -91,7 +92,7 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
 
   //--------------------------------------------------------------------------------------
   // create new cut wizard & dofset
-  Teuchos::RCP<CORE::GEO::CutWizard> wizard;
+  Teuchos::RCP<Core::Geo::CutWizard> wizard;
   Teuchos::RCP<XFEM::XFEMDofSet> dofset;
 
   create_new_cut_state(dofset, wizard, xdiscret, back_disp_col, solver_params, step);
@@ -123,7 +124,7 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
  *----------------------------------------------------------------------*/
 void FLD::XFluidStateCreator::create_new_cut_state(
     Teuchos::RCP<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
-    Teuchos::RCP<CORE::GEO::CutWizard>&
+    Teuchos::RCP<Core::Geo::CutWizard>&
         wizard,  //!< cut wizard associated with current intersection state
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
     Teuchos::RCP<const Epetra_Vector>
@@ -133,7 +134,7 @@ void FLD::XFluidStateCreator::create_new_cut_state(
 )
 {
   // new wizard using information about cutting sides from the condition_manager
-  wizard = Teuchos::rcp(new CORE::GEO::CutWizard(xdiscret));
+  wizard = Teuchos::rcp(new Core::Geo::CutWizard(xdiscret));
 
   // Set options for the cut wizard
   wizard->SetOptions(nodal_dofset_strategy_,  // strategy for nodal dofset management
@@ -197,7 +198,7 @@ void FLD::XFluidStateCreator::create_new_cut_state(
   // create a new XFEM-dofset
   dofset = Teuchos::rcp(new XFEM::XFEMDofSet(*wizard, maxNumMyReservedDofsperNode, *xdiscret));
 
-  const int restart = GLOBAL::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->Restart();
   if ((step < 1) or restart) minnumdofsets_ = xdiscret->dof_row_map()->MinAllGID();
 
   dofset->SetMinGID(minnumdofsets_);         // set the minimal GID of xfem dis

@@ -63,13 +63,13 @@ namespace BEAMINTERACTION
       return *pot_law_prefactors_;
     }
 
-    inline enum INPAR::BEAMPOTENTIAL::BeamPotentialType PotentialType() const
+    inline enum Inpar::BEAMPOTENTIAL::BeamPotentialType PotentialType() const
     {
       throw_error_if_not_init_and_setup();
       return potential_type_;
     }
 
-    inline enum INPAR::BEAMPOTENTIAL::BeamPotentialStrategy Strategy() const
+    inline enum Inpar::BEAMPOTENTIAL::BeamPotentialStrategy Strategy() const
     {
       throw_error_if_not_init_and_setup();
       return strategy_;
@@ -81,7 +81,7 @@ namespace BEAMINTERACTION
       return cutoff_radius_;
     }
 
-    inline enum INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType RegularizationType() const
+    inline enum Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType RegularizationType() const
     {
       throw_error_if_not_init_and_setup();
       return regularization_type_;
@@ -111,7 +111,7 @@ namespace BEAMINTERACTION
       return use_fad_;
     }
 
-    inline enum INPAR::BEAMPOTENTIAL::MasterSlaveChoice ChoiceMasterSlave() const
+    inline enum Inpar::BEAMPOTENTIAL::MasterSlaveChoice ChoiceMasterSlave() const
     {
       throw_error_if_not_init_and_setup();
       return choice_master_slave_;
@@ -145,16 +145,16 @@ namespace BEAMINTERACTION
     Teuchos::RCP<std::vector<double>> pot_law_prefactors_;
 
     //! type of applied potential (volume, surface)
-    enum INPAR::BEAMPOTENTIAL::BeamPotentialType potential_type_;
+    enum Inpar::BEAMPOTENTIAL::BeamPotentialType potential_type_;
 
     //! strategy to evaluate interaction potential
-    enum INPAR::BEAMPOTENTIAL::BeamPotentialStrategy strategy_;
+    enum Inpar::BEAMPOTENTIAL::BeamPotentialStrategy strategy_;
 
     //! neglect all contributions at separation larger than this cutoff radius
     double cutoff_radius_;
 
     //! type of regularization to use for force law at separations below specified separation
-    enum INPAR::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type_;
+    enum Inpar::BEAMPOTENTIAL::BeamPotentialRegularizationType regularization_type_;
 
     //! use specified regularization type for separations smaller than this value
     double regularization_separation_;
@@ -169,7 +169,7 @@ namespace BEAMINTERACTION
     bool use_fad_;
 
     //! rule how to assign the role of master and slave to beam elements (if applicable)
-    enum INPAR::BEAMPOTENTIAL::MasterSlaveChoice choice_master_slave_;
+    enum Inpar::BEAMPOTENTIAL::MasterSlaveChoice choice_master_slave_;
 
     //! whether to write visualization output at runtime
     bool visualization_output_;

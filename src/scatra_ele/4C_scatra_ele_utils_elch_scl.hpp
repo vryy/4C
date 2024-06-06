@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -28,7 +28,7 @@ namespace DRT
     class ScaTraEleDiffManagerElchScl;
 
     // class implementation
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleUtilsElchScl : public ScaTraEleUtilsElchDiffCond<distype>
     {
       //! abbreviations
@@ -44,22 +44,22 @@ namespace DRT
       );
 
       //! evaluate electrolyte material
-      void MatElchMat(Teuchos::RCP<const CORE::MAT::Material> material,  //!< electrolyte material
+      void MatElchMat(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrolyte material
           const std::vector<double>& concentrations,              //!< local concentration values
           double temperature,                                     //!< temperature
           Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,  //!< diffusion manager
-          INPAR::ELCH::DiffCondMat& diffcondmat                   //!< ion type
+          Inpar::ElCh::DiffCondMat& diffcondmat                   //!< ion type
       );
       //! evaluate electrolyte phase
-      void MatElchPhase(Teuchos::RCP<const CORE::MAT::Material> material,  //!< electrolyte phase
+      void MatElchPhase(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrolyte phase
           const std::vector<double>& concentrations,              //!< local concentration values
           double temperature,                                     //!< temperature
           Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,  //!< diffusion manager
-          INPAR::ELCH::DiffCondMat& diffcondmat                   //!< ion type
+          Inpar::ElCh::DiffCondMat& diffcondmat                   //!< ion type
       );
 
       //! evaluate Space Charge Layer Material
-      void MatScl(Teuchos::RCP<const CORE::MAT::Material> material, const double concentration,
+      void MatScl(Teuchos::RCP<const Core::Mat::Material> material, const double concentration,
           const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager);
 
      protected:
@@ -70,7 +70,7 @@ namespace DRT
       );
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

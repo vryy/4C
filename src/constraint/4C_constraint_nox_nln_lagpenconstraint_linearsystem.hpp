@@ -25,11 +25,11 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace LAGPENCONSTRAINT
     {
-      class LinearSystem : public NOX::NLN::LinearSystem
+      class LinearSystem : public NOX::Nln::LinearSystem
       {
        public:
         //! Standard constructor with full functionality.
@@ -37,11 +37,11 @@ namespace NOX
             Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
             const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-            const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+            const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
             const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
-            const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& M,
+            const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& M,
             const ::NOX::Epetra::Vector& cloneVector,
             const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject);
 
@@ -50,36 +50,36 @@ namespace NOX
             Teuchos::ParameterList& linearSolverParams, const SolverMap& solvers,
             const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-            const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+            const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
             const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
-            const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-            const Teuchos::RCP<CORE::LINALG::SparseOperator>& M,
+            const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
+            const Teuchos::RCP<Core::LinAlg::SparseOperator>& M,
             const ::NOX::Epetra::Vector& cloneVector);
 
         //! Sets the options of the underlying solver
-        CORE::LINALG::SolverParams set_solver_options(Teuchos::ParameterList& p,
-            Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
-            const NOX::NLN::SolutionType& solverType) override;
+        Core::LinAlg::SolverParams set_solver_options(Teuchos::ParameterList& p,
+            Teuchos::RCP<Core::LinAlg::Solver>& solverPtr,
+            const NOX::Nln::SolutionType& solverType) override;
 
         //! Returns a pointer to linear solver, which has to be used
-        NOX::NLN::SolutionType get_active_lin_solver(
-            const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
-            Teuchos::RCP<CORE::LINALG::Solver>& currSolver) override;
+        NOX::Nln::SolutionType get_active_lin_solver(
+            const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
+            Teuchos::RCP<Core::LinAlg::Solver>& currSolver) override;
 
        private:
         //! throws an error message
         void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
        private:
-        //! map of NOX::NLN::CONSTRAINT::Interface::Required objects
-        NOX::NLN::CONSTRAINT::ReqInterfaceMap i_constr_;
+        //! map of NOX::Nln::CONSTRAINT::Interface::Required objects
+        NOX::Nln::CONSTRAINT::ReqInterfaceMap i_constr_;
 
-        //! map of NOX::NLN::CONSTRAINT::Interface::Preconditioner objects
-        NOX::NLN::CONSTRAINT::PrecInterfaceMap i_constr_prec_;
+        //! map of NOX::Nln::CONSTRAINT::Interface::Preconditioner objects
+        NOX::Nln::CONSTRAINT::PrecInterfaceMap i_constr_prec_;
       };  // class LinearSystem
     }     // namespace LAGPENCONSTRAINT
-  }       // namespace NLN
+  }       // namespace Nln
 }  // namespace NOX
 
 

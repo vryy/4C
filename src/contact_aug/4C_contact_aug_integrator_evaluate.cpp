@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 \brief A class to perform integrations of Mortar matrices on the overlap
-       of two MORTAR::Elements in 1D and 2D (derived version for
+       of two Mortar::Elements in 1D and 2D (derived version for
        augmented contact). This file contains only the evaluate routines.
 
 \level 2
@@ -17,17 +17,17 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::EvaluatorDeriv1stOnly::Deriv_Jacobian(MORTAR::Element& ele, const double* xi,
-    const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-    const CORE::LINALG::Matrix<3, 2>& stau)
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
+    IntPolicy>::EvaluatorDeriv1stOnly::Deriv_Jacobian(Mortar::Element& ele, const double* xi,
+    const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+    const Core::LinAlg::Matrix<3, 2>& stau)
 {
-  CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
+  Core::LinAlg::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
 
   // evaluate the non-unit slave element normal and the inverse of its length
-  CORE::LINALG::Matrix<probdim, 1> unit_normal;
+  Core::LinAlg::Matrix<probdim, 1> unit_normal;
   double length_n_inv = 0.0;
 
   Deriv1stVecMap d_non_unit_normal(probdim);
@@ -38,14 +38,14 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::EvaluatorDeriv1stOnly::deriv1st_jacobian(MORTAR::Element& ele, const double* xi,
-    const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-    const CORE::LINALG::Matrix<3, 2>& stau,
-    CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
-    CORE::LINALG::Matrix<probdim, 1>& unit_normal, double& length_n_inv,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
+    IntPolicy>::EvaluatorDeriv1stOnly::deriv1st_jacobian(Mortar::Element& ele, const double* xi,
+    const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+    const Core::LinAlg::Matrix<3, 2>& stau,
+    Core::LinAlg::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
+    Core::LinAlg::Matrix<probdim, 1>& unit_normal, double& length_n_inv,
     Deriv1stVecMap& d_non_unit_normal)
 {
   CONTACT::INTEGRATOR::GetElementNodalDofs(ele, nodal_dofs);
@@ -69,17 +69,17 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::EvaluatorFull::Deriv_Jacobian(MORTAR::Element& ele, const double* xi,
-    const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-    const CORE::LINALG::Matrix<3, 2>& stau)
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
+    IntPolicy>::EvaluatorFull::Deriv_Jacobian(Mortar::Element& ele, const double* xi,
+    const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+    const Core::LinAlg::Matrix<3, 2>& stau)
 {
-  CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
+  Core::LinAlg::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
 
   // evaluate the non-unit slave element normal and the inverse of its length
-  CORE::LINALG::Matrix<probdim, 1> unit_normal;
+  Core::LinAlg::Matrix<probdim, 1> unit_normal;
   double length_n_inv = 0.0;
 
   Deriv1stVecMap d_non_unit_normal(probdim);
@@ -94,34 +94,34 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::EvaluatorDeriv1stOnly::Deriv_MXiGP(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
+    IntPolicy>::EvaluatorDeriv1stOnly::Deriv_MXiGP(Mortar::Element& sele, Mortar::Element& mele,
     const double* sxi, const double* mxi, const double alpha,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-    const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
-    const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
-    const CORE::LINALG::Matrix<3, 2>& mtau)
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+    const Core::LinAlg::Matrix<my::MASTERNUMNODE, 1>& mval,
+    const Core::LinAlg::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
+    const Core::LinAlg::Matrix<3, 2>& mtau)
 {
-  CORE::LINALG::Matrix<probdim, probdim> lmat_inv(false);
+  Core::LinAlg::Matrix<probdim, probdim> lmat_inv(false);
 
   deriv1st_m_xi_gp(sele, mele, sxi, mxi, alpha, sval, mval, mderiv, mtau, lmat_inv);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::EvaluatorDeriv1stOnly::deriv1st_m_xi_gp(MORTAR::Element& sele,
-    MORTAR::Element& mele, const double* sxi, const double* mxi, const double alpha,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-    const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
-    const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
-    const CORE::LINALG::Matrix<3, 2>& mtau, CORE::LINALG::Matrix<probdim, probdim>& lmat_inv)
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
+    IntPolicy>::EvaluatorDeriv1stOnly::deriv1st_m_xi_gp(Mortar::Element& sele,
+    Mortar::Element& mele, const double* sxi, const double* mxi, const double alpha,
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+    const Core::LinAlg::Matrix<my::MASTERNUMNODE, 1>& mval,
+    const Core::LinAlg::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
+    const Core::LinAlg::Matrix<3, 2>& mtau, Core::LinAlg::Matrix<probdim, probdim>& lmat_inv)
 {
-  CORE::LINALG::Matrix<probdim, 1> snormal(false);
+  Core::LinAlg::Matrix<probdim, 1> snormal(false);
   this->parent_.IntPolicy::AveragedNormalAtXi(sele, sval, snormal);
 
   this->parent_.IntPolicy::LMatrixInverse(mtau, snormal, lmat_inv);
@@ -134,24 +134,24 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::EvaluatorFull::Deriv_MXiGP(MORTAR::Element& sele, MORTAR::Element& mele,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
+    IntPolicy>::EvaluatorFull::Deriv_MXiGP(Mortar::Element& sele, Mortar::Element& mele,
     const double* sxi, const double* mxi, const double alpha,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-    const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
-    const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
-    const CORE::LINALG::Matrix<3, 2>& mtau)
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+    const Core::LinAlg::Matrix<my::MASTERNUMNODE, 1>& mval,
+    const Core::LinAlg::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
+    const Core::LinAlg::Matrix<3, 2>& mtau)
 {
-  CORE::LINALG::Matrix<probdim, probdim> lmat_inv(false);
+  Core::LinAlg::Matrix<probdim, probdim> lmat_inv(false);
 
   base_type::deriv1st_m_xi_gp(sele, mele, sxi, mxi, alpha, sval, mval, mderiv, mtau, lmat_inv);
 
   Deriv1stVecMap& d_mxigp = this->parent_.dmxigp_;
   Deriv1stMap& d_alpha = this->parent_.dalpha_;
 
-  const CORE::LINALG::Matrix<3, my::MASTERNUMNODE>& mderiv2 = this->parent_.mderiv2nd_;
+  const Core::LinAlg::Matrix<3, my::MASTERNUMNODE>& mderiv2 = this->parent_.mderiv2nd_;
   Deriv2ndVecMap& dd_mxigp = this->parent_.ddmxigp_;
 
   this->parent_.IntPolicy::Get_Deriv2nd_MXiGP(lmat_inv, sele, mele, sval, mval, mderiv, mderiv2,
@@ -161,14 +161,14 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
-    IntPolicy>::EvaluatorFull::Get_Deriv2nd_AugA(MORTAR::Element& sele,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
+    IntPolicy>::EvaluatorFull::Get_Deriv2nd_AugA(Mortar::Element& sele,
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
     const Deriv2ndMap& dd_jac) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -191,14 +191,14 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_kappa(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_kappa(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
     double jac) const
 {
   // Get slave nodes
-  CORE::Nodes::Node** snodes = sele.Nodes();
+  Core::Nodes::Node** snodes = sele.Nodes();
   FOUR_C_ASSERT(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
 
   //  // number of nodes (slave)
@@ -221,14 +221,14 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_kap
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_deriv1st_kappa(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_deriv1st_kappa(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
     const Deriv1stMap& d_jac)
 {
   // get slave element nodes themselves
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -246,12 +246,12 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_de
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_normal(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn) const
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_normal(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn) const
 {
-  const CORE::Nodes::Node* const* snodes = sele.Nodes();
+  const Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -265,21 +265,21 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_nor
   }
 
   // unify the gauss point normal
-  CORE::LINALG::Matrix<probdim, 1> unit_gp_normal(gpn, true);
+  Core::LinAlg::Matrix<probdim, 1> unit_gp_normal(gpn, true);
   const double length_n_inv = 1.0 / unit_gp_normal.Norm2();
   unit_gp_normal.Scale(length_n_inv);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_normal_deriv_normal(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_normal_deriv_normal(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn,
     Deriv1stVecMap& dn_non_unit, Deriv2ndVecMap& ddn_non_unit, Deriv1stVecMap& dn_unit,
     Deriv2ndVecMap& ddn_unit)
 {
-  const CORE::Nodes::Node* const* snodes = sele.Nodes();
+  const Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -319,11 +319,11 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_nor
     }
   }
 
-  CORE::GEN::complete(dn_non_unit);
-  CORE::GEN::complete(ddn_non_unit);
+  Core::Gen::complete(dn_non_unit);
+  Core::Gen::complete(ddn_non_unit);
 
   // unify the gauss point normal
-  CORE::LINALG::Matrix<probdim, 1> unit_gp_normal(gpn, true);
+  Core::LinAlg::Matrix<probdim, 1> unit_gp_normal(gpn, true);
   const double length_n_inv = 1.0 / unit_gp_normal.Norm2();
   unit_gp_normal.Scale(length_n_inv);
 
@@ -340,14 +340,14 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_nor
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_aug_a(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_aug_a(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
     double jac) const
 {
   // Get slave nodes
-  CORE::Nodes::Node** snodes = sele.Nodes();
+  Core::Nodes::Node** snodes = sele.Nodes();
   FOUR_C_ASSERT(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
 
   for (unsigned it = 0; it < my::SLAVENUMNODE; ++it)
@@ -362,14 +362,14 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_aug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_deriv1st_aug_a(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_deriv1st_aug_a(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
     double jac, const Deriv1stMap& derivjac) const
 {
   // Get slave nodes
-  CORE::Nodes::Node** snodes = sele.Nodes();
+  Core::Nodes::Node** snodes = sele.Nodes();
   FOUR_C_ASSERT(snodes, "ERROR: AugmentedIntegrator::GP_2D_kappa: Null pointer!");
 
   // map iterator
@@ -391,13 +391,13 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_de
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_deriv2nd_kappa(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_deriv2nd_kappa(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
     const Deriv2ndMap& dd_jac) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -420,16 +420,16 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_de
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gap_n(
-    MORTAR::Element& sele, MORTAR::Element& mele,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-    const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval, const double* gpn, double& gapn_sl,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::gap_n(
+    Mortar::Element& sele, Mortar::Element& mele,
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+    const Core::LinAlg::Matrix<my::MASTERNUMNODE, 1>& mval, const double* gpn, double& gapn_sl,
     double& gapn_ma) const
 {
-  const CORE::Nodes::Node* const* snodes = sele.Nodes();
-  const CORE::Nodes::Node* const* mnodes = mele.Nodes();
+  const Core::Nodes::Node* const* snodes = sele.Nodes();
+  const Core::Nodes::Node* const* mnodes = mele.Nodes();
 
   // slave contribution of the gauss point normal gap
   gapn_sl = 0.0;
@@ -453,13 +453,13 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gap_n(
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype,
     class IntPolicy>
-void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_w_gap(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_w_gap(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double gapn_ma, const double wg, const double jac) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
   const double scale = wg * jac;
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)

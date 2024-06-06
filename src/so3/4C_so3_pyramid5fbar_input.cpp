@@ -13,13 +13,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoPyramid5fbar::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoPyramid5fbar::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   // set up of materials with GP data (e.g., history variables)
   SolidMaterial()->Setup(NUMGPT_SOP5, linedef);
@@ -35,7 +35,7 @@ bool DRT::ELEMENTS::SoPyramid5fbar::ReadElement(
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
   }
   else
     FOUR_C_THROW("Reading SO_PYRAMID5FBAR element failed KINEM unknown");

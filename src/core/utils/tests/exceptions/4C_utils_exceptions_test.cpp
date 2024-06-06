@@ -31,6 +31,6 @@ namespace
     int a = 1, b = 0;
 
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(
-        division(a, b), CORE::Exception, "Division by zero condition!");
+        division(a, b), Core::Exception, "Division by zero condition!");
   }
 }  // namespace

@@ -16,16 +16,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::Wall1LineType DRT::ELEMENTS::Wall1LineType::instance_;
+Discret::ELEMENTS::Wall1LineType Discret::ELEMENTS::Wall1LineType::instance_;
 
-DRT::ELEMENTS::Wall1LineType& DRT::ELEMENTS::Wall1LineType::Instance() { return instance_; }
+Discret::ELEMENTS::Wall1LineType& Discret::ELEMENTS::Wall1LineType::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 03/07|
   *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1Line::Wall1Line(int id, int owner, int nnode, const int* nodeids,
-    CORE::Nodes::Node** nodes, DRT::ELEMENTS::Wall1* parent, const int lline)
-    : CORE::Elements::FaceElement(id, owner)
+Discret::ELEMENTS::Wall1Line::Wall1Line(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Discret::ELEMENTS::Wall1* parent, const int lline)
+    : Core::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -36,8 +36,8 @@ DRT::ELEMENTS::Wall1Line::Wall1Line(int id, int owner, int nnode, const int* nod
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Wall1Line::Wall1Line(const DRT::ELEMENTS::Wall1Line& old)
-    : CORE::Elements::FaceElement(old)
+Discret::ELEMENTS::Wall1Line::Wall1Line(const Discret::ELEMENTS::Wall1Line& old)
+    : Core::Elements::FaceElement(old)
 {
   return;
 }
@@ -46,9 +46,9 @@ DRT::ELEMENTS::Wall1Line::Wall1Line(const DRT::ELEMENTS::Wall1Line& old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Wall1Line::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Wall1Line::Clone() const
 {
-  DRT::ELEMENTS::Wall1Line* newelement = new DRT::ELEMENTS::Wall1Line(*this);
+  Discret::ELEMENTS::Wall1Line* newelement = new Discret::ELEMENTS::Wall1Line(*this);
   return newelement;
 }
 
@@ -56,49 +56,49 @@ CORE::Elements::Element* DRT::ELEMENTS::Wall1Line::Clone() const
  |                                                             (public) |
  |                                                          farah 02/14 |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::Wall1Line::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Wall1Line::Shape() const
 {
-  CORE::FE::CellType distype_line = CORE::FE::CellType::dis_none;
+  Core::FE::CellType distype_line = Core::FE::CellType::dis_none;
 
   switch (ParentMasterElement()->Shape())
   {
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      distype_line = CORE::FE::CellType::line2;
+      distype_line = Core::FE::CellType::line2;
       break;
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      distype_line = CORE::FE::CellType::line3;
+      distype_line = Core::FE::CellType::line3;
       break;
     }
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      distype_line = CORE::FE::CellType::line2;
+      distype_line = Core::FE::CellType::line2;
       break;
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
-      distype_line = CORE::FE::CellType::line3;
+      distype_line = Core::FE::CellType::line3;
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      distype_line = CORE::FE::CellType::line3;
+      distype_line = Core::FE::CellType::line3;
       break;
     }
-    case CORE::FE::CellType::nurbs4:
+    case Core::FE::CellType::nurbs4:
     {
-      distype_line = CORE::FE::CellType::nurbs2;
+      distype_line = Core::FE::CellType::nurbs2;
       break;
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
-      distype_line = CORE::FE::CellType::nurbs3;
+      distype_line = Core::FE::CellType::nurbs3;
       break;
     }
     default:
-      FOUR_C_THROW("DRT::ELEMENTS::Wall1Line::Wall1Line: Unknown parent shape!");
+      FOUR_C_THROW("Discret::ELEMENTS::Wall1Line::Wall1Line: Unknown parent shape!");
   }
 
   return distype_line;
@@ -108,7 +108,7 @@ CORE::FE::CellType DRT::ELEMENTS::Wall1Line::Shape() const
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Line::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Wall1Line::Pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Wall1Line element does not support communication");
 
@@ -119,7 +119,7 @@ void DRT::ELEMENTS::Wall1Line::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Line::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Wall1Line::Unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this line element does not support communication");
   return;
@@ -130,7 +130,7 @@ void DRT::ELEMENTS::Wall1Line::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mgit 03/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Line::Print(std::ostream& os) const
+void Discret::ELEMENTS::Wall1Line::Print(std::ostream& os) const
 {
   os << "Wall1Line ";
   Element::Print(os);

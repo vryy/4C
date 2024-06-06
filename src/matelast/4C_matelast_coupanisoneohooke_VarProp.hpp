@@ -17,9 +17,9 @@ with space-time varying coefficients
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
@@ -30,11 +30,11 @@ namespace MAT
        * <h3>Input line</h3>
        * MAT 1 CoupAnisoNeoHooke_VarProp C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
        */
-      class CoupAnisoNeoHookeVarProp : public MAT::PAR::ParameterAniso
+      class CoupAnisoNeoHookeVarProp : public Mat::PAR::ParameterAniso
       {
        public:
         /// standard constructor
-        CoupAnisoNeoHookeVarProp(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        CoupAnisoNeoHookeVarProp(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -56,11 +56,11 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
       };  // class CoupAnisoNeoHooke_VarProp
@@ -91,12 +91,12 @@ namespace MAT
       //    CoupAnisoNeoHooke_VarProp();
 
       /// constructor with given material parameters
-      CoupAnisoNeoHookeVarProp(MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp* params);
+      CoupAnisoNeoHookeVarProp(Mat::Elastic::PAR::CoupAnisoNeoHookeVarProp* params);
 
       ///@name Packing and Unpacking
       //@{
 
-      void PackSummand(CORE::COMM::PackBuffer& data) const override;
+      void PackSummand(Core::Communication::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -107,21 +107,21 @@ namespace MAT
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_coupanisoneohooke_varprop;
+        return Core::Materials::mes_coupanisoneohooke_varprop;
       }
 
       //@}
 
       /// Setup of summand
-      void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+      void Setup(int numgp, Input::LineDefinition* linedef) override;
 
       /// Add anisotropic principal stresses
       void add_stress_aniso_principal(
-          const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+          const Core::LinAlg::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          Core::LinAlg::Matrix<6, 6>& cmat,       ///< material stiffness matrix
+          Core::LinAlg::Matrix<6, 1>& stress,     ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
           int gp,      ///< Gauss point
@@ -130,13 +130,13 @@ namespace MAT
 
       /// Set fiber directions
       void SetFiberVecs(const double newgamma,       ///< new angle
-          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
-          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+          const Core::LinAlg::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const Core::LinAlg::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /// Setup of patient-specific materials
@@ -157,16 +157,16 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp* params_;
+      Mat::Elastic::PAR::CoupAnisoNeoHookeVarProp* params_;
 
       /// fiber direction
-      CORE::LINALG::Matrix<3, 1> a_;
+      Core::LinAlg::Matrix<3, 1> a_;
       /// structural tensors in voigt notation for anisotropy
-      CORE::LINALG::Matrix<6, 1> structural_tensor_;
+      Core::LinAlg::Matrix<6, 1> structural_tensor_;
     };
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

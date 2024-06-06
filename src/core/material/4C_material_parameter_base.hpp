@@ -26,25 +26,25 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* forward declarations */
-namespace CORE::MAT
+namespace Core::Mat
 {
   class Material;
   namespace PAR
   {
     class Parameter;
   }
-}  // namespace CORE::MAT
+}  // namespace Core::Mat
 
 /*----------------------------------------------------------------------*/
 /* declarations */
 
-namespace CORE::MAT::PAR
+namespace Core::Mat::PAR
 {
   /// Legacy container for read-in materials
   ///
   /// This object stores the validated material parameters as
-  /// CORE::IO::InputParameterContainer.
-  class Material : public CORE::IO::InputParameterContainer
+  /// Core::IO::InputParameterContainer.
+  class Material : public Core::IO::InputParameterContainer
   {
    public:
     /// @name life span
@@ -52,12 +52,12 @@ namespace CORE::MAT::PAR
 
     /// Standard constructor
     Material(const int id,                        ///< unique material ID
-        const CORE::Materials::MaterialType type  ///< type of material
+        const Core::Materials::MaterialType type  ///< type of material
     );
 
     /// Copy the input_data into this object.
-    Material(int id, CORE::Materials::MaterialType type,
-        const CORE::IO::InputParameterContainer& input_data);
+    Material(int id, Core::Materials::MaterialType type,
+        const Core::IO::InputParameterContainer& input_data);
 
     /// Default constructor without information from the input lines.
     Material() = default;
@@ -71,26 +71,26 @@ namespace CORE::MAT::PAR
     [[nodiscard]] inline virtual int Id() const { return id_; }
 
     /// Return type of material
-    [[nodiscard]] inline virtual CORE::Materials::MaterialType Type() const { return type_; }
+    [[nodiscard]] inline virtual Core::Materials::MaterialType Type() const { return type_; }
 
     //@}
 
     /// don't want = operator
     Material operator=(const Material& old) = delete;
-    Material(const CORE::MAT::PAR::Material& old) = delete;
+    Material(const Core::Mat::PAR::Material& old) = delete;
 
    protected:
     /// Unique ID of this material, no second material of same ID may exist
     int id_{};
 
     /// Type of this material
-    CORE::Materials::MaterialType type_{};
+    Core::Materials::MaterialType type_{};
   };
 
   /*----------------------------------------------------------------------*/
   /// Base object to hold 'quick' access material parameters
   ///
-  /// CORE::MAT::PAR::Parameters is derived for the various implemented
+  /// Core::Mat::PAR::Parameters is derived for the various implemented
   /// materials. These provide the 'quick' access to the read-in
   /// material parameters.
   ///
@@ -100,7 +100,7 @@ namespace CORE::MAT::PAR
   {
    public:
     /// construct the material object given material parameters
-    Parameter(Teuchos::RCP<const CORE::MAT::PAR::Material>
+    Parameter(Teuchos::RCP<const Core::Mat::PAR::Material>
             matdata  ///< read and validated material data (of 'slow' access)
     );
 
@@ -111,19 +111,19 @@ namespace CORE::MAT::PAR
     [[nodiscard]] int Id() const { return id_; }
 
     /// material type
-    [[nodiscard]] CORE::Materials::MaterialType Type() const { return type_; }
+    [[nodiscard]] Core::Materials::MaterialType Type() const { return type_; }
 
     /// create material instance of matching type with my parameters
-    virtual Teuchos::RCP<CORE::MAT::Material> create_material() = 0;
+    virtual Teuchos::RCP<Core::Mat::Material> create_material() = 0;
 
     //! \brief return element specific or global material parameter using enum parametername which
-    //! is defined in respective MAT::PAR classes
+    //! is defined in respective Mat::PAR classes
     double GetParameter(int parametername, const int EleId);
 
     /**
      * Access to the raw input data.
      */
-    const CORE::IO::InputParameterContainer& raw_parameters() const { return *raw_parameters_; }
+    const Core::IO::InputParameterContainer& raw_parameters() const { return *raw_parameters_; }
 
    protected:
     /*! \brief
@@ -139,14 +139,14 @@ namespace CORE::MAT::PAR
     int id_;
 
     /// material type
-    CORE::Materials::MaterialType type_;
+    Core::Materials::MaterialType type_;
 
     /// raw input parameters
-    Teuchos::RCP<const CORE::MAT::PAR::Material> raw_parameters_;
+    Teuchos::RCP<const Core::Mat::PAR::Material> raw_parameters_;
 
   };  // class Parameter
 
-}  // namespace CORE::MAT::PAR
+}  // namespace Core::Mat::PAR
 
 
 FOUR_C_NAMESPACE_CLOSE

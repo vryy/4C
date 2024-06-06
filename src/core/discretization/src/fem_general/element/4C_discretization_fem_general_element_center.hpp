@@ -14,17 +14,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::FE
+namespace Core::FE
 {
   // return center coordinates of @p ele. Note that the average of all nodal coordinates is
   // computed.
-  std::vector<double> element_center_refe_coords(const CORE::Elements::Element& ele);
-}  // namespace CORE::FE
+  std::vector<double> element_center_refe_coords(const Core::Elements::Element& ele);
+}  // namespace Core::FE
 
 #endif
 

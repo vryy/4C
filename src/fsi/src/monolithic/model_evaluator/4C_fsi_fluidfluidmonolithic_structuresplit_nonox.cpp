@@ -46,7 +46,7 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
   intersectionmaps.push_back(structure_field()->GetDBCMapExtractor()->CondMap());
   intersectionmaps.push_back(structure_field()->Interface()->FSICondMap());
   Teuchos::RCP<Epetra_Map> intersectionmap =
-      CORE::LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+      Core::LinAlg::MultiMapExtractor::IntersectMaps(intersectionmaps);
 
   if (intersectionmap->NumGlobalElements() != 0)
   {
@@ -102,20 +102,20 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
   intersectionmaps.resize(0);
   intersectionmaps.push_back(structure_field()->GetDBCMapExtractor()->CondMap());
   intersectionmaps.push_back(structure_field()->Interface()->FSICondMap());
-  intersectionmap = CORE::LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+  intersectionmap = Core::LinAlg::MultiMapExtractor::IntersectMaps(intersectionmaps);
   if (intersectionmap->NumGlobalElements() != 0)
     FOUR_C_THROW(
         "Could not remove structural interface Dirichlet conditions from structure DBC map.");
 #endif
 
-  sggtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform);
-  sgitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
-  sigtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  aigtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  fsaigtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
-  fsmgitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform);
+  sggtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowColTransform);
+  sgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
+  sigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  aigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  fmiitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  fmgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  fsaigtransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
+  fsmgitransform_ = Teuchos::rcp(new Core::LinAlg::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on structure field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*structure_field()->Interface()->FSICondMap()));
@@ -150,7 +150,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
   /*----------------------------------------------------------------------*/
   // initialize systemmatrix_
   systemmatrix_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           extractor(), extractor(), 81, false, true));
 }
 
@@ -166,21 +166,21 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(Epetra_Vector& f, b
   if (firstcall)
   {
     // get structure matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocks =
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blocks =
         structure_field()->BlockSystemMatrix();
     if (blocks == Teuchos::null) FOUR_C_THROW("expect structure block matrix");
 
     // get fluid shape derivatives matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> mmm = fluid_field()->ShapeDerivatives();
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->ShapeDerivatives();
 
     // get ale matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocka = ale_field()->BlockSystemMatrix();
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blocka = ale_field()->BlockSystemMatrix();
     if (blocka == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
     // extract structure and ale submatrices
-    CORE::LINALG::SparseMatrix& sig = blocks->Matrix(0, 1);  // S_{I\Gamma}
-    CORE::LINALG::SparseMatrix& sgg = blocks->Matrix(1, 1);  // S_{\Gamma\Gamma}
-    CORE::LINALG::SparseMatrix& aig = blocka->Matrix(0, 1);  // A_{I\Gamma}
+    Core::LinAlg::SparseMatrix& sig = blocks->Matrix(0, 1);  // S_{I\Gamma}
+    Core::LinAlg::SparseMatrix& sgg = blocks->Matrix(1, 1);  // S_{\Gamma\Gamma}
+    Core::LinAlg::SparseMatrix& aig = blocka->Matrix(0, 1);  // A_{I\Gamma}
 
     // get time integration parameters of structure an fluid time integrators
     // to enable consistent time integration among the fields
@@ -229,7 +229,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(Epetra_Vector& f, b
     // can insert the embedded dofrowmap into it
     // kruse 30.04. --> we don't, see adapter
     // Teuchos::RCP<Epetra_Vector> fluidfluidtmp =
-    // CORE::LINALG::CreateVector(*fluid_field()->dof_row_map(),true);
+    // Core::LinAlg::CreateVector(*fluid_field()->dof_row_map(),true);
 
     // ---------- inner fluid DOFs
     /* The following terms are added to the inner fluid DOFs of right hand side:
@@ -242,7 +242,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(Epetra_Vector& f, b
     // ----------addressing term 1
     if (mmm != Teuchos::null)
     {
-      CORE::LINALG::SparseMatrix& fmig = mmm->Matrix(0, 1);
+      Core::LinAlg::SparseMatrix& fmig = mmm->Matrix(0, 1);
       rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap(), true));
       fmig.Apply(*fveln, *rhs);
       rhs->Scale(-dt);
@@ -273,7 +273,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(Epetra_Vector& f, b
     // ----------addressing term 1
     if (mmm != Teuchos::null)
     {
-      CORE::LINALG::SparseMatrix& fmgg = mmm->Matrix(1, 1);
+      Core::LinAlg::SparseMatrix& fmgg = mmm->Matrix(1, 1);
       rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap(), true));
       fmgg.Apply(*fveln, *rhs);
       rhs->Scale(-dt);
@@ -311,9 +311,9 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(Epetra_Vector& f, b
   // -----------------------------------------------------
   // Reset quantities for previous iteration step since they still store values from the last time
   // step
-  ddiinc_ = CORE::LINALG::CreateVector(*structure_field()->Interface()->OtherMap(), true);
+  ddiinc_ = Core::LinAlg::CreateVector(*structure_field()->Interface()->OtherMap(), true);
   solipre_ = Teuchos::null;
-  ddginc_ = CORE::LINALG::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
+  ddginc_ = Core::LinAlg::CreateVector(*structure_field()->Interface()->FSICondMap(), true);
   solgpre_ = Teuchos::null;
 }
 
@@ -326,19 +326,19 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system_matrix()
   // extract Jacobian matrices and put them into composite system
   // matrix W
 
-  const CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
-  const CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
-  const CORE::ADAPTER::Coupling& icoupfa = interface_fluid_ale_coupling();
+  const Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  const Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
+  const Core::Adapter::Coupling& icoupfa = interface_fluid_ale_coupling();
 
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> s = structure_field()->BlockSystemMatrix();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> s = structure_field()->BlockSystemMatrix();
   if (s == Teuchos::null) FOUR_C_THROW("expect structure block matrix");
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> f = fluid_field()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> f = fluid_field()->SystemMatrix();
   if (f == Teuchos::null) FOUR_C_THROW("expect fluid matrix");
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = ale_field()->BlockSystemMatrix();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->BlockSystemMatrix();
   if (a == Teuchos::null) FOUR_C_THROW("expect ale block matrix");
 
-  CORE::LINALG::SparseMatrix& aii = a->Matrix(0, 0);
-  CORE::LINALG::SparseMatrix& aig = a->Matrix(0, 1);
+  Core::LinAlg::SparseMatrix& aii = a->Matrix(0, 0);
+  Core::LinAlg::SparseMatrix& aig = a->Matrix(0, 1);
 
   // scaling factors for fluid
   const double scale = fluid_field()->residual_scaling();
@@ -351,8 +351,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system_matrix()
 
   // store parts of structural matrix to know them in the next iteration as previous iteration
   // matricesu
-  sgicur_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(s->Matrix(1, 0)));
-  sggcur_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(s->Matrix(1, 1)));
+  sgicur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(s->Matrix(1, 0)));
+  sggcur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(s->Matrix(1, 1)));
 
   /*----------------------------------------------------------------------*/
   // build block matrix
@@ -363,63 +363,63 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system_matrix()
   // interface meshes.
   f->UnComplete();
 
-  systemmatrix_->Assign(0, 0, CORE::LINALG::View, s->Matrix(0, 0));
+  systemmatrix_->Assign(0, 0, Core::LinAlg::View, s->Matrix(0, 0));
 
   (*sigtransform_)(s->FullRowMap(), s->FullColMap(), s->Matrix(0, 1), 1. / timescale,
-      CORE::ADAPTER::CouplingMasterConverter(coupsf), systemmatrix_->Matrix(0, 1));
+      Core::Adapter::CouplingMasterConverter(coupsf), systemmatrix_->Matrix(0, 1));
   (*sggtransform_)(s->Matrix(1, 1),
       ((1.0 - ftiparam) / (1.0 - stiparam)) * (1. / (scale * timescale)),
-      CORE::ADAPTER::CouplingMasterConverter(coupsf),
-      CORE::ADAPTER::CouplingMasterConverter(coupsf), *f, true, true);
+      Core::Adapter::CouplingMasterConverter(coupsf),
+      Core::Adapter::CouplingMasterConverter(coupsf), *f, true, true);
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> lsgi =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(f->RowMap(), 81, false));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> lsgi =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(f->RowMap(), 81, false));
   (*sgitransform_)(s->Matrix(1, 0), ((1.0 - ftiparam) / (1.0 - stiparam)) * (1. / scale),
-      CORE::ADAPTER::CouplingMasterConverter(coupsf), *lsgi);
+      Core::Adapter::CouplingMasterConverter(coupsf), *lsgi);
 
   lsgi->Complete(s->Matrix(1, 0).DomainMap(), f->RangeMap());
 
   // systemmatrix_->Assign(1,1,View,*f);
-  systemmatrix_->Assign(1, 0, CORE::LINALG::View, *lsgi);
+  systemmatrix_->Assign(1, 0, Core::LinAlg::View, *lsgi);
 
   (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1. / timescale,
-      CORE::ADAPTER::CouplingSlaveConverter(icoupfa), systemmatrix_->Matrix(2, 1));
+      Core::Adapter::CouplingSlaveConverter(icoupfa), systemmatrix_->Matrix(2, 1));
 
-  systemmatrix_->Assign(2, 2, CORE::LINALG::View, aii);
+  systemmatrix_->Assign(2, 2, Core::LinAlg::View, aii);
 
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
 
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> mmm = fluid_field()->ShapeDerivatives();
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> mmm = fluid_field()->ShapeDerivatives();
   if (mmm != Teuchos::null)
   {
-    CORE::LINALG::SparseMatrix& fmii = mmm->Matrix(0, 0);
-    CORE::LINALG::SparseMatrix& fmig = mmm->Matrix(0, 1);
-    CORE::LINALG::SparseMatrix& fmgi = mmm->Matrix(1, 0);
-    CORE::LINALG::SparseMatrix& fmgg = mmm->Matrix(1, 1);
+    Core::LinAlg::SparseMatrix& fmii = mmm->Matrix(0, 0);
+    Core::LinAlg::SparseMatrix& fmig = mmm->Matrix(0, 1);
+    Core::LinAlg::SparseMatrix& fmgi = mmm->Matrix(1, 0);
+    Core::LinAlg::SparseMatrix& fmgg = mmm->Matrix(1, 1);
 
     systemmatrix_->Matrix(1, 1).Add(fmgg, false, 1. / timescale, 1.0);
     systemmatrix_->Matrix(1, 1).Add(fmig, false, 1. / timescale, 1.0);
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> lfmgi =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(f->RowMap(), 81, false));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> lfmgi =
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(f->RowMap(), 81, false));
     (*fmgitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmgi, 1.,
-        CORE::ADAPTER::CouplingMasterConverter(coupfa),
+        Core::Adapter::CouplingMasterConverter(coupfa),
         // systemmatrix_->Matrix(1,2),
         *lfmgi, false, false);
 
     (*fmiitransform_)(mmm->FullRowMap(), mmm->FullColMap(), fmii, 1.,
-        CORE::ADAPTER::CouplingMasterConverter(coupfa), *lfmgi, false, true);
+        Core::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false, true);
 
     lfmgi->Complete(aii.DomainMap(), f->RangeMap());
 
-    systemmatrix_->Assign(1, 2, CORE::LINALG::View, *lfmgi);
+    systemmatrix_->Assign(1, 2, Core::LinAlg::View, *lfmgi);
   }
 
   f->Complete();
 
   // finally assign fluid block
-  systemmatrix_->Assign(1, 1, CORE::LINALG::View, *f);
+  systemmatrix_->Assign(1, 1, Core::LinAlg::View, *f);
 
   // done. make sure all blocks are filled.
   systemmatrix_->Complete();
@@ -439,12 +439,12 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::initial_guess(Teuchos::RCP<Ep
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::scale_system(
-    CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+    Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -502,11 +502,11 @@ Teuchos::RCP<Epetra_Map> FSI::FluidFluidMonolithicStructureSplitNoNOX::combined_
   aleintersectionmaps.push_back(ale_field()->GetDBCMapExtractor()->CondMap());
   aleintersectionmaps.push_back(ale_field()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap =
-      CORE::LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
+      Core::LinAlg::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
   alldbcmaps.push_back(aleintersectionmap);
 
   // Merge the maps
-  Teuchos::RCP<Epetra_Map> alldbcmap = CORE::LINALG::MultiMapExtractor::MergeMaps(alldbcmaps);
+  Teuchos::RCP<Epetra_Map> alldbcmap = Core::LinAlg::MultiMapExtractor::MergeMaps(alldbcmaps);
 
   return alldbcmap;
 }
@@ -514,11 +514,11 @@ Teuchos::RCP<Epetra_Map> FSI::FluidFluidMonolithicStructureSplitNoNOX::combined_
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::unscale_solution(
-    CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+    Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -695,7 +695,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::output()
     Teuchos::RCP<Epetra_Vector> lambdafull =
         structure_field()->Interface()->InsertFSICondVector(lambda_);
 
-    const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
     const int upres = fsidyn.get<int>("RESULTSEVRY");
     if ((uprestart != 0 && fluid_field()->Step() % uprestart == 0) ||
@@ -722,8 +722,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::read_restart(int step)
   {
     Teuchos::RCP<Epetra_Vector> lambdafull =
         Teuchos::rcp(new Epetra_Vector(*structure_field()->dof_row_map(), true));
-    CORE::IO::DiscretizationReader reader = CORE::IO::DiscretizationReader(
-        structure_field()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
+    Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
+        structure_field()->discretization(), Global::Problem::Instance()->InputControlFile(), step);
     reader.ReadVector(lambdafull, "fsilambda");
     lambda_ = structure_field()->Interface()->ExtractFSICondVector(lambdafull);
   }
@@ -783,7 +783,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::build_convergence_norms()
   std::vector<Teuchos::RCP<const Epetra_Map>> innerfluidvel;
   innerfluidvel.push_back(fluid_field()->InnerVelocityRowMap());
   innerfluidvel.push_back(Teuchos::null);
-  CORE::LINALG::MultiMapExtractor fluidvelextract(*(fluid_field()->dof_row_map()), innerfluidvel);
+  Core::LinAlg::MultiMapExtractor fluidvelextract(*(fluid_field()->dof_row_map()), innerfluidvel);
   fluidvelextract.ExtractVector(fluid_field()->RHS(), 0)->Norm2(&normflvelrhsL2_);
   fluidvelextract.ExtractVector(fluid_field()->RHS(), 0)->NormInf(&normflvelrhsInf_);
 
@@ -791,7 +791,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::build_convergence_norms()
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidpres;
   fluidpres.push_back(fluid_field()->PressureRowMap());
   fluidpres.push_back(Teuchos::null);
-  CORE::LINALG::MultiMapExtractor fluidpresextract(*(fluid_field()->dof_row_map()), fluidpres);
+  Core::LinAlg::MultiMapExtractor fluidpresextract(*(fluid_field()->dof_row_map()), fluidpres);
   fluidpresextract.ExtractVector(fluid_field()->RHS(), 0)->Norm2(&normflpresrhsL2_);
   fluidpresextract.ExtractVector(fluid_field()->RHS(), 0)->NormInf(&normflpresrhsInf_);
 
@@ -943,13 +943,13 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::recover_lagrange_multiplier()
   //------ old version changed on 5/12/12  --------------
   //   // compute the product S_{\Gamma I} \Delta d_I
   //   Teuchos::RCP<Epetra_Vector> sgiddi =
-  //   CORE::LINALG::CreateVector(*structure_field()->Interface()->OtherMap(),true); // store the
+  //   Core::LinAlg::CreateVector(*structure_field()->Interface()->OtherMap(),true); // store the
   //   prodcut 'S_{\GammaI} \Delta d_I^{n+1}' in here (sgicur_->EpetraMatrix())->Multiply(false,
   //   *ddiinc_, *sgiddi);
 
   //    // compute the product S_{\Gamma\Gamma} \Delta d_\Gamma
   //    Teuchos::RCP<Epetra_Vector> sggddg =
-  //    CORE::LINALG::CreateVector(*structure_field()->Interface()->OtherMap(),true); // store the
+  //    Core::LinAlg::CreateVector(*structure_field()->Interface()->OtherMap(),true); // store the
   //    prodcut
   //    '\Delta t / 2 * S_{\Gamma\Gamma} \Delta u_\Gamma^{n+1}' in here
   //    (sggcur_->EpetraMatrix())->Multiply(false, *ddginc_, *sggddg);
@@ -968,10 +968,10 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::recover_lagrange_multiplier()
 
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::handle_fluid_dof_map_change_in_newton()
 {
-  if (Comm().MyPID() == 0) CORE::IO::cout << " New Map!! " << CORE::IO::endl;
+  if (Comm().MyPID() == 0) Core::IO::cout << " New Map!! " << Core::IO::endl;
 
   // save the old x_sum
-  Teuchos::RCP<Epetra_Vector> x_sum_n = CORE::LINALG::CreateVector(*dof_row_map(), true);
+  Teuchos::RCP<Epetra_Vector> x_sum_n = Core::LinAlg::CreateVector(*dof_row_map(), true);
   *x_sum_n = *x_sum_;
   Teuchos::RCP<const Epetra_Vector> sx_n;
   Teuchos::RCP<const Epetra_Vector> ax_n;
@@ -982,13 +982,13 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::handle_fluid_dof_map_change_i
   create_combined_dof_row_map();
   // re-initialize systemmatrix_
   systemmatrix_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           extractor(), extractor(), 81, false, true));
 
-  rhs_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
-  iterinc_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
-  zeros_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
-  x_sum_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+  rhs_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
+  x_sum_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
 
   // build the new iter_sum
   extractor().InsertVector(sx_n, 0, x_sum_);

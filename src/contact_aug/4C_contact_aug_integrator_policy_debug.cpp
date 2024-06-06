@@ -27,9 +27,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Debug(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Debug(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double gapn_ma, const double wgt, const double jac,
     const double* gpn, const double* mxigp) const
 {
@@ -38,12 +38,12 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1st_Debug(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-    const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-    const CORE::LINALG::Matrix<3, 2>& stau, const Deriv1stMap& d_jac, const Deriv1stVecMap& dmxigp,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1st_Debug(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+    const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+    const Core::LinAlg::Matrix<3, 2>& stau, const Deriv1stMap& d_jac, const Deriv1stVecMap& dmxigp,
     const Deriv1stVecMap& d_gpn, const Deriv1stMap& d_gap_sl, const double gapn_sl,
     const double wgt, const double jac) const
 {
@@ -56,12 +56,12 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2nd_Debug(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-    const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-    const CORE::LINALG::Matrix<3, 2>& stau, const Deriv1stMap& d_jac, const Deriv1stMap& d_gapn_sl,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2nd_Debug(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+    const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+    const Core::LinAlg::Matrix<3, 2>& stau, const Deriv1stMap& d_jac, const Deriv1stMap& d_gapn_sl,
     const Deriv2ndMap& dd_jac, const Deriv2ndVecMap& ddmxigp, const Deriv1stVecMap& d_n_unit,
     const Deriv2ndVecMap& dd_n_unit, const double gapn_sl, const double wgt, const double jac) const
 {
@@ -74,24 +74,24 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::Get
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_w_gap(
-    MORTAR::Element& sele) const
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_w_gap(
+    Mortar::Element& sele) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
-    CORE::GEN::copy(cnode.AugData().GetDeriv1st_WGapMa(), d_debug);
+    Core::Gen::copy(cnode.AugData().GetDeriv1st_WGapMa(), d_debug);
 
     const Deriv1stMap& d_wgap_sl = cnode.AugData().GetDeriv1st_WGapSl();
 
     for (auto& d_wgap_sl_var : d_wgap_sl)
     {
-      CORE::GEN::increase_capacity(d_debug);
+      Core::Gen::increase_capacity(d_debug);
       d_debug[d_wgap_sl_var.first] -= d_wgap_sl_var.second;
     }
   }
@@ -99,28 +99,28 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::deb
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_w_gap(
-    MORTAR::Element& sele) const
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_w_gap(
+    Mortar::Element& sele) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
-    CORE::GEN::copy(cnode.AugData().GetDeriv2nd_WGapMa(), dd_debug);
+    Core::Gen::copy(cnode.AugData().GetDeriv2nd_WGapMa(), dd_debug);
 
     const Deriv2ndMap& dd_wgap_sl = cnode.AugData().GetDeriv2nd_WGapSl();
     for (auto& dd_wgap_sl_var : dd_wgap_sl)
     {
-      CORE::GEN::increase_capacity(dd_debug);
+      Core::Gen::increase_capacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[dd_wgap_sl_var.first];
 
       for (auto& dd_wgap_sl_var_lin : dd_wgap_sl_var.second)
       {
-        CORE::GEN::increase_capacity(dd_debug_var);
+        Core::Gen::increase_capacity(dd_debug_var);
         dd_debug_var[dd_wgap_sl_var_lin.first] -= dd_wgap_sl_var_lin.second;
       }
     }
@@ -129,9 +129,9 @@ void CONTACT::AUG::DebugIncompleteIntPolicy<probdim, slavetype, mastertype>::deb
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_Debug(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_Debug(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double gapn_ma, const double wgt, const double jac,
     const double* gpn, const double* mxigp) const
 {
@@ -160,12 +160,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_D
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1st_Debug(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-    const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-    const CORE::LINALG::Matrix<3, 2>& stau, const Deriv1stMap& d_jac, const Deriv1stVecMap& dmxigp,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv1st_Debug(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+    const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+    const Core::LinAlg::Matrix<3, 2>& stau, const Deriv1stMap& d_jac, const Deriv1stVecMap& dmxigp,
     const Deriv1stVecMap& d_gpn, const Deriv1stMap& d_gap_sl, const double gapn_sl,
     const double wgt, const double jac) const
 {
@@ -216,12 +216,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_D
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2nd_Debug(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-    const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-    const CORE::LINALG::Matrix<3, 2>& stau, const Deriv1stMap& d_jac, const Deriv1stMap& d_gapn_sl,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_Deriv2nd_Debug(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval,
+    const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+    const Core::LinAlg::Matrix<3, 2>& stau, const Deriv1stMap& d_jac, const Deriv1stMap& d_gapn_sl,
     const Deriv2ndMap& dd_jac, const Deriv2ndVecMap& ddmxigp, const Deriv1stVecMap& d_n_unit,
     const Deriv2ndVecMap& dd_n_unit, const double gapn_sl, const double wgt, const double jac) const
 {
@@ -263,9 +263,9 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Get_D
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-const CONTACT::AUG::Deriv1stMap&
-CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::get_nodal_deriv1st(
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+const CONTACT::Aug::Deriv1stMap&
+CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::get_nodal_deriv1st(
     NodeDataContainer& data) const
 {
   FOUR_C_THROW("No active scalar first derivative!");
@@ -274,9 +274,9 @@ CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::get_nodal_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-const CONTACT::AUG::Deriv2ndMap&
-CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::get_nodal_deriv2nd(
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+const CONTACT::Aug::Deriv2ndMap&
+CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::get_nodal_deriv2nd(
     NodeDataContainer& data) const
 {
   FOUR_C_THROW("No active scalar second derivative!");
@@ -285,12 +285,12 @@ CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::get_nodal_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_kappa(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double jac,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_kappa(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval, const double jac,
     const double wgt) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -304,22 +304,22 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_kappa(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_kappa(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stMap& djac, const double wgt) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
 
-    //    CORE::GEN::copy( cnode.AugData().GetDeriv1st_Kappa(), d_debug );
+    //    Core::Gen::copy( cnode.AugData().GetDeriv1st_Kappa(), d_debug );
     for (auto& djac_var : djac)
     {
-      CORE::GEN::increase_capacity(d_debug);
+      Core::Gen::increase_capacity(d_debug);
       d_debug[djac_var.first] += wgt * lmval(i, 0) * djac_var.second;
     }
   }
@@ -327,12 +327,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_gpn(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_gpn(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double* gpn) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -349,12 +349,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_gpn(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_gpn(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stVecMap& d_gpn) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -364,14 +364,14 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     if (d_debug.size() < probdim)
     {
       d_debug.resize(probdim);
-      CORE::GEN::reset(1, d_debug);
+      Core::Gen::reset(1, d_debug);
     }
 
     for (unsigned d = 0; d < probdim; ++d)
     {
       for (auto& d_gpn_var : d_gpn[d])
       {
-        CORE::GEN::increase_capacity(d_debug[d]);
+        Core::Gen::increase_capacity(d_debug[d]);
         d_debug[d][d_gpn_var.first] += lmval(i, 0) * d_gpn_var.second;
       }
     }
@@ -380,12 +380,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_w_gap(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_w_gap(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double gapn_ma, const double wgt, const double jac) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -400,12 +400,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_w_gap_sl(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_w_gap_sl(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double gapn_sl, const double wgt, const double jac) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -420,24 +420,24 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_gap_sl(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_n_unit,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_gap_sl(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_n_unit,
     const Deriv1stMap& d_gapn_sl, const Deriv1stMap& d_jac, const double gapn_sl, const double wgt,
     const double jac, Deriv1stMap& d_gapn_sl_complete) const
 {
-  CORE::Nodes::Node** snodes = sele.Nodes();
+  Core::Nodes::Node** snodes = sele.Nodes();
 
   // --- standard slave gap part --------------------------------------------
   for (auto& d_gapn_sl_var : d_gapn_sl)
   {
-    CORE::GEN::increase_capacity(d_gapn_sl_complete);
+    Core::Gen::increase_capacity(d_gapn_sl_complete);
     d_gapn_sl_complete[d_gapn_sl_var.first] += d_gapn_sl_var.second;
   }
 
   // --- Additional part for debugging only ----------------------------------
-  CORE::LINALG::Matrix<probdim, 1> xs_int(true);
+  Core::LinAlg::Matrix<probdim, 1> xs_int(true);
   for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
   {
     const Node& snode = static_cast<const Node&>(*snodes[k]);
@@ -453,7 +453,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
   {
     for (auto& d_n_unit_j_var : d_n_unit[j])
     {
-      CORE::GEN::increase_capacity(d_gapn_sl_complete);
+      Core::Gen::increase_capacity(d_gapn_sl_complete);
       d_gapn_sl_complete[d_n_unit_j_var.first] += d_n_unit_j_var.second * xs_int(j, 0);
     }
   }
@@ -461,14 +461,14 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_w_gap_sl(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_gpn,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_w_gap_sl(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_gpn,
     const Deriv1stMap& d_gapn_sl_complete, const Deriv1stMap& d_jac, const double gapn_sl,
     const double wgt, const double jac) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -479,13 +479,13 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
     if (d_debug.capacity() == 0)
     {
-      CORE::GEN::reset(1, d_debug);
+      Core::Gen::reset(1, d_debug);
     }
 
     // --- slave gap part -----------------------------------------------------
     for (auto& d_gapn_sl_var : d_gapn_sl_complete)
     {
-      CORE::GEN::increase_capacity(d_debug);
+      Core::Gen::increase_capacity(d_debug);
       d_debug[d_gapn_sl_var.first] += tmp * d_gapn_sl_var.second;
     }
 
@@ -494,7 +494,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
     for (auto& d_jac_var : d_jac)
     {
-      CORE::GEN::increase_capacity(d_debug);
+      Core::Gen::increase_capacity(d_debug);
       d_debug[d_jac_var.first] += tmp_sl * d_jac_var.second;
     }
   }
@@ -502,15 +502,15 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_w_gap_sl(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_n_unit,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_w_gap_sl(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& sval, const Deriv1stVecMap& d_n_unit,
     const Deriv2ndVecMap& dd_n_unit, const Deriv1stMap& d_jac,
     const Deriv1stMap& d_gapn_sl_complete, const Deriv2ndMap& dd_jac, const double gapn_sl,
     const double wgt, const double jac) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -521,7 +521,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
     if (dd_debug.capacity() == 0)
     {
-      CORE::GEN::reset(1, dd_debug);
+      Core::Gen::reset(1, dd_debug);
     }
 
     // --- linearized normal multiplied by the varied slave position ----------
@@ -534,12 +534,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
       // smooth normal
       for (unsigned d = 0; d < probdim; ++d)
       {
-        CORE::GEN::increase_capacity(dd_debug);
+        Core::Gen::increase_capacity(dd_debug);
         Deriv1stMap& dd_debug_var = dd_debug[sdof[d]];
 
         for (auto& d_n_unit_lin : d_n_unit[d])
         {
-          CORE::GEN::increase_capacity(dd_debug_var);
+          Core::Gen::increase_capacity(dd_debug_var);
           dd_debug_var[d_n_unit_lin.first] += tmp * sval(k, 0) * d_n_unit_lin.second;
         }
       }
@@ -548,14 +548,14 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     // --- varied slave gap multiplied by linearized jacobian  ----------------
     for (auto& d_gapn_sl_var : d_gapn_sl_complete)
     {
-      CORE::GEN::increase_capacity(dd_debug);
+      Core::Gen::increase_capacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[d_gapn_sl_var.first];
 
       const double val = wgt * lmval(i, 0) * d_gapn_sl_var.second;
 
       for (auto& d_jac_lin : d_jac)
       {
-        CORE::GEN::increase_capacity(dd_debug_var);
+        Core::Gen::increase_capacity(dd_debug_var);
         dd_debug_var[d_jac_lin.first] += d_jac_lin.second * val;
       }
     }
@@ -566,12 +566,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
       const double val = wgt * lmval(i, 0) * d_jac_var.second;
 
       // linearized slave part of the normal gap
-      CORE::GEN::increase_capacity(dd_debug);
+      Core::Gen::increase_capacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[d_jac_var.first];
 
       for (auto& d_gapn_sl_lin : d_gapn_sl_complete)
       {
-        CORE::GEN::increase_capacity(dd_debug_var);
+        Core::Gen::increase_capacity(dd_debug_var);
         dd_debug_var[d_gapn_sl_lin.first] += d_gapn_sl_lin.second * val;
       }
     }
@@ -582,14 +582,14 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     {
       const int gid_var = dd_jac_var.first;
 
-      CORE::GEN::increase_capacity(dd_debug);
+      Core::Gen::increase_capacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[gid_var];
 
       for (auto& dd_jac_var_lin : dd_jac_var.second)
       {
         const int gid_lin = dd_jac_var_lin.first;
 
-        CORE::GEN::increase_capacity(dd_debug_var);
+        Core::Gen::increase_capacity(dd_debug_var);
         dd_debug_var[gid_lin] += tmp_sl * dd_jac_var_lin.second;
       }
     }
@@ -598,7 +598,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     // --- Additional parts for debugging only --------------------------------
     // slave position multiplied with the 2-nd order derivative of the smooth
     // unit normal
-    CORE::LINALG::Matrix<probdim, 1> xs_int(true);
+    Core::LinAlg::Matrix<probdim, 1> xs_int(true);
     for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
     {
       const Node& snode = static_cast<const Node&>(*snodes[k]);
@@ -616,12 +616,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
       for (auto& dd_sun_var : dd_n_unit[j])
       {
-        CORE::GEN::increase_capacity(dd_debug);
+        Core::Gen::increase_capacity(dd_debug);
         Deriv1stMap& dd_debug_var = dd_debug[dd_sun_var.first];
 
         for (auto& dd_sun_var_lin : dd_sun_var.second)
         {
-          CORE::GEN::increase_capacity(dd_debug_var);
+          Core::Gen::increase_capacity(dd_debug_var);
           dd_debug_var[dd_sun_var_lin.first] += val * dd_sun_var_lin.second;
         }
       }
@@ -632,7 +632,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     {
       for (auto& d_sun_j_var : d_n_unit[j])
       {
-        CORE::GEN::increase_capacity(dd_debug);
+        Core::Gen::increase_capacity(dd_debug);
         Deriv1stMap& dd_debug_var = dd_debug[d_sun_j_var.first];
 
         for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
@@ -640,7 +640,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
           const Node& snode = static_cast<const Node&>(*snodes[k]);
           const int* sdof = snode.Dofs().data();
 
-          CORE::GEN::increase_capacity(dd_debug_var);
+          Core::Gen::increase_capacity(dd_debug_var);
           dd_debug_var[sdof[j]] += sval(k, 0) * d_sun_j_var.second * tmp;
         }
       }
@@ -650,24 +650,24 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_w_gap(
-    MORTAR::Element& sele) const
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_w_gap(
+    Mortar::Element& sele) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
-    CORE::GEN::copy(cnode.AugData().GetDeriv1st_WGapMa(), d_debug);
+    Core::Gen::copy(cnode.AugData().GetDeriv1st_WGapMa(), d_debug);
 
     const Deriv1stMap& d_wgap_sl = cnode.AugData().GetDeriv1st_WGapSl();
 
     for (auto& d_wgap_sl_var : d_wgap_sl)
     {
-      CORE::GEN::increase_capacity(d_debug);
+      Core::Gen::increase_capacity(d_debug);
       d_debug[d_wgap_sl_var.first] -= d_wgap_sl_var.second;
     }
   }
@@ -675,28 +675,28 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_w_gap(
-    MORTAR::Element& sele) const
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_w_gap(
+    Mortar::Element& sele) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
-    CORE::GEN::copy(cnode.AugData().GetDeriv2nd_WGapMa(), dd_debug);
+    Core::Gen::copy(cnode.AugData().GetDeriv2nd_WGapMa(), dd_debug);
 
     const Deriv2ndMap& dd_wgap_sl = cnode.AugData().GetDeriv2nd_WGapSl();
     for (auto& dd_wgap_sl_var : dd_wgap_sl)
     {
-      CORE::GEN::increase_capacity(dd_debug);
+      Core::Gen::increase_capacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[dd_wgap_sl_var.first];
 
       for (auto& dd_wgap_sl_var_lin : dd_wgap_sl_var.second)
       {
-        CORE::GEN::increase_capacity(dd_debug_var);
+        Core::Gen::increase_capacity(dd_debug_var);
         dd_debug_var[dd_wgap_sl_var_lin.first] -= dd_wgap_sl_var_lin.second;
       }
     }
@@ -705,12 +705,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_m_xi(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_m_xi(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const double* mxigp) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -730,12 +730,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_m_xi(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_m_xi(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stVecMap& dmxigp) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -745,14 +745,14 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     if (d_debug.size() < my::MASTERDIM)
     {
       d_debug.resize(my::MASTERDIM);
-      CORE::GEN::reset(1, d_debug);
+      Core::Gen::reset(1, d_debug);
     }
 
     for (unsigned d = 0; d < my::MASTERDIM; ++d)
     {
       for (auto& dmxigp_var : dmxigp[d])
       {
-        CORE::GEN::increase_capacity(d_debug[d]);
+        Core::Gen::increase_capacity(d_debug[d]);
         d_debug[d][dmxigp_var.first] += lmval(i, 0) * dmxigp_var.second;
       }
     }
@@ -761,12 +761,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_m_xi(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_m_xi(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv2ndVecMap& ddmxigp) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -776,19 +776,19 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     if (dd_debug.size() < my::MASTERDIM)
     {
       dd_debug.resize(my::MASTERDIM);
-      CORE::GEN::reset(1, dd_debug);
+      Core::Gen::reset(1, dd_debug);
     }
 
     for (unsigned d = 0; d < my::MASTERDIM; ++d)
     {
       for (auto& ddmxigp_var : ddmxigp[d])
       {
-        CORE::GEN::increase_capacity(dd_debug[d]);
+        Core::Gen::increase_capacity(dd_debug[d]);
         Deriv1stMap& dd_debug_var = dd_debug[d][ddmxigp_var.first];
 
         for (auto& ddmxigp_var_lin : ddmxigp_var.second)
         {
-          CORE::GEN::increase_capacity(dd_debug_var);
+          Core::Gen::increase_capacity(dd_debug_var);
           dd_debug_var[ddmxigp_var_lin.first] += ddmxigp_var_lin.second * lmval(i, 0);
         }
       }
@@ -798,46 +798,46 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
-    mastertype>::debug_deriv1st_smooth_unit_normal(MORTAR::Element& sele) const
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype,
+    mastertype>::debug_deriv1st_smooth_unit_normal(Mortar::Element& sele) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv1stVecMap& d_debug = cnode.AugData().get_deriv1st_debug_vec();
-    CORE::GEN::copy(cnode.AugData().GetDeriv1st_N(), d_debug);
+    Core::Gen::copy(cnode.AugData().GetDeriv1st_N(), d_debug);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
-    mastertype>::debug_deriv2nd_smooth_unit_normal(MORTAR::Element& sele) const
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype,
+    mastertype>::debug_deriv2nd_smooth_unit_normal(Mortar::Element& sele) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv2ndVecMap& dd_debug = cnode.AugData().get_deriv2nd_debug_vec();
-    CORE::GEN::copy(cnode.AugData().GetDeriv2nd_N(), dd_debug);
+    Core::Gen::copy(cnode.AugData().GetDeriv2nd_N(), dd_debug);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_jac(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_jac(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv1stMap& djac) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -846,12 +846,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
     if (d_debug.capacity() == 0)
     {
-      CORE::GEN::reset(1, d_debug);
+      Core::Gen::reset(1, d_debug);
     }
 
     for (auto& djac_var : djac)
     {
-      CORE::GEN::increase_capacity(d_debug);
+      Core::Gen::increase_capacity(d_debug);
       d_debug[djac_var.first] += lmval(i, 0) * djac_var.second;
     }
   }
@@ -859,12 +859,12 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_jac(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_jac(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
     const Deriv2ndMap& ddjac) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -873,17 +873,17 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
     if (dd_debug.capacity() == 0)
     {
-      CORE::GEN::reset(1, dd_debug);
+      Core::Gen::reset(1, dd_debug);
     }
 
     for (auto& ddjac_var : ddjac)
     {
-      CORE::GEN::increase_capacity(dd_debug);
+      Core::Gen::increase_capacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[ddjac_var.first];
 
       for (auto& ddjac_var_lin : ddjac_var.second)
       {
-        CORE::GEN::increase_capacity(dd_debug_var);
+        Core::Gen::increase_capacity(dd_debug_var);
         dd_debug_var[ddjac_var_lin.first] += ddjac_var_lin.second * lmval(i, 0);
       }
     }
@@ -892,19 +892,19 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_jacobian(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-    const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-    const CORE::LINALG::Matrix<3, 2>& stau) const
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv1st_jacobian(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
+    const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+    const Core::LinAlg::Matrix<3, 2>& stau) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
-  CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
+  Core::LinAlg::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   // evaluate the non-unit slave element normal and the inverse of its length
-  CORE::LINALG::Matrix<probdim, 1> unit_normal;
+  Core::LinAlg::Matrix<probdim, 1> unit_normal;
   this->unit_slave_element_normal(sele, stau, unit_normal);
 
   /*--------------------------------------------------------------------------*/
@@ -925,11 +925,11 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     Node& cnode = dynamic_cast<Node&>(*snodes[i]);
 
     Deriv1stMap& d_debug = cnode.AugData().GetDeriv1st_Debug();
-    if (d_debug.capacity() == 0) CORE::GEN::reset(1, d_debug);
+    if (d_debug.capacity() == 0) Core::Gen::reset(1, d_debug);
 
     for (auto& deriv1st_jac_var : deriv1st_jac)
     {
-      CORE::GEN::increase_capacity(d_debug);
+      Core::Gen::increase_capacity(d_debug);
       d_debug[deriv1st_jac_var.first] += lmval(i, 0) * deriv1st_jac_var.second;
     }
   }
@@ -937,19 +937,19 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_jacobian(
-    MORTAR::Element& sele, const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-    const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-    const CORE::LINALG::Matrix<3, 2>& stau) const
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug_deriv2nd_jacobian(
+    Mortar::Element& sele, const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
+    const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+    const Core::LinAlg::Matrix<3, 2>& stau) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
-  CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
+  Core::LinAlg::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   // evaluate the non-unit slave element normal and the inverse of its length
-  CORE::LINALG::Matrix<probdim, 1> unit_normal;
+  Core::LinAlg::Matrix<probdim, 1> unit_normal;
   const double length_n_inv = this->unit_slave_element_normal(sele, stau, unit_normal);
 
   /*--------------------------------------------------------------------------*/
@@ -970,16 +970,16 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
     Deriv2ndMap& dd_debug = cnode.AugData().GetDeriv2nd_Debug();
     if (dd_debug.capacity() == 0)
     {
-      CORE::GEN::reset(1, dd_debug);
+      Core::Gen::reset(1, dd_debug);
     }
 
     for (auto& deriv2nd_jac_var : deriv2nd_jac)
     {
-      CORE::GEN::increase_capacity(dd_debug);
+      Core::Gen::increase_capacity(dd_debug);
       Deriv1stMap& dd_debug_var = dd_debug[deriv2nd_jac_var.first];
       for (auto& deriv2nd_jac_var_lin : deriv2nd_jac_var.second)
       {
-        CORE::GEN::increase_capacity(dd_debug_var);
+        Core::Gen::increase_capacity(dd_debug_var);
         dd_debug_var[deriv2nd_jac_var_lin.first] += lmval(i, 0) * deriv2nd_jac_var_lin.second;
       }
     }
@@ -988,16 +988,16 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::debug
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
-    mastertype>::debug_deriv1st_non_unit_normal(MORTAR::Element& sele,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-    const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-    const CORE::LINALG::Matrix<3, 2>& stau) const
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype,
+    mastertype>::debug_deriv1st_non_unit_normal(Mortar::Element& sele,
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
+    const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+    const Core::LinAlg::Matrix<3, 2>& stau) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
-  CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
+  Core::LinAlg::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   /*--------------------------------------------------------------------------*/
@@ -1015,14 +1015,14 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     if (d_debug.size() < 3)
     {
       d_debug.resize(probdim);
-      CORE::GEN::reset(1, d_debug);
+      Core::Gen::reset(1, d_debug);
     }
 
     for (unsigned d = 0; d < probdim; ++d)
     {
       for (auto& d_nun_var : d_non_unit_normal[d])
       {
-        CORE::GEN::increase_capacity(d_debug[d]);
+        Core::Gen::increase_capacity(d_debug[d]);
         d_debug[d][d_nun_var.first] += lmval(i, 0) * d_nun_var.second;
       }
     }
@@ -1031,15 +1031,15 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType slavetype, CORE::FE::CellType mastertype>
-void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
-    mastertype>::debug_deriv2nd_non_unit_normal(MORTAR::Element& sele,
-    const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-    const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv) const
+template <unsigned probdim, Core::FE::CellType slavetype, Core::FE::CellType mastertype>
+void CONTACT::Aug::DebugCompleteIntPolicy<probdim, slavetype,
+    mastertype>::debug_deriv2nd_non_unit_normal(Mortar::Element& sele,
+    const Core::LinAlg::Matrix<my::SLAVENUMNODE, 1>& lmval,
+    const Core::LinAlg::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv) const
 {
-  CORE::Nodes::Node* const* snodes = sele.Nodes();
+  Core::Nodes::Node* const* snodes = sele.Nodes();
 
-  CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
+  Core::LinAlg::Matrix<probdim, my::SLAVENUMNODE, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   Deriv2ndVecMap dd_non_unit_normal(probdim);
@@ -1053,19 +1053,19 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
     if (dd_debug.size() < 3)
     {
       dd_debug.resize(probdim);
-      CORE::GEN::reset(1, dd_debug);
+      Core::Gen::reset(1, dd_debug);
     }
 
     for (unsigned d = 0; d < probdim; ++d)
     {
       for (auto& dd_nun_var : dd_non_unit_normal[d])
       {
-        CORE::GEN::increase_capacity(dd_debug[d]);
+        Core::Gen::increase_capacity(dd_debug[d]);
         Deriv1stMap& dd_debug_var = dd_debug[d][dd_nun_var.first];
 
         for (auto& dd_nun_var_lin : dd_nun_var.second)
         {
-          CORE::GEN::increase_capacity(dd_debug_var);
+          Core::Gen::increase_capacity(dd_debug_var);
           dd_debug_var[dd_nun_var_lin.first] += dd_nun_var_lin.second * lmval(i, 0);
         }
       }
@@ -1074,119 +1074,119 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 }
 
 /*----------------------------------------------------------------------------*/
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::line2,
-    CORE::FE::CellType::line2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::line2,
-    CORE::FE::CellType::nurbs2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::line2,
-    CORE::FE::CellType::nurbs3>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::line2,
+    Core::FE::CellType::line2>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::line2,
+    Core::FE::CellType::nurbs2>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::line2,
+    Core::FE::CellType::nurbs3>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
-    CORE::FE::CellType::nurbs2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
-    CORE::FE::CellType::line2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
-    CORE::FE::CellType::nurbs3>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::nurbs2,
+    Core::FE::CellType::nurbs2>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::nurbs2,
+    Core::FE::CellType::line2>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::nurbs2,
+    Core::FE::CellType::nurbs3>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
-    CORE::FE::CellType::nurbs3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
-    CORE::FE::CellType::line2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
-    CORE::FE::CellType::nurbs2>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::nurbs3,
+    Core::FE::CellType::nurbs3>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::nurbs3,
+    Core::FE::CellType::line2>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<2, Core::FE::CellType::nurbs3,
+    Core::FE::CellType::nurbs2>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::quad4,
-    CORE::FE::CellType::quad4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::quad4,
-    CORE::FE::CellType::tri3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::quad4,
-    CORE::FE::CellType::nurbs4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::quad4,
-    CORE::FE::CellType::nurbs9>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::quad4,
+    Core::FE::CellType::quad4>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::quad4,
+    Core::FE::CellType::tri3>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::quad4,
+    Core::FE::CellType::nurbs4>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::quad4,
+    Core::FE::CellType::nurbs9>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::tri3,
-    CORE::FE::CellType::quad4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::tri3,
-    CORE::FE::CellType::tri3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::tri3,
-    CORE::FE::CellType::nurbs4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::tri3,
-    CORE::FE::CellType::nurbs9>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::tri3,
+    Core::FE::CellType::quad4>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::tri3,
+    Core::FE::CellType::tri3>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::tri3,
+    Core::FE::CellType::nurbs4>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::tri3,
+    Core::FE::CellType::nurbs9>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-    CORE::FE::CellType::nurbs4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-    CORE::FE::CellType::quad4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-    CORE::FE::CellType::tri3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-    CORE::FE::CellType::nurbs9>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+    Core::FE::CellType::nurbs4>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+    Core::FE::CellType::quad4>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+    Core::FE::CellType::tri3>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+    Core::FE::CellType::nurbs9>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-    CORE::FE::CellType::nurbs9>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-    CORE::FE::CellType::quad4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-    CORE::FE::CellType::tri3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-    CORE::FE::CellType::nurbs4>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+    Core::FE::CellType::nurbs9>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+    Core::FE::CellType::quad4>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+    Core::FE::CellType::tri3>;
+template class CONTACT::Aug::DebugIncompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+    Core::FE::CellType::nurbs4>;
 
 /*----------------------------------------------------------------------------*/
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::line2,
-    CORE::FE::CellType::line2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::line2,
-    CORE::FE::CellType::nurbs2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::line2,
-    CORE::FE::CellType::nurbs3>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::line2,
+    Core::FE::CellType::line2>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::line2,
+    Core::FE::CellType::nurbs2>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::line2,
+    Core::FE::CellType::nurbs3>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
-    CORE::FE::CellType::nurbs2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
-    CORE::FE::CellType::line2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs2,
-    CORE::FE::CellType::nurbs3>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::nurbs2,
+    Core::FE::CellType::nurbs2>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::nurbs2,
+    Core::FE::CellType::line2>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::nurbs2,
+    Core::FE::CellType::nurbs3>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
-    CORE::FE::CellType::nurbs3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
-    CORE::FE::CellType::line2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, CORE::FE::CellType::nurbs3,
-    CORE::FE::CellType::nurbs2>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::nurbs3,
+    Core::FE::CellType::nurbs3>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::nurbs3,
+    Core::FE::CellType::line2>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<2, Core::FE::CellType::nurbs3,
+    Core::FE::CellType::nurbs2>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::quad4,
-    CORE::FE::CellType::quad4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::quad4,
-    CORE::FE::CellType::tri3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::quad4,
-    CORE::FE::CellType::nurbs4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::quad4,
-    CORE::FE::CellType::nurbs9>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::quad4,
+    Core::FE::CellType::quad4>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::quad4,
+    Core::FE::CellType::tri3>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::quad4,
+    Core::FE::CellType::nurbs4>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::quad4,
+    Core::FE::CellType::nurbs9>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::tri3,
-    CORE::FE::CellType::quad4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::tri3,
-    CORE::FE::CellType::tri3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::tri3,
-    CORE::FE::CellType::nurbs4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::tri3,
-    CORE::FE::CellType::nurbs9>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::tri3,
+    Core::FE::CellType::quad4>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::tri3,
+    Core::FE::CellType::tri3>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::tri3,
+    Core::FE::CellType::nurbs4>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::tri3,
+    Core::FE::CellType::nurbs9>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-    CORE::FE::CellType::nurbs4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-    CORE::FE::CellType::quad4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-    CORE::FE::CellType::tri3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs4,
-    CORE::FE::CellType::nurbs9>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+    Core::FE::CellType::nurbs4>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+    Core::FE::CellType::quad4>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+    Core::FE::CellType::tri3>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs4,
+    Core::FE::CellType::nurbs9>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-    CORE::FE::CellType::nurbs9>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-    CORE::FE::CellType::quad4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-    CORE::FE::CellType::tri3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, CORE::FE::CellType::nurbs9,
-    CORE::FE::CellType::nurbs4>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+    Core::FE::CellType::nurbs9>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+    Core::FE::CellType::quad4>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+    Core::FE::CellType::tri3>;
+template class CONTACT::Aug::DebugCompleteIntPolicy<3, Core::FE::CellType::nurbs9,
+    Core::FE::CellType::nurbs4>;
 
 FOUR_C_NAMESPACE_CLOSE

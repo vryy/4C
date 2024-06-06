@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Beam3r::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::Beam3r::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   /* the triad field is discretized with Lagrange polynomials of order num_node()-1;
    * the centerline is either discretized in the same way or with 3rd order Hermite polynomials;
@@ -36,12 +36,12 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
   // read number of material model and cross-section specs
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   const auto mat_type = Material()->Parameter()->Type();
-  FOUR_C_THROW_UNLESS(mat_type == CORE::Materials::m_beam_reissner_elast_hyper ||
-                          mat_type == CORE::Materials::m_beam_reissner_elast_plastic ||
-                          mat_type == CORE::Materials::m_beam_reissner_elast_hyper_bymodes,
+  FOUR_C_THROW_UNLESS(mat_type == Core::Materials::m_beam_reissner_elast_hyper ||
+                          mat_type == Core::Materials::m_beam_reissner_elast_plastic ||
+                          mat_type == Core::Materials::m_beam_reissner_elast_hyper_bymodes,
       "The material parameter definition '%s' is not supported by Beam3r element! "
       "Choose MAT_BeamReissnerElastHyper, MAT_BeamReissnerElastHyper_ByModes or "
       "MAT_BeamReissnerElastPlastic!",
@@ -73,8 +73,8 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
   for (int node = 0; node < nnodetriad; node++)
     for (int dim = 0; dim < 3; dim++) theta0node_[node](dim) = nodal_rotvecs[3 * node + dim];
 
-  CORE::FE::IntegrationPoints1D gausspoints_force(MyGaussRule(res_elastic_force));
-  CORE::FE::IntegrationPoints1D gausspoints_moment(MyGaussRule(res_elastic_moment));
+  Core::FE::IntegrationPoints1D gausspoints_force(MyGaussRule(res_elastic_force));
+  Core::FE::IntegrationPoints1D gausspoints_moment(MyGaussRule(res_elastic_moment));
 
   get_beam_material().Setup(gausspoints_force.NumPoints(), gausspoints_moment.NumPoints());
 
@@ -83,7 +83,7 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::set_centerline_hermite(const bool yesno)
+void Discret::ELEMENTS::Beam3r::set_centerline_hermite(const bool yesno)
 {
   centerline_hermite_ = yesno;
 }

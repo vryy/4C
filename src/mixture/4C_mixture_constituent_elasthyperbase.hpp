@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   class Anisotropy;
 }
@@ -37,7 +37,7 @@ namespace MIXTURE
     {
      public:
       explicit MixtureConstituentElastHyperBase(
-          const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+          const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
       int get_prestressing_mat_id() const { return matid_prestress_strategy_; }
 
       /// @name material parameters
@@ -59,7 +59,7 @@ namespace MIXTURE
    * \brief Constituent for any hyperelastic material
    *
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
-   * be paired with the MAT::Mixture material and a MIXTURE::MixtureRule.
+   * be paired with the Mat::Mixture material and a MIXTURE::MixtureRule.
    */
   class MixtureConstituentElastHyperBase : public MIXTURE::MixtureConstituent
   {
@@ -77,7 +77,7 @@ namespace MIXTURE
      *
      * @param data (in/put) : vector storing all data to be packed into this instance.
      */
-    void PackConstituent(CORE::COMM::PackBuffer& data) const override;
+    void PackConstituent(Core::Communication::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -97,7 +97,7 @@ namespace MIXTURE
      *
      * \param anisotropy Reference to the global anisotropy manager
      */
-    void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
+    void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
     /*!
      * Initialize the constituent with the parameters of the input line
@@ -105,7 +105,7 @@ namespace MIXTURE
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) Parameter list for exchange of parameters
      */
-    void ReadElement(int numgp, INPUT::LineDefinition* linedef) override;
+    void ReadElement(int numgp, Input::LineDefinition* linedef) override;
 
     /*!
      * \brief Updates the material and all its summands
@@ -117,22 +117,22 @@ namespace MIXTURE
      * @param gp Gauss point
      * @param eleGID Global element identifier
      */
-    void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
+    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
     /*!
      * \brief Returns a reference to all summands
      *
-     * \return const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& Reference to the summands
+     * \return const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& Reference to the summands
      */
-    const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& Summands() const { return potsum_; }
+    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& Summands() const { return potsum_; }
 
     /*!
      * \brief Returns a reference to all summand properties
      *
-     * \return const MAT::SummandProperties& Reference to the summand properties
+     * \return const Mat::SummandProperties& Reference to the summand properties
      */
-    const MAT::SummandProperties& SummandProperties() { return summand_properties_; }
+    const Mat::SummandProperties& SummandProperties() { return summand_properties_; }
 
     /*!
      * \brief Method that is called to setup the constituent once before the start of the simulation
@@ -157,16 +157,16 @@ namespace MIXTURE
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(
-        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
    protected:
     /*!
      * \brief Returns a reference to the prestretch tensor at the Gauss point
      *
      * \param gp Gauss point
-     * \return const CORE::LINALG::Matrix<3, 3>& Reference to the prestretch tensor
+     * \return const Core::LinAlg::Matrix<3, 3>& Reference to the prestretch tensor
      */
-    const CORE::LINALG::Matrix<3, 3>& prestretch_tensor(const int gp) const
+    const Core::LinAlg::Matrix<3, 3>& prestretch_tensor(const int gp) const
     {
       return prestretch_[gp];
     }
@@ -174,9 +174,9 @@ namespace MIXTURE
     /*!
      * \brief Returns a reference to the cylinder coordinate system
      *
-     * \return const MAT::CylinderCoordinateSystemProvider&
+     * \return const Mat::CylinderCoordinateSystemProvider&
      */
-    const MAT::CylinderCoordinateSystemAnisotropyExtension&
+    const Mat::CylinderCoordinateSystemAnisotropyExtension&
     cylinder_coordinate_system_anisotropy_extension() const
     {
       return cosy_anisotropy_extension_;
@@ -187,20 +187,20 @@ namespace MIXTURE
    private:
     /// @name Flags to specify the elastic formulations (initialize with false)
     //@{
-    MAT::SummandProperties summand_properties_;  ///< holder for formulation specification
+    Mat::SummandProperties summand_properties_;  ///< holder for formulation specification
     //@}
 
     /// my material parameters
     MIXTURE::PAR::MixtureConstituentElastHyperBase* params_;
 
     /// map to materials/potential summands
-    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum_;
+    std::vector<Teuchos::RCP<Mat::Elastic::Summand>> potsum_;
 
     /// Prestretch of the constituent
-    std::vector<CORE::LINALG::Matrix<3, 3>> prestretch_;
+    std::vector<Core::LinAlg::Matrix<3, 3>> prestretch_;
 
     /// AnisotropyExtension that handles the management of cylinder coordinate systems
-    MAT::CylinderCoordinateSystemAnisotropyExtension cosy_anisotropy_extension_;
+    Mat::CylinderCoordinateSystemAnisotropyExtension cosy_anisotropy_extension_;
 
     /// Strategy for prestressing the constituent
     std::shared_ptr<MIXTURE::PrestressStrategy> prestress_strategy_;

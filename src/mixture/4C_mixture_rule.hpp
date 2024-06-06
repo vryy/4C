@@ -36,19 +36,19 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
-namespace LINALG
+namespace LinAlg
 {
   class SerialDenseMatrix;
 }
-namespace INPUT
+namespace Input
 {
   class LineDefinition;
 }
-namespace MAT
+namespace Mat
 {
   class Anisotropy;
   class Material;
@@ -56,7 +56,7 @@ namespace MAT
   {
     class Material;
   }
-}  // namespace MAT
+}  // namespace Mat
 
 namespace MIXTURE
 {
@@ -66,16 +66,16 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class MixtureRule : public CORE::MAT::PAR::Parameter
+    class MixtureRule : public Core::Mat::PAR::Parameter
     {
       friend class MIXTURE::MixtureRule;
 
      public:
       /// constructor
-      explicit MixtureRule(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+      explicit MixtureRule(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
       /// Override this method and throw error, as only the CreateRule() should be used.
-      Teuchos::RCP<CORE::MAT::Material> create_material() final
+      Teuchos::RCP<Core::Mat::Material> create_material() final
       {
         FOUR_C_THROW("Cannot create mixture rule from this method. Use CreateRule() instead.");
         return Teuchos::null;
@@ -124,7 +124,7 @@ namespace MIXTURE
 
     virtual ~MixtureRule() = default;
 
-    virtual void PackMixtureRule(CORE::COMM::PackBuffer& data) const;
+    virtual void PackMixtureRule(Core::Communication::PackBuffer& data) const;
 
     /*!
      * \brief Unpack data from a char vector into this class to be called from a derived class
@@ -150,7 +150,7 @@ namespace MIXTURE
       constituents_ = std::move(constituents);
     }
 
-    virtual void register_anisotropy_extensions(MAT::Anisotropy& anisotropy)
+    virtual void register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
     {
       // do nothing in the default case
     }
@@ -161,7 +161,7 @@ namespace MIXTURE
      * @param numgp (in) Number of Gauss-points
      * @param params (in/out) : Parameter list for exchange of parameters
      */
-    virtual void ReadElement(int numgp, INPUT::LineDefinition* linedef);
+    virtual void ReadElement(int numgp, Input::LineDefinition* linedef);
 
     /*!
      * Returns whether the constituent is already set up
@@ -190,7 +190,7 @@ namespace MIXTURE
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void Update(CORE::LINALG::Matrix<3, 3> const& F, Teuchos::ParameterList& params,
+    virtual void Update(Core::LinAlg::Matrix<3, 3> const& F, Teuchos::ParameterList& params,
         const int gp, const int eleGID)
     {
       // Nothing needs to be updated in this simple mixture rule
@@ -221,9 +221,9 @@ namespace MIXTURE
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
-        const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+    virtual void Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+        const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp,
         int eleGID) = 0;
 
     /*!
@@ -258,7 +258,7 @@ namespace MIXTURE
      * \return true if data is set by the material, otherwise false
      */
     virtual bool EvaluateOutputData(
-        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
     {
       return false;
     }

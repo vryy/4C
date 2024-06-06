@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     enum class CorrectionType : int;
-  }  // namespace NLN
+  }  // namespace Nln
 }  // namespace NOX
-namespace INPAR
+namespace Inpar
 {
   namespace STR
   {
@@ -37,7 +37,7 @@ namespace INPAR
     enum VariationalApproach : int;
     enum class CouplingScheme : int;
   }  // namespace CONTACT
-}  // namespace INPAR
+}  // namespace Inpar
 
 namespace STR
 {
@@ -49,7 +49,7 @@ namespace STR
 
 namespace CONTACT
 {
-  class ParamsInterface : public MORTAR::ParamsInterface
+  class ParamsInterface : public Mortar::ParamsInterface
   {
    public:
     //! get the predictor status
@@ -60,8 +60,8 @@ namespace CONTACT
 
     //! \brief get the currently active predictor type
     /** \note If the execution of the predictor is finished, this
-     *  function will return INPAR::STR::pred_vague. \author hiermeier */
-    virtual enum INPAR::STR::PredEnum GetPredictorType() const = 0;
+     *  function will return Inpar::STR::pred_vague. \author hiermeier */
+    virtual enum Inpar::STR::PredEnum GetPredictorType() const = 0;
 
     //! get the current step length
     virtual double GetStepLength() const = 0;
@@ -73,7 +73,7 @@ namespace CONTACT
     virtual bool IsDefaultStep() const = 0;
 
     //! get correction type
-    virtual NOX::NLN::CorrectionType GetCorrectionType() const = 0;
+    virtual NOX::Nln::CorrectionType GetCorrectionType() const = 0;
 
     //! get the current time step [derived]
     virtual double GetDeltaTime() const = 0;
@@ -85,17 +85,17 @@ namespace CONTACT
     virtual std::string GetOutputFilePath() const = 0;
 
     //! get the variational approach type
-    virtual enum INPAR::CONTACT::VariationalApproach get_variational_approach_type() const = 0;
+    virtual enum Inpar::CONTACT::VariationalApproach get_variational_approach_type() const = 0;
 
     //! set the variational approach type
     virtual void set_variational_approach_type(
-        const enum INPAR::CONTACT::VariationalApproach var_type) = 0;
+        const enum Inpar::CONTACT::VariationalApproach var_type) = 0;
 
     //! set the coupling approach mode
-    virtual enum INPAR::CONTACT::CouplingScheme GetCouplingScheme() const = 0;
+    virtual enum Inpar::CONTACT::CouplingScheme GetCouplingScheme() const = 0;
 
     //! set the coupling scheme
-    virtual void SetCouplingScheme(const enum INPAR::CONTACT::CouplingScheme scheme) = 0;
+    virtual void SetCouplingScheme(const enum Inpar::CONTACT::CouplingScheme scheme) = 0;
   };
 }  // namespace CONTACT
 

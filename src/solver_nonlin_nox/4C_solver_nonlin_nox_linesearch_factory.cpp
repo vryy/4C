@@ -24,17 +24,17 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LineSearch::Factory::Factory()
+NOX::Nln::LineSearch::Factory::Factory()
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::LineSearch::Generic> NOX::NLN::LineSearch::Factory::BuildLineSearch(
+Teuchos::RCP<::NOX::LineSearch::Generic> NOX::Nln::LineSearch::Factory::BuildLineSearch(
     const Teuchos::RCP<::NOX::GlobalData>& gd,
     const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
-    const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
+    const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> innerTests,
     Teuchos::ParameterList& lsparams)
 {
   Teuchos::RCP<::NOX::LineSearch::Generic> line_search;
@@ -49,12 +49,12 @@ Teuchos::RCP<::NOX::LineSearch::Generic> NOX::NLN::LineSearch::Factory::BuildLin
   else if (method == "Backtrack")
   {
     line_search =
-        Teuchos::rcp(new NOX::NLN::LineSearch::Backtrack(gd, outerTests, innerTests, lsparams));
+        Teuchos::rcp(new NOX::Nln::LineSearch::Backtrack(gd, outerTests, innerTests, lsparams));
   }
   else
   {
     std::ostringstream msg;
-    msg << "Error - NOX::NLN::LineSearch::Factory::BuildLineSearch() - The \"Method\" parameter \""
+    msg << "Error - NOX::Nln::LineSearch::Factory::BuildLineSearch() - The \"Method\" parameter \""
         << method << "\" is not a valid linesearch option. " << std::endl
         << "Please fix your parameter list!" << std::endl;
     FOUR_C_THROW(msg.str());
@@ -65,21 +65,21 @@ Teuchos::RCP<::NOX::LineSearch::Generic> NOX::NLN::LineSearch::Factory::BuildLin
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::LineSearch::Factory::inner_status_test_is_required(
-    const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests) const
+void NOX::Nln::LineSearch::Factory::inner_status_test_is_required(
+    const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests) const
 {
   if (innerTests.is_null())
     FOUR_C_THROW(
-        "ERROR - NOX::NLN::LineSearch::Factory::inner_status_test_is_required -"
+        "ERROR - NOX::Nln::LineSearch::Factory::inner_status_test_is_required -"
         " The inner status test pointer should be initialized at this point!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::LineSearch::Generic> NOX::NLN::LineSearch::BuildLineSearch(
+Teuchos::RCP<::NOX::LineSearch::Generic> NOX::Nln::LineSearch::BuildLineSearch(
     const Teuchos::RCP<::NOX::GlobalData>& gd,
     const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
-    const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
+    const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> innerTests,
     Teuchos::ParameterList& lsparams)
 {
   Factory factory;

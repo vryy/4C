@@ -44,44 +44,44 @@ FOUR_C_NAMESPACE_OPEN
 
 class PostProblem;
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   class Communicators;
-}  // namespace CORE::COMM
+}  // namespace Core::Communication
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class MapExtractor;
   class SerialDenseVector;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::FE
+namespace Core::FE
 {
   class AssembleStrategy;
 }
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   class DofSetProxy;
 }
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   class FunctionManager;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
-namespace GLOBAL
+namespace Global
 {
   class Problem;
 }
 
-namespace DRT
+namespace Discret
 {
   /*!
   \brief A class to manage a discretization in parallel
@@ -118,7 +118,7 @@ namespace DRT
 
   The initialization of a discretization is a major effort since the parallel
   distribution needs to be established. Normally the discretization is read from
-  a dat-file with the help of DRT::DatFileReader and related classes. The
+  a dat-file with the help of Discret::DatFileReader and related classes. The
   discretization class comes with a bunch of helper method for its setup phase.
 
   <h3>Filled-State</h3>
@@ -149,7 +149,7 @@ namespace DRT
 
   <h3>Misc</h3>
 
-  The \ref DRT::Discretization class supports the ostream& operator <<
+  The \ref Discret::Discretization class supports the ostream& operator <<
 
   */
   class Discretization
@@ -172,7 +172,7 @@ namespace DRT
     /**
      * The discretization is a heavy object that should not be copied (accidentally).
      */
-    Discretization(const DRT::Discretization&) = delete;
+    Discretization(const Discret::Discretization&) = delete;
 
     /**
      * The discretization is a heavy object that should not be copied (accidentally).
@@ -182,7 +182,7 @@ namespace DRT
     /**
      * Moving a discretization is not supported.
      */
-    Discretization(DRT::Discretization&&) = delete;
+    Discretization(Discret::Discretization&&) = delete;
 
     /**
      * Moving a discretization is not supported.
@@ -199,10 +199,10 @@ namespace DRT
     /*!
     \brief Get output writer for this discretization
 
-    \warning This routine does not verify if a valid CORE::IO::DiscretizationWriter has
+    \warning This routine does not verify if a valid Core::IO::DiscretizationWriter has
     been set. If not, this will cause a segmentation fault.
     */
-    [[nodiscard]] virtual Teuchos::RCP<CORE::IO::DiscretizationWriter> Writer() const
+    [[nodiscard]] virtual Teuchos::RCP<Core::IO::DiscretizationWriter> Writer() const
     {
       return writer_;
     }
@@ -236,7 +236,7 @@ namespace DRT
     - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param element (in)      : the element those number of dofs are requested
     */
-    virtual int NumDof(const CORE::Elements::Element* element) const
+    virtual int NumDof(const Core::Elements::Element* element) const
     {
       FOUR_C_ASSERT(
           dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
@@ -252,7 +252,7 @@ namespace DRT
     \param element (in)      : the element
     \param dof (in)          : the element local dof number
     */
-    virtual int Dof(const CORE::Elements::Element* element, const int dof) const
+    virtual int Dof(const Core::Elements::Element* element, const int dof) const
     {
       FOUR_C_ASSERT(
           dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
@@ -268,7 +268,7 @@ namespace DRT
     - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param element (in)      : the element
     */
-    virtual std::vector<int> Dof(const CORE::Elements::Element* element) const
+    virtual std::vector<int> Dof(const Core::Elements::Element* element) const
     {
       FOUR_C_ASSERT(
           dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
@@ -286,7 +286,7 @@ namespace DRT
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(const CORE::Elements::Element* element, const CORE::Nodes::Node* node,
+    virtual void Dof(const Core::Elements::Element* element, const Core::Nodes::Node* node,
         std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(
@@ -304,7 +304,7 @@ namespace DRT
     \param element (in)      : the element
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(const CORE::Elements::Element* element, std::vector<int>& lm) const
+    virtual void Dof(const Core::Elements::Element* element, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(
           dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
@@ -323,7 +323,7 @@ namespace DRT
     \param lm (in/out)    : lm vector the dofs are appended to
     */
     virtual void Dof(
-        const CORE::Nodes::Node* node, const unsigned startindex, std::vector<int>& lm) const
+        const Core::Nodes::Node* node, const unsigned startindex, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(
           dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
@@ -338,7 +338,7 @@ namespace DRT
     @param[in] replaceinstatdofsets Replace also in static dofsets?
     */
     virtual void ReplaceDofSet(
-        Teuchos::RCP<CORE::Dofsets::DofSetInterface> newdofset, bool replaceinstatdofsets = false);
+        Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset, bool replaceinstatdofsets = false);
 
     /*!
     \brief Get master to slave coupling in case of periodic boundary conditions
@@ -362,7 +362,7 @@ namespace DRT
     - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node those number of dofs are requested
     */
-    int NumDof(const CORE::Nodes::Node* node) const
+    int NumDof(const Core::Nodes::Node* node) const
     {
       FOUR_C_ASSERT(
           dofsets_.size() == 1, "Discretization %s expects just one dof set!", name_.c_str());
@@ -378,7 +378,7 @@ namespace DRT
     \param nds (in)       : number of dofset
     \param node (in)      : the node those number of dofs are requested
     */
-    virtual int NumDof(unsigned nds, const CORE::Nodes::Node* node) const
+    virtual int NumDof(unsigned nds, const Core::Nodes::Node* node) const
     {
       FOUR_C_ASSERT(
           nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
@@ -395,7 +395,7 @@ namespace DRT
     \param nds (in)          : number of dofset
     \param element (in)      : the element those number of dofs are requested
     */
-    virtual int NumDof(unsigned nds, const CORE::Elements::Element* element) const
+    virtual int NumDof(unsigned nds, const Core::Elements::Element* element) const
     {
       FOUR_C_ASSERT(
           nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
@@ -413,7 +413,7 @@ namespace DRT
      *  \param node (in)      : the node those number of DoF's are requested
      *
      *  \author hiermeier \date 10/16 */
-    virtual int NumStandardDof(const unsigned& nds, const CORE::Nodes::Node* node) const
+    virtual int NumStandardDof(const unsigned& nds, const Core::Nodes::Node* node) const
     {
       return NumDof(nds, node);
     }
@@ -427,7 +427,7 @@ namespace DRT
     \param node (in)      : the node
     \param dof (in)       : the node local dof number
     */
-    int Dof(const CORE::Nodes::Node* node, const int ldof) const
+    int Dof(const Core::Nodes::Node* node, const int ldof) const
     {
       FOUR_C_ASSERT(
           NumDofSets() == 1, "Discretization %s expects just one dof set!", name_.c_str());
@@ -444,7 +444,7 @@ namespace DRT
     \param node (in)      : the node
     \param dof (in)       : the node local dof number
     */
-    virtual int Dof(unsigned nds, const CORE::Nodes::Node* node, const int dof) const
+    virtual int Dof(unsigned nds, const Core::Nodes::Node* node, const int dof) const
     {
       FOUR_C_ASSERT(
           nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
@@ -462,7 +462,7 @@ namespace DRT
     \param element (in)      : the element
     \param dof (in)          : the element local dof number
     */
-    virtual int Dof(unsigned nds, const CORE::Elements::Element* element, const int dof) const
+    virtual int Dof(unsigned nds, const Core::Elements::Element* element, const int dof) const
     {
       FOUR_C_ASSERT(
           nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
@@ -479,7 +479,7 @@ namespace DRT
     - HaveDofs()==true prerequisite (produced by call to assign_degrees_of_freedom()))
     \param node (in)      : the node
     */
-    std::vector<int> Dof(const CORE::Nodes::Node* node) const
+    std::vector<int> Dof(const Core::Nodes::Node* node) const
     {
       FOUR_C_ASSERT(
           NumDofSets() == 1, "Discretization %s expects just one dof set!", name_.c_str());
@@ -496,7 +496,7 @@ namespace DRT
     \param nds (in)       : number of dofset
     \param node (in)      : the node
     */
-    virtual std::vector<int> Dof(unsigned nds, const CORE::Nodes::Node* node) const
+    virtual std::vector<int> Dof(unsigned nds, const Core::Nodes::Node* node) const
     {
       FOUR_C_ASSERT(
           nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
@@ -521,8 +521,8 @@ namespace DRT
     \param nodaldofset (in) : number of nodal dofset
     \param element     (in) : the element (optionally)
     */
-    virtual void Dof(std::vector<int>& dof, const CORE::Nodes::Node* node, unsigned nds,
-        unsigned nodaldofset, const CORE::Elements::Element* element = nullptr) const
+    virtual void Dof(std::vector<int>& dof, const Core::Nodes::Node* node, unsigned nds,
+        unsigned nodaldofset, const Core::Elements::Element* element = nullptr) const
     {
       FOUR_C_ASSERT(
           nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
@@ -540,7 +540,7 @@ namespace DRT
     \param nds     (in) : number of dofset
     \param element (in) : the element
     */
-    virtual std::vector<int> Dof(unsigned nds, const CORE::Elements::Element* element) const
+    virtual std::vector<int> Dof(unsigned nds, const Core::Elements::Element* element) const
     {
       FOUR_C_ASSERT(
           nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
@@ -558,7 +558,7 @@ namespace DRT
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    void Dof(const CORE::Nodes::Node* node, std::vector<int>& lm) const
+    void Dof(const Core::Nodes::Node* node, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(
           NumDofSets() == 1, "Discretization %s expects just one dof set!", name_.c_str());
@@ -576,7 +576,7 @@ namespace DRT
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(unsigned nds, const CORE::Nodes::Node* node, std::vector<int>& lm) const
+    virtual void Dof(unsigned nds, const Core::Nodes::Node* node, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(
           nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
@@ -596,8 +596,8 @@ namespace DRT
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(unsigned nds, const CORE::Elements::Element* element,
-        const CORE::Nodes::Node* node, std::vector<int>& lm) const
+    virtual void Dof(unsigned nds, const Core::Elements::Element* element,
+        const Core::Nodes::Node* node, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(
           nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
@@ -617,7 +617,7 @@ namespace DRT
     \param lm (in/out)    : lm vector the dofs are appended to
     */
     virtual void Dof(
-        unsigned nds, const CORE::Elements::Element* element, std::vector<int>& lm) const
+        unsigned nds, const Core::Elements::Element* element, std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(
           nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
@@ -637,7 +637,7 @@ namespace DRT
     \param startindex (in): first index of vector at which will be written to end
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    virtual void Dof(unsigned nds, const CORE::Nodes::Node* node, const unsigned startindex,
+    virtual void Dof(unsigned nds, const Core::Nodes::Node* node, const unsigned startindex,
         std::vector<int>& lm) const
     {
       FOUR_C_ASSERT(
@@ -650,7 +650,7 @@ namespace DRT
     \brief Replace the dofset associated with the discretisation by a new dofset.
                    Sets havedof_ to false.
     */
-    virtual void ReplaceDofSet(unsigned nds, Teuchos::RCP<CORE::Dofsets::DofSetInterface> newdofset,
+    virtual void ReplaceDofSet(unsigned nds, Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset,
         bool replaceinstatdofsets = false);
 
     /*!
@@ -658,12 +658,12 @@ namespace DRT
 
     Sets havedof_ to false only if the new dofset is not properly filled yet.
     */
-    virtual int AddDofSet(Teuchos::RCP<CORE::Dofsets::DofSetInterface> newdofset);
+    virtual int AddDofSet(Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset);
 
     /*!
     \brief Get proxy to dof set.
     */
-    virtual Teuchos::RCP<CORE::Dofsets::DofSetInterface> GetDofSetProxy(int nds = 0);
+    virtual Teuchos::RCP<Core::DOFSets::DofSetInterface> GetDofSetProxy(int nds = 0);
 
     /*!
     \brief Get degree of freedom row map (Filled()==true prerequisite)
@@ -785,7 +785,7 @@ namespace DRT
     proc.
 
     \note: this query does not tell, if the element is owned by this proc. Use
-    CORE::Elements::Element.Owner() for this.
+    Core::Elements::Element.Owner() for this.
 
     */
     virtual bool HaveGlobalElement(int gid) const;
@@ -802,7 +802,7 @@ namespace DRT
     \return Address of element if element is owned by calling proc, returns nullptr
             otherwise
     */
-    [[nodiscard]] virtual CORE::Elements::Element* gElement(int gid) const;
+    [[nodiscard]] virtual Core::Elements::Element* gElement(int gid) const;
 
     /*!
     \brief Get the element with local row id lid (Filled()==true prerequisite)
@@ -813,7 +813,7 @@ namespace DRT
 
     \return Address of element if element is owned by calling proc
     */
-    [[nodiscard]] virtual CORE::Elements::Element* lRowElement(int lid) const
+    [[nodiscard]] virtual Core::Elements::Element* lRowElement(int lid) const
     {
       FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return elerowptr_[lid];
@@ -828,7 +828,7 @@ namespace DRT
 
     \return Address of element if element is stored by calling proc
     */
-    virtual CORE::Elements::Element* lColElement(int lid) const
+    virtual Core::Elements::Element* lColElement(int lid) const
     {
       FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return elecolptr_[lid];
@@ -838,7 +838,7 @@ namespace DRT
      * This function is useful for range based for-loops over all row elements.
      *
      * \code
-     *      for (CORE::Elements::Element* actele : MyRowElementRange()) {}
+     *      for (Core::Elements::Element* actele : MyRowElementRange()) {}
      * \endcode
      *
      * \return A range of all local row elements.
@@ -863,7 +863,7 @@ namespace DRT
            (Filled()==true NOT prerequisite)
 
     \note: this query does not tell, if the node is owned by this proc. Use
-    CORE::Nodes::Node.Owner() for this.
+    Core::Nodes::Node.Owner() for this.
 
     */
     [[nodiscard]] virtual bool HaveGlobalNode(int gid) const;
@@ -877,7 +877,7 @@ namespace DRT
 
     \return Address of node if node is stored on calling proc
     */
-    [[nodiscard]] virtual CORE::Nodes::Node* gNode(int gid) const;
+    [[nodiscard]] virtual Core::Nodes::Node* gNode(int gid) const;
 
     /*!
     \brief Get the node with local row id lid (Filled()==true prerequisite)
@@ -888,7 +888,7 @@ namespace DRT
 
     \return Address of node if node is owned and stored by calling proc
     */
-    [[nodiscard]] virtual CORE::Nodes::Node* lRowNode(int lid) const
+    [[nodiscard]] virtual Core::Nodes::Node* lRowNode(int lid) const
     {
       FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return noderowptr_[lid];
@@ -903,7 +903,7 @@ namespace DRT
 
     \return Address of node if node is stored by calling proc
     */
-    virtual CORE::Nodes::Node* lColNode(int lid) const
+    virtual Core::Nodes::Node* lColNode(int lid) const
     {
       FOUR_C_ASSERT(Filled(), "Discretization %s not Filled()!", name_.c_str());
       return nodecolptr_[lid];
@@ -944,7 +944,7 @@ namespace DRT
     /*!
     \brief Set a DiscretizationWriter
     */
-    virtual void SetWriter(Teuchos::RCP<CORE::IO::DiscretizationWriter> writer)
+    virtual void SetWriter(Teuchos::RCP<Core::IO::DiscretizationWriter> writer)
     {
       writer_ = writer;
     }
@@ -962,7 +962,7 @@ namespace DRT
 
     \note Sets Filled()=false
     */
-    virtual void add_element(Teuchos::RCP<CORE::Elements::Element> ele);
+    virtual void add_element(Teuchos::RCP<Core::Elements::Element> ele);
 
     /*!
     \brief Add a node to the discretization  (Filled()==true NOT prerequisite)
@@ -977,7 +977,7 @@ namespace DRT
 
     \note Sets Filled()=false
     */
-    virtual void AddNode(Teuchos::RCP<CORE::Nodes::Node> node);
+    virtual void AddNode(Teuchos::RCP<Core::Nodes::Node> node);
 
     /*!
     \brief Delete an node from the discretization (Filled()==true NOT prerequisite)
@@ -995,7 +995,7 @@ namespace DRT
 
     \note Sets Filled()=false and calls Reset() upon discretization.
     */
-    virtual bool DeleteNode(Teuchos::RCP<CORE::Nodes::Node> node);
+    virtual bool DeleteNode(Teuchos::RCP<Core::Nodes::Node> node);
 
     /*!
     \brief Delete an node with global id gid from the discretization
@@ -1050,7 +1050,7 @@ namespace DRT
 
     \note Sets Filled()=false and calls Reset() upon discretization.
     */
-    virtual bool DeleteElement(Teuchos::RCP<CORE::Elements::Element> ele);
+    virtual bool DeleteElement(Teuchos::RCP<Core::Elements::Element> ele);
 
     /*!
     \brief Delete an element with global id gid from the discretization
@@ -1158,7 +1158,7 @@ namespace DRT
 
     */
     virtual void SetCondition(
-        const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond);
+        const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond);
 
     /*!
     \brief Replace a condition with a certain name (Filled()==false on exit)
@@ -1171,7 +1171,7 @@ namespace DRT
 
     \author hiermeier \date 11/16 */
     void ReplaceConditions(const std::string& name,
-        const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds);
+        const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds);
 
     /*!
     \brief Get all conditions with a certain name
@@ -1191,10 +1191,10 @@ namespace DRT
     \return Returns out.size()=0 if condition with that name does not exist
     */
     virtual void GetCondition(
-        const std::string& name, std::vector<CORE::Conditions::Condition*>& out) const;
+        const std::string& name, std::vector<Core::Conditions::Condition*>& out) const;
 
     virtual void GetCondition(
-        const std::string& name, std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& out) const;
+        const std::string& name, std::vector<Teuchos::RCP<Core::Conditions::Condition>>& out) const;
 
     /*! \brief Get a condition with a certain name
 
@@ -1212,13 +1212,13 @@ namespace DRT
 
     \return Returns nullptr if condition with that name does not exist
     */
-    [[nodiscard]] virtual CORE::Conditions::Condition* GetCondition(const std::string& name) const;
+    [[nodiscard]] virtual Core::Conditions::Condition* GetCondition(const std::string& name) const;
 
     /// return all condition names defined in this discretization
     virtual void GetConditionNames(std::vector<std::string>& names) const;
 
     /// return all conditions defined on this discretization
-    virtual std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>>&
+    virtual std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>>&
     GetAllConditions()
     {
       return condition_;
@@ -1696,13 +1696,13 @@ namespace DRT
                                    contributions.
     */
     virtual void Evaluate(Teuchos::ParameterList& params,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3);
 
     /// Call elements to evaluate
-    virtual void Evaluate(Teuchos::ParameterList& params, CORE::FE::AssembleStrategy& strategy);
+    virtual void Evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy);
 
     /**
      * Loop over all elements of the discretization and perform the given @p element_action. In
@@ -1711,11 +1711,11 @@ namespace DRT
      * This is very useful for one-off actions, that one does not want to implement inside the
      * actual Element's Evaluate call.
      */
-    virtual void Evaluate(Teuchos::ParameterList& params, CORE::FE::AssembleStrategy& strategy,
-        const std::function<void(CORE::Elements::Element&, CORE::Elements::Element::LocationArray&,
-            CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
-            CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&,
-            CORE::LINALG::SerialDenseVector&)>& element_action);
+    virtual void Evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy,
+        const std::function<void(Core::Elements::Element&, Core::Elements::Element::LocationArray&,
+            Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&,
+            Core::LinAlg::SerialDenseVector&, Core::LinAlg::SerialDenseVector&,
+            Core::LinAlg::SerialDenseVector&)>& element_action);
 
     /// Call elements to evaluate
     /*!
@@ -1738,7 +1738,7 @@ namespace DRT
                                   contributions.
      */
     void Evaluate(Teuchos::ParameterList& params,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
         Teuchos::RCP<Epetra_Vector> systemvector);
 
 
@@ -1756,7 +1756,7 @@ namespace DRT
    */
     void Evaluate(Teuchos::ParameterList& params);
 
-    virtual void Evaluate(const std::function<void(CORE::Elements::Element&)>& element_action);
+    virtual void Evaluate(const std::function<void(Core::Elements::Element&)>& element_action);
 
     /** \brief Evaluate Neumann boundary conditions
      *
@@ -1779,7 +1779,7 @@ namespace DRT
      *  \param systemvector (out): Optional matrix to assemble linearization
      *                             of Neumann BCs to. */
     void evaluate_neumann(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix = Teuchos::null)
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix = Teuchos::null)
     {
       if (systemmatrix.is_null())
         evaluate_neumann(params, *systemvector);
@@ -1807,7 +1807,7 @@ namespace DRT
                                The vector is NOT initialized to zero by this method.
     */
     virtual void evaluate_neumann(Teuchos::ParameterList& params, Epetra_Vector& systemvector,
-        CORE::LINALG::SparseOperator* systemmatrix = nullptr);
+        Core::LinAlg::SparseOperator* systemmatrix = nullptr);
 
     /*!
     \brief Evaluate Dirichlet boundary conditions
@@ -1844,11 +1844,11 @@ namespace DRT
     virtual void evaluate_dirichlet(Teuchos::ParameterList& params,
         Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
         Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor = Teuchos::null) const;
+        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmapextractor = Teuchos::null) const;
 
     /// Evaluate a specific condition using assemble strategy
     virtual void evaluate_condition(Teuchos::ParameterList& params,
-        CORE::FE::AssembleStrategy& strategy, const std::string& condstring, const int condid = -1);
+        Core::FE::AssembleStrategy& strategy, const std::string& condstring, const int condid = -1);
 
     /** \brief Evaluate a specified condition
      *
@@ -1917,8 +1917,8 @@ namespace DRT
       \param condid (in):        Condition ID
       */
     virtual void evaluate_condition(Teuchos::ParameterList& params,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
         const int condid = -1);
@@ -1950,7 +1950,7 @@ namespace DRT
      * \author bborn \date 08/08
      */
     virtual void EvaluateScalars(
-        Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars);
+        Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars);
 
     /*!
      * \brief Assemble scalar quantities across conditioned elements
@@ -1965,7 +1965,7 @@ namespace DRT
      * \author fang \date 02/15
      */
     void EvaluateScalars(Teuchos::ParameterList& params,  //! (in) parameter list
-        Teuchos::RCP<CORE::LINALG::SerialDenseVector>
+        Teuchos::RCP<Core::LinAlg::SerialDenseVector>
             scalars,                    //! (out) result vector for scalar quantities to be computed
         const std::string& condstring,  //! (in) name of condition to be evaluated
         const int condid = -1           //! (in) condition ID (optional)
@@ -2001,7 +2001,7 @@ namespace DRT
     the local pressure DOF id, namely {3}.
 
     */
-    void evaluate_initial_field(const CORE::UTILS::FunctionManager& function_manager,
+    void evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
         const std::string& fieldstring, Teuchos::RCP<Epetra_Vector> fieldvector,
         const std::vector<int>& locids) const;
 
@@ -2143,7 +2143,7 @@ namespace DRT
     volume coupling condition -> this is special since an associated volume
     conditions also needs to be considered
     */
-    void find_associated_ele_i_ds(Teuchos::RCP<CORE::Conditions::Condition> cond,
+    void find_associated_ele_i_ds(Teuchos::RCP<Core::Conditions::Condition> cond,
         std::set<int>& VolEleIDs, const std::string& name);
 
    protected:
@@ -2152,7 +2152,7 @@ namespace DRT
 
     */
     virtual bool build_linesin_condition(
-        const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond);
+        const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond);
 
     /*!
     \brief Build the geometry of surfaces for a certain surface condition.
@@ -2166,14 +2166,14 @@ namespace DRT
 
     \version rework by Andreas Rauch ( rauch 10/16 )       */
     virtual bool build_surfacesin_condition(
-        const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond);
+        const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond);
 
     /*!
     \brief Build the geometry of volumes for a certain volume condition
 
     */
     virtual bool build_volumesin_condition(
-        const std::string& name, Teuchos::RCP<CORE::Conditions::Condition> cond);
+        const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond);
 
     /*!
     \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
@@ -2184,7 +2184,7 @@ namespace DRT
 
     \note This is a collective call
     */
-    // set protected to be accessible from derived class DRT::MESHFREE::MeshfreeDiscretization
+    // set protected to be accessible from derived class Discret::MeshFree::MeshfreeDiscretization
     // (nis) Jan12
     virtual void reset(bool killdofs, bool killcond);
     virtual void reset() { this->reset(true, true); }
@@ -2230,8 +2230,8 @@ namespace DRT
      *  \author h.kue
      *  \date 09/07    */
     virtual void assign_global_i_ds(const Epetra_Comm& comm,
-        const std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>& elementmap,
-        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& finalgeometry);
+        const std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>>& elementmap,
+        std::map<int, Teuchos::RCP<Core::Elements::Element>>& finalgeometry);
 
 
     //! Name of this discretization
@@ -2241,7 +2241,7 @@ namespace DRT
     Teuchos::RCP<Epetra_Comm> comm_;
 
     //! DiscretizationWriter
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> writer_;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> writer_;
 
     //! Flag indicating whether fill_complete() has been called
     bool filled_;
@@ -2260,13 +2260,13 @@ namespace DRT
     Teuchos::RCP<Epetra_Map> elecolmap_;
 
     //! Vector of pointers to row elements for faster access
-    std::vector<CORE::Elements::Element*> elerowptr_;
+    std::vector<Core::Elements::Element*> elerowptr_;
 
     //! Vector of pointers to column elements for faster access
-    std::vector<CORE::Elements::Element*> elecolptr_;
+    std::vector<Core::Elements::Element*> elecolptr_;
 
     //! Map of elements
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>> element_;
+    std::map<int, Teuchos::RCP<Core::Elements::Element>> element_;
 
     //! @}
 
@@ -2280,13 +2280,13 @@ namespace DRT
     Teuchos::RCP<Epetra_Map> nodecolmap_;
 
     //! Vector of pointers to row nodes for faster access
-    std::vector<CORE::Nodes::Node*> noderowptr_;
+    std::vector<Core::Nodes::Node*> noderowptr_;
 
     //! Vector of pointers to column nodes for faster access
-    std::vector<CORE::Nodes::Node*> nodecolptr_;
+    std::vector<Core::Nodes::Node*> nodecolptr_;
 
     //! Map from nodal Gid to node pointers
-    std::map<int, Teuchos::RCP<CORE::Nodes::Node>> node_;
+    std::map<int, Teuchos::RCP<Core::Nodes::Node>> node_;
 
     //! @}
 
@@ -2297,18 +2297,18 @@ namespace DRT
     std::vector<Teuchos::RCP<Epetra_Import>> stateimporter_;
 
     ///< Some conditions e.g. boundary conditions
-    std::multimap<std::string, Teuchos::RCP<CORE::Conditions::Condition>> condition_;
+    std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>> condition_;
 
     //! Vector of DofSets
-    std::vector<Teuchos::RCP<CORE::Dofsets::DofSetInterface>> dofsets_;
+    std::vector<Teuchos::RCP<Core::DOFSets::DofSetInterface>> dofsets_;
 
     //! number of space dimension
     const unsigned int n_dim_;
   };  // class Discretization
-}  // namespace DRT
+}  // namespace Discret
 
 /// << operator
-std::ostream& operator<<(std::ostream& os, const DRT::Discretization& dis);
+std::ostream& operator<<(std::ostream& os, const Discret::Discretization& dis);
 
 FOUR_C_NAMESPACE_CLOSE
 

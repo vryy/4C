@@ -28,7 +28,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   /// Collection of valid element dat file line definitions
   /*!
@@ -50,14 +50,14 @@ namespace CORE::Elements
     void PrintElementLines(std::ostream& stream, std::string name);
 
     /// return line definitions for given element type
-    INPUT::LineDefinition* ElementLines(std::string name, std::string distype);
+    Input::LineDefinition* ElementLines(std::string name, std::string distype);
 
    private:
     /// input line definitions per element type
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>> definitions_;
+    std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_;
   };
 
-}  // namespace CORE::Elements
+}  // namespace Core::Elements
 
 
 void PrintElementDatHeader();

@@ -44,28 +44,28 @@ FOUR_C_NAMESPACE_OPEN
 SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
       diff_time_step_size_(
-          static_cast<int>(CORE::UTILS::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE"))),
-      fieldcoupling_(Teuchos::getIntegralValue<INPAR::SSI::FieldCoupling>(
-          GLOBAL::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
+          static_cast<int>(Core::UTILS::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE"))),
+      fieldcoupling_(Teuchos::getIntegralValue<Inpar::SSI::FieldCoupling>(
+          Global::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
       is_scatra_manifold_(
-          CORE::UTILS::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
-      is_manifold_meshtying_(CORE::UTILS::IntegralValue<bool>(
+          Core::UTILS::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
+      is_manifold_meshtying_(Core::UTILS::IntegralValue<bool>(
           globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
       is_s2i_kinetic_with_pseudo_contact_(
           check_s2_i_kinetics_condition_for_pseudo_contact("structure")),
-      macro_scale_(GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-                       CORE::Materials::m_scatra_multiscale) != -1 or
-                   GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-                       CORE::Materials::m_newman_multiscale) != -1),
+      macro_scale_(Global::Problem::Instance()->Materials()->FirstIdByType(
+                       Core::Materials::m_scatra_multiscale) != -1 or
+                   Global::Problem::Instance()->Materials()->FirstIdByType(
+                       Core::Materials::m_newman_multiscale) != -1),
       ssiinterfacecontact_(
-          GLOBAL::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceContact") !=
+          Global::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceContact") !=
           nullptr),
-      ssiinterfacemeshtying_(GLOBAL::Problem::Instance()
+      ssiinterfacemeshtying_(Global::Problem::Instance()
                                  ->GetDis("structure")
                                  ->GetCondition("ssi_interface_meshtying") != nullptr),
       temperature_funct_num_(
-          GLOBAL::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT")),
-      use_old_structure_(GLOBAL::Problem::Instance()->structural_dynamic_params().get<std::string>(
+          Global::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT")),
+      use_old_structure_(Global::Problem::Instance()->structural_dynamic_params().get<std::string>(
                              "INT_STRATEGY") == "Old")
 {
   // Keep this constructor empty!
@@ -87,7 +87,7 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 
   // do discretization specific setup (e.g. clone discr. scatra from structure)
   InitDiscretizations(comm, struct_disname, scatra_disname,
-      CORE::UTILS::IntegralValue<bool>(globaltimeparams, "REDISTRIBUTE_SOLID"));
+      Core::UTILS::IntegralValue<bool>(globaltimeparams, "REDISTRIBUTE_SOLID"));
 
   init_time_integrators(
       globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
@@ -117,7 +117,7 @@ void SSI::SSIBase::Setup()
 
   // in case of an ssi  multi scale formulation we need to set the displacement here
   auto dummy_vec = Teuchos::rcp(
-      new Epetra_Vector(*GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map(), true));
+      new Epetra_Vector(*Global::Problem::Instance()->GetDis("structure")->dof_row_map(), true));
   ssicoupling_->set_mesh_disp(ScaTraBaseAlgorithm(), dummy_vec);
 
   // set up scalar transport field
@@ -133,32 +133,32 @@ void SSI::SSIBase::Setup()
 
     // pass initial scalar field to structural discretization to correctly compute initial
     // accelerations
-    if (Teuchos::getIntegralValue<INPAR::SSI::SolutionSchemeOverFields>(
-            GLOBAL::Problem::Instance()->SSIControlParams(), "COUPALGO") !=
-        INPAR::SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra)
+    if (Teuchos::getIntegralValue<Inpar::SSI::SolutionSchemeOverFields>(
+            Global::Problem::Instance()->SSIControlParams(), "COUPALGO") !=
+        Inpar::SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra)
       ssicoupling_->SetScalarField(
-          *GLOBAL::Problem::Instance()->GetDis("structure"), ScaTraField()->Phinp(), 1);
+          *Global::Problem::Instance()->GetDis("structure"), ScaTraField()->Phinp(), 1);
 
     if (macro_scale_)
     {
       ScaTraField()->calc_mean_micro_concentration();
       ssicoupling_->SetScalarFieldMicro(
-          *GLOBAL::Problem::Instance()->GetDis("structure"), ScaTraField()->PhinpMicro(), 2);
+          *Global::Problem::Instance()->GetDis("structure"), ScaTraField()->PhinpMicro(), 2);
     }
 
     //   temperature is non primary variable. Only set, if function for temperature is given
     if (temperature_funct_num_ != -1)
     {
       temperature_vector_ = Teuchos::rcp(new Epetra_Vector(
-          *GLOBAL::Problem::Instance()->GetDis("structure")->dof_row_map(2), true));
+          *Global::Problem::Instance()->GetDis("structure")->dof_row_map(2), true));
 
       temperature_vector_->PutScalar(
-          GLOBAL::Problem::Instance()
-              ->FunctionById<CORE::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+          Global::Problem::Instance()
+              ->FunctionById<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
               .Evaluate(Time()));
 
       ssicoupling_->SetTemperatureField(
-          *GLOBAL::Problem::Instance()->GetDis("structure"), temperature_vector_);
+          *Global::Problem::Instance()->GetDis("structure"), temperature_vector_);
     }
 
     // set up structural base algorithm
@@ -167,13 +167,13 @@ void SSI::SSIBase::Setup()
     // get wrapper and cast it to specific type
     // do not do so, in case the wrapper has already been set from outside
     if (structure_ == Teuchos::null)
-      structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(
+      structure_ = Teuchos::rcp_dynamic_cast<Adapter::SSIStructureWrapper>(
           struct_adapterbase_ptr_->structure_field());
 
     if (structure_ == Teuchos::null)
     {
       FOUR_C_THROW(
-          "No valid pointer to ADAPTER::SSIStructureWrapper !\n"
+          "No valid pointer to Adapter::SSIStructureWrapper !\n"
           "Either cast failed, or no valid wrapper was set using set_structure_wrapper(...) !");
     }
   }
@@ -208,7 +208,7 @@ void SSI::SSIBase::Setup()
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_s2i_ =
-        Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(ScaTraField()->Strategy());
+        Teuchos::rcp_dynamic_cast<const ScaTra::MeshtyingStrategyS2I>(ScaTraField()->Strategy());
 
     // safety checks
     if (meshtying_strategy_s2i_ == Teuchos::null)
@@ -216,7 +216,7 @@ void SSI::SSIBase::Setup()
   }
 
   // construct vector of zeroes
-  zeros_structure_ = CORE::LINALG::CreateVector(*structure_->dof_row_map());
+  zeros_structure_ = Core::LinAlg::CreateVector(*structure_->dof_row_map());
 
   // set flag
   set_is_setup(true);
@@ -228,18 +228,18 @@ void SSI::SSIBase::Setup()
 void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::string& struct_disname,
     const std::string& scatra_disname, bool redistribute_struct_dis)
 {
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   auto structdis = problem->GetDis(struct_disname);
   auto scatradis = problem->GetDis(scatra_disname);
 
   if (redistribute_struct_dis)
-    CORE::REBALANCE::RebalanceDiscretizationsByBinning({structdis}, false);
+    Core::Rebalance::RebalanceDiscretizationsByBinning({structdis}, false);
 
   if (scatradis->NumGlobalNodes() == 0)
   {
-    if (fieldcoupling_ != INPAR::SSI::FieldCoupling::volume_match and
-        fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match)
+    if (fieldcoupling_ != Inpar::SSI::FieldCoupling::volume_match and
+        fieldcoupling_ != Inpar::SSI::FieldCoupling::volumeboundary_match)
     {
       FOUR_C_THROW(
           "If 'FIELDCOUPLING' is NOT 'volume_matching' or 'volumeboundary_matching' in the SSI "
@@ -248,17 +248,17 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     }
 
     // fill scatra discretization by cloning structure discretization
-    CORE::FE::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(
-        structdis, scatradis, GLOBAL::Problem::Instance()->CloningMaterialMap());
+    Core::FE::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(
+        structdis, scatradis, Global::Problem::Instance()->CloningMaterialMap());
     scatradis->fill_complete();
 
     // create discretization for scatra manifold based on SSISurfaceManifold condition
     if (is_sca_tra_manifold())
     {
       auto scatra_manifold_dis = problem->GetDis("scatra_manifold");
-      CORE::FE::CloneDiscretizationFromCondition<SSI::ScatraStructureCloneStrategyManifold>(
+      Core::FE::CloneDiscretizationFromCondition<SSI::ScatraStructureCloneStrategyManifold>(
           *structdis, *scatra_manifold_dis, "SSISurfaceManifold",
-          GLOBAL::Problem::Instance()->CloningMaterialMap());
+          Global::Problem::Instance()->CloningMaterialMap());
 
       // clone conditions. Needed this way, as many conditions are cloned from SSISurfaceManifold.
       std::vector<std::map<std::string, std::string>> conditions_to_copy = {
@@ -274,10 +274,10 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
         conditions_to_copy.emplace_back(temp_map);
       }
 
-      const auto output_scalar_type = CORE::UTILS::IntegralValue<INPAR::SCATRA::OutputScalarType>(
+      const auto output_scalar_type = Core::UTILS::IntegralValue<Inpar::ScaTra::OutputScalarType>(
           problem->scalar_transport_dynamic_params(), "OUTPUTSCALARS");
-      if (output_scalar_type == INPAR::SCATRA::outputscalars_condition or
-          output_scalar_type == INPAR::SCATRA::outputscalars_entiredomain_condition)
+      if (output_scalar_type == Inpar::ScaTra::outputscalars_condition or
+          output_scalar_type == Inpar::ScaTra::outputscalars_entiredomain_condition)
       {
         std::map<std::string, std::string> tempmap = {
             std::make_pair("SSISurfaceManifold", "TotalAndMeanScalar")};
@@ -285,7 +285,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
         conditions_to_copy.emplace_back(tempmap);
       }
 
-      CORE::FE::DiscretizationCreatorBase creator;
+      Core::FE::DiscretizationCreatorBase creator;
       for (const auto& condition_to_copy : conditions_to_copy)
         creator.CopyConditions(*structdis, *scatra_manifold_dis, condition_to_copy);
 
@@ -317,8 +317,8 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
 
         // create new condition
         const int num_conditions = static_cast<int>(scatra_manifold_dis->GetAllConditions().size());
-        auto cond = Teuchos::rcp(new CORE::Conditions::Condition(num_conditions + 1,
-            CORE::Conditions::ScatraPartitioning, true, CORE::Conditions::geometry_type_surface));
+        auto cond = Teuchos::rcp(new Core::Conditions::Condition(num_conditions + 1,
+            Core::Conditions::ScatraPartitioning, true, Core::Conditions::geometry_type_surface));
         cond->parameters().Add("ConditionID", 0);
         cond->SetNodes(glob_node_ids);
 
@@ -330,7 +330,7 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
   }
   else
   {
-    if (fieldcoupling_ == INPAR::SSI::FieldCoupling::volume_match)
+    if (fieldcoupling_ == Inpar::SSI::FieldCoupling::volume_match)
     {
       FOUR_C_THROW(
           "Reading a TRANSPORT discretization from the .dat file for the input parameter "
@@ -345,15 +345,15 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
     // as standard DIRICHLET/NEUMANN CONDITIONS
     SSI::ScatraStructureCloneStrategy clonestrategy;
     const auto conditions_to_copy = clonestrategy.conditions_to_copy();
-    CORE::FE::DiscretizationCreatorBase creator;
+    Core::FE::DiscretizationCreatorBase creator;
     creator.CopyConditions(*scatradis, *scatradis, conditions_to_copy);
 
     // safety check, since it is not reasonable to have SOLIDSCATRA or SOLIDPOROP1 Elements with a
-    // SCATRA::ImplType != 'impltype_undefined' if they are not cloned! Therefore loop over all
+    // ScaTra::ImplType != 'impltype_undefined' if they are not cloned! Therefore loop over all
     // structure elements and check the impltype
     for (int i = 0; i < structdis->NumMyColElements(); ++i)
     {
-      if (clonestrategy.GetImplType(structdis->lColElement(i)) != INPAR::SCATRA::impltype_undefined)
+      if (clonestrategy.GetImplType(structdis->lColElement(i)) != Inpar::ScaTra::impltype_undefined)
       {
         FOUR_C_THROW(
             "A TRANSPORT discretization is read from the .dat file, which is fine since the scatra "
@@ -367,8 +367,8 @@ void SSI::SSIBase::InitDiscretizations(const Epetra_Comm& comm, const std::strin
   }
   // read in the micro field, has to be done after cloning of the scatra discretization
   auto input_file_name = problem->OutputControlFile()->InputFileName();
-  CORE::IO::DatFileReader local_reader(input_file_name);
-  GLOBAL::ReadMicroFields(*problem, local_reader);
+  Core::IO::DatFileReader local_reader(input_file_name);
+  Global::ReadMicroFields(*problem, local_reader);
 }
 
 /*----------------------------------------------------------------------*
@@ -384,24 +384,24 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
   // safety check
   {
     // check for ssi coupling condition
-    std::vector<CORE::Conditions::Condition*> ssicoupling;
+    std::vector<Core::Conditions::Condition*> ssicoupling;
     scatra_integrator->discretization()->GetCondition("SSICoupling", ssicoupling);
     const bool havessicoupling = (ssicoupling.size() > 0);
 
-    if (havessicoupling and (fieldcoupling_ != INPAR::SSI::FieldCoupling::boundary_nonmatch and
-                                fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match))
+    if (havessicoupling and (fieldcoupling_ != Inpar::SSI::FieldCoupling::boundary_nonmatch and
+                                fieldcoupling_ != Inpar::SSI::FieldCoupling::volumeboundary_match))
     {
       FOUR_C_THROW(
           "SSICoupling condition only valid in combination with FIELDCOUPLING set to "
           "'boundary_nonmatching' or 'volumeboundary_matching' in SSI DYNAMIC section. ");
     }
 
-    if (fieldcoupling_ == INPAR::SSI::FieldCoupling::volume_nonmatch)
+    if (fieldcoupling_ == Inpar::SSI::FieldCoupling::volume_nonmatch)
     {
       const Teuchos::ParameterList& volmortarparams =
-          GLOBAL::Problem::Instance()->VolmortarParams();
-      if (CORE::UTILS::IntegralValue<CORE::VOLMORTAR::CouplingType>(
-              volmortarparams, "COUPLINGTYPE") != CORE::VOLMORTAR::couplingtype_coninter)
+          Global::Problem::Instance()->VolmortarParams();
+      if (Core::UTILS::IntegralValue<Core::VolMortar::CouplingType>(
+              volmortarparams, "COUPLINGTYPE") != Core::VolMortar::couplingtype_coninter)
       {
         FOUR_C_THROW(
             "Volmortar coupling only tested for consistent interpolation, "
@@ -411,25 +411,25 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
             "risk.");
       }
     }
-    if (is_sca_tra_manifold() and fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match)
+    if (is_sca_tra_manifold() and fieldcoupling_ != Inpar::SSI::FieldCoupling::volumeboundary_match)
       FOUR_C_THROW("Solving manifolds only in combination with matching volumes and boundaries");
   }
 
   // build SSI coupling class
   switch (fieldcoupling_)
   {
-    case INPAR::SSI::FieldCoupling::volume_match:
+    case Inpar::SSI::FieldCoupling::volume_match:
       ssicoupling_ = Teuchos::rcp(new SSICouplingMatchingVolume());
       break;
-    case INPAR::SSI::FieldCoupling::volume_nonmatch:
+    case Inpar::SSI::FieldCoupling::volume_nonmatch:
       ssicoupling_ = Teuchos::rcp(new SSICouplingNonMatchingVolume());
       // redistribution is still performed inside
       redistribution_required = SSI::RedistributionType::binning;
       break;
-    case INPAR::SSI::FieldCoupling::boundary_nonmatch:
+    case Inpar::SSI::FieldCoupling::boundary_nonmatch:
       ssicoupling_ = Teuchos::rcp(new SSICouplingNonMatchingBoundary());
       break;
-    case INPAR::SSI::FieldCoupling::volumeboundary_match:
+    case Inpar::SSI::FieldCoupling::volumeboundary_match:
       ssicoupling_ = Teuchos::rcp(new SSICouplingMatchingVolumeAndBoundary());
       redistribution_required = SSI::RedistributionType::match;
       break;
@@ -438,7 +438,7 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
   }
 
   // initialize coupling objects including dof sets
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   ssicoupling_->Init(problem->NDim(), problem->GetDis(struct_disname), Teuchos::rcp(this, false));
 
   return redistribution_required;
@@ -453,9 +453,9 @@ void SSI::SSIBase::read_restart(int restart)
   {
     structure_->read_restart(restart);
 
-    const Teuchos::ParameterList& ssidyn = GLOBAL::Problem::Instance()->SSIControlParams();
+    const Teuchos::ParameterList& ssidyn = Global::Problem::Instance()->SSIControlParams();
     const bool restartfromstructure =
-        CORE::UTILS::IntegralValue<int>(ssidyn, "RESTART_FROM_STRUCTURE");
+        Core::UTILS::IntegralValue<int>(ssidyn, "RESTART_FROM_STRUCTURE");
 
     if (not restartfromstructure)  // standard restart
     {
@@ -483,7 +483,7 @@ void SSI::SSIBase::read_restart(int restart)
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::TestResults(const Epetra_Comm& comm) const
 {
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   problem->AddFieldTest(structure_->CreateFieldTest());
   problem->AddFieldTest(ScaTraBaseAlgorithm()->create_sca_tra_field_test());
@@ -527,7 +527,7 @@ void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
  *---------------------------------------------------------------------------------*/
 void SSI::SSIBase::set_ssi_contact_states(Teuchos::RCP<const Epetra_Vector> phi) const
 {
-  contact_strategy_nitsche_->set_state(MORTAR::state_scalar, *phi);
+  contact_strategy_nitsche_->set_state(Mortar::state_scalar, *phi);
 }
 
 /*----------------------------------------------------------------------*/
@@ -550,8 +550,8 @@ void SSI::SSIBase::evaluate_and_set_temperature_field()
   {
     // evaluate temperature at current time and put to scalar
     const double temperature =
-        GLOBAL::Problem::Instance()
-            ->FunctionById<CORE::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+        Global::Problem::Instance()
+            ->FunctionById<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
             .Evaluate(Time());
     temperature_vector_->PutScalar(temperature);
 
@@ -613,8 +613,8 @@ void SSI::SSIBase::check_ssi_flags() const
     }
   }
 
-  const bool is_nitsche_penalty_adaptive(CORE::UTILS::IntegralValue<int>(
-      GLOBAL::Problem::Instance()->contact_dynamic_params(), "NITSCHE_PENALTY_ADAPTIVE"));
+  const bool is_nitsche_penalty_adaptive(Core::UTILS::IntegralValue<int>(
+      Global::Problem::Instance()->contact_dynamic_params(), "NITSCHE_PENALTY_ADAPTIVE"));
 
   if (SSIInterfaceContact() and is_nitsche_penalty_adaptive)
     FOUR_C_THROW("Adaptive nitsche penalty parameter currently not supported!");
@@ -654,44 +654,44 @@ void SSI::SSIBase::set_dt_from_sca_tra_to_ssi()
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
 {
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   auto structdis = problem->GetDis("structure");
   auto scatradis = problem->GetDis("scatra");
   if (redistribution_type == SSI::RedistributionType::match and !is_sca_tra_manifold())
   {
     // first we bin the scatra discretization
-    std::vector<Teuchos::RCP<DRT::Discretization>> dis;
+    std::vector<Teuchos::RCP<Discret::Discretization>> dis;
     dis.push_back(scatradis);
-    CORE::REBALANCE::RebalanceDiscretizationsByBinning(dis, false);
+    Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
 
-    CORE::REBALANCE::MatchElementDistributionOfMatchingConditionedElements(
+    Core::Rebalance::MatchElementDistributionOfMatchingConditionedElements(
         *scatradis, *scatradis, "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave");
 
     // now we redistribute the structure dis to match the scatra dis
-    CORE::REBALANCE::MatchElementDistributionOfMatchingDiscretizations(*scatradis, *structdis);
+    Core::Rebalance::MatchElementDistributionOfMatchingDiscretizations(*scatradis, *structdis);
   }
   else if (redistribution_type == SSI::RedistributionType::binning)
   {
     // create vector of discr.
-    std::vector<Teuchos::RCP<DRT::Discretization>> dis;
+    std::vector<Teuchos::RCP<Discret::Discretization>> dis;
     dis.push_back(structdis);
     dis.push_back(scatradis);
 
-    CORE::REBALANCE::RebalanceDiscretizationsByBinning(dis, false);
+    Core::Rebalance::RebalanceDiscretizationsByBinning(dis, false);
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSIBase::ScaTraField() const
+Teuchos::RCP<ScaTra::ScaTraTimIntImpl> SSI::SSIBase::ScaTraField() const
 {
   return scatra_base_algorithm_->ScaTraField();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSIBase::ScaTraManifold() const
+Teuchos::RCP<ScaTra::ScaTraTimIntImpl> SSI::SSIBase::ScaTraManifold() const
 {
   return scatra_manifold_base_algorithm_->ScaTraField();
 }
@@ -703,7 +703,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
     const std::string& struct_disname, const std::string& scatra_disname, const bool isAle)
 {
   // get the global problem
-  auto* problem = GLOBAL::Problem::Instance();
+  auto* problem = Global::Problem::Instance();
 
   // time parameter handling
   // In case of different time stepping, time params have to be read from single field sections.
@@ -726,7 +726,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
     // build structure based on new structural time integration
     if (structparams.get<std::string>("INT_STRATEGY") == "Standard")
     {
-      struct_adapterbase_ptr_ = ADAPTER::build_structure_algorithm(structparams);
+      struct_adapterbase_ptr_ = Adapter::build_structure_algorithm(structparams);
 
       // initialize structure base algorithm
       struct_adapterbase_ptr_->Init(
@@ -735,12 +735,12 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
     // build structure based on old structural time integration
     else if (structparams.get<std::string>("INT_STRATEGY") == "Old")
     {
-      auto structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
+      auto structure = Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
-      structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::SSIStructureWrapper>(
+      structure_ = Teuchos::rcp_dynamic_cast<Adapter::SSIStructureWrapper>(
           structure->structure_field(), true);
       if (structure_ == Teuchos::null)
-        FOUR_C_THROW("cast from ADAPTER::Structure to ADAPTER::SSIStructureWrapper failed");
+        FOUR_C_THROW("cast from Adapter::Structure to Adapter::SSIStructureWrapper failed");
     }
     else
     {
@@ -755,7 +755,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
   // create and initialize scatra base algorithm.
   // scatra time integrator constructed and initialized inside.
   // mesh is written inside. cloning must happen before!
-  scatra_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*scatratimeparams,
+  scatra_base_algorithm_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(*scatratimeparams,
       SSI::UTILS::ModifyScaTraParams(scatraparams),
       problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle));
 
@@ -764,7 +764,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
   // create and initialize scatra base algorithm for manifolds
   if (is_sca_tra_manifold())
   {
-    scatra_manifold_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+    scatra_manifold_base_algorithm_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
         *scatratimeparams,
         SSI::UTILS::CloneScaTraManifoldParams(scatraparams, globaltimeparams.sublist("MANIFOLD")),
         problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
@@ -774,7 +774,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
   }
 
   // do checks if adaptive time stepping is activated
-  if (CORE::UTILS::IntegralValue<bool>(globaltimeparams, "ADAPTIVE_TIMESTEPPING"))
+  if (Core::UTILS::IntegralValue<bool>(globaltimeparams, "ADAPTIVE_TIMESTEPPING"))
     check_adaptive_time_stepping(scatraparams, structparams);
 }
 
@@ -782,9 +782,9 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
 /*----------------------------------------------------------------------*/
 bool SSI::SSIBase::do_calculate_initial_potential_field() const
 {
-  const auto ssi_params = GLOBAL::Problem::Instance()->SSIControlParams();
+  const auto ssi_params = Global::Problem::Instance()->SSIControlParams();
   const bool init_pot_calc =
-      CORE::UTILS::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
+      Core::UTILS::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
 
   return init_pot_calc and is_elch_sca_tra_tim_int_type();
 }
@@ -793,11 +793,11 @@ bool SSI::SSIBase::do_calculate_initial_potential_field() const
 /*----------------------------------------------------------------------*/
 bool SSI::SSIBase::is_elch_sca_tra_tim_int_type() const
 {
-  const auto ssi_params = GLOBAL::Problem::Instance()->SSIControlParams();
+  const auto ssi_params = Global::Problem::Instance()->SSIControlParams();
   const auto scatra_type =
-      Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
+      Teuchos::getIntegralValue<Inpar::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
 
-  return scatra_type == INPAR::SSI::ScaTraTimIntType::elch;
+  return scatra_type == Inpar::SSI::ScaTraTimIntType::elch;
 }
 
 /*----------------------------------------------------------------------*/
@@ -805,7 +805,7 @@ bool SSI::SSIBase::is_elch_sca_tra_tim_int_type() const
 bool SSI::SSIBase::IsRestart() const
 {
   // get the global problem
-  const auto* problem = GLOBAL::Problem::Instance();
+  const auto* problem = Global::Problem::Instance();
 
   const int restartstep = problem->Restart();
 
@@ -818,16 +818,16 @@ void SSI::SSIBase::check_adaptive_time_stepping(
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams)
 {
   // safety check: adaptive time stepping in one of the sub problems
-  if (!CORE::UTILS::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
+  if (!Core::UTILS::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
   {
     FOUR_C_THROW(
         "Must provide adaptive time stepping algorithm in one of the sub problems. (Currently "
         "just ScaTra)");
   }
-  if (CORE::UTILS::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
-      INPAR::STR::timada_kind_none)
+  if (Core::UTILS::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
+      Inpar::STR::timada_kind_none)
     FOUR_C_THROW("Adaptive time stepping in SSI currently just from ScaTra");
-  if (CORE::UTILS::IntegralValue<int>(structparams, "DYNAMICTYP") == INPAR::STR::dyna_ab2)
+  if (Core::UTILS::IntegralValue<int>(structparams, "DYNAMICTYP") == Inpar::STR::dyna_ab2)
     FOUR_C_THROW("Currently, only one step methods are allowed for adaptive time stepping");
 }
 
@@ -838,18 +838,18 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
 {
   bool is_s2i_kinetic_with_pseudo_contact = false;
 
-  auto structdis = GLOBAL::Problem::Instance()->GetDis(struct_disname);
+  auto structdis = Global::Problem::Instance()->GetDis(struct_disname);
   // get all s2i kinetics conditions
-  std::vector<CORE::Conditions::Condition*> s2ikinetics_conditons(0, nullptr);
+  std::vector<Core::Conditions::Condition*> s2ikinetics_conditons(0, nullptr);
   structdis->GetCondition("S2IKinetics", s2ikinetics_conditons);
   // get all ssi contact conditions
-  std::vector<CORE::Conditions::Condition*> ssi_contact_conditions;
+  std::vector<Core::Conditions::Condition*> ssi_contact_conditions;
   structdis->GetCondition("SSIInterfaceContact", ssi_contact_conditions);
   for (auto* s2ikinetics_cond : s2ikinetics_conditons)
   {
-    if ((s2ikinetics_cond->parameters().Get<int>("interface side") == INPAR::S2I::side_slave) and
+    if ((s2ikinetics_cond->parameters().Get<int>("interface side") == Inpar::S2I::side_slave) and
         (s2ikinetics_cond->parameters().Get<int>("kinetic model") !=
-            INPAR::S2I::kinetics_nointerfaceflux) and
+            Inpar::S2I::kinetics_nointerfaceflux) and
         (s2ikinetics_cond->parameters().Get<int>("is_pseudo_contact") == 1))
     {
       is_s2i_kinetic_with_pseudo_contact = true;
@@ -869,8 +869,8 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
   }
 
   const bool do_output_cauchy_stress =
-      CORE::UTILS::IntegralValue<INPAR::STR::StressType>(
-          GLOBAL::Problem::Instance()->IOParams(), "STRUCT_STRESS") == INPAR::STR::stress_cauchy;
+      Core::UTILS::IntegralValue<Inpar::STR::StressType>(
+          Global::Problem::Instance()->IOParams(), "STRUCT_STRESS") == Inpar::STR::stress_cauchy;
 
   if (is_s2i_kinetic_with_pseudo_contact and !do_output_cauchy_stress)
   {
@@ -887,17 +887,17 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
 void SSI::SSIBase::check_ssi_interface_conditions(const std::string& struct_disname) const
 {
   // access the structural discretization
-  auto structdis = GLOBAL::Problem::Instance()->GetDis(struct_disname);
+  auto structdis = Global::Problem::Instance()->GetDis(struct_disname);
 
   if (ssi_interface_meshtying())
-    SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
+    ScaTra::ScaTraUtils::CheckConsistencyWithS2IKineticsCondition(
         "ssi_interface_meshtying", structdis);
 
   // check scatra-structure-interaction contact condition
   if (SSIInterfaceContact())
   {
     // get ssi condition to be tested
-    std::vector<CORE::Conditions::Condition*> ssiconditions;
+    std::vector<Core::Conditions::Condition*> ssiconditions;
     structdis->GetCondition("SSIInterfaceContact", ssiconditions);
     SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(ssiconditions, structdis);
   }
@@ -930,19 +930,19 @@ void SSI::SSIBase::setup_model_evaluator()
 void SSI::SSIBase::setup_contact_strategy()
 {
   // get the contact solution strategy
-  auto contact_solution_type = CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
-      GLOBAL::Problem::Instance()->contact_dynamic_params(), "STRATEGY");
+  auto contact_solution_type = Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+      Global::Problem::Instance()->contact_dynamic_params(), "STRATEGY");
 
-  if (contact_solution_type == INPAR::CONTACT::solution_nitsche)
+  if (contact_solution_type == Inpar::CONTACT::solution_nitsche)
   {
-    if (CORE::UTILS::IntegralValue<INPAR::STR::IntegrationStrategy>(
-            GLOBAL::Problem::Instance()->structural_dynamic_params(), "INT_STRATEGY") !=
-        INPAR::STR::int_standard)
+    if (Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(
+            Global::Problem::Instance()->structural_dynamic_params(), "INT_STRATEGY") !=
+        Inpar::STR::int_standard)
       FOUR_C_THROW("ssi contact only with new structural time integration");
 
     // get the contact model evaluator and store a pointer to the strategy
     auto& model_evaluator_contact = dynamic_cast<STR::MODELEVALUATOR::Contact&>(
-        structure_field()->ModelEvaluator(INPAR::STR::model_contact));
+        structure_field()->ModelEvaluator(Inpar::STR::model_contact));
     contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategySsi>(
         model_evaluator_contact.StrategyPtr(), true);
   }

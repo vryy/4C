@@ -28,7 +28,7 @@ coexist with this general class.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -53,9 +53,9 @@ namespace DRT
       bool IsAle() const { return is_ale_; };
       bool IsConservative() const { return is_conservative_; };
       bool SphericalCoords() const { return sphericalcoords_; };
-      INPAR::SCATRA::FluxType CalcFluxDomain() const { return calcflux_domain_; };
+      Inpar::ScaTra::FluxType CalcFluxDomain() const { return calcflux_domain_; };
       Teuchos::RCP<std::vector<int>> WriteFluxIds() const { return writefluxids_; };
-      INPAR::SCATRA::FdCheck fd_check() const { return fdcheck_; };
+      Inpar::ScaTra::FdCheck fd_check() const { return fdcheck_; };
       double FDCheckEps() const { return fdcheckeps_; };
       double FDCheckTol() const { return fdchecktol_; };
       int ProbNum() const { return probnum_; };
@@ -90,13 +90,13 @@ namespace DRT
 
       //! @name return stabilization parameters
       //! @{
-      INPAR::SCATRA::StabType StabType() const { return stabtype_; };
-      INPAR::SCATRA::TauType TauDef() const { return whichtau_; };
-      INPAR::SCATRA::CharEleLength CharEleLength() const { return charelelength_; };
+      Inpar::ScaTra::StabType StabType() const { return stabtype_; };
+      Inpar::ScaTra::TauType TauDef() const { return whichtau_; };
+      Inpar::ScaTra::CharEleLength CharEleLength() const { return charelelength_; };
       double USFEMGLSFac() const { return diffreastafac_; };
       bool RBSubGrVel() const { return sgvel_; };
       bool ASSGD() const { return assgd_; };
-      INPAR::SCATRA::AssgdType ASSGDType() const { return whichassgd_; };
+      Inpar::ScaTra::AssgdType ASSGDType() const { return whichassgd_; };
       bool TauGP() const { return tau_gp_; };
       bool MatGP() const { return mat_gp_; };
       double TauValue() const { return tau_value_; };
@@ -119,13 +119,13 @@ namespace DRT
       bool sphericalcoords_;
 
       //! flag for writing the flux vector fields
-      INPAR::SCATRA::FluxType calcflux_domain_;
+      Inpar::ScaTra::FluxType calcflux_domain_;
 
       //! ids of scalars for which flux vectors are written (starting with 1)
       Teuchos::RCP<std::vector<int>> writefluxids_;
 
       //! flag for finite difference check
-      INPAR::SCATRA::FdCheck fdcheck_;
+      Inpar::ScaTra::FdCheck fdcheck_;
 
       //! perturbation magnitude for finite difference check
       double fdcheckeps_;
@@ -191,13 +191,13 @@ namespace DRT
       //! @name stabilization parameters
       //! @{
       //! type of stabilization
-      INPAR::SCATRA::StabType stabtype_;
+      Inpar::ScaTra::StabType stabtype_;
 
       //! definition of stabilization parameter
-      INPAR::SCATRA::TauType whichtau_;
+      Inpar::ScaTra::TauType whichtau_;
 
       //! definition of characteristic element length
-      INPAR::SCATRA::CharEleLength charelelength_;
+      Inpar::ScaTra::CharEleLength charelelength_;
 
       //! parameter to switch between SUPG, GLS and USFEM
       double diffreastafac_;
@@ -209,7 +209,7 @@ namespace DRT
       bool assgd_;
 
       //! definition of artificial diffusion
-      INPAR::SCATRA::AssgdType whichassgd_;
+      Inpar::ScaTra::AssgdType whichassgd_;
 
       //! flag for evaluation of tau at Gauss point
       bool tau_gp_;
@@ -222,10 +222,10 @@ namespace DRT
       //! @}
 
       //! parameter class for time integration
-      DRT::ELEMENTS::ScaTraEleParameterTimInt* scatraparatimint_;
+      Discret::ELEMENTS::ScaTraEleParameterTimInt* scatraparatimint_;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINEAR_SOLVER
+namespace Core::LinearSolver
 {
   /// preconditioner base class
   /*!
@@ -51,7 +51,7 @@ namespace CORE::LINEAR_SOLVER
     /// linear operator used for preconditioning
     virtual Teuchos::RCP<Epetra_Operator> PrecOperator() const = 0;
   };
-}  // namespace CORE::LINEAR_SOLVER
+}  // namespace Core::LinearSolver
 
 FOUR_C_NAMESPACE_CLOSE
 

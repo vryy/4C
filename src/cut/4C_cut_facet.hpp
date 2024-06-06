@@ -19,9 +19,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class BoundaryCell;
     class VolumeCell;
@@ -106,7 +106,7 @@ namespace CORE::GEO
 
       bool Equals(const std::vector<Point*>& facet_points) { return equals(points_, facet_points); }
 
-      bool Equals(CORE::FE::CellType distype);
+      bool Equals(Core::FE::CellType distype);
 
       bool CornerEquals(const std::vector<Point*>& facet_points)
       {
@@ -224,8 +224,8 @@ namespace CORE::GEO
       dealt with when moment fitting is used for boun.cell integration
        */
       void NewArbitraryCell(Mesh& mesh, VolumeCell* volume, const std::vector<Point*>& points,
-          plain_boundarycell_set& bcells, const CORE::FE::GaussIntegration& gp,
-          const CORE::LINALG::Matrix<3, 1>& normal);
+          plain_boundarycell_set& bcells, const Core::FE::GaussIntegration& gp,
+          const Core::LinAlg::Matrix<3, 1>& normal);
 
       /// Get the BoundaryCells created on this facet
       void GetBoundaryCells(plain_boundarycell_set& bcells);
@@ -300,10 +300,10 @@ namespace CORE::GEO
 
       void get_nodal_ids(Mesh& mesh, const std::vector<Point*>& points, std::vector<int>& nids);
 
-      unsigned normal(const std::vector<Point*>& points, CORE::LINALG::Matrix<3, 1>& x1,
-          CORE::LINALG::Matrix<3, 1>& x2, CORE::LINALG::Matrix<3, 1>& x3,
-          CORE::LINALG::Matrix<3, 1>& b1, CORE::LINALG::Matrix<3, 1>& b2,
-          CORE::LINALG::Matrix<3, 1>& b3);
+      unsigned normal(const std::vector<Point*>& points, Core::LinAlg::Matrix<3, 1>& x1,
+          Core::LinAlg::Matrix<3, 1>& x2, Core::LinAlg::Matrix<3, 1>& x3,
+          Core::LinAlg::Matrix<3, 1>& b1, Core::LinAlg::Matrix<3, 1>& b2,
+          Core::LinAlg::Matrix<3, 1>& b3);
 
       void find_corner_points();
 
@@ -431,10 +431,10 @@ namespace CORE::GEO
       p4->intersection(facets);
     }
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
-std::ostream& operator<<(std::ostream& stream, CORE::GEO::CUT::Facet& f);
+std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Facet& f);
 
 FOUR_C_NAMESPACE_CLOSE
 

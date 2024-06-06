@@ -24,27 +24,27 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> CORE::FE::evaluate_and_solve_nodal_l2_projection(
-    DRT::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
+Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projection(
+    Discret::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
     const int& numvec, Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
     const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap)
 {
   // create empty matrix
-  auto massmatrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(noderowmap, 108, false, true));
+  auto massmatrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(noderowmap, 108, false, true));
   // create empty right hand side
   auto rhs = Teuchos::rcp(new Epetra_MultiVector(noderowmap, numvec));
 
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
-  CORE::Elements::Element::LocationArray la(dis.NumDofSets());
+  Core::Elements::Element::LocationArray la(dis.NumDofSets());
 
   // define element matrices and vectors
-  CORE::LINALG::SerialDenseMatrix elematrix1;
-  CORE::LINALG::SerialDenseMatrix elematrix2;
-  CORE::LINALG::SerialDenseVector elevector1;
-  CORE::LINALG::SerialDenseVector elevector2;
-  CORE::LINALG::SerialDenseVector elevector3;
+  Core::LinAlg::SerialDenseMatrix elematrix1;
+  Core::LinAlg::SerialDenseMatrix elematrix2;
+  Core::LinAlg::SerialDenseVector elevector1;
+  Core::LinAlg::SerialDenseVector elevector2;
+  Core::LinAlg::SerialDenseVector elevector3;
 
   // loop column elements
 
@@ -72,7 +72,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::evaluate_and_solve_nodal_l2_projectio
     lm.resize(numnode);
     lmowner.resize(numnode);
 
-    CORE::Nodes::Node** nodes = actele->Nodes();
+    Core::Nodes::Node** nodes = actele->Nodes();
     for (int n = 0; n < numnode; ++n)
     {
       const int nodeid = nodes[n]->Id();
@@ -100,7 +100,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::evaluate_and_solve_nodal_l2_projectio
       // copy results into Serial_DenseVector for assembling
       for (int inode = 0; inode < numnode; ++inode) elevector1(inode) = elematrix2(inode, n);
       // assemble into nth vector of MultiVector
-      CORE::LINALG::Assemble(*rhs, n, elevector1, lm, lmowner);
+      Core::LinAlg::Assemble(*rhs, n, elevector1, lm, lmowner);
     }
   }  // end element loop
 
@@ -113,8 +113,8 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::evaluate_and_solve_nodal_l2_projectio
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_nodal_l2_projection(
-    Teuchos::RCP<DRT::Discretization> dis, const std::string& statename, const int& numvec,
+Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
+    Teuchos::RCP<Discret::Discretization> dis, const std::string& statename, const int& numvec,
     Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams)
 {
   // check if the statename has been set
@@ -199,37 +199,37 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::compute_nodal_l2_projection(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> CORE::FE::solve_nodal_l2_projection(
-    CORE::LINALG::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const Epetra_Comm& comm,
+Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
+    Core::LinAlg::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const Epetra_Comm& comm,
     const int& numvec, const Teuchos::ParameterList& solverparams, const Epetra_Map& noderowmap,
     const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap)
 {
   // get solver parameter list of linear solver
   const auto solvertype =
-      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(solverparams, "SOLVER");
+      Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
-  auto solver = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, comm));
+  auto solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, comm));
 
   // skip setup of preconditioner in case of a direct solver
-  if (solvertype != CORE::LINEAR_SOLVER::SolverType::umfpack and
-      solvertype != CORE::LINEAR_SOLVER::SolverType::superlu)
+  if (solvertype != Core::LinearSolver::SolverType::umfpack and
+      solvertype != Core::LinearSolver::SolverType::superlu)
   {
     const auto prectyp =
-        Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(solverparams, "AZPREC");
+        Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(solverparams, "AZPREC");
     switch (prectyp)
     {
-      case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml:
-      case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid:
-      case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2:
-      case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu:
+      case Core::LinearSolver::PreconditionerType::multigrid_ml:
+      case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid:
+      case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2:
+      case Core::LinearSolver::PreconditionerType::multigrid_muelu:
       {
         Teuchos::ParameterList* preclist_ptr = nullptr;
         // switch here between ML and MueLu cases
-        if (prectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml or
-            prectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid or
-            prectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2)
+        if (prectyp == Core::LinearSolver::PreconditionerType::multigrid_ml or
+            prectyp == Core::LinearSolver::PreconditionerType::multigrid_ml_fluid or
+            prectyp == Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2)
           preclist_ptr = &((solver->Params()).sublist("ML Parameters"));
-        else if (prectyp == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu)
+        else if (prectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu)
           preclist_ptr = &((solver->Params()).sublist("MueLu Parameters"));
         else
           FOUR_C_THROW("please add correct parameter list");
@@ -249,7 +249,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::solve_nodal_l2_projection(
         preclist.set("ML validate parameter list", false);
       }
       break;
-      case CORE::LINEAR_SOLVER::PreconditionerType::ilu:
+      case Core::LinearSolver::PreconditionerType::ilu:
         // do nothing
         break;
       default:
@@ -263,10 +263,10 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::solve_nodal_l2_projection(
 
   switch (solvertype)
   {
-    case CORE::LINEAR_SOLVER::SolverType::belos:
+    case Core::LinearSolver::SolverType::belos:
     {
       // solve for numvec rhs at the same time using Belos solver
-      CORE::LINALG::SolverParams solver_params;
+      Core::LinAlg::SolverParams solver_params;
       solver_params.refactor = true;
       solver_params.reset = true;
       solver->Solve(massmatrix.EpetraOperator(), nodevec, Teuchos::rcpFromRef(rhs), solver_params);
@@ -283,7 +283,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::FE::solve_nodal_l2_projection(
       // solve for numvec rhs iteratively
       for (int i = 0; i < numvec; i++)
       {
-        CORE::LINALG::SolverParams solver_params;
+        Core::LinAlg::SolverParams solver_params;
         solver_params.refactor = true;
         solver_params.reset = true;
         solver->Solve(massmatrix.EpetraOperator(), Teuchos::rcp(((*nodevec)(i)), false),

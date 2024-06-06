@@ -23,7 +23,7 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR::NLN::SOLVER
+namespace STR::Nln::SOLVER
 {
   /*! \brief Full step with single iteration via NOX for explicit structural dynamics
    *
@@ -35,7 +35,7 @@ namespace STR::NLN::SOLVER
     void Setup() override;
 
     //! derived from the base class
-    INPAR::STR::ConvergenceStatus Solve() override;
+    Inpar::STR::ConvergenceStatus Solve() override;
 
    protected:
     //! Reset the non-linear solver parameters and variables
@@ -48,7 +48,7 @@ namespace STR::NLN::SOLVER
     void set_single_step_params(Teuchos::ParameterList& p);
 
   };  // class SingleStep
-}  // namespace STR::NLN::SOLVER
+}  // namespace STR::Nln::SOLVER
 
 
 FOUR_C_NAMESPACE_CLOSE

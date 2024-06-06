@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-MORTAR::MatrixRowColTransformer::MatrixRowColTransformer(const unsigned num_transformer)
+Mortar::MatrixRowColTransformer::MatrixRowColTransformer(const unsigned num_transformer)
     : isinit_(false),
       issetup_(false),
       slave_to_master_(num_transformer),
@@ -35,7 +35,7 @@ MORTAR::MatrixRowColTransformer::MatrixRowColTransformer(const unsigned num_tran
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::Init(const plain_block_map_pairs& redistributed_row,
+void Mortar::MatrixRowColTransformer::Init(const plain_block_map_pairs& redistributed_row,
     const plain_block_map_pairs& redistributed_column,
     const plain_block_map_pairs& unredistributed_row,
     const plain_block_map_pairs& unredistributed_column)
@@ -50,7 +50,7 @@ void MORTAR::MatrixRowColTransformer::Init(const plain_block_map_pairs& redistri
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::set_slave_map_pairs(
+void Mortar::MatrixRowColTransformer::set_slave_map_pairs(
     const plain_block_map_pairs& redistributed_row,
     const plain_block_map_pairs& redistributed_column)
 {
@@ -65,7 +65,7 @@ void MORTAR::MatrixRowColTransformer::set_slave_map_pairs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::set_master_map_pairs(
+void Mortar::MatrixRowColTransformer::set_master_map_pairs(
     const plain_block_map_pairs& unredistributed_row,
     const plain_block_map_pairs& unredistributed_column)
 {
@@ -80,7 +80,7 @@ void MORTAR::MatrixRowColTransformer::set_master_map_pairs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::Setup()
+void Mortar::MatrixRowColTransformer::Setup()
 {
   throw_if_not_init();
 
@@ -104,13 +104,13 @@ void MORTAR::MatrixRowColTransformer::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix>
-MORTAR::MatrixRowColTransformer::redistributed_to_unredistributed(
-    const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat)
+Teuchos::RCP<Core::LinAlg::SparseMatrix>
+Mortar::MatrixRowColTransformer::redistributed_to_unredistributed(
+    const CONTACT::MatBlockType bt, const Core::LinAlg::SparseMatrix& src_mat)
 {
   throw_if_not_init_and_setup();
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dst_mat = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dst_mat = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       **master_row_[bt], src_mat.EpetraMatrix()->MaxNumEntries(), false, true));
 
   redistributed_to_unredistributed(bt, src_mat, *dst_mat);
@@ -121,9 +121,9 @@ MORTAR::MatrixRowColTransformer::redistributed_to_unredistributed(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::redistributed_to_unredistributed(
-    const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat,
-    CORE::LINALG::SparseMatrix& dst_mat)
+void Mortar::MatrixRowColTransformer::redistributed_to_unredistributed(
+    const CONTACT::MatBlockType bt, const Core::LinAlg::SparseMatrix& src_mat,
+    Core::LinAlg::SparseMatrix& dst_mat)
 {
   throw_if_not_init_and_setup();
 
@@ -138,13 +138,13 @@ void MORTAR::MatrixRowColTransformer::redistributed_to_unredistributed(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix>
-MORTAR::MatrixRowColTransformer::unredistributed_to_redistributed(
-    const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat)
+Teuchos::RCP<Core::LinAlg::SparseMatrix>
+Mortar::MatrixRowColTransformer::unredistributed_to_redistributed(
+    const CONTACT::MatBlockType bt, const Core::LinAlg::SparseMatrix& src_mat)
 {
   throw_if_not_init_and_setup();
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> dst_mat = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dst_mat = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       **slave_row_[bt], src_mat.EpetraMatrix()->MaxNumEntries(), false, true));
 
   redistributed_to_unredistributed(bt, src_mat, *dst_mat);
@@ -155,9 +155,9 @@ MORTAR::MatrixRowColTransformer::unredistributed_to_redistributed(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::unredistributed_to_redistributed(
-    const CONTACT::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat,
-    CORE::LINALG::SparseMatrix& dst_mat)
+void Mortar::MatrixRowColTransformer::unredistributed_to_redistributed(
+    const CONTACT::MatBlockType bt, const Core::LinAlg::SparseMatrix& src_mat,
+    Core::LinAlg::SparseMatrix& dst_mat)
 {
   throw_if_not_init_and_setup();
 
@@ -172,7 +172,7 @@ void MORTAR::MatrixRowColTransformer::unredistributed_to_redistributed(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void MORTAR::MatrixRowColTransformer::reset_exporter(Teuchos::RCP<Epetra_Export>& exporter) const
+void Mortar::MatrixRowColTransformer::reset_exporter(Teuchos::RCP<Epetra_Export>& exporter) const
 {
   exporter = Teuchos::rcp(new Epetra_Export(*exporter));
 }

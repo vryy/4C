@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-namespace ART
+namespace Arteries
 {
   namespace UTILS
   {
@@ -66,8 +66,8 @@ namespace ART
       /*!
       \brief Standard Constructor
       */
-      ArtJunctionWrapper(Teuchos::RCP<DRT::Discretization> actdis,
-          CORE::IO::DiscretizationWriter &output, Teuchos::ParameterList &params, double dta);
+      ArtJunctionWrapper(Teuchos::RCP<Discret::Discretization> actdis,
+          Core::IO::DiscretizationWriter &output, Teuchos::ParameterList &params, double dta);
 
       /*!
       \brief Destructor
@@ -105,10 +105,10 @@ namespace ART
       // map<const int, Teuchos::RCP<Teuchos::ParameterList> >  nodalParams_;
 
       //! 1d artery discretization
-      Teuchos::RCP<DRT::Discretization> discret_;
+      Teuchos::RCP<Discret::Discretization> discret_;
 
       //! the output writer
-      CORE::IO::DiscretizationWriter &output_;
+      Core::IO::DiscretizationWriter &output_;
 
     };  // class ArtJunctionWrapper
 
@@ -127,14 +127,14 @@ namespace ART
       friend class ArtJunctionWrapper;
 
      public:
-      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+      using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+      using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
 
       /*!
       \brief Standard Constructor
      */
-      ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdis,
-          CORE::IO::DiscretizationWriter &output, std::vector<CORE::Conditions::Condition *> conds,
+      ArtJunctionBc(Teuchos::RCP<Discret::Discretization> actdis,
+          Core::IO::DiscretizationWriter &output, std::vector<Core::Conditions::Condition *> conds,
           std::vector<int> IOart_flag, double dta, int condid, int numcond);
 
       /*!
@@ -162,30 +162,30 @@ namespace ART
       /*!
       \Evaluate the Jacobian matrix to solve the nonlinear problem
       */
-      void jacobian_eval(CORE::LINALG::SerialDenseMatrix &Jacobian, std::vector<double> &A,
+      void jacobian_eval(Core::LinAlg::SerialDenseMatrix &Jacobian, std::vector<double> &A,
           std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
           std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      void residual_eval(CORE::LINALG::SerialDenseVector &f, std::vector<double> &A,
+      void residual_eval(Core::LinAlg::SerialDenseVector &f, std::vector<double> &A,
           std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
           std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
 
-      void residual_eval(CORE::LINALG::SerialDenseMatrix &f, std::vector<double> &A,
+      void residual_eval(Core::LinAlg::SerialDenseMatrix &f, std::vector<double> &A,
           std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
           std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      void update_result(CORE::LINALG::SerialDenseVector &xn, CORE::LINALG::SerialDenseVector &dx);
+      void update_result(Core::LinAlg::SerialDenseVector &xn, Core::LinAlg::SerialDenseVector &dx);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      double two_norm(CORE::LINALG::SerialDenseVector &x);
+      double two_norm(Core::LinAlg::SerialDenseVector &x);
 
 
 
@@ -212,10 +212,10 @@ namespace ART
       int myrank_;
 
       //! fluid discretization
-      Teuchos::RCP<DRT::Discretization> discret_;
+      Teuchos::RCP<Discret::Discretization> discret_;
 
       //! the output writer
-      CORE::IO::DiscretizationWriter &output_;
+      Core::IO::DiscretizationWriter &output_;
 
       //! the vector defining whethe an element is inlet or outlet
       std::vector<int> io_art_flag_;
@@ -233,7 +233,7 @@ namespace ART
     };  // class ArtJunctionBc
 
   }  // namespace UTILS
-}  // namespace ART
+}  // namespace Arteries
 
 FOUR_C_NAMESPACE_CLOSE
 

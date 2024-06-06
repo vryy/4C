@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
+Adapter::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
     : StructureWrapper(stru)
 {
   //----------------------------------------------------------------------
@@ -26,7 +26,7 @@ ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
 
   // first get all Neumann conditions on structure
 
-  std::vector<CORE::Conditions::Condition*> surfneumcond;
+  std::vector<Core::Conditions::Condition*> surfneumcond;
   discretization()->GetCondition("SurfaceNeumann", surfneumcond);
   unsigned int numneumcond = surfneumcond.size();
   if (numneumcond == 0) FOUR_C_THROW("no Neumann conditions on structure");
@@ -35,8 +35,8 @@ ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
   std::vector<int> tmp;
   for (unsigned int i = 0; i < numneumcond; ++i)
   {
-    CORE::Conditions::Condition* actcond = surfneumcond[i];
-    if (actcond->Type() == CORE::Conditions::RedAirwayTissue)
+    Core::Conditions::Condition* actcond = surfneumcond[i];
+    if (actcond->Type() == Core::Conditions::RedAirwayTissue)
     {
       int condID = actcond->parameters().Get<int>("coupling id");
       coupcond_[condID] = actcond;
@@ -53,14 +53,14 @@ ADAPTER::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
 
 
 /*======================================================================*/
-void ADAPTER::StructureRedAirway::SetPressure(Teuchos::RCP<Epetra_Vector> couppres)
+void Adapter::StructureRedAirway::SetPressure(Teuchos::RCP<Epetra_Vector> couppres)
 {
   const Epetra_BlockMap& condmap = couppres->Map();
 
   for (int i = 0; i < condmap.NumMyElements(); ++i)
   {
     int condID = condmap.GID(i);
-    CORE::Conditions::Condition* cond = coupcond_[condID];
+    Core::Conditions::Condition* cond = coupcond_[condID];
     std::vector<double> newval(6, 0.0);
     newval[0] = (*couppres)[i];
     cond->parameters().Add("val", newval);
@@ -69,7 +69,7 @@ void ADAPTER::StructureRedAirway::SetPressure(Teuchos::RCP<Epetra_Vector> couppr
 
 
 /*======================================================================*/
-void ADAPTER::StructureRedAirway::CalcVol(std::map<int, double>& V)
+void Adapter::StructureRedAirway::CalcVol(std::map<int, double>& V)
 {
   if (!(discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
 
@@ -86,23 +86,23 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int, double>& V)
   for (int i = 0; i < coupmap_->NumMyElements(); ++i)
   {
     int condID = coupmap_->GID(i);
-    CORE::Conditions::Condition& cond = *(coupcond_[condID]);
+    Core::Conditions::Condition& cond = *(coupcond_[condID]);
     double tmp = 0.;
     params.set("ConditionID", condID);
-    params.set<Teuchos::RCP<CORE::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
 
     // define element matrices and vectors
-    CORE::LINALG::SerialDenseMatrix elematrix1;
-    CORE::LINALG::SerialDenseMatrix elematrix2;
-    CORE::LINALG::SerialDenseVector elevector1;
-    CORE::LINALG::SerialDenseVector elevector2;
-    CORE::LINALG::SerialDenseVector elevector3;
+    Core::LinAlg::SerialDenseMatrix elematrix1;
+    Core::LinAlg::SerialDenseMatrix elematrix2;
+    Core::LinAlg::SerialDenseVector elevector1;
+    Core::LinAlg::SerialDenseVector elevector2;
+    Core::LinAlg::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = cond.Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -131,7 +131,7 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int, double>& V)
 
 
 /*======================================================================*/
-void ADAPTER::StructureRedAirway::InitVol()
+void Adapter::StructureRedAirway::InitVol()
 {
   CalcVol(vn_);
 
@@ -148,7 +148,7 @@ void ADAPTER::StructureRedAirway::InitVol()
 
 
 /*======================================================================*/
-void ADAPTER::StructureRedAirway::CalcFlux(
+void Adapter::StructureRedAirway::CalcFlux(
     Teuchos::RCP<Epetra_Vector> coupflux, Teuchos::RCP<Epetra_Vector> coupvol, double dt)
 {
   CalcVol(vnp_);
@@ -164,7 +164,7 @@ void ADAPTER::StructureRedAirway::CalcFlux(
 
 
 /*======================================================================*/
-void ADAPTER::StructureRedAirway::Update()
+void Adapter::StructureRedAirway::Update()
 {
   StructureWrapper::Update();
 

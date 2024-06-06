@@ -38,12 +38,12 @@ namespace POROFLUIDMULTIPHASE
     void Output() override;
 
     //! Initialize the linear solver
-    void initialize_linear_solver(Teuchos::RCP<CORE::LINALG::Solver> solver) override;
+    void initialize_linear_solver(Teuchos::RCP<Core::LinAlg::Solver> solver) override;
 
     //! solve linear system of equations
-    void linear_solve(Teuchos::RCP<CORE::LINALG::Solver> solver,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
-        Teuchos::RCP<Epetra_Vector> residual, CORE::LINALG::SolverParams& solver_params) override;
+    void linear_solve(Teuchos::RCP<Core::LinAlg::Solver> solver,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
+        Teuchos::RCP<Epetra_Vector> residual, Core::LinAlg::SolverParams& solver_params) override;
 
     //! calculate norms for convergence checks
     void CalculateNorms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,

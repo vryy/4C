@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-unsigned int CORE::LARGEROTATIONS::NumberingTrafo(const unsigned int j, const unsigned int numnode)
+unsigned int Core::LargeRotations::NumberingTrafo(const unsigned int j, const unsigned int numnode)
 {
   // Node numbering j=1,...,num_node() according to Crisfield 1999:
   // LINE2  1---2

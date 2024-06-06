@@ -27,18 +27,18 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class ScaTraBaseAlgorithm;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace FSI
 {
   class Monolithic;
 }  // namespace FSI
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MultiMapExtractor;
   class BlockSparseMatrixBase;
@@ -47,7 +47,7 @@ namespace CORE::LINALG
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace FS3I
 {
@@ -153,7 +153,7 @@ namespace FS3I
 
    protected:
     /// vector of scatra algorithms
-    std::vector<Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>> scatravec_;
+    std::vector<Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>> scatravec_;
 
     /// scatra rhs vector
     Teuchos::RCP<Epetra_Vector> scatrarhs_;
@@ -162,27 +162,27 @@ namespace FS3I
     Teuchos::RCP<Epetra_Vector> scatraincrement_;
 
     /// dof row map of scatra problems splitted in (field) blocks
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> scatraglobalex_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> scatraglobalex_;
 
     /// vector of scatra field map extractors (coupled vs. uncoupled dofs)
-    std::vector<Teuchos::RCP<CORE::LINALG::MultiMapExtractor>> scatrafieldexvec_;
+    std::vector<Teuchos::RCP<Core::LinAlg::MultiMapExtractor>> scatrafieldexvec_;
 
     /// coupling of dofs at the scatra interface
-    Teuchos::RCP<CORE::ADAPTER::Coupling> scatracoup_;
+    Teuchos::RCP<Core::Adapter::Coupling> scatracoup_;
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> scatrasystemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> scatrasystemmatrix_;
 
     /// coupling forces (in case of surface permeability)
     std::vector<Teuchos::RCP<Epetra_Vector>> scatracoupforce_;
 
     /// coupling matrices (in case of surface permeability)
-    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> scatracoupmat_;
+    std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> scatracoupmat_;
 
     /// zero vector (needed for application of Dirichlet BC on coupling vector)
     std::vector<Teuchos::RCP<Epetra_Vector>> scatrazeros_;
 
     /// scatra solver
-    Teuchos::RCP<CORE::LINALG::Solver> scatrasolver_;
+    Teuchos::RCP<Core::LinAlg::Solver> scatrasolver_;
 
     /// flag for infinite surface permeability
     const bool infperm_;
@@ -209,10 +209,10 @@ namespace FS3I
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> sbbtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> sbitransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> sibtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fbitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform> sbbtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> sbitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> sibtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> fbitransform_;
     ///@}
 
    private:

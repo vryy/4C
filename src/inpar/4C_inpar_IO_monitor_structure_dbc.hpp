@@ -23,9 +23,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace IO_MONITOR_STRUCTURE_DBC
+  namespace IOMonitorStructureDBC
   {
     /// data format for written numeric data
     enum FileType
@@ -37,8 +37,8 @@ namespace INPAR
     /// set the valid parameters related to writing of output at runtime
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }  // namespace IO_MONITOR_STRUCTURE_DBC
-}  // namespace INPAR
+  }  // namespace IOMonitorStructureDBC
+}  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE
 

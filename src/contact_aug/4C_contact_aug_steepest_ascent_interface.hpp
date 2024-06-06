@@ -19,14 +19,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
-    namespace STEEPESTASCENT
+    namespace SteepestAscent
     {
       /** \brief Augmented steepest ascent contact interface class
        *
        *  \author hiermeier \date 03/17 */
-      class Interface : public CONTACT::AUG::Interface
+      class Interface : public CONTACT::Aug::Interface
       {
        public:
         /** \brief Alternative constructor
@@ -38,15 +38,15 @@ namespace CONTACT
          *                          data container object
          *
          *  \author hiermeier \date 03/17 */
-        Interface(const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& interfaceData_ptr);
+        Interface(const Teuchos::RCP<CONTACT::Aug::InterfaceDataContainer>& interfaceData_ptr);
 
         /// constructor
-        Interface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, int id,
+        Interface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr, int id,
             const Epetra_Comm& comm, int dim, const Teuchos::ParameterList& icontact,
             bool selfcontact);
 
        protected:
-        Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy>
+        Teuchos::RCP<CONTACT::Aug::INTERFACE::AssembleStrategy>
         create_node_based_assemble_strategy() override;
 
       };  // class Interface
@@ -63,12 +63,12 @@ namespace CONTACT
          *  \author hiermeier \date 07/17 */
         template <typename assemble_policy>
         class NodeBasedAssembleStrategy
-            : public CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>
+            : public CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>
         {
          public:
           /// constructor
           explicit NodeBasedAssembleStrategy(Interface* inter)
-              : CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>(inter)
+              : CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>(inter)
           { /* empty */
           }
 
@@ -77,12 +77,12 @@ namespace CONTACT
 
           /// derived
           void assemble_dgg_lin_matrix(
-              CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override;
+              Core::LinAlg::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override;
         };
 
       }  // namespace INTERFACE
-    }    // namespace STEEPESTASCENT
-  }      // namespace AUG
+    }    // namespace SteepestAscent
+  }      // namespace Aug
 }  // namespace CONTACT
 
 

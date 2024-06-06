@@ -19,17 +19,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for spring
-    class Spring : public CORE::MAT::PAR::Parameter
+    class Spring : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      Spring(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Spring(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -43,20 +43,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class Spring
 
   }  // namespace PAR
 
-  class SpringType : public CORE::COMM::ParObjectType
+  class SpringType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "SpringType"; }
 
     static SpringType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static SpringType instance_;
@@ -64,14 +64,14 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for spring material
-  class Spring : public CORE::MAT::Material
+  class Spring : public Core::Mat::Material
   {
    public:
     /// construct empty material object
     Spring();
 
     /// construct the material object given material parameters
-    explicit Spring(MAT::PAR::Spring* params);
+    explicit Spring(Mat::PAR::Spring* params);
 
     //! @name Packing and Unpacking
 
@@ -93,7 +93,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -112,13 +112,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_spring;
+      return Core::Materials::m_spring;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new Spring(*this));
     }
@@ -130,14 +130,14 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
-    MAT::PAR::Spring* params_;
+    Mat::PAR::Spring* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

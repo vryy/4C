@@ -26,13 +26,13 @@ namespace
 
   void CreateMaterialInGlobalProblem()
   {
-    CORE::IO::InputParameterContainer mat_stvenant;
+    Core::IO::InputParameterContainer mat_stvenant;
     mat_stvenant.Add("YOUNG", 1.0);
     mat_stvenant.Add("NUE", 0.1);
     mat_stvenant.Add("DENS", 2.0);
 
-    GLOBAL::Problem::Instance()->Materials()->insert(
-        1, MAT::make_parameter(1, CORE::Materials::MaterialType::m_stvenant, mat_stvenant));
+    Global::Problem::Instance()->Materials()->insert(
+        1, Mat::make_parameter(1, Core::Materials::MaterialType::m_stvenant, mat_stvenant));
   }
 
   // Serial discretization nodal method tests
@@ -44,9 +44,9 @@ namespace
       CreateMaterialInGlobalProblem();
 
       comm_ = Teuchos::rcp(new Epetra_SerialComm());
-      test_discretization_ = Teuchos::rcp(new DRT::Discretization("dummy", comm_, 3));
+      test_discretization_ = Teuchos::rcp(new Discret::Discretization("dummy", comm_, 3));
 
-      CORE::IO::cout.setup(false, false, false, CORE::IO::standard, comm_, 0, 0, "dummyFilePrefix");
+      Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
 
       // results in 27 nodes
       inputData_.bottom_corner_point_ = std::array<double, 3>{0.0, 0.0, 0.0};
@@ -58,17 +58,17 @@ namespace
       inputData_.distype_ = "HEX8";
       inputData_.elearguments_ = "MAT 1 KINEM nonlinear EAS none";
 
-      CORE::IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(
+      Core::IO::GridGenerator::CreateRectangularCuboidDiscretization(
           *test_discretization_, inputData_, true);
 
       test_discretization_->fill_complete(false, false, false);
     }
 
-    void TearDown() override { CORE::IO::cout.close(); }
+    void TearDown() override { Core::IO::cout.close(); }
 
    protected:
-    CORE::IO::GRIDGENERATOR::RectangularCuboidInputs inputData_{};
-    Teuchos::RCP<DRT::Discretization> test_discretization_;
+    Core::IO::GridGenerator::RectangularCuboidInputs inputData_{};
+    Teuchos::RCP<Discret::Discretization> test_discretization_;
     Teuchos::RCP<Epetra_SerialComm> comm_;
   };
 

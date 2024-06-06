@@ -29,7 +29,7 @@ STR::MODELEVALUATOR::BrownianDynData::BrownianDynData()
       kt_(0.0),
       maxrandforce_(0.0),
       timeintconstrandnumb_(0.0),
-      beam_damping_coeff_specified_via_(INPAR::BROWNIANDYN::vague),
+      beam_damping_coeff_specified_via_(Inpar::BROWNIANDYN::vague),
       beams_damping_coefficient_prefactors_perunitlength_(0),
       randomforces_(Teuchos::null)
 {
@@ -46,7 +46,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Init(
   str_data_ptr_ = str_data_ptr;
 
   const Teuchos::ParameterList& browndyn_params_list =
-      GLOBAL::Problem::Instance()->brownian_dynamics_params();
+      Global::Problem::Instance()->brownian_dynamics_params();
 
   // viscosity
   viscosity_ = browndyn_params_list.get<double>("VISCOSITY");
@@ -59,11 +59,11 @@ void STR::MODELEVALUATOR::BrownianDynData::Init(
 
   // the way how damping coefficient values for beams are specified
   beam_damping_coeff_specified_via_ =
-      CORE::UTILS::IntegralValue<INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType>(
+      Core::UTILS::IntegralValue<Inpar::BROWNIANDYN::BeamDampingCoefficientSpecificationType>(
           browndyn_params_list, "BEAMS_DAMPING_COEFF_SPECIFIED_VIA");
 
   // if input file is chosen, get the required values and check them for sanity
-  if (beam_damping_coeff_specified_via_ == INPAR::BROWNIANDYN::input_file)
+  if (beam_damping_coeff_specified_via_ == Inpar::BROWNIANDYN::input_file)
   {
     std::istringstream input_file_linecontent(Teuchos::getNumericStringParameter(
         browndyn_params_list, "BEAMS_DAMPING_COEFF_PER_UNITLENGTH"));
@@ -99,7 +99,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Init(
     }
   }
   // safety check for valid input parameter
-  else if (beam_damping_coeff_specified_via_ == INPAR::BROWNIANDYN::vague)
+  else if (beam_damping_coeff_specified_via_ == Inpar::BROWNIANDYN::vague)
   {
     FOUR_C_THROW("The way how beam damping coefficients are specified is not properly set!");
   }
@@ -125,7 +125,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BrownianDynData::resize_random_force_m_vector(
-    Teuchos::RCP<DRT::Discretization> discret_ptr, int maxrandnumelement)
+    Teuchos::RCP<Discret::Discretization> discret_ptr, int maxrandnumelement)
 {
   check_init_setup();
 

@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT::FLUIDPORO
+namespace Mat::FLUIDPORO
 {
   /*! @brief Compute structure tensor from a given direction vector
    *
@@ -29,7 +29,7 @@ namespace MAT::FLUIDPORO
    */
   template <unsigned int dim>
   void CreateStructureTensorFromVector(
-      const std::vector<double>& direction_vector, CORE::LINALG::Matrix<dim, dim>& structure_tensor)
+      const std::vector<double>& direction_vector, Core::LinAlg::Matrix<dim, dim>& structure_tensor)
   {
     structure_tensor.Clear();
 
@@ -71,7 +71,7 @@ namespace MAT::FLUIDPORO
      *
      * @param [in] params Material parameters
      */
-    PoroAnisotropyStrategyBase(const MAT::PAR::FluidPoro* params) : params_(params){};
+    PoroAnisotropyStrategyBase(const Mat::PAR::FluidPoro* params) : params_(params){};
 
     //! Virtual default destructor
     virtual ~PoroAnisotropyStrategyBase() = default;
@@ -97,7 +97,7 @@ namespace MAT::FLUIDPORO
      * @param [in] anisotropic_permeability_coeffs  Scaling coefficients for the permeability in
      *                                              anisotropy directions
      */
-    virtual void compute_reaction_tensor(CORE::LINALG::Matrix<2, 2>& reaction_tensor,
+    virtual void compute_reaction_tensor(Core::LinAlg::Matrix<2, 2>& reaction_tensor,
         const double& J, const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions,
         const std::vector<double>& anisotropic_permeability_coeffs) const = 0;
@@ -119,7 +119,7 @@ namespace MAT::FLUIDPORO
      * @param [in] anisotropic_permeability_coeffs  Scaling coefficients for the permeability in
      *                                              anisotropy directions
      */
-    virtual void compute_reaction_tensor(CORE::LINALG::Matrix<3, 3>& reaction_tensor,
+    virtual void compute_reaction_tensor(Core::LinAlg::Matrix<3, 3>& reaction_tensor,
         const double& J, const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions,
         const std::vector<double>& anisotropic_permeability_coeffs) const = 0;
@@ -137,8 +137,8 @@ namespace MAT::FLUIDPORO
      * @param [in] J  Determinant of the deformation gradient
      * @param [in] porosity   Porosity value
      */
-    virtual void compute_lin_mat_reaction_tensor(CORE::LINALG::Matrix<2, 2>& linreac_dphi,
-        CORE::LINALG::Matrix<2, 2>& linreac_dJ, const double& J, const double& porosity) const
+    virtual void compute_lin_mat_reaction_tensor(Core::LinAlg::Matrix<2, 2>& linreac_dphi,
+        Core::LinAlg::Matrix<2, 2>& linreac_dJ, const double& J, const double& porosity) const
     {
       // Derivative is zero, clearing the tensors is enough
       // This is the standard case, so it is implemented in the base class
@@ -159,8 +159,8 @@ namespace MAT::FLUIDPORO
      * @param [in] J  Determinant of the deformation gradient
      * @param [in] porosity   Porosity value
      */
-    virtual void compute_lin_mat_reaction_tensor(CORE::LINALG::Matrix<3, 3>& linreac_dphi,
-        CORE::LINALG::Matrix<3, 3>& linreac_dJ, const double& J, const double& porosity) const
+    virtual void compute_lin_mat_reaction_tensor(Core::LinAlg::Matrix<3, 3>& linreac_dphi,
+        Core::LinAlg::Matrix<3, 3>& linreac_dJ, const double& J, const double& porosity) const
     {
       // Derivative is zero, clearing the tensors is enough
       // This is the standard case, so it is implemented in the base class
@@ -170,7 +170,7 @@ namespace MAT::FLUIDPORO
 
    protected:
     //! Material parameters
-    const MAT::PAR::FluidPoro* params_;
+    const Mat::PAR::FluidPoro* params_;
   };
 
   /*!
@@ -185,7 +185,7 @@ namespace MAT::FLUIDPORO
   {
    public:
     //! Simple constructor
-    PoroIsotropyStrategy(const MAT::PAR::FluidPoro* params) : PoroAnisotropyStrategyBase(params){};
+    PoroIsotropyStrategy(const Mat::PAR::FluidPoro* params) : PoroAnisotropyStrategyBase(params){};
 
     //! compute isotropy reaction coefficient
     double compute_reaction_coeff() const override
@@ -203,7 +203,7 @@ namespace MAT::FLUIDPORO
     };
 
     //! compute isotropic reaction tensor - 2D
-    void compute_reaction_tensor(CORE::LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
+    void compute_reaction_tensor(Core::LinAlg::Matrix<2, 2>& reaction_tensor, const double& J,
         const double& porosity,
         [[maybe_unused]] const std::vector<std::vector<double>>&
             anisotropic_permeability_directions,
@@ -214,7 +214,7 @@ namespace MAT::FLUIDPORO
     };
 
     //! compute isotropic reaction tensor - 3D
-    void compute_reaction_tensor(CORE::LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
+    void compute_reaction_tensor(Core::LinAlg::Matrix<3, 3>& reaction_tensor, const double& J,
         const double& porosity,
         [[maybe_unused]] const std::vector<std::vector<double>>&
             anisotropic_permeability_directions,
@@ -241,7 +241,7 @@ namespace MAT::FLUIDPORO
      *                                              permeability in anisotropy directions
      */
     template <unsigned int dim>
-    void compute_reaction_tensor_for_isotropy(CORE::LINALG::Matrix<dim, dim>& reaction_tensor,
+    void compute_reaction_tensor_for_isotropy(Core::LinAlg::Matrix<dim, dim>& reaction_tensor,
         const double& J, const double& porosity,
         [[maybe_unused]] const std::vector<std::vector<double>>&
             anisotropic_permeability_directions,
@@ -253,7 +253,7 @@ namespace MAT::FLUIDPORO
 
       reaction_tensor.Clear();
 
-      if (permeability_function == MAT::PAR::kozeny_carman)
+      if (permeability_function == Mat::PAR::kozeny_carman)
       {
         reacoeff *= (1 - porosity * porosity * J * J) /
                     (porosity * porosity * porosity * J * J * J) * permeability_correction_factor;
@@ -263,16 +263,16 @@ namespace MAT::FLUIDPORO
     };
 
     //! compute linearization of isotropic reaction tensor - 2D
-    void compute_lin_mat_reaction_tensor(CORE::LINALG::Matrix<2, 2>& linreac_dphi,
-        CORE::LINALG::Matrix<2, 2>& linreac_dJ, const double& J,
+    void compute_lin_mat_reaction_tensor(Core::LinAlg::Matrix<2, 2>& linreac_dphi,
+        Core::LinAlg::Matrix<2, 2>& linreac_dJ, const double& J,
         const double& porosity) const override
     {
       compute_lin_mat_reaction_tensor_for_isotropy<2>(linreac_dphi, linreac_dJ, J, porosity);
     };
 
     //! compute linearization of isotropic reaction tensor - 3D
-    void compute_lin_mat_reaction_tensor(CORE::LINALG::Matrix<3, 3>& linreac_dphi,
-        CORE::LINALG::Matrix<3, 3>& linreac_dJ, const double& J,
+    void compute_lin_mat_reaction_tensor(Core::LinAlg::Matrix<3, 3>& linreac_dphi,
+        Core::LinAlg::Matrix<3, 3>& linreac_dJ, const double& J,
         const double& porosity) const override
     {
       compute_lin_mat_reaction_tensor_for_isotropy<3>(linreac_dphi, linreac_dJ, J, porosity);
@@ -295,8 +295,8 @@ namespace MAT::FLUIDPORO
      * @param [in] porosity Porosity value
      */
     template <unsigned int dim>
-    void compute_lin_mat_reaction_tensor_for_isotropy(CORE::LINALG::Matrix<dim, dim>& linreac_dphi,
-        CORE::LINALG::Matrix<dim, dim>& linreac_dJ, const double& J, const double& porosity) const
+    void compute_lin_mat_reaction_tensor_for_isotropy(Core::LinAlg::Matrix<dim, dim>& linreac_dphi,
+        Core::LinAlg::Matrix<dim, dim>& linreac_dJ, const double& J, const double& porosity) const
     {
       const double reacoeff = compute_reaction_coeff();
       const double permeability_correction_factor = params_->permeability_correction_factor_;
@@ -305,12 +305,12 @@ namespace MAT::FLUIDPORO
       linreac_dphi.Clear();
       linreac_dJ.Clear();
 
-      if (permeability_function == MAT::PAR::constant)
+      if (permeability_function == Mat::PAR::constant)
       {
         // Permeability is not a function of porosity or J
         return;
       }
-      else if (permeability_function == MAT::PAR::kozeny_carman)
+      else if (permeability_function == Mat::PAR::kozeny_carman)
       {
         // d(isotropic_mat_reactiontensor)/d(phi) = reacoeff * [(J * phi)^2 - 3] / ( J^3 * phi^4 )
         // d(isotropic_mat_reactiontensor)/d(J) = reacoeff * [(J * phi)^2 - 3] / ( J^4 * phi^3 )
@@ -340,7 +340,7 @@ namespace MAT::FLUIDPORO
   class PoroConstantMaterialTransverseIsotropyStrategy : public PoroAnisotropyStrategyBase
   {
    public:
-    PoroConstantMaterialTransverseIsotropyStrategy(const MAT::PAR::FluidPoro* params)
+    PoroConstantMaterialTransverseIsotropyStrategy(const Mat::PAR::FluidPoro* params)
         : PoroAnisotropyStrategyBase(params){};
 
     //! compute reaction coefficient for constant material transverse isotropy
@@ -361,7 +361,7 @@ namespace MAT::FLUIDPORO
     };
 
     //! compute reaction tensor for constant material transverse isotropy - 2D
-    void compute_reaction_tensor(CORE::LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
+    void compute_reaction_tensor(Core::LinAlg::Matrix<2, 2>& reaction_tensor, const double& J,
         const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions,
         [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const override
@@ -371,7 +371,7 @@ namespace MAT::FLUIDPORO
     };
 
     //! compute reaction tensor for constant material transverse isotropy - 3D
-    void compute_reaction_tensor(CORE::LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
+    void compute_reaction_tensor(Core::LinAlg::Matrix<3, 3>& reaction_tensor, const double& J,
         const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions,
         [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const override
@@ -398,7 +398,7 @@ namespace MAT::FLUIDPORO
      */
     template <unsigned int dim>
     void compute_reaction_tensor_for_constant_material_transverse_isotropy(
-        CORE::LINALG::Matrix<dim, dim>& reaction_tensor, const double& J, const double& porosity,
+        Core::LinAlg::Matrix<dim, dim>& reaction_tensor, const double& J, const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions,
         [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const
     {
@@ -414,8 +414,8 @@ namespace MAT::FLUIDPORO
 
       reaction_tensor.Clear();
 
-      CORE::LINALG::Matrix<dim, dim> permeability_tensor(true);
-      CORE::LINALG::Matrix<dim, dim> structure_tensor(true);
+      Core::LinAlg::Matrix<dim, dim> permeability_tensor(true);
+      Core::LinAlg::Matrix<dim, dim> structure_tensor(true);
       CreateStructureTensorFromVector<dim>(
           anisotropic_permeability_directions[0], structure_tensor);
 
@@ -441,7 +441,7 @@ namespace MAT::FLUIDPORO
   {
    public:
     //! Simple constructor
-    PoroConstantMaterialOrthotropyStrategy(const MAT::PAR::FluidPoro* params)
+    PoroConstantMaterialOrthotropyStrategy(const Mat::PAR::FluidPoro* params)
         : PoroAnisotropyStrategyBase(params){};
 
     //! compute reaction coefficient for constant material orthotropy
@@ -465,7 +465,7 @@ namespace MAT::FLUIDPORO
     };
 
     //! constant material orthotropy in 2D is not allowed
-    void compute_reaction_tensor(CORE::LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
+    void compute_reaction_tensor(Core::LinAlg::Matrix<2, 2>& reaction_tensor, const double& J,
         const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions,
         [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const override
@@ -474,7 +474,7 @@ namespace MAT::FLUIDPORO
     };
 
     //! compute reaction tensor for constant material orthotropy - 3D
-    void compute_reaction_tensor(CORE::LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
+    void compute_reaction_tensor(Core::LinAlg::Matrix<3, 3>& reaction_tensor, const double& J,
         const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions,
         [[maybe_unused]] const std::vector<double>& anisotropic_permeability_coeffs) const override
@@ -491,8 +491,8 @@ namespace MAT::FLUIDPORO
 
       reaction_tensor.Clear();
 
-      CORE::LINALG::Matrix<3, 3> permeability_tensor(true);
-      CORE::LINALG::Matrix<3, 3> structure_tensor(true);
+      Core::LinAlg::Matrix<3, 3> permeability_tensor(true);
+      Core::LinAlg::Matrix<3, 3> structure_tensor(true);
 
       for (int dim = 0; dim < 3; ++dim)
       {
@@ -506,8 +506,8 @@ namespace MAT::FLUIDPORO
     };
 
     //! constant material orthotropy in 2D is not allowed
-    void compute_lin_mat_reaction_tensor(CORE::LINALG::Matrix<2, 2>& linreac_dphi,
-        CORE::LINALG::Matrix<2, 2>& linreac_dJ, const double& J,
+    void compute_lin_mat_reaction_tensor(Core::LinAlg::Matrix<2, 2>& linreac_dphi,
+        Core::LinAlg::Matrix<2, 2>& linreac_dJ, const double& J,
         const double& porosity) const override
     {
       // constant material orthotropy in 2D is not allowed
@@ -533,7 +533,7 @@ namespace MAT::FLUIDPORO
   {
    public:
     //! Simple constructor
-    PoroConstantMaterialNodalOrthotropyStrategy(const MAT::PAR::FluidPoro* params)
+    PoroConstantMaterialNodalOrthotropyStrategy(const Mat::PAR::FluidPoro* params)
         : PoroAnisotropyStrategyBase(params){};
 
     //! compute reaction coefficient for constant material nodal orthotropy
@@ -552,7 +552,7 @@ namespace MAT::FLUIDPORO
     };
 
     //!  compute reaction tensor for constant material nodal orthotropy - 2D
-    void compute_reaction_tensor(CORE::LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
+    void compute_reaction_tensor(Core::LinAlg::Matrix<2, 2>& reaction_tensor, const double& J,
         const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions,
         const std::vector<double>& anisotropic_permeability_coeffs) const override
@@ -562,7 +562,7 @@ namespace MAT::FLUIDPORO
     };
 
     //! compute reaction tensor for constant material nodal orthotropy - 3D
-    void compute_reaction_tensor(CORE::LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
+    void compute_reaction_tensor(Core::LinAlg::Matrix<3, 3>& reaction_tensor, const double& J,
         const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions,
         const std::vector<double>& anisotropic_permeability_coeffs) const override
@@ -589,7 +589,7 @@ namespace MAT::FLUIDPORO
      */
     template <unsigned int dim>
     void compute_reaction_tensor_for_constant_material_nodal_orthotropy(
-        CORE::LINALG::Matrix<dim, dim>& reaction_tensor, const double& J, const double& porosity,
+        Core::LinAlg::Matrix<dim, dim>& reaction_tensor, const double& J, const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions,
         const std::vector<double>& anisotropic_permeability_coeffs) const
     {
@@ -605,8 +605,8 @@ namespace MAT::FLUIDPORO
 
       reaction_tensor.Clear();
 
-      CORE::LINALG::Matrix<dim, dim> permeability_tensor(true);
-      CORE::LINALG::Matrix<dim, dim> structure_tensor(true);
+      Core::LinAlg::Matrix<dim, dim> permeability_tensor(true);
+      Core::LinAlg::Matrix<dim, dim> structure_tensor(true);
 
       for (unsigned int i = 0; i < dim; ++i)
       {
@@ -621,30 +621,30 @@ namespace MAT::FLUIDPORO
     }
   };
 
-  Teuchos::RCP<MAT::FLUIDPORO::PoroAnisotropyStrategyBase> CreateAnisotropyStrategy(
-      const MAT::PAR::FluidPoro* params)
+  Teuchos::RCP<Mat::FLUIDPORO::PoroAnisotropyStrategyBase> CreateAnisotropyStrategy(
+      const Mat::PAR::FluidPoro* params)
   {
     switch (params->permeability_func_)
     {
-      case MAT::PAR::constant:
-      case MAT::PAR::kozeny_carman:
-        return Teuchos::rcp(new MAT::FLUIDPORO::PoroIsotropyStrategy(params));
-      case MAT::PAR::const_material_transverse:
+      case Mat::PAR::constant:
+      case Mat::PAR::kozeny_carman:
+        return Teuchos::rcp(new Mat::FLUIDPORO::PoroIsotropyStrategy(params));
+      case Mat::PAR::const_material_transverse:
         return Teuchos::rcp(
-            new MAT::FLUIDPORO::PoroConstantMaterialTransverseIsotropyStrategy(params));
-      case MAT::PAR::const_material_orthotropic:
-        return Teuchos::rcp(new MAT::FLUIDPORO::PoroConstantMaterialOrthotropyStrategy(params));
-      case MAT::PAR::const_material_nodal_orthotropic:
+            new Mat::FLUIDPORO::PoroConstantMaterialTransverseIsotropyStrategy(params));
+      case Mat::PAR::const_material_orthotropic:
+        return Teuchos::rcp(new Mat::FLUIDPORO::PoroConstantMaterialOrthotropyStrategy(params));
+      case Mat::PAR::const_material_nodal_orthotropic:
         return Teuchos::rcp(
-            new MAT::FLUIDPORO::PoroConstantMaterialNodalOrthotropyStrategy(params));
+            new Mat::FLUIDPORO::PoroConstantMaterialNodalOrthotropyStrategy(params));
       default:
         return Teuchos::null;
     }
   }
 
-}  // namespace MAT::FLUIDPORO
+}  // namespace Mat::FLUIDPORO
 
-MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::FluidPoro::FluidPoro(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       viscosity_(matdata->Get<double>("DYNVISCOSITY")),
       density_(matdata->Get<double>("DENSITY")),
@@ -652,7 +652,7 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
       axial_permeability_(matdata->Get<double>("AXIALPERMEABILITY")),
       type_(undefined),
       varying_permeability_(false),
-      permeability_func_(MAT::PAR::pf_undefined),
+      permeability_func_(Mat::PAR::pf_undefined),
       permeability_correction_factor_(1.0),
       initial_porosity_(1.0)
 {
@@ -666,20 +666,20 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
   const auto& pfuncstring = matdata->Get<std::string>("PERMEABILITYFUNCTION");
 
   if (pfuncstring == "Const")
-    permeability_func_ = MAT::PAR::constant;
+    permeability_func_ = Mat::PAR::constant;
   else if (pfuncstring == "Kozeny_Carman")
-    permeability_func_ = MAT::PAR::kozeny_carman;
+    permeability_func_ = Mat::PAR::kozeny_carman;
   else if (pfuncstring == "Const_Material_Transverse")
-    permeability_func_ = MAT::PAR::const_material_transverse;
+    permeability_func_ = Mat::PAR::const_material_transverse;
   else if (pfuncstring == "Const_Material_Orthotropy")
-    permeability_func_ = MAT::PAR::const_material_orthotropic;
+    permeability_func_ = Mat::PAR::const_material_orthotropic;
   else if (pfuncstring == "Const_Material_Nodal_Orthotropy")
-    permeability_func_ = MAT::PAR::const_material_nodal_orthotropic;
+    permeability_func_ = Mat::PAR::const_material_nodal_orthotropic;
   else
     FOUR_C_THROW("Unknown permeability function: %s", pfuncstring.c_str());
 
   orthotropic_permeabilities_.resize(3, 0.0);
-  if (permeability_func_ == MAT::PAR::const_material_orthotropic)
+  if (permeability_func_ == Mat::PAR::const_material_orthotropic)
   {
     for (int dim = 0; dim < 3; ++dim)
       orthotropic_permeabilities_[dim] =
@@ -687,16 +687,16 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoro::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoro::create_material()
 {
-  return Teuchos::rcp(new MAT::FluidPoro(this));
+  return Teuchos::rcp(new Mat::FluidPoro(this));
 }
 
-void MAT::PAR::FluidPoro::SetInitialPorosity(double initial_porosity)
+void Mat::PAR::FluidPoro::SetInitialPorosity(double initial_porosity)
 {
   initial_porosity_ = initial_porosity;
 
-  if (permeability_func_ == MAT::PAR::kozeny_carman)
+  if (permeability_func_ == Mat::PAR::kozeny_carman)
   {
     // c = (phi0^3 / (1 - phi0^2))
     permeability_correction_factor_ = initial_porosity_ * initial_porosity_ * initial_porosity_ /
@@ -708,25 +708,25 @@ void MAT::PAR::FluidPoro::SetInitialPorosity(double initial_porosity)
   }
 }
 
-MAT::FluidPoroType MAT::FluidPoroType::instance_;
+Mat::FluidPoroType Mat::FluidPoroType::instance_;
 
-CORE::COMM::ParObject* MAT::FluidPoroType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::FluidPoroType::Create(const std::vector<char>& data)
 {
-  auto* fluid_poro = new MAT::FluidPoro();
+  auto* fluid_poro = new Mat::FluidPoro();
   fluid_poro->Unpack(data);
   return fluid_poro;
 }
 
-MAT::FluidPoro::FluidPoro() : params_(nullptr), anisotropy_strategy_(Teuchos::null) {}
+Mat::FluidPoro::FluidPoro() : params_(nullptr), anisotropy_strategy_(Teuchos::null) {}
 
-MAT::FluidPoro::FluidPoro(MAT::PAR::FluidPoro* params) : params_(params)
+Mat::FluidPoro::FluidPoro(Mat::PAR::FluidPoro* params) : params_(params)
 {
-  anisotropy_strategy_ = MAT::FLUIDPORO::CreateAnisotropyStrategy(params);
+  anisotropy_strategy_ = Mat::FLUIDPORO::CreateAnisotropyStrategy(params);
 }
 
-void MAT::FluidPoro::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::FluidPoro::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -739,25 +739,25 @@ void MAT::FluidPoro::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, matid);
 }
 
-void MAT::FluidPoro::Unpack(const std::vector<char>& data)
+void Mat::FluidPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::FluidPoro*>(mat);
+        params_ = static_cast<Mat::PAR::FluidPoro*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -765,18 +765,18 @@ void MAT::FluidPoro::Unpack(const std::vector<char>& data)
   }
 
   // Only execute if not in post-process mode
-  if (params_ != nullptr) anisotropy_strategy_ = MAT::FLUIDPORO::CreateAnisotropyStrategy(params_);
+  if (params_ != nullptr) anisotropy_strategy_ = Mat::FLUIDPORO::CreateAnisotropyStrategy(params_);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-double MAT::FluidPoro::compute_reaction_coeff() const
+double Mat::FluidPoro::compute_reaction_coeff() const
 {
   return anisotropy_strategy_->compute_reaction_coeff();
 }
 
-void MAT::FluidPoro::compute_reaction_tensor(CORE::LINALG::Matrix<2, 2>& reaction_tensor,
+void Mat::FluidPoro::compute_reaction_tensor(Core::LinAlg::Matrix<2, 2>& reaction_tensor,
     const double& J, const double& porosity,
     const std::vector<std::vector<double>>& anisotropic_permeability_directions,
     const std::vector<double>& anisotropic_permeability_coeffs) const
@@ -785,7 +785,7 @@ void MAT::FluidPoro::compute_reaction_tensor(CORE::LINALG::Matrix<2, 2>& reactio
       anisotropic_permeability_directions, anisotropic_permeability_coeffs);
 }
 
-void MAT::FluidPoro::compute_reaction_tensor(CORE::LINALG::Matrix<3, 3>& reaction_tensor,
+void Mat::FluidPoro::compute_reaction_tensor(Core::LinAlg::Matrix<3, 3>& reaction_tensor,
     const double& J, const double& porosity,
     const std::vector<std::vector<double>>& anisotropic_permeability_directions,
     const std::vector<double>& anisotropic_permeability_coeffs) const
@@ -794,19 +794,19 @@ void MAT::FluidPoro::compute_reaction_tensor(CORE::LINALG::Matrix<3, 3>& reactio
       anisotropic_permeability_directions, anisotropic_permeability_coeffs);
 }
 
-void MAT::FluidPoro::compute_lin_mat_reaction_tensor(CORE::LINALG::Matrix<2, 2>& linreac_dphi,
-    CORE::LINALG::Matrix<2, 2>& linreac_dJ, const double& J, const double& porosity) const
+void Mat::FluidPoro::compute_lin_mat_reaction_tensor(Core::LinAlg::Matrix<2, 2>& linreac_dphi,
+    Core::LinAlg::Matrix<2, 2>& linreac_dJ, const double& J, const double& porosity) const
 {
   anisotropy_strategy_->compute_lin_mat_reaction_tensor(linreac_dphi, linreac_dJ, J, porosity);
 }
 
-void MAT::FluidPoro::compute_lin_mat_reaction_tensor(CORE::LINALG::Matrix<3, 3>& linreac_dphi,
-    CORE::LINALG::Matrix<3, 3>& linreac_dJ, const double& J, const double& porosity) const
+void Mat::FluidPoro::compute_lin_mat_reaction_tensor(Core::LinAlg::Matrix<3, 3>& linreac_dphi,
+    Core::LinAlg::Matrix<3, 3>& linreac_dJ, const double& J, const double& porosity) const
 {
   anisotropy_strategy_->compute_lin_mat_reaction_tensor(linreac_dphi, linreac_dJ, J, porosity);
 }
 
-double MAT::FluidPoro::EffectiveViscosity() const
+double Mat::FluidPoro::EffectiveViscosity() const
 {
   // set zero viscosity and only modify it for Darcy-Stokes problems
   double viscosity = -1.0;

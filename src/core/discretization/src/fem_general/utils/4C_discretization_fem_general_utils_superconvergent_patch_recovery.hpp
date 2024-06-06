@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of helper methods for namespace DRT
+\brief A collection of helper methods for namespace Discret
 
 \level 0
 
@@ -22,13 +22,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
 
-namespace CORE::FE
+namespace Core::FE
 {
   /*!
     \brief reconstruct nodal values via superconvergent patch recovery
@@ -38,13 +38,13 @@ namespace CORE::FE
    */
   template <int dim>
   Teuchos::RCP<Epetra_MultiVector> compute_superconvergent_patch_recovery(
-      DRT::Discretization& dis,       ///< underlying discretization
+      Discret::Discretization& dis,   ///< underlying discretization
       const Epetra_Vector& state,     ///< state vector needed on element level
       const std::string& statename,   ///< name of state which will be set
       const int numvec,               ///< number of entries per node to project
       Teuchos::ParameterList& params  ///< parameter list that contains the element action
   );
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 
 FOUR_C_NAMESPACE_CLOSE

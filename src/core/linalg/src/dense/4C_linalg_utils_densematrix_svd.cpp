@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of singular value decomposition (SVD) methods for namespace CORE::LINALG
+\brief A collection of singular value decomposition (SVD) methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -15,11 +15,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void CORE::LINALG::SVD(const CORE::LINALG::SerialDenseMatrix::Base& A,
-    CORE::LINALG::SerialDenseMatrix& Q, CORE::LINALG::SerialDenseMatrix& S,
-    CORE::LINALG::SerialDenseMatrix& VT)
+void Core::LinAlg::SVD(const Core::LinAlg::SerialDenseMatrix::Base& A,
+    Core::LinAlg::SerialDenseMatrix& Q, Core::LinAlg::SerialDenseMatrix& S,
+    Core::LinAlg::SerialDenseMatrix& VT)
 {
-  CORE::LINALG::SerialDenseMatrix tmp(A);  // copy, because content of A is destroyed
+  Core::LinAlg::SerialDenseMatrix tmp(A);  // copy, because content of A is destroyed
   const char jobu = 'A';                   // compute and return all M columns of U
   const char jobvt = 'A';                  // compute and return all N rows of V^T
   const int n = tmp.numCols();

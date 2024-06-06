@@ -20,13 +20,13 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::MaterialHandler::MaterialHandler(const Teuchos::ParameterList& params)
+ParticleInteraction::MaterialHandler::MaterialHandler(const Teuchos::ParameterList& params)
     : params_(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::MaterialHandler::Init()
+void ParticleInteraction::MaterialHandler::Init()
 {
   // init map relating particle types to material ids
   std::map<PARTICLEENGINE::TypeEnum, int> typetomatidmap;
@@ -51,10 +51,10 @@ void PARTICLEINTERACTION::MaterialHandler::Init()
     storedtypes_.insert(type_i);
 
     // get material parameters and cast to particle material parameter
-    const CORE::MAT::PAR::Parameter* matparameter =
-        GLOBAL::Problem::Instance()->Materials()->ParameterById(typeIt.second);
-    const MAT::PAR::ParticleMaterialBase* particlematparameter =
-        dynamic_cast<const MAT::PAR::ParticleMaterialBase*>(matparameter);
+    const Core::Mat::PAR::Parameter* matparameter =
+        Global::Problem::Instance()->Materials()->ParameterById(typeIt.second);
+    const Mat::PAR::ParticleMaterialBase* particlematparameter =
+        dynamic_cast<const Mat::PAR::ParticleMaterialBase*>(matparameter);
 
     // safety check
     if (particlematparameter == nullptr) FOUR_C_THROW("cast to specific particle material failed!");
@@ -64,7 +64,7 @@ void PARTICLEINTERACTION::MaterialHandler::Init()
   }
 }
 
-void PARTICLEINTERACTION::MaterialHandler::Setup()
+void ParticleInteraction::MaterialHandler::Setup()
 {
   // nothing to do
 }

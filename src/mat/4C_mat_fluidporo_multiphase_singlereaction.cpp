@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *  constructor (public)                               vuong 08/16      |
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       numscal_(matdata->Get<int>("NUMSCAL")),
       numvolfrac_(matdata->Get<int>("NUMVOLFRAC")),
@@ -42,9 +42,9 @@ MAT::PAR::FluidPoroSingleReaction::FluidPoroSingleReaction(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::PAR::FluidPoroSingleReaction::Initialize()
+void Mat::PAR::FluidPoroSingleReaction::Initialize()
 {
-  switch (GLOBAL::Problem::Instance()->NDim())
+  switch (Global::Problem::Instance()->NDim())
   {
     case 1:
       return initialize_internal<1>();
@@ -53,18 +53,18 @@ void MAT::PAR::FluidPoroSingleReaction::Initialize()
     case 3:
       return initialize_internal<3>();
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void MAT::PAR::FluidPoroSingleReaction::initialize_internal()
+void Mat::PAR::FluidPoroSingleReaction::initialize_internal()
 {
   // safety check
-  if (GLOBAL::Problem::Instance()
-          ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
+  if (Global::Problem::Instance()
+          ->FunctionById<Core::UTILS::FunctionOfAnything>(functID_ - 1)
           .NumberComponents() != 1)
     FOUR_C_THROW("expected only one component for single phase reaction!");
 
@@ -118,7 +118,7 @@ void MAT::PAR::FluidPoroSingleReaction::initialize_internal()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::PAR::FluidPoroSingleReaction::evaluate_function(std::vector<double>& reacval,
+void Mat::PAR::FluidPoroSingleReaction::evaluate_function(std::vector<double>& reacval,
     std::vector<std::vector<double>>& reacderivspressure,
     std::vector<std::vector<double>>& reacderivssaturation, std::vector<double>& reacderivsporosity,
     std::vector<std::vector<double>>& reacderivsvolfrac,
@@ -128,7 +128,7 @@ void MAT::PAR::FluidPoroSingleReaction::evaluate_function(std::vector<double>& r
     const std::vector<double>& volfracs, const std::vector<double>& volfracpressures,
     const std::vector<double>& scalar)
 {
-  switch (GLOBAL::Problem::Instance()->NDim())
+  switch (Global::Problem::Instance()->NDim())
   {
     case 1:
       return evaluate_function_internal<1>(reacval, reacderivspressure, reacderivssaturation,
@@ -143,7 +143,7 @@ void MAT::PAR::FluidPoroSingleReaction::evaluate_function(std::vector<double>& r
           reacderivsporosity, reacderivsvolfrac, reacderivsvolfracpressure, reacderivsscalar,
           pressure, saturation, porosity, volfracs, volfracpressures, scalar);
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
   }
 }
 
@@ -151,7 +151,7 @@ void MAT::PAR::FluidPoroSingleReaction::evaluate_function(std::vector<double>& r
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void MAT::PAR::FluidPoroSingleReaction::evaluate_function_internal(std::vector<double>& reacval,
+void Mat::PAR::FluidPoroSingleReaction::evaluate_function_internal(std::vector<double>& reacval,
     std::vector<std::vector<double>>& reacderivspressure,
     std::vector<std::vector<double>>& reacderivssaturation, std::vector<double>& reacderivsporosity,
     std::vector<std::vector<double>>& reacderivsvolfrac,
@@ -197,12 +197,12 @@ void MAT::PAR::FluidPoroSingleReaction::evaluate_function_internal(std::vector<d
         std::pair<std::string, double>(volfracpressurenames_[k], volfracpressures[k]));
 
   // evaluate the reaction term
-  double curval = GLOBAL::Problem::Instance()
-                      ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
+  double curval = Global::Problem::Instance()
+                      ->FunctionById<Core::UTILS::FunctionOfAnything>(functID_ - 1)
                       .Evaluate(variables, constants, 0);
   // evaluate derivatives
-  std::vector<double> curderivs(GLOBAL::Problem::Instance()
-                                    ->FunctionById<CORE::UTILS::FunctionOfAnything>(functID_ - 1)
+  std::vector<double> curderivs(Global::Problem::Instance()
+                                    ->FunctionById<Core::UTILS::FunctionOfAnything>(functID_ - 1)
                                     .EvaluateDerivative(variables, constants, 0));
 
   // fill the output vector
@@ -245,7 +245,7 @@ void MAT::PAR::FluidPoroSingleReaction::evaluate_function_internal(std::vector<d
 /*----------------------------------------------------------------------*
  *  check sizes of vectors                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::PAR::FluidPoroSingleReaction::CheckSizes(std::vector<double>& reacval,
+void Mat::PAR::FluidPoroSingleReaction::CheckSizes(std::vector<double>& reacval,
     std::vector<std::vector<double>>& reacderivspressure,
     std::vector<std::vector<double>>& reacderivssaturation, std::vector<double>& reacderivsporosity,
     std::vector<std::vector<double>>& reacderivsvolfrac,
@@ -331,16 +331,16 @@ void MAT::PAR::FluidPoroSingleReaction::CheckSizes(std::vector<double>& reacval,
 /*----------------------------------------------------------------------*
  *  Create Material (public)                             vuong 08/16      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FluidPoroSingleReaction::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroSingleReaction::create_material()
 {
-  return Teuchos::rcp(new MAT::FluidPoroSingleReaction(this));
+  return Teuchos::rcp(new Mat::FluidPoroSingleReaction(this));
 }
 
 /*----------------------------------------------------------------------*
  *  translate coupling type                             vuong 08/16      |
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling
-MAT::PAR::FluidPoroSingleReaction::set_coupling_type(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::FluidPoroSingleReaction::PorofluidReactionCoupling
+Mat::PAR::FluidPoroSingleReaction::set_coupling_type(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
 {
   if ((matdata->Get<std::string>("COUPLING")) == "scalar_by_function")
   {
@@ -359,15 +359,16 @@ MAT::PAR::FluidPoroSingleReaction::set_coupling_type(Teuchos::RCP<CORE::MAT::PAR
 /*----------------------------------------------------------------------*
   global instance of parameter class                   vuong 08/16     |
 *----------------------------------------------------------------------*/
-MAT::FluidPoroSingleReactionType MAT::FluidPoroSingleReactionType::instance_;
+Mat::FluidPoroSingleReactionType Mat::FluidPoroSingleReactionType::instance_;
 
 /*----------------------------------------------------------------------*
  *  Create material from given data                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 
-CORE::COMM::ParObject* MAT::FluidPoroSingleReactionType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::FluidPoroSingleReactionType::Create(
+    const std::vector<char>& data)
 {
-  MAT::FluidPoroSingleReaction* fluid_poro = new MAT::FluidPoroSingleReaction();
+  Mat::FluidPoroSingleReaction* fluid_poro = new Mat::FluidPoroSingleReaction();
   fluid_poro->Unpack(data);
   return fluid_poro;
 }
@@ -375,12 +376,12 @@ CORE::COMM::ParObject* MAT::FluidPoroSingleReactionType::Create(const std::vecto
 /*----------------------------------------------------------------------*
  *   Create empty material                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-MAT::FluidPoroSingleReaction::FluidPoroSingleReaction() : params_(nullptr) {}
+Mat::FluidPoroSingleReaction::FluidPoroSingleReaction() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  *   Create material with parameters                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-MAT::FluidPoroSingleReaction::FluidPoroSingleReaction(MAT::PAR::FluidPoroSingleReaction* params)
+Mat::FluidPoroSingleReaction::FluidPoroSingleReaction(Mat::PAR::FluidPoroSingleReaction* params)
     : params_(params)
 {
 }
@@ -388,9 +389,9 @@ MAT::FluidPoroSingleReaction::FluidPoroSingleReaction(MAT::PAR::FluidPoroSingleR
 /*----------------------------------------------------------------------*
  * pack material for commuication                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroSingleReaction::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::FluidPoroSingleReaction::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -406,24 +407,24 @@ void MAT::FluidPoroSingleReaction::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  * unpack material                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroSingleReaction::Unpack(const std::vector<char>& data)
+void Mat::FluidPoroSingleReaction::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::FluidPoroSingleReaction*>(mat);
+        params_ = static_cast<Mat::PAR::FluidPoroSingleReaction*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -436,7 +437,7 @@ void MAT::FluidPoroSingleReaction::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *  initialize                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroSingleReaction::Initialize()
+void Mat::FluidPoroSingleReaction::Initialize()
 {
   params_->Initialize();
   return;
@@ -445,7 +446,7 @@ void MAT::FluidPoroSingleReaction::Initialize()
 /*----------------------------------------------------------------------*
  *  set values in function                                 vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroSingleReaction::EvaluateReaction(std::vector<double>& reacval,
+void Mat::FluidPoroSingleReaction::EvaluateReaction(std::vector<double>& reacval,
     std::vector<std::vector<double>>& reacderivspressure,
     std::vector<std::vector<double>>& reacderivssaturation, std::vector<double>& reacderivsporosity,
     std::vector<std::vector<double>>& reacderivsvolfrac,

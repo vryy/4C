@@ -27,14 +27,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<Discret::Discretization> dis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
       levelsetparams_(params),
-      reinitaction_(INPAR::SCATRA::reinitaction_none),
+      reinitaction_(Inpar::ScaTra::reinitaction_none),
       switchreinit_(false),
       pseudostepmax_(0),
       pseudostep_(0),
@@ -47,8 +47,8 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<DRT::Discretization> d
       reinitband_(false),
       reinitbandwidth_(-1.0),
       reinitcorrector_(true),
-      useprojectedreinitvel_(INPAR::SCATRA::vel_reinit_integration_point_based),
-      lsdim_(INPAR::SCATRA::ls_3D),
+      useprojectedreinitvel_(Inpar::ScaTra::vel_reinit_integration_point_based),
+      lsdim_(Inpar::ScaTra::ls_3D),
       projection_(true),
       reinit_tol_(-1.0),
       reinitvolcorrection_(false),
@@ -68,7 +68,7 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<DRT::Discretization> d
 /*----------------------------------------------------------------------*
  | initialize algorithm                                     rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::Init()
+void ScaTra::LevelSetAlgorithm::Init()
 {
   // todo #initsetupissue
   // DO NOT CALL Init() IN ScaTraTimIntImpl
@@ -82,7 +82,7 @@ void SCATRA::LevelSetAlgorithm::Init()
 /*----------------------------------------------------------------------*
  | setup algorithm                                          rauch 09/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::Setup()
+void ScaTra::LevelSetAlgorithm::Setup()
 {
   // todo #initsetupissue
   // DO NOT CALL Setup() IN ScaTraTimIntImpl
@@ -104,10 +104,10 @@ void SCATRA::LevelSetAlgorithm::Setup()
   //         initialize reinitialization
   // -------------------------------------------------------------------
   // get reinitialization strategy
-  reinitaction_ = CORE::UTILS::IntegralValue<INPAR::SCATRA::ReInitialAction>(
+  reinitaction_ = Core::UTILS::IntegralValue<Inpar::ScaTra::ReInitialAction>(
       levelsetparams_->sublist("REINITIALIZATION"), "REINITIALIZATION");
 
-  if (reinitaction_ != INPAR::SCATRA::reinitaction_none)
+  if (reinitaction_ != Inpar::ScaTra::reinitaction_none)
   {
     // how often to perform reinitialization
     reinitinterval_ = levelsetparams_->sublist("REINITIALIZATION").get<int>("REINITINTERVAL");
@@ -117,18 +117,18 @@ void SCATRA::LevelSetAlgorithm::Setup()
     reinitbandwidth_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("REINITBANDWIDTH");
 
     // set parameters for geometric reinitialization
-    if (reinitaction_ == INPAR::SCATRA::reinitaction_signeddistancefunction)
+    if (reinitaction_ == Inpar::ScaTra::reinitaction_signeddistancefunction)
     {
       // reinitialization within band around interface only
-      reinitband_ = CORE::UTILS::IntegralValue<int>(
+      reinitband_ = Core::UTILS::IntegralValue<int>(
           levelsetparams_->sublist("REINITIALIZATION"), "REINITBAND");
     }
 
     // set parameters for reinitialization equation
-    if (reinitaction_ == INPAR::SCATRA::reinitaction_sussman)
+    if (reinitaction_ == Inpar::ScaTra::reinitaction_sussman)
     {
       // vector for initial phi (solution of level-set equation) of reinitialization process
-      initialphireinit_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+      initialphireinit_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
       // get pseudo-time step size
       dtau_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("TIMESTEPREINIT");
@@ -143,14 +143,14 @@ void SCATRA::LevelSetAlgorithm::Setup()
       reinit_tol_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("CONVTOL_REINIT");
 
       // flag to activate corrector step
-      reinitcorrector_ = CORE::UTILS::IntegralValue<int>(
+      reinitcorrector_ = Core::UTILS::IntegralValue<int>(
           levelsetparams_->sublist("REINITIALIZATION"), "CORRECTOR_STEP");
 
       // flag to activate calculation of node-based velocity
-      useprojectedreinitvel_ = CORE::UTILS::IntegralValue<INPAR::SCATRA::VelReinit>(
+      useprojectedreinitvel_ = Core::UTILS::IntegralValue<Inpar::ScaTra::VelReinit>(
           levelsetparams_->sublist("REINITIALIZATION"), "VELREINIT");
 
-      if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
+      if (useprojectedreinitvel_ == Inpar::ScaTra::vel_reinit_node_based)
       {
         // vector for nodal velocity for reinitialization
         // velocities (always three velocity components per node)
@@ -160,11 +160,11 @@ void SCATRA::LevelSetAlgorithm::Setup()
       }
 
       // get dimension
-      lsdim_ = CORE::UTILS::IntegralValue<INPAR::SCATRA::LSDim>(
+      lsdim_ = Core::UTILS::IntegralValue<Inpar::ScaTra::LSDim>(
           levelsetparams_->sublist("REINITIALIZATION"), "DIMENSION");
     }
 
-    if (reinitaction_ == INPAR::SCATRA::reinitaction_ellipticeq)
+    if (reinitaction_ == Inpar::ScaTra::reinitaction_ellipticeq)
     {
       // number of iterations steps to solve nonlinear equation
       pseudostepmax_ = levelsetparams_->sublist("REINITIALIZATION").get<int>("NUMSTEPSREINIT");
@@ -173,11 +173,11 @@ void SCATRA::LevelSetAlgorithm::Setup()
       reinit_tol_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("CONVTOL_REINIT");
 
       // get dimension
-      lsdim_ = CORE::UTILS::IntegralValue<INPAR::SCATRA::LSDim>(
+      lsdim_ = Core::UTILS::IntegralValue<Inpar::ScaTra::LSDim>(
           levelsetparams_->sublist("REINITIALIZATION"), "DIMENSION");
 
       // use L2-projection of grad phi and related quantities
-      projection_ = CORE::UTILS::IntegralValue<int>(
+      projection_ = Core::UTILS::IntegralValue<int>(
           levelsetparams_->sublist("REINITIALIZATION"), "PROJECTION");
       if (projection_ == true)
       {
@@ -190,11 +190,11 @@ void SCATRA::LevelSetAlgorithm::Setup()
     }
 
     // flag to correct volume after reinitialization
-    reinitvolcorrection_ = CORE::UTILS::IntegralValue<int>(
+    reinitvolcorrection_ = Core::UTILS::IntegralValue<int>(
         levelsetparams_->sublist("REINITIALIZATION"), "REINITVOLCORRECTION");
 
     // initialize level-set to signed distance function if required
-    if (CORE::UTILS::IntegralValue<int>(
+    if (Core::UTILS::IntegralValue<int>(
             levelsetparams_->sublist("REINITIALIZATION"), "REINIT_INITIAL"))
     {
       reinitialization();
@@ -214,7 +214,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
   // -------------------------------------------------------------------
   // set potential extraction of interface velocity
   extract_interface_vel_ =
-      CORE::UTILS::IntegralValue<int>(*levelsetparams_, "EXTRACT_INTERFACE_VEL");
+      Core::UTILS::IntegralValue<int>(*levelsetparams_, "EXTRACT_INTERFACE_VEL");
   if (extract_interface_vel_)
   {
     // set number of element layers around interface where velocity field form Navier-Stokes is kept
@@ -227,7 +227,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
 
   // set flag for modification of convective velocity at contact points
   // check whether there are level-set contact point conditions
-  std::vector<CORE::Conditions::Condition*> lscontactpoint;
+  std::vector<Core::Conditions::Condition*> lscontactpoint;
   discret_->GetCondition("LsContact", lscontactpoint);
 
   if (not lscontactpoint.empty()) cpbc_ = true;
@@ -237,23 +237,23 @@ void SCATRA::LevelSetAlgorithm::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::get_initial_volume_of_minus_domain(
+void ScaTra::LevelSetAlgorithm::get_initial_volume_of_minus_domain(
     const Teuchos::RCP<const Epetra_Vector>& phinp,
-    const Teuchos::RCP<const DRT::Discretization>& scatradis, double& volumedomainminus) const
+    const Teuchos::RCP<const Discret::Discretization>& scatradis, double& volumedomainminus) const
 {
   double volplus = 0.0;
   double surf = 0.0;
-  std::map<int, CORE::GEO::BoundaryIntCells> interface;
+  std::map<int, Core::Geo::BoundaryIntCells> interface;
   interface.clear();
   // reconstruct interface and calculate volumes, etc ...
-  SCATRA::LEVELSET::Intersection intersect;
+  ScaTra::LevelSet::Intersection intersect;
   intersect.CaptureZeroLevelSet(phinp, scatradis, volumedomainminus, volplus, surf, interface);
 }
 
 /*----------------------------------------------------------------------*
  | time loop                                            rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::TimeLoop()
+void ScaTra::LevelSetAlgorithm::TimeLoop()
 {
   // safety check
   check_is_init();
@@ -312,7 +312,7 @@ void SCATRA::LevelSetAlgorithm::TimeLoop()
 /*----------------------------------------------------------------------*
  | setup the variables to do a new time step            rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::prepare_time_step()
+void ScaTra::LevelSetAlgorithm::prepare_time_step()
 {
   // prepare basic scalar transport solver
   ScaTraTimIntImpl::prepare_time_step();
@@ -324,12 +324,12 @@ void SCATRA::LevelSetAlgorithm::prepare_time_step()
 /*----------------------------------------------------------------------*
  | solve level-set equation and perform correction      rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::Solve()
+void ScaTra::LevelSetAlgorithm::Solve()
 {
   // -----------------------------------------------------------------
   //                    solve level-set equation
   // -----------------------------------------------------------------
-  if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear)
+  if (solvtype_ == Inpar::ScaTra::solvertype_nonlinear)
     nonlinear_solve();
   else
     linear_solve();
@@ -341,11 +341,11 @@ void SCATRA::LevelSetAlgorithm::Solve()
 /*----------------------------------------------------------------------*
  | reinitialize level-set                               rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::reinitialization()
+void ScaTra::LevelSetAlgorithm::reinitialization()
 {
   // check for reinitialization action first
 
-  if (reinitaction_ != INPAR::SCATRA::reinitaction_none)
+  if (reinitaction_ != Inpar::ScaTra::reinitaction_none)
   {
     // check if level-set field should be reinitialized in this time step
     if (step_ % reinitinterval_ == 0)
@@ -356,7 +356,7 @@ void SCATRA::LevelSetAlgorithm::reinitialization()
       // get volume distribution before reinitialization
       // initalize structure holding the interface
       // potentially required for reinitialization via signed distance to interface
-      std::map<int, CORE::GEO::BoundaryIntCells> zerolevelset;
+      std::map<int, Core::Geo::BoundaryIntCells> zerolevelset;
       zerolevelset.clear();
       capture_interface(zerolevelset);
 
@@ -366,19 +366,19 @@ void SCATRA::LevelSetAlgorithm::reinitialization()
       // select reinitialization method
       switch (reinitaction_)
       {
-        case INPAR::SCATRA::reinitaction_signeddistancefunction:
+        case Inpar::ScaTra::reinitaction_signeddistancefunction:
         {
           // reinitialization via signed distance to interface
           reinit_geo(zerolevelset);
           break;
         }
-        case INPAR::SCATRA::reinitaction_sussman:
+        case Inpar::ScaTra::reinitaction_sussman:
         {
           // reinitialization via solving equation to steady state
           reinit_eq();
           break;
         }
-        case INPAR::SCATRA::reinitaction_ellipticeq:
+        case Inpar::ScaTra::reinitaction_ellipticeq:
         {
           // reinitialization via elliptic equation
           reinit_elliptic(zerolevelset);
@@ -405,7 +405,7 @@ void SCATRA::LevelSetAlgorithm::reinitialization()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::check_and_write_output_and_restart()
+void ScaTra::LevelSetAlgorithm::check_and_write_output_and_restart()
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
@@ -441,10 +441,10 @@ void SCATRA::LevelSetAlgorithm::check_and_write_output_and_restart()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::output_of_level_set_specific_values()
+void ScaTra::LevelSetAlgorithm::output_of_level_set_specific_values()
 {
   // capture interface, evalute mass conservation, write to file
-  std::map<int, CORE::GEO::BoundaryIntCells> zerolevelset;
+  std::map<int, Core::Geo::BoundaryIntCells> zerolevelset;
   zerolevelset.clear();
   capture_interface(zerolevelset, true);
 }
@@ -452,9 +452,9 @@ void SCATRA::LevelSetAlgorithm::output_of_level_set_specific_values()
 /*----------------------------------------------------------------------*
  | perform result test                                  rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::TestResults()
+void ScaTra::LevelSetAlgorithm::TestResults()
 {
-  problem_->AddFieldTest(Teuchos::rcp(new SCATRA::ScaTraResultTest(Teuchos::rcp(this, false))));
+  problem_->AddFieldTest(Teuchos::rcp(new ScaTra::ScaTraResultTest(Teuchos::rcp(this, false))));
   problem_->TestAll(discret_->Comm());
 
   return;
@@ -464,10 +464,10 @@ void SCATRA::LevelSetAlgorithm::TestResults()
 /*----------------------------------------------------------------------*
  | set time and step value                              rasthofer 04/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::SetTimeStep(const double time, const int step)
+void ScaTra::LevelSetAlgorithm::SetTimeStep(const double time, const int step)
 {
   // call base class function
-  SCATRA::ScaTraTimIntImpl::SetTimeStep(time, step);
+  ScaTra::ScaTraTimIntImpl::SetTimeStep(time, step);
 
   return;
 }

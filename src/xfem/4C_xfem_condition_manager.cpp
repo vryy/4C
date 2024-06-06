@@ -26,10 +26,10 @@ FOUR_C_NAMESPACE_OPEN
 // constructor
 XFEM::ConditionManager::ConditionManager(
     const std::map<std::string, int>& dofset_coupling_map,  ///< ???
-    Teuchos::RCP<DRT::Discretization>& bg_dis,              ///< background discretization
-    std::vector<Teuchos::RCP<DRT::Discretization>>&
+    Teuchos::RCP<Discret::Discretization>& bg_dis,          ///< background discretization
+    std::vector<Teuchos::RCP<Discret::Discretization>>&
         meshcoupl_dis,  ///< mesh coupling discretizations
-    std::vector<Teuchos::RCP<DRT::Discretization>>&
+    std::vector<Teuchos::RCP<Discret::Discretization>>&
         levelsetcoupl_dis,  ///< levelset coupling discretizations
     const double time,      ///< time
     const int step          ///< time step
@@ -82,7 +82,7 @@ XFEM::ConditionManager::ConditionManager(
 
 
 void XFEM::ConditionManager::CreateCouplings(
-    std::vector<Teuchos::RCP<DRT::Discretization>>& coupl_dis,  ///< coupling discretizations
+    std::vector<Teuchos::RCP<Discret::Discretization>>& coupl_dis,  ///< coupling discretizations
     const std::vector<std::string>&
         conditions_to_check,   ///< conditions for which coupling objects shall be created
     bool create_mesh_coupling  ///< create mesh coupling or level-set coupling object
@@ -118,18 +118,18 @@ void XFEM::ConditionManager::CreateCouplings(
   }
 }
 
-void XFEM::ConditionManager::GetCouplingIds(const DRT::Discretization& cond_dis,
+void XFEM::ConditionManager::GetCouplingIds(const Discret::Discretization& cond_dis,
     const std::string& condition_name, std::set<int>& coupling_ids)
 {
   // get all conditions of this type, if several conditions with different coupling ids
   // create an own coupling object for each coupling id
-  std::vector<CORE::Conditions::Condition*> conditions;
+  std::vector<Core::Conditions::Condition*> conditions;
   cond_dis.GetCondition(condition_name, conditions);
 
   // CompositeByCouplingId
   for (size_t s = 0; s < conditions.size(); ++s)
   {
-    CORE::Conditions::Condition* cond = conditions[s];
+    Core::Conditions::Condition* cond = conditions[s];
     const int couplingID = cond->parameters().Get<int>("label");
 
     coupling_ids.insert(couplingID);
@@ -272,15 +272,15 @@ void XFEM::ConditionManager::SetTimeAndStep(const double time, const int step)
 
 
 
-void XFEM::ConditionManager::create_new_level_set_coupling(
-    const std::string& cond_name, Teuchos::RCP<DRT::Discretization> cond_dis, const int coupling_id)
+void XFEM::ConditionManager::create_new_level_set_coupling(const std::string& cond_name,
+    Teuchos::RCP<Discret::Discretization> cond_dis, const int coupling_id)
 {
   AddLevelSetCoupling(cond_name, cond_dis, coupling_id);
 }
 
 
 void XFEM::ConditionManager::create_new_mesh_coupling(const std::string& cond_name,
-    Teuchos::RCP<DRT::Discretization>
+    Teuchos::RCP<Discret::Discretization>
         cond_dis,  ///< discretization from which the cutter discretization can be derived
     const int coupling_id)
 {
@@ -348,7 +348,7 @@ void XFEM::ConditionManager::create()
   // loop all mesh coupling objects
   for (int mc = 0; mc < (int)mesh_coupl_.size(); mc++)
   {
-    Teuchos::RCP<DRT::Discretization> mc_cutdis = mesh_coupl_[mc]->GetCutterDis();
+    Teuchos::RCP<Discret::Discretization> mc_cutdis = mesh_coupl_[mc]->GetCutterDis();
     if (mc_cutdis == Teuchos::null) FOUR_C_THROW("cutter dis is Teuchos::null");
 
     // set current number of global coupling sides as start index for global id this coupling object
@@ -368,7 +368,7 @@ void XFEM::ConditionManager::create()
     levelset_gid_ = numglobal_coupling_sides_;
     numglobal_coupling_sides_ += 1;
 
-    bg_phinp_ = CORE::LINALG::CreateVector(*bg_dis_->NodeRowMap(), true);
+    bg_phinp_ = Core::LinAlg::CreateVector(*bg_dis_->NodeRowMap(), true);
 
     // information about the coupling condition for level-sets is obtained via the background
     // element for which we store the index of the level-set coupling object we allow for multiple
@@ -420,7 +420,7 @@ Teuchos::RCP<const Epetra_Vector> XFEM::ConditionManager::GetLevelSetFieldCol()
   // export nodal level-set values to node column map
   Teuchos::RCP<Epetra_Vector> bg_phinp_col =
       Teuchos::rcp(new Epetra_Vector(*bg_dis_->NodeColMap()));
-  CORE::LINALG::Export(*GetLevelSetField(), *bg_phinp_col);
+  Core::LinAlg::Export(*GetLevelSetField(), *bg_phinp_col);
 
   return bg_phinp_col;
 }
@@ -490,7 +490,7 @@ void XFEM::ConditionManager::update_level_set_field()
   }
 
   // export to column vector
-  CORE::LINALG::Export(*node_lsc_coup_idx, *node_lsc_coup_idx_col);
+  Core::LinAlg::Export(*node_lsc_coup_idx, *node_lsc_coup_idx_col);
 
   // set the levelset coupling index for all row elements
   const Epetra_Map* elerowmap = bg_dis_->ElementRowMap();
@@ -500,7 +500,7 @@ void XFEM::ConditionManager::update_level_set_field()
   for (int leleid = 0; leleid < bg_dis_->NumMyRowElements(); ++leleid)
   {
     const int gid = elerowmap->GID(leleid);
-    CORE::Elements::Element* ele = bg_dis_->gElement(gid);
+    Core::Elements::Element* ele = bg_dis_->gElement(gid);
     const int numnode = ele->num_node();
     const int* nodeids = ele->NodeIds();
 
@@ -525,7 +525,7 @@ void XFEM::ConditionManager::update_level_set_field()
     (*ele_lsc_coup_idx)[leleid] = *(lsc_coupling_indices.begin());
   }
 
-  CORE::LINALG::Export(*ele_lsc_coup_idx, *ele_lsc_coup_idx_col_);
+  Core::LinAlg::Export(*ele_lsc_coup_idx, *ele_lsc_coup_idx_col_);
 
   is_levelset_uptodate_ = true;
 }
@@ -788,7 +788,7 @@ void XFEM::ConditionManager::Output(
   // no restart as bg_phinp can be rebuild from single level-set fields
   if (levelset_coupl_.size() > 0)
   {
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output = bg_dis_->Writer();
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output = bg_dis_->Writer();
     output->WriteVector("fluid_levelset_boundary", bg_phinp_);
   }
 
@@ -858,7 +858,7 @@ bool XFEM::ConditionManager::HasMovingInterface()
   return false;
 }
 
-bool XFEM::ConditionManager::has_averaging_strategy(INPAR::XFEM::AveragingStrategy strategy)
+bool XFEM::ConditionManager::has_averaging_strategy(Inpar::XFEM::AveragingStrategy strategy)
 {
   if (HasLevelSetCoupling())
   {
@@ -879,20 +879,20 @@ bool XFEM::ConditionManager::has_averaging_strategy(INPAR::XFEM::AveragingStrate
   return false;
 }
 
-void XFEM::ConditionManager::get_volume_cell_material(CORE::Elements::Element* actele,
-    Teuchos::RCP<CORE::MAT::Material>& mat, const CORE::GEO::CUT::VolumeCell* vc)
+void XFEM::ConditionManager::get_volume_cell_material(Core::Elements::Element* actele,
+    Teuchos::RCP<Core::Mat::Material>& mat, const Core::Geo::Cut::VolumeCell* vc)
 {
   XFEM::UTILS::get_volume_cell_material(actele, mat, vc->Position());
 }
 
-void XFEM::ConditionManager::get_interface_master_material(CORE::Elements::Element* actele,
-    Teuchos::RCP<CORE::MAT::Material>& mat, const CORE::GEO::CUT::VolumeCell* vc)
+void XFEM::ConditionManager::get_interface_master_material(Core::Elements::Element* actele,
+    Teuchos::RCP<Core::Mat::Material>& mat, const Core::Geo::Cut::VolumeCell* vc)
 {
   XFEM::UTILS::get_volume_cell_material(actele, mat, vc->Position());
 }
 
 void XFEM::ConditionManager::get_interface_slave_material(
-    CORE::Elements::Element* actele, Teuchos::RCP<CORE::MAT::Material>& mat, int coup_sid)
+    Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat, int coup_sid)
 {
   if (IsMeshCoupling(coup_sid))
   {
@@ -910,8 +910,8 @@ void XFEM::ConditionManager::get_interface_slave_material(
         coup_sid);
 }
 
-bool XFEM::ConditionManager::initialize_fluid_state(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
-    Teuchos::RCP<DRT::Discretization> fluiddis,
+bool XFEM::ConditionManager::initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
+    Teuchos::RCP<Discret::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
 {
@@ -971,9 +971,9 @@ std::vector<std::pair<int, int>> XFEM::ConditionManager::get_bc_clone_informatio
   return BCCloneInformationvector;
 }
 
-CORE::Elements::Element* XFEM::ConditionManager::GetCouplingElement(
+Core::Elements::Element* XFEM::ConditionManager::GetCouplingElement(
     const int coup_sid,  ///< the overall global coupling side id
-    CORE::Elements::Element* ele)
+    Core::Elements::Element* ele)
 {
   if (IsMeshCoupling(coup_sid))
   {
@@ -1018,15 +1018,15 @@ void XFEM::ConditionManager::get_coupling_ele_location_vector(
 // comment: as soon as we start doing mesh and levelset coupling with overlapping interfaces, we
 // need to provide the position of the volumecells down here as well to choose the correct material.
 // atm the position this is hardcoded in the coupling objects
-// (all assume CORE::GEO::CUT::Point::outside, exept TwoPhaseFlow Master outside, Slave inside)
+// (all assume Core::Geo::Cut::Point::outside, exept TwoPhaseFlow Master outside, Slave inside)
 void XFEM::ConditionManager::GetAverageWeights(
     const int coup_sid,              ///< the overall global coupling side id
-    CORE::Elements::Element* xfele,  ///< xfluid ele
+    Core::Elements::Element* xfele,  ///< xfluid ele
     double& kappa_m,                 ///< Weight parameter (parameter +/master side)
     double& kappa_s,                 ///< Weight parameter (parameter -/slave  side)
     bool& non_xfluid_coupling)
 {
-  CORE::Elements::Element* coup_ele = GetCouplingElement(coup_sid, xfele);
+  Core::Elements::Element* coup_ele = GetCouplingElement(coup_sid, xfele);
   const int coup_idx = GetCouplingIndex(coup_sid, xfele->Id());
 
   GetCouplingByIdx(coup_idx)->GetAverageWeights(
@@ -1040,17 +1040,17 @@ void XFEM::ConditionManager::GetAverageWeights(
  *--------------------------------------------------------------------------------*/
 void XFEM::ConditionManager::get_visc_penalty_stabfac(
     const int coup_sid,              ///< the overall global coupling side id
-    CORE::Elements::Element* xfele,  ///< xfluid ele
+    Core::Elements::Element* xfele,  ///< xfluid ele
     const double& kappa_m,           ///< Weight parameter (parameter +/master side)
     const double& kappa_s,           ///< Weight parameter (parameter -/slave  side)
     const double& inv_h_k,           ///< the inverse characteristic element length h_k
-    const DRT::ELEMENTS::FluidEleParameterXFEM*
+    const Discret::ELEMENTS::FluidEleParameterXFEM*
         params,                     ///< parameterlist which specifies interface configuration
     double& NIT_visc_stab_fac,      ///< viscous part of Nitsche's penalty term
     double& NIT_visc_stab_fac_tang  ///< viscous part of Nitsche's penalty term in tang direction
 )
 {
-  CORE::Elements::Element* coup_ele = GetCouplingElement(coup_sid, xfele);
+  Core::Elements::Element* coup_ele = GetCouplingElement(coup_sid, xfele);
   const int coup_idx = GetCouplingIndex(coup_sid, xfele->Id());
 
   GetCouplingByIdx(coup_idx)->get_visc_penalty_stabfac(xfele, coup_ele, kappa_m, kappa_s, inv_h_k,

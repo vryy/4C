@@ -14,23 +14,23 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-CORE::MAT::PAR::Material::Material(const int id, const CORE::Materials::MaterialType type)
+Core::Mat::PAR::Material::Material(const int id, const Core::Materials::MaterialType type)
     : InputParameterContainer(), id_(id), type_(type)
 {
 }
 
-CORE::MAT::PAR::Material::Material(
-    int id, CORE::Materials::MaterialType type, const CORE::IO::InputParameterContainer& input_data)
+Core::Mat::PAR::Material::Material(
+    int id, Core::Materials::MaterialType type, const Core::IO::InputParameterContainer& input_data)
     : InputParameterContainer(input_data), id_(id), type_(type)
 {
 }
 
-CORE::MAT::PAR::Parameter::Parameter(Teuchos::RCP<const CORE::MAT::PAR::Material> matdata)
+Core::Mat::PAR::Parameter::Parameter(Teuchos::RCP<const Core::Mat::PAR::Material> matdata)
     : id_(matdata->Id()), type_(matdata->Type()), raw_parameters_(matdata)
 {
 }
 
-double CORE::MAT::PAR::Parameter::GetParameter(int parametername, const int EleId)
+double Core::Mat::PAR::Parameter::GetParameter(int parametername, const int EleId)
 {
   // check if we have an element based value via size
   if (matparams_[parametername]->GlobalLength() == 1)

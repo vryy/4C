@@ -137,9 +137,9 @@ namespace THR
     TimIntOneStepTheta(const Teuchos::ParameterList& ioparams,  //!< ioflags
         const Teuchos::ParameterList& tdynparams,               //!< input parameters
         const Teuchos::ParameterList& xparams,                  //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,               //!< current discretisation
-        Teuchos::RCP<CORE::LINALG::Solver> solver,              //!< the solver
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output     //!< the output
+        Teuchos::RCP<Discret::Discretization> actdis,           //!< current discretisation
+        Teuchos::RCP<Core::LinAlg::Solver> solver,              //!< the solver
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output     //!< the output
     );
 
     //! Destructor
@@ -155,9 +155,9 @@ namespace THR
     //@{
 
     //! Return name
-    enum INPAR::THR::DynamicType MethodName() const override
+    enum Inpar::THR::DynamicType MethodName() const override
     {
-      return INPAR::THR::dyna_onesteptheta;
+      return Inpar::THR::dyna_onesteptheta;
     }
 
     //! Provide number of steps, a single-step method returns 1
@@ -180,7 +180,7 @@ namespace THR
         const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
         Teuchos::RCP<Epetra_Vector> fcap,              //!< capacity force
         Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force
@@ -197,7 +197,7 @@ namespace THR
         const Teuchos::RCP<Epetra_Vector> tempn,       //!< temperature state T_n
         const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state T_n+1
         Teuchos::RCP<Epetra_Vector> fext,              //!< internal force
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
     );
 
     //! Create force residual #fres_ and its tangent #tang_
@@ -239,7 +239,7 @@ namespace THR
     void ReadRestartForce() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) override;
+    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
 
     //@}
 

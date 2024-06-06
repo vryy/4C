@@ -85,7 +85,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the contact discretization method.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidConstraintEnforcement get_constraint_enforcement() const
+    inline Inpar::BeamToSolid::BeamToSolidConstraintEnforcement get_constraint_enforcement() const
     {
       return constraint_enforcement_;
     }
@@ -93,7 +93,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns constraints enforcement strategy.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization get_contact_discretization() const
+    inline Inpar::BeamToSolid::BeamToSolidContactDiscretization get_contact_discretization() const
     {
       return contact_discretization_;
     }
@@ -101,7 +101,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the shape function for the mortar Lagrange-multiplicators.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions get_mortar_shape_function_type()
+    inline Inpar::BeamToSolid::BeamToSolidMortarShapefunctions get_mortar_shape_function_type()
         const
     {
       return mortar_shape_function_;
@@ -117,7 +117,7 @@ namespace BEAMINTERACTION
      * \brief Returns the Gauss rule.
      * @return gauss rule.
      */
-    inline CORE::FE::GaussRule1D get_gauss_rule() const { return gauss_rule_; }
+    inline Core::FE::GaussRule1D get_gauss_rule() const { return gauss_rule_; }
 
     /**
      * \brief Returns true if the coupling should be evaluated with FAD.
@@ -142,19 +142,19 @@ namespace BEAMINTERACTION
     bool issetup_;
 
     //! Enforcement strategy for constraints.
-    INPAR::BEAMTOSOLID::BeamToSolidConstraintEnforcement constraint_enforcement_;
+    Inpar::BeamToSolid::BeamToSolidConstraintEnforcement constraint_enforcement_;
 
     //! discretization used for the contact.
-    INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization contact_discretization_;
+    Inpar::BeamToSolid::BeamToSolidContactDiscretization contact_discretization_;
 
     //! Shape function for the mortar Lagrange-multiplicators
-    INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shape_function_;
+    Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function_;
 
     //! Penalty parameter.
     double penalty_parameter_;
 
     //! Gauss rule to be used.
-    CORE::FE::GaussRule1D gauss_rule_;
+    Core::FE::GaussRule1D gauss_rule_;
 
     //! Flag for rotational coupling
     bool rotational_coupling_;

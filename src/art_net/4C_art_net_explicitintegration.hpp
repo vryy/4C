@@ -37,7 +37,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ART
+namespace Arteries
 {
   /*!
   \brief time integration for arterial network problems
@@ -52,9 +52,9 @@ namespace ART
     \brief Standard Constructor
 
     */
-    ArtNetExplicitTimeInt(Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
+    ArtNetExplicitTimeInt(Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-        CORE::IO::DiscretizationWriter& output);
+        Core::IO::DiscretizationWriter& output);
 
 
 
@@ -66,7 +66,7 @@ namespace ART
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     // create field test
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
 
     /*!
@@ -149,7 +149,7 @@ namespace ART
     // Teuchos::RCP<Epetra_Vector> Presn()  { return presn_; }
 
     /// provide access to the Dirichlet map
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
@@ -165,9 +165,9 @@ namespace ART
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
     const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> MassMatrix()
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> MassMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(massmat_);
+      return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(massmat_);
     }
 
     //@}
@@ -175,7 +175,7 @@ namespace ART
 
    protected:
     /// (standard) mass matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> massmat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> massmat_;
 
     /// maps for scatra Dirichlet and free DOF sets
     Teuchos::RCP<Epetra_Vector> nodeIds_;
@@ -270,7 +270,7 @@ namespace ART
     //@}
 
     //! @name 1D artery values at the junctions
-    Teuchos::RCP<std::map<const int, Teuchos::RCP<ART::UTILS::JunctionNodeParams>>>
+    Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>
         junc_nodal_vals_;
     //@}
 
@@ -282,7 +282,7 @@ namespace ART
 
   };  // class ArtNetExplicitTimeInt
 
-}  // namespace ART
+}  // namespace Arteries
 
 
 FOUR_C_NAMESPACE_CLOSE

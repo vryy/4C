@@ -265,14 +265,14 @@ namespace
   /**
    * Setup the beam geometry for the tests.
    */
-  std::pair<std::shared_ptr<CORE::Elements::Element>,
+  std::pair<std::shared_ptr<Core::Elements::Element>,
       GEOMETRYPAIR::ElementData<GEOMETRYPAIR::t_hermite, double>>
   XtestSetupBeam()
   {
     // Set up the beam element.
     const int dummy_node_ids[2] = {0, 1};
-    std::shared_ptr<CORE::Elements::Element> element =
-        std::make_shared<DRT::ELEMENTS::Beam3r>(0, 0);
+    std::shared_ptr<Core::Elements::Element> element =
+        std::make_shared<Discret::ELEMENTS::Beam3r>(0, 0);
     element->SetNodeIds(2, dummy_node_ids);
 
     // Set up the beam.

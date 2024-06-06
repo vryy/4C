@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   /*!
    * @class FourTensor
@@ -108,7 +108,7 @@ namespace CORE::LINALG
 #endif
     return GetConst()[i1][i2][i3][i4];
   }
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

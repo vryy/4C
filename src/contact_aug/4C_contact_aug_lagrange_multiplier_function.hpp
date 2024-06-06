@@ -22,18 +22,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseOperator;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace CONTACT
 {
   class ParamsInterface;
 
-  namespace AUG
+  namespace Aug
   {
     class DataContainer;
     class Strategy;
@@ -45,7 +45,7 @@ namespace CONTACT
       LagrangeMultiplierFunction();
 
 
-      void Init(const Strategy* const strategy, CONTACT::AUG::DataContainer& data);
+      void Init(const Strategy* const strategy, CONTACT::Aug::DataContainer& data);
 
       void Setup();
 
@@ -57,11 +57,11 @@ namespace CONTACT
           const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dincr);
 
      private:
-      Teuchos::RCP<CORE::LINALG::Solver> create_linear_solver(const int lin_sol_id,
-          const Epetra_Comm& comm, enum CORE::LINEAR_SOLVER::SolverType& solver_type) const;
+      Teuchos::RCP<Core::LinAlg::Solver> create_linear_solver(const int lin_sol_id,
+          const Epetra_Comm& comm, enum Core::LinearSolver::SolverType& solver_type) const;
 
       void lin_solve(
-          CORE::LINALG::SparseOperator& mat, Epetra_MultiVector& rhs, Epetra_MultiVector& sol);
+          Core::LinAlg::SparseOperator& mat, Epetra_MultiVector& rhs, Epetra_MultiVector& sol);
 
       inline void check_init() const
       {
@@ -95,15 +95,15 @@ namespace CONTACT
 
       Teuchos::RCP<DataContainer> data_;
 
-      enum CORE::LINEAR_SOLVER::SolverType lin_solver_type_;
+      enum Core::LinearSolver::SolverType lin_solver_type_;
 
-      Teuchos::RCP<CORE::LINALG::Solver> lin_solver_;
+      Teuchos::RCP<Core::LinAlg::Solver> lin_solver_;
 
       // B-matrix
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> bmat_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> bmat_;
 
     };  // class LagrangeMultiplierFunction
-  }     // namespace AUG
+  }     // namespace Aug
 }  // namespace CONTACT
 
 

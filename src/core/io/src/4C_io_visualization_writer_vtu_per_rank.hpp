@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   class VisualizationWriterVtuPerRank : public VisualizationWriterBase
   {
@@ -26,7 +26,7 @@ namespace CORE::IO
     /**
      * @brief Default constructor
      */
-    VisualizationWriterVtuPerRank(const CORE::IO::VisualizationParameters& parameters,
+    VisualizationWriterVtuPerRank(const Core::IO::VisualizationParameters& parameters,
         const Epetra_Comm& comm, std::string visualization_data_name);
 
     /**
@@ -50,11 +50,11 @@ namespace CORE::IO
      * disk (derived)
      */
     void WriteGeometryToDisk(const std::vector<double>& point_coordinates,
-        const std::vector<CORE::IO::index_type>& point_cell_connectivity,
-        const std::vector<CORE::IO::index_type>& cell_offset,
+        const std::vector<Core::IO::index_type>& point_cell_connectivity,
+        const std::vector<Core::IO::index_type>& cell_offset,
         const std::vector<uint8_t>& cell_types,
-        const std::vector<CORE::IO::index_type>& face_connectivity,
-        const std::vector<CORE::IO::index_type>& face_offset) override;
+        const std::vector<Core::IO::index_type>& face_connectivity,
+        const std::vector<Core::IO::index_type>& face_offset) override;
 
     /**
      * @brief Write a single point data vector to disk (derived)
@@ -77,7 +77,7 @@ namespace CORE::IO
     //! object will be implemented in this class in the future
     VtuWriter vtu_writer_;
   };
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

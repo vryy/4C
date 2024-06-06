@@ -33,11 +33,11 @@ class Epetra_BlockMap;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace LINALG
+namespace LinAlg
 {
   class SerialDenseMatrix;
 }
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -45,7 +45,7 @@ namespace DRT
 enum class ShapeFunctionType;
 
 /// IO: input/output facility
-namespace CORE::IO
+namespace Core::IO
 {
   class InputControl;
   class OutputControl;
@@ -76,8 +76,8 @@ namespace CORE::IO
   {
    public:
     /// construct reader for a given discretization to read a particular time step
-    DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::IO::InputControl> input, int step);
+    DiscretizationReader(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::IO::InputControl> input, int step);
 
     /// destructor
     virtual ~DiscretizationReader() = default;
@@ -131,9 +131,9 @@ namespace CORE::IO
      */
     void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
 
-    /// read into given std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> >
+    /// read into given std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> >
     void read_serial_dense_matrix(
-        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> mapdata,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> mapdata,
         std::string name);
 
     /// check if an integer value exists in the control file
@@ -209,10 +209,10 @@ namespace CORE::IO
 
 
     //! my discretization
-    Teuchos::RCP<DRT::Discretization> dis_;
+    Teuchos::RCP<Discret::Discretization> dis_;
 
     /// my input control file
-    Teuchos::RCP<CORE::IO::InputControl> input_;
+    Teuchos::RCP<Core::IO::InputControl> input_;
 
     /// control file entry of this step
     MAP* restart_step_;
@@ -244,9 +244,9 @@ namespace CORE::IO
      * @param[in] output_control        output control file
      * @param[in] shape_function_type   shape function type of the underlying fe discretization
      */
-    DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis,
+    DiscretizationWriter(Teuchos::RCP<Discret::Discretization> dis,
         Teuchos::RCP<OutputControl> output_control,
-        const CORE::FE::ShapeFunctionType shape_function_type);
+        const Core::FE::ShapeFunctionType shape_function_type);
 
     /** \brief copy constructor
      *
@@ -255,7 +255,7 @@ namespace CORE::IO
      *  \parma[in] type    copy type
      *
      *  \author hiermeier \date 08/17 */
-    DiscretizationWriter(const CORE::IO::DiscretizationWriter& writer,
+    DiscretizationWriter(const Core::IO::DiscretizationWriter& writer,
         const Teuchos::RCP<OutputControl>& control, enum CopyType type);
 
     /// cleanup, close hdf5 files
@@ -405,7 +405,7 @@ namespace CORE::IO
     virtual void SetOutput(Teuchos::RCP<OutputControl> output);
 
     /// access discretization
-    const DRT::Discretization& GetDiscret() const;
+    const Discret::Discretization& GetDiscret() const;
 
    protected:
     /// empty constructor (only used for the construction of derived classes)
@@ -429,7 +429,7 @@ namespace CORE::IO
     virtual void create_result_file(const int step);
 
     //! my discretization
-    Teuchos::RCP<DRT::Discretization> dis_;
+    Teuchos::RCP<Discret::Discretization> dis_;
 
     int step_;
     double time_;
@@ -458,11 +458,11 @@ namespace CORE::IO
     //! do we want binary output
     bool binio_;
 
-    CORE::FE::ShapeFunctionType spatial_approx_;
+    Core::FE::ShapeFunctionType spatial_approx_;
   };
 
 
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

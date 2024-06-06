@@ -25,11 +25,11 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                     gammi 09/08|
  *----------------------------------------------------------------------*/
 FLD::DynSmagFilter::DynSmagFilter(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::ParameterList& params)
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::ParameterList& params)
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
-      physicaltype_(CORE::UTILS::GetAsEnum<INPAR::FLUID::PhysicalType>(params_, "Physical Type"))
+      physicaltype_(Core::UTILS::GetAsEnum<Inpar::FLUID::PhysicalType>(params_, "Physical Type"))
 {
   // the default is do nothing
   apply_dynamic_smagorinsky_ = false;
@@ -49,7 +49,7 @@ FLD::DynSmagFilter::DynSmagFilter(
       apply_dynamic_smagorinsky_ = true;
 
       // check, if averaging is desired
-      if (CORE::UTILS::IntegralValue<int>(
+      if (Core::UTILS::IntegralValue<int>(
               params_.sublist("SUBGRID VISCOSITY"), "C_SMAGORINSKY_AVERAGED") == true)
       {
         if (discret_->Comm().MyPID() == 0)
@@ -80,9 +80,9 @@ FLD::DynSmagFilter::DynSmagFilter(
       }
 
       // check whether we would like to include a model for the isotropic part
-      if (physicaltype_ == INPAR::FLUID::loma)
+      if (physicaltype_ == Inpar::FLUID::loma)
       {
-        if (CORE::UTILS::IntegralValue<int>(params_.sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI") ==
+        if (Core::UTILS::IntegralValue<int>(params_.sublist("SUBGRID VISCOSITY"), "C_INCLUDE_CI") ==
             true)
         {
           if (discret_->Comm().MyPID() == 0)
@@ -130,7 +130,7 @@ FLD::DynSmagFilter::DynSmagFilter(
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
-void FLD::DynSmagFilter::AddScatra(Teuchos::RCP<DRT::Discretization> scatradis)
+void FLD::DynSmagFilter::AddScatra(Teuchos::RCP<Discret::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
@@ -168,7 +168,7 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
     boxf_->get_filtered_reynolds_stress(col_filtered_reynoldsstress_);
     boxf_->get_filtered_modeled_subgrid_stress(col_filtered_modeled_subgrid_stress_);
 
-    if (physicaltype_ == INPAR::FLUID::loma)
+    if (physicaltype_ == Inpar::FLUID::loma)
     {
       col_filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
       col_filtered_dens_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
@@ -416,7 +416,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
   calc_smag_const_params.set(
       "col_filtered_modeled_subgrid_stress", col_filtered_modeled_subgrid_stress_);
 
-  if (physicaltype_ == INPAR::FLUID::loma)
+  if (physicaltype_ == Inpar::FLUID::loma)
   {
     calc_smag_const_params.set("col_filtered_dens", col_filtered_dens_);
     calc_smag_const_params.set("col_filtered_dens_vel", col_filtered_dens_vel_);
@@ -424,17 +424,17 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
   }
 
   // dummy matrices and vectors for element call
-  CORE::LINALG::SerialDenseMatrix dummym1;
-  CORE::LINALG::SerialDenseMatrix dummym2;
-  CORE::LINALG::SerialDenseVector dummyv1;
-  CORE::LINALG::SerialDenseVector dummyv2;
-  CORE::LINALG::SerialDenseVector dummyv3;
+  Core::LinAlg::SerialDenseMatrix dummym1;
+  Core::LinAlg::SerialDenseMatrix dummym2;
+  Core::LinAlg::SerialDenseVector dummyv1;
+  Core::LinAlg::SerialDenseVector dummyv2;
+  Core::LinAlg::SerialDenseVector dummyv3;
 
   // loop all elements on this proc (excluding ghosted ones)
   for (int nele = 0; nele < discret_->NumMyRowElements(); ++nele)
   {
     // get the element
-    CORE::Elements::Element* ele = discret_->lRowElement(nele);
+    Core::Elements::Element* ele = discret_->lRowElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
@@ -466,7 +466,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       double MijMij = calc_smag_const_params.get<double>("MijMij");
       double CI_numerator = 0.0;
       double CI_denominator = 0.0;
-      if (physicaltype_ == INPAR::FLUID::loma)
+      if (physicaltype_ == Inpar::FLUID::loma)
       {
         CI_numerator = calc_smag_const_params.get<double>("CI_numerator");
         CI_denominator = calc_smag_const_params.get<double>("CI_denominator");
@@ -570,7 +570,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       // add it up
       local_ele_sum_LijMij[nlayer] += LijMij;
       local_ele_sum_MijMij[nlayer] += MijMij;
-      if (physicaltype_ == INPAR::FLUID::loma)
+      if (physicaltype_ == Inpar::FLUID::loma)
       {
         local_ele_sum_CI_numerator[nlayer] += CI_numerator;
         local_ele_sum_CI_denominator[nlayer] += CI_denominator;
@@ -586,11 +586,11 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
   Teuchos::RCP<Epetra_Vector> col_Cs_delta_sq = Teuchos::rcp(new Epetra_Vector(*elecolmap, true));
   col_Cs_delta_sq->PutScalar(0.0);
 
-  CORE::LINALG::Export(*Cs_delta_sq, *col_Cs_delta_sq);
+  Core::LinAlg::Export(*Cs_delta_sq, *col_Cs_delta_sq);
   Teuchos::RCP<Epetra_Vector> col_Ci_delta_sq = Teuchos::rcp(new Epetra_Vector(*elecolmap, true));
   col_Ci_delta_sq->PutScalar(0.0);
 
-  CORE::LINALG::Export(*Ci_delta_sq, *col_Ci_delta_sq);
+  Core::LinAlg::Export(*Ci_delta_sq, *col_Ci_delta_sq);
 
   // store in parameters
   Teuchos::ParameterList* modelparams = &(params_.sublist("TURBULENCE MODEL"));
@@ -610,7 +610,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       discret_->Comm().SumAll(&(local_count_for_average[rr]), &(count_for_average[rr]), 1);
       discret_->Comm().SumAll(&(local_ele_sum_LijMij[rr]), &((*averaged_LijMij)[rr]), 1);
       discret_->Comm().SumAll(&(local_ele_sum_MijMij[rr]), &((*averaged_MijMij)[rr]), 1);
-      if (physicaltype_ == INPAR::FLUID::loma)
+      if (physicaltype_ == Inpar::FLUID::loma)
       {
         discret_->Comm().SumAll(
             &(local_ele_sum_CI_numerator[rr]), &((*averaged_CI_numerator)[rr]), 1);
@@ -626,7 +626,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       if (count_for_average[rr] == 0 and
           ((*averaged_LijMij)[rr] != 0.0 or (*averaged_MijMij)[rr] != 0.0))
         FOUR_C_THROW("Expected 'averaged_LijMij' or 'averaged_MijMij' equal zero!");
-      if (physicaltype_ == INPAR::FLUID::loma)
+      if (physicaltype_ == Inpar::FLUID::loma)
       {
         if (count_for_average[rr] == 0 and
             ((*averaged_CI_numerator)[rr] != 0.0 or (*averaged_CI_denominator)[rr] != 0.0))
@@ -640,7 +640,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       {
         (*averaged_LijMij)[rr] /= count_for_average[rr];
         (*averaged_MijMij)[rr] /= count_for_average[rr];
-        if (physicaltype_ == INPAR::FLUID::loma)
+        if (physicaltype_ == Inpar::FLUID::loma)
         {
           (*averaged_CI_numerator)[rr] /= count_for_average[rr];
           (*averaged_CI_denominator)[rr] /= count_for_average[rr];
@@ -651,7 +651,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
     {
       modelparams->set<Teuchos::RCP<std::vector<double>>>("averaged_LijMij_", averaged_LijMij);
       modelparams->set<Teuchos::RCP<std::vector<double>>>("averaged_MijMij_", averaged_MijMij);
-      if (physicaltype_ == INPAR::FLUID::loma)
+      if (physicaltype_ == Inpar::FLUID::loma)
       {
         modelparams->set<Teuchos::RCP<std::vector<double>>>(
             "averaged_CI_numerator_", averaged_CI_numerator);
@@ -792,8 +792,8 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_turb_prandtl_params;
   // action for elements
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::calc_turbulent_prandtl_number, calc_turb_prandtl_params);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::calc_turbulent_prandtl_number, calc_turb_prandtl_params);
 
   // hand filtered global vectors down to the element
   calc_turb_prandtl_params.set("col_filtered_vel", col_filtered_vel_);
@@ -806,20 +806,20 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
   calc_turb_prandtl_params.set("col_filtered_dens_temp", col_filtered_dens_temp_);
 
   // dummy matrices and vectors for element call
-  CORE::LINALG::SerialDenseMatrix dummym1;
-  CORE::LINALG::SerialDenseMatrix dummym2;
-  CORE::LINALG::SerialDenseVector dummyv1;
-  CORE::LINALG::SerialDenseVector dummyv2;
-  CORE::LINALG::SerialDenseVector dummyv3;
+  Core::LinAlg::SerialDenseMatrix dummym1;
+  Core::LinAlg::SerialDenseMatrix dummym2;
+  Core::LinAlg::SerialDenseVector dummyv1;
+  Core::LinAlg::SerialDenseVector dummyv2;
+  Core::LinAlg::SerialDenseVector dummyv3;
 
   // loop all elements on this proc (excluding ghosted ones)
   for (int nele = 0; nele < scatradiscret_->NumMyRowElements(); ++nele)
   {
     // get the element
-    CORE::Elements::Element* ele = scatradiscret_->lRowElement(nele);
+    Core::Elements::Element* ele = scatradiscret_->lRowElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
-    CORE::Elements::Element::LocationArray la(scatradiscret_->NumDofSets());
+    Core::Elements::Element::LocationArray la(scatradiscret_->NumDofSets());
     ele->LocationVector(*scatradiscret_, la, false);
 
     // call the element evaluate method to integrate functions
@@ -952,7 +952,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
   const Epetra_Map* elecolmap = scatradiscret_->ElementColMap();
   Teuchos::RCP<Epetra_Vector> col_Prt = Teuchos::rcp(new Epetra_Vector(*elecolmap, true));
   col_Prt->PutScalar(0.0);
-  CORE::LINALG::Export(*Prt, *col_Prt);
+  Core::LinAlg::Export(*Prt, *col_Prt);
   // store in parameters
   Teuchos::ParameterList* modelparams = &(extraparams.sublist("TURBULENCE MODEL"));
   modelparams->set<Teuchos::RCP<Epetra_Vector>>("col_ele_Prt", col_Prt);

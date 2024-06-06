@@ -20,34 +20,34 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    namespace NURBS
+    namespace Nurbs
     {
-      class Ale3NurbsType : public CORE::Elements::ElementType
+      class Ale3NurbsType : public Core::Elements::ElementType
       {
        public:
         std::string Name() const override { return "Ale3_NurbsType"; }
 
         static Ale3NurbsType& Instance();
 
-        CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+        Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-        Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+        Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
             const std::string eledistype, const int id, const int owner) override;
 
-        Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+        Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
         void nodal_block_information(
-            CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+            Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-        CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-            CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+        Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+            Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
         void setup_element_definition(
-            std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+            std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
             override
         {
           // do nothing. Definition inserted by normal wall element.
@@ -59,7 +59,7 @@ namespace DRT
 
       /*----------------------------------------------------------------------------*/
       /*----------------------------------------------------------------------------*/
-      class Ale3Nurbs : public DRT::ELEMENTS::Ale3
+      class Ale3Nurbs : public Discret::ELEMENTS::Ale3
       {
        public:
         /*!
@@ -93,7 +93,7 @@ namespace DRT
           return Ale3NurbsType::Instance().UniqueParObjectId();
         }
 
-        virtual CORE::Elements::ElementType& ElementType() { return Ale3NurbsType::Instance(); }
+        virtual Core::Elements::ElementType& ElementType() { return Ale3NurbsType::Instance(); }
 
         /// Print this element
         void Print(std::ostream& os) const override;
@@ -105,7 +105,7 @@ namespace DRT
         \return nurbs4 or nurbs9
 
         */
-        CORE::FE::CellType Shape() const override;
+        Core::FE::CellType Shape() const override;
 
 
         /*!
@@ -146,9 +146,9 @@ namespace DRT
        private:
       };
 
-    }  // namespace NURBS
+    }  // namespace Nurbs
   }    // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

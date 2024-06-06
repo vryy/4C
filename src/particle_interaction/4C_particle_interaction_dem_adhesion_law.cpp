@@ -19,27 +19,27 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::DEMAdhesionLawBase::DEMAdhesionLawBase(const Teuchos::ParameterList& params)
+ParticleInteraction::DEMAdhesionLawBase::DEMAdhesionLawBase(const Teuchos::ParameterList& params)
     : params_dem_(params),
       adhesion_surface_energy_factor_(params_dem_.get<double>("ADHESION_SURFACE_ENERGY_FACTOR")),
       adhesion_max_contact_pressure_(params_dem_.get<double>("ADHESION_MAX_CONTACT_PRESSURE")),
       adhesion_max_contact_force_(params_dem_.get<double>("ADHESION_MAX_CONTACT_FORCE")),
       adhesion_use_max_contact_force_(
-          CORE::UTILS::IntegralValue<int>(params_dem_, "ADHESION_USE_MAX_CONTACT_FORCE")),
+          Core::UTILS::IntegralValue<int>(params_dem_, "ADHESION_USE_MAX_CONTACT_FORCE")),
       adhesion_max_contact_force_fac_(0.0),
       adhesion_vdW_curve_shift_(
-          CORE::UTILS::IntegralValue<int>(params_dem_, "ADHESION_VDW_CURVE_SHIFT")),
+          Core::UTILS::IntegralValue<int>(params_dem_, "ADHESION_VDW_CURVE_SHIFT")),
       inv_k_normal_(0.0)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::DEMAdhesionLawBase::Init()
+void ParticleInteraction::DEMAdhesionLawBase::Init()
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::DEMAdhesionLawBase::Setup(const double& k_normal)
+void ParticleInteraction::DEMAdhesionLawBase::Setup(const double& k_normal)
 {
   // set inverse normal contact stiffness
   inv_k_normal_ = 1.0 / k_normal;
@@ -77,15 +77,15 @@ void PARTICLEINTERACTION::DEMAdhesionLawBase::Setup(const double& k_normal)
   }
 }
 
-PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::DEMAdhesionLawVdWDMT(
+ParticleInteraction::DEMAdhesionLawVdWDMT::DEMAdhesionLawVdWDMT(
     const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::DEMAdhesionLawBase(params),
+    : ParticleInteraction::DEMAdhesionLawBase(params),
       hamaker_constant_(params_dem_.get<double>("ADHESION_HAMAKER"))
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::Init()
+void ParticleInteraction::DEMAdhesionLawVdWDMT::Init()
 {
   // call base class init
   DEMAdhesionLawBase::Init();
@@ -94,7 +94,7 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::Init()
   if (hamaker_constant_ <= 0.0) FOUR_C_THROW("negative hamaker constant!");
 }
 
-void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
+void ParticleInteraction::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
     const double& surfaceenergy, const double& r_eff, const double& v_rel_normal,
     const double& m_eff, double& adhesionforce) const
 {
@@ -179,7 +179,7 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::AdhesionForce(const double& gap,
   }
 }
 
-void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::calculate_intersection_gap(
+void ParticleInteraction::DEMAdhesionLawVdWDMT::calculate_intersection_gap(
     double a, double b, double c, double d, double& gap_intersect) const
 {
   double x1 = 0.0;
@@ -250,15 +250,15 @@ void PARTICLEINTERACTION::DEMAdhesionLawVdWDMT::calculate_intersection_gap(
   }
 }
 
-PARTICLEINTERACTION::DEMAdhesionLawRegDMT::DEMAdhesionLawRegDMT(
+ParticleInteraction::DEMAdhesionLawRegDMT::DEMAdhesionLawRegDMT(
     const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::DEMAdhesionLawBase(params),
+    : ParticleInteraction::DEMAdhesionLawBase(params),
       adhesion_distance_(params_dem_.get<double>("ADHESION_DISTANCE"))
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::DEMAdhesionLawRegDMT::AdhesionForce(const double& gap,
+void ParticleInteraction::DEMAdhesionLawRegDMT::AdhesionForce(const double& gap,
     const double& surfaceenergy, const double& r_eff, const double& v_rel_normal,
     const double& m_eff, double& adhesionforce) const
 {

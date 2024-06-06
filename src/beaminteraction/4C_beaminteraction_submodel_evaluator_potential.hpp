@@ -23,7 +23,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -48,9 +48,9 @@ namespace BEAMINTERACTION
       void post_setup() override;
 
       //! Returns the type of the current submodel evaluator
-      INPAR::BEAMINTERACTION::SubModelType Type() const override
+      Inpar::BEAMINTERACTION::SubModelType Type() const override
       {
-        return INPAR::BEAMINTERACTION::submodel_potential;
+        return Inpar::BEAMINTERACTION::submodel_potential;
       }
 
       //! @name Derived public BEAMINTERACTION::SUBMODELEVALUATOR::Generic methods
@@ -84,7 +84,7 @@ namespace BEAMINTERACTION
       std::map<STR::EnergyType, double> get_energy() const override;
 
       //! derived
-      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       void runtime_output_step_state() const override;
@@ -93,15 +93,15 @@ namespace BEAMINTERACTION
       void ResetStepState() override;
 
       //! derived
-      void write_restart(CORE::IO::DiscretizationWriter& ia_writer,
-          CORE::IO::DiscretizationWriter& bin_writer) const override;
+      void write_restart(Core::IO::DiscretizationWriter& ia_writer,
+          Core::IO::DiscretizationWriter& bin_writer) const override;
 
       //! derived
       void PreReadRestart() override;
 
       //! derived
-      void read_restart(CORE::IO::DiscretizationReader& ia_reader,
-          CORE::IO::DiscretizationReader& bin_reader) override;
+      void read_restart(Core::IO::DiscretizationReader& ia_reader,
+          Core::IO::DiscretizationReader& bin_reader) override;
 
       //! derived
       void PostReadRestart() override;
@@ -162,7 +162,7 @@ namespace BEAMINTERACTION
 
       /// exclude certain neighbors from interaction evaluation
       void select_eles_to_be_considered_for_potential_evaluation(
-          CORE::Elements::Element* currele, std::set<CORE::Elements::Element*>& neighbors) const;
+          Core::Elements::Element* currele, std::set<Core::Elements::Element*>& neighbors) const;
 
       /// create instances of class BeamContactPair that will be evaluated
       //  to get force and stiffness contributions from beam interactions
@@ -170,8 +170,8 @@ namespace BEAMINTERACTION
 
       void get_beam_potential_conditions_applied_to_this_element_pair(
           BEAMINTERACTION::BeamPotentialPair const& elementpair,
-          std::vector<CORE::Conditions::Condition*>& conditions_element1,
-          std::vector<CORE::Conditions::Condition*>& conditions_element2) const;
+          std::vector<Core::Conditions::Condition*>& conditions_element1,
+          std::vector<Core::Conditions::Condition*>& conditions_element2) const;
 
       //! @}
 
@@ -208,10 +208,10 @@ namespace BEAMINTERACTION
       std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>> beam_potential_element_pairs_;
 
       //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
-      std::map<int, std::set<CORE::Elements::Element*>> nearby_elements_map_;
+      std::map<int, std::set<Core::Elements::Element*>> nearby_elements_map_;
 
       //! runtime vtp writer for visualization of potential-based interactions
-      Teuchos::RCP<CORE::IO::VisualizationManager> visualization_manager_;
+      Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager_;
     };
 
   }  // namespace SUBMODELEVALUATOR

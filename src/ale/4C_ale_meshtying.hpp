@@ -23,7 +23,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -31,19 +31,19 @@ namespace DRT
   {
     class FluidEleParameter;
   }
-}  // namespace DRT
+}  // namespace Discret
 
-namespace MORTAR
+namespace Mortar
 {
   class Interface;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class CouplingMortar;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseMatrix;
@@ -52,7 +52,7 @@ namespace CORE::LINALG
   class BlockSparseMatrixBase;
   class SparseOperator;
   class KrylovProjector;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace ALE
 {
@@ -65,8 +65,8 @@ namespace ALE
   {
    public:
     //! Constructor
-    Meshtying(Teuchos::RCP<DRT::Discretization> dis,            ///> actual discretisation
-        CORE::LINALG::Solver& solver,                           ///> solver
+    Meshtying(Teuchos::RCP<Discret::Discretization> dis,        ///> actual discretisation
+        Core::LinAlg::Solver& solver,                           ///> solver
         int msht,                                               ///> meshting parameter list
         int nsd,                                                ///> number space dimensions
         const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
@@ -74,33 +74,33 @@ namespace ALE
     virtual ~Meshtying() = default;
 
     //! Set up mesh-tying framework
-    virtual Teuchos::RCP<CORE::LINALG::SparseOperator> Setup(
+    virtual Teuchos::RCP<Core::LinAlg::SparseOperator> Setup(
         std::vector<int> coupleddof, Teuchos::RCP<Epetra_Vector>& dispnp);
 
     //! Use the split of the ale mesh tying for the sysmat
-    Teuchos::RCP<CORE::LINALG::SparseOperator> MshtSplit();
+    Teuchos::RCP<Core::LinAlg::SparseOperator> MshtSplit();
 
     //! Check weather Dirichlet BC are defined on the master
     void DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps  ///> map of boundary condition
     );
 
     //! Prepare matrix and residual for meshtying
-    void prepare_meshtying_system(Teuchos::RCP<CORE::LINALG::SparseOperator>&
+    void prepare_meshtying_system(Teuchos::RCP<Core::LinAlg::SparseOperator>&
                                       sysmat,   ///> sysmat established by the element routine
         Teuchos::RCP<Epetra_Vector>& residual,  ///> residual established by the element routine
         Teuchos::RCP<Epetra_Vector>& dispnp);   ///> current ALE displacement vector
 
     //! Set the flag for multifield problems
-    void IsMultifield(const CORE::LINALG::MultiMapExtractor&
+    void IsMultifield(const Core::LinAlg::MultiMapExtractor&
                           interface,  ///< interface maps for split of ale matrix
         bool ismultifield             ///< flag for multifield problems
     );
 
     //! Use the split of the ale mesh tying for the sysmat
-    void MshtSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat);
+    void MshtSplit(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat);
 
     //! Use the split of the multifield problem for the sysmat
-    void MultifieldSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat);
+    void MultifieldSplit(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat);
 
     //! Call the constructor and the setup of the mortar coupling adapter
     virtual void AdapterMortar(std::vector<int> coupleddof);
@@ -112,14 +112,14 @@ namespace ALE
     virtual void DofRowMaps();
 
     //! Get function for the P matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixP();
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMortarMatrixP();
 
     //! Condensation operation for a block matrix (including ALE case):
     /// the original blocks (nn, nm, mn, mm) are manipulated directly;
     /// the remaining blocks (ns, ms, ss, sn, sm) are not touched at all,
     /// since finally a 2x2 block matrix is solved
     virtual void condensation_operation_block_matrix(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>&
+        Teuchos::RCP<Core::LinAlg::SparseOperator>&
             sysmat,                             ///> sysmat established by the element routine
         Teuchos::RCP<Epetra_Vector>& residual,  ///> residual established by the element routine
         Teuchos::RCP<Epetra_Vector>& dispnp);   ///> current displacement vector
@@ -132,8 +132,8 @@ namespace ALE
     virtual void Recover(Teuchos::RCP<Epetra_Vector>& inc){};
 
     //! Solve ALE mesh tying problem
-    virtual int SolveMeshtying(CORE::LINALG::Solver& solver,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector>& disi,
+    virtual int SolveMeshtying(Core::LinAlg::Solver& solver,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector>& disi,
         Teuchos::RCP<Epetra_Vector> residual, Teuchos::RCP<Epetra_Vector>& dispnp);
 
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Epetra_Vector> >
@@ -142,9 +142,9 @@ namespace ALE
 
    protected:
     //! discretisation
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
-    CORE::LINALG::Solver& solver_;  // standard solver object
+    Core::LinAlg::Solver& solver_;  // standard solver object
 
     //! dof row map of the complete system
     const Epetra_Map* dofrowmap_;
@@ -190,10 +190,10 @@ namespace ALE
     Teuchos::RCP<Epetra_Vector> valuesdc_;
 
     //! adapter to mortar framework
-    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> adaptermeshtying_;
+    Teuchos::RCP<Core::Adapter::CouplingMortar> adaptermeshtying_;
 
     //! 2x2 (3x3) block matrix for solving condensed system (3x3 block matrix)
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmatsolve_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmatsolve_;
     Teuchos::RCP<Epetra_Vector> residual_;
 
     //! flag defining if Dirichlet  or Dirichlet-like boundary conditions are defined on the master
@@ -207,7 +207,7 @@ namespace ALE
     //    int nsd_;    // Todo commented to avoid compiler warning, grill 04/17
 
     //! interface maps for split of ale matrix in multifield simulation
-    CORE::LINALG::MultiMapExtractor multifield_interface_;
+    Core::LinAlg::MultiMapExtractor multifield_interface_;
 
     //! flag for multifield problems in multifield simulation
     bool is_multifield_;

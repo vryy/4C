@@ -27,29 +27,29 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                           seitz 11/16|
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_combined(
+double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_combined(
     std::vector<double>& parent_disp)
 {
   switch (parent_element()->Shape())
   {
-    case CORE::FE::CellType::hex8:
-      if (Shape() == CORE::FE::CellType::quad4)
-        return estimate_nitsche_trace_max_eigenvalue_combined<CORE::FE::CellType::hex8,
-            CORE::FE::CellType::quad4>(parent_disp);
+    case Core::FE::CellType::hex8:
+      if (Shape() == Core::FE::CellType::quad4)
+        return estimate_nitsche_trace_max_eigenvalue_combined<Core::FE::CellType::hex8,
+            Core::FE::CellType::quad4>(parent_disp);
       else
         FOUR_C_THROW("how can an hex8 element have a surface that is not quad4 ???");
       break;
-    case CORE::FE::CellType::hex27:
-      return estimate_nitsche_trace_max_eigenvalue_combined<CORE::FE::CellType::hex27,
-          CORE::FE::CellType::quad9>(parent_disp);
+    case Core::FE::CellType::hex27:
+      return estimate_nitsche_trace_max_eigenvalue_combined<Core::FE::CellType::hex27,
+          Core::FE::CellType::quad9>(parent_disp);
       break;
-    case CORE::FE::CellType::tet4:
-      return estimate_nitsche_trace_max_eigenvalue_combined<CORE::FE::CellType::tet4,
-          CORE::FE::CellType::tri3>(parent_disp);
+    case Core::FE::CellType::tet4:
+      return estimate_nitsche_trace_max_eigenvalue_combined<Core::FE::CellType::tet4,
+          Core::FE::CellType::tri3>(parent_disp);
       break;
-    case CORE::FE::CellType::nurbs27:
-      return estimate_nitsche_trace_max_eigenvalue_combined<CORE::FE::CellType::nurbs27,
-          CORE::FE::CellType::nurbs9>(parent_disp);
+    case Core::FE::CellType::nurbs27:
+      return estimate_nitsche_trace_max_eigenvalue_combined<Core::FE::CellType::nurbs27,
+          Core::FE::CellType::nurbs9>(parent_disp);
       break;
     default:
       FOUR_C_THROW("parent shape not implemented");
@@ -59,17 +59,17 @@ double DRT::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_c
 }
 
 
-template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
-double DRT::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_combined(
+template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
+double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_combined(
     std::vector<double>& parent_disp)
 {
-  const int dim = CORE::FE::dim<dt_vol>;
-  const int num_dof = CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol>;
-  const int dim_image = CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol> -
-                        CORE::FE::dim<dt_vol> * (CORE::FE::dim<dt_vol> + 1) / 2;
+  const int dim = Core::FE::dim<dt_vol>;
+  const int num_dof = Core::FE::num_nodes<dt_vol> * Core::FE::dim<dt_vol>;
+  const int dim_image = Core::FE::num_nodes<dt_vol> * Core::FE::dim<dt_vol> -
+                        Core::FE::dim<dt_vol> * (Core::FE::dim<dt_vol> + 1) / 2;
 
-  CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3> xrefe;
-  CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3> xcurr;
+  Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3> xrefe;
+  Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3> xcurr;
 
   for (int i = 0; i < parent_element()->num_node(); ++i)
     for (int d = 0; d < dim; ++d)
@@ -78,56 +78,56 @@ double DRT::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_c
       xcurr(i, d) = xrefe(i, d) + parent_disp[i * dim + d];
     }
 
-  CORE::LINALG::Matrix<num_dof, num_dof> vol, surf;
+  Core::LinAlg::Matrix<num_dof, num_dof> vol, surf;
 
   trace_estimate_vol_matrix<dt_vol>(xrefe, xcurr, vol);
   trace_estimate_surf_matrix<dt_vol, dt_surf>(xrefe, xcurr, surf);
 
-  CORE::LINALG::Matrix<num_dof, dim_image> proj, tmp;
+  Core::LinAlg::Matrix<num_dof, dim_image> proj, tmp;
   subspace_projector<dt_vol>(xcurr, proj);
 
-  CORE::LINALG::Matrix<dim_image, dim_image> vol_red, surf_red;
+  Core::LinAlg::Matrix<dim_image, dim_image> vol_red, surf_red;
 
   tmp.Multiply(vol, proj);
   vol_red.MultiplyTN(proj, tmp);
   tmp.Multiply(surf, proj);
   surf_red.MultiplyTN(proj, tmp);
 
-  CORE::LINALG::SerialDenseMatrix vol_red_sd(
+  Core::LinAlg::SerialDenseMatrix vol_red_sd(
       Teuchos::View, vol_red.A(), dim_image, dim_image, dim_image);
-  CORE::LINALG::SerialDenseMatrix surf_red_sd(
+  Core::LinAlg::SerialDenseMatrix surf_red_sd(
       Teuchos::View, surf_red.A(), dim_image, dim_image, dim_image);
 
-  return CORE::LINALG::GeneralizedEigen(surf_red_sd, vol_red_sd);
+  return Core::LinAlg::GeneralizedEigen(surf_red_sd, vol_red_sd);
 }
 
-template <CORE::FE::CellType dt_vol>
-void DRT::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, CORE::FE::num_nodes<dt_vol> * 3>& vol)
+template <Core::FE::CellType dt_vol>
+void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
+    const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
+    const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, Core::FE::num_nodes<dt_vol> * 3>& vol)
 {
-  const int dim = CORE::FE::dim<dt_vol>;
+  const int dim = Core::FE::dim<dt_vol>;
 
   double jac;
-  CORE::LINALG::Matrix<3, 3> defgrd;
-  CORE::LINALG::Matrix<3, 3> rcg;
-  CORE::LINALG::Matrix<6, 1> glstrain;
-  CORE::LINALG::Matrix<6, CORE::FE::num_nodes<dt_vol> * 3> bop;
-  CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, 6> bc;
-  CORE::LINALG::Matrix<dim, CORE::FE::num_nodes<dt_vol>> N_XYZ;
+  Core::LinAlg::Matrix<3, 3> defgrd;
+  Core::LinAlg::Matrix<3, 3> rcg;
+  Core::LinAlg::Matrix<6, 1> glstrain;
+  Core::LinAlg::Matrix<6, Core::FE::num_nodes<dt_vol> * 3> bop;
+  Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, 6> bc;
+  Core::LinAlg::Matrix<dim, Core::FE::num_nodes<dt_vol>> N_XYZ;
 
-  CORE::FE::IntPointsAndWeights<dim> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
+  Core::FE::IntPointsAndWeights<dim> ip(Discret::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
 
   for (int gp = 0; gp < ip.IP().nquad; ++gp)
   {
-    const CORE::LINALG::Matrix<3, 1> xi(ip.IP().qxg[gp], false);
+    const Core::LinAlg::Matrix<3, 1> xi(ip.IP().qxg[gp], false);
     strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
-    CORE::LINALG::Matrix<6, 6> cmat(true);
-    CORE::LINALG::Matrix<6, 1> stress(true);
+    Core::LinAlg::Matrix<6, 6> cmat(true);
+    Core::LinAlg::Matrix<6, 1> stress(true);
     Teuchos::ParameterList params;
-    Teuchos::rcp_dynamic_cast<MAT::So3Material>(parent_element()->Material())
+    Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->Material())
         ->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, parent_element()->Id());
     bc.MultiplyTN(bop, cmat);
     vol.Multiply(ip.IP().qwgt[gp] * jac, bc, bop, 1.);
@@ -137,82 +137,83 @@ void DRT::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
 }
 
 
-template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
-void DRT::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, CORE::FE::num_nodes<dt_vol> * 3>& surf)
+template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
+void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
+    const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
+    const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, Core::FE::num_nodes<dt_vol> * 3>& surf)
 {
-  const int dim = CORE::FE::dim<dt_vol>;
+  const int dim = Core::FE::dim<dt_vol>;
 
-  CORE::LINALG::Matrix<6, 6> id4;
+  Core::LinAlg::Matrix<6, 6> id4;
   for (int i = 0; i < 3; ++i) id4(i, i) = 1.;
   for (int i = 3; i < 6; ++i) id4(i, i) = 2.;
 
-  CORE::LINALG::SerialDenseMatrix xrefe_surf(CORE::FE::num_nodes<dt_surf>, dim);
+  Core::LinAlg::SerialDenseMatrix xrefe_surf(Core::FE::num_nodes<dt_surf>, dim);
   material_configuration(xrefe_surf);
 
   std::vector<double> n(3);
-  CORE::LINALG::Matrix<3, 1> n_v(n.data(), true);
-  CORE::LINALG::Matrix<3, 3> nn;
+  Core::LinAlg::Matrix<3, 1> n_v(n.data(), true);
+  Core::LinAlg::Matrix<3, 3> nn;
   double detA;
   double jac;
-  CORE::LINALG::Matrix<3, 3> defgrd;
-  CORE::LINALG::Matrix<3, 3> rcg;
-  CORE::LINALG::Matrix<6, 1> glstrain;
-  CORE::LINALG::Matrix<6, CORE::FE::num_nodes<dt_vol> * 3> bop;
-  CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, 6> bc;
-  CORE::LINALG::Matrix<dim, CORE::FE::num_nodes<dt_vol>> N_XYZ;
+  Core::LinAlg::Matrix<3, 3> defgrd;
+  Core::LinAlg::Matrix<3, 3> rcg;
+  Core::LinAlg::Matrix<6, 1> glstrain;
+  Core::LinAlg::Matrix<6, Core::FE::num_nodes<dt_vol> * 3> bop;
+  Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, 6> bc;
+  Core::LinAlg::Matrix<dim, Core::FE::num_nodes<dt_vol>> N_XYZ;
 
-  CORE::FE::IntPointsAndWeights<dim - 1> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
-  CORE::LINALG::SerialDenseMatrix deriv_surf(2, CORE::FE::num_nodes<dt_surf>);
+  Core::FE::IntPointsAndWeights<dim - 1> ip(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
+  Core::LinAlg::SerialDenseMatrix deriv_surf(2, Core::FE::num_nodes<dt_surf>);
 
   for (int gp = 0; gp < ip.IP().nquad; ++gp)
   {
-    CORE::FE::CollectedGaussPoints intpoints =
-        CORE::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
+    Core::FE::CollectedGaussPoints intpoints =
+        Core::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
     intpoints.Append(ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], 0.0, ip.IP().qwgt[gp]);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
-    CORE::LINALG::SerialDenseMatrix pqxg(1, 3);
-    CORE::LINALG::Matrix<3, 3> derivtrafo;
+    Core::LinAlg::SerialDenseMatrix pqxg(1, 3);
+    Core::LinAlg::Matrix<3, 3> derivtrafo;
 
-    CORE::FE::BoundaryGPToParentGP<3>(
+    Core::FE::BoundaryGPToParentGP<3>(
         pqxg, derivtrafo, intpoints, parent_element()->Shape(), Shape(), FaceParentNumber());
 
-    CORE::LINALG::Matrix<3, 1> xi;
+    Core::LinAlg::Matrix<3, 1> xi;
     for (int i = 0; i < 3; ++i) xi(i) = pqxg(0, i);
     strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
-    CORE::LINALG::Matrix<6, 6> cmat(true);
-    CORE::LINALG::Matrix<6, 1> stress(true);
+    Core::LinAlg::Matrix<6, 6> cmat(true);
+    Core::LinAlg::Matrix<6, 1> stress(true);
     Teuchos::ParameterList params;
-    Teuchos::rcp_dynamic_cast<MAT::So3Material>(parent_element()->Material())
+    Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->Material())
         ->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, parent_element()->Id());
 
     double normalfac = 1.;
-    if (Shape() == CORE::FE::CellType::nurbs9)
+    if (Shape() == Core::FE::CellType::nurbs9)
     {
-      std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
-      std::vector<CORE::LINALG::SerialDenseVector> boundaryknots(dim - 1);
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(
-          GLOBAL::Problem::Instance()->GetDis("structure").get())
+      std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
+      std::vector<Core::LinAlg::SerialDenseVector> boundaryknots(dim - 1);
+      dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(
+          Global::Problem::Instance()->GetDis("structure").get())
           ->GetKnotVector()
           ->get_boundary_ele_and_parent_knots(
               parentknots, boundaryknots, normalfac, parent_element()->Id(), FaceParentNumber());
 
-      CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_surf>, 1> weights, shapefcn;
-      for (int i = 0; i < CORE::FE::num_nodes<dt_surf>; ++i)
-        weights(i) = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[i])->W();
+      Core::LinAlg::Matrix<Core::FE::num_nodes<dt_surf>, 1> weights, shapefcn;
+      for (int i = 0; i < Core::FE::num_nodes<dt_surf>; ++i)
+        weights(i) = dynamic_cast<Discret::Nurbs::ControlPoint*>(Nodes()[i])->W();
 
-      CORE::LINALG::Matrix<2, 1> xi_surf;
+      Core::LinAlg::Matrix<2, 1> xi_surf;
       xi_surf(0) = ip.IP().qxg[gp][0];
       xi_surf(1) = ip.IP().qxg[gp][1];
-      CORE::FE::NURBS::nurbs_get_2D_funct_deriv(
+      Core::FE::Nurbs::nurbs_get_2D_funct_deriv(
           shapefcn, deriv_surf, xi_surf, boundaryknots, weights, dt_surf);
     }
     else
-      CORE::FE::shape_function_2D_deriv1(
+      Core::FE::shape_function_2D_deriv1(
           deriv_surf, ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], Shape());
 
     surface_integration(detA, n, xrefe_surf, deriv_surf);
@@ -220,16 +221,16 @@ void DRT::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
     n_v.Scale(1. / n_v.Norm2());
     nn.MultiplyNT(n_v, n_v);
 
-    CORE::LINALG::Matrix<6, 6> cn;
-    MAT::AddSymmetricHolzapfelProduct(cn, rcg, nn, .25);
+    Core::LinAlg::Matrix<6, 6> cn;
+    Mat::AddSymmetricHolzapfelProduct(cn, rcg, nn, .25);
 
-    CORE::LINALG::Matrix<6, 6> tmp1, tmp2;
+    Core::LinAlg::Matrix<6, 6> tmp1, tmp2;
     tmp1.Multiply(cmat, id4);
     tmp2.Multiply(tmp1, cn);
     tmp1.Multiply(tmp2, id4);
     tmp2.Multiply(tmp1, cmat);
 
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, 6> tmp3;
+    Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, 6> tmp3;
     tmp3.MultiplyTN(bop, tmp2);
 
     surf.Multiply(detA * ip.IP().qwgt[gp], tmp3, bop, 1.);
@@ -238,38 +239,38 @@ void DRT::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
   return;
 }
 
-template <CORE::FE::CellType dt_vol>
-void DRT::ELEMENTS::StructuralSurface::strains(
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
-    const CORE::LINALG::Matrix<3, 1>& xi, double& jac, CORE::LINALG::Matrix<3, 3>& defgrd,
-    CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& rcg,
-    CORE::LINALG::Matrix<6, CORE::FE::num_nodes<dt_vol> * 3>& bop,
-    CORE::LINALG::Matrix<3, CORE::FE::num_nodes<dt_vol>>& N_XYZ)
+template <Core::FE::CellType dt_vol>
+void Discret::ELEMENTS::StructuralSurface::strains(
+    const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
+    const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
+    const Core::LinAlg::Matrix<3, 1>& xi, double& jac, Core::LinAlg::Matrix<3, 3>& defgrd,
+    Core::LinAlg::Matrix<6, 1>& glstrain, Core::LinAlg::Matrix<3, 3>& rcg,
+    Core::LinAlg::Matrix<6, Core::FE::num_nodes<dt_vol> * 3>& bop,
+    Core::LinAlg::Matrix<3, Core::FE::num_nodes<dt_vol>>& N_XYZ)
 {
-  const int dim = CORE::FE::dim<dt_vol>;
-  const int num_node = CORE::FE::num_nodes<dt_vol>;
-  CORE::LINALG::Matrix<dim, num_node> deriv;
+  const int dim = Core::FE::dim<dt_vol>;
+  const int num_node = Core::FE::num_nodes<dt_vol>;
+  Core::LinAlg::Matrix<dim, num_node> deriv;
 
-  if (dt_vol == CORE::FE::CellType::nurbs27)
+  if (dt_vol == Core::FE::CellType::nurbs27)
   {
-    std::vector<CORE::LINALG::SerialDenseVector> knots;
-    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(
-        GLOBAL::Problem::Instance()->GetDis("structure").get())
+    std::vector<Core::LinAlg::SerialDenseVector> knots;
+    dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(
+        Global::Problem::Instance()->GetDis("structure").get())
         ->GetKnotVector()
         ->GetEleKnots(knots, ParentElementId());
 
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 1> weights, shapefcn;
+    Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 1> weights, shapefcn;
 
-    for (int i = 0; i < CORE::FE::num_nodes<dt_vol>; ++i)
-      weights(i) = dynamic_cast<DRT::NURBS::ControlPoint*>(parent_element()->Nodes()[i])->W();
+    for (int i = 0; i < Core::FE::num_nodes<dt_vol>; ++i)
+      weights(i) = dynamic_cast<Discret::Nurbs::ControlPoint*>(parent_element()->Nodes()[i])->W();
 
-    CORE::FE::NURBS::nurbs_get_3D_funct_deriv(shapefcn, deriv, xi, knots, weights, dt_vol);
+    Core::FE::Nurbs::nurbs_get_3D_funct_deriv(shapefcn, deriv, xi, knots, weights, dt_vol);
   }
   else
-    CORE::FE::shape_function_deriv1<dt_vol>(xi, deriv);
+    Core::FE::shape_function_deriv1<dt_vol>(xi, deriv);
 
-  CORE::LINALG::Matrix<dim, dim> invJ;
+  Core::LinAlg::Matrix<dim, dim> invJ;
   invJ.Multiply(deriv, xrefe);
   jac = invJ.Invert();
   N_XYZ.Multiply(invJ, deriv);
@@ -310,28 +311,28 @@ void DRT::ELEMENTS::StructuralSurface::strains(
 }
 
 
-template <CORE::FE::CellType dt_vol>
-void DRT::ELEMENTS::StructuralSurface::subspace_projector(
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol>,
-        CORE::FE::num_nodes<dt_vol> * CORE::FE::dim<dt_vol> -
-            CORE::FE::dim<dt_vol>*(CORE::FE::dim<dt_vol> + 1) / 2>& proj)
+template <Core::FE::CellType dt_vol>
+void Discret::ELEMENTS::StructuralSurface::subspace_projector(
+    const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * Core::FE::dim<dt_vol>,
+        Core::FE::num_nodes<dt_vol> * Core::FE::dim<dt_vol> -
+            Core::FE::dim<dt_vol>*(Core::FE::dim<dt_vol> + 1) / 2>& proj)
 {
-  const int dim = CORE::FE::dim<dt_vol>;
-  const int num_node = CORE::FE::num_nodes<dt_vol>;
+  const int dim = Core::FE::dim<dt_vol>;
+  const int num_node = Core::FE::num_nodes<dt_vol>;
   if (dim != 3) FOUR_C_THROW("this should be 3D");
 
-  CORE::LINALG::Matrix<3, 1> c;
+  Core::LinAlg::Matrix<3, 1> c;
   for (int r = 0; r < (int)xcurr.numRows(); ++r)
     for (int d = 0; d < (int)xcurr.numCols(); ++d) c(d) += xcurr(r, d);
   c.Scale(1. / xcurr.numRows());
 
-  CORE::LINALG::Matrix<dim, 1> r[3];
+  Core::LinAlg::Matrix<dim, 1> r[3];
   for (int i = 0; i < 3; ++i) r[i](i) = 1.;
 
   // basis, where the first six entries are the rigid body modes and the
   // remaining are constructed to be orthogonal to the rigid body modes
-  CORE::LINALG::Matrix<dim * num_node, 1> basis[dim * num_node];
+  Core::LinAlg::Matrix<dim * num_node, 1> basis[dim * num_node];
 
   // rigid body translations
   for (int i = 0; i < dim; ++i)
@@ -341,10 +342,10 @@ void DRT::ELEMENTS::StructuralSurface::subspace_projector(
   for (int i = 0; i < dim; ++i)
     for (int j = 0; j < num_node; ++j)
     {
-      CORE::LINALG::Matrix<3, 1> x;
+      Core::LinAlg::Matrix<3, 1> x;
       for (int d = 0; d < 3; ++d) x(d) = xcurr(j, d);
       x.Update(-1., c, 1.);
-      CORE::LINALG::Matrix<3, 1> cross;
+      Core::LinAlg::Matrix<3, 1> cross;
       cross.CrossProduct(r[i], x);
       for (int k = 0; k < 3; ++k) basis[i + 3](j * 3 + k) = cross(k);
     }
@@ -360,13 +361,13 @@ void DRT::ELEMENTS::StructuralSurface::subspace_projector(
     {
       for (int j = 0; j < i + 1; ++j)
       {
-        CORE::LINALG::SerialDenseMatrix det(i, i, true);
+        Core::LinAlg::SerialDenseMatrix det(i, i, true);
         for (int c = 0; c < i; ++c)
         {
           for (int k = 0; k < j; ++k) det(k, c) = basis[c](k + off);
           for (int k = j; k < i; ++k) det(k, c) = basis[c](k + 1 + off);
         }
-        basis[i](j + off) = CORE::LINALG::DeterminantLU(det) * sign;
+        basis[i](j + off) = Core::LinAlg::DeterminantLU(det) * sign;
         sign *= -1.;
       }
       if (basis[i].Norm2() > 1.e-6)
@@ -382,7 +383,7 @@ void DRT::ELEMENTS::StructuralSurface::subspace_projector(
   // due to cut-off errors we do another sweep of Gram-Schmidt
   for (int i = 0; i < dim * num_node; ++i)
   {
-    const CORE::LINALG::Matrix<dim * num_node, 1> tmp(basis[i]);
+    const Core::LinAlg::Matrix<dim * num_node, 1> tmp(basis[i]);
     for (int j = 0; j < i; ++j) basis[i].Update(-tmp.Dot(basis[j]), basis[j], 1.);
 
     basis[i].Scale(1. / basis[i].Norm2());
@@ -398,27 +399,27 @@ void DRT::ELEMENTS::StructuralSurface::subspace_projector(
 /*----------------------------------------------------------------------*
  |                                                           seitz 11/16|
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_tsi(
+double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_tsi(
     std::vector<double>& parent_disp)
 {
   switch (parent_element()->Shape())
   {
-    case CORE::FE::CellType::hex8:
-      if (Shape() == CORE::FE::CellType::quad4)
-        return estimate_nitsche_trace_max_eigenvalue_tsi<CORE::FE::CellType::hex8,
-            CORE::FE::CellType::quad4>(parent_disp);
+    case Core::FE::CellType::hex8:
+      if (Shape() == Core::FE::CellType::quad4)
+        return estimate_nitsche_trace_max_eigenvalue_tsi<Core::FE::CellType::hex8,
+            Core::FE::CellType::quad4>(parent_disp);
       else
         FOUR_C_THROW("how can an hex8 element have a surface that is not quad4 ???");
       break;
-    case CORE::FE::CellType::hex27:
-      return estimate_nitsche_trace_max_eigenvalue_tsi<CORE::FE::CellType::hex27,
-          CORE::FE::CellType::quad9>(parent_disp);
-    case CORE::FE::CellType::tet4:
-      return estimate_nitsche_trace_max_eigenvalue_tsi<CORE::FE::CellType::tet4,
-          CORE::FE::CellType::tri3>(parent_disp);
-    case CORE::FE::CellType::nurbs27:
-      return estimate_nitsche_trace_max_eigenvalue_tsi<CORE::FE::CellType::nurbs27,
-          CORE::FE::CellType::nurbs9>(parent_disp);
+    case Core::FE::CellType::hex27:
+      return estimate_nitsche_trace_max_eigenvalue_tsi<Core::FE::CellType::hex27,
+          Core::FE::CellType::quad9>(parent_disp);
+    case Core::FE::CellType::tet4:
+      return estimate_nitsche_trace_max_eigenvalue_tsi<Core::FE::CellType::tet4,
+          Core::FE::CellType::tri3>(parent_disp);
+    case Core::FE::CellType::nurbs27:
+      return estimate_nitsche_trace_max_eigenvalue_tsi<Core::FE::CellType::nurbs27,
+          Core::FE::CellType::nurbs9>(parent_disp);
     default:
       FOUR_C_THROW("parent shape not implemented");
   }
@@ -426,16 +427,16 @@ double DRT::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_t
   return 0;
 }
 
-template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
-double DRT::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_tsi(
+template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
+double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_tsi(
     std::vector<double>& parent_disp)
 {
-  const int dim = CORE::FE::dim<dt_vol>;
-  const int num_dof = CORE::FE::num_nodes<dt_vol>;
-  const int dim_image = CORE::FE::num_nodes<dt_vol> - 1;
+  const int dim = Core::FE::dim<dt_vol>;
+  const int num_dof = Core::FE::num_nodes<dt_vol>;
+  const int dim_image = Core::FE::num_nodes<dt_vol> - 1;
 
-  CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3> xrefe;
-  CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3> xcurr;
+  Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3> xrefe;
+  Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3> xcurr;
 
   for (int i = 0; i < parent_element()->num_node(); ++i)
     for (int d = 0; d < dim; ++d)
@@ -444,60 +445,60 @@ double DRT::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_t
       xcurr(i, d) = xrefe(i, d) + parent_disp[i * dim + d];
     }
 
-  CORE::LINALG::Matrix<num_dof, num_dof> vol, surf;
+  Core::LinAlg::Matrix<num_dof, num_dof> vol, surf;
 
   trace_estimate_vol_matrix_tsi<dt_vol>(xrefe, xcurr, vol);
   trace_estimate_surf_matrix_tsi<dt_vol, dt_surf>(xrefe, xcurr, surf);
 
 
-  CORE::LINALG::Matrix<num_dof, dim_image> proj, tmp;
+  Core::LinAlg::Matrix<num_dof, dim_image> proj, tmp;
   subspace_projector_scalar<dt_vol>(proj);
 
-  CORE::LINALG::Matrix<dim_image, dim_image> vol_red, surf_red;
+  Core::LinAlg::Matrix<dim_image, dim_image> vol_red, surf_red;
 
   tmp.Multiply(vol, proj);
   vol_red.MultiplyTN(proj, tmp);
   tmp.Multiply(surf, proj);
   surf_red.MultiplyTN(proj, tmp);
 
-  CORE::LINALG::SerialDenseMatrix vol_red_sd(
+  Core::LinAlg::SerialDenseMatrix vol_red_sd(
       Teuchos::View, vol_red.A(), dim_image, dim_image, dim_image);
-  CORE::LINALG::SerialDenseMatrix surf_red_sd(
+  Core::LinAlg::SerialDenseMatrix surf_red_sd(
       Teuchos::View, surf_red.A(), dim_image, dim_image, dim_image);
 
-  return CORE::LINALG::GeneralizedEigen(surf_red_sd, vol_red_sd);
+  return Core::LinAlg::GeneralizedEigen(surf_red_sd, vol_red_sd);
 }
 
-template <CORE::FE::CellType dt_vol>
-void DRT::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix_tsi(
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol>>& vol)
+template <Core::FE::CellType dt_vol>
+void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix_tsi(
+    const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
+    const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, Core::FE::num_nodes<dt_vol>>& vol)
 {
-  const int dim = CORE::FE::dim<dt_vol>;
-  const int num_node = CORE::FE::num_nodes<dt_vol>;
+  const int dim = Core::FE::dim<dt_vol>;
+  const int num_node = Core::FE::num_nodes<dt_vol>;
 
   double jac;
-  CORE::LINALG::Matrix<3, 3> defgrd;
-  CORE::LINALG::Matrix<3, 3> rcg;
-  CORE::LINALG::Matrix<6, 1> glstrain;
-  CORE::LINALG::Matrix<6, CORE::FE::num_nodes<dt_vol> * 3> bop;
-  CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, 6> bc;
-  CORE::LINALG::Matrix<dim, num_node> N_XYZ, iC_N_XYZ;
+  Core::LinAlg::Matrix<3, 3> defgrd;
+  Core::LinAlg::Matrix<3, 3> rcg;
+  Core::LinAlg::Matrix<6, 1> glstrain;
+  Core::LinAlg::Matrix<6, Core::FE::num_nodes<dt_vol> * 3> bop;
+  Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, 6> bc;
+  Core::LinAlg::Matrix<dim, num_node> N_XYZ, iC_N_XYZ;
 
-  CORE::FE::IntPointsAndWeights<dim> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
+  Core::FE::IntPointsAndWeights<dim> ip(Discret::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
 
   if (parent_element()->NumMaterial() < 2) FOUR_C_THROW("where's my second material");
-  Teuchos::RCP<MAT::FourierIso> mat_thr =
-      Teuchos::rcp_dynamic_cast<MAT::FourierIso>(parent_element()->Material(1), true);
+  Teuchos::RCP<Mat::FourierIso> mat_thr =
+      Teuchos::rcp_dynamic_cast<Mat::FourierIso>(parent_element()->Material(1), true);
   const double k0 = mat_thr->Conductivity();
 
   for (int gp = 0; gp < ip.IP().nquad; ++gp)
   {
-    const CORE::LINALG::Matrix<3, 1> xi(ip.IP().qxg[gp], false);
+    const Core::LinAlg::Matrix<3, 1> xi(ip.IP().qxg[gp], false);
     strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
-    CORE::LINALG::Matrix<3, 3> iC;
+    Core::LinAlg::Matrix<3, 3> iC;
     iC.MultiplyTN(defgrd, defgrd);
     iC.Invert();
 
@@ -509,62 +510,63 @@ void DRT::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix_tsi(
 }
 
 
-template <CORE::FE::CellType dt_vol, CORE::FE::CellType dt_surf>
-void DRT::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xrefe,
-    const CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, 3>& xcurr,
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol>>& surf)
+template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
+void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
+    const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
+    const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
+    Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, Core::FE::num_nodes<dt_vol>>& surf)
 {
-  const int dim = CORE::FE::dim<dt_vol>;
-  const int num_node = CORE::FE::num_nodes<dt_vol>;
+  const int dim = Core::FE::dim<dt_vol>;
+  const int num_node = Core::FE::num_nodes<dt_vol>;
 
   double jac;
-  CORE::LINALG::Matrix<3, 3> defgrd;
-  CORE::LINALG::Matrix<3, 3> rcg;
-  CORE::LINALG::Matrix<6, 1> glstrain;
-  CORE::LINALG::Matrix<6, CORE::FE::num_nodes<dt_vol> * 3> bop;
-  CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol> * 3, 6> bc;
-  CORE::LINALG::Matrix<dim, num_node> N_XYZ;
-  CORE::LINALG::Matrix<1, num_node> iCn_N_XYZ;
+  Core::LinAlg::Matrix<3, 3> defgrd;
+  Core::LinAlg::Matrix<3, 3> rcg;
+  Core::LinAlg::Matrix<6, 1> glstrain;
+  Core::LinAlg::Matrix<6, Core::FE::num_nodes<dt_vol> * 3> bop;
+  Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, 6> bc;
+  Core::LinAlg::Matrix<dim, num_node> N_XYZ;
+  Core::LinAlg::Matrix<1, num_node> iCn_N_XYZ;
 
-  CORE::LINALG::SerialDenseMatrix xrefe_surf(CORE::FE::num_nodes<dt_surf>, dim);
+  Core::LinAlg::SerialDenseMatrix xrefe_surf(Core::FE::num_nodes<dt_surf>, dim);
   material_configuration(xrefe_surf);
 
   std::vector<double> n(3);
-  CORE::LINALG::Matrix<3, 1> n_v(n.data(), true), iCn;
+  Core::LinAlg::Matrix<3, 1> n_v(n.data(), true), iCn;
   double detA;
 
-  CORE::FE::IntPointsAndWeights<dim - 1> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
-  CORE::LINALG::SerialDenseMatrix deriv_surf(2, CORE::FE::num_nodes<dt_surf>);
+  Core::FE::IntPointsAndWeights<dim - 1> ip(
+      Discret::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
+  Core::LinAlg::SerialDenseMatrix deriv_surf(2, Core::FE::num_nodes<dt_surf>);
 
   if (parent_element()->NumMaterial() < 2) FOUR_C_THROW("where's my second material");
-  Teuchos::RCP<MAT::FourierIso> mat_thr =
-      Teuchos::rcp_dynamic_cast<MAT::FourierIso>(parent_element()->Material(1), true);
+  Teuchos::RCP<Mat::FourierIso> mat_thr =
+      Teuchos::rcp_dynamic_cast<Mat::FourierIso>(parent_element()->Material(1), true);
   const double k0 = mat_thr->Conductivity();
 
   for (int gp = 0; gp < ip.IP().nquad; ++gp)
   {
-    CORE::FE::shape_function_2D_deriv1(deriv_surf, ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], Shape());
+    Core::FE::shape_function_2D_deriv1(deriv_surf, ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], Shape());
     surface_integration(detA, n, xrefe_surf, deriv_surf);
     n_v.Scale(1. / n_v.Norm2());
 
-    CORE::FE::CollectedGaussPoints intpoints =
-        CORE::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
+    Core::FE::CollectedGaussPoints intpoints =
+        Core::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
     intpoints.Append(ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], 0.0, ip.IP().qwgt[gp]);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
-    CORE::LINALG::SerialDenseMatrix pqxg(1, 3);
-    CORE::LINALG::Matrix<3, 3> derivtrafo;
+    Core::LinAlg::SerialDenseMatrix pqxg(1, 3);
+    Core::LinAlg::Matrix<3, 3> derivtrafo;
 
-    CORE::FE::BoundaryGPToParentGP<3>(
+    Core::FE::BoundaryGPToParentGP<3>(
         pqxg, derivtrafo, intpoints, parent_element()->Shape(), Shape(), FaceParentNumber());
 
-    CORE::LINALG::Matrix<3, 1> xi;
+    Core::LinAlg::Matrix<3, 1> xi;
     for (int i = 0; i < 3; ++i) xi(i) = pqxg(0, i);
 
     strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
-    CORE::LINALG::Matrix<3, 3> iC;
+    Core::LinAlg::Matrix<3, 3> iC;
     iC.MultiplyTN(defgrd, defgrd);
     iC.Invert();
     iCn.Multiply(iC, n_v);
@@ -578,12 +580,12 @@ void DRT::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
 
 
 
-template <CORE::FE::CellType dt_vol>
-void DRT::ELEMENTS::StructuralSurface::subspace_projector_scalar(
-    CORE::LINALG::Matrix<CORE::FE::num_nodes<dt_vol>, CORE::FE::num_nodes<dt_vol> - 1>& proj)
+template <Core::FE::CellType dt_vol>
+void Discret::ELEMENTS::StructuralSurface::subspace_projector_scalar(
+    Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, Core::FE::num_nodes<dt_vol> - 1>& proj)
 {
-  const int num_node = CORE::FE::num_nodes<dt_vol>;
-  CORE::LINALG::Matrix<num_node, 1> basis[num_node];
+  const int num_node = Core::FE::num_nodes<dt_vol>;
+  Core::LinAlg::Matrix<num_node, 1> basis[num_node];
 
   for (int i = 0; i < num_node; ++i) basis[0](i) = 1.;
 
@@ -592,13 +594,13 @@ void DRT::ELEMENTS::StructuralSurface::subspace_projector_scalar(
     double sign = +1.;
     for (int j = 0; j < i + 1; ++j)
     {
-      CORE::LINALG::SerialDenseMatrix det(i, i, true);
+      Core::LinAlg::SerialDenseMatrix det(i, i, true);
       for (int c = 0; c < i; ++c)
       {
         for (int k = 0; k < j; ++k) det(k, c) = basis[c](k);
         for (int k = j; k < i; ++k) det(k, c) = basis[c](k + 1);
       }
-      basis[i](j) = CORE::LINALG::DeterminantLU(det) * sign;
+      basis[i](j) = Core::LinAlg::DeterminantLU(det) * sign;
       sign *= -1.;
     }
     basis[i].Scale(1. / basis[i].Norm2());

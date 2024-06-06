@@ -38,14 +38,14 @@ namespace CONTACT
        * \date 04/16
        * \author hiermeier */
       Teuchos::RCP<CONTACT::Integrator> BuildIntegrator(
-          const INPAR::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
-          const CORE::FE::CellType& slave_type, const Epetra_Comm& comm) const;
+          const Inpar::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
+          const Core::FE::CellType& slave_type, const Epetra_Comm& comm) const;
     };  // class Factory
 
     // non-member function, please call this one from outside!
     Teuchos::RCP<CONTACT::Integrator> BuildIntegrator(
-        const INPAR::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
-        const CORE::FE::CellType& slave_type, const Epetra_Comm& comm);
+        const Inpar::CONTACT::SolvingStrategy& sol_type, Teuchos::ParameterList& mortar_params,
+        const Core::FE::CellType& slave_type, const Epetra_Comm& comm);
   }  // namespace INTEGRATOR
 }  // namespace CONTACT
 

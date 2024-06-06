@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------
                   Standard Constructor (public)
   ---------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<DRT::Discretization> actdis,
+FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<Discret::Discretization> actdis,
     Teuchos::ParameterList& params, const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {
@@ -281,11 +281,11 @@ void FLD::TurbulenceStatisticsTgv::EvaluateResiduals(
 
   // add velafgrad
   Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
-  if (CORE::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der"))
+  if (Core::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der"))
   {
     // add velafgrad
     Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
-    if (CORE::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der"))
+    if (Core::UTILS::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der"))
     {
       for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::iterator state = statevecs.begin();
            state != statevecs.end(); ++state)

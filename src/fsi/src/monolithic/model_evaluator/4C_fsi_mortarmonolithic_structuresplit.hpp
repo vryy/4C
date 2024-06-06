@@ -22,17 +22,17 @@ with condensed structure interface displacements
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class CouplingMortar;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class BlockSparseMatrixBase;
   class MatrixColTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace FSI
 {
@@ -57,7 +57,7 @@ namespace FSI
 
     The structural interface displacements are computed based on the
     fluid interface velocities. The conversion is done by
-    ADAPTER::FluidFSI::velocity_to_displacement().
+    Adapter::FluidFSI::velocity_to_displacement().
 
     \sa MortarMonolithicStructureSplit
   */
@@ -93,22 +93,22 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override;
 
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override;
 
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
+    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
         Epetra_Vector& b                                         ///< right hand side
         ) override;
 
     /// undo infnorm scaling from scaled solution
-    void unscale_solution(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
+    void unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
         Epetra_Vector& x,                                            ///< solution vector
         Epetra_Vector& b                                             ///< right hand side
         ) override;
@@ -199,10 +199,11 @@ namespace FSI
      */
     void create_node_owner_relationship(std::map<int, int>* nodeOwner,
         std::map<int, std::list<int>>* inverseNodeOwner,
-        std::map<int, CORE::Nodes::Node*>* structurenodesPtr,
-        std::map<int, CORE::Nodes::Node*>* fluidgnodesPtr,
-        Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
-        const INPAR::FSI::Redistribute domain) override;
+        std::map<int, Core::Nodes::Node*>* structurenodesPtr,
+        std::map<int, Core::Nodes::Node*>* fluidgnodesPtr,
+        Teuchos::RCP<Discret::Discretization> structuredis,
+        Teuchos::RCP<Discret::Discretization> fluiddis,
+        const Inpar::FSI::Redistribute domain) override;
 
    protected:
     /// create the composed system matrix
@@ -232,7 +233,7 @@ namespace FSI
      *  We are dealing with NOX here, so we get absolute values. x is the sum of
      *  all increments up to this point.
      *
-     *  \sa  ADAPTER::FluidFSI::velocity_to_displacement()
+     *  \sa  Adapter::FluidFSI::velocity_to_displacement()
      */
     void extract_field_vectors(
         Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
@@ -272,13 +273,13 @@ namespace FSI
         const bool slave_vectors_contain_interface_dofs) final;
 
     /// block system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<CORE::ADAPTER::Coupling> fscoupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> fscoupfa_;
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> coupsfm_;
+    Teuchos::RCP<Core::Adapter::CouplingMortar> coupsfm_;
 
     /// communicator
     const Epetra_Comm& comm_;
@@ -286,13 +287,13 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> aigtransform_;
 
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmgitransform_;
 
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fsaigtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fsmgitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fsaigtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fsmgitransform_;
 
     ///@}
 
@@ -332,16 +333,16 @@ namespace FSI
     Teuchos::RCP<const Epetra_Vector> velgprev_;
 
     //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> sgicur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> sgicur_;
 
     //! block \f$S_{\Gamma I,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> sgiprev_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> sgiprev_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> sggcur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> sggcur_;
 
     //! block \f$S_{\Gamma\Gamma,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> sggprev_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> sggprev_;
 
     //@}
 
@@ -352,10 +353,10 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> aleresidual_;
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
+    Inpar::FSI::LinearBlockSolver linearsolverstrategy_;
 
     /// ale movement relative to structure (none, slide_curr, slide_ref)
-    INPAR::FSI::SlideALEProj aleproj_;
+    Inpar::FSI::SlideALEProj aleproj_;
 
     bool notsetup_;  ///< indicates if Setup has not been called yet
 

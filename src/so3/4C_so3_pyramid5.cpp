@@ -27,61 +27,65 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::SoPyramid5Type DRT::ELEMENTS::SoPyramid5Type::instance_;
+Discret::ELEMENTS::SoPyramid5Type Discret::ELEMENTS::SoPyramid5Type::instance_;
 
-DRT::ELEMENTS::SoPyramid5Type& DRT::ELEMENTS::SoPyramid5Type::Instance() { return instance_; }
-
-
-CORE::COMM::ParObject* DRT::ELEMENTS::SoPyramid5Type::Create(const std::vector<char>& data)
+Discret::ELEMENTS::SoPyramid5Type& Discret::ELEMENTS::SoPyramid5Type::Instance()
 {
-  auto* object = new DRT::ELEMENTS::SoPyramid5(-1, -1);
+  return instance_;
+}
+
+
+Core::Communication::ParObject* Discret::ELEMENTS::SoPyramid5Type::Create(
+    const std::vector<char>& data)
+{
+  auto* object = new Discret::ELEMENTS::SoPyramid5(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoPyramid5Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoPyramid5Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<CORE::Elements::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::SoPyramid5(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::SoPyramid5(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoPyramid5Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoPyramid5Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::SoPyramid5(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::SoPyramid5(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::SoPyramid5Type::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::SoPyramid5Type::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoPyramid5Type::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoPyramid5Type::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::SoPyramid5Type::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::SoPyramid5Type::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
+  std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
-  defs["PYRAMID5"] = INPUT::LineDefinition::Builder()
+  defs["PYRAMID5"] = Input::LineDefinition::Builder()
                          .AddIntVector("PYRAMID5", 5)
                          .AddNamedInt("MAT")
                          .AddNamedString("KINEM")
@@ -101,25 +105,25 @@ void DRT::ELEMENTS::SoPyramid5Type::setup_element_definition(
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoPyramid5::SoPyramid5(int id, int owner)
-    : SoBase(id, owner), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
+Discret::ELEMENTS::SoPyramid5::SoPyramid5(int id, int owner)
+    : SoBase(id, owner), pstype_(Inpar::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
-  kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
-  invJ_.resize(NUMGPT_SOP5, CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>(true));
+  kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+  invJ_.resize(NUMGPT_SOP5, Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>(true));
   detJ_.resize(NUMGPT_SOP5, 0.0);
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      GLOBAL::Problem::Instance()->getParameterList();
+      Global::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    pstype_ = PRESTRESS::GetType();
-    pstime_ = PRESTRESS::GetPrestressTime();
+    pstype_ = Prestress::GetType();
+    pstime_ = Prestress::GetPrestressTime();
 
-    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+    Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
-  if (PRESTRESS::IsMulf(pstype_))
-    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5));
+  if (Prestress::IsMulf(pstype_))
+    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5));
 
   return;
 }
@@ -128,7 +132,7 @@ DRT::ELEMENTS::SoPyramid5::SoPyramid5(int id, int owner)
  |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoPyramid5::SoPyramid5(const DRT::ELEMENTS::SoPyramid5& old)
+Discret::ELEMENTS::SoPyramid5::SoPyramid5(const Discret::ELEMENTS::SoPyramid5& old)
     : SoBase(old),
       kintype_(old.kintype_),
       detJ_(old.detJ_),
@@ -143,8 +147,8 @@ DRT::ELEMENTS::SoPyramid5::SoPyramid5(const DRT::ELEMENTS::SoPyramid5& old)
     invJ_[i] = old.invJ_[i];
   }
 
-  if (PRESTRESS::IsMulf(pstype_))
-    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
+  if (Prestress::IsMulf(pstype_))
+    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(*(old.prestress_)));
 
   return;
 }
@@ -152,23 +156,26 @@ DRT::ELEMENTS::SoPyramid5::SoPyramid5(const DRT::ELEMENTS::SoPyramid5& old)
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::SoPyramid5::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoPyramid5::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::SoPyramid5(*this);
+  auto* newelement = new Discret::ELEMENTS::SoPyramid5(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::SoPyramid5::Shape() const { return CORE::FE::CellType::pyramid5; }
+Core::FE::CellType Discret::ELEMENTS::SoPyramid5::Shape() const
+{
+  return Core::FE::CellType::pyramid5;
+}
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoPyramid5::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::SoPyramid5::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -191,9 +198,9 @@ void DRT::ELEMENTS::SoPyramid5::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, static_cast<int>(pstype_));
   AddtoPack(data, pstime_);
   AddtoPack(data, time_);
-  if (PRESTRESS::IsMulf(pstype_))
+  if (Prestress::IsMulf(pstype_))
   {
-    CORE::COMM::ParObject::AddtoPack(data, *prestress_);
+    Core::Communication::ParObject::AddtoPack(data, *prestress_);
   }
 
   return;
@@ -203,32 +210,32 @@ void DRT::ELEMENTS::SoPyramid5::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoPyramid5::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoPyramid5::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
   Element::Unpack(basedata);
   // kintype_
-  kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
+  kintype_ = static_cast<Inpar::STR::KinemType>(ExtractInt(position, data));
 
   // detJ_
   ExtractfromPack(position, data, detJ_);
   // invJ_
   int size = 0;
   ExtractfromPack(position, data, size);
-  invJ_.resize(size, CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>(true));
+  invJ_.resize(size, Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   // Extract prestress_
-  pstype_ = static_cast<INPAR::STR::PreStress>(ExtractInt(position, data));
+  pstype_ = static_cast<Inpar::STR::PreStress>(ExtractInt(position, data));
   ExtractfromPack(position, data, pstime_);
   ExtractfromPack(position, data, time_);
-  if (PRESTRESS::IsMulf(pstype_))
+  if (Prestress::IsMulf(pstype_))
   {
     std::vector<char> tmpprestress(0);
     ExtractfromPack(position, data, tmpprestress);
@@ -236,9 +243,9 @@ void DRT::ELEMENTS::SoPyramid5::Unpack(const std::vector<char>& data)
     {
       int numgpt = NUMGPT_SOP5;
       // see whether I am actually a So_pyramid5fbar element
-      auto* me = dynamic_cast<DRT::ELEMENTS::SoPyramid5fbar*>(this);
+      auto* me = dynamic_cast<Discret::ELEMENTS::SoPyramid5fbar*>(this);
       if (me) numgpt += 1;  // one more history entry for centroid data in pyramid5fbar
-      prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, numgpt));
+      prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOP5, numgpt));
     }
     prestress_->Unpack(tmpprestress);
     // end
@@ -254,7 +261,7 @@ void DRT::ELEMENTS::SoPyramid5::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoPyramid5::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoPyramid5::Print(std::ostream& os) const
 {
   os << "So_pyramid5 ";
   Element::Print(os);
@@ -295,24 +302,25 @@ void DRT::ELEMENTS::SoPyramid5::Print(std::ostream& os) const
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SoPyramid5::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoPyramid5::Surfaces()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralSurface>(CORE::COMM::buildSurfaces, *this);
+  return Core::Communication::ElementBoundaryFactory<StructuralSurface>(
+      Core::Communication::buildSurfaces, *this);
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SoPyramid5::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoPyramid5::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<StructuralLine, CORE::Elements::Element>(
-      CORE::COMM::buildLines, *this);
+  return Core::Communication::ElementBoundaryFactory<StructuralLine, Core::Elements::Element>(
+      Core::Communication::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                         |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoPyramid5::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::SoPyramid5::VisNames(std::map<std::string, int>& names)
 {
   SolidMaterial()->VisNames(names);
   return;
@@ -321,10 +329,10 @@ void DRT::ELEMENTS::SoPyramid5::VisNames(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                                  |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoPyramid5::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::SoPyramid5::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (CORE::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::VisData(name, data)) return true;
 
   return SolidMaterial()->VisData(name, data, NUMGPT_SOP5, this->Id());
 }

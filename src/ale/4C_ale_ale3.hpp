@@ -34,64 +34,64 @@ const int NODDOF_ALE3 = 3;  ///< number of dofs per node
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
   namespace ELEMENTS
   {
     // where should that be put?
-    template <CORE::FE::CellType dtype>
+    template <Core::FE::CellType dtype>
     struct DisTypeToNumCornerNodes
     {
     };
     template <>
-    struct DisTypeToNumCornerNodes<CORE::FE::CellType::tet4>
+    struct DisTypeToNumCornerNodes<Core::FE::CellType::tet4>
     {
       static constexpr int numCornerNodes = 4;
     };
     template <>
-    struct DisTypeToNumCornerNodes<CORE::FE::CellType::tet10>
+    struct DisTypeToNumCornerNodes<Core::FE::CellType::tet10>
     {
       static constexpr int numCornerNodes = 4;
     };
     template <>
-    struct DisTypeToNumCornerNodes<CORE::FE::CellType::hex8>
+    struct DisTypeToNumCornerNodes<Core::FE::CellType::hex8>
     {
       static constexpr int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<CORE::FE::CellType::hex20>
+    struct DisTypeToNumCornerNodes<Core::FE::CellType::hex20>
     {
       static constexpr int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<CORE::FE::CellType::hex27>
+    struct DisTypeToNumCornerNodes<Core::FE::CellType::hex27>
     {
       static constexpr int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<CORE::FE::CellType::pyramid5>
+    struct DisTypeToNumCornerNodes<Core::FE::CellType::pyramid5>
     {
       static constexpr int numCornerNodes = 5;
     };
     template <>
-    struct DisTypeToNumCornerNodes<CORE::FE::CellType::wedge6>
+    struct DisTypeToNumCornerNodes<Core::FE::CellType::wedge6>
     {
       static constexpr int numCornerNodes = 6;
     };
     template <>
-    struct DisTypeToNumCornerNodes<CORE::FE::CellType::wedge15>
+    struct DisTypeToNumCornerNodes<Core::FE::CellType::wedge15>
     {
       static constexpr int numCornerNodes = 6;
     };
     template <>
-    struct DisTypeToNumCornerNodes<CORE::FE::CellType::nurbs8>
+    struct DisTypeToNumCornerNodes<Core::FE::CellType::nurbs8>
     {
       static constexpr int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<CORE::FE::CellType::nurbs27>
+    struct DisTypeToNumCornerNodes<Core::FE::CellType::nurbs27>
     {
       static constexpr int numCornerNodes = 8;
     };
@@ -101,35 +101,35 @@ namespace DRT
     /*----------------------------------------------------------------------------*/
     class Ale3Surface;
     class Ale3ImplInterface;
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class Ale3Impl;
     class Ale3SurfaceImplInterface;
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class Ale3SurfaceImpl;
 
 
-    class Ale3Type : public CORE::Elements::ElementType
+    class Ale3Type : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Ale3Type"; }
 
       static Ale3Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -141,7 +141,7 @@ namespace DRT
     /*!
     \brief A C++ wrapper for the ale3 element
     */
-    class Ale3 : public CORE::Elements::Element
+    class Ale3 : public Core::Elements::Element
     {
      public:
       //! @name Friends
@@ -174,12 +174,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
@@ -219,7 +219,7 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -235,7 +235,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -253,18 +253,18 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -280,7 +280,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override { return Ale3Type::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return Ale3Type::Instance(); }
 
       //@}
 
@@ -290,7 +290,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -320,11 +320,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
 
       /*!
@@ -341,10 +341,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
       //@}
@@ -392,21 +392,21 @@ namespace DRT
       virtual ~Ale3ImplInterface() = default;
 
       /// Internal implementation class for fluid element
-      static Ale3ImplInterface* Impl(DRT::ELEMENTS::Ale3* ele);
+      static Ale3ImplInterface* Impl(Discret::ELEMENTS::Ale3* ele);
 
       virtual void static_ke_spring(Ale3* ele,        ///< pointer to element
-          CORE::LINALG::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
-          CORE::LINALG::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          Core::LinAlg::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
+          Core::LinAlg::SerialDenseVector& residual,  ///< element residual vector (to be filled)
           const std::vector<double>& displacements,   ///< nodal displacements
           const bool spatialconfiguration  ///< use spatial configuration (true), material
                                            ///< configuration (false)
           ) = 0;
 
       virtual void static_ke_nonlinear(Ale3* ele,     ///< pointer to element
-          DRT::Discretization& discretization,        ///< discretization
+          Discret::Discretization& discretization,    ///< discretization
           std::vector<int>& lm,                       ///< node owner procs
-          CORE::LINALG::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
-          CORE::LINALG::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          Core::LinAlg::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
+          Core::LinAlg::SerialDenseVector& residual,  ///< element residual vector (to be filled)
           std::vector<double>& my_dispnp,             ///< nodal displacements
           Teuchos::ParameterList& params,             ///< parameter list
           const bool spatialconfiguration  ///< use spatial configuration (true), material
@@ -414,41 +414,41 @@ namespace DRT
           ) = 0;
 
       virtual void static_ke_laplace(Ale3* ele,        ///< pointer to element
-          DRT::Discretization& dis,                    ///< discretization
-          CORE::LINALG::SerialDenseMatrix& sys_mat,    ///< element stiffnes matrix (to be filled)
-          CORE::LINALG::SerialDenseVector& residual,   ///< element residual vector (to be filled)
+          Discret::Discretization& dis,                ///< discretization
+          Core::LinAlg::SerialDenseMatrix& sys_mat,    ///< element stiffnes matrix (to be filled)
+          Core::LinAlg::SerialDenseVector& residual,   ///< element residual vector (to be filled)
           std::vector<double>& my_dispnp,              ///< nodal displacements
-          Teuchos::RCP<CORE::MAT::Material> material,  ///< material law
+          Teuchos::RCP<Core::Mat::Material> material,  ///< material law
           const bool spatialconfiguration  ///< use spatial configuration (true), material
                                            ///< configuration (false)
           ) = 0;
 
       virtual void ElementNodeNormal(
-          Ale3* ele, CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& my_dispnp) = 0;
+          Ale3* ele, Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& my_dispnp) = 0;
     };
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class Ale3Impl : public Ale3ImplInterface
     {
      public:
       /// Singleton access method
       static Ale3Impl<distype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       void static_ke_laplace(Ale3* ele,                ///< pointer to element
-          DRT::Discretization& dis,                    ///< discretization
-          CORE::LINALG::SerialDenseMatrix& sys_mat,    ///< element stiffnes matrix (to be filled)
-          CORE::LINALG::SerialDenseVector& residual,   ///< element residual vector (to be filled)
+          Discret::Discretization& dis,                ///< discretization
+          Core::LinAlg::SerialDenseMatrix& sys_mat,    ///< element stiffnes matrix (to be filled)
+          Core::LinAlg::SerialDenseVector& residual,   ///< element residual vector (to be filled)
           std::vector<double>& my_dispnp,              ///< nodal displacements
-          Teuchos::RCP<CORE::MAT::Material> material,  ///< material law
+          Teuchos::RCP<Core::Mat::Material> material,  ///< material law
           const bool spatialconfiguration  ///< use spatial configuration (true), material
                                            ///< configuration (false)
           ) override;
 
       void static_ke_spring(Ale3* ele,  ///< pointer to element
-          CORE::LINALG::SerialDenseMatrix&
+          Core::LinAlg::SerialDenseMatrix&
               sys_mat_epetra,  ///< element stiffness matrix (to be filled)
-          CORE::LINALG::SerialDenseVector&
+          Core::LinAlg::SerialDenseVector&
               residual_epetra,                       ///< element residual vector (to be filled)
           const std::vector<double>& displacements,  ///< nodal displacements
           const bool spatialconfiguration            ///< use spatial configuration (true), material
@@ -456,10 +456,10 @@ namespace DRT
           ) override;
 
       void static_ke_nonlinear(Ale3* ele,             ///< pointer to element
-          DRT::Discretization& discretization,        ///< discretization
+          Discret::Discretization& discretization,    ///< discretization
           std::vector<int>& lm,                       ///< node owner procs
-          CORE::LINALG::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
-          CORE::LINALG::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          Core::LinAlg::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
+          Core::LinAlg::SerialDenseVector& residual,  ///< element residual vector (to be filled)
           std::vector<double>& my_dispnp,             ///< nodal displacements
           Teuchos::ParameterList& params,             ///< parameter list
           const bool spatialconfiguration  ///< use spatial configuration (true), material
@@ -467,7 +467,7 @@ namespace DRT
           ) override;
 
       void ElementNodeNormal(Ale3* ele,              ///< pointer to element
-          CORE::LINALG::SerialDenseVector& elevec1,  ///< normal vector (to be filled)
+          Core::LinAlg::SerialDenseVector& elevec1,  ///< normal vector (to be filled)
           std::vector<double>& my_dispnp             ///< nodal displacements
           ) override;
 
@@ -478,10 +478,10 @@ namespace DRT
 
      private:
       Ale3Impl() = default;
-      static constexpr int iel = CORE::FE::num_nodes<distype>;
+      static constexpr int iel = Core::FE::num_nodes<distype>;
       static constexpr int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
 
-      inline void ale3_edge_geometry(int i, int j, const CORE::LINALG::Matrix<3, iel>& xyze,
+      inline void ale3_edge_geometry(int i, int j, const Core::LinAlg::Matrix<3, iel>& xyze,
           double& length, double& dx, double& dy, double& dz);
 
       /*!
@@ -504,10 +504,10 @@ namespace DRT
       \param sysmat (in/out): The element's sys_mat
       */
       void ale3_add_tria_stiffness(int node_p, int node_q, int node_r, int node_s,
-          const CORE::LINALG::Matrix<3, 1>& sq, const double len_sq,
-          const CORE::LINALG::Matrix<3, 1>& rp, const double len_rp,
-          const CORE::LINALG::Matrix<3, 1>& qp, const CORE::LINALG::Matrix<3, 1>& local_x,
-          CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat);
+          const Core::LinAlg::Matrix<3, 1>& sq, const double len_sq,
+          const Core::LinAlg::Matrix<3, 1>& rp, const double len_rp,
+          const Core::LinAlg::Matrix<3, 1>& qp, const Core::LinAlg::Matrix<3, 1>& local_x,
+          Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat);
 
       /*!
       \brief Prevents node-face-penetration for given nodes.
@@ -519,21 +519,21 @@ namespace DRT
       \param xyze (in)     : The actual element coordinates
       */
       void ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2, int tet_3,
-          CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
-          const CORE::LINALG::Matrix<3, iel>& xyze);
-      inline void ale3_tors_spring_tet4(CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
-          const CORE::LINALG::Matrix<3, iel>& xyze);
-      inline void ale3_tors_spring_pyramid5(CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
-          const CORE::LINALG::Matrix<3, iel>& xyze);
-      inline void ale3_tors_spring_wedge6(CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
-          const CORE::LINALG::Matrix<3, iel>& xyze);
-      inline void ale3_tors_spring_hex8(CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
-          const CORE::LINALG::Matrix<3, iel>& xyze);
-      inline void ale3_tors_spring_nurbs27(CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
-          const CORE::LINALG::Matrix<3, iel>& xyze);
+          Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat,
+          const Core::LinAlg::Matrix<3, iel>& xyze);
+      inline void ale3_tors_spring_tet4(Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat,
+          const Core::LinAlg::Matrix<3, iel>& xyze);
+      inline void ale3_tors_spring_pyramid5(Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat,
+          const Core::LinAlg::Matrix<3, iel>& xyze);
+      inline void ale3_tors_spring_wedge6(Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat,
+          const Core::LinAlg::Matrix<3, iel>& xyze);
+      inline void ale3_tors_spring_hex8(Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat,
+          const Core::LinAlg::Matrix<3, iel>& xyze);
+      inline void ale3_tors_spring_nurbs27(Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat,
+          const Core::LinAlg::Matrix<3, iel>& xyze);
 
 
-      inline CORE::FE::GaussRule3D get_optimal_gaussrule();
+      inline Core::FE::GaussRule3D get_optimal_gaussrule();
 
       Ale3Impl<distype> operator=(const Ale3Impl<distype> other);
     };
@@ -545,24 +545,24 @@ namespace DRT
     //=======================================================================
 
 
-    class Ale3SurfaceType : public CORE::Elements::ElementType
+    class Ale3SurfaceType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Ale3SurfaceType"; }
 
       static Ale3SurfaceType& Instance();
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
         return nullspace;
       }
@@ -578,11 +578,11 @@ namespace DRT
     \note This is a pure Neumann boundary condition element. It's only
           purpose is to evaluate surface Neumann boundary conditions that might be
           adjacent to a parent ale3 element. It therefore does not implement
-          the CORE::Elements::Element::Evaluate method and does not have its own ElementRegister
+          the Core::Elements::Element::Evaluate method and does not have its own ElementRegister
     class.
 
     */
-    class Ale3Surface : public CORE::Elements::FaceElement
+    class Ale3Surface : public Core::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -598,8 +598,8 @@ namespace DRT
       \param parent: The parent ale element of this surface
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
-      Ale3Surface(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
-          DRT::ELEMENTS::Ale3* parent, const int lsurface);
+      Ale3Surface(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
+          Discret::ELEMENTS::Ale3* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -616,12 +616,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -640,7 +640,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -658,18 +658,18 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -685,7 +685,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return Ale3SurfaceType::Instance();
       }
@@ -716,11 +716,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
 
 
@@ -738,10 +738,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
@@ -751,9 +751,9 @@ namespace DRT
 
       //  compute kovariant metric tensor G for ale surface element
       //                                                  gammi 04/07
-      void f3_metric_tensor_for_surface(const CORE::LINALG::SerialDenseMatrix xyze,
-          const CORE::LINALG::SerialDenseMatrix deriv,
-          CORE::LINALG::SerialDenseMatrix& metrictensor, double* drs);
+      void f3_metric_tensor_for_surface(const Core::LinAlg::SerialDenseMatrix xyze,
+          const Core::LinAlg::SerialDenseMatrix deriv,
+          Core::LinAlg::SerialDenseMatrix& metrictensor, double* drs);
 
     };  // class Ale3Surface
 
@@ -765,14 +765,14 @@ namespace DRT
 
       virtual ~Ale3SurfaceImplInterface() = default;
       /// Internal implementation class for ale surface element
-      static Ale3SurfaceImplInterface* Impl(DRT::ELEMENTS::Ale3Surface* ele);
+      static Ale3SurfaceImplInterface* Impl(Discret::ELEMENTS::Ale3Surface* ele);
 
       virtual void ElementNodeNormal(Ale3Surface* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& mydispnp) = 0;
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& mydispnp) = 0;
     };
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class Ale3SurfaceImpl : public Ale3SurfaceImplInterface
     {
       Ale3SurfaceImpl() {}
@@ -780,13 +780,13 @@ namespace DRT
      public:
       /// Singleton access method
       static Ale3SurfaceImpl<distype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       //! number of element nodes
-      static constexpr int bdrynen_ = CORE::FE::num_nodes<distype>;
+      static constexpr int bdrynen_ = Core::FE::num_nodes<distype>;
 
       //! number of spatial dimensions of boundary element
-      static constexpr int bdrynsd_ = CORE::FE::dim<distype>;
+      static constexpr int bdrynsd_ = Core::FE::dim<distype>;
 
       //! number of spatial dimensions of parent element
       static constexpr int nsd_ = bdrynsd_ + 1;
@@ -795,15 +795,15 @@ namespace DRT
       static constexpr int numdofpernode_ = nsd_;
 
       void ElementNodeNormal(Ale3Surface* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& mydispnp) override;
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& mydispnp) override;
 
      private:
       //  static constexpr int iel =
-      //  CORE::FE::num_nodes<distype>; static const int
+      //  Core::FE::num_nodes<distype>; static const int
       //  numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;
 
-      //  inline void ale3_edge_geometry(int i, int j, const CORE::LINALG::Matrix<3, iel>& xyze,
+      //  inline void ale3_edge_geometry(int i, int j, const Core::LinAlg::Matrix<3, iel>& xyze,
       //                                 double& length,
       //                                 double& dx,
       //                                 double& dy,
@@ -830,13 +830,13 @@ namespace DRT
       //  */
       //  void ale3_add_tria_stiffness(
       //      int node_p, int node_q, int node_r, int node_s,
-      //      const CORE::LINALG::Matrix<3, 1>& sq,
+      //      const Core::LinAlg::Matrix<3, 1>& sq,
       //      const double len_sq,
-      //      const CORE::LINALG::Matrix<3, 1>& rp,
+      //      const Core::LinAlg::Matrix<3, 1>& rp,
       //      const double len_rp,
-      //      const CORE::LINALG::Matrix<3, 1>& qp,
-      //      const CORE::LINALG::Matrix<3, 1>& local_x,
-      //      CORE::LINALG::Matrix<3*iel,3*iel>& sys_mat);
+      //      const Core::LinAlg::Matrix<3, 1>& qp,
+      //      const Core::LinAlg::Matrix<3, 1>& local_x,
+      //      Core::LinAlg::Matrix<3*iel,3*iel>& sys_mat);
       //
       //  /*!
       //  \brief Prevents node-face-penetration for given nodes.
@@ -848,46 +848,46 @@ namespace DRT
       //  \param xyze (in)     : The actual element coordinates
       //  */
       //  void ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2, int tet_3,
-      //                                CORE::LINALG::Matrix<3*iel,3*iel>& sys_mat,
-      //                                const CORE::LINALG::Matrix<3,iel>& xyze);
-      //  inline void ale3_tors_spring_tet4(CORE::LINALG::Matrix<3*iel,3*iel>& sys_mat,
-      //                                    const CORE::LINALG::Matrix<3,iel>& xyze);
-      //  inline void ale3_tors_spring_pyramid5(CORE::LINALG::Matrix<3*iel,3*iel>& sys_mat,
-      //                                        const CORE::LINALG::Matrix<3,iel>& xyze);
-      //  inline void ale3_tors_spring_wedge6(CORE::LINALG::Matrix<3*iel,3*iel>& sys_mat,
-      //                                      const CORE::LINALG::Matrix<3,iel>& xyze);
-      //  inline void ale3_tors_spring_hex8(CORE::LINALG::Matrix<3*iel,3*iel>& sys_mat,
-      //                                    const CORE::LINALG::Matrix<3,iel>& xyze);
-      //  inline void ale3_tors_spring_nurbs27(CORE::LINALG::Matrix<3*iel,3*iel>& sys_mat,
-      //               const CORE::LINALG::Matrix<3,iel>& xyze);
+      //                                Core::LinAlg::Matrix<3*iel,3*iel>& sys_mat,
+      //                                const Core::LinAlg::Matrix<3,iel>& xyze);
+      //  inline void ale3_tors_spring_tet4(Core::LinAlg::Matrix<3*iel,3*iel>& sys_mat,
+      //                                    const Core::LinAlg::Matrix<3,iel>& xyze);
+      //  inline void ale3_tors_spring_pyramid5(Core::LinAlg::Matrix<3*iel,3*iel>& sys_mat,
+      //                                        const Core::LinAlg::Matrix<3,iel>& xyze);
+      //  inline void ale3_tors_spring_wedge6(Core::LinAlg::Matrix<3*iel,3*iel>& sys_mat,
+      //                                      const Core::LinAlg::Matrix<3,iel>& xyze);
+      //  inline void ale3_tors_spring_hex8(Core::LinAlg::Matrix<3*iel,3*iel>& sys_mat,
+      //                                    const Core::LinAlg::Matrix<3,iel>& xyze);
+      //  inline void ale3_tors_spring_nurbs27(Core::LinAlg::Matrix<3*iel,3*iel>& sys_mat,
+      //               const Core::LinAlg::Matrix<3,iel>& xyze);
       //
       //
-      //  inline CORE::FE::GaussRule3D get_optimal_gaussrule();
+      //  inline Core::FE::GaussRule3D get_optimal_gaussrule();
 
       // Ale3SurfaceImpl<distype> operator=(const Ale3SurfaceImpl<distype> other);
 
 
      protected:
       //! array for shape functions for boundary element
-      CORE::LINALG::Matrix<bdrynen_, 1> funct_;
+      Core::LinAlg::Matrix<bdrynen_, 1> funct_;
       //! array for shape function derivatives for boundary element
-      CORE::LINALG::Matrix<bdrynsd_, bdrynen_> deriv_;
+      Core::LinAlg::Matrix<bdrynsd_, bdrynen_> deriv_;
       //! integration factor
       double fac_;
       //! normal vector pointing out of the domain
-      CORE::LINALG::Matrix<nsd_, 1> unitnormal_;
+      Core::LinAlg::Matrix<nsd_, 1> unitnormal_;
       //! infinitesimal area element drs
       double drs_;
       //! coordinates of current integration point in reference coordinates
-      CORE::LINALG::Matrix<bdrynsd_, 1> xsi_;
+      Core::LinAlg::Matrix<bdrynsd_, 1> xsi_;
       //! node coordinates for boundary element
-      CORE::LINALG::Matrix<nsd_, bdrynen_> xyze_;
+      Core::LinAlg::Matrix<nsd_, bdrynen_> xyze_;
     };
 
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

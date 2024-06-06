@@ -36,10 +36,10 @@ FOUR_C_NAMESPACE_OPEN
 
 //! constructor
 XFEM::MeshCouplingFPI::MeshCouplingFPI(
-    Teuchos::RCP<DRT::Discretization>& bg_dis,  ///< background discretization
+    Teuchos::RCP<Discret::Discretization>& bg_dis,  ///< background discretization
     const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                    ///< discretization is identified
-    Teuchos::RCP<DRT::Discretization>&
+    Teuchos::RCP<Discret::Discretization>&
         cond_dis,           ///< discretization from which cutter discretization can be derived
     const int coupling_id,  ///< id of composite of coupling conditions
     const double time,      ///< time
@@ -88,8 +88,8 @@ void XFEM::MeshCouplingFPI::init_state_vectors()
   const Epetra_Map* cutterdofrowmap = cutter_dis_->dof_row_map();
   const Epetra_Map* cutterdofcolmap = cutter_dis_->DofColMap();
 
-  itrueresidual_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
-  iforcecol_ = CORE::LINALG::CreateVector(*cutterdofcolmap, true);
+  itrueresidual_ = Core::LinAlg::CreateVector(*cutterdofrowmap, true);
+  iforcecol_ = Core::LinAlg::CreateVector(*cutterdofcolmap, true);
 }
 
 /*--------------------------------------------------------------------------*
@@ -101,9 +101,9 @@ void XFEM::MeshCouplingFPI::do_condition_specific_setup()
   // should be done in an setup routine, to guarantee, that it is done late enought (no ghosting
   // afterwards...)
   if (coupled_field_ == MeshCouplingFPI::ps_ps)
-    POROELAST::UTILS::create_volume_ghosting(*cutter_dis_);
+    PoroElast::UTILS::create_volume_ghosting(*cutter_dis_);
   else
-    POROELAST::UTILS::reconnect_parent_pointers(*cutter_dis_, *cond_dis_);
+    PoroElast::UTILS::reconnect_parent_pointers(*cutter_dis_, *cond_dis_);
 
   // call base class
   XFEM::MeshCoupling::do_condition_specific_setup();
@@ -113,7 +113,7 @@ void XFEM::MeshCouplingFPI::do_condition_specific_setup()
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFPI::reconnect_parent_pointers()
 {
-  POROELAST::UTILS::reconnect_parent_pointers(*cutter_dis_, *cond_dis_);
+  PoroElast::UTILS::reconnect_parent_pointers(*cutter_dis_, *cond_dis_);
 }
 
 /*--------------------------------------------------------------------------*
@@ -155,98 +155,98 @@ void XFEM::MeshCouplingFPI::setup_configuration_map()
 
       if (!sub_tang_)
       {
-        configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::F_Con_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::F_Con_Col] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
       }
       else
       {
-        configuration_map_[INPAR::XFEM::F_Con_n_Row] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::F_Con_n_Col] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::F_Con_n_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::F_Con_n_Col] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::X_Con_n_Row] = std::pair<bool, double>(true, 1.0);
       }
-      // configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0-porosity);
+      // configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool,double>(true,1.0-porosity);
       // Configuration of Adjount Consistency Terms
-      configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
 
       if (!sub_tang_)
       {
-        configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::F_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] =
+        configuration_map_[Inpar::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::F_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::X_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::FStr_Adj_t_Col] =
             std::pair<bool, double>(true, 1.0);  // Here we need alpha BJ finally!!! Todo
       }
 
       // Configuration of Penalty Terms
-      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
 
       if (!sub_tang_)
       {
-        configuration_map_[INPAR::XFEM::F_Con_t_Row] =
+        configuration_map_[Inpar::XFEM::F_Con_t_Row] =
             std::pair<bool, double>(true, 1.0);  //+sign for penalty!
-        configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::X_Con_t_Row] =
+        configuration_map_[Inpar::XFEM::F_Con_t_Col] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::X_Con_t_Row] =
             std::pair<bool, double>(true, 1.0);  //+sign for penalty!
       }
 
 #ifdef INFLOW_STAB
-      configuration_map_[INPAR::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF1] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF2] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_Row_linF3] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF1] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF2] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_Row_linF3] = std::pair<bool, double>(true, 1.0);
 #endif
       break;
     }
     case MeshCouplingFPI::ps_pf:
     {
       // Configuration of Adjount Consistency Terms
-      configuration_map_[INPAR::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Adj_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Adj_n_Col] = std::pair<bool, double>(true, 1.0);
 
       if (!sub_tang_)
       {
-        configuration_map_[INPAR::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::F_Adj_t_Row] = std::pair<bool, double>(true, 1.0);
         if (full_bj_)
-          configuration_map_[INPAR::XFEM::X_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
+          configuration_map_[Inpar::XFEM::X_Adj_t_Col] = std::pair<bool, double>(true, 1.0);
       }
 
       //    //Configuration of Penalty Terms
-      configuration_map_[INPAR::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_t_Row] = std::pair<bool, double>(true, 1.0);
       if (full_bj_)
-        configuration_map_[INPAR::XFEM::X_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::X_Pen_t_Col] = std::pair<bool, double>(true, 1.0);
       break;
     }
     case MeshCouplingFPI::pf_ps:
     {
       // Configuration of Consistency Terms
-      configuration_map_[INPAR::XFEM::X_Con_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Con_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Con_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Con_n_Col] = std::pair<bool, double>(true, 1.0);
       // Configuration of Penalty Terms
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::F_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
       break;
     }
     case MeshCouplingFPI::pf_pf:
     {
       // Configuration of Penalty Terms
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
-      configuration_map_[INPAR::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, 1.0);
+      configuration_map_[Inpar::XFEM::X_Pen_n_Col] = std::pair<bool, double>(true, 1.0);
       break;
     }
   }
@@ -260,14 +260,14 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp(double& kappa_m,  //< fl
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    CORE::Elements::Element* ele,   //< Element
-    CORE::Elements::Element* bele,  //< Boundary Element
+    double& full_stab, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond,
+    Core::Elements::Element* ele,   //< Element
+    Core::Elements::Element* bele,  //< Boundary Element
     double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+    Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
@@ -298,85 +298,85 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp(double& kappa_m,  //< fl
     {
       case MeshCouplingFPI::ps_ps:
       {
-        configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = 1.0 - porosity;
+        configuration_map_[Inpar::XFEM::X_Adj_n_Col].second = 1.0 - porosity;
         if (!sub_tang_)
         {
-          configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
-          configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = 1.0 - full_bj_ * porosity;
-          configuration_map_[INPAR::XFEM::FStr_Adj_t_Col].second = sliplength;
+          configuration_map_[Inpar::XFEM::F_Adj_t_Row].second = stabadj;
+          configuration_map_[Inpar::XFEM::X_Adj_t_Col].second = 1.0 - full_bj_ * porosity;
+          configuration_map_[Inpar::XFEM::FStr_Adj_t_Col].second = sliplength;
         }
-        configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
-        configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab;
-        configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = 1.0 - porosity;
+        configuration_map_[Inpar::XFEM::F_Pen_n_Row].second = full_stab;
+        configuration_map_[Inpar::XFEM::X_Pen_n_Row].second = full_stab;
+        configuration_map_[Inpar::XFEM::X_Pen_n_Col].second = 1.0 - porosity;
         if (!sub_tang_)
         {
-          configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
-          configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = stabnit;
-          configuration_map_[INPAR::XFEM::F_Con_t_Row].second = -stabnit;  //+sign for penalty!
-          configuration_map_[INPAR::XFEM::F_Con_t_Col].second = sliplength / dynvisc;
-          configuration_map_[INPAR::XFEM::X_Con_t_Row].second = -stabnit;  //+sign for penalty!
+          configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
+          configuration_map_[Inpar::XFEM::X_Pen_t_Row].second = stabnit;
+          configuration_map_[Inpar::XFEM::F_Con_t_Row].second = -stabnit;  //+sign for penalty!
+          configuration_map_[Inpar::XFEM::F_Con_t_Col].second = sliplength / dynvisc;
+          configuration_map_[Inpar::XFEM::X_Con_t_Row].second = -stabnit;  //+sign for penalty!
         }
         else
         {
-          configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = 1. / sliplength;
-          configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = 1. / sliplength;
+          configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = 1. / sliplength;
+          configuration_map_[Inpar::XFEM::X_Pen_t_Row].second = 1. / sliplength;
 
           // does nothing but should just be done in case we don't use the adjoint
-          configuration_map_[INPAR::XFEM::F_Adj_t_Col].second = 1.0;
-          configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = 1.0 - full_bj_ * porosity;
+          configuration_map_[Inpar::XFEM::F_Adj_t_Col].second = 1.0;
+          configuration_map_[Inpar::XFEM::X_Adj_t_Col].second = 1.0 - full_bj_ * porosity;
         }
 
-        configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = 1.0 - full_bj_ * porosity;
+        configuration_map_[Inpar::XFEM::X_Pen_t_Col].second = 1.0 - full_bj_ * porosity;
         break;
       }
       case MeshCouplingFPI::ps_pf:
       {
-        configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = porosity;
+        configuration_map_[Inpar::XFEM::X_Adj_n_Col].second = porosity;
         if (!sub_tang_)
         {
-          configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
-          configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = full_bj_ * porosity;
+          configuration_map_[Inpar::XFEM::F_Adj_t_Row].second = stabadj;
+          configuration_map_[Inpar::XFEM::X_Adj_t_Col].second = full_bj_ * porosity;
         }
-        configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
-        configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab;
-        configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = porosity;
+        configuration_map_[Inpar::XFEM::F_Pen_n_Row].second = full_stab;
+        configuration_map_[Inpar::XFEM::X_Pen_n_Row].second = full_stab;
+        configuration_map_[Inpar::XFEM::X_Pen_n_Col].second = porosity;
         if (!sub_tang_)
         {
-          configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
-          configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = stabnit;
+          configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
+          configuration_map_[Inpar::XFEM::X_Pen_t_Row].second = stabnit;
         }
         else
         {
-          configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = 1. / sliplength;
-          configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = 1. / sliplength;
+          configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = 1. / sliplength;
+          configuration_map_[Inpar::XFEM::X_Pen_t_Row].second = 1. / sliplength;
 
           // does nothing but should just be done in case we don't use the adjoint
-          configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = full_bj_ * porosity;
+          configuration_map_[Inpar::XFEM::X_Adj_t_Col].second = full_bj_ * porosity;
         }
-        configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = full_bj_ * porosity;
+        configuration_map_[Inpar::XFEM::X_Pen_t_Col].second = full_bj_ * porosity;
         break;
       }
       case MeshCouplingFPI::pf_ps:
       {
-        configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab;
-        configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = 1.0 - porosity;
+        configuration_map_[Inpar::XFEM::X_Pen_n_Row].second = full_stab;
+        configuration_map_[Inpar::XFEM::X_Pen_n_Col].second = 1.0 - porosity;
 
         // does nothing but should just be done in case we don't use the adjoint
-        configuration_map_[INPAR::XFEM::F_Adj_n_Col].second =
-            configuration_map_[INPAR::XFEM::F_Pen_n_Col].second;
-        configuration_map_[INPAR::XFEM::X_Adj_n_Col].second =
-            configuration_map_[INPAR::XFEM::X_Pen_n_Col].second;
+        configuration_map_[Inpar::XFEM::F_Adj_n_Col].second =
+            configuration_map_[Inpar::XFEM::F_Pen_n_Col].second;
+        configuration_map_[Inpar::XFEM::X_Adj_n_Col].second =
+            configuration_map_[Inpar::XFEM::X_Pen_n_Col].second;
         break;
       }
       case MeshCouplingFPI::pf_pf:
       {
         // Configuration of Penalty Terms
-        configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab;
-        configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = porosity;
+        configuration_map_[Inpar::XFEM::X_Pen_n_Row].second = full_stab;
+        configuration_map_[Inpar::XFEM::X_Pen_n_Col].second = porosity;
 
         // does nothing but should just be done in case we don't use the adjoint
-        configuration_map_[INPAR::XFEM::X_Adj_n_Col].second =
-            configuration_map_[INPAR::XFEM::X_Pen_n_Col].second;
+        configuration_map_[Inpar::XFEM::X_Adj_n_Col].second =
+            configuration_map_[Inpar::XFEM::X_Pen_n_Col].second;
         break;
       }
     }
@@ -397,14 +397,14 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const CORE::Conditions::Condition* cond,
-    CORE::Elements::Element* ele,   //< Element
-    CORE::Elements::Element* bele,  //< Boundary Element
+    double& full_stab, const Core::LinAlg::Matrix<3, 1>& x, const Core::Conditions::Condition* cond,
+    Core::Elements::Element* ele,   //< Element
+    Core::Elements::Element* bele,  //< Boundary Element
     double* funct,                  //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    Core::LinAlg::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    Core::LinAlg::Matrix<3, 1>& normal,     //< normal at gp
+    Core::LinAlg::Matrix<3, 1>& vel_m,      //< master velocity at gp
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
@@ -421,7 +421,7 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
   static const double scaling = 1. / (MAX_h - MIN_h);
   static const double refsliplength = 0.1;  // numerical reference sliplength
 
-  CORE::LINALG::Matrix<2, 1> xsi(rst_slave.A(), true);  // 3-->2
+  Core::LinAlg::Matrix<2, 1> xsi(rst_slave.A(), true);  // 3-->2
   double gap =
       MAX_h * h_scaling_;  // initialize with large value as this should be the default value ...
   bool pure_fsi = true;
@@ -478,56 +478,56 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
   {
     case MeshCouplingFPI::ps_ps:
     {
-      configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = 1.0 - porosity;
-      configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
-      configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = 1.0 - full_bj_ * porosity;
-      configuration_map_[INPAR::XFEM::FStr_Adj_t_Col].second = sliplength;
+      configuration_map_[Inpar::XFEM::X_Adj_n_Col].second = 1.0 - porosity;
+      configuration_map_[Inpar::XFEM::F_Adj_t_Row].second = stabadj;
+      configuration_map_[Inpar::XFEM::X_Adj_t_Col].second = 1.0 - full_bj_ * porosity;
+      configuration_map_[Inpar::XFEM::FStr_Adj_t_Col].second = sliplength;
 
-      configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
-      configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = 1.0 - porosity;
-      configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = stabnit;
+      configuration_map_[Inpar::XFEM::F_Pen_n_Row].second = full_stab;
+      configuration_map_[Inpar::XFEM::X_Pen_n_Col].second = 1.0 - porosity;
+      configuration_map_[Inpar::XFEM::X_Pen_t_Row].second = stabnit;
 
       if (pure_fsi)
       {
-        configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
-        configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
-        configuration_map_[INPAR::XFEM::X_Con_t_Row].second = -stabnit;  //+sign for penalty!
+        configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool, double>(true, 1.0);
+        configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
+        configuration_map_[Inpar::XFEM::X_Con_t_Row].second = -stabnit;  //+sign for penalty!
       }
       else
       {
-        configuration_map_[INPAR::XFEM::X_Con_Row] = std::pair<bool, double>(false, 0.0);
-        configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(false, 0.0);
+        configuration_map_[Inpar::XFEM::X_Con_Row] = std::pair<bool, double>(false, 0.0);
+        configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(false, 0.0);
         if (sliplength > 1e-40)
-          configuration_map_[INPAR::XFEM::X_Con_t_Row].second =
+          configuration_map_[Inpar::XFEM::X_Con_t_Row].second =
               -stabnit + dynvisc / sliplength;  //+sign for penalty! + tangential consistency
         else                                    // avoid to evaluate this term ...
-          configuration_map_[INPAR::XFEM::X_Con_t_Row].second = 0;
+          configuration_map_[Inpar::XFEM::X_Con_t_Row].second = 0;
       }
-      configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
-      configuration_map_[INPAR::XFEM::F_Con_t_Row].second = -stabnit;  //+sign for penalty!
-      configuration_map_[INPAR::XFEM::F_Con_t_Col].second = sliplength / dynvisc;
-      configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = 1.0 - full_bj_ * porosity;
+      configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
+      configuration_map_[Inpar::XFEM::F_Con_t_Row].second = -stabnit;  //+sign for penalty!
+      configuration_map_[Inpar::XFEM::F_Con_t_Col].second = sliplength / dynvisc;
+      configuration_map_[Inpar::XFEM::X_Pen_t_Col].second = 1.0 - full_bj_ * porosity;
       break;
     }
     case MeshCouplingFPI::ps_pf:
     {
-      configuration_map_[INPAR::XFEM::X_Adj_n_Col].second = porosity;
-      configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = stabadj;
-      configuration_map_[INPAR::XFEM::X_Adj_t_Col].second = full_bj_ * porosity;
-      configuration_map_[INPAR::XFEM::F_Pen_n_Row].second = full_stab;
-      configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = porosity;
+      configuration_map_[Inpar::XFEM::X_Adj_n_Col].second = porosity;
+      configuration_map_[Inpar::XFEM::F_Adj_t_Row].second = stabadj;
+      configuration_map_[Inpar::XFEM::X_Adj_t_Col].second = full_bj_ * porosity;
+      configuration_map_[Inpar::XFEM::F_Pen_n_Row].second = full_stab;
+      configuration_map_[Inpar::XFEM::X_Pen_n_Col].second = porosity;
 
-      configuration_map_[INPAR::XFEM::F_Pen_t_Row].second = stabnit;
-      configuration_map_[INPAR::XFEM::X_Pen_t_Row].second = stabnit;
+      configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
+      configuration_map_[Inpar::XFEM::X_Pen_t_Row].second = stabnit;
 
-      configuration_map_[INPAR::XFEM::X_Pen_t_Col].second = full_bj_ * porosity;
+      configuration_map_[Inpar::XFEM::X_Pen_t_Col].second = full_bj_ * porosity;
       if (pure_fsi)
       {
-        configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
+        configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(true, full_stab);
       }
       else
       {
-        configuration_map_[INPAR::XFEM::X_Pen_n_Row] = std::pair<bool, double>(false, 0.0);
+        configuration_map_[Inpar::XFEM::X_Pen_n_Row] = std::pair<bool, double>(false, 0.0);
       }
       break;
     }
@@ -543,16 +543,16 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
       xf_c_comm_->Gmsh_Write(x, ffac, 10);
 #endif
 
-      configuration_map_[INPAR::XFEM::X_Con_n_Row].second = ffac;
+      configuration_map_[Inpar::XFEM::X_Con_n_Row].second = ffac;
 
-      configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = 1.0 - porosity;
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab * ffac;
+      configuration_map_[Inpar::XFEM::X_Pen_n_Col].second = 1.0 - porosity;
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row].second = full_stab * ffac;
 
       // does nothing but should just be done in case we don't use the adjoint
-      configuration_map_[INPAR::XFEM::F_Adj_n_Col].second =
-          configuration_map_[INPAR::XFEM::F_Pen_n_Col].second;
-      configuration_map_[INPAR::XFEM::X_Adj_n_Col].second =
-          configuration_map_[INPAR::XFEM::X_Pen_n_Col].second;
+      configuration_map_[Inpar::XFEM::F_Adj_n_Col].second =
+          configuration_map_[Inpar::XFEM::F_Pen_n_Col].second;
+      configuration_map_[Inpar::XFEM::X_Adj_n_Col].second =
+          configuration_map_[Inpar::XFEM::X_Pen_n_Col].second;
       break;
     }
     case MeshCouplingFPI::pf_pf:
@@ -564,12 +564,12 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
       if (ffac < 0) ffac = 0;
 
       // Configuration of Penalty Terms
-      configuration_map_[INPAR::XFEM::X_Pen_n_Col].second = porosity;
-      configuration_map_[INPAR::XFEM::X_Pen_n_Row].second = full_stab * ffac;
+      configuration_map_[Inpar::XFEM::X_Pen_n_Col].second = porosity;
+      configuration_map_[Inpar::XFEM::X_Pen_n_Row].second = full_stab * ffac;
 
       // does nothing but should just be done in case we don't use the adjoint
-      configuration_map_[INPAR::XFEM::X_Adj_n_Col].second =
-          configuration_map_[INPAR::XFEM::X_Pen_n_Col].second;
+      configuration_map_[Inpar::XFEM::X_Adj_n_Col].second =
+          configuration_map_[Inpar::XFEM::X_Pen_n_Col].second;
       break;
     }
   }
@@ -589,19 +589,19 @@ void XFEM::MeshCouplingFPI::zero_state_vectors_fpi()
 // -------------------------------------------------------------------
 void XFEM::MeshCouplingFPI::read_restart(const int step)
 {
-  if (myrank_) CORE::IO::cout << "read_restart for boundary discretization " << CORE::IO::endl;
+  if (myrank_) Core::IO::cout << "read_restart for boundary discretization " << Core::IO::endl;
 
   //-------- boundary discretization
-  CORE::IO::DiscretizationReader boundaryreader(
-      cutter_dis_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader boundaryreader(
+      cutter_dis_, Global::Problem::Instance()->InputControlFile(), step);
 
   const double time = boundaryreader.ReadDouble("time");
   //  const int    step = boundaryreader.ReadInt("step");
 
   if (myrank_ == 0)
   {
-    CORE::IO::cout << "time: " << time << CORE::IO::endl;
-    CORE::IO::cout << "step: " << step << CORE::IO::endl;
+    Core::IO::cout << "time: " << time << Core::IO::endl;
+    Core::IO::cout << "step: " << step << Core::IO::endl;
   }
 
   boundaryreader.ReadVector(iveln_, "iveln_res");
@@ -633,11 +633,11 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
   filename_base_fsi << filename_base << "_force";
 
   // compute the current boundary position
-  std::map<int, CORE::LINALG::Matrix<3, 1>> currinterfacepositions;
+  std::map<int, Core::LinAlg::Matrix<3, 1>> currinterfacepositions;
   XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
 
 
-  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
       filename_base_fsi.str(), cutter_dis_->Writer()->Output()->FileName(), step, gmsh_step_diff,
       gmsh_debug_out_screen, myrank_);
 
@@ -648,7 +648,7 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
     gmshfilecontent << "View \" "
                     << "iforce \" {" << std::endl;
     // draw vector field 'force' for every node
-    CORE::IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
         cutter_dis_, itrueresidual_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -658,7 +658,7 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
     gmshfilecontent << "View \" "
                     << "idispnp \" {" << std::endl;
     // draw vector field 'idispnp' for every node
-    CORE::IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
         cutter_dis_, idispnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -668,7 +668,7 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
     gmshfilecontent << "View \" "
                     << "ivelnp \" {" << std::endl;
     // draw vector field 'ivelnp' for every node
-    CORE::IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
+    Core::IO::Gmsh::SurfaceVectorFieldDofBasedToGmsh(
         cutter_dis_, ivelnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
@@ -684,11 +684,11 @@ void XFEM::MeshCouplingFPI::gmsh_output_discretization(std::ostream& gmshfilecon
   XFEM::MeshCoupling::gmsh_output_discretization(gmshfilecontent);
 
   // compute the current solid and boundary position
-  std::map<int, CORE::LINALG::Matrix<3, 1>> currsolidpositions;
+  std::map<int, Core::LinAlg::Matrix<3, 1>> currsolidpositions;
 
   // write dis with zero solid displacements here!
   Teuchos::RCP<Epetra_Vector> solid_dispnp =
-      CORE::LINALG::CreateVector(*cond_dis_->dof_row_map(), true);
+      Core::LinAlg::CreateVector(*cond_dis_->dof_row_map(), true);
 
   XFEM::UTILS::extract_node_vectors(cond_dis_, currsolidpositions, solid_dispnp);
 
@@ -721,7 +721,7 @@ void XFEM::MeshCouplingFPI::Output(const int step, const double time, const bool
 
 void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
 {
-  std::vector<CORE::Conditions::Condition*> conditions_XFPI;
+  std::vector<Core::Conditions::Condition*> conditions_XFPI;
   cutter_dis_->GetCondition(cond_name_, conditions_XFPI);
 
   // Create maps for easy extraction at gausspoint level
@@ -766,12 +766,12 @@ void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
     double hmax = 0.0;
     for (int ele = 0; ele < bg_dis_->NumMyRowElements(); ++ele)
     {
-      CORE::Elements::Element* fluid_ele = bg_dis_->lRowElement(ele);
-      if (fluid_ele->Shape() == CORE::FE::CellType::hex8)
+      Core::Elements::Element* fluid_ele = bg_dis_->lRowElement(ele);
+      if (fluid_ele->Shape() == Core::FE::CellType::hex8)
       {
-        CORE::LINALG::Matrix<3, 8> xyze(true);
-        CORE::GEO::fillInitialPositionArray(fluid_ele, xyze);
-        double vol = XFEM::UTILS::EvalElementVolume<CORE::FE::CellType::hex8>(xyze);
+        Core::LinAlg::Matrix<3, 8> xyze(true);
+        Core::Geo::fillInitialPositionArray(fluid_ele, xyze);
+        double vol = XFEM::UTILS::EvalElementVolume<Core::FE::CellType::hex8>(xyze);
         hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
       }
       else
@@ -781,10 +781,10 @@ void XFEM::MeshCouplingFPI::set_condition_specific_parameters()
     std::cout << "==| XFEM::MeshCouplingFPI: Computed h_scaling for fluidele is: " << h_scaling_
               << "(Proc: " << bg_dis_->Comm().MyPID() << ")! |==" << std::endl;
 
-    fpsi_contact_hfraction_ = (GLOBAL::Problem::Instance()->XFluidDynamicParams())
+    fpsi_contact_hfraction_ = (Global::Problem::Instance()->XFluidDynamicParams())
                                   .sublist("XFPSI MONOLITHIC")
                                   .get<double>("POROCONTACTFPSI_HFRACTION");
-    fpsi_contact_fullpcfraction_ = (GLOBAL::Problem::Instance()->XFluidDynamicParams())
+    fpsi_contact_fullpcfraction_ = (Global::Problem::Instance()->XFluidDynamicParams())
                                        .sublist("XFPSI MONOLITHIC")
                                        .get<double>("POROCONTACTFPSI_FULLPCFRACTION");
   }
@@ -836,17 +836,17 @@ void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
   // get forces on all procs
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<const Epetra_Vector> iforcecol =
-      CORE::REBALANCE::GetColVersionOfRowVector(cutter_dis_, itrueresidual_);
+      Core::Rebalance::GetColVersionOfRowVector(cutter_dis_, itrueresidual_);
 
   if (myrank_ == 0)
   {
     // compute force components
     const int nsd = 3;
     const Epetra_Map* dofcolmap = cutter_dis_->DofColMap();
-    CORE::LINALG::Matrix<3, 1> c(true);
+    Core::LinAlg::Matrix<3, 1> c(true);
     for (int inode = 0; inode < cutter_dis_->NumMyColNodes(); ++inode)
     {
-      const CORE::Nodes::Node* node = cutter_dis_->lColNode(inode);
+      const Core::Nodes::Node* node = cutter_dis_->lColNode(inode);
       const std::vector<int> dof = cutter_dis_->Dof(node);
       for (int isd = 0; isd < nsd; ++isd)
       {
@@ -866,7 +866,7 @@ void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
       << std::right << std::setw(16) << std::scientific << c(2);
 
     std::ofstream f;
-    const std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileName() +
+    const std::string fname = Global::Problem::Instance()->OutputControlFile()->FileName() +
                               ".liftdrag." + cond_name_ + ".txt";
     if (step <= 1)
     {
@@ -889,21 +889,21 @@ void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
 //        for J,porosity pair on this FaceElement               ager 12/17
 // ------------------------------------------------------------------------
 double XFEM::MeshCouplingFPI::calctr_permeability(
-    CORE::Elements::Element* ele, double& porosity, double& J)
+    Core::Elements::Element* ele, double& porosity, double& J)
 {
   // Calculate normalized trace of permeability matrix
-  CORE::Elements::FaceElement* fele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
+  Core::Elements::FaceElement* fele = dynamic_cast<Core::Elements::FaceElement*>(ele);
   if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
-  CORE::Elements::Element* coupl_ele = fele->parent_element();
+  Core::Elements::Element* coupl_ele = fele->parent_element();
   if (coupl_ele == nullptr) FOUR_C_THROW("No coupl_ele!");
-  Teuchos::RCP<MAT::FluidPoro> poromat;
+  Teuchos::RCP<Mat::FluidPoro> poromat;
   // access second material in structure element
   if (coupl_ele->NumMaterial() > 1)
-    poromat = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(coupl_ele->Material(1));
+    poromat = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(coupl_ele->Material(1));
   else
     FOUR_C_THROW("no second material defined for element %i", ele->Id());
 
-  static CORE::LINALG::Matrix<3, 3> reactiontensor(true);
+  static Core::LinAlg::Matrix<3, 3> reactiontensor(true);
   poromat->compute_reaction_tensor(reactiontensor, J, porosity);
 
   return sqrt((1. / reactiontensor(0, 0) + 1. / reactiontensor(1, 1) + 1. / reactiontensor(2, 2)) /
@@ -914,25 +914,25 @@ double XFEM::MeshCouplingFPI::calctr_permeability(
 // Caluculate the Porosity for this FaceElement Gausspoint   ager 12/16
 // --------------------------------------------------------------------
 double XFEM::MeshCouplingFPI::CalcPorosity(
-    CORE::Elements::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& J)
+    Core::Elements::Element* ele, Core::LinAlg::Matrix<3, 1>& rst_slave, double& J)
 {
-  CORE::Elements::FaceElement* fele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
+  Core::Elements::FaceElement* fele = dynamic_cast<Core::Elements::FaceElement*>(ele);
   if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
 
-  CORE::Elements::Element* coupl_ele = fele->parent_element();
+  Core::Elements::Element* coupl_ele = fele->parent_element();
   if (coupl_ele == nullptr) FOUR_C_THROW("No coupl_ele!");
 
   double pres = 0.0;
   J = compute_jacobianand_pressure(ele, rst_slave, pres);
 
-  Teuchos::RCP<MAT::StructPoro> poromat;
+  Teuchos::RCP<Mat::StructPoro> poromat;
   // access second material in structure element
   if (coupl_ele->NumMaterial() > 1)
   {
-    poromat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(coupl_ele->Material(0));
-    if (poromat->MaterialType() != CORE::Materials::m_structporo and
-        poromat->MaterialType() != CORE::Materials::m_structpororeaction and
-        poromat->MaterialType() != CORE::Materials::m_structpororeactionECM)
+    poromat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(coupl_ele->Material(0));
+    if (poromat->MaterialType() != Core::Materials::m_structporo and
+        poromat->MaterialType() != Core::Materials::m_structpororeaction and
+        poromat->MaterialType() != Core::Materials::m_structpororeactionECM)
       FOUR_C_THROW("invalid structure material for poroelasticity");
   }
   else
@@ -950,51 +950,51 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
 // Compute Jacobian and extract PoroFluidPressure this FaceElement Gausspoint   ager 12/17
 // ------------------------------------------------------------------------------------------
 double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
-    CORE::Elements::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& pres)
+    Core::Elements::Element* ele, Core::LinAlg::Matrix<3, 1>& rst_slave, double& pres)
 {
-  CORE::Elements::FaceElement* fele = dynamic_cast<CORE::Elements::FaceElement*>(ele);
+  Core::Elements::FaceElement* fele = dynamic_cast<Core::Elements::FaceElement*>(ele);
   if (!fele) FOUR_C_THROW("Cast to Faceele failed!");
 
-  CORE::Elements::Element* coupl_ele = fele->parent_element();
+  Core::Elements::Element* coupl_ele = fele->parent_element();
 
-  if (fele->Shape() == CORE::FE::CellType::quad4)
+  if (fele->Shape() == Core::FE::CellType::quad4)
   {
     pres = 0.0;
 
     const unsigned int SLAVE_NUMDOF = 3;
 
-    CORE::FE::CollectedGaussPoints intpoints =
-        CORE::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
+    Core::FE::CollectedGaussPoints intpoints =
+        Core::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
     intpoints.Append(rst_slave(0, 0), rst_slave(1, 0), 0.0, 1.0);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
-    CORE::LINALG::SerialDenseMatrix pqxg(1, SLAVE_NUMDOF);
-    CORE::LINALG::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> derivtrafo(true);
+    Core::LinAlg::SerialDenseMatrix pqxg(1, SLAVE_NUMDOF);
+    Core::LinAlg::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> derivtrafo(true);
 
-    CORE::FE::BoundaryGPToParentGP<SLAVE_NUMDOF>(
+    Core::FE::BoundaryGPToParentGP<SLAVE_NUMDOF>(
         pqxg, derivtrafo, intpoints, coupl_ele->Shape(), fele->Shape(), fele->FaceParentNumber());
 
-    CORE::LINALG::Matrix<SLAVE_NUMDOF, 1> pxsi(true);
+    Core::LinAlg::Matrix<SLAVE_NUMDOF, 1> pxsi(true);
 
     // coordinates of the current integration point in parent coordinate system
     for (unsigned int idim = 0; idim < SLAVE_NUMDOF; idim++)
     {
       pxsi(idim) = pqxg(0, idim);
     }
-    if (coupl_ele->Shape() == CORE::FE::CellType::hex8)
+    if (coupl_ele->Shape() == Core::FE::CellType::hex8)
     {
-      const size_t PARENT_NEN = CORE::FE::num_nodes<CORE::FE::CellType::hex8>;
-      CORE::LINALG::Matrix<PARENT_NEN, 1> pfunc_loc(
+      const size_t PARENT_NEN = Core::FE::num_nodes<Core::FE::CellType::hex8>;
+      Core::LinAlg::Matrix<PARENT_NEN, 1> pfunc_loc(
           true);  // derivatives of parent element shape functions in parent element coordinate
                   // system
-      CORE::LINALG::Matrix<SLAVE_NUMDOF, PARENT_NEN> pderiv_loc(
+      Core::LinAlg::Matrix<SLAVE_NUMDOF, PARENT_NEN> pderiv_loc(
           true);  // derivatives of parent element shape functions in parent element coordinate
                   // system
 
       // evaluate derivatives of parent element shape functions at current integration point in
       // parent coordinate system
-      CORE::FE::shape_function<CORE::FE::CellType::hex8>(pxsi, pfunc_loc);
-      CORE::FE::shape_function_deriv1<CORE::FE::CellType::hex8>(pxsi, pderiv_loc);
+      Core::FE::shape_function<Core::FE::CellType::hex8>(pxsi, pfunc_loc);
+      Core::FE::shape_function_deriv1<Core::FE::CellType::hex8>(pxsi, pderiv_loc);
       //
       // get Jacobian matrix and determinant w.r.t. spatial configuration
       //
@@ -1009,17 +1009,17 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
       //   |  X_1,2  X_2,2  X_3,2  | = Jmat = --------
       //   |_ X_1,3  X_2,3  X_3,3 _|           d s_j
       //
-      CORE::LINALG::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> xjm;
-      CORE::LINALG::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> Jmat;
+      Core::LinAlg::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> xjm;
+      Core::LinAlg::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> Jmat;
 
-      CORE::LINALG::Matrix<SLAVE_NUMDOF, PARENT_NEN> xrefe(
+      Core::LinAlg::Matrix<SLAVE_NUMDOF, PARENT_NEN> xrefe(
           true);  // material coord. of parent element
-      CORE::LINALG::Matrix<SLAVE_NUMDOF, PARENT_NEN> xcurr(
+      Core::LinAlg::Matrix<SLAVE_NUMDOF, PARENT_NEN> xcurr(
           true);  // current  coord. of parent element
 
       // update element geometry of parent element
       {
-        CORE::Nodes::Node** nodes = coupl_ele->Nodes();
+        Core::Nodes::Node** nodes = coupl_ele->Nodes();
         for (unsigned int inode = 0; inode < PARENT_NEN; ++inode)
         {
           for (unsigned int idof = 0; idof < SLAVE_NUMDOF; ++idof)
@@ -1054,20 +1054,20 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
     else
       FOUR_C_THROW(
           "t_det_deformation_gradient for type %s not yet implemented, just add your element type!",
-          (CORE::FE::CellTypeToString(coupl_ele->Shape())).c_str());
+          (Core::FE::CellTypeToString(coupl_ele->Shape())).c_str());
     return -1.0;
   }
   else
     FOUR_C_THROW(
         "t_det_deformation_gradient for type %s not yet implemented, just add your element type!",
-        (CORE::FE::CellTypeToString(fele->Shape())).c_str());
+        (Core::FE::CellTypeToString(fele->Shape())).c_str());
   return -1.0;
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-bool XFEM::MeshCouplingFPI::initialize_fluid_state(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
-    Teuchos::RCP<DRT::Discretization> fluiddis,
+bool XFEM::MeshCouplingFPI::initialize_fluid_state(Teuchos::RCP<Core::Geo::CutWizard> cutwizard,
+    Teuchos::RCP<Discret::Discretization> fluiddis,
     Teuchos::RCP<XFEM::ConditionManager> condition_manager,
     Teuchos::RCP<Teuchos::ParameterList> fluidparams)
 {

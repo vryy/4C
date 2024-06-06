@@ -16,14 +16,14 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------/
 | start new time step                                                    |
 /-----------------------------------------------------------------------*/
-void ADAPTER::FieldWrapper::prepare_time_step()
+void Adapter::FieldWrapper::prepare_time_step()
 {
   field_->prepare_time_step();
   if (nox_correction_) reset_stepinc();
 }
 
 
-void ADAPTER::FieldWrapper::update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void Adapter::FieldWrapper::update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   if (nox_correction_) get_iterinc(disiterinc);
   field_->update_state_incrementally(disiterinc);
@@ -32,7 +32,7 @@ void ADAPTER::FieldWrapper::update_state_incrementally(Teuchos::RCP<const Epetra
 /*-----------------------------------------------------------------------/
 | update dofs and evaluate elements                                      |
 /-----------------------------------------------------------------------*/
-void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void Adapter::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   if (nox_correction_) get_iterinc(disiterinc);
   field_->Evaluate(disiterinc);
@@ -41,7 +41,7 @@ void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 /*-----------------------------------------------------------------------/
 | update dofs and evaluate elements                                      |
 /-----------------------------------------------------------------------*/
-void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter)
+void Adapter::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter)
 {
   if (nox_correction_) get_iterinc(disiterinc);
   field_->Evaluate(disiterinc, firstiter);
@@ -50,7 +50,7 @@ void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 /*-----------------------------------------------------------------------/
 | Reset Step Increment                                                   |
 /-----------------------------------------------------------------------*/
-void ADAPTER::FieldWrapper::reset_stepinc()
+void Adapter::FieldWrapper::reset_stepinc()
 {
   if (stepinc_ != Teuchos::null) stepinc_->PutScalar(0.);
 }
@@ -58,7 +58,7 @@ void ADAPTER::FieldWrapper::reset_stepinc()
 /*-----------------------------------------------------------------------/
 | Get Iteration Increment from Step Increment                            |
 /-----------------------------------------------------------------------*/
-void ADAPTER::FieldWrapper::get_iterinc(Teuchos::RCP<const Epetra_Vector>& stepinc)
+void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Epetra_Vector>& stepinc)
 {
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take

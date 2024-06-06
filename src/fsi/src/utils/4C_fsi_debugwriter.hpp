@@ -16,18 +16,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class OutputControl;
   class DiscretizationWriter;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -43,7 +43,7 @@ namespace FSI
     {
      public:
       /// create FSI debug writer on given field discretization
-      explicit DebugWriter(Teuchos::RCP<DRT::Discretization> dis);
+      explicit DebugWriter(Teuchos::RCP<Discret::Discretization> dis);
 
       /// announce new time step
       /*!
@@ -63,16 +63,16 @@ namespace FSI
 
      private:
       /// internal interface discretization
-      Teuchos::RCP<DRT::Discretization> dis_;
+      Teuchos::RCP<Discret::Discretization> dis_;
 
       /// coupling of field discretization and interface discretization
-      Teuchos::RCP<CORE::ADAPTER::Coupling> coup_;
+      Teuchos::RCP<Core::Adapter::Coupling> coup_;
 
       /// current control file
-      Teuchos::RCP<CORE::IO::OutputControl> control_;
+      Teuchos::RCP<Core::IO::OutputControl> control_;
 
       /// writer to control file
-      Teuchos::RCP<CORE::IO::DiscretizationWriter> writer_;
+      Teuchos::RCP<Core::IO::DiscretizationWriter> writer_;
 
       /// internal FSI iteration count
       int itnum_;
@@ -84,7 +84,7 @@ namespace FSI
     class SimpleDebugWriter
     {
      public:
-      SimpleDebugWriter(Teuchos::RCP<DRT::Discretization> dis, const std::string& name);
+      SimpleDebugWriter(Teuchos::RCP<Discret::Discretization> dis, const std::string& name);
 
       virtual ~SimpleDebugWriter() = default;
       /// announce new time step
@@ -105,16 +105,16 @@ namespace FSI
 
      private:
       /// discretization
-      Teuchos::RCP<DRT::Discretization> dis_;
+      Teuchos::RCP<Discret::Discretization> dis_;
 
       /// name of output file
       std::string name_;
 
       /// current control file
-      Teuchos::RCP<CORE::IO::OutputControl> control_;
+      Teuchos::RCP<Core::IO::OutputControl> control_;
 
       /// writer to control file
-      Teuchos::RCP<CORE::IO::DiscretizationWriter> writer_;
+      Teuchos::RCP<Core::IO::DiscretizationWriter> writer_;
 
       /// internal FSI iteration count
       int itnum_;

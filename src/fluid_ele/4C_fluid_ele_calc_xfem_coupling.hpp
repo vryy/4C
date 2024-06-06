@@ -36,7 +36,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -55,16 +55,16 @@ namespace DRT
        * without assembling any coupling terms (e.g. in two-sided xfluid-fluid coupling
        * for gauss-point projection or error calculation in case of a given analytical solution).
        */
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       class SlaveElementInterface
       {
        public:
         /// number of spatial dimensions
-        static constexpr unsigned nsd_ = CORE::FE::dim<distype>;
+        static constexpr unsigned nsd_ = Core::FE::dim<distype>;
 
         //! set names of displacement and velocity states (differ dependent on the slave element)
         static void DefineStateNames(
-            CORE::FE::CellType slave_distype,  ///< coupling slave discretization type
+            Core::FE::CellType slave_distype,  ///< coupling slave discretization type
             std::string& disp_statename,       ///< name of displacement state at current step
             std::string& vel_statename,        ///< name of velocity state at current step
             std::string& veln_statename        ///< name of velocity state at previous step
@@ -72,8 +72,8 @@ namespace DRT
 
         //! create a pure coupling slave element representation
         static Teuchos::RCP<SlaveElementInterface<distype>> create_slave_element_representation(
-            CORE::Elements::Element* slave_ele,  ///< coupling slave element
-            CORE::LINALG::SerialDenseMatrix&
+            Core::Elements::Element* slave_ele,  ///< coupling slave element
+            Core::LinAlg::SerialDenseMatrix&
                 slave_xyz  ///< global node coordinates of coupling slave element
         );
 
@@ -82,17 +82,17 @@ namespace DRT
 
         //! add slave element's displacements and set current element's nodal coordinates
         virtual void AddSlaveEleDisp(
-            const DRT::Discretization& slavedis,  ///< coupling slave discretization
-            const std::vector<int>& lm,           ///< local map
-            std::vector<double>& mymatrix         ///< slave element displacement vector
+            const Discret::Discretization& slavedis,  ///< coupling slave discretization
+            const std::vector<int>& lm,               ///< local map
+            std::vector<double>& mymatrix             ///< slave element displacement vector
         )
         {
           FOUR_C_THROW("There is no concrete slave element available.");
         };
 
         virtual void AddSlaveEleDisp(
-            const DRT::Discretization& slavedis,  ///< coupling slave discretization
-            const std::vector<int>& lm            ///< local map
+            const Discret::Discretization& slavedis,  ///< coupling slave discretization
+            const std::vector<int>& lm                ///< local map
         )
         {
           FOUR_C_THROW("There is no concrete slave element available.");
@@ -103,8 +103,8 @@ namespace DRT
 
         //! set slave element's nodal velocities
         virtual void SetSlaveState(
-            const DRT::Discretization& slavedis,  ///< embedded discretization
-            const std::vector<int>& lm            ///< local map
+            const Discret::Discretization& slavedis,  ///< embedded discretization
+            const std::vector<int>& lm                ///< local map
         )
         {
           FOUR_C_THROW("There is no concrete slave element available.");
@@ -112,8 +112,8 @@ namespace DRT
 
         //! set slave element's nodal velocities
         virtual void SetSlaveStaten(
-            const DRT::Discretization& slavedis,  ///< embedded discretization
-            const std::vector<int>& lm            ///< local map
+            const Discret::Discretization& slavedis,  ///< embedded discretization
+            const std::vector<int>& lm                ///< local map
         )
         {
           FOUR_C_THROW("There is no concrete slave element available.");
@@ -125,10 +125,10 @@ namespace DRT
          * overloaded!!)
          */
         virtual void GetInterfaceVelnp(
-            CORE::LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
+            Core::LinAlg::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
         ) const
         {
-          ivelint = CORE::LINALG::Matrix<nsd_, 1>(true);
+          ivelint = Core::LinAlg::Matrix<nsd_, 1>(true);
         };
 
         /*!
@@ -137,10 +137,10 @@ namespace DRT
          * overloaded!!)
          */
         virtual void GetInterfaceVeln(
-            CORE::LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
+            Core::LinAlg::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
         ) const
         {
-          ivelint = CORE::LINALG::Matrix<nsd_, 1>(true);
+          ivelint = Core::LinAlg::Matrix<nsd_, 1>(true);
         };
 
         //! get interface pressure
@@ -158,7 +158,7 @@ namespace DRT
         };
 
         //! get interface velocity gradient
-        virtual void get_interface_vel_gradnp(CORE::LINALG::Matrix<nsd_, nsd_>&
+        virtual void get_interface_vel_gradnp(Core::LinAlg::Matrix<nsd_, nsd_>&
                 velgradint  ///< interface velocity gradients at coupling slave side
         ) const
         {
@@ -166,7 +166,7 @@ namespace DRT
         };
 
         //! get interface velocity gradient
-        virtual void get_interface_vel_gradn(CORE::LINALG::Matrix<nsd_, nsd_>&
+        virtual void get_interface_vel_gradn(Core::LinAlg::Matrix<nsd_, nsd_>&
                 velgradint  ///< interface velocity gradients at coupling slave side
         ) const
         {
@@ -175,9 +175,9 @@ namespace DRT
 
         //! set state for interface velocity jump
         virtual void set_interface_jump_statenp(
-            const DRT::Discretization& cutterdis,  ///< cutter discretization
-            const std::string state,               ///< state
-            const std::vector<int>& lm             ///< local map
+            const Discret::Discretization& cutterdis,  ///< cutter discretization
+            const std::string state,                   ///< state
+            const std::vector<int>& lm                 ///< local map
         )
         {
           FOUR_C_THROW("There is no concrete slave element available.");
@@ -185,9 +185,9 @@ namespace DRT
 
         //! set state for interface velocity jump for previous time step
         virtual void set_interface_jump_staten(
-            const DRT::Discretization& cutterdis,  ///< cutter discretization
-            const std::string state,               ///< state
-            const std::vector<int>& lm             ///< local map
+            const Discret::Discretization& cutterdis,  ///< cutter discretization
+            const std::string state,                   ///< state
+            const std::vector<int>& lm                 ///< local map
         )
         {
           FOUR_C_THROW("There is no concrete slave element available.");
@@ -195,7 +195,7 @@ namespace DRT
 
         //! get interface velocity jump at Gaussian point
         virtual void get_interface_jump_velnp(
-            CORE::LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump
+            Core::LinAlg::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump
                                                          ///< or prescribed DBC at Gaussian point
         ) const
         {
@@ -203,7 +203,7 @@ namespace DRT
         };
 
         //! get interface velocity jump at Gaussian point for previous time step
-        virtual void get_interface_jump_veln(CORE::LINALG::Matrix<nsd_, 1>&
+        virtual void get_interface_jump_veln(Core::LinAlg::Matrix<nsd_, 1>&
                 ivelintn_jump  ///< cutter element interface velocity jump or
                                ///< prescribed DBC at Gaussian point
         ) const
@@ -215,7 +215,7 @@ namespace DRT
 
         //! evaluate shape function, derivatives and transformation w.r.t coupling slave element at
         //! gaussian point
-        virtual void Evaluate(CORE::LINALG::Matrix<nsd_, 1>& xside)
+        virtual void Evaluate(Core::LinAlg::Matrix<nsd_, 1>& xside)
         {
           FOUR_C_THROW("There is no concrete slave element available.");
         }
@@ -223,15 +223,15 @@ namespace DRT
         //! evaluate shape function, derivatives and transformation w.r.t coupling slave element at
         //! gaussian point
         virtual void Evaluate(
-            CORE::LINALG::Matrix<nsd_, 1>& xside, CORE::LINALG::Matrix<nsd_, 1>& rst_slave)
+            Core::LinAlg::Matrix<nsd_, 1>& xside, Core::LinAlg::Matrix<nsd_, 1>& rst_slave)
         {
           FOUR_C_THROW("There is no concrete slave element available.");
         }
 
         //! compute interface force for side nodes
         virtual void compute_interface_force(
-            CORE::LINALG::SerialDenseVector& iforce,  ///< interface force vector
-            CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
+            Core::LinAlg::SerialDenseVector& iforce,  ///< interface force vector
+            Core::LinAlg::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
             const double& fac                         ///< integration factor
         )
         {
@@ -241,10 +241,10 @@ namespace DRT
         //! project gaussian point from linearized interface in normal direction onto corresponding
         //! side (2D slave element)
         virtual void project_on_side(
-            CORE::LINALG::Matrix<nsd_, 1>&
+            Core::LinAlg::Matrix<nsd_, 1>&
                 x_gp_lin,  ///< global coordinates of gaussian point w.r.t linearized interface
-            CORE::LINALG::Matrix<nsd_, 1>& x_side,  ///< projected gaussian point on side
-            CORE::LINALG::Matrix<nsd_, 1>&
+            Core::LinAlg::Matrix<nsd_, 1>& x_side,  ///< projected gaussian point on side
+            Core::LinAlg::Matrix<nsd_, 1>&
                 xi_side  ///< local coordinates of projected gaussian point w.r.t side
         )
         {
@@ -260,63 +260,63 @@ namespace DRT
       };
 
       //! factory class for coupling with Nitsche's method
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       class NitscheInterface : virtual public SlaveElementInterface<distype>
       {
        public:
         /// number of nodes per master element
-        static constexpr unsigned nen_ = CORE::FE::num_nodes<distype>;
+        static constexpr unsigned nen_ = Core::FE::num_nodes<distype>;
         /// number of spatial dimensions
         static constexpr unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
         /// number of nodal DOF for master element (always a xfem-fluid element)
         static constexpr unsigned master_numdof_ = nsd_ + 1;
 
         static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
-            CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-            CORE::LINALG::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-            const DRT::ELEMENTS::FluidEleParameterXFEM&
+            Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
+            const Discret::ELEMENTS::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
         //! create a coupling interface for Nitsche's method for xfluid weak dirichlet problems
         static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
-            CORE::Elements::Element* bele,  ///< boundary element
-            CORE::LINALG::SerialDenseMatrix::Base&
+            Core::Elements::Element* bele,  ///< boundary element
+            Core::LinAlg::SerialDenseMatrix::Base&
                 bele_xyz,  ///< global node coordinates of boundary element
-            CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-            CORE::LINALG::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-            const DRT::ELEMENTS::FluidEleParameterXFEM&
+            Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
+            const Discret::ELEMENTS::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
         //! create a coupling interface for Nitsche's method for xfluid-sided coupling strategy
         static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_sided(
-            CORE::Elements::Element* bele,  ///< boundary element
-            CORE::LINALG::SerialDenseMatrix::Base&
+            Core::Elements::Element* bele,  ///< boundary element
+            Core::LinAlg::SerialDenseMatrix::Base&
                 bele_xyz,  ///< global node coordinates of boundary element
-            CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-            CORE::LINALG::SerialDenseMatrix::Base& C_usum,  ///< C_usum coupling matrix
-            CORE::LINALG::SerialDenseMatrix::Base& C_umus,  ///< C_umus coupling matrix
-            CORE::LINALG::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
-            CORE::LINALG::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-            CORE::LINALG::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
-            const DRT::ELEMENTS::FluidEleParameterXFEM&
+            Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix::Base& C_usum,  ///< C_usum coupling matrix
+            Core::LinAlg::SerialDenseMatrix::Base& C_umus,  ///< C_umus coupling matrix
+            Core::LinAlg::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
+            Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
+            Core::LinAlg::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
+            const Discret::ELEMENTS::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
         //! create a coupling interface for Nitsche's method for two-sided coupling strategy
         //! (weighted or fully embedded-sided)
         static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_two_sided(
-            CORE::Elements::Element* vele,  ///< volumetric element to couple with
-            CORE::LINALG::SerialDenseMatrix::Base&
+            Core::Elements::Element* vele,  ///< volumetric element to couple with
+            Core::LinAlg::SerialDenseMatrix::Base&
                 vele_xyz,  ///< global node coordinates of volumetric element
-            CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
-            CORE::LINALG::SerialDenseMatrix::Base& C_usum,  ///< C_usum coupling matrix
-            CORE::LINALG::SerialDenseMatrix::Base& C_umus,  ///< C_umus coupling matrix
-            CORE::LINALG::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
-            CORE::LINALG::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-            CORE::LINALG::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
-            const DRT::ELEMENTS::FluidEleParameterXFEM&
+            Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
+            Core::LinAlg::SerialDenseMatrix::Base& C_usum,  ///< C_usum coupling matrix
+            Core::LinAlg::SerialDenseMatrix::Base& C_umus,  ///< C_umus coupling matrix
+            Core::LinAlg::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
+            Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
+            Core::LinAlg::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
+            const Discret::ELEMENTS::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
@@ -327,22 +327,22 @@ namespace DRT
         virtual void ApplyConvStabTerms(
             const Teuchos::RCP<SlaveElementInterface<distype>>&
                 slave_ele,  ///< associated slave element coupling object
-            const CORE::LINALG::Matrix<nen_, 1>& funct_m,   ///< master shape functions
-            const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< vector of slave shape functions
-            const CORE::LINALG::Matrix<nsd_, 1>& normal,    ///< normal vector n^b
+            const Core::LinAlg::Matrix<nen_, 1>& funct_m,   ///< master shape functions
+            const Core::LinAlg::Matrix<nsd_, 1>& velint_m,  ///< vector of slave shape functions
+            const Core::LinAlg::Matrix<nsd_, 1>& normal,    ///< normal vector n^b
             const double& density_m,                        ///< fluid density (master)
             const double& NIT_stab_fac_conv,                ///< full Nitsche's penalty term scaling
                                                             ///< (viscous+convective part)
             const double& timefacfac,                       ///< theta*dt
-            const CORE::LINALG::Matrix<nsd_, 1>&
+            const Core::LinAlg::Matrix<nsd_, 1>&
                 ivelint_jump,  ///< prescribed interface velocity, Dirichlet values or jump height
                                ///< for coupled problems
-            const INPAR::XFEM::EleCouplingCondType& cond_type  ///< condition type
+            const Inpar::XFEM::EleCouplingCondType& cond_type  ///< condition type
             ) = 0;
 
         //! build coupling matrices for Nitsche's method (NIT)
         virtual void nit_evaluate_coupling(
-            const CORE::LINALG::Matrix<nsd_, 1>&
+            const Core::LinAlg::Matrix<nsd_, 1>&
                 normal,  ///< outward pointing normal (defined by the coupling partner, that
                          ///< determines the interface traction)
             const double& timefacfac,                      ///< theta*dt*fac
@@ -350,32 +350,32 @@ namespace DRT
             const double& visceff_m,                       ///< viscosity in coupling master fluid
             const double& visceff_s,                       ///< viscosity in coupling slave fluid
             const double& density_m,                       ///< fluid density (master) USED IN XFF
-            const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
-            const CORE::LINALG::Matrix<nsd_, nen_>&
+            const Core::LinAlg::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
+            const Core::LinAlg::Matrix<nsd_, nen_>&
                 derxy_m,  ///< spatial derivatives of coupling master shape functions
-            const CORE::LINALG::Matrix<nsd_, nsd_>&
+            const Core::LinAlg::Matrix<nsd_, nsd_>&
                 vderxy_m,          ///< coupling master spatial velocity derivatives
             const double& pres_m,  ///< coupling master pressure
-            const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< coupling master interface velocity
-            const CORE::LINALG::Matrix<nsd_, 1>&
+            const Core::LinAlg::Matrix<nsd_, 1>& velint_m,  ///< coupling master interface velocity
+            const Core::LinAlg::Matrix<nsd_, 1>&
                 ivelint_jump,  ///< prescribed interface velocity, Dirichlet values or jump height
                                ///< for coupled problems
-            const CORE::LINALG::Matrix<nsd_, 1>&
+            const Core::LinAlg::Matrix<nsd_, 1>&
                 itraction_jump,  ///< prescribed interface traction, jump
                                  ///< height for coupled problems
-            const CORE::LINALG::Matrix<nsd_, nsd_>&
+            const Core::LinAlg::Matrix<nsd_, nsd_>&
                 proj_tangential,  ///< tangential projection matrix
-            const CORE::LINALG::Matrix<nsd_, nsd_>&
+            const Core::LinAlg::Matrix<nsd_, nsd_>&
                 LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
-            const std::vector<CORE::LINALG::SerialDenseMatrix>&
+            const std::vector<Core::LinAlg::SerialDenseMatrix>&
                 solid_stress,  ///< structural cauchy stress and linearization
-            std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>&
+            std::map<Inpar::XFEM::CoupTerm, std::pair<bool, double>>&
                 configmap  ///< Interface Terms configuration map
             ) = 0;
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method
         virtual void nit_evaluate_coupling_old_state(
-            const CORE::LINALG::Matrix<nsd_, 1>&
+            const Core::LinAlg::Matrix<nsd_, 1>&
                 normal,  ///< outward pointing normal (defined by the coupling partner, that
                          ///< determines the interface traction)
             const double& timefacfac,                      ///< dt*(1-theta)*fac
@@ -383,39 +383,39 @@ namespace DRT
             const double& visceff_m,                       ///< viscosity in coupling master fluid
             const double& visceff_s,                       ///< viscosity in coupling slave fluid
             const double& density_m,                       ///< fluid density (master) USED IN XFF
-            const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
-            const CORE::LINALG::Matrix<nsd_, nen_>&
+            const Core::LinAlg::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
+            const Core::LinAlg::Matrix<nsd_, nen_>&
                 derxy_m,  ///< spatial derivatives of coupling master shape functions
-            const CORE::LINALG::Matrix<nsd_, nsd_>&
+            const Core::LinAlg::Matrix<nsd_, nsd_>&
                 vderxy_m,          ///< coupling master spatial velocity derivatives
             const double& pres_m,  ///< coupling master pressure
-            const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< coupling master interface velocity
-            const CORE::LINALG::Matrix<nsd_, 1>&
+            const Core::LinAlg::Matrix<nsd_, 1>& velint_m,  ///< coupling master interface velocity
+            const Core::LinAlg::Matrix<nsd_, 1>&
                 ivelint_jump,  ///< prescribed interface velocity, Dirichlet values or jump height
                                ///< for coupled problems
-            const CORE::LINALG::Matrix<nsd_, nsd_>&
+            const Core::LinAlg::Matrix<nsd_, nsd_>&
                 proj_tangential,  ///< tangential projection matrix
-            const CORE::LINALG::Matrix<nsd_, 1>&
+            const Core::LinAlg::Matrix<nsd_, 1>&
                 itraction_jump,  ///< prescribed interface traction, jump
                                  ///< height for coupled problems
-            std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>&
+            std::map<Inpar::XFEM::CoupTerm, std::pair<bool, double>>&
                 configmap  ///< Interface Terms configuration map
             ) = 0;
       };
 
       //! factory class for coupling with mixed/hybrid stress-based Lagrange multipliers
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       class HybridLMInterface : virtual public SlaveElementInterface<distype>
       {
        public:
         /// number of nodes per master (xfluid) element
-        static constexpr unsigned nen_ = CORE::FE::num_nodes<distype>;
+        static constexpr unsigned nen_ = Core::FE::num_nodes<distype>;
         /// number of spatial dimensions of the master element (xfem-fluid)
         static constexpr unsigned nsd_ = SlaveElementInterface<distype>::nsd_;
         /// number of nodal dof for master element (coupling master is always a fluid element!)
         static constexpr unsigned master_numdof_ = nsd_ + 1;
         /// number of independent stress-dof
-        static constexpr unsigned numstressdof_ = CORE::FE::DisTypeToNumDeriv2<distype>::numderiv2;
+        static constexpr unsigned numstressdof_ = Core::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
         //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet
         //! problems
@@ -427,8 +427,8 @@ namespace DRT
         //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet
         //! problems
         static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_wdbc(
-            CORE::Elements::Element* bele,  ///< boundary element
-            CORE::LINALG::SerialDenseMatrix&
+            Core::Elements::Element* bele,  ///< boundary element
+            Core::LinAlg::SerialDenseMatrix&
                 bele_xyz,                 ///< global node coordinates of boundary element
             bool is_viscAdjointSymmetric  ///< flag that indicates equal signs of Nitsche's standard
                                           ///< & adjoint viscous term
@@ -437,14 +437,14 @@ namespace DRT
         //! create a coupling interface for mixed/hybrid LM approach for xfluid-sided coupling
         //! strategy
         static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_x_fluid_sided(
-            CORE::Elements::Element* bele,  ///< boundary element
-            CORE::LINALG::SerialDenseMatrix&
+            Core::Elements::Element* bele,  ///< boundary element
+            Core::LinAlg::SerialDenseMatrix&
                 bele_xyz,  ///< global node coordinates of boundary element
-            CORE::LINALG::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
-            CORE::LINALG::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
-            CORE::LINALG::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
-            CORE::LINALG::SerialDenseMatrix& G_s_us,  ///< \f$G_{u^s \sigma}\f$ coupling matrix
-            CORE::LINALG::SerialDenseMatrix& G_us_s,  ///< \f$G_{\sigma u^s}\f$ coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
+            Core::LinAlg::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
+            Core::LinAlg::SerialDenseMatrix& G_s_us,  ///< \f$G_{u^s \sigma}\f$ coupling matrix
+            Core::LinAlg::SerialDenseMatrix& G_us_s,  ///< \f$G_{\sigma u^s}\f$ coupling matrix
             bool is_viscAdjointSymmetric  ///< flag that indicates equal signs of Nitsche's standard
                                           ///< & adjoint viscous term
         );
@@ -452,16 +452,16 @@ namespace DRT
         //! create a coupling interface for mixed/hybrid LM approach for two-sided coupling strategy
         //! (weighted or fully embedded-sided)
         static Teuchos::RCP<HybridLMInterface<distype>> create_hybrid_lm_coupling_two_sided(
-            CORE::Elements::Element* vele,  ///< volumetric element to couple with
-            CORE::LINALG::SerialDenseMatrix&
+            Core::Elements::Element* vele,  ///< volumetric element to couple with
+            Core::LinAlg::SerialDenseMatrix&
                 vele_xyz,  ///< global node coordinates of volumetric element
-            CORE::LINALG::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
-            CORE::LINALG::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
-            CORE::LINALG::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
-            CORE::LINALG::SerialDenseMatrix& G_s_us,  ///< \f$G_{u^s \sigma}\f$ coupling matrix
-            CORE::LINALG::SerialDenseMatrix& G_us_s,  ///< \f$G_{\sigma u^s}\f$ coupling matrix
-            CORE::Elements::Element* bele,            ///< boundary element
-            CORE::LINALG::SerialDenseMatrix&
+            Core::LinAlg::SerialDenseMatrix& C_usum,  ///< C_usum coupling matrix
+            Core::LinAlg::SerialDenseMatrix& C_umus,  ///< C_umus coupling matrix
+            Core::LinAlg::SerialDenseMatrix& rhC_us,  ///< C_us coupling rhs
+            Core::LinAlg::SerialDenseMatrix& G_s_us,  ///< \f$G_{u^s \sigma}\f$ coupling matrix
+            Core::LinAlg::SerialDenseMatrix& G_us_s,  ///< \f$G_{\sigma u^s}\f$ coupling matrix
+            Core::Elements::Element* bele,            ///< boundary element
+            Core::LinAlg::SerialDenseMatrix&
                 bele_xyz,                 ///< global node coordinates of slave element
             bool is_viscAdjointSymmetric  ///< flag, that indicates equal signs of Nitsche's
                                           ///< standard & adjoint viscous term
@@ -473,51 +473,51 @@ namespace DRT
 
         //! evaluate interface matrices for mixed/hybrid Cauchy stress-based (MHCS) coupling
         virtual void mhcs_build_coupling_matrices(
-            const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
+            const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector
             const double& fac,                            ///< integration factor
-            const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< shape function
-            CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+            const Core::LinAlg::Matrix<nen_, 1>& funct,   ///< shape function
+            Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numstressdof_, 1>&
                 rhs_s,  ///< block rhs vector \f$ rhs_{\sigma} \f$
-            const CORE::LINALG::Matrix<nsd_, 1>&
+            const Core::LinAlg::Matrix<nsd_, 1>&
                 ivelint_jump,  ///< prescribed interface velocity or interface jump height
-            const CORE::LINALG::Matrix<nsd_, 1>&
+            const Core::LinAlg::Matrix<nsd_, 1>&
                 itraction_jump  ///< prescribed interface traction or interface jump height
             ) = 0;
 
         //! evaluate interface matrices for mixed/hybrid viscous stress-based (MHVS) coupling
         virtual void mhvs_build_coupling_matrices(
-            const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
+            const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector
             const double& fac,                            ///< integration factor
-            const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< background element shape functions
-            CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+            const Core::LinAlg::Matrix<nen_, 1>& funct,   ///< background element shape functions
+            Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numstressdof_, 1>&
                 rhs_s,            ///< block rhs vector \f$ rhs_{\sigma}\f$
             const double& press,  ///< background element pressure
-            CORE::LINALG::Matrix<nen_, 1>&
+            Core::LinAlg::Matrix<nen_, 1>&
                 rhs_pmus,  ///< contribution to block rhs vector \f$rhs_p\f$
                            ///< (includes interface slave velocity terms)
-            const CORE::LINALG::Matrix<nsd_, 1>&
+            const Core::LinAlg::Matrix<nsd_, 1>&
                 ivelint_jump,  ///< prescribed interface velocity or interface jump height
-            const CORE::LINALG::Matrix<nsd_, 1>&
+            const Core::LinAlg::Matrix<nsd_, 1>&
                 itraction_jump  ///< prescribed interface traction or interface jump height
             ) = 0;
 
         //! build the final coupling matrices for mixed/hybrid Cauchy or viscous stress-based
         //! coupling (MHCS or MHVS)
         virtual void hybrid_lm_build_final_coupling_matrices(
-            CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
+            Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_,
                 numstressdof_>& BinvK_ss,  ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
-            CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, master_numdof_,
+            Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, master_numdof_,
                 numstressdof_>&
                 BKumsInvKss,  ///< block matrix \f$ K_{u\sigma} \cdot K^{-1}_{\sigma\sigma} \f$
-            CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
+            Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_,
                 master_numdof_>& BK_sum,  ///< block matrix \f$ K_{\sigma u} \f$
-            CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+            Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numstressdof_, 1>&
                 rhs_s  ///< block rhs vector \f$ rhs_{\sigma}\f$
             ) = 0;
       };
     }  // end namespace XFLUID
   }    // end namespace ELEMENTS
-}  // end namespace DRT
+}  // end namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -16,13 +16,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::NURBS::SoNurbs27::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::Nurbs::SoNurbs27::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   const int numgp = 27;
   SolidMaterial()->Setup(numgp, linedef);
@@ -34,7 +34,7 @@ bool DRT::ELEMENTS::NURBS::SoNurbs27::ReadElement(
     if (ngp[i] != 3) FOUR_C_THROW("Only version with 3 GP for So_N27 implemented");
 
   // we expect kintype to be total lagrangian
-  kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
+  kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);

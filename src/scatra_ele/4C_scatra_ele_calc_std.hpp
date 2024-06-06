@@ -16,12 +16,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     // class implementation
-    template <CORE::FE::CellType distype, int probdim>
+    template <Core::FE::CellType distype, int probdim>
     class ScaTraEleCalcStd : public ScaTraEleCalc<distype, probdim>
     {
      public:
@@ -38,7 +38,7 @@ namespace DRT
       ScaTraEleCalcStd(const int numdofpernode, const int numscal, const std::string& disname);
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

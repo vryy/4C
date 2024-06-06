@@ -19,11 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | evaluate the element for volume coupling (public)         dano 02/10 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ThermoBoundary::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::ThermoBoundary::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Thermo
@@ -31,7 +31,7 @@ int DRT::ELEMENTS::ThermoBoundary::Evaluate(Teuchos::ParameterList& params,
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->Evaluate(
+  return Discret::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->Evaluate(
       this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
 }  // Evaluate in case of multiple dofsets
 
@@ -39,10 +39,10 @@ int DRT::ELEMENTS::ThermoBoundary::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  | integrate a Surface/Line Neumann boundary condition       dano 09/09 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ThermoBoundary::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::ThermoBoundary::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Thermo
@@ -50,7 +50,7 @@ int DRT::ELEMENTS::ThermoBoundary::evaluate_neumann(Teuchos::ParameterList& para
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->evaluate_neumann(
+  return Discret::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->evaluate_neumann(
       this, params, discretization, condition, lm, elevec1);
 }
 

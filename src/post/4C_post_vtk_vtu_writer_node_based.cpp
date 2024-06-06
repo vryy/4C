@@ -31,8 +31,8 @@ FOUR_C_NAMESPACE_OPEN
 PostVtuWriterNode::PostVtuWriterNode(PostField* field, const std::string& filename)
     : PostVtuWriter(field, filename)
 {
-  static_assert(29 == static_cast<int>(CORE::FE::CellType::max_distype),
-      "The number of element types defined by CORE::FE::CellType does not match the "
+  static_assert(29 == static_cast<int>(Core::FE::CellType::max_distype),
+      "The number of element types defined by Core::FE::CellType does not match the "
       "number of element types supported by the post vtu filter.");
   if (myrank_ != 0) FOUR_C_THROW("Node based filtering only works in serial mode");
 }
@@ -86,7 +86,7 @@ void PostVtuWriterNode::write_geo()
 {
   using namespace FourC;
 
-  Teuchos::RCP<DRT::Discretization> dis = this->GetField()->discretization();
+  Teuchos::RCP<Discret::Discretization> dis = this->GetField()->discretization();
 
   // count number of nodes and number for each processor; output is completely independent of
   // the number of processors involved
@@ -105,9 +105,10 @@ void PostVtuWriterNode::write_geo()
   int outNodeId = 0;
   for (int e = 0; e < nelements; ++e)
   {
-    const CORE::Elements::Element* ele = dis->lRowElement(e);
+    const Core::Elements::Element* ele = dis->lRowElement(e);
     // check for beam element that potentially needs special treatment due to Hermite interpolation
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const Discret::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     if (ele->IsNurbsElement())
     {
@@ -119,10 +120,10 @@ void PostVtuWriterNode::write_geo()
     }
     else
     {
-      celltypes.push_back(CORE::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).first);
+      celltypes.push_back(Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).first);
       const std::vector<int>& numbering =
-          CORE::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
-      const CORE::Nodes::Node* const* nodes = ele->Nodes();
+          Core::IO::GetVtkCellTypeFromFourCElementShapeType(ele->Shape()).second;
+      const Core::Nodes::Node* const* nodes = ele->Nodes();
       for (int n = 0; n < ele->num_node(); ++n)
       {
         connectivity.push_back(nodes[numbering[n]]->LID());
@@ -153,7 +154,7 @@ void PostVtuWriterNode::write_geo()
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LIBB64::writeCompressedBlock(coordinates, currentout_);
+    LibB64::writeCompressedBlock(coordinates, currentout_);
   }
   else
   {
@@ -192,7 +193,7 @@ void PostVtuWriterNode::write_geo()
 
 
   if (write_binary_output_)
-    LIBB64::writeCompressedBlock(connectivity, currentout_);
+    LibB64::writeCompressedBlock(connectivity, currentout_);
   else
   {
     for (std::vector<int32_t>::const_iterator it = connectivity.begin(); it != connectivity.end();
@@ -209,7 +210,7 @@ void PostVtuWriterNode::write_geo()
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LIBB64::writeCompressedBlock(celloffset, currentout_);
+    LibB64::writeCompressedBlock(celloffset, currentout_);
   }
   else
   {
@@ -224,7 +225,7 @@ void PostVtuWriterNode::write_geo()
   if (write_binary_output_)
   {
     currentout_ << " format=\"binary\">\n";
-    LIBB64::writeCompressedBlock(celltypes, currentout_);
+    LibB64::writeCompressedBlock(celltypes, currentout_);
   }
   else
   {
@@ -257,7 +258,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
-  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
 
   // For parallel computations, we need to access all dofs on the elements, including the
   // nodes owned by other processors. Therefore, we need to import that data here.
@@ -281,11 +282,11 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
       gids[i] = vecmap.MyGlobalElements()[i] - offset;
     Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(new Epetra_Map(
         vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm()));
-    Teuchos::RCP<Epetra_Vector> dofvec = CORE::LINALG::CreateVector(*rowmap, false);
+    Teuchos::RCP<Epetra_Vector> dofvec = Core::LinAlg::CreateVector(*rowmap, false);
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 
-    ghostedData = CORE::LINALG::CreateVector(*colmap, true);
-    CORE::LINALG::Export(*dofvec, *ghostedData);
+    ghostedData = Core::LinAlg::CreateVector(*colmap, true);
+    Core::LinAlg::Export(*dofvec, *ghostedData);
   }
 
   int ncomponents = numdf;
@@ -354,7 +355,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
-  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<Discret::Discretization> dis = field_->discretization();
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the NodeColMap to have this access
@@ -371,7 +372,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
   else
   {
     ghostedData = Teuchos::rcp(new Epetra_MultiVector(*colmap, data->NumVectors(), false));
-    CORE::LINALG::Export(*data, *ghostedData);
+    Core::LinAlg::Export(*data, *ghostedData);
   }
 
   int ncomponents = numdf;
@@ -431,35 +432,35 @@ void PostVtuWriterNode::write_element_result_step(std::ofstream& file,
   }
 }
 
-void PostVtuWriterNode::write_geo_nurbs_ele(const CORE::Elements::Element* ele,
+void PostVtuWriterNode::write_geo_nurbs_ele(const Core::Elements::Element* ele,
     std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
     std::vector<double>& coordinates)
 {
   FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }
 
-void PostVtuWriterNode::write_geo_beam_ele(const DRT::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriterNode::write_geo_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
     std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
     std::vector<double>& coordinates)
 {
   FOUR_C_THROW("VTU node based filter cannot handle beam elements");
 }
 
-void PostVtuWriterNode::wirte_dof_result_step_nurbs_ele(const CORE::Elements::Element* ele,
+void PostVtuWriterNode::wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros)
 {
   FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }
 
-void PostVtuWriterNode::write_dof_result_step_beam_ele(const DRT::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriterNode::write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros)
 {
   FOUR_C_THROW("VTU node based filter cannot handle beam elements");
 }
 
-void PostVtuWriterNode::write_nodal_result_step_nurbs_ele(const CORE::Elements::Element* ele,
+void PostVtuWriterNode::write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData)
 {

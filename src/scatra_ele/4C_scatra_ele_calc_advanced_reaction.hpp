@@ -17,12 +17,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace MAT
+namespace Mat
 {
   class MatListReactions;
 }
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -36,7 +36,7 @@ namespace DRT
      linearizations \partial_c f(c) are done within the material MAT_matlist_reactions and
      MAT_scatra_reaction
      */
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
     class ScaTraEleCalcAdvReac : public virtual ScaTraEleCalc<distype, probdim>
     {
      protected:
@@ -62,7 +62,7 @@ namespace DRT
 
       //! get the material parameters
       void get_material_params(
-          const CORE::Elements::Element* ele,  //!< the element we are dealing with
+          const Core::Elements::Element* ele,  //!< the element we are dealing with
           std::vector<double>& densn,          //!< density at t_(n)
           std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
           std::vector<double>& densam,         //!< density at t_(n+alpha_M)
@@ -73,7 +73,7 @@ namespace DRT
 
       //! evaluate material
       void materials(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -91,21 +91,21 @@ namespace DRT
 
 
       //! calculation of reactive element matrix
-      void calc_mat_react(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+      void calc_mat_react(Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau
           const double taufac,                          //!< domain-integration factor times tau
           const double densnp,                          //!< density at time_(n+1)
-          const CORE::LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
-          const CORE::LINALG::Matrix<nen_, 1>& diff     //!< laplace term
+          const Core::LinAlg::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
+          const Core::LinAlg::Matrix<nen_, 1>& diff     //!< laplace term
           ) override;
 
 
       //! Set advanced reaction terms and derivatives
       virtual void set_advanced_reaction_terms(const int k,       //!< index of current scalar
-          const Teuchos::RCP<MAT::MatListReactions> matreaclist,  //!< index of current scalar
+          const Teuchos::RCP<Mat::MatListReactions> matreaclist,  //!< index of current scalar
           const double* gpcoord  //!< current Gauss-point coordinates
       );
 
@@ -113,7 +113,7 @@ namespace DRT
       double eval_shape_func_and_derivs_at_ele_center() override;
 
       //! array for shape function at element center
-      CORE::LINALG::Matrix<nen_, 1> funct_elementcenter_;
+      Core::LinAlg::Matrix<nen_, 1> funct_elementcenter_;
 
       //! get current Gauss-point coordinates
       virtual const double* get_gp_coord() const { return gpcoord_; }
@@ -253,7 +253,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

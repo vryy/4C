@@ -23,7 +23,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -39,7 +39,7 @@ namespace DRT
       \date 01/09
     */
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ArteryEleCalcLinExp : public ArteryEleCalc<distype>
     {
      private:
@@ -53,32 +53,33 @@ namespace DRT
       static ArteryEleCalcLinExp<distype>* Instance(
           const int numdofpernode, const std::string& disname);
 
-      int Evaluate(Artery* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<CORE::MAT::Material> mat) override;
+      int Evaluate(Artery* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<Core::Mat::Material> mat) override;
 
       int ScatraEvaluate(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<CORE::MAT::Material> mat) override;
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<Core::Mat::Material> mat) override;
 
-      int EvaluateService(Artery* ele, const ARTERY::Action action, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<CORE::MAT::Material> mat) override;
+      int EvaluateService(Artery* ele, const Arteries::Action action,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<Core::Mat::Material> mat) override;
 
       /*!
         \brief calculate element matrix and rhs
@@ -94,48 +95,48 @@ namespace DRT
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-      void sysmat(Artery* ele, const CORE::LINALG::Matrix<my::iel_, 1>& eqnp,
-          const CORE::LINALG::Matrix<my::iel_, 1>& eareanp,
-          CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
-          CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs,
-          Teuchos::RCP<const CORE::MAT::Material> material, double dt);
+      void sysmat(Artery* ele, const Core::LinAlg::Matrix<my::iel_, 1>& eqnp,
+          const Core::LinAlg::Matrix<my::iel_, 1>& eareanp,
+          Core::LinAlg::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
+          Core::LinAlg::Matrix<2 * my::iel_, 1>& rhs,
+          Teuchos::RCP<const Core::Mat::Material> material, double dt);
 
-      void ScatraSysmat(Artery* ele, const CORE::LINALG::Matrix<2 * my::iel_, 1>& escatran,
-          const CORE::LINALG::Matrix<my::iel_, 1>& ewfnp,
-          const CORE::LINALG::Matrix<my::iel_, 1>& ewbnp,
-          const CORE::LINALG::Matrix<my::iel_, 1>& eareanp,
-          const CORE::LINALG::Matrix<my::iel_, 1>& earean,
-          CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
-          CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs,
-          Teuchos::RCP<const CORE::MAT::Material> material, double dt);
+      void ScatraSysmat(Artery* ele, const Core::LinAlg::Matrix<2 * my::iel_, 1>& escatran,
+          const Core::LinAlg::Matrix<my::iel_, 1>& ewfnp,
+          const Core::LinAlg::Matrix<my::iel_, 1>& ewbnp,
+          const Core::LinAlg::Matrix<my::iel_, 1>& eareanp,
+          const Core::LinAlg::Matrix<my::iel_, 1>& earean,
+          Core::LinAlg::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
+          Core::LinAlg::Matrix<2 * my::iel_, 1>& rhs,
+          Teuchos::RCP<const Core::Mat::Material> material, double dt);
 
       virtual bool SolveRiemann(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<const CORE::MAT::Material> mat);
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Teuchos::RCP<const Core::Mat::Material> mat);
 
       virtual void EvaluateTerminalBC(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> mat);
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material> mat);
 
       virtual void EvaluateScatraBC(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& disctretization, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> material);
+          Discret::Discretization& disctretization, std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material> material);
 
       virtual void calc_postprocessing_values(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> mat);
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material> mat);
 
       virtual void calc_scatra_from_scatra_fw(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> material);
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material> material);
 
       virtual void EvaluateWfAndWb(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> material);
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material> material);
 
       virtual void solve_scatra_analytically(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<CORE::MAT::Material> material);
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Teuchos::RCP<Core::Mat::Material> material);
 
       /*!
         \brief get the initial values of the degrees of freedome at the node
@@ -152,29 +153,29 @@ namespace DRT
         \param dt               (i) timestep
         */
       virtual void Initial(Artery* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<const CORE::MAT::Material> material);
+          Discret::Discretization& discretization, std::vector<int>& lm,
+          Teuchos::RCP<const Core::Mat::Material> material);
 
       /*!
        \Essential functions to compute the results of essential matrices
       */
      private:
       //! nodal volumetric flow rate at time step "n"
-      CORE::LINALG::Matrix<my::iel_, 1> qn_;
+      Core::LinAlg::Matrix<my::iel_, 1> qn_;
       //! nodal cross-sectional area at time step "n"
-      CORE::LINALG::Matrix<my::iel_, 1> an_;
+      Core::LinAlg::Matrix<my::iel_, 1> an_;
       //! vector containing the initial cross-sectional area at the element nodes
-      CORE::LINALG::Matrix<my::iel_, 1> area0_;
+      Core::LinAlg::Matrix<my::iel_, 1> area0_;
       //! vector containing the initial thickness at the element nodes
-      CORE::LINALG::Matrix<my::iel_, 1> th_;
+      Core::LinAlg::Matrix<my::iel_, 1> th_;
       //! vector containing the initial Youngs modulus at the element nodes
-      CORE::LINALG::Matrix<my::iel_, 1> young_;
+      Core::LinAlg::Matrix<my::iel_, 1> young_;
       //! vector containing the fixed external pressure
-      CORE::LINALG::Matrix<my::iel_, 1> pext_;
+      Core::LinAlg::Matrix<my::iel_, 1> pext_;
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

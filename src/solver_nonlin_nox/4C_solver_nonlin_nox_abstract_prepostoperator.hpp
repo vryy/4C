@@ -20,14 +20,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     class Group;
     class LinearSystem;
@@ -38,7 +38,7 @@ namespace NOX
         operations into different NOX::NLN classes.
 
         The user should implement their own concrete implementation of this class
-        and register it as a Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator>
+        and register it as a Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator>
         in the corresponding sublist.
 
         For example: To create and use a user defined pre/post operator for the linear system you
@@ -47,11 +47,11 @@ namespace NOX
         <ol>
 
         <li> Create a pre/post operator that derives from
-        NOX::NLN::Abstract::PrePostOperator. For example, the pre/post operator \c
+        NOX::Nln::Abstract::PrePostOperator. For example, the pre/post operator \c
         Foo might be defined as shown below.
 
         \code
-        class Foo : public NOX::NLN::Abstract::PrePostOperator
+        class Foo : public NOX::Nln::Abstract::PrePostOperator
         {
         // Insert class definition here
         }
@@ -64,7 +64,7 @@ namespace NOX
         Teuchos::RCP<Foo> foo = Teuchos::rcp(new Foo);
         const std::string& dir_str = paramsPtr->sublist("Direction").get<std::string>("Method");
         Teuchos::ParameterList& p_linsolver = paramsPtr->sublist("Direction").sublist(dir_str).
-            sublist("Linear Solver").set<Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> >
+            sublist("Linear Solver").set<Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> >
             ("User Defined Pre/Post Operator",foo);
         \endcode
 
@@ -82,7 +82,7 @@ namespace NOX
         PrePostOperator(){};
 
         //! Copy constructor (does nothing)
-        PrePostOperator(const NOX::NLN::Abstract::PrePostOperator& source){};
+        PrePostOperator(const NOX::Nln::Abstract::PrePostOperator& source){};
 
         /** @name Solver Pre/Post Operator
          *  Non-linear solver pre/post-operator functions. See the  ::NOX::Solver::PrePostOperator
@@ -107,26 +107,26 @@ namespace NOX
         solver); */
         ///@}
 
-        /** @name NLN::LinearSystem Pre/Post Operator
-         *  This pre/post operator is used in the NOX::NLN::LinearSystem class and its derived
+        /** @name Nln::LinearSystem Pre/Post Operator
+         *  This pre/post operator is used in the NOX::Nln::LinearSystem class and its derived
          * classes.
          */
         ///@{
         /** User defined method that will be executed at the start
-         *  of a call to NOX::NLN::LinearSystem::applyJacobianInverse().
+         *  of a call to NOX::Nln::LinearSystem::applyJacobianInverse().
          *
          * \param rhs    : full access to the rhs vector
          * \param jac    : full access to the jacobian
          * \param linsys : read only access to the linear system object
          */
         virtual void run_pre_apply_jacobian_inverse(::NOX::Abstract::Vector& rhs,
-            CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys)
+            Core::LinAlg::SparseOperator& jac, const NOX::Nln::LinearSystem& linsys)
         {
           return;
         };
 
         /** User defined method that will be executed at the end
-         *  of a call to NOX::NLN::LinearSystem::applyJacobianInverse().
+         *  of a call to NOX::Nln::LinearSystem::applyJacobianInverse().
          *
          * \param result : full access to the result vector
          * \param rhs    : full access to the rhs vector
@@ -134,40 +134,40 @@ namespace NOX
          * \param linsys : read only access to the linear system object
          */
         virtual void run_post_apply_jacobian_inverse(::NOX::Abstract::Vector& result,
-            ::NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
-            const NOX::NLN::LinearSystem& linsys)
+            ::NOX::Abstract::Vector& rhs, Core::LinAlg::SparseOperator& jac,
+            const NOX::Nln::LinearSystem& linsys)
         {
           return;
         };
 
         /** User defined method that will be executed at the start of a call to
-         * NOX::NLN::LinearSystem::applyJacobianInverse().
+         * NOX::Nln::LinearSystem::applyJacobianInverse().
          *
          * \param jac    : full access to the jacobian operator
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void run_pre_compute_jacobian(CORE::LINALG::SparseOperator& jac,
-            const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
+        virtual void run_pre_compute_jacobian(Core::LinAlg::SparseOperator& jac,
+            const Epetra_Vector& x, const NOX::Nln::LinearSystem& linsys)
         {
           return;
         };
 
         /** User defined method that will be executed at the end of a call to
-         * NOX::NLN::LinearSystem::applyJacobianInverse().
+         * NOX::Nln::LinearSystem::applyJacobianInverse().
          *
          * \param jac    : full access to the jacobian operator
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void run_post_compute_jacobian(CORE::LINALG::SparseOperator& jac,
-            const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
+        virtual void run_post_compute_jacobian(Core::LinAlg::SparseOperator& jac,
+            const Epetra_Vector& x, const NOX::Nln::LinearSystem& linsys)
         {
           return;
         };
 
         /** User defined method that will be executed at the start of a call to
-         * NOX::NLN::LinearSystem::computeFandJacobian().
+         * NOX::Nln::LinearSystem::computeFandJacobian().
          *
          * \param rhs    : full access to the right-hand-side vector
          * \param jac    : full access to the jacobian operator
@@ -175,14 +175,14 @@ namespace NOX
          * \param linsys : read only access to the linear system object
          */
         virtual void run_pre_compute_fand_jacobian(Epetra_Vector& rhs,
-            CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
-            const NOX::NLN::LinearSystem& linsys)
+            Core::LinAlg::SparseOperator& jac, const Epetra_Vector& x,
+            const NOX::Nln::LinearSystem& linsys)
         {
           return;
         };
 
         /** User defined method that will be executed at the end of a call to
-         * NOX::NLN::LinearSystem::computeFandJacobian().
+         * NOX::Nln::LinearSystem::computeFandJacobian().
          *
          * \param rhs    : full access to the right-hand-side vector
          * \param jac    : full access to the jacobian operator
@@ -190,64 +190,64 @@ namespace NOX
          * \param linsys : read only access to the linear system object
          */
         virtual void run_post_compute_fand_jacobian(Epetra_Vector& rhs,
-            CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
-            const NOX::NLN::LinearSystem& linsys)
+            Core::LinAlg::SparseOperator& jac, const Epetra_Vector& x,
+            const NOX::Nln::LinearSystem& linsys)
         {
           return;
         };
 
         ///@}
 
-        /** @name NLN::Group Pre/Post Operator
-         *  This pre/post operator is used in the NOX::NLN::Group class and its derived classes.
+        /** @name Nln::Group Pre/Post Operator
+         *  This pre/post operator is used in the NOX::Nln::Group class and its derived classes.
          */
         ///@{
         /** User defined method that will be executed at the start of a call to
-         * NOX::NLN::Group::computeF().
+         * NOX::Nln::Group::computeF().
          *
-         * \param F        : full access to the right hand side vector of the NOX::NLN::Group.
-         * \param grp      : read only access to the NOX::NLN::Group object.
+         * \param F        : full access to the right hand side vector of the NOX::Nln::Group.
+         * \param grp      : read only access to the NOX::Nln::Group object.
          */
-        virtual void runPreComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp) { return; };
+        virtual void runPreComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp) { return; };
 
         /** User defined method that will be executed at the end of a call to
-         * NOX::NLN::Group::computeF().
+         * NOX::Nln::Group::computeF().
          *
-         * \param F        : full access to the right hand side vector of the NOX::NLN::Group.
-         * \param grp      : read only access to the NOX::NLN::Group object.
+         * \param F        : full access to the right hand side vector of the NOX::Nln::Group.
+         * \param grp      : read only access to the NOX::Nln::Group object.
          */
-        virtual void runPostComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp) { return; };
+        virtual void runPostComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp) { return; };
 
         /** User defined method that will be executed at the start of a call to
-         * NOX::NLN::Group::computeX().
+         * NOX::Nln::Group::computeX().
          *
          * \param input_grp: read only access to the input group (holds the old X).
          * \param dir      : read only access to the direction vector (step length equal 1.0).
          * \param step     : read only access to the current step length (line search).
          * \param curr_grp : read only access to the called/current group (will hold the new X).
          */
-        virtual void runPreComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
-            const double& step, const NOX::NLN::Group& curr_grp)
+        virtual void runPreComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+            const double& step, const NOX::Nln::Group& curr_grp)
         {
           return;
         };
 
         /** User defined method that will be executed at the end of a call to
-         * NOX::NLN::Group::computeX().
+         * NOX::Nln::Group::computeX().
          *
          * \param input_grp: read only access to the input group (holds the old X).
          * \param dir      : read only access to the direction vector (step length equal 1.0).
          * \param step     : read only access to the current step length (line search).
          * \param curr_grp : read only access to the called/current group (holds the new X).
          */
-        virtual void runPostComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
-            const double& step, const NOX::NLN::Group& curr_grp)
+        virtual void runPostComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+            const double& step, const NOX::Nln::Group& curr_grp)
         {
           return;
         };
 
         /*! User defined method that will be executed at the beginning
-         *  of a call to NOX::NLN::Group::applyJacobianInverse().
+         *  of a call to NOX::Nln::Group::applyJacobianInverse().
          *
          *  \param rhs    : read-only access to the rhs vector
          *  \param result : full access to the result vector
@@ -256,13 +256,13 @@ namespace NOX
          */
         virtual void run_pre_apply_jacobian_inverse(const ::NOX::Abstract::Vector& rhs,
             ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
-            const NOX::NLN::Group& grp)
+            const NOX::Nln::Group& grp)
         {
           return;
         };
 
         /*! User defined method that will be executed at the end
-         *  of a call to NOX::NLN::Group::applyJacobianInverse().
+         *  of a call to NOX::Nln::Group::applyJacobianInverse().
          *
          *  \param rhs    : read-only access to the rhs vector
          *  \param result : full access to the result vector
@@ -271,15 +271,15 @@ namespace NOX
          */
         virtual void run_post_apply_jacobian_inverse(const ::NOX::Abstract::Vector& rhs,
             ::NOX::Abstract::Vector& result, const ::NOX::Abstract::Vector& xold,
-            const NOX::NLN::Group& grp)
+            const NOX::Nln::Group& grp)
         {
           return;
         };
 
         ///@}
 
-        /** @name NLN::LineSearch Pre/Post Operator
-         *  This pre/post operator is used in the NOX::NLN::LineSearch classes.
+        /** @name Nln::LineSearch Pre/Post Operator
+         *  This pre/post operator is used in the NOX::Nln::LineSearch classes.
          */
         ///@{
         /** User defined method that will be executed before the step is modified in
@@ -297,7 +297,7 @@ namespace NOX
 
       };  // class PrePostOperator
     }     // namespace Abstract
-  }       // namespace NLN
+  }       // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

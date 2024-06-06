@@ -23,7 +23,7 @@ namespace STR::MODELEVALUATOR
     bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override { return true; }
 
     bool assemble_jacobian(
-        CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override
+        Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override
     {
       return true;
     }
@@ -59,17 +59,17 @@ namespace STR::MODELEVALUATOR
       return mechanical_stress_state_;
     }
 
-    void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override {}
+    void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override {}
 
     void post_evaluate() override {}
 
     void PostOutput() override {}
 
-    void Predict(const INPAR::STR::PredEnum& pred_type) override {}
+    void Predict(const Inpar::STR::PredEnum& pred_type) override {}
 
     void pre_evaluate() override {}
 
-    void read_restart(CORE::IO::DiscretizationReader& ioreader) override {}
+    void read_restart(Core::IO::DiscretizationReader& ioreader) override {}
 
     void Reset(const Epetra_Vector& x) override {}
 
@@ -83,15 +83,15 @@ namespace STR::MODELEVALUATOR
     void run_post_iterate(const ::NOX::Solver::Generic& solver) override {}
 
     void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-        const NOX::NLN::Group& curr_grp) override
+        const NOX::Nln::Group& curr_grp) override
     {
     }
 
     void Setup() override;
 
-    [[nodiscard]] INPAR::STR::ModelType Type() const override
+    [[nodiscard]] Inpar::STR::ModelType Type() const override
     {
-      return INPAR::STR::model_basic_coupling;
+      return Inpar::STR::model_basic_coupling;
     }
 
     void UpdateStepElement() override {}
@@ -99,7 +99,7 @@ namespace STR::MODELEVALUATOR
     void UpdateStepState(const double& timefac_n) override {}
 
     void write_restart(
-        CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override
+        Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override
     {
     }
 

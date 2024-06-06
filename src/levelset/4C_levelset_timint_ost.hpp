@@ -19,17 +19,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace SCATRA
+namespace ScaTra
 {
   class LevelSetTimIntOneStepTheta : public LevelSetAlgorithm, public TimIntOneStepTheta
   {
    public:
     /// standard Constructor
-    LevelSetTimIntOneStepTheta(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    LevelSetTimIntOneStepTheta(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
 
     /// initialize time-integration scheme
@@ -40,7 +40,7 @@ namespace SCATRA
 
     /// read restart data
     void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
@@ -78,7 +78,7 @@ namespace SCATRA
    private:
   };  // class LevelSetTimIntOneStepTheta
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

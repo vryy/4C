@@ -15,21 +15,21 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
 
-  template <CORE::FE::CellType celltype, typename SolidFormulation>
+  template <Core::FE::CellType celltype, typename SolidFormulation>
   class ElementFormulationDerivativeEvaluator
   {
    public:
-    ElementFormulationDerivativeEvaluator(const CORE::Elements::Element& ele,
-        const DRT::ELEMENTS::ElementNodes<celltype>& element_nodes,
-        const CORE::LINALG::Matrix<3, 1>& xi,
-        const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
-        const DRT::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
-        const CORE::LINALG::Matrix<3, 3>& deformation_gradient,
-        const DRT::ELEMENTS::PreparationData<SolidFormulation>& preparation_data,
-        DRT::ELEMENTS::SolidFormulationHistory<SolidFormulation>& history_data)
+    ElementFormulationDerivativeEvaluator(const Core::Elements::Element& ele,
+        const Discret::ELEMENTS::ElementNodes<celltype>& element_nodes,
+        const Core::LinAlg::Matrix<3, 1>& xi,
+        const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+        const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
+        const Core::LinAlg::Matrix<3, 3>& deformation_gradient,
+        const Discret::ELEMENTS::PreparationData<SolidFormulation>& preparation_data,
+        Discret::ELEMENTS::SolidFormulationHistory<SolidFormulation>& history_data)
         : ele_(ele),
           element_nodes_(element_nodes),
           xi_(xi),
@@ -41,42 +41,42 @@ namespace DRT::ELEMENTS
     {
     }
 
-    [[nodiscard]] CORE::LINALG::Matrix<9, CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+    [[nodiscard]] Core::LinAlg::Matrix<9, Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
     evaluate_d_deformation_gradient_d_displacements() const
     {
-      return DRT::ELEMENTS::evaluate_d_deformation_gradient_d_displacements(ele_, element_nodes_,
-          xi_, shape_functions_, jacobian_mapping_, deformation_gradient_, preparation_data_,
-          history_data_);
+      return Discret::ELEMENTS::evaluate_d_deformation_gradient_d_displacements(ele_,
+          element_nodes_, xi_, shape_functions_, jacobian_mapping_, deformation_gradient_,
+          preparation_data_, history_data_);
     }
 
-    [[nodiscard]] CORE::LINALG::Matrix<9, CORE::FE::dim<celltype>>
+    [[nodiscard]] Core::LinAlg::Matrix<9, Core::FE::dim<celltype>>
     evaluate_d_deformation_gradient_d_xi() const
     {
-      return DRT::ELEMENTS::evaluate_d_deformation_gradient_d_xi(ele_, element_nodes_, xi_,
+      return Discret::ELEMENTS::evaluate_d_deformation_gradient_d_xi(ele_, element_nodes_, xi_,
           shape_functions_, jacobian_mapping_, deformation_gradient_, preparation_data_,
           history_data_);
     }
 
-    [[nodiscard]] CORE::LINALG::Matrix<9,
-        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype> * CORE::FE::dim<celltype>>
+    [[nodiscard]] Core::LinAlg::Matrix<9,
+        Core::FE::num_nodes<celltype> * Core::FE::dim<celltype> * Core::FE::dim<celltype>>
     evaluate_d2_deformation_gradient_d_displacements_d_xi() const
     {
-      return DRT::ELEMENTS::evaluate_d_deformation_gradient_d_displacements_d_xi(ele_,
+      return Discret::ELEMENTS::evaluate_d_deformation_gradient_d_displacements_d_xi(ele_,
           element_nodes_, xi_, shape_functions_, jacobian_mapping_, deformation_gradient_,
           preparation_data_, history_data_);
     }
 
    private:
-    const CORE::Elements::Element& ele_;
-    const DRT::ELEMENTS::ElementNodes<celltype>& element_nodes_;
-    const CORE::LINALG::Matrix<3, 1>& xi_;
-    const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions_;
-    const DRT::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping_;
-    const CORE::LINALG::Matrix<3, 3>& deformation_gradient_;
-    const DRT::ELEMENTS::PreparationData<SolidFormulation>& preparation_data_;
-    DRT::ELEMENTS::SolidFormulationHistory<SolidFormulation>& history_data_;
+    const Core::Elements::Element& ele_;
+    const Discret::ELEMENTS::ElementNodes<celltype>& element_nodes_;
+    const Core::LinAlg::Matrix<3, 1>& xi_;
+    const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions_;
+    const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping_;
+    const Core::LinAlg::Matrix<3, 3>& deformation_gradient_;
+    const Discret::ELEMENTS::PreparationData<SolidFormulation>& preparation_data_;
+    Discret::ELEMENTS::SolidFormulationHistory<SolidFormulation>& history_data_;
   };
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 

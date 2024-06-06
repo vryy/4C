@@ -17,9 +17,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Side;
     class Mesh;
@@ -162,8 +162,8 @@ namespace CORE::GEO
       std::map<Side*, std::vector<Side*>> side_parent_to_child_;
       // std::map<Side*, Side*> side_child_to_parent_;
     };
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -22,29 +22,29 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
-namespace CORE::MAT
+namespace Core::Mat
 {
   class Material;
-}  // namespace CORE::MAT
+}  // namespace Core::Mat
 
-namespace MAT
+namespace Mat
 {
   class CrosslinkerMat;
 }
 
-namespace CROSSLINKING
+namespace CrossLinking
 {
   /*!
-  \brief A class for a crosslinker derived from CORE::Nodes::Node
+  \brief A class for a crosslinker derived from Core::Nodes::Node
   */
-  class CrosslinkerNodeType : public CORE::COMM::ParObjectType
+  class CrosslinkerNodeType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "CrosslinkerNodeType"; };
 
     static CrosslinkerNodeType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static CrosslinkerNodeType instance_;
@@ -56,7 +56,7 @@ namespace CROSSLINKING
    This class contains additional information from crosslinker nodes which are
    needed for correct crosslinking in a biopolymer network simulation. Note they are only
    available on the node's processor (ColMap). The class CrosslinkerNodeDataContainer
-   must be declared before the MORTAR::Node itself.
+   must be declared before the Mortar::Node itself.
 
    \author eichinger
    */
@@ -84,7 +84,7 @@ namespace CROSSLINKING
      class exists.
 
      */
-    void Pack(CORE::COMM::PackBuffer& data) const;
+    void Pack(Core::Communication::PackBuffer& data) const;
 
     /*!
      \brief Unpack data from a vector into this class
@@ -150,7 +150,7 @@ namespace CROSSLINKING
   // class CrosslinkerNodeDataContainer
 
   /*!
-   \brief A class for a crosslinker node derived from CORE::Nodes::Node
+   \brief A class for a crosslinker node derived from Core::Nodes::Node
 
   This class represents a single crosslinker involved in a biopolymer network simulation.
   * note:
@@ -161,15 +161,15 @@ namespace CROSSLINKING
   \author eichinger
    */
 
-  class CrosslinkerNode : public CORE::Nodes::Node
+  class CrosslinkerNode : public Core::Nodes::Node
   {
    public:
     //! @name Enums and Friends
 
     /*!
-     \brief The discretization is a friend of MORTAR::Node
+     \brief The discretization is a friend of Mortar::Node
      */
-    friend class DRT::Discretization;
+    friend class Discret::Discretization;
 
     //@}
 
@@ -191,13 +191,13 @@ namespace CROSSLINKING
     Makes a deep copy of a CrosslinkerNode
 
     */
-    CrosslinkerNode(const CROSSLINKING::CrosslinkerNode& old);
+    CrosslinkerNode(const CrossLinking::CrosslinkerNode& old);
 
     /*!
      \brief Deep copy the derived class and return pointer to it
 
      */
-    CROSSLINKING::CrosslinkerNode* Clone() const override;
+    CrossLinking::CrosslinkerNode* Clone() const override;
 
 
 
@@ -219,7 +219,7 @@ namespace CROSSLINKING
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -234,7 +234,7 @@ namespace CROSSLINKING
     //! @name Access methods
 
     /*!
-     \brief Print this MORTAR::Node
+     \brief Print this Mortar::Node
      */
     void Print(std::ostream& os) const override;
 
@@ -245,7 +245,7 @@ namespace CROSSLINKING
     This method returns the material associated with this crosslinker node
 
     */
-    inline Teuchos::RCP<MAT::CrosslinkerMat> GetMaterial() const
+    inline Teuchos::RCP<Mat::CrosslinkerMat> GetMaterial() const
     {
       if (mat_ == Teuchos::null) FOUR_C_THROW("No crosslinker material attached.");
       return mat_;
@@ -272,7 +272,7 @@ namespace CROSSLINKING
     /*!
      \brief Set material for crosslinker node
      */
-    virtual void SetMaterial(Teuchos::RCP<CORE::MAT::Material> material);
+    virtual void SetMaterial(Teuchos::RCP<Core::Mat::Material> material);
 
     //  /*!
     //   \brief Resets the data container of the node
@@ -289,18 +289,18 @@ namespace CROSSLINKING
    protected:
     //  /// information of crosslinker binding status, this is different for each crosslinker
     //  //  and may change each time step
-    //  Teuchos::RCP<CROSSLINKING::CrosslinkerNodeDataContainer> cldata_;
+    //  Teuchos::RCP<CrossLinking::CrosslinkerNodeDataContainer> cldata_;
 
     /// this contains information that does not change during the simulation time and is
     //  the same for a subset of crosslinker, we only need one object for each subset
-    Teuchos::RCP<MAT::CrosslinkerMat> mat_;
+    Teuchos::RCP<Mat::CrosslinkerMat> mat_;
 
 
   };  // class CrosslinkerNode
-}  // namespace CROSSLINKING
+}  // namespace CrossLinking
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& crosslinker_node);
+std::ostream& operator<<(std::ostream& os, const CrossLinking::CrosslinkerNode& crosslinker_node);
 
 FOUR_C_NAMESPACE_CLOSE
 

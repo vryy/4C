@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                           dano 06/09 |
  *----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace THR
   {
@@ -338,19 +338,19 @@ namespace INPAR
     {
       switch (norm)
       {
-        case INPAR::THR::norm_vague:
+        case Inpar::THR::norm_vague:
           return "Vague";
           break;
-        case INPAR::THR::norm_l1:
+        case Inpar::THR::norm_l1:
           return "L1";
           break;
-        case INPAR::THR::norm_l2:
+        case Inpar::THR::norm_l2:
           return "L2";
           break;
-        case INPAR::THR::norm_rms:
+        case Inpar::THR::norm_rms:
           return "Rms";
           break;
-        case INPAR::THR::norm_inf:
+        case Inpar::THR::norm_inf:
           return "Inf";
           break;
         default:
@@ -373,11 +373,11 @@ namespace INPAR
 
     /// set thermo specific conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace THR
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

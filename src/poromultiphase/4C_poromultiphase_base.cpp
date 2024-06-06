@@ -31,7 +31,7 @@ POROMULTIPHASE::PoroMultiPhaseBase::PoroMultiPhaseBase(
       fluid_(Teuchos::null),
       struct_zeros_(Teuchos::null),
       solve_structure_(true),
-      artery_coupl_(CORE::UTILS::IntegralValue<int>(globaltimeparams, "ARTERY_COUPLING"))
+      artery_coupl_(Core::UTILS::IntegralValue<int>(globaltimeparams, "ARTERY_COUPLING"))
 {
 }
 
@@ -45,24 +45,24 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
     int ndsporofluid_scatra, const std::map<int, std::set<int>>* nearbyelepairs)
 {
   // access the global problem
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // Create the two uncoupled subproblems.
   // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<Discret::Discretization> structdis = problem->GetDis(struct_disname);
 
   // build structural time integrator
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase =
-      ADAPTER::build_structure_algorithm(structparams);
+  Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase =
+      Adapter::build_structure_algorithm(structparams);
   adapterbase->Init(globaltimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
   adapterbase->Setup();
   structure_ = adapterbase->structure_field();
 
   // initialize zero vector for convenience
-  struct_zeros_ = CORE::LINALG::CreateVector(*structure_->dof_row_map(), true);
+  struct_zeros_ = Core::LinAlg::CreateVector(*structure_->dof_row_map(), true);
   // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh
   // deformation
-  solve_structure_ = CORE::UTILS::IntegralValue<int>(algoparams, "SOLVE_STRUCTURE");
+  solve_structure_ = Core::UTILS::IntegralValue<int>(algoparams, "SOLVE_STRUCTURE");
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = fluidparams.get<int>("LINEAR_SOLVER");
@@ -71,7 +71,8 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   // -------------------------------------------------------------------
   // access the fluid discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis(fluid_disname);
+  Teuchos::RCP<Discret::Discretization> fluiddis =
+      Global::Problem::Instance()->GetDis(fluid_disname);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -81,24 +82,24 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = fluiddis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = fluiddis->Writer();
   output->WriteMesh(0, 0.0);
 
   // -------------------------------------------------------------------
   // algorithm construction depending on
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme =
-      CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(
+  Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme =
+      Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme>(
           fluidparams, "TIMEINTEGR");
 
   // build poro fluid time integrator
-  Teuchos::RCP<ADAPTER::PoroFluidMultiphase> porofluid =
+  Teuchos::RCP<Adapter::PoroFluidMultiphase> porofluid =
       POROFLUIDMULTIPHASE::UTILS::CreateAlgorithm(
           timintscheme, fluiddis, linsolvernumber, globaltimeparams, fluidparams, output);
 
   // wrap it
-  fluid_ = Teuchos::rcp(new ADAPTER::PoroFluidMultiphaseWrapper(porofluid));
+  fluid_ = Teuchos::rcp(new Adapter::PoroFluidMultiphaseWrapper(porofluid));
   // initialize it
   fluid_->Init(isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra, nearbyelepairs);
 
@@ -199,7 +200,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::prepare_time_step()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseBase::CreateFieldTest()
 {
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   problem->AddFieldTest(structure_->CreateFieldTest());
   problem->AddFieldTest(fluid_->CreateFieldTest());
@@ -284,7 +285,7 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::FluidDofRowMa
 /*------------------------------------------------------------------------*
  | coupled artery-porofluid system matrix                kremheller 05/18 |
  *------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
 POROMULTIPHASE::PoroMultiPhaseBase::artery_porofluid_sysmat() const
 {
   return fluid_->artery_porofluid_sysmat();

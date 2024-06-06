@@ -24,23 +24,23 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declaration.
-namespace INPAR
+namespace Inpar
 {
-  namespace BEAMTOSOLID
+  namespace BeamToSolid
   {
     enum class BeamToSolidMortarShapefunctions;
     enum class BeamToSolidSurfaceRotationCoupling;
-  }  // namespace BEAMTOSOLID
+  }  // namespace BeamToSolid
   namespace GEOMETRYPAIR
   {
     enum class SurfaceNormals;
   }
-}  // namespace INPAR
-namespace CORE::LARGEROTATIONS
+}  // namespace Inpar
+namespace Core::LargeRotations
 {
   template <unsigned int numnodes, typename T>
   class TriadInterpolationLocalRotationVectors;
-}  // namespace CORE::LARGEROTATIONS
+}  // namespace Core::LargeRotations
 
 
 namespace BEAMINTERACTION
@@ -73,19 +73,19 @@ namespace BEAMINTERACTION
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
      * matrix. (derived)
      */
-    void EvaluateAndAssemble(const DRT::Discretization& discret,
+    void EvaluateAndAssemble(const Discret::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Epetra_Vector& global_lambda, const Epetra_Vector& displacement_vector) override;
 
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
-        CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
-        CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+    void evaluate_and_assemble_mortar_contributions(const Discret::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_G_B,
+        Core::LinAlg::SparseMatrix& global_G_S, Core::LinAlg::SparseMatrix& global_FB_L,
+        Core::LinAlg::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
   };
@@ -115,7 +115,7 @@ namespace BEAMINTERACTION
     //! psi_beam, the following entries are the discrete solid DOFs.
     using scalar_type_rot_1st = typename Sacado::Fad::SLFad<double, 3 + surface::n_dof_>;
     using scalar_type_rot_2nd =
-        typename CORE::FADUTILS::HigherOrderFadType<2, scalar_type_rot_1st>::type;
+        typename Core::FADUtils::HigherOrderFadType<2, scalar_type_rot_1st>::type;
 
     //! Number of rotational DOF for the SR beams;
     static constexpr unsigned int n_dof_rot_ = 9;
@@ -134,19 +134,19 @@ namespace BEAMINTERACTION
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
      * matrix (derived).
      */
-    void EvaluateAndAssemble(const DRT::Discretization& discret,
+    void EvaluateAndAssemble(const Discret::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Epetra_Vector& global_lambda, const Epetra_Vector& displacement_vector) override;
 
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void evaluate_and_assemble_mortar_contributions(const DRT::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_GB,
-        CORE::LINALG::SparseMatrix& global_GS, CORE::LINALG::SparseMatrix& global_FB,
-        CORE::LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
+    void evaluate_and_assemble_mortar_contributions(const Discret::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager, Core::LinAlg::SparseMatrix& global_GB,
+        Core::LinAlg::SparseMatrix& global_GS, Core::LinAlg::SparseMatrix& global_FB,
+        Core::LinAlg::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
@@ -161,12 +161,12 @@ namespace BEAMINTERACTION
      * @param psi_solid (out) Rotation vector on solid surface.
      */
     template <typename scalar_type_rot_vec>
-    void get_surface_rotation_vector(const CORE::LINALG::Matrix<3, 1, double>& xi,
+    void get_surface_rotation_vector(const Core::LinAlg::Matrix<3, 1, double>& xi,
         const GEOMETRYPAIR::ElementData<surface, double>& q_solid_ref,
         const GEOMETRYPAIR::ElementData<surface, scalar_type_rot_vec>& q_solid,
-        const CORE::LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
-        const INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling surface_triad_type,
-        CORE::LINALG::Matrix<3, 1, scalar_type_rot_vec>& psi_solid) const;
+        const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref,
+        const Inpar::BeamToSolid::BeamToSolidSurfaceRotationCoupling surface_triad_type,
+        Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec>& psi_solid) const;
 
     /**
      * \brief Get the rotational GIDs for the beam and surface.
@@ -174,8 +174,8 @@ namespace BEAMINTERACTION
      * @param gid_surface (out) GIDs for the surface that influence the rotation.
      * @param gid_rot (out) Rotational GIDs for the beam
      */
-    void get_pair_rotational_gi_ds(const DRT::Discretization& discret,
-        std::vector<int>& gid_surface, CORE::LINALG::Matrix<n_dof_rot_, 1, int>& gid_rot) const;
+    void get_pair_rotational_gi_ds(const Discret::Discretization& discret,
+        std::vector<int>& gid_surface, Core::LinAlg::Matrix<n_dof_rot_, 1, int>& gid_rot) const;
   };
 
   /**
@@ -186,10 +186,10 @@ namespace BEAMINTERACTION
    * @return Pointer to the created pair.
    */
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
-      const CORE::FE::CellType surface_shape,
-      const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction,
+      const Core::FE::CellType surface_shape,
+      const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction,
       const bool rotational_coupling,
-      const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
+      const Inpar::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
 }  // namespace BEAMINTERACTION
 
 FOUR_C_NAMESPACE_CLOSE

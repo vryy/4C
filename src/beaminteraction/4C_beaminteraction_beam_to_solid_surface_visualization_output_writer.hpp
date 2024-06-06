@@ -32,7 +32,7 @@ namespace BEAMINTERACTION
     class BeamContact;
   }
 }  // namespace BEAMINTERACTION
-namespace STR::TIMINT
+namespace STR::TimeInt
 {
   class ParamsRuntimeOutput;
 }
@@ -51,7 +51,7 @@ namespace BEAMINTERACTION
      * \brief Constructor.
      */
     explicit BeamToSolidSurfaceVisualizationOutputWriter(
-        CORE::IO::VisualizationParameters visualization_params);
+        Core::IO::VisualizationParameters visualization_params);
 
     /**
      * \brief Destructor.
@@ -69,7 +69,7 @@ namespace BEAMINTERACTION
      * options.
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      */
-    void Setup(Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+    void Setup(Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
         Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
             output_params_ptr);
 
@@ -129,7 +129,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase> output_writer_base_ptr_;
 
     //! visualization parameters
-    const CORE::IO::VisualizationParameters visualization_params_;
+    const Core::IO::VisualizationParameters visualization_params_;
   };
 
 }  // namespace BEAMINTERACTION

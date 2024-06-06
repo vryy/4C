@@ -18,14 +18,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
 
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class MembraneScatra : public Membrane<distype>
     {
      public:
@@ -54,7 +54,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-constructor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -66,19 +66,19 @@ namespace DRT
       {
         switch (distype)
         {
-          case CORE::FE::CellType::tri3:
+          case Core::FE::CellType::tri3:
           {
             return MembraneScatraTri3Type::Instance().UniqueParObjectId();
           }
-          case CORE::FE::CellType::tri6:
+          case Core::FE::CellType::tri6:
           {
             return MembraneScatraTri6Type::Instance().UniqueParObjectId();
           }
-          case CORE::FE::CellType::quad4:
+          case Core::FE::CellType::quad4:
           {
             return MembraneScatraQuad4Type::Instance().UniqueParObjectId();
           }
-          case CORE::FE::CellType::quad9:
+          case Core::FE::CellType::quad9:
           {
             return MembraneScatraQuad9Type::Instance().UniqueParObjectId();
           }
@@ -96,7 +96,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -116,26 +116,26 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         switch (distype)
         {
-          case CORE::FE::CellType::tri3:
+          case Core::FE::CellType::tri3:
           {
             return MembraneScatraTri3Type::Instance();
           }
           break;
-          case CORE::FE::CellType::tri6:
+          case Core::FE::CellType::tri6:
           {
             return MembraneScatraTri6Type::Instance();
           }
           break;
-          case CORE::FE::CellType::quad4:
+          case Core::FE::CellType::quad4:
           {
             return MembraneScatraQuad4Type::Instance();
           }
           break;
-          case CORE::FE::CellType::quad9:
+          case Core::FE::CellType::quad9:
           {
             return MembraneScatraQuad9Type::Instance();
           }
@@ -156,7 +156,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -170,8 +170,8 @@ namespace DRT
       \param discretization : pointer to discretization for de-assembly
       \param la (in)        : location array for de-assembly
       */
-      void pre_evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la);
+      void pre_evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la);
 
       /*!
       \brief Evaluate an element
@@ -199,21 +199,21 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
       //@}
 
       //! @name params
       /*!
-      \brief return SCATRA::ImplType
+      \brief return ScaTra::ImplType
       */
-      const INPAR::SCATRA::ImplType& ImplType() const { return impltype_; };
+      const Inpar::ScaTra::ImplType& ImplType() const { return impltype_; };
 
       //@}
 
@@ -221,16 +221,16 @@ namespace DRT
       /*!
       \brief Get vector of ptrs to nodes
       */
-      CORE::Nodes::Node** Nodes() override;
+      Core::Nodes::Node** Nodes() override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       //! @{
       //! scalar transport implementation type (physics)
-      INPAR::SCATRA::ImplType impltype_;
+      Inpar::ScaTra::ImplType impltype_;
       //@}
 
      protected:
@@ -239,7 +239,7 @@ namespace DRT
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

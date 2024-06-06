@@ -25,10 +25,10 @@ namespace FLD
   {
    public:
     //! Standard Constructor
-    TimIntPoro(const Teuchos::RCP<DRT::Discretization>& actdis,
-        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    TimIntPoro(const Teuchos::RCP<Discret::Discretization>& actdis,
+        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid = false);
+        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /*!
     \brief initialization
@@ -57,7 +57,7 @@ namespace FLD
 
     //! set the initial porosity field
     void set_initial_porosity_field(
-        const INPAR::POROELAST::InitialField init,  //!< type of initial field
+        const Inpar::PoroElast::InitialField init,  //!< type of initial field
         const int startfuncno                       //!< number of spatial function
         ) override;
 

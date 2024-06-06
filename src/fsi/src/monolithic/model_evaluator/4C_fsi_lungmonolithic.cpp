@@ -33,10 +33,10 @@ FSI::LungMonolithic::LungMonolithic(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : BlockMonolithic(comm, timeparams)
 {
-  icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupsaout_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupfsout_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  coupfaout_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  icoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupsaout_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupfsout_ = Teuchos::rcp(new Core::Adapter::Coupling());
+  coupfaout_ = Teuchos::rcp(new Core::Adapter::Coupling());
 
   //-----------------------------------------------------------------------------
   // additional fluid-structure volume constraints
@@ -49,10 +49,10 @@ FSI::LungMonolithic::LungMonolithic(
   // manager is included here on the algorithm level (as far as
   // needed).
 
-  Teuchos::RCP<ADAPTER::FluidLung> fluidfield =
-      Teuchos::rcp_dynamic_cast<ADAPTER::FluidLung>(fluid_field());
-  const Teuchos::RCP<ADAPTER::StructureLung>& structfield =
-      Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(structure_field());
+  Teuchos::RCP<Adapter::FluidLung> fluidfield =
+      Teuchos::rcp_dynamic_cast<Adapter::FluidLung>(fluid_field());
+  const Teuchos::RCP<Adapter::StructureLung>& structfield =
+      Teuchos::rcp_dynamic_cast<Adapter::StructureLung>(structure_field());
 
   // consistency check: all dofs contained in ale(fluid)-structure coupling need to
   // be part of the structure volume constraint, too. this needs to be checked because during
@@ -108,7 +108,7 @@ FSI::LungMonolithic::LungMonolithic(
 
   // build an all reduced version of the constraintmap, since sometimes all processors
   // have to know all values of the constraints and Lagrange multipliers
-  RedConstrMap_ = CORE::LINALG::AllreduceEMap(*ConstrMap_);
+  RedConstrMap_ = Core::LinAlg::AllreduceEMap(*ConstrMap_);
 
   // create importer
   ConstrImport_ = Teuchos::rcp(new Epetra_Export(*RedConstrMap_, *ConstrMap_));
@@ -126,32 +126,32 @@ FSI::LungMonolithic::LungMonolithic(
 
   // build merged structure dof map
   Teuchos::RCP<Epetra_Map> FullStructDofMap =
-      CORE::LINALG::MergeMap(*structure_field()->dof_row_map(), *ConstrMap_, false);
-  CORE::LINALG::MapExtractor StructConstrExtractor(
+      Core::LinAlg::MergeMap(*structure_field()->dof_row_map(), *ConstrMap_, false);
+  Core::LinAlg::MapExtractor StructConstrExtractor(
       *FullStructDofMap, ConstrMap_, structure_field()->dof_row_map());
 
   AddStructConstrMatrix_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           StructConstrExtractor, StructConstrExtractor, 81, false, true));
 
   AddFluidShapeDerivMatrix_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *fluid_field()->Interface(), *fluid_field()->Interface(), 108, false, true));
-  FluidConstrMatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+  FluidConstrMatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
       *fluid_field()->discretization()->dof_row_map(), NumConstrID_, false, true));
-  ConstrFluidMatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ConstrMap_,
+  ConstrFluidMatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*ConstrMap_,
       fluid_field()->discretization()->dof_row_map()->NumGlobalElements(), false, true));
 
   // additional "ale" matrices filled in the fluid elements
   Teuchos::RCP<Epetra_Map> emptymap =
       Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, fluid_field()->discretization()->Comm()));
-  CORE::LINALG::MapExtractor constrextractor;
+  Core::LinAlg::MapExtractor constrextractor;
   constrextractor.Setup(*ConstrMap_, emptymap, ConstrMap_);
   AleConstrMatrix_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           constrextractor, *fluid_field()->Interface(), 108, false, true));
   ConstrAleMatrix_ =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *fluid_field()->Interface(), constrextractor, 108, false, true));
 
   AddStructRHS_ =
@@ -195,10 +195,10 @@ FSI::LungMonolithic::LungMonolithic(
 /*----------------------------------------------------------------------*/
 void FSI::LungMonolithic::GeneralSetup()
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
   linearsolverstrategy_ =
-      CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+      Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
 
   set_default_parameters(fsidyn, nox_parameter_list());
 
@@ -212,11 +212,11 @@ void FSI::LungMonolithic::GeneralSetup()
 
   // right now we use matching meshes at the interface
 
-  CORE::ADAPTER::Coupling& coupsf = structure_fluid_coupling();
-  CORE::ADAPTER::Coupling& coupsa = structure_ale_coupling();
-  CORE::ADAPTER::Coupling& coupfa = fluid_ale_coupling();
+  Core::Adapter::Coupling& coupsf = structure_fluid_coupling();
+  Core::Adapter::Coupling& coupsa = structure_ale_coupling();
+  Core::Adapter::Coupling& coupfa = fluid_ale_coupling();
 
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
 
   // structure to fluid
 
@@ -289,7 +289,7 @@ void FSI::LungMonolithic::GeneralSetup()
   if (Comm().MyPID() == 0)
   {
     std::string outputprefix =
-        GLOBAL::Problem::Instance()->OutputControlFile()->NewOutputFileName();
+        Global::Problem::Instance()->OutputControlFile()->NewOutputFileName();
     std::string dfluidfilename;
     std::string dstructfilename;
     std::string absstructfilename;
@@ -377,11 +377,11 @@ void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increm
 
   // create redundant vectors
   Teuchos::RCP<Epetra_Vector> LagrMultVecRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-  CORE::LINALG::Export(*LagrMultVec_, *LagrMultVecRed);
+  Core::LinAlg::Export(*LagrMultVec_, *LagrMultVecRed);
   Teuchos::RCP<Epetra_Vector> CurrVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
 
-  const Teuchos::RCP<ADAPTER::StructureLung>& structfield =
-      Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(structure_field());
+  const Teuchos::RCP<Adapter::StructureLung>& structfield =
+      Teuchos::rcp_dynamic_cast<Adapter::StructureLung>(structure_field());
   CurrVolsRed->PutScalar(0.0);
   AddStructRHS_->PutScalar(0.0);
   AddStructConstrMatrix_->Zero();
@@ -401,8 +401,8 @@ void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increm
   //-----------------------------------------------------------------------------
   // fluid/ale part
 
-  Teuchos::RCP<ADAPTER::FluidLung> fluidfield =
-      Teuchos::rcp_dynamic_cast<ADAPTER::FluidLung>(fluid_field());
+  Teuchos::RCP<Adapter::FluidLung> fluidfield =
+      Teuchos::rcp_dynamic_cast<Adapter::FluidLung>(fluid_field());
 
   // create redundant vector
   Teuchos::RCP<Epetra_Vector> CurrFlowRatesRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
@@ -438,12 +438,12 @@ void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increm
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungMonolithic::scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+void FSI::LungMonolithic::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -492,11 +492,11 @@ void FSI::LungMonolithic::scale_system(CORE::LINALG::BlockSparseMatrixBase& mat,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::LungMonolithic::unscale_solution(
-    CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+    Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-  const bool scaling_infnorm = (bool)CORE::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
+  const bool scaling_infnorm = (bool)Core::UTILS::IntegralValue<int>(fsimono, "INFNORMSCALING");
 
   if (scaling_infnorm)
   {
@@ -610,7 +610,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::LungMonolithic::create_linear_sys
 
   switch (linearsolverstrategy_)
   {
-    case INPAR::FSI::PreconditionedKrylov:
+    case Inpar::FSI::PreconditionedKrylov:
       linSys = Teuchos::rcp(new  // ::NOX::Epetra::LinearSystemAztecOO(
           FSI::MonolithicLinearSystem(printParams, *lsParams, Teuchos::rcp(iJac, false), J,
               Teuchos::rcp(iPrec, false), M, noxSoln));
@@ -675,7 +675,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
   std::vector<Teuchos::RCP<const Epetra_Map>> interface;
   interface.push_back(fluid_field()->Interface()->FSICondMap());
   interface.push_back(Teuchos::null);
-  CORE::LINALG::MultiMapExtractor interfaceextract(*dof_row_map(), interface);
+  Core::LinAlg::MultiMapExtractor interfaceextract(*dof_row_map(), interface);
 
   Teuchos::RCP<::NOX::StatusTest::Combo> interfacecombo =
       Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
@@ -698,7 +698,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidvel;
   fluidvel.push_back(fluid_field()->InnerVelocityRowMap());
   fluidvel.push_back(Teuchos::null);
-  CORE::LINALG::MultiMapExtractor fluidvelextract(*dof_row_map(), fluidvel);
+  Core::LinAlg::MultiMapExtractor fluidvelextract(*dof_row_map(), fluidvel);
 
   Teuchos::RCP<::NOX::StatusTest::Combo> fluidvelcombo =
       Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
@@ -721,7 +721,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidpress;
   fluidpress.push_back(fluid_field()->PressureRowMap());
   fluidpress.push_back(Teuchos::null);
-  CORE::LINALG::MultiMapExtractor fluidpressextract(*dof_row_map(), fluidpress);
+  Core::LinAlg::MultiMapExtractor fluidpressextract(*dof_row_map(), fluidpress);
 
   Teuchos::RCP<::NOX::StatusTest::Combo> fluidpresscombo =
       Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
@@ -745,7 +745,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
   std::vector<Teuchos::RCP<const Epetra_Map>> volconstr;
   volconstr.push_back(ConstrMap_);
   volconstr.push_back(Teuchos::null);
-  CORE::LINALG::MultiMapExtractor volconstrextract(*dof_row_map(), volconstr);
+  Core::LinAlg::MultiMapExtractor volconstrextract(*dof_row_map(), volconstr);
 
   Teuchos::RCP<::NOX::StatusTest::Combo> volconstrcombo =
       Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
@@ -792,8 +792,8 @@ void FSI::LungMonolithic::output()
   structure_field()->Output();
 
   // additional output of volume constraint related forces
-  //   ADAPTER::StructureLung& structfield =
-  //   dynamic_cast<ADAPTER::StructureLung&>(structure_field());
+  //   Adapter::StructureLung& structfield =
+  //   dynamic_cast<Adapter::StructureLung&>(structure_field());
   //   structfield.OutputForces(AddStructRHS_);
 
   // Write history vectors in case of restart
@@ -801,21 +801,21 @@ void FSI::LungMonolithic::output()
   // is placed in between the output of the single fields.
   if (writerestartevery_ and (Step() % writerestartevery_ == 0))
   {
-    const Teuchos::RCP<ADAPTER::StructureLung>& structfield =
-        Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(structure_field());
+    const Teuchos::RCP<Adapter::StructureLung>& structfield =
+        Teuchos::rcp_dynamic_cast<Adapter::StructureLung>(structure_field());
     Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-    CORE::LINALG::Export(*OldFlowRates_, *OldFlowRatesRed);
+    Core::LinAlg::Export(*OldFlowRates_, *OldFlowRatesRed);
     Teuchos::RCP<Epetra_Vector> OldVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-    CORE::LINALG::Export(*OldVols_, *OldVolsRed);
+    Core::LinAlg::Export(*OldVols_, *OldVolsRed);
     Teuchos::RCP<Epetra_Vector> LagrMultVecOldRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-    CORE::LINALG::Export(*LagrMultVecOld_, *LagrMultVecOldRed);
+    Core::LinAlg::Export(*LagrMultVecOld_, *LagrMultVecOldRed);
     structfield->WriteVolConRestart(OldFlowRatesRed, OldVolsRed, LagrMultVecOldRed);
   }
 
   fluid_field()->Output();
 
   // additional output of volume constraint related forces
-  //   ADAPTER::FluidLung& fluidfield = dynamic_cast<ADAPTER::FluidLung&>(fluid_field());
+  //   Adapter::FluidLung& fluidfield = dynamic_cast<Adapter::FluidLung&>(fluid_field());
   //   fluidfield->OutputForces(AddFluidRHS_);
 
   ale_field()->Output();
@@ -823,7 +823,7 @@ void FSI::LungMonolithic::output()
   // output of volumes for visualization (e.g. gnuplot)
 
   Teuchos::RCP<Epetra_Vector> dVfluidRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-  CORE::LINALG::Export(*dVfluid_, *dVfluidRed);
+  Core::LinAlg::Export(*dVfluid_, *dVfluidRed);
 
   if (Comm().MyPID() == 0)
   {
@@ -836,7 +836,7 @@ void FSI::LungMonolithic::output()
   }
 
   Teuchos::RCP<Epetra_Vector> dVstructRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-  CORE::LINALG::Export(*dVstruct_, *dVstructRed);
+  Core::LinAlg::Export(*dVstruct_, *dVstructRed);
 
   if (Comm().MyPID() == 0)
   {
@@ -849,7 +849,7 @@ void FSI::LungMonolithic::output()
   }
 
   Teuchos::RCP<Epetra_Vector> VstructRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
-  CORE::LINALG::Export(*CurrVols_, *VstructRed);
+  Core::LinAlg::Export(*CurrVols_, *VstructRed);
 
   if (Comm().MyPID() == 0)
   {
@@ -869,8 +869,8 @@ void FSI::LungMonolithic::read_restart(int step)
 {
   FSI::Monolithic::read_restart(step);
 
-  const Teuchos::RCP<ADAPTER::StructureLung>& structfield =
-      Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(structure_field());
+  const Teuchos::RCP<Adapter::StructureLung>& structfield =
+      Teuchos::rcp_dynamic_cast<Adapter::StructureLung>(structure_field());
 
   Teuchos::RCP<Epetra_Vector> OldFlowRatesRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
   Teuchos::RCP<Epetra_Vector> OldVolsRed = Teuchos::rcp(new Epetra_Vector(*RedConstrMap_));
@@ -910,7 +910,7 @@ void FSI::LungMonolithic::prepare_time_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> FSI::LungMonolithic::SystemMatrix() const
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> FSI::LungMonolithic::SystemMatrix() const
 {
   return systemmatrix_;
 }
@@ -919,7 +919,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> FSI::LungMonolithic::SystemMat
 /*----------------------------------------------------------------------*/
 void FSI::LungMonolithic::create_system_matrix(bool structuresplit)
 {
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // get the PCITER from inputfile
@@ -967,10 +967,10 @@ void FSI::LungMonolithic::create_system_matrix(bool structuresplit)
 
   switch (linearsolverstrategy_)
   {
-    case INPAR::FSI::PreconditionedKrylov:
+    case Inpar::FSI::PreconditionedKrylov:
       systemmatrix_ = Teuchos::rcp(new LungOverlappingBlockMatrix(extractor(), *structure_field(),
           *fluid_field(), *ale_field(), structuresplit,
-          CORE::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
+          Core::UTILS::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"), pcomega[0], pciter[0],
           spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0], apciter[0]));
       break;
     default:

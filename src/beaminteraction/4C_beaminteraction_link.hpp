@@ -20,34 +20,34 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     class Beam3Base;
     class Beam3r;
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace BEAMINTERACTION
 {
-  class BeamLinkType : public CORE::COMM::ParObjectType
+  class BeamLinkType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "BeamLinkType"; };
@@ -62,7 +62,7 @@ namespace BEAMINTERACTION
   /*!
    \brief element for interaction of two 3D beam elements via a mechanical linkage
    */
-  class BeamLink : public CORE::COMM::ParObject
+  class BeamLink : public Core::Communication::ParObject
   {
    public:
     //! @name Constructors and destructors and related methods
@@ -80,9 +80,9 @@ namespace BEAMINTERACTION
 
     //! Initialization
     virtual void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& inittriad,
-        INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset);
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
+        Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset);
 
     //! Setup
     virtual void Setup(const int matnum);
@@ -104,7 +104,7 @@ namespace BEAMINTERACTION
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -141,12 +141,12 @@ namespace BEAMINTERACTION
     }
 
     //! return position of first connection site
-    inline const CORE::LINALG::Matrix<3, 1, double>& GetBindSpotPos1() const { return bspotpos1_; }
+    inline const Core::LinAlg::Matrix<3, 1, double>& GetBindSpotPos1() const { return bspotpos1_; }
 
     //! return position of second connection site
-    inline const CORE::LINALG::Matrix<3, 1, double>& GetBindSpotPos2() const { return bspotpos2_; }
+    inline const Core::LinAlg::Matrix<3, 1, double>& GetBindSpotPos2() const { return bspotpos2_; }
 
-    inline INPAR::BEAMINTERACTION::CrosslinkerType GetLinkerType() const { return linkertype_; }
+    inline Inpar::BEAMINTERACTION::CrosslinkerType GetLinkerType() const { return linkertype_; }
 
     //! return time at which linker was set
     inline double GetTimeLinkWasSet() const { return timelinkwasset_; }
@@ -156,7 +156,7 @@ namespace BEAMINTERACTION
 
     //! get force in first or second binding spot
     virtual void GetBindingSpotForce(
-        int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const = 0;
+        int bspotid, Core::LinAlg::SerialDenseVector& bspotforce) const = 0;
 
     //! get internal linker energy
     virtual double GetInternalEnergy() const = 0;
@@ -174,29 +174,29 @@ namespace BEAMINTERACTION
     /*
     \brief Update position and triad of both connection sites (a.k.a. binding spots)
     */
-    virtual void ResetState(std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
-        std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad);
+    virtual void ResetState(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+        std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad);
 
     /*!
     \brief Evaluate forces
     */
     virtual bool evaluate_force(
-        CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2) = 0;
+        Core::LinAlg::SerialDenseVector& forcevec1, Core::LinAlg::SerialDenseVector& forcevec2) = 0;
 
     /*!
     \brief Evaluate stiffness contribution
     */
-    virtual bool evaluate_stiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
-        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
-        CORE::LINALG::SerialDenseMatrix& stiffmat22) = 0;
+    virtual bool evaluate_stiff(Core::LinAlg::SerialDenseMatrix& stiffmat11,
+        Core::LinAlg::SerialDenseMatrix& stiffmat12, Core::LinAlg::SerialDenseMatrix& stiffmat21,
+        Core::LinAlg::SerialDenseMatrix& stiffmat22) = 0;
 
     /*!
     \brief Evaluate forces and stiffness contribution
     */
-    virtual bool evaluate_force_stiff(CORE::LINALG::SerialDenseVector& forcevec1,
-        CORE::LINALG::SerialDenseVector& forcevec2, CORE::LINALG::SerialDenseMatrix& stiffmat11,
-        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
-        CORE::LINALG::SerialDenseMatrix& stiffmat22) = 0;
+    virtual bool evaluate_force_stiff(Core::LinAlg::SerialDenseVector& forcevec1,
+        Core::LinAlg::SerialDenseVector& forcevec2, Core::LinAlg::SerialDenseMatrix& stiffmat11,
+        Core::LinAlg::SerialDenseMatrix& stiffmat12, Core::LinAlg::SerialDenseMatrix& stiffmat21,
+        Core::LinAlg::SerialDenseMatrix& stiffmat22) = 0;
 
 
     void Print(std::ostream& out) const;
@@ -242,11 +242,11 @@ namespace BEAMINTERACTION
     std::vector<std::pair<int, int>> bspot_ids_;
 
     //! current position of the two connection sites (a.k.a. binding spots)
-    CORE::LINALG::Matrix<3, 1> bspotpos1_;
-    CORE::LINALG::Matrix<3, 1> bspotpos2_;
+    Core::LinAlg::Matrix<3, 1> bspotpos1_;
+    Core::LinAlg::Matrix<3, 1> bspotpos2_;
 
     //! type of filament element belongs to
-    INPAR::BEAMINTERACTION::CrosslinkerType linkertype_;
+    Inpar::BEAMINTERACTION::CrosslinkerType linkertype_;
 
     //! stores the the time the link was set (can e.g. be used to calculate
     //  lifetime of a link or check if link is new in certain time step)

@@ -27,12 +27,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declaration
-namespace DRT
+namespace Discret
 {
   class ParObject;
 }
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -44,9 +44,9 @@ namespace MAT
     {
      public:
       //! standard constructor
-      BeamReissnerElastPlasticMaterialParams(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      BeamReissnerElastPlasticMaterialParams(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! @name Access to plasticity parameters
       //@{
@@ -104,7 +104,7 @@ namespace MAT
 
   //! singleton for constitutive law of a beam formulation (hyperelastic stored energy function)
   template <typename T>
-  class BeamElastPlasticMaterialType : public CORE::COMM::ParObjectType
+  class BeamElastPlasticMaterialType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return typeid(this).name(); }
@@ -113,7 +113,7 @@ namespace MAT
     static BeamElastPlasticMaterialType& Instance() { return instance_; };
 
     //! create material object
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static BeamElastPlasticMaterialType instance_;
@@ -129,7 +129,7 @@ namespace MAT
     BeamPlasticMaterial() = default;
 
     //! construct the material object from given material parameters
-    explicit BeamPlasticMaterial(MAT::PAR::BeamReissnerElastPlasticMaterialParams* params);
+    explicit BeamPlasticMaterial(Mat::PAR::BeamReissnerElastPlasticMaterialParams* params);
 
     /**
      * \brief Initialize and setup element specific variables
@@ -160,7 +160,7 @@ namespace MAT
      *
      * @param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack data from a char vector into this class
@@ -185,8 +185,8 @@ namespace MAT
      *\param[in] CN constitutive matrix
      *\param[in] Gamma strain
      */
-    void evaluate_force_contributions_to_stress(CORE::LINALG::Matrix<3, 1, T>& stressN,
-        const CORE::LINALG::Matrix<3, 3, T>& CN, const CORE::LINALG::Matrix<3, 1, T>& Gamma,
+    void evaluate_force_contributions_to_stress(Core::LinAlg::Matrix<3, 1, T>& stressN,
+        const Core::LinAlg::Matrix<3, 3, T>& CN, const Core::LinAlg::Matrix<3, 1, T>& Gamma,
         const unsigned int gp) override;
 
     /*!
@@ -196,13 +196,13 @@ namespace MAT
      *\param[in] CM constitutive matrix
      *\param[in] Cur curvature
      */
-    void evaluate_moment_contributions_to_stress(CORE::LINALG::Matrix<3, 1, T>& stressM,
-        const CORE::LINALG::Matrix<3, 3, T>& CM, const CORE::LINALG::Matrix<3, 1, T>& Cur,
+    void evaluate_moment_contributions_to_stress(Core::LinAlg::Matrix<3, 1, T>& stressM,
+        const Core::LinAlg::Matrix<3, 3, T>& CM, const Core::LinAlg::Matrix<3, 1, T>& Cur,
         const unsigned int gp) override;
 
     /** \brief return copy of this material object
      */
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new BeamPlasticMaterial(*this));
     }
@@ -216,14 +216,14 @@ namespace MAT
      *         measures, expressed w.r.t. material frame
      */
     void get_constitutive_matrix_of_forces_material_frame(
-        CORE::LINALG::Matrix<3, 3, T>& C_N) const override;
+        Core::LinAlg::Matrix<3, 3, T>& C_N) const override;
 
     /** \brief get constitutive matrix relating stress moment resultants and rotational strain
      *         measures, expressed w.r.t. material frame
      *
      */
     void get_constitutive_matrix_of_moments_material_frame(
-        CORE::LINALG::Matrix<3, 3, T>& C_M) const override;
+        Core::LinAlg::Matrix<3, 3, T>& C_M) const override;
 
     /** \brief get mass inertia factor with respect to translational accelerations
      *         (usually: density * cross-section area)
@@ -239,13 +239,13 @@ namespace MAT
 
     /** \brief compute stiffness matrix of moments for plastic regime
      */
-    void get_stiffness_matrix_of_moments(CORE::LINALG::Matrix<3, 3, T>& stiffM,
-        const CORE::LINALG::Matrix<3, 3, T>& C_M, const int gp) override;
+    void get_stiffness_matrix_of_moments(Core::LinAlg::Matrix<3, 3, T>& stiffM,
+        const Core::LinAlg::Matrix<3, 3, T>& C_M, const int gp) override;
 
     /** \brief compute stiffness matrix of forces for plastic regime
      */
-    void get_stiffness_matrix_of_forces(CORE::LINALG::Matrix<3, 3, T>& stiffN,
-        const CORE::LINALG::Matrix<3, 3, T>& C_N, const int gp) override;
+    void get_stiffness_matrix_of_forces(Core::LinAlg::Matrix<3, 3, T>& stiffN,
+        const Core::LinAlg::Matrix<3, 3, T>& C_N, const int gp) override;
 
     /** \brief update the plastic strain and curvature vectors
      */
@@ -258,19 +258,19 @@ namespace MAT
     /** \brief get hardening constitutive parameters depending on the type of plasticity
      */
     void compute_constitutive_parameter(
-        CORE::LINALG::Matrix<3, 3, T>& C_N, CORE::LINALG::Matrix<3, 3, T>& C_M) override;
+        Core::LinAlg::Matrix<3, 3, T>& C_N, Core::LinAlg::Matrix<3, 3, T>& C_M) override;
 
    protected:
     /** \brief get the constitutive matrix of forces during kinematic hardening
      *
      */
     void get_hardening_constitutive_matrix_of_forces_material_frame(
-        CORE::LINALG::Matrix<3, 3, T>& CN_eff) const;
+        Core::LinAlg::Matrix<3, 3, T>& CN_eff) const;
 
     /** \brief get the constitutive matrix of moments during kinematic hardening
      */
     void get_hardening_constitutive_matrix_of_moments_material_frame(
-        CORE::LINALG::Matrix<3, 3, T>& CM_eff) const;
+        Core::LinAlg::Matrix<3, 3, T>& CM_eff) const;
 
     /** \brief returns current effective yield stress of forces depending on plastic deformation
      */
@@ -284,21 +284,21 @@ namespace MAT
 
    private:
     //! effective constitutive matrices forces
-    std::vector<CORE::LINALG::Matrix<3, 3, T>> c_n_eff_;
+    std::vector<Core::LinAlg::Matrix<3, 3, T>> c_n_eff_;
     //! effective constitutive matrices moments
-    std::vector<CORE::LINALG::Matrix<3, 3, T>> c_m_eff_;
+    std::vector<Core::LinAlg::Matrix<3, 3, T>> c_m_eff_;
 
     //! converged plastic strain vectors at GPs
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> gammaplastconv_;
+    std::vector<Core::LinAlg::Matrix<3, 1, T>> gammaplastconv_;
     //! new plastic strain vectors at GPs
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> gammaplastnew_;
+    std::vector<Core::LinAlg::Matrix<3, 1, T>> gammaplastnew_;
     //! accumulated plastic strain vectors at GPs
     std::vector<T> gammaplastaccum_;
 
     //! converged plastic curvature vectors at GPs
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> kappaplastconv_;
+    std::vector<Core::LinAlg::Matrix<3, 1, T>> kappaplastconv_;
     //! new plastic curvature vectors at GPs
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> kappaplastnew_;
+    std::vector<Core::LinAlg::Matrix<3, 1, T>> kappaplastnew_;
     //! accumulated plastic curvature vectors at GPs
     std::vector<T> kappaplastaccum_;
 
@@ -315,17 +315,17 @@ namespace MAT
     std::vector<T> deltastress_m_;
 
     //! material elastic curvature
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> kappaelast_;
+    std::vector<Core::LinAlg::Matrix<3, 1, T>> kappaelast_;
     /** copy of material elastic curvature needed to determine flow direction when computing the
      * stiffness matrix (first entry is 0 if torsional plasticity is turned off)
      */
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> kappaelastflow_;
+    std::vector<Core::LinAlg::Matrix<3, 1, T>> kappaelastflow_;
     //! unit vector in the direction of the elastic curvature
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> elastic_curvature_;
+    std::vector<Core::LinAlg::Matrix<3, 1, T>> elastic_curvature_;
     //! material plastic strain increment
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> delta_gammaplast_;
+    std::vector<Core::LinAlg::Matrix<3, 1, T>> delta_gammaplast_;
     //! fraction of the stress exceeding the current yield force
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> deltastress_n_;
+    std::vector<Core::LinAlg::Matrix<3, 1, T>> deltastress_n_;
 
     //! axial stress
     std::vector<T> stress_n_;
@@ -337,7 +337,7 @@ namespace MAT
     unsigned int numgp_moment_;
     //@}
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

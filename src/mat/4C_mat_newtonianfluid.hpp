@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -28,11 +28,11 @@ namespace MAT
     /// material parameters for Newtonian fluid
     ///
     /// This object exists only once for each read Newton fluid.
-    class NewtonianFluid : public CORE::MAT::PAR::Parameter
+    class NewtonianFluid : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      NewtonianFluid(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      NewtonianFluid(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -47,20 +47,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class NewtonianFluid
 
   }  // namespace PAR
 
-  class NewtonianFluidType : public CORE::COMM::ParObjectType
+  class NewtonianFluidType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "NewtonianFluidType"; }
 
     static NewtonianFluidType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static NewtonianFluidType instance_;
@@ -70,14 +70,14 @@ namespace MAT
   /// Wrapper for Newtonian fluid material
   ///
   /// This object exists (several times) at every element
-  class NewtonianFluid : public CORE::MAT::Material
+  class NewtonianFluid : public Core::Mat::Material
   {
    public:
     /// construct empty material object
     NewtonianFluid();
 
     /// construct the material object given material parameters
-    explicit NewtonianFluid(MAT::PAR::NewtonianFluid* params);
+    explicit NewtonianFluid(Mat::PAR::NewtonianFluid* params);
 
     //! @name Packing and Unpacking
 
@@ -102,7 +102,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -121,10 +121,10 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override { return CORE::Materials::m_fluid; }
+    Core::Materials::MaterialType MaterialType() const override { return Core::Materials::m_fluid; }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new NewtonianFluid(*this));
     }
@@ -139,14 +139,14 @@ namespace MAT
     double Gamma() const { return params_->gamma_; }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
-    MAT::PAR::NewtonianFluid* params_;
+    Mat::PAR::NewtonianFluid* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

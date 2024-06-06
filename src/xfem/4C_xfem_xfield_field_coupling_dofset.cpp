@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 XFEM::XFieldField::CouplingDofSet::CouplingDofSet(const int& my_num_reserve_dof_per_node,
     const int& g_node_index_range, const int& g_num_std_dof_per_node,
     const std::map<int, int>& my_num_dofs_per_node)
-    : CORE::Dofsets::FixedSizeDofSet(my_num_reserve_dof_per_node, g_node_index_range),
+    : Core::DOFSets::FixedSizeDofSet(my_num_reserve_dof_per_node, g_node_index_range),
       my_num_dof_per_node_(my_num_dofs_per_node),
       g_num_std_dof_per_node_(g_num_std_dof_per_node)
 {
@@ -29,7 +29,7 @@ XFEM::XFieldField::CouplingDofSet::CouplingDofSet(const int& my_num_reserve_dof_
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::XFieldField::CouplingDofSet::Dof(
-    std::vector<int>& dofs, const CORE::Nodes::Node* node, unsigned nodal_dofset_id) const
+    std::vector<int>& dofs, const Core::Nodes::Node* node, unsigned nodal_dofset_id) const
 {
   const int lid = node->LID();
   if (lid == -1) return;
@@ -41,7 +41,7 @@ void XFEM::XFieldField::CouplingDofSet::Dof(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int XFEM::XFieldField::CouplingDofSet::NumDofPerNode(const CORE::Nodes::Node& node) const
+int XFEM::XFieldField::CouplingDofSet::NumDofPerNode(const Core::Nodes::Node& node) const
 {
   return my_num_dof_per_node(node.Id());
 }

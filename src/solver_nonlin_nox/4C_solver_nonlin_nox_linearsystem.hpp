@@ -25,7 +25,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Forward declaration
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   struct SolverParams;
@@ -34,11 +34,11 @@ namespace CORE::LINALG
   class SerialDenseMatrix;
   class SerialDenseVector;
   class BlockSparseMatrixBase;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace Solver
     {
@@ -52,7 +52,7 @@ namespace NOX
     class LinearSystem : public ::NOX::Epetra::LinearSystem
     {
      public:
-      typedef std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>> SolverMap;
+      typedef std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>> SolverMap;
 
      protected:
       //! Source of the RowMatrix if using a native preconditioner
@@ -76,9 +76,9 @@ namespace NOX
       LinearSystem(Teuchos::ParameterList& printParams, Teuchos::ParameterList& linearSolverParams,
           const SolverMap& solvers, const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
           const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
           const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& preconditioner,
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& preconditioner,
           const ::NOX::Epetra::Vector& cloneVector,
           const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject);
 
@@ -86,16 +86,16 @@ namespace NOX
       LinearSystem(Teuchos::ParameterList& printParams, Teuchos::ParameterList& linearSolverParams,
           const SolverMap& solvers, const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
           const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
           const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& preconditioner,
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& preconditioner,
           const ::NOX::Epetra::Vector& cloneVector);
 
       //! Constructor without preconditioner
       LinearSystem(Teuchos::ParameterList& printParams, Teuchos::ParameterList& linearSolverParams,
           const SolverMap& solvers, const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
           const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
           const ::NOX::Epetra::Vector& cloneVector,
           const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject);
 
@@ -103,7 +103,7 @@ namespace NOX
       LinearSystem(Teuchos::ParameterList& printParams, Teuchos::ParameterList& linearSolverParams,
           const SolverMap& solvers, const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
           const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& J,
           const ::NOX::Epetra::Vector& cloneVector);
 
       //! reset the linear solver parameters
@@ -118,7 +118,7 @@ namespace NOX
       //! Evaluate the Jacobian and the right hand side based on the solution vector x at once.
       virtual bool computeFandJacobian(const ::NOX::Epetra::Vector& x, ::NOX::Epetra::Vector& rhs);
 
-      bool compute_correction_system(const enum NOX::NLN::CorrectionType type,
+      bool compute_correction_system(const enum NOX::Nln::CorrectionType type,
           const ::NOX::Abstract::Group& grp, const ::NOX::Epetra::Vector& x,
           ::NOX::Epetra::Vector& rhs);
 
@@ -143,7 +143,7 @@ namespace NOX
       //! adjust the pseudo time step (using a least squares approximation)
       void adjust_pseudo_time_step(double& delta, const double& stepSize,
           const ::NOX::Epetra::Vector& dir, const ::NOX::Epetra::Vector& rhs,
-          const NOX::NLN::Solver::PseudoTransient& ptcsolver);
+          const NOX::Nln::Solver::PseudoTransient& ptcsolver);
 
       //! ::NOX::Epetra::Interface::Required accessor
       Teuchos::RCP<const ::NOX::Epetra::Interface::Required> get_required_interface() const;
@@ -164,7 +164,7 @@ namespace NOX
        *
        *  \param rbid  row block id
        *  \param cbid  column block id */
-      const CORE::LINALG::SparseMatrix& getJacobianBlock(unsigned rbid, unsigned cbid) const;
+      const Core::LinAlg::SparseMatrix& getJacobianBlock(unsigned rbid, unsigned cbid) const;
 
       /** \brief get a copy of the block diagonal
        *
@@ -183,7 +183,7 @@ namespace NOX
       Teuchos::RCP<Epetra_Operator> getJacobianOperator() override;
 
       //! Returns the operator type of the jacobian
-      const enum NOX::NLN::LinSystem::OperatorType& get_jacobian_operator_type() const;
+      const enum NOX::Nln::LinSystem::OperatorType& get_jacobian_operator_type() const;
 
       //! Set the jacobian operator
       //! Derived function: Check if the input operator is a LINALG_SparseOperator
@@ -192,7 +192,7 @@ namespace NOX
 
       //! Set the jacobian operator of this class
       void set_jacobian_operator_for_solve(
-          const Teuchos::RCP<const CORE::LINALG::SparseOperator>& solveJacOp);
+          const Teuchos::RCP<const Core::LinAlg::SparseOperator>& solveJacOp);
 
       Teuchos::RCP<::NOX::Epetra::Scaling> getScaling() override;
 
@@ -232,8 +232,8 @@ namespace NOX
        *
        *  \return the computed condition number.
        *  \author hiermeier \date 04/18 */
-      void compute_serial_eigenvalues_of_jacobian(CORE::LINALG::SerialDenseVector& reigenvalues,
-          CORE::LINALG::SerialDenseVector& ieigenvalues) const;
+      void compute_serial_eigenvalues_of_jacobian(Core::LinAlg::SerialDenseVector& reigenvalues,
+          Core::LinAlg::SerialDenseVector& ieigenvalues) const;
 
       /// compute the respective condition number (only possible in serial mode)
       double compute_serial_condition_number_of_jacobian(
@@ -241,7 +241,7 @@ namespace NOX
 
      protected:
       /// access the jacobian
-      inline CORE::LINALG::SparseOperator& jacobian() const
+      inline Core::LinAlg::SparseOperator& jacobian() const
       {
         if (jac_ptr_.is_null()) throw_error("JacPtr", "JacPtr is nullptr!");
 
@@ -249,7 +249,7 @@ namespace NOX
       }
 
       /// access the jacobian (read-only)
-      inline const Teuchos::RCP<CORE::LINALG::SparseOperator>& jacobian_ptr() const
+      inline const Teuchos::RCP<Core::LinAlg::SparseOperator>& jacobian_ptr() const
       {
         if (jac_ptr_.is_null()) throw_error("JacPtr", "JacPtr is nullptr!");
 
@@ -260,18 +260,18 @@ namespace NOX
       //! problem specific subclasses.
 
       //! sets the options of the underlying solver
-      virtual CORE::LINALG::SolverParams set_solver_options(Teuchos::ParameterList& p,
-          Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
-          const NOX::NLN::SolutionType& solverType) = 0;
+      virtual Core::LinAlg::SolverParams set_solver_options(Teuchos::ParameterList& p,
+          Teuchos::RCP<Core::LinAlg::Solver>& solverPtr,
+          const NOX::Nln::SolutionType& solverType) = 0;
 
       //! Returns a pointer to linear solver, which has to be used
-      virtual NOX::NLN::SolutionType get_active_lin_solver(
-          const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
-          Teuchos::RCP<CORE::LINALG::Solver>& currSolver) = 0;
+      virtual NOX::Nln::SolutionType get_active_lin_solver(
+          const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
+          Teuchos::RCP<Core::LinAlg::Solver>& currSolver) = 0;
 
       //! Set-up the linear problem object
       virtual void set_linear_problem_for_solve(Epetra_LinearProblem& linear_problem,
-          CORE::LINALG::SparseOperator& jac, Epetra_Vector& lhs, Epetra_Vector& rhs) const;
+          Core::LinAlg::SparseOperator& jac, Epetra_Vector& lhs, Epetra_Vector& rhs) const;
 
       /*! \brief Complete the solution vector after a linear solver attempt
        *
@@ -286,34 +286,34 @@ namespace NOX
           const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const;
 
       /// convert jacobian matrix to dense matrix
-      void convert_jacobian_to_dense_matrix(CORE::LINALG::SerialDenseMatrix& dense) const;
+      void convert_jacobian_to_dense_matrix(Core::LinAlg::SerialDenseMatrix& dense) const;
 
       /// convert sparse matrix to dense matrix
-      void convert_sparse_to_dense_matrix(const CORE::LINALG::SparseMatrix& sparse,
-          CORE::LINALG::SerialDenseMatrix& dense, const Epetra_Map& full_rangemap,
+      void convert_sparse_to_dense_matrix(const Core::LinAlg::SparseMatrix& sparse,
+          Core::LinAlg::SerialDenseMatrix& dense, const Epetra_Map& full_rangemap,
           const Epetra_Map& full_domainmap) const;
 
       /// prepare the dense matrix in case of a block sparse matrix
-      void prepare_block_dense_matrix(const CORE::LINALG::BlockSparseMatrixBase& block_sparse,
-          CORE::LINALG::SerialDenseMatrix& block_dense) const;
+      void prepare_block_dense_matrix(const Core::LinAlg::BlockSparseMatrixBase& block_sparse,
+          Core::LinAlg::SerialDenseMatrix& block_dense) const;
 
       /// throw an error if there is a row containing only zeros
-      void throw_if_zero_row(const CORE::LINALG::SerialDenseMatrix& block_dense) const;
+      void throw_if_zero_row(const Core::LinAlg::SerialDenseMatrix& block_dense) const;
 
       /// solve the non-symmetric eigenvalue problem
-      void solve_non_symm_eigen_value_problem(CORE::LINALG::SerialDenseMatrix& mat,
-          CORE::LINALG::SerialDenseVector& reigenvalues,
-          CORE::LINALG::SerialDenseVector& ieigenvalues) const;
+      void solve_non_symm_eigen_value_problem(Core::LinAlg::SerialDenseMatrix& mat,
+          Core::LinAlg::SerialDenseVector& reigenvalues,
+          Core::LinAlg::SerialDenseVector& ieigenvalues) const;
 
       /// call GEEV from LAPACK
-      void call_geev(CORE::LINALG::SerialDenseMatrix& mat,
-          CORE::LINALG::SerialDenseVector& reigenvalues,
-          CORE::LINALG::SerialDenseVector& ieigenvalues) const;
+      void call_geev(Core::LinAlg::SerialDenseMatrix& mat,
+          Core::LinAlg::SerialDenseVector& reigenvalues,
+          Core::LinAlg::SerialDenseVector& ieigenvalues) const;
 
       /// call GGEV from LAPACK
-      void call_ggev(CORE::LINALG::SerialDenseMatrix& mat,
-          CORE::LINALG::SerialDenseVector& reigenvalues,
-          CORE::LINALG::SerialDenseVector& ieigenvalues) const;
+      void call_ggev(Core::LinAlg::SerialDenseMatrix& mat,
+          Core::LinAlg::SerialDenseVector& reigenvalues,
+          Core::LinAlg::SerialDenseVector& ieigenvalues) const;
 
      private:
       //! throws an error
@@ -324,7 +324,7 @@ namespace NOX
       ::NOX::Utils utils_;
 
       //! Solver pointers
-      const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers_;
+      const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers_;
 
       //! Reference to the user supplied required interface functions
       Teuchos::RCP<::NOX::Epetra::Interface::Required> reqInterfacePtr_;
@@ -333,13 +333,13 @@ namespace NOX
       Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> jacInterfacePtr_;
 
       //! Type of operator for the Jacobian.
-      NOX::NLN::LinSystem::OperatorType jacType_;
+      NOX::Nln::LinSystem::OperatorType jacType_;
 
       //! Reference to the user supplied preconditioner interface functions
       Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> precInterfacePtr_;
 
       //! Type of operator for the preconditioner.
-      NOX::NLN::LinSystem::OperatorType precType_;
+      NOX::Nln::LinSystem::OperatorType precType_;
 
       //! Pointer to the preconditioner operator.
       Teuchos::RCP<Epetra_Operator> precPtr_;
@@ -374,17 +374,17 @@ namespace NOX
       //! Stores the parameter "Compute Scaling Manually".
       bool manualScaling_;
 
-      //! Pointer to an user defined wrapped NOX::NLN::Abstract::PrePostOperator object.
-      Teuchos::RCP<NOX::NLN::LinSystem::PrePostOperator> prePostOperatorPtr_;
+      //! Pointer to an user defined wrapped NOX::Nln::Abstract::PrePostOperator object.
+      Teuchos::RCP<NOX::Nln::LinSystem::PrePostOperator> prePostOperatorPtr_;
 
      private:
       /*! \brief Pointer to the Jacobian operator.
        *
        *  Use the provided accessors to access this member. Direct access is prohibited
        *  due to the pointer management by changing states (e.g. XFEM). */
-      Teuchos::RCP<CORE::LINALG::SparseOperator> jac_ptr_;
+      Teuchos::RCP<Core::LinAlg::SparseOperator> jac_ptr_;
     };
-  }  // namespace NLN
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

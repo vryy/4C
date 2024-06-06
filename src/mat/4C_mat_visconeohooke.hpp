@@ -26,17 +26,17 @@ MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.0 POISSON 0.499 DENS 0.1 YOUNGS_FAST 100.0
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters
-    class ViscoNeoHooke : public CORE::MAT::PAR::Parameter
+    class ViscoNeoHooke : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      ViscoNeoHooke(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ViscoNeoHooke(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -49,20 +49,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class ViscoNeoHooke
 
   }  // namespace PAR
 
-  class ViscoNeoHookeType : public CORE::COMM::ParObjectType
+  class ViscoNeoHookeType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ViscoNeoHookeType"; }
 
     static ViscoNeoHookeType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ViscoNeoHookeType instance_;
@@ -77,7 +77,7 @@ namespace MAT
     ViscoNeoHooke();
 
     /// construct the material object given material parameters
-    explicit ViscoNeoHooke(MAT::PAR::ViscoNeoHooke* params);
+    explicit ViscoNeoHooke(Mat::PAR::ViscoNeoHooke* params);
 
     //! @name Packing and Unpacking
 
@@ -103,7 +103,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -123,36 +123,36 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_visconeohooke;
+      return Core::Materials::m_visconeohooke;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (!(kinem == Inpar::STR::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ViscoNeoHooke(*this));
     }
 
     /// Initialize internal stress variables
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Update internal stress variables
     void Update() override;
 
     /// Evaluate material
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,      ///< deformation gradient
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,  ///< green lagrange strain
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,      ///< deformation gradient
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain,  ///< green lagrange strain
         Teuchos::ParameterList& params,                  ///< parameter list for communication
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  ///< 2nd PK-stress
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,  ///< 2nd PK-stress
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
         int gp,                                                    ///< Gauss point
         int eleGID) override;
 
@@ -166,25 +166,25 @@ namespace MAT
     bool Initialized() const { return isinit_ && (histstresscurr_ != Teuchos::null); }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
-    MAT::PAR::ViscoNeoHooke* params_;
+    Mat::PAR::ViscoNeoHooke* params_;
 
     /// visco history stresses
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         histstresscurr_;  ///< current stress
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         histstresslast_;  ///< stress of last converged state
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         artstresscurr_;  ///< current artificial stress
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>
         artstresslast_;  ///< artificial stress in last converged state
 
     bool isinit_;  ///< indicates if #Initialized routine has been called
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

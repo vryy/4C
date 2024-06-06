@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -38,7 +38,7 @@ namespace FLD
 
   \author u.kue
   */
-  class FluidResultTest : public CORE::UTILS::ResultTest
+  class FluidResultTest : public Core::UTILS::ResultTest
   {
    public:
     /*!
@@ -52,11 +52,11 @@ namespace FLD
     "tractionx", "tractiony", "tractionz", "errvel", "errpre" and "divu".
     With the obvious meaning.
     */
-    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// pointer to fluid discretization
-    Teuchos::RCP<DRT::Discretization> fluiddis_;
+    Teuchos::RCP<Discret::Discretization> fluiddis_;
     /// pointer to unknown vector with nodal values
     Teuchos::RCP<Epetra_Vector> mysol_;
     /// pointer to traction vector with values

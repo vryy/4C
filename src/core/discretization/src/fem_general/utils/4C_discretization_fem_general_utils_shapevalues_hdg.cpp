@@ -18,20 +18,20 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                              kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-CORE::FE::ShapeValues<distype>::ShapeValues(
+template <Core::FE::CellType distype>
+Core::FE::ShapeValues<distype>::ShapeValues(
     const unsigned int degree, const bool completepoly, const unsigned int quadratureDegree)
     : degree_(degree),
-      quadrature_(CORE::FE::GaussPointCache::Instance().Create(distype, quadratureDegree)),
+      quadrature_(Core::FE::GaussPointCache::Instance().Create(distype, quadratureDegree)),
       usescompletepoly_(completepoly),
       nqpoints_(quadrature_->NumPoints())
 {
   PolynomialSpaceParams params(distype, degree, completepoly);
-  polySpace_ = CORE::FE::PolynomialSpaceCache<nsd_>::Instance().Create(params);
+  polySpace_ = Core::FE::PolynomialSpaceCache<nsd_>::Instance().Create(params);
   ndofs_ = polySpace_->Size();
 
-  CORE::LINALG::SerialDenseVector values(ndofs_);
-  CORE::LINALG::SerialDenseMatrix derivs(nsd_, ndofs_);
+  Core::LinAlg::SerialDenseVector values(ndofs_);
+  Core::LinAlg::SerialDenseMatrix derivs(nsd_, ndofs_);
 
   xyzreal.shape(nsd_, nqpoints_);
 
@@ -59,8 +59,8 @@ CORE::FE::ShapeValues<distype>::ShapeValues(
       for (unsigned int d = 0; d < nsd_; ++d) shderiv(i * nsd_ + d, q) = derivs(d, i);
     }
 
-    CORE::LINALG::Matrix<nen_, 1> myfunct(funct.values() + q * nen_, true);
-    CORE::FE::shape_function<distype>(xsi, myfunct);
+    Core::LinAlg::Matrix<nen_, 1> myfunct(funct.values() + q * nen_, true);
+    Core::FE::shape_function<distype>(xsi, myfunct);
   }
 
   // Fill support points
@@ -76,12 +76,12 @@ CORE::FE::ShapeValues<distype>::ShapeValues(
 /*----------------------------------------------------------------------*
  |  Evaluate element-dependent shape data (public)    kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void CORE::FE::ShapeValues<distype>::Evaluate(
-    const CORE::Elements::Element& ele, const std::vector<double>& aleDis)
+template <Core::FE::CellType distype>
+void Core::FE::ShapeValues<distype>::Evaluate(
+    const Core::Elements::Element& ele, const std::vector<double>& aleDis)
 {
   FOUR_C_ASSERT(ele.Shape() == distype, "Internal error");
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(&ele, xyze);
 
   // update nodal coordinates
   if (!(aleDis.empty()))
@@ -97,12 +97,12 @@ void CORE::FE::ShapeValues<distype>::Evaluate(
     const double* gpcoord = quadrature_->Point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
 
-    CORE::FE::shape_function_deriv1<distype>(xsi, deriv);
+    Core::FE::shape_function_deriv1<distype>(xsi, deriv);
     xjm.MultiplyNT(deriv, xyze);
     jfac(q) = xji.Invert(xjm) * quadrature_->Weight(q);
 
-    CORE::LINALG::Matrix<nen_, 1> myfunct(funct.values() + q * nen_, true);
-    CORE::LINALG::Matrix<nsd_, 1> mypoint(xyzreal.values() + q * nsd_, true);
+    Core::LinAlg::Matrix<nen_, 1> myfunct(funct.values() + q * nen_, true);
+    Core::LinAlg::Matrix<nsd_, 1> mypoint(xyzreal.values() + q * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
 
     // compute global first derivates
@@ -133,10 +133,10 @@ void CORE::FE::ShapeValues<distype>::Evaluate(
   {
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = nodexyzunit(idim, i);
 
-    CORE::LINALG::Matrix<nen_, 1> myfunct;
-    // CORE::FE::shape_function<CORE::FE::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
-    CORE::FE::shape_function<distype>(xsi, myfunct);
-    CORE::LINALG::Matrix<nsd_, 1> mypoint(nodexyzreal.values() + i * nsd_, true);
+    Core::LinAlg::Matrix<nen_, 1> myfunct;
+    // Core::FE::shape_function<Core::FE::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
+    Core::FE::shape_function<distype>(xsi, myfunct);
+    Core::LinAlg::Matrix<nsd_, 1> mypoint(nodexyzreal.values() + i * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
   }
 }
@@ -144,24 +144,24 @@ void CORE::FE::ShapeValues<distype>::Evaluate(
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 schoeder 06/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-CORE::FE::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params)
+template <Core::FE::CellType distype>
+Core::FE::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params)
     : params_(params), degree_(params.degree_)
 {
   if (nsd_ == 2)
-    faceNodeOrder = CORE::FE::getEleNodeNumberingLines(distype);
+    faceNodeOrder = Core::FE::getEleNodeNumberingLines(distype);
   else if (nsd_ == 3)
-    faceNodeOrder = CORE::FE::getEleNodeNumberingSurfaces(distype);
+    faceNodeOrder = Core::FE::getEleNodeNumberingSurfaces(distype);
   else
     FOUR_C_THROW("Not implemented for dim != 2, 3");
 
   PolynomialSpaceParams polyparams(
-      CORE::FE::DisTypeToFaceShapeType<distype>::shape, degree_, params.completepoly_);
-  polySpace_ = CORE::FE::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(polyparams);
+      Core::FE::DisTypeToFaceShapeType<distype>::shape, degree_, params.completepoly_);
+  polySpace_ = Core::FE::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(polyparams);
 
   nfdofs_ = polySpace_->Size();
-  quadrature_ = CORE::FE::GaussPointCache::Instance().Create(
-      CORE::FE::DisTypeToFaceShapeType<distype>::shape, params.quadraturedegree_);
+  quadrature_ = Core::FE::GaussPointCache::Instance().Create(
+      Core::FE::DisTypeToFaceShapeType<distype>::shape, params.quadraturedegree_);
   nqpoints_ = quadrature_->NumPoints();
 
   face_values_.size(nfdofs_);
@@ -185,25 +185,25 @@ CORE::FE::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params
     polySpace_->Evaluate(xsi, face_values_);
     for (unsigned int i = 0; i < nfdofs_; ++i) shfunctNoPermute(i, q) = face_values_(i);
 
-    CORE::LINALG::Matrix<nfn_, 1> myfunct(funct.values() + q * nfn_, true);
-    CORE::FE::shape_function<CORE::FE::DisTypeToFaceShapeType<distype>::shape>(xsi, myfunct);
+    Core::LinAlg::Matrix<nfn_, 1> myfunct(funct.values() + q * nfn_, true);
+    Core::FE::shape_function<Core::FE::DisTypeToFaceShapeType<distype>::shape>(xsi, myfunct);
   }
 }
 
 /*----------------------------------------------------------------------*
  |  Evaluate face-dependent shape data (public)       kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void CORE::FE::ShapeValuesFace<distype>::EvaluateFace(
-    const CORE::Elements::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
+template <Core::FE::CellType distype>
+void Core::FE::ShapeValuesFace<distype>::EvaluateFace(
+    const Core::Elements::Element& ele, const unsigned int face, const std::vector<double>& aleDis)
 {
-  const CORE::FE::CellType facedis = CORE::FE::DisTypeToFaceShapeType<distype>::shape;
+  const Core::FE::CellType facedis = Core::FE::DisTypeToFaceShapeType<distype>::shape;
 
   // get face position array from element position array
   FOUR_C_ASSERT(faceNodeOrder[face].size() == nfn_, "Internal error");
 
-  CORE::LINALG::Matrix<nsd_, nen_> xyzeElement;
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+  Core::LinAlg::Matrix<nsd_, nen_> xyzeElement;
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
       &ele, xyzeElement);
 
   // update nodal coordinates
@@ -224,9 +224,9 @@ void CORE::FE::ShapeValuesFace<distype>::EvaluateFace(
   {
     for (unsigned int idim = 0; idim < nsd_ - 1; idim++) xsi(idim) = nodexyzunit(idim, i);
 
-    CORE::LINALG::Matrix<nfn_, 1> myfunct;
-    CORE::FE::shape_function<CORE::FE::DisTypeToFaceShapeType<distype>::shape>(xsi, myfunct);
-    CORE::LINALG::Matrix<nsd_, 1> mypoint(nodexyzreal.values() + i * nsd_, true);
+    Core::LinAlg::Matrix<nfn_, 1> myfunct;
+    Core::FE::shape_function<Core::FE::DisTypeToFaceShapeType<distype>::shape>(xsi, myfunct);
+    Core::LinAlg::Matrix<nsd_, 1> mypoint(nodexyzreal.values() + i * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
   }
 
@@ -236,22 +236,22 @@ void CORE::FE::ShapeValuesFace<distype>::EvaluateFace(
     const double* gpcoord = quadrature_->Point(q);
     for (unsigned int idim = 0; idim < nsd_ - 1; idim++) xsi(idim) = gpcoord[idim];
 
-    CORE::FE::shape_function_deriv1<facedis>(xsi, deriv);
+    Core::FE::shape_function_deriv1<facedis>(xsi, deriv);
     double jacdet = 0.0;
-    CORE::FE::ComputeMetricTensorForBoundaryEle<facedis>(
+    Core::FE::ComputeMetricTensorForBoundaryEle<facedis>(
         xyze, deriv, metricTensor, jacdet, &normal);
     for (unsigned int d = 0; d < nsd_; ++d) normals(d, q) = normal(d);
     jfac(q) = jacdet * quadrature_->Weight(q);
 
-    CORE::LINALG::Matrix<nfn_, 1> myfunct(funct.values() + q * nfn_, true);
-    CORE::LINALG::Matrix<nsd_, 1> mypoint(xyzreal.values() + q * nsd_, true);
+    Core::LinAlg::Matrix<nfn_, 1> myfunct(funct.values() + q * nfn_, true);
+    Core::LinAlg::Matrix<nsd_, 1> mypoint(xyzreal.values() + q * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
   }
 
   adjust_face_orientation(ele, face);
   compute_face_reference_system(ele, face);
 
-  CORE::FE::ShapeValuesFaceParams interiorparams = params_;
+  Core::FE::ShapeValuesFaceParams interiorparams = params_;
   interiorparams.degree_ = ele.Degree();
   interiorparams.face_ = face;
   shfunctI = *(ShapeValuesInteriorOnFaceCache<distype>::Instance().Create(interiorparams));
@@ -262,9 +262,9 @@ void CORE::FE::ShapeValuesFace<distype>::EvaluateFace(
 /*----------------------------------------------------------------------*
  |  Reorder evaluated face shape functions (private)  kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void CORE::FE::ShapeValuesFace<distype>::adjust_face_orientation(
-    const CORE::Elements::Element& ele, const unsigned int face)
+template <Core::FE::CellType distype>
+void Core::FE::ShapeValuesFace<distype>::adjust_face_orientation(
+    const Core::Elements::Element& ele, const unsigned int face)
 {
   // For the shape values on faces, we need to figure out how the master element of
   // a face walks over the face and how the current face element wants to walk over
@@ -312,9 +312,9 @@ void CORE::FE::ShapeValuesFace<distype>::adjust_face_orientation(
         }
         break;
       case 3:
-        if (distype == CORE::FE::CellType::hex8 || distype == CORE::FE::CellType::hex20 ||
-            distype == CORE::FE::CellType::hex27 || distype == CORE::FE::CellType::nurbs8 ||
-            distype == CORE::FE::CellType::nurbs27)
+        if (distype == Core::FE::CellType::hex8 || distype == Core::FE::CellType::hex20 ||
+            distype == Core::FE::CellType::hex27 || distype == Core::FE::CellType::nurbs8 ||
+            distype == Core::FE::CellType::nurbs27)
         {
           if (trafomap[0] == 1 && trafomap[1] == 0 && trafomap[2] == 3 &&
               trafomap[3] == 2)  // x-direction mirrored
@@ -383,7 +383,7 @@ void CORE::FE::ShapeValuesFace<distype>::adjust_face_orientation(
             FOUR_C_THROW("Unknown HEX face orientation in 3D");
           }
         }
-        else if (distype == CORE::FE::CellType::tet4 || distype == CORE::FE::CellType::tet10)
+        else if (distype == Core::FE::CellType::tet4 || distype == Core::FE::CellType::tet10)
         {
           if (trafomap[0] == 1 && trafomap[1] == 0 && trafomap[2] == 2)
           {
@@ -465,7 +465,7 @@ void CORE::FE::ShapeValuesFace<distype>::adjust_face_orientation(
         }
         else
           FOUR_C_THROW(
-              "Shape type %s not yet implemented", (CORE::FE::CellTypeToString(distype)).c_str());
+              "Shape type %s not yet implemented", (Core::FE::CellTypeToString(distype)).c_str());
         break;
       default:
         FOUR_C_THROW("Only implemented in 2D and 3D");
@@ -478,14 +478,14 @@ void CORE::FE::ShapeValuesFace<distype>::adjust_face_orientation(
 /*----------------------------------------------------------------------*
  |  Compute the face reference system       (private)  berardocco 09/18 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void CORE::FE::ShapeValuesFace<distype>::compute_face_reference_system(
-    const CORE::Elements::Element& ele, const unsigned int face)
+template <Core::FE::CellType distype>
+void Core::FE::ShapeValuesFace<distype>::compute_face_reference_system(
+    const Core::Elements::Element& ele, const unsigned int face)
 {
   // In the case in which the element is not the master element for the face there is the need to
   // find the master element and build the face reference system from the master side.
 
-  CORE::LINALG::SerialDenseVector norm(nsd_ - 1);
+  Core::LinAlg::SerialDenseVector norm(nsd_ - 1);
 
   if (ele.Faces()[face]->ParentMasterElement() != &ele)
   {
@@ -494,9 +494,9 @@ void CORE::FE::ShapeValuesFace<distype>::compute_face_reference_system(
     FOUR_C_ASSERT(faceNodeOrder[face].size() == nfn_, "Internal error");
     const std::vector<int>& trafomap = ele.Faces()[face]->GetLocalTrafoMap();
 
-    // CORE::LINALG::SerialDenseMatrix nodexyzreal_master(nsd_, nfdofs_);
-    CORE::LINALG::Matrix<nsd_, nen_> xyzeMasterElement;
-    CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+    // Core::LinAlg::SerialDenseMatrix nodexyzreal_master(nsd_, nfdofs_);
+    Core::LinAlg::Matrix<nsd_, nen_> xyzeMasterElement;
+    Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(
         &ele, xyzeMasterElement);
 
     // Compute the reference system from the master side
@@ -534,22 +534,22 @@ void CORE::FE::ShapeValuesFace<distype>::compute_face_reference_system(
 }
 
 
-template <CORE::FE::CellType distype>
-CORE::FE::ShapeValuesFaceCache<distype>& CORE::FE::ShapeValuesFaceCache<distype>::Instance()
+template <Core::FE::CellType distype>
+Core::FE::ShapeValuesFaceCache<distype>& Core::FE::ShapeValuesFaceCache<distype>::Instance()
 {
-  static CORE::UTILS::SingletonOwner<CORE::FE::ShapeValuesFaceCache<distype>> owner(
+  static Core::UTILS::SingletonOwner<Core::FE::ShapeValuesFaceCache<distype>> owner(
       []() {
         return std::unique_ptr<ShapeValuesFaceCache<distype>>(new ShapeValuesFaceCache<distype>);
       });
 
-  return *owner.Instance(CORE::UTILS::SingletonAction::create);
+  return *owner.Instance(Core::UTILS::SingletonAction::create);
 }
 
-template <CORE::FE::CellType distype>
-Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>> CORE::FE::ShapeValuesFaceCache<distype>::Create(
+template <Core::FE::CellType distype>
+Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> Core::FE::ShapeValuesFaceCache<distype>::Create(
     ShapeValuesFaceParams params)
 {
-  typename std::map<std::size_t, Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>>>::iterator i =
+  typename std::map<std::size_t, Teuchos::RCP<Core::FE::ShapeValuesFace<distype>>>::iterator i =
       svf_cache_.find(params.ToInt());
   if (i != svf_cache_.end())
   {
@@ -567,24 +567,24 @@ Teuchos::RCP<CORE::FE::ShapeValuesFace<distype>> CORE::FE::ShapeValuesFaceCache<
 
 
 
-template <CORE::FE::CellType distype>
-CORE::FE::ShapeValuesInteriorOnFaceCache<distype>&
-CORE::FE::ShapeValuesInteriorOnFaceCache<distype>::Instance()
+template <Core::FE::CellType distype>
+Core::FE::ShapeValuesInteriorOnFaceCache<distype>&
+Core::FE::ShapeValuesInteriorOnFaceCache<distype>::Instance()
 {
-  static CORE::UTILS::SingletonOwner<CORE::FE::ShapeValuesInteriorOnFaceCache<distype>> owner(
+  static Core::UTILS::SingletonOwner<Core::FE::ShapeValuesInteriorOnFaceCache<distype>> owner(
       []()
       {
         return std::unique_ptr<ShapeValuesInteriorOnFaceCache<distype>>(
             new ShapeValuesInteriorOnFaceCache<distype>);
       });
 
-  return *owner.Instance(CORE::UTILS::SingletonAction::create);
+  return *owner.Instance(Core::UTILS::SingletonAction::create);
 }
 
 
-template <CORE::FE::CellType distype>
-Teuchos::RCP<CORE::FE::ShapeValuesInteriorOnFace>
-CORE::FE::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams params)
+template <Core::FE::CellType distype>
+Teuchos::RCP<Core::FE::ShapeValuesInteriorOnFace>
+Core::FE::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams params)
 {
   typename std::map<std::size_t, Teuchos::RCP<ShapeValuesInteriorOnFace>>::iterator i =
       cache_.find(params.ToInt());
@@ -594,24 +594,24 @@ CORE::FE::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams 
   }
 
   // this is expensive and should not be done too often
-  const int nsd = CORE::FE::dim<distype>;
+  const int nsd = Core::FE::dim<distype>;
 
   PolynomialSpaceParams polyparams(distype, params.degree_, params.completepoly_);
   Teuchos::RCP<PolynomialSpace<nsd>> polySpace =
-      CORE::FE::PolynomialSpaceCache<nsd>::Instance().Create(polyparams);
-  CORE::LINALG::SerialDenseVector(polySpace->Size());
-  Teuchos::RCP<CORE::FE::GaussPoints> quadrature = CORE::FE::GaussPointCache::Instance().Create(
-      CORE::FE::getEleFaceShapeType(distype, params.face_), params.quadraturedegree_);
+      Core::FE::PolynomialSpaceCache<nsd>::Instance().Create(polyparams);
+  Core::LinAlg::SerialDenseVector(polySpace->Size());
+  Teuchos::RCP<Core::FE::GaussPoints> quadrature = Core::FE::GaussPointCache::Instance().Create(
+      Core::FE::getEleFaceShapeType(distype, params.face_), params.quadraturedegree_);
 
   Teuchos::RCP<ShapeValuesInteriorOnFace> container = Teuchos::rcp(new ShapeValuesInteriorOnFace());
   container->Shape(polySpace->Size(), quadrature->NumPoints());
 
-  CORE::LINALG::Matrix<nsd, nsd> trafo;
-  CORE::LINALG::Matrix<nsd, 1> xsi;
-  CORE::LINALG::SerialDenseMatrix faceQPoints;
-  CORE::FE::BoundaryGPToParentGP<nsd>(faceQPoints, trafo, *quadrature, distype,
-      CORE::FE::getEleFaceShapeType(distype, params.face_), params.face_);
-  CORE::LINALG::SerialDenseVector faceValues(polySpace->Size());
+  Core::LinAlg::Matrix<nsd, nsd> trafo;
+  Core::LinAlg::Matrix<nsd, 1> xsi;
+  Core::LinAlg::SerialDenseMatrix faceQPoints;
+  Core::FE::BoundaryGPToParentGP<nsd>(faceQPoints, trafo, *quadrature, distype,
+      Core::FE::getEleFaceShapeType(distype, params.face_), params.face_);
+  Core::LinAlg::SerialDenseVector faceValues(polySpace->Size());
   for (int q = 0; q < quadrature->NumPoints(); ++q)
   {
     for (int d = 0; d < nsd; ++d) xsi(d) = faceQPoints(q, d);
@@ -629,52 +629,52 @@ CORE::FE::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams 
 
 
 // explicit instantiation of template classes
-template class CORE::FE::ShapeValues<CORE::FE::CellType::hex8>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::hex20>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::hex27>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::tet4>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::tet10>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::wedge6>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::wedge15>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::pyramid5>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::quad4>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::quad8>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::quad9>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::tri3>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::tri6>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::nurbs9>;
-template class CORE::FE::ShapeValues<CORE::FE::CellType::nurbs27>;
+template class Core::FE::ShapeValues<Core::FE::CellType::hex8>;
+template class Core::FE::ShapeValues<Core::FE::CellType::hex20>;
+template class Core::FE::ShapeValues<Core::FE::CellType::hex27>;
+template class Core::FE::ShapeValues<Core::FE::CellType::tet4>;
+template class Core::FE::ShapeValues<Core::FE::CellType::tet10>;
+template class Core::FE::ShapeValues<Core::FE::CellType::wedge6>;
+template class Core::FE::ShapeValues<Core::FE::CellType::wedge15>;
+template class Core::FE::ShapeValues<Core::FE::CellType::pyramid5>;
+template class Core::FE::ShapeValues<Core::FE::CellType::quad4>;
+template class Core::FE::ShapeValues<Core::FE::CellType::quad8>;
+template class Core::FE::ShapeValues<Core::FE::CellType::quad9>;
+template class Core::FE::ShapeValues<Core::FE::CellType::tri3>;
+template class Core::FE::ShapeValues<Core::FE::CellType::tri6>;
+template class Core::FE::ShapeValues<Core::FE::CellType::nurbs9>;
+template class Core::FE::ShapeValues<Core::FE::CellType::nurbs27>;
 
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::hex8>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::hex20>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::hex27>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::tet4>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::tet10>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::wedge6>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::wedge15>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::pyramid5>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::quad4>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::quad8>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::quad9>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::tri3>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::tri6>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::nurbs9>;
-template class CORE::FE::ShapeValuesFace<CORE::FE::CellType::nurbs27>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::hex8>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::hex20>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::hex27>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::tet4>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::tet10>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::wedge6>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::wedge15>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::pyramid5>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::quad4>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::quad8>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::quad9>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::tri3>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::tri6>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::nurbs9>;
+template class Core::FE::ShapeValuesFace<Core::FE::CellType::nurbs27>;
 
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::hex8>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::hex20>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::hex27>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::tet4>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::tet10>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::wedge6>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::wedge15>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::pyramid5>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::quad4>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::quad8>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::quad9>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::tri3>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::tri6>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::nurbs9>;
-template class CORE::FE::ShapeValuesFaceCache<CORE::FE::CellType::nurbs27>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::hex8>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::hex20>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::hex27>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::tet4>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::tet10>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::wedge6>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::wedge15>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::pyramid5>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::quad4>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::quad8>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::quad9>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::tri3>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::tri6>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::nurbs9>;
+template class Core::FE::ShapeValuesFaceCache<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

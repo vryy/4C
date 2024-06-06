@@ -45,7 +45,7 @@ FOUR_C_NAMESPACE_OPEN
 class PostField;
 
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -135,10 +135,10 @@ class PostProblem
   std::string input_dir() { return input_dir_; }
 
   //! returns type of the simulation
-  CORE::ProblemType Problemtype() { return problemtype_; }
+  Core::ProblemType Problemtype() { return problemtype_; }
 
   //! returns type of the spatial approximation (nurbs/polynomial)
-  CORE::FE::ShapeFunctionType spatial_approximation_type() { return spatial_approx_; }
+  Core::FE::ShapeFunctionType spatial_approximation_type() { return spatial_approx_; }
 
   //! returns stress type
   std::string stresstype() { return stresstype_; }
@@ -199,10 +199,10 @@ class PostProblem
   std::string filter_;
 
   //! type of the problem we post process
-  CORE::ProblemType problemtype_;
+  Core::ProblemType problemtype_;
 
   //! type of the spatial approximation of theproblem we post process
-  CORE::FE::ShapeFunctionType spatial_approx_;
+  Core::FE::ShapeFunctionType spatial_approx_;
 
   //! number of dimensions
   int ndim_;
@@ -295,11 +295,11 @@ class PostField
   // @{ \name Constructors and destructors
 
   //! Constructor
-  PostField(Teuchos::RCP<DRT::Discretization> dis,  ///< [in] discretization
-      PostProblem* problem,                         ///< [in] Instance of PostProblem
-      std::string field_name,                       ///< [in] Name of the field
-      const int numnd,                              ///< [in] Number of nodes
-      const int numele                              ///< [in] Number of elements
+  PostField(Teuchos::RCP<Discret::Discretization> dis,  ///< [in] discretization
+      PostProblem* problem,                             ///< [in] Instance of PostProblem
+      std::string field_name,                           ///< [in] Name of the field
+      const int numnd,                                  ///< [in] Number of nodes
+      const int numele                                  ///< [in] Number of elements
   );
 
   //@}
@@ -307,8 +307,8 @@ class PostField
   // @{ \name Access methods
 
   //! returns the discretization of this field
-  Teuchos::RCP<DRT::Discretization> discretization() { return dis_; }
-  Teuchos::RCP<const DRT::Discretization> discretization() const { return dis_; }
+  Teuchos::RCP<Discret::Discretization> discretization() { return dis_; }
+  Teuchos::RCP<const Discret::Discretization> discretization() const { return dis_; }
 
   //! returns the number of output processors
   int num_output_procs() const { return num_output_procs_; }
@@ -343,7 +343,7 @@ class PostField
 
  private:
   //! discretization of underlying field
-  Teuchos::RCP<DRT::Discretization> dis_;
+  Teuchos::RCP<Discret::Discretization> dis_;
 
   //! PostProblem of underlying field
   PostProblem* problem_;
@@ -442,7 +442,7 @@ class PostResult
    *
    * \returns vector with results read
    */
-  Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>
   read_result_serialdensematrix(const std::string name);
 
   /*! \brief Reads the data of the result vector 'name' from the current result block
@@ -490,7 +490,7 @@ class PostResult
   PostField* field_;
   int pos_;
   MAP* group_;
-  CORE::IO::HDFReader file_;
+  Core::IO::HDFReader file_;
 };
 
 FOUR_C_NAMESPACE_CLOSE

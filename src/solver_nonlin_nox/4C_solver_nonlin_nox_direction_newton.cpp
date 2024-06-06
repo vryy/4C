@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Direction::Newton::Newton(
+NOX::Nln::Direction::Newton::Newton(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& p)
     : ::NOX::Direction::Newton(gd, p), utils_(gd->getUtils())
 {
@@ -29,13 +29,13 @@ NOX::NLN::Direction::Newton::Newton(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::Direction::Newton::compute(::NOX::Abstract::Vector& dir,
+bool NOX::Nln::Direction::Newton::compute(::NOX::Abstract::Vector& dir,
     ::NOX::Abstract::Group& group, const ::NOX::Solver::Generic& solver)
 {
   ::NOX::Abstract::Group::ReturnType status;
 
   // dynamic cast of the nox_abstract_group
-  NOX::NLN::Group* nlnSoln = dynamic_cast<NOX::NLN::Group*>(&group);
+  NOX::Nln::Group* nlnSoln = dynamic_cast<NOX::Nln::Group*>(&group);
 
   if (nlnSoln == nullptr)
   {
@@ -70,11 +70,11 @@ bool NOX::NLN::Direction::Newton::compute(::NOX::Abstract::Vector& dir,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Direction::Newton::throw_error(
+void NOX::Nln::Direction::Newton::throw_error(
     const std::string& functionName, const std::string& errorMsg)
 {
   if (utils_->isPrintType(::NOX::Utils::Error))
-    utils_->err() << "NOX::NLN::Direction::Newton::" << functionName << " - " << errorMsg
+    utils_->err() << "NOX::Nln::Direction::Newton::" << functionName << " - " << errorMsg
                   << std::endl;
   throw "NOX Error";
 }

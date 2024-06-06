@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -48,9 +48,9 @@ namespace SSI
 
     //! get impltype of scatra element from structure element
     //!
-    //! \param ele     element whose SCATRA::ImplType shall be determined
+    //! \param ele     element whose ScaTra::ImplType shall be determined
     //! \return        impltype of the scatra element
-    virtual INPAR::SCATRA::ImplType GetImplType(CORE::Elements::Element* ele);
+    virtual Inpar::ScaTra::ImplType GetImplType(Core::Elements::Element* ele);
 
    protected:
     //! check material of cloned element
@@ -65,7 +65,7 @@ namespace SSI
     //! \param eletype      vector storing types of cloned elements
     //! \return
     virtual bool determine_ele_type(
-        CORE::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
+        Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
     //! provide cloned element with element specific data (material etc.)
     //!
@@ -73,8 +73,8 @@ namespace SSI
     //! \param oldele    current element on source discretization
     //! \param matid     material of cloned element
     //! \param isnurbs   nurbs flag
-    virtual void set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
-        CORE::Elements::Element* oldele, const int matid, const bool isnurbs);
+    virtual void set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+        Core::Elements::Element* oldele, const int matid, const bool isnurbs);
   };
 
   class ScatraStructureCloneStrategyManifold : public ScatraStructureCloneStrategy
@@ -82,8 +82,8 @@ namespace SSI
    public:
     std::map<std::string, std::string> conditions_to_copy() const override;
 
-    void set_element_data(Teuchos::RCP<CORE::Elements::Element> newele,
-        CORE::Elements::Element* oldele, const int matid, const bool isnurbs) override;
+    void set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+        Core::Elements::Element* oldele, const int matid, const bool isnurbs) override;
   };
 
 }  // namespace SSI

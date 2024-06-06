@@ -18,9 +18,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     /*!
      * \brief Container class for communication with the base material
@@ -42,15 +42,15 @@ namespace MAT
 
       ///@name Packing and Unpacking
       /// @{
-      void PackAnisotropy(CORE::COMM::PackBuffer& data) const override;
+      void PackAnisotropy(Core::Communication::PackBuffer& data) const override;
 
       void UnpackAnisotropy(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
       /// @}
 
       double GetScalarProduct(int gp) const override;
-      const CORE::LINALG::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
-      const CORE::LINALG::Matrix<6, 1>& get_structural_tensor_stress(int gp) const override;
+      const Core::LinAlg::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
+      const Core::LinAlg::Matrix<6, 1>& get_structural_tensor_stress(int gp) const override;
 
       /*!
        * /copydoc
@@ -72,12 +72,12 @@ namespace MAT
       /**
        * Coupling structural tensor of the fibers in stress like Voigt notation at the Gauss points
        */
-      std::vector<CORE::LINALG::Matrix<6, 1>> structural_tensors_stress_;
+      std::vector<Core::LinAlg::Matrix<6, 1>> structural_tensors_stress_;
 
       /**
        * Coupling structural tensor of the fibers at the Gauss points
        */
-      std::vector<CORE::LINALG::Matrix<3, 3>> structural_tensors_;
+      std::vector<Core::LinAlg::Matrix<3, 3>> structural_tensors_;
 
       /// Flag whether fibers are initialized
       bool is_initialized_{};
@@ -98,20 +98,20 @@ namespace MAT
        * <h3>Input line</h3>
        * MAT 1 ELAST_CoupAnisoExpoShear K1 10.0 K2 1.0 K1COMP 0.0 K2COMP 1.0 INIT 0 FIBER_IDS 1 2
        */
-      class CoupAnisoExpoShear : public CORE::MAT::PAR::Parameter,
-                                 public MAT::ELASTIC::PAR::CoupAnisoExpoBase
+      class CoupAnisoExpoShear : public Core::Mat::PAR::Parameter,
+                                 public Mat::Elastic::PAR::CoupAnisoExpoBase
       {
        public:
         /// standard constructor
-        explicit CoupAnisoExpoShear(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        explicit CoupAnisoExpoShear(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
 
@@ -132,26 +132,26 @@ namespace MAT
      * \[\psi = \frac{a_{fs}}{2b_{fs}} \left[ \exp( b_{fs} (I_{8fs} - \boldsymbol{f} \cdot
      * \boldsymbol{s})^2 ) - 1 \right]\]
      */
-    class CoupAnisoExpoShear : public MAT::ELASTIC::CoupAnisoExpoBase
+    class CoupAnisoExpoShear : public Mat::Elastic::CoupAnisoExpoBase
     {
      public:
       /// constructor with given material parameters
-      explicit CoupAnisoExpoShear(MAT::ELASTIC::PAR::CoupAnisoExpoShear* params);
+      explicit CoupAnisoExpoShear(Mat::Elastic::PAR::CoupAnisoExpoShear* params);
 
       /// @name Access material constants
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_coupanisoexposhear;
+        return Core::Materials::mes_coupanisoexposhear;
       }
 
       //@}
 
       /// @name Methods for Packing and Unpacking
       ///@{
-      void PackSummand(CORE::COMM::PackBuffer& data) const override;
+      void PackSummand(Core::Communication::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
@@ -162,17 +162,17 @@ namespace MAT
        *
        * \param anisotropy anisotropy manager
        */
-      void register_anisotropy_extensions(MAT::Anisotropy& anisotropy) override;
+      void register_anisotropy_extensions(Mat::Anisotropy& anisotropy) override;
 
       /// Set fiber directions
       void SetFiberVecs(double newgamma,             ///< new angle
-          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
-          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+          const Core::LinAlg::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const Core::LinAlg::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
      protected:
@@ -183,14 +183,14 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::CoupAnisoExpoShear* params_;
+      Mat::Elastic::PAR::CoupAnisoExpoShear* params_;
 
       /// Internal ansotropy information
-      MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension anisotropy_extension_;
+      Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension anisotropy_extension_;
     };
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

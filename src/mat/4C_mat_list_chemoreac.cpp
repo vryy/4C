@@ -23,24 +23,24 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | standard constructor                                     thon 06/15 |
  *----------------------------------------------------------------------*/
-MAT::PAR::MatListChemoReac::MatListChemoReac(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::MatListChemoReac::MatListChemoReac(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : MatList(matdata), MatListReactions(matdata), MatListChemotaxis(matdata)
 {
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatListChemoReac::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatListChemoReac::create_material()
 {
-  return Teuchos::rcp(new MAT::MatListChemoReac(this));
+  return Teuchos::rcp(new Mat::MatListChemoReac(this));
 }
 
 
-MAT::MatListChemoReacType MAT::MatListChemoReacType::instance_;
+Mat::MatListChemoReacType Mat::MatListChemoReacType::instance_;
 
 
-CORE::COMM::ParObject* MAT::MatListChemoReacType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MatListChemoReacType::Create(const std::vector<char>& data)
 {
-  MAT::MatListChemoReac* MatListChemoReac = new MAT::MatListChemoReac();
+  Mat::MatListChemoReac* MatListChemoReac = new Mat::MatListChemoReac();
   MatListChemoReac->Unpack(data);
   return MatListChemoReac;
 }
@@ -49,7 +49,7 @@ CORE::COMM::ParObject* MAT::MatListChemoReacType::Create(const std::vector<char>
 /*----------------------------------------------------------------------*
  | construct empty material object                           thon 06/15 |
  *----------------------------------------------------------------------*/
-MAT::MatListChemoReac::MatListChemoReac()
+Mat::MatListChemoReac::MatListChemoReac()
     : MatList(), MatListChemotaxis(), MatListReactions(), paramsreachemo_(nullptr)
 {
 }
@@ -58,7 +58,7 @@ MAT::MatListChemoReac::MatListChemoReac()
 /*----------------------------------------------------------------------*
  | construct the material object given material paramete     thon 06/15 |
  *----------------------------------------------------------------------*/
-MAT::MatListChemoReac::MatListChemoReac(MAT::PAR::MatListChemoReac* params)
+Mat::MatListChemoReac::MatListChemoReac(Mat::PAR::MatListChemoReac* params)
     : MatList(params), MatListChemotaxis(params), MatListReactions(params), paramsreachemo_(params)
 {
   // setup of material map
@@ -72,14 +72,14 @@ MAT::MatListChemoReac::MatListChemoReac(MAT::PAR::MatListChemoReac* params)
 /*----------------------------------------------------------------------*
  | setup of material map                                     thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemoReac::setup_mat_map()
+void Mat::MatListChemoReac::setup_mat_map()
 {
   // We just have to add the chemotactic/reactive materials, since the rest is already done in
-  // MAT::MatList::setup_mat_map() called from the MatList constructor
+  // Mat::MatList::setup_mat_map() called from the MatList constructor
 
   // here's the recursive creation of materials
-  MAT::MatListReactions::setup_mat_map();
-  MAT::MatListChemotaxis::setup_mat_map();
+  Mat::MatListReactions::setup_mat_map();
+  Mat::MatListChemotaxis::setup_mat_map();
 
   return;
 }
@@ -88,7 +88,7 @@ void MAT::MatListChemoReac::setup_mat_map()
 /*----------------------------------------------------------------------*
  | reset everything                                          thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemoReac::clear()
+void Mat::MatListChemoReac::clear()
 {
   paramsreachemo_ = nullptr;
   return;
@@ -98,9 +98,9 @@ void MAT::MatListChemoReac::clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemoReac::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::MatListChemoReac::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -115,38 +115,38 @@ void MAT::MatListChemoReac::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, matid);
 
   // Pack base class material
-  MAT::MatListReactions::Pack(data);
-  MAT::MatListChemotaxis::Pack(data);
+  Mat::MatListReactions::Pack(data);
+  Mat::MatListChemotaxis::Pack(data);
 }
 
 
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemoReac::Unpack(const std::vector<char>& data)
+void Mat::MatListChemoReac::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   clear();
 
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover paramsreac_
   int matid(-1);
   ExtractfromPack(position, data, matid);
   paramsreachemo_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
         // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction
         // are in a diamond inheritance structure
-        paramsreachemo_ = dynamic_cast<MAT::PAR::MatListChemoReac*>(mat);
+        paramsreachemo_ = dynamic_cast<Mat::PAR::MatListChemoReac*>(mat);
       }
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
@@ -155,12 +155,12 @@ void MAT::MatListChemoReac::Unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  MAT::MatList::ExtractfromPack(position, data, basedata);
-  MAT::MatListReactions::Unpack(basedata);
+  Mat::MatList::ExtractfromPack(position, data, basedata);
+  Mat::MatListReactions::Unpack(basedata);
 
   std::vector<char> basedata2(0);
-  MAT::MatList::ExtractfromPack(position, data, basedata2);
-  MAT::MatListChemotaxis::Unpack(basedata2);
+  Mat::MatList::ExtractfromPack(position, data, basedata2);
+  Mat::MatListChemotaxis::Unpack(basedata2);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case

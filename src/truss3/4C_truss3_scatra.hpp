@@ -16,26 +16,26 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     class Truss3ScatraType : public Truss3Type
     {
      public:
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       static Truss3ScatraType& Instance();
 
       std::string Name() const override { return "Truss3ScatraType"; }
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -59,18 +59,18 @@ namespace DRT
 
       Truss3Scatra(const Truss3Scatra& old);
 
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return Truss3ScatraType::Instance();
       }
 
-      /// return SCATRA::ImplType
-      const INPAR::SCATRA::ImplType& ImplType() const { return impltype_; };
+      /// return ScaTra::ImplType
+      const Inpar::ScaTra::ImplType& ImplType() const { return impltype_; };
 
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       int UniqueParObjectId() const override
       {
@@ -79,26 +79,26 @@ namespace DRT
 
       void calc_internal_force_stiff_tot_lag(
           const std::map<std::string, std::vector<double>>& ele_state,
-          CORE::LINALG::SerialDenseVector& forcevec,
-          CORE::LINALG::SerialDenseMatrix& stiffmat) override;
+          Core::LinAlg::SerialDenseVector& forcevec,
+          Core::LinAlg::SerialDenseMatrix& stiffmat) override;
 
       void CalcGPStresses(Teuchos::ParameterList& params,
           const std::map<std::string, std::vector<double>>& ele_state) override;
 
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
       void Unpack(const std::vector<char>& data) override;
 
      protected:
-      void extract_elemental_variables(LocationArray& la, const DRT::Discretization& discretization,
-          const Teuchos::ParameterList& params,
+      void extract_elemental_variables(LocationArray& la,
+          const Discret::Discretization& discretization, const Teuchos::ParameterList& params,
           std::map<std::string, std::vector<double>>& ele_state) override;
 
       void energy(const std::map<std::string, std::vector<double>>& ele_state,
-          Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& intenergy) override;
+          Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& intenergy) override;
 
      private:
       //! scalar transport implementation type (physics)
-      INPAR::SCATRA::ImplType impltype_;
+      Inpar::ScaTra::ImplType impltype_;
 
       //! evaluate elemental specific values
       //!
@@ -110,18 +110,18 @@ namespace DRT
       //! @param[out] nodal_concentration nodal concentrations
       void prep_calc_internal_force_stiff_tot_lag_sca_tra(
           const std::map<std::string, std::vector<double>>& ele_state,
-          CORE::LINALG::Matrix<6, 1>& curr_nodal_coords,
-          CORE::LINALG::Matrix<6, 6>& dcurr_nodal_coords_du, CORE::LINALG::Matrix<6, 1>& dN_dx,
-          CORE::LINALG::Matrix<2, 1>& nodal_concentration);
+          Core::LinAlg::Matrix<6, 1>& curr_nodal_coords,
+          Core::LinAlg::Matrix<6, 6>& dcurr_nodal_coords_du, Core::LinAlg::Matrix<6, 1>& dN_dx,
+          Core::LinAlg::Matrix<2, 1>& nodal_concentration);
 
       //! calculation of concentration at Gauss Points, given concentration at nodes
-      double project_scalar_to_gauss_point(double xi, const CORE::LINALG::Matrix<2, 1>& c) const;
+      double project_scalar_to_gauss_point(double xi, const Core::LinAlg::Matrix<2, 1>& c) const;
 
       // don't want = operator
       Truss3Scatra& operator=(const Truss3Scatra& old);
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

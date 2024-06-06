@@ -25,7 +25,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : MixtureRule(matdata),
       initial_reference_density_(matdata->Get<double>("DENS")),
       mass_fractions_(matdata->Get<std::vector<double>>("MASSFRAC"))
@@ -47,14 +47,14 @@ MIXTURE::SimpleMixtureRule::SimpleMixtureRule(MIXTURE::PAR::SimpleMixtureRule* p
 {
 }
 
-void MIXTURE::SimpleMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
-    const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp,
+void MIXTURE::SimpleMixtureRule::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+    const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
 {
   // define temporary matrices
-  CORE::LINALG::Matrix<6, 1> cstress;
-  CORE::LINALG::Matrix<6, 6> ccmat;
+  Core::LinAlg::Matrix<6, 1> cstress;
+  Core::LinAlg::Matrix<6, 6> ccmat;
 
   // This is the simplest mixture rule
   // Just iterate over all constituents and add all stress/cmat contributions

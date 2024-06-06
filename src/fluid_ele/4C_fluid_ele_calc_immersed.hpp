@@ -19,16 +19,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     class FluidImmersedBase;
 
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class FluidEleCalcImmersed : public FluidEleCalc<distype>
     {
-      typedef DRT::ELEMENTS::FluidEleCalc<distype> my;
+      typedef Discret::ELEMENTS::FluidEleCalc<distype> my;
       using my::nen_;
       using my::nsd_;
 
@@ -39,7 +39,7 @@ namespace DRT
      public:
       /// Singleton access method
       static FluidEleCalcImmersed<distype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
 
      protected:
@@ -60,17 +60,17 @@ namespace DRT
         be calculated
 
        */
-      int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int Evaluate(Discret::ELEMENTS::Fluid* ele, Discret::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<CORE::MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
+          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       //! compute residual of momentum equation and subgrid-scale velocity
       void compute_subgrid_scale_velocity(
-          const CORE::LINALG::Matrix<nsd_, nen_>& eaccam,  ///< acceleration at time n+alpha_M
+          const Core::LinAlg::Matrix<nsd_, nen_>& eaccam,  ///< acceleration at time n+alpha_M
           double& fac1,                                    ///< factor for old s.-s. velocities
           double& fac2,                                    ///< factor for old s.-s. accelerations
           double& fac3,     ///< factor for residual in current s.-s. velocities
@@ -82,48 +82,48 @@ namespace DRT
           ) override;
 
       //! Provide linearization of Garlerkin momentum residual with respect to the velocities
-      void lin_gal_mom_res_u(CORE::LINALG::Matrix<nsd_ * nsd_, nen_>&
+      void lin_gal_mom_res_u(Core::LinAlg::Matrix<nsd_ * nsd_, nen_>&
                                  lin_resM_Du,  ///< linearisation of the Garlerkin momentum residual
           const double& timefacfac             ///< = timefac x fac
           ) override;
 
       //! Compute element matrix and rhs entries: inertia, convective andyn
       //! reactive terms of the Galerkin part
-      void inertia_convection_reaction_gal_part(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
+      void inertia_convection_reaction_gal_part(Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>&
                                                     estif_u,  ///< block (weighting function v x u)
-          CORE::LINALG::Matrix<nsd_, nen_>& velforce,         ///< rhs forces velocity
-          CORE::LINALG::Matrix<nsd_ * nsd_, nen_>&
+          Core::LinAlg::Matrix<nsd_, nen_>& velforce,         ///< rhs forces velocity
+          Core::LinAlg::Matrix<nsd_ * nsd_, nen_>&
               lin_resM_Du,  ///< linearisation of the Garlerkin momentum residual
-          CORE::LINALG::Matrix<nsd_, 1>&
+          Core::LinAlg::Matrix<nsd_, 1>&
               resM_Du,          ///< linearisation of the Garlerkin momentum residual
           const double& rhsfac  ///< right-hand-side factor
           ) override;
 
       //! Compute element matrix entries: continuity terms of the Garlerkin part and rhs
       void continuity_gal_part(
-          CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u,  ///< block (weighting function q x u)
-          CORE::LINALG::Matrix<nen_, 1>& preforce,             ///< rhs forces pressure
+          Core::LinAlg::Matrix<nen_, nen_ * nsd_>& estif_q_u,  ///< block (weighting function q x u)
+          Core::LinAlg::Matrix<nen_, 1>& preforce,             ///< rhs forces pressure
           const double& timefacfac,                            ///< = timefac x fac
           const double& timefacfacpre,
           const double& rhsfac  ///< right-hand-side factor
           ) override;
 
       //! Compute element matrix entries: conservative formulation
-      void conservative_formulation(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
+      void conservative_formulation(Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>&
                                         estif_u,       ///< block (weighting function v x u)
-          CORE::LINALG::Matrix<nsd_, nen_>& velforce,  ///< rhs forces velocity
+          Core::LinAlg::Matrix<nsd_, nen_>& velforce,  ///< rhs forces velocity
           const double& timefacfac,                    ///< = timefac x fac
           const double& rhsfac                         ///< right-hand-side factor
           ) override;
 
       // current element
-      DRT::ELEMENTS::FluidImmersedBase* immersedele_;
+      Discret::ELEMENTS::FluidImmersedBase* immersedele_;
       // number of current gp
       int gp_iquad_;
 
     };  // class FluidEleCalcImmersed
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

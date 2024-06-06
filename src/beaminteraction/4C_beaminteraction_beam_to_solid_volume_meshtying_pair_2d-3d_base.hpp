@@ -59,8 +59,8 @@ namespace BEAMINTERACTION
      * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(const CORE::Elements::Element* element1,
-        const CORE::Elements::Element* element2,
+    void CreateGeometryPair(const Core::Elements::Element* element1,
+        const Core::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
@@ -75,7 +75,7 @@ namespace BEAMINTERACTION
      */
     void evaluate_beam_position_double(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        CORE::LINALG::Matrix<3, 1, double>& r_beam, bool reference) const override;
+        Core::LinAlg::Matrix<3, 1, double>& r_beam, bool reference) const override;
 
     /**
      * \brief Return a cast of the geometry pair to the type for this contact pair.
@@ -98,7 +98,7 @@ namespace BEAMINTERACTION
      * returned
      */
     virtual void get_triad_at_xi_double(
-        const double xi, CORE::LINALG::Matrix<3, 3, double>& triad, const bool reference) const = 0;
+        const double xi, Core::LinAlg::Matrix<3, 3, double>& triad, const bool reference) const = 0;
   };
 }  // namespace BEAMINTERACTION
 

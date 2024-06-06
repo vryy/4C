@@ -41,18 +41,18 @@ namespace STR
       bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
 
       //! \brief Apply the stiffness only (derived)
-      bool ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac) override;
+      bool ApplyStiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac) override;
 
       //! \brief Apply force and stiff at once (derived)
       bool ApplyForceStiff(
-          const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override;
+          const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) override;
 
       /*! \brief (derived)
        *
        */
-      bool apply_correction_system(const enum NOX::NLN::CorrectionType type,
-          const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
-          Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override
+      bool apply_correction_system(const enum NOX::Nln::CorrectionType type,
+          const std::vector<Inpar::STR::ModelType>& constraint_models, const Epetra_Vector& x,
+          Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) override
       {
         return false;
       }
@@ -67,11 +67,11 @@ namespace STR
 
       //! compute the scaling operator for element based scaling using PTC (derived)
       void compute_jacobian_contributions_from_element_level_for_ptc(
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr) override;
+          Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr) override;
 
       //! Assemble the right hand side
       bool assemble_force(Epetra_Vector& f,
-          const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override;
+          const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const override;
 
       //! @name Monolithic update routines
       //! @{
@@ -99,7 +99,7 @@ namespace STR
       //@{
 
       //! Provide Name
-      [[nodiscard]] virtual enum INPAR::STR::DynamicType MethodName() const = 0;
+      [[nodiscard]] virtual enum Inpar::STR::DynamicType MethodName() const = 0;
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a \f$m\f$-multistep method returns \f$m\f$
@@ -128,7 +128,7 @@ namespace STR
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace PrePostOp
     {
@@ -136,7 +136,7 @@ namespace NOX
       {
         /*! \brief Explicit time integration helper class
          */
-        class Generic : public NOX::NLN::Abstract::PrePostOperator
+        class Generic : public NOX::Nln::Abstract::PrePostOperator
         {
          public:
           //! constructor
@@ -153,12 +153,12 @@ namespace NOX
           void runPreSolve(const ::NOX::Solver::Generic& nlnSolver) override;
 
           //! derived
-          void runPreComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
-              const double& step, const NOX::NLN::Group& curr_grp) override;
+          void runPreComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+              const double& step, const NOX::Nln::Group& curr_grp) override;
 
           //! derived
-          void runPostComputeX(const NOX::NLN::Group& input_grp, const Epetra_Vector& dir,
-              const double& step, const NOX::NLN::Group& curr_grp) override;
+          void runPostComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+              const double& step, const NOX::Nln::Group& curr_grp) override;
 
          private:
           //! default step length
@@ -166,7 +166,7 @@ namespace NOX
         };  // class Generic
       }     // namespace EXPLICIT
     }       // namespace PrePostOp
-  }         // namespace NLN
+  }         // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

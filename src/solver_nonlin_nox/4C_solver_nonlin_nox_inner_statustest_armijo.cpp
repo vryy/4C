@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::Armijo::Armijo(
+NOX::Nln::Inner::StatusTest::Armijo::Armijo(
     const double& c_1, const bool& isMonotone, const std::size_t& maxHistSize)
     : status_(status_unevaluated),
       c_1_(c_1),
@@ -40,8 +40,8 @@ NOX::NLN::INNER::StatusTest::Armijo::Armijo(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::NLN::INNER::StatusTest::Armijo::setup(
-    const NOX::NLN::LineSearch::Generic& linesearch, const ::NOX::Abstract::Group& grp)
+bool NOX::Nln::Inner::StatusTest::Armijo::setup(
+    const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Abstract::Group& grp)
 {
   const ::NOX::MeritFunction::Generic& mrtFct = linesearch.GetMeritFunction();
 
@@ -80,19 +80,19 @@ bool NOX::NLN::INNER::StatusTest::Armijo::setup(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Armijo::CheckStatus(
-    const NOX::NLN::INNER::StatusTest::Interface::Required& interface,
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::CheckStatus(
+    const NOX::Nln::Inner::StatusTest::Interface::Required& interface,
     const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
     ::NOX::StatusTest::CheckType checkType)
 {
   // check if it is a line search object
   // Amrijo rule plays only a role as inner status test for line search solvers
-  const NOX::NLN::LineSearch::Generic* linesearch =
-      dynamic_cast<const NOX::NLN::LineSearch::Generic*>(&interface);
+  const NOX::Nln::LineSearch::Generic* linesearch =
+      dynamic_cast<const NOX::Nln::LineSearch::Generic*>(&interface);
   if (linesearch == nullptr)
   {
     std::ostringstream msg;
-    msg << "Dynamic cast to NOX::NLN::LineSearch::Generic failed!\n\n"
+    msg << "Dynamic cast to NOX::Nln::LineSearch::Generic failed!\n\n"
         << "The Armijo rule status test supports only Line Search problems!";
     throw_error("CheckStatus", msg.str());
   }
@@ -133,14 +133,14 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Armijo::Che
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Armijo::GetStatus() const
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::GetStatus() const
 {
   return status_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::NLN::INNER::StatusTest::Armijo::Print(std::ostream& stream, int indent) const
+std::ostream& NOX::Nln::Inner::StatusTest::Armijo::Print(std::ostream& stream, int indent) const
 {
   std::string indent_string;
   indent_string.assign(indent, ' ');
@@ -168,11 +168,11 @@ std::ostream& NOX::NLN::INNER::StatusTest::Armijo::Print(std::ostream& stream, i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Armijo::throw_error(
+void NOX::Nln::Inner::StatusTest::Armijo::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   std::ostringstream msg;
-  msg << "ERROR - NOX::NLN::INNER::StatusTest::Armijo::" << functionName << " - " << errorMsg
+  msg << "ERROR - NOX::Nln::Inner::StatusTest::Armijo::" << functionName << " - " << errorMsg
       << std::endl;
   FOUR_C_THROW(msg.str());
 }

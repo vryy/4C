@@ -19,20 +19,20 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPUT
+namespace Input
 {
   class ParticleReader
   {
    public:
     //! construct a reader that reads a given section
-    ParticleReader(const CORE::IO::DatFileReader& reader, std::string sectionname);
+    ParticleReader(const Core::IO::DatFileReader& reader, std::string sectionname);
 
     //! do the actual reading of particles
     void Read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles);
 
    private:
     //! the main dat file reader
-    const CORE::IO::DatFileReader& reader_;
+    const Core::IO::DatFileReader& reader_;
 
     //! my comm
     Teuchos::RCP<Epetra_Comm> comm_;
@@ -41,7 +41,7 @@ namespace INPUT
     std::string sectionname_;
   };
 
-}  // namespace INPUT
+}  // namespace Input
 
 FOUR_C_NAMESPACE_CLOSE
 

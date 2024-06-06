@@ -24,12 +24,12 @@ namespace
   ExtractParticleTypesToFunctionIds(const Teuchos::ParameterList& params);
 
   std::vector<std::vector<double>>& GetRigidBodyState(PARTICLEENGINE::StateEnum particleState,
-      PARTICLERIGIDBODY::RigidBodyDataState& rigidbodydatastates);
+      ParticleRigidBody::RigidBodyDataState& rigidbodydatastates);
 }  // namespace
 
-void PARTICLERIGIDBODY::SetInitialFields(const Teuchos::ParameterList& params,
+void ParticleRigidBody::SetInitialFields(const Teuchos::ParameterList& params,
     const std::vector<int>& ownedrigidbodies,
-    PARTICLERIGIDBODY::RigidBodyDataState& rigidbodydatastates)
+    ParticleRigidBody::RigidBodyDataState& rigidbodydatastates)
 {
   // relating particle types to function ids
   std::map<PARTICLEENGINE::StateEnum, std::map<PARTICLEENGINE::TypeEnum, int>>
@@ -50,7 +50,7 @@ void PARTICLERIGIDBODY::SetInitialFields(const Teuchos::ParameterList& params,
 
     // get reference to function
     const auto& function =
-        GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functid - 1);
+        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functid - 1);
 
     // get rigid body state dimension
     const int statedim = 3;
@@ -124,7 +124,7 @@ namespace
   }
 
   std::vector<std::vector<double>>& GetRigidBodyState(PARTICLEENGINE::StateEnum particleState,
-      PARTICLERIGIDBODY::RigidBodyDataState& rigidbodydatastates)
+      ParticleRigidBody::RigidBodyDataState& rigidbodydatastates)
   {
     switch (particleState)
     {

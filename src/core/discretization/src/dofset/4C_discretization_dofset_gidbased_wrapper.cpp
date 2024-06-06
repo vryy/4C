@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Dofsets::DofSetGIDBasedWrapper::DofSetGIDBasedWrapper(
-    Teuchos::RCP<DRT::Discretization> sourcedis,
-    Teuchos::RCP<CORE::Dofsets::DofSetInterface> sourcedofset)
+Core::DOFSets::DofSetGIDBasedWrapper::DofSetGIDBasedWrapper(
+    Teuchos::RCP<Discret::Discretization> sourcedis,
+    Teuchos::RCP<Core::DOFSets::DofSetInterface> sourcedofset)
     : DofSetBase(),
       sourcedis_(sourcedis),
       sourcedofset_(sourcedofset),
@@ -35,14 +35,14 @@ CORE::Dofsets::DofSetGIDBasedWrapper::DofSetGIDBasedWrapper(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Dofsets::DofSetGIDBasedWrapper::~DofSetGIDBasedWrapper()
+Core::DOFSets::DofSetGIDBasedWrapper::~DofSetGIDBasedWrapper()
 {
   if (sourcedofset_ != Teuchos::null) sourcedofset_->Unregister(this);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::DofSetGIDBasedWrapper::Reset()
+void Core::DOFSets::DofSetGIDBasedWrapper::Reset()
 {
   isassigned_ = false;
   NotifyReset();
@@ -50,8 +50,8 @@ void CORE::Dofsets::DofSetGIDBasedWrapper::Reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::DofSetGIDBasedWrapper::assign_degrees_of_freedom(
-    const DRT::Discretization& dis, const unsigned dspos, const int start)
+int Core::DOFSets::DofSetGIDBasedWrapper::assign_degrees_of_freedom(
+    const Discret::Discretization& dis, const unsigned dspos, const int start)
 {
   NotifyAssigned();
   return start;
@@ -59,7 +59,7 @@ int CORE::Dofsets::DofSetGIDBasedWrapper::assign_degrees_of_freedom(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::DofSetGIDBasedWrapper::NotifyAssigned()
+void Core::DOFSets::DofSetGIDBasedWrapper::NotifyAssigned()
 {
   if (sourcedis_->NodeColMap() == nullptr) FOUR_C_THROW("No NodeColMap on sourcedis");
   if (sourcedis_->ElementColMap() == nullptr) FOUR_C_THROW("No ElementColMap on sourcedis");
@@ -72,7 +72,7 @@ void CORE::Dofsets::DofSetGIDBasedWrapper::NotifyAssigned()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::DofSetGIDBasedWrapper::Disconnect(DofSetInterface* dofset)
+void Core::DOFSets::DofSetGIDBasedWrapper::Disconnect(DofSetInterface* dofset)
 {
   if (dofset == sourcedofset_.get())
   {
@@ -88,7 +88,7 @@ void CORE::Dofsets::DofSetGIDBasedWrapper::Disconnect(DofSetInterface* dofset)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::DofSetGIDBasedWrapper::check_is_assigned() const
+void Core::DOFSets::DofSetGIDBasedWrapper::check_is_assigned() const
 {
   // checks in debug mode only
   FOUR_C_ASSERT(isassigned_,

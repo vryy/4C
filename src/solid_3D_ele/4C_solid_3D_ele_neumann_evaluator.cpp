@@ -17,47 +17,47 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void DRT::ELEMENTS::EvaluateNeumannByElement(CORE::Elements::Element& element,
-    const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
+void Discret::ELEMENTS::EvaluateNeumannByElement(Core::Elements::Element& element,
+    const Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     double total_time)
 {
   switch (element.Shape())
   {
-    case CORE::FE::CellType::hex8:
-      return evaluate_neumann<CORE::FE::CellType::hex8>(
+    case Core::FE::CellType::hex8:
+      return evaluate_neumann<Core::FE::CellType::hex8>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case CORE::FE::CellType::hex27:
-      return evaluate_neumann<CORE::FE::CellType::hex27>(
+    case Core::FE::CellType::hex27:
+      return evaluate_neumann<Core::FE::CellType::hex27>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case CORE::FE::CellType::hex20:
-      return evaluate_neumann<CORE::FE::CellType::hex20>(
+    case Core::FE::CellType::hex20:
+      return evaluate_neumann<Core::FE::CellType::hex20>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case CORE::FE::CellType::hex18:
-      return evaluate_neumann<CORE::FE::CellType::hex18>(
+    case Core::FE::CellType::hex18:
+      return evaluate_neumann<Core::FE::CellType::hex18>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case CORE::FE::CellType::nurbs27:
-      return evaluate_neumann<CORE::FE::CellType::nurbs27>(
+    case Core::FE::CellType::nurbs27:
+      return evaluate_neumann<Core::FE::CellType::nurbs27>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case CORE::FE::CellType::pyramid5:
-      return evaluate_neumann<CORE::FE::CellType::pyramid5>(
+    case Core::FE::CellType::pyramid5:
+      return evaluate_neumann<Core::FE::CellType::pyramid5>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case CORE::FE::CellType::wedge6:
-      return evaluate_neumann<CORE::FE::CellType::wedge6>(
+    case Core::FE::CellType::wedge6:
+      return evaluate_neumann<Core::FE::CellType::wedge6>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case CORE::FE::CellType::tet4:
-      return evaluate_neumann<CORE::FE::CellType::tet4>(
+    case Core::FE::CellType::tet4:
+      return evaluate_neumann<Core::FE::CellType::tet4>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case CORE::FE::CellType::tet10:
-      return evaluate_neumann<CORE::FE::CellType::tet10>(
+    case Core::FE::CellType::tet10:
+      return evaluate_neumann<Core::FE::CellType::tet10>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     default:
@@ -68,16 +68,16 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(CORE::Elements::Element& element,
   }
 }
 
-template <CORE::FE::CellType celltype>
-void DRT::ELEMENTS::evaluate_neumann(CORE::Elements::Element& element,
-    const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
+template <Core::FE::CellType celltype>
+void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
+    const Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     double total_time)
 {
-  constexpr auto numdim = CORE::FE::dim<celltype>;
-  constexpr auto numnod = CORE::FE::num_nodes<celltype>;
-  CORE::FE::GaussIntegration gauss_integration =
-      CreateGaussIntegration<celltype>(DRT::ELEMENTS::GetGaussRuleStiffnessMatrix<celltype>());
+  constexpr auto numdim = Core::FE::dim<celltype>;
+  constexpr auto numnod = Core::FE::num_nodes<celltype>;
+  Core::FE::GaussIntegration gauss_integration =
+      CreateGaussIntegration<celltype>(Discret::ELEMENTS::GetGaussRuleStiffnessMatrix<celltype>());
 
   // get values and switches from the condition
   const auto& onoff = condition.parameters().Get<std::vector<int>>("onoff");
@@ -105,7 +105,7 @@ void DRT::ELEMENTS::evaluate_neumann(CORE::Elements::Element& element,
       EvaluateElementNodes<celltype>(element, discretization, dof_index_array);
 
   ForEachGaussPoint<celltype>(nodal_coordinates, gauss_integration,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -117,7 +117,7 @@ void DRT::ELEMENTS::evaluate_neumann(CORE::Elements::Element& element,
               jacobian_mapping.determinant_, element.Id());
 
         // material/reference co-ordinates of Gauss point
-        CORE::LINALG::Matrix<numdim, 1> gauss_point_reference_coordinates;
+        Core::LinAlg::Matrix<numdim, 1> gauss_point_reference_coordinates;
         gauss_point_reference_coordinates.MultiplyTN(
             nodal_coordinates.reference_coordinates_, shape_functions.shapefunctions_);
 
@@ -129,8 +129,8 @@ void DRT::ELEMENTS::evaluate_neumann(CORE::Elements::Element& element,
             const int function_number = function_ids[dim];
             const double function_scale_factor =
                 (function_number > 0)
-                    ? GLOBAL::Problem::Instance()
-                          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(function_number - 1)
+                    ? Global::Problem::Instance()
+                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(function_number - 1)
                           .Evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
                     : 1.0;
 

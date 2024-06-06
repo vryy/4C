@@ -26,7 +26,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   /// fluid field solver
   class FluidBaseAlgorithm
@@ -44,7 +44,7 @@ namespace ADAPTER
     /// second constructor (special version for turbulent flows with separate inflow
     /// section for generation of turbulent inflow profiles)
     explicit FluidBaseAlgorithm(
-        const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<DRT::Discretization> discret);
+        const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<Discret::Discretization> discret);
 
     /// virtual destructor to support polymorph destruction
     virtual ~FluidBaseAlgorithm() = default;
@@ -76,7 +76,7 @@ namespace ADAPTER
     /// values specified in given problem-dependent Turbulent Inflow ParameterList)
     /// separate discretization for inflow generation
     void setup_inflow_fluid(
-        const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<DRT::Discretization> discret);
+        const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<Discret::Discretization> discret);
 
     //! set parameters in list required for all schemes
     void set_general_parameters(const Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams,
@@ -84,13 +84,13 @@ namespace ADAPTER
 
     //! create a second solver
     void create_second_solver(
-        const Teuchos::RCP<CORE::LINALG::Solver> solver, const Teuchos::ParameterList& fdyn);
+        const Teuchos::RCP<Core::LinAlg::Solver> solver, const Teuchos::ParameterList& fdyn);
 
     /// fluid field solver
     Teuchos::RCP<Fluid> fluid_;
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

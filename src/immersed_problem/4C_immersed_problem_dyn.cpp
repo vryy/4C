@@ -32,7 +32,7 @@ void immersed_problem_drt()
   // declare general ParameterList that can be handed into Algorithm
   Teuchos::ParameterList params;
   // get pointer to global problem
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   // get communicator
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
@@ -42,8 +42,8 @@ void immersed_problem_drt()
   // get parameterlist for immersed method
   const Teuchos::ParameterList& immersedmethodparams = problem->immersed_method_params();
   // choose algorithm
-  int coupling = CORE::UTILS::IntegralValue<int>(immersedmethodparams, "COUPALGO");
-  int scheme = CORE::UTILS::IntegralValue<int>(immersedmethodparams, "SCHEME");
+  int coupling = Core::UTILS::IntegralValue<int>(immersedmethodparams, "COUPALGO");
+  int scheme = Core::UTILS::IntegralValue<int>(immersedmethodparams, "SCHEME");
 
 
   ///////////////////////////////////////////////////////////////////////
@@ -51,11 +51,11 @@ void immersed_problem_drt()
   ///////////////////////////////////////////////////////////////////////
   switch (coupling)
   {
-    case INPAR::IMMERSED::partitioned:
+    case Inpar::Immersed::partitioned:
     {
-      switch (GLOBAL::Problem::Instance()->GetProblemType())
+      switch (Global::Problem::Instance()->GetProblemType())
       {
-        case CORE::ProblemType::immersed_fsi:
+        case Core::ProblemType::immersed_fsi:
         {
           // fill discretizations
           problem->GetDis("structure")->fill_complete(false, false, false);
@@ -65,7 +65,7 @@ void immersed_problem_drt()
           {
             // check if INODE is defined in input file
             int gid = problem->GetDis("fluid")->ElementRowMap()->GID(0);
-            CORE::Nodes::ImmersedNode* inode = dynamic_cast<CORE::Nodes::ImmersedNode*>(
+            Core::Nodes::ImmersedNode* inode = dynamic_cast<Core::Nodes::ImmersedNode*>(
                 (problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
 
             if (inode == nullptr)
@@ -85,9 +85,9 @@ void immersed_problem_drt()
                   "previous time step.");
           }
 
-          Teuchos::RCP<IMMERSED::ImmersedPartitionedFSIDirichletNeumann> algo = Teuchos::null;
-          if (scheme == INPAR::IMMERSED::dirichletneumann)
-            algo = Teuchos::rcp(new IMMERSED::ImmersedPartitionedFSIDirichletNeumann(comm));
+          Teuchos::RCP<Immersed::ImmersedPartitionedFSIDirichletNeumann> algo = Teuchos::null;
+          if (scheme == Inpar::Immersed::dirichletneumann)
+            algo = Teuchos::rcp(new Immersed::ImmersedPartitionedFSIDirichletNeumann(comm));
           else
           {
             algo = Teuchos::null;
@@ -98,7 +98,7 @@ void immersed_problem_drt()
           algo->Init(params);
 
           // ghost structure redundantly on all procs
-          CORE::REBALANCE::GhostDiscretizationOnAllProcs(problem->GetDis("structure"));
+          Core::Rebalance::GhostDiscretizationOnAllProcs(problem->GetDis("structure"));
 
           // setup algo
           algo->Setup();
@@ -106,7 +106,7 @@ void immersed_problem_drt()
           // PARTITIONED FSI ALGORITHM
 
           // read restart step
-          const int restart = GLOBAL::Problem::Instance()->Restart();
+          const int restart = Global::Problem::Instance()->Restart();
           if (restart)
             algo->read_restart(restart);
           else
@@ -122,14 +122,14 @@ void immersed_problem_drt()
           }
 
           // create result tests for single fields
-          GLOBAL::Problem::Instance()->AddFieldTest(algo->MBFluidField()->CreateFieldTest());
-          GLOBAL::Problem::Instance()->AddFieldTest(algo->structure_field()->CreateFieldTest());
+          Global::Problem::Instance()->AddFieldTest(algo->MBFluidField()->CreateFieldTest());
+          Global::Problem::Instance()->AddFieldTest(algo->structure_field()->CreateFieldTest());
 
           // do the actual testing
-          GLOBAL::Problem::Instance()->TestAll(comm);
+          Global::Problem::Instance()->TestAll(comm);
 
           break;
-        }  // case CORE::ProblemType::immersed_fsi
+        }  // case Core::ProblemType::immersed_fsi
 
         default:
         {
@@ -140,7 +140,7 @@ void immersed_problem_drt()
       }  // switch problemtype
       break;
     }  // case partitioned (default)
-    case INPAR::IMMERSED::monolithic:
+    case Inpar::Immersed::monolithic:
     {
       FOUR_C_THROW(
           "Monolithic solution scheme not implemented for immersed problems, yet.\n "

@@ -31,19 +31,19 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class FluidWrapper;
   class StructureWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
-namespace IMMERSED
+namespace Immersed
 {
   class ImmersedBase
   {
@@ -118,8 +118,8 @@ namespace IMMERSED
     \param condname      (in) : condition name
     \param buildgeometry (in) : build geometry for condition or not
     */
-    void create_volume_condition(const Teuchos::RCP<DRT::Discretization>& dis,
-        const std::vector<int> dvol_fenode, const CORE::Conditions::ConditionType condtype,
+    void create_volume_condition(const Teuchos::RCP<Discret::Discretization>& dis,
+        const std::vector<int> dvol_fenode, const Core::Conditions::ConditionType condtype,
         const std::string condname, bool buildgeometry);
 
     /*!
@@ -128,7 +128,7 @@ namespace IMMERSED
     \author rauch
     \date 02/17
     */
-    void build_condition_dof_map(const Teuchos::RCP<const DRT::Discretization>& dis,
+    void build_condition_dof_map(const Teuchos::RCP<const Discret::Discretization>& dis,
         const std::string condname, const Teuchos::RCP<const Epetra_Map>& cond_dofmap_orig,
         const int numdof, Teuchos::RCP<Epetra_Map>& cond_dofmap);
 
@@ -166,8 +166,8 @@ namespace IMMERSED
     \author rauch
     \date 02/17
     */
-    virtual void ApplyDirichlet(const Teuchos::RCP<ADAPTER::StructureWrapper>& field_wrapper,
-        const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
+    virtual void ApplyDirichlet(const Teuchos::RCP<Adapter::StructureWrapper>& field_wrapper,
+        const Teuchos::RCP<Discret::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals);
 
@@ -178,8 +178,8 @@ namespace IMMERSED
     \author rauch
     \date 02/17
     */
-    void apply_dirichlet_to_fluid(const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper,
-        const Teuchos::RCP<DRT::Discretization>& dis, const std::string condname,
+    void apply_dirichlet_to_fluid(const Teuchos::RCP<Adapter::FluidWrapper>& field_wrapper,
+        const Teuchos::RCP<Discret::Discretization>& dis, const std::string condname,
         Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
         const Teuchos::RCP<const Epetra_Vector>& dirichvals);
 
@@ -191,7 +191,7 @@ namespace IMMERSED
     \date 02/17
     */
     void RemoveDirichlet(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
-        const Teuchos::RCP<ADAPTER::StructureWrapper>& field_wrapper);
+        const Teuchos::RCP<Adapter::StructureWrapper>& field_wrapper);
 
 
     /*!
@@ -201,7 +201,7 @@ namespace IMMERSED
     \date 02/17
     */
     void remove_dirichlet_from_fluid(const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
-        const Teuchos::RCP<ADAPTER::FluidWrapper>& field_wrapper);
+        const Teuchos::RCP<Adapter::FluidWrapper>& field_wrapper);
 
 
     /*!
@@ -210,10 +210,10 @@ namespace IMMERSED
     \author rauch
     \date 05/14
     */
-    void EvaluateImmersed(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> dis,
-        CORE::FE::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
-        Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
-        std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, int action,
+    void EvaluateImmersed(Teuchos::ParameterList& params, Teuchos::RCP<Discret::Discretization> dis,
+        Core::FE::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
+        Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
+        std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, int action,
         bool evaluateonlyboundary = false);
 
 
@@ -225,9 +225,9 @@ namespace IMMERSED
 
     */
     void evaluate_immersed_no_assembly(Teuchos::ParameterList& params,
-        Teuchos::RCP<DRT::Discretization> dis, std::map<int, std::set<int>>* elementstoeval,
-        Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
-        std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, int action);
+        Teuchos::RCP<Discret::Discretization> dis, std::map<int, std::set<int>>* elementstoeval,
+        Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
+        std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct, int action);
 
 
     /*!
@@ -237,11 +237,11 @@ namespace IMMERSED
     \date 05/14
 
     */
-    void evaluate_sca_tra_with_internal_communication(Teuchos::RCP<DRT::Discretization> dis,
-        const Teuchos::RCP<const DRT::Discretization> idis, CORE::FE::AssembleStrategy* strategy,
-        std::map<int, std::set<int>>* elementstoeval,
-        Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
-        std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct,
+    void evaluate_sca_tra_with_internal_communication(Teuchos::RCP<Discret::Discretization> dis,
+        const Teuchos::RCP<const Discret::Discretization> idis,
+        Core::FE::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
+        Teuchos::RCP<Core::Geo::SearchTree> structsearchtree,
+        std::map<int, Core::LinAlg::Matrix<3, 1>>* currpositions_struct,
         Teuchos::ParameterList& params, bool evaluateonlyboundary = false);
 
 
@@ -253,8 +253,8 @@ namespace IMMERSED
     \date 05/14
 
     */
-    void evaluate_interpolation_condition(Teuchos::RCP<DRT::Discretization> evaldis,
-        Teuchos::ParameterList& params, CORE::FE::AssembleStrategy& strategy,
+    void evaluate_interpolation_condition(Teuchos::RCP<Discret::Discretization> evaldis,
+        Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy,
         const std::string& condstring, const int condid);
 
 
@@ -267,9 +267,9 @@ namespace IMMERSED
     */
     void search_potentially_covered_backgrd_elements(
         std::map<int, std::set<int>>* current_subset_tofill,
-        Teuchos::RCP<CORE::GEO::SearchTree> backgrd_SearchTree, const DRT::Discretization& dis,
-        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-        const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label);
+        Teuchos::RCP<Core::Geo::SearchTree> backgrd_SearchTree, const Discret::Discretization& dis,
+        const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
+        const Core::LinAlg::Matrix<3, 1>& point, const double radius, const int label);
 
 
     /*!
@@ -280,7 +280,7 @@ namespace IMMERSED
 
     */
     void evaluate_subset_elements(Teuchos::ParameterList& params,
-        Teuchos::RCP<DRT::Discretization> dis, std::map<int, std::set<int>>& elementstoeval,
+        Teuchos::RCP<Discret::Discretization> dis, std::map<int, std::set<int>>& elementstoeval,
         int action);
 
 
@@ -313,7 +313,7 @@ namespace IMMERSED
     \date 03/17
     */
     std::vector<double> calc_global_resultantfrom_epetra_vector(const Epetra_Comm& comm,
-        const Teuchos::RCP<const DRT::Discretization>& dis,
+        const Teuchos::RCP<const Discret::Discretization>& dis,
         const Teuchos::RCP<const Epetra_Vector>& vec_epetra);
 
    private:
@@ -360,9 +360,9 @@ namespace IMMERSED
   \date 09/15
 
   */
-  template <CORE::FE::CellType sourcedistype, CORE::FE::CellType targetdistype>
-  int InterpolateToImmersedIntPoint(const Teuchos::RCP<DRT::Discretization> sourcedis,
-      const Teuchos::RCP<DRT::Discretization> targetdis, CORE::Elements::Element& targetele,
+  template <Core::FE::CellType sourcedistype, Core::FE::CellType targetdistype>
+  int InterpolateToImmersedIntPoint(const Teuchos::RCP<Discret::Discretization> sourcedis,
+      const Teuchos::RCP<Discret::Discretization> targetdis, Core::Elements::Element& targetele,
       const std::vector<double>& targetxi, const std::vector<double>& targetedisp, int action,
       std::vector<double>& targetdata)
   {
@@ -393,7 +393,7 @@ namespace IMMERSED
     const Epetra_Comm& comm = sourcedis->Comm();
 
     // get the global problem
-    GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+    Global::Problem* problem = Global::Problem::Instance();
 
     // true in case we have to deal wit ha deformable background mesh
     static int isALE =
@@ -403,7 +403,7 @@ namespace IMMERSED
     const int globdim = problem->NDim();
 
     // pointer to background element
-    CORE::Elements::Element* sourceele;
+    Core::Elements::Element* sourceele;
 
     // sourceele displacements
     std::vector<double> myvalues;
@@ -412,8 +412,8 @@ namespace IMMERSED
     std::vector<double> x(globdim);
 
     // dimension of source discretization
-    static constexpr int source_dim = CORE::FE::dim<sourcedistype>;
-    static constexpr int target_dim = CORE::FE::dim<targetdistype>;
+    static constexpr int source_dim = Core::FE::dim<sourcedistype>;
+    static constexpr int target_dim = Core::FE::dim<targetdistype>;
 
     // declarations and definitions for round robin loop
     const int numproc = comm.NumProc();
@@ -421,10 +421,10 @@ namespace IMMERSED
     const int torank = (myrank + 1) % numproc;              // sends to
     const int fromrank = (myrank + numproc - 1) % numproc;  // recieves from
 
-    CORE::COMM::Exporter exporter(comm);
+    Core::Communication::Exporter exporter(comm);
 
     // get current global coordinates of the given point xi of the target dis
-    MORTAR::UTILS::LocalToCurrentGlobal<targetdistype>(
+    Mortar::UTILS::LocalToCurrentGlobal<targetdistype>(
         targetele, globdim, targetxi.data(), targetedisp, x.data());
     std::vector<double> xvec(globdim);
     xvec[0] = x[0];
@@ -432,35 +432,35 @@ namespace IMMERSED
     xvec[2] = x[2];
 
     // vector to fill by sourcedis->Evaluate (needs to be resized in calc class)
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> vectofill =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(targetdata.size()));
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> vectofill =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(targetdata.size()));
     (*vectofill)(0) = -1234.0;
 
     // save parameter space coordinate in serial dense vector
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> xi_dense =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(source_dim));
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> targetxi_dense =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(target_dim));
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> xi_dense =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(source_dim));
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> targetxi_dense =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(target_dim));
 
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> normal_at_targetpoint =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> normal_at_targetpoint =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(3));
     std::vector<double> normal_vec(3);
 
-    CORE::LINALG::SerialDenseMatrix dummy1;
-    CORE::LINALG::SerialDenseMatrix dummy2;
-    CORE::LINALG::SerialDenseVector dummy3;
+    Core::LinAlg::SerialDenseMatrix dummy1;
+    Core::LinAlg::SerialDenseMatrix dummy2;
+    Core::LinAlg::SerialDenseVector dummy3;
 
     Teuchos::ParameterList params;
 
     params.set<std::string>("action", "calc_cur_normal_at_point");
     for (int i = 0; i < target_dim; ++i) (*targetxi_dense)(i) = targetxi[i];
 
-    CORE::Elements::Element::LocationArray targetla(1);
+    Core::Elements::Element::LocationArray targetla(1);
     targetele.LocationVector(*targetdis, targetla, false);
 
     targetele.Evaluate(params, *targetdis, targetla, dummy1, dummy2, *normal_at_targetpoint,
         *targetxi_dense, dummy3);
-    normal_at_targetpoint->scale(1.0 / (CORE::LINALG::Norm2(*normal_at_targetpoint)));
+    normal_at_targetpoint->scale(1.0 / (Core::LinAlg::Norm2(*normal_at_targetpoint)));
     normal_vec[0] = (*normal_at_targetpoint)(0);
     normal_vec[1] = (*normal_at_targetpoint)(1);
     normal_vec[2] = (*normal_at_targetpoint)(2);
@@ -493,8 +493,8 @@ namespace IMMERSED
     int datalength = (int)vectofill->length();
 
     // get possible elements being intersected by immersed structure
-    CORE::Conditions::Condition* searchbox = sourcedis->GetCondition("ImmersedSearchbox");
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& searchboxgeom = searchbox->Geometry();
+    Core::Conditions::Condition* searchbox = sourcedis->GetCondition("ImmersedSearchbox");
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& searchboxgeom = searchbox->Geometry();
     int mysearchboxgeomsize = searchboxgeom.size();
 
     // round robin loop
@@ -511,8 +511,8 @@ namespace IMMERSED
       // if the current proc can already match the given point xi (xvec)
       //
       /////////////////////////////////////////////////////////////////////
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>::iterator curr;
-      CORE::LINALG::Matrix<source_dim, 1> xi(true);
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+      Core::LinAlg::Matrix<source_dim, 1> xi(true);
       if (!matched and mysearchboxgeomsize > 0)
       {
         // every proc that has searchboxgeom elements
@@ -529,11 +529,11 @@ namespace IMMERSED
             {
               Teuchos::RCP<const Epetra_Vector> state = sourcedis->GetState("dispnp");
 
-              CORE::Elements::Element::LocationArray la(1);
+              Core::Elements::Element::LocationArray la(1);
               curr->second->LocationVector(*sourcedis, la, false);
               // extract local values of the global vectors
               myvalues.resize(la[0].lm_.size());
-              CORE::FE::ExtractMyValues(*state, myvalues, la[0].lm_);
+              Core::FE::ExtractMyValues(*state, myvalues, la[0].lm_);
               double sourceeledisp[24];
               for (int node = 0; node < 8; ++node)
                 for (int dof = 0; dof < 3; ++dof)
@@ -562,7 +562,7 @@ namespace IMMERSED
               // fac*characteristic element length
               if (distance < 1.5 * diagonal)
               {
-                MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(
+                Mortar::UTILS::GlobalToCurrentLocal<sourcedistype>(
                     *(curr->second), sourceeledisp, xvec.data(), &xi(0), converged, residual);
                 if (converged == false)
                 {
@@ -602,7 +602,7 @@ namespace IMMERSED
               {
                 // get parameter space coords xi in source element of global point xvec of target
                 // element
-                MORTAR::UTILS::GlobalToLocal<sourcedistype>(
+                Mortar::UTILS::GlobalToLocal<sourcedistype>(
                     *(curr->second), xvec.data(), &xi(0), converged);
                 if (converged == false)
                 {
@@ -645,10 +645,10 @@ namespace IMMERSED
             )
             {
               double scalarproduct = 0.0;
-              Teuchos::RCP<CORE::LINALG::SerialDenseVector> vector;
+              Teuchos::RCP<Core::LinAlg::SerialDenseVector> vector;
 
               // get nodal coords of source ele
-              vector = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
+              vector = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(3));
               std::vector<double> distances(sourceele->num_node());
 
               // loop over source element nodes and calc distance from targetpoint to those nodes
@@ -704,7 +704,7 @@ namespace IMMERSED
               (*vector)(0) = x[0] - xvec[0];
               (*vector)(1) = x[1] - xvec[1];
               (*vector)(2) = x[2] - xvec[2];
-              vector->scale(CORE::LINALG::Norm2(*vector));
+              vector->scale(Core::LinAlg::Norm2(*vector));
 
               // build scalar product between normal and vector
               scalarproduct = (*vector)(0) * normal_vec[0] + (*vector)(1) * normal_vec[1] +
@@ -746,7 +746,7 @@ namespace IMMERSED
             }
             else
               params.set<int>("action", action);
-            params.set<int>("Physical Type", INPAR::FLUID::poro_p1);
+            params.set<int>("Physical Type", Inpar::FLUID::poro_p1);
             if (validsource)
             {
               //              std::cout<<"\n ---------- \n PROC "<<comm.MyPID()<<" ; sourcele :
@@ -758,15 +758,15 @@ namespace IMMERSED
               //              "<<scalarproduct<<std::endl;
 
               // fill locationarray
-              CORE::Elements::Element::LocationArray sourcela(1);
+              Core::Elements::Element::LocationArray sourcela(1);
               sourceele->LocationVector(*sourcedis, sourcela, false);
               sourceele->Evaluate(
                   params, *sourcedis, sourcela, dummy1, dummy2, *vectofill, *xi_dense, dummy3);
               matched = 1;
 
               // if element interpolates to structural intpoint set as "boundary is immersed"
-              Teuchos::RCP<DRT::ELEMENTS::FluidImmersedBase> immersedele =
-                  Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second);
+              Teuchos::RCP<Discret::ELEMENTS::FluidImmersedBase> immersedele =
+                  Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::FluidImmersedBase>(curr->second);
               // only possible and reasonable if current element is fluid element
               if (immersedele != Teuchos::null)
               {
@@ -797,7 +797,7 @@ namespace IMMERSED
       {
         // ---- pack data for sending -----
         {
-          CORE::COMM::PackBuffer data;
+          Core::Communication::PackBuffer data;
           data.StartPacking();
           {
             data.AddtoPack(matched);
@@ -844,21 +844,21 @@ namespace IMMERSED
 
         // ---- unpack data -----
         std::vector<char>::size_type position = 0;
-        matched = CORE::COMM::ParObject::ExtractInt(position, rdata);
-        owner = CORE::COMM::ParObject::ExtractInt(position, rdata);
-        datalength = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        matched = Core::Communication::ParObject::ExtractInt(position, rdata);
+        owner = Core::Communication::ParObject::ExtractInt(position, rdata);
+        datalength = Core::Communication::ParObject::ExtractInt(position, rdata);
 
         for (int i = 0; i < globdim; ++i)
-          xvec[i] = CORE::COMM::ParObject::ExtractDouble(position, rdata);
+          xvec[i] = Core::Communication::ParObject::ExtractDouble(position, rdata);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*vectofill)(dim) = CORE::COMM::ParObject::ExtractDouble(position, rdata);
+            (*vectofill)(dim) = Core::Communication::ParObject::ExtractDouble(position, rdata);
         }
 
         for (int i = 0; i < globdim; ++i)
-          normal_vec[i] = CORE::COMM::ParObject::ExtractDouble(position, rdata);
+          normal_vec[i] = Core::Communication::ParObject::ExtractDouble(position, rdata);
 
         // wait for all communication to finish
         exporter.Wait(request);
@@ -899,10 +899,10 @@ namespace IMMERSED
   \date 09/15
 
   */
-  template <CORE::FE::CellType sourcedistype, CORE::FE::CellType targetdistype>
+  template <Core::FE::CellType sourcedistype, Core::FE::CellType targetdistype>
   int InterpolateToBackgrdPoint(std::map<int, std::set<int>>& curr_subset_of_structdis,
-      const Teuchos::RCP<DRT::Discretization> sourcedis,
-      const Teuchos::RCP<DRT::Discretization> targetdis, CORE::Elements::Element& targetele,
+      const Teuchos::RCP<Discret::Discretization> sourcedis,
+      const Teuchos::RCP<Discret::Discretization> targetdis, Core::Elements::Element& targetele,
       const std::vector<double>& targetxi, const std::vector<double>& targetedisp,
       const std::string action, std::vector<double>& targetdata, bool& match, bool vel_calculation,
       bool doCommunication = true)
@@ -921,15 +921,15 @@ namespace IMMERSED
     // get communicator
     const Epetra_Comm& comm = sourcedis->Comm();
     // get the global problem
-    GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+    Global::Problem* problem = Global::Problem::Instance();
     // dimension of global problem
     const int globdim = problem->NDim();
     // pointer to background element
-    CORE::Elements::Element* sourceele;
+    Core::Elements::Element* sourceele;
     // declare vector of global current coordinates
     std::vector<double> x(globdim);
     // dimension of source discretization
-    static constexpr int source_dim = CORE::FE::dim<sourcedistype>;
+    static constexpr int source_dim = Core::FE::dim<sourcedistype>;
     // declarations and definitions for round robin loop
     int numproc = comm.NumProc();
     const int myrank = comm.MyPID();                        // myrank
@@ -940,10 +940,10 @@ namespace IMMERSED
     if (doCommunication == false) numproc = 1;
 
     Teuchos::RCP<const Epetra_Vector> dispnp = sourcedis->GetState("displacement");
-    CORE::Elements::Element::LocationArray la(1);
+    Core::Elements::Element::LocationArray la(1);
 
     // get current global coordinates of the given point xi of the target dis
-    MORTAR::UTILS::LocalToCurrentGlobal<targetdistype>(
+    Mortar::UTILS::LocalToCurrentGlobal<targetdistype>(
         targetele, globdim, targetxi.data(), targetedisp, x.data());
     std::vector<double> xvec(globdim);
     xvec[0] = x[0];
@@ -951,8 +951,8 @@ namespace IMMERSED
     xvec[2] = x[2];
 
     // vector to be filled in sourcedis->Evaluate (needs to be resized in calc class)
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> vectofill =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4));
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> vectofill =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(4));
     (*vectofill)(0) = -1234.0;
     if (match)  // was already matched, add no contribution
     {
@@ -963,8 +963,8 @@ namespace IMMERSED
     }
 
     // save parameter space coordinate in serial dense vector
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> xi_dense =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(source_dim));
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> xi_dense =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(source_dim));
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     //////
@@ -1008,7 +1008,7 @@ namespace IMMERSED
       // if the current proc can already match the given point xi (xvec)
       //
       /////////////////////////////////////////////////////////////////////
-      CORE::LINALG::Matrix<source_dim, 1> xi(true);
+      Core::LinAlg::Matrix<source_dim, 1> xi(true);
       if (matched == 0)
       {
         for (std::map<int, std::set<int>>::const_iterator closele =
@@ -1025,12 +1025,12 @@ namespace IMMERSED
             // get parameter space coords xi in source element
             sourceele->LocationVector(*sourcedis, la, false);
             std::vector<double> mysourcedispnp(la[0].lm_.size());
-            CORE::FE::ExtractMyValues(*dispnp, mysourcedispnp, la[0].lm_);
+            Core::FE::ExtractMyValues(*dispnp, mysourcedispnp, la[0].lm_);
 
             // construct bounding box around current source element
-            Teuchos::RCP<CORE::GEO::CUT::BoundingBox> bbside =
-                Teuchos::rcp(CORE::GEO::CUT::BoundingBox::Create());
-            CORE::LINALG::Matrix<3, 1> nodalpos;
+            Teuchos::RCP<Core::Geo::Cut::BoundingBox> bbside =
+                Teuchos::rcp(Core::Geo::Cut::BoundingBox::Create());
+            Core::LinAlg::Matrix<3, 1> nodalpos;
             for (int i = 0; i < (int)(sourceele->num_node()); ++i)
             {
               nodalpos(0, 0) = (sourceele->Nodes())[i]->X()[0] + mysourcedispnp[i * 3 + 0];
@@ -1045,7 +1045,7 @@ namespace IMMERSED
             // only try to match given target point and sourceele if within bounding box
             if (within)
             {
-              MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(
+              Mortar::UTILS::GlobalToCurrentLocal<sourcedistype>(
                   *sourceele, mysourcedispnp.data(), xvec.data(), &xi(0), converged, residual);
 
               if (converged == false)
@@ -1087,16 +1087,16 @@ namespace IMMERSED
               Teuchos::ParameterList params;
               params.set<std::string>("action", action);
               // fill locationarray
-              CORE::Elements::Element::LocationArray la(1);
+              Core::Elements::Element::LocationArray la(1);
               sourceele->LocationVector(*sourcedis, la, false);
 
               (*xi_dense)(0) = xi(0);
               (*xi_dense)(1) = xi(1);
               (*xi_dense)(2) = xi(2);
 
-              CORE::LINALG::SerialDenseMatrix dummy1;
-              CORE::LINALG::SerialDenseMatrix dummy2;
-              CORE::LINALG::SerialDenseVector dummy3;
+              Core::LinAlg::SerialDenseMatrix dummy1;
+              Core::LinAlg::SerialDenseMatrix dummy2;
+              Core::LinAlg::SerialDenseVector dummy3;
 
               // check whether velocity or divergence should be interpolated
               int vel_or_div = 1;
@@ -1128,11 +1128,11 @@ namespace IMMERSED
 
       if (doCommunication)
       {
-        CORE::COMM::Exporter exporter(comm);
+        Core::Communication::Exporter exporter(comm);
 
         // ---- pack data for sending -----
         {
-          CORE::COMM::PackBuffer data;
+          Core::Communication::PackBuffer data;
           data.StartPacking();
           {
             data.AddtoPack(matched);
@@ -1172,17 +1172,17 @@ namespace IMMERSED
 
         // ---- unpack data -----
         std::vector<char>::size_type position = 0;
-        matched = CORE::COMM::ParObject::ExtractInt(position, rdata);
-        owner = CORE::COMM::ParObject::ExtractInt(position, rdata);
-        datalength = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        matched = Core::Communication::ParObject::ExtractInt(position, rdata);
+        owner = Core::Communication::ParObject::ExtractInt(position, rdata);
+        datalength = Core::Communication::ParObject::ExtractInt(position, rdata);
 
         for (int i = 0; i < globdim; ++i)
-          xvec[i] = CORE::COMM::ParObject::ExtractDouble(position, rdata);
+          xvec[i] = Core::Communication::ParObject::ExtractDouble(position, rdata);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*vectofill)(dim) = CORE::COMM::ParObject::ExtractDouble(position, rdata);
+            (*vectofill)(dim) = Core::Communication::ParObject::ExtractDouble(position, rdata);
         }
 
         // wait for all communication to finish
@@ -1219,12 +1219,12 @@ namespace IMMERSED
   \date 07/2015
 
    */
-  template <CORE::FE::CellType structdistype, CORE::FE::CellType fluiddistype>
+  template <Core::FE::CellType structdistype, Core::FE::CellType fluiddistype>
   int FindClosestStructureSurfacePoint(
       std::map<int, std::set<int>>& curr_subset_of_structdis,  //!< Input
-      const Teuchos::RCP<DRT::Discretization> structdis,       //!< Input
-      const Teuchos::RCP<DRT::Discretization> fluiddis,        //!< Input
-      CORE::Elements::Element& fluidele,                       //!< Input
+      const Teuchos::RCP<Discret::Discretization> structdis,   //!< Input
+      const Teuchos::RCP<Discret::Discretization> fluiddis,    //!< Input
+      Core::Elements::Element& fluidele,                       //!< Input
       const std::vector<double>& fluidxi,                      //!< Input
       const std::vector<double>& fluideledisp,                 //!< Input
       const std::string action,                                //!< Input
@@ -1241,7 +1241,7 @@ namespace IMMERSED
     const Epetra_Comm& comm = structdis->Comm();
 
     // get the global problem
-    GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+    Global::Problem* problem = Global::Problem::Instance();
 
     // true in case we have to deal wit ha deformable background mesh
     static int isALE =
@@ -1254,14 +1254,14 @@ namespace IMMERSED
     std::vector<double> x_fluid_node(globdim);
 
     // dimension of structure and fluid discretization
-    static constexpr int struct_dim = CORE::FE::dim<structdistype>;
-    static constexpr int fluid_dim = CORE::FE::dim<fluiddistype>;
+    static constexpr int struct_dim = Core::FE::dim<structdistype>;
+    static constexpr int fluid_dim = Core::FE::dim<fluiddistype>;
 
     // get integration rule of structural surface element
-    const CORE::FE::IntPointsAndWeights<2> intpoints(CORE::FE::GaussRule2D::quad_36point);
+    const Core::FE::IntPointsAndWeights<2> intpoints(Core::FE::GaussRule2D::quad_36point);
 
     // initialize structural shape functions matrix
-    CORE::LINALG::Matrix<4, 1> shapefcts(true);
+    Core::LinAlg::Matrix<4, 1> shapefcts(true);
 
     // declarations and definitions for round robin loop
     int numproc = comm.NumProc();
@@ -1273,7 +1273,7 @@ namespace IMMERSED
 
     if (doCommunication == false) numproc = 1;
 
-    CORE::Nodes::Node** fluidnode = fluidele.Nodes();
+    Core::Nodes::Node** fluidnode = fluidele.Nodes();
     double char_fld_ele_length = sqrt(pow(fluidnode[1]->X()[0] - fluidnode[7]->X()[0], 2) +
                                       pow(fluidnode[1]->X()[1] - fluidnode[7]->X()[1], 2) +
                                       pow(fluidnode[1]->X()[2] - fluidnode[7]->X()[2], 2));
@@ -1281,20 +1281,20 @@ namespace IMMERSED
     // get current displacements and velocities of structure discretization
     Teuchos::RCP<const Epetra_Vector> dispnp = structdis->GetState("displacement");
     Teuchos::RCP<const Epetra_Vector> velnp = structdis->GetState("velocity");
-    CORE::Elements::Element::LocationArray la(structdis->NumDofSets());
+    Core::Elements::Element::LocationArray la(structdis->NumDofSets());
 
     // get current global coordinates of the given fluid node fluid_xi
-    MORTAR::UTILS::LocalToCurrentGlobal<fluiddistype>(
+    Mortar::UTILS::LocalToCurrentGlobal<fluiddistype>(
         fluidele, globdim, fluidxi.data(), fluideledisp, x_fluid_node.data());
     // get as vector
     std::vector<double> fluid_node_glob_coord(globdim);
     for (int idim = 0; idim < 3; ++idim) fluid_node_glob_coord[idim] = x_fluid_node[idim];
 
     // initialize vectors to fill
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> velnp_at_struct_point =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> xi_pos_of_struct_point =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> velnp_at_struct_point =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(3));
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> xi_pos_of_struct_point =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(3));
     (*velnp_at_struct_point)(0) = -1234.0;
     (*xi_pos_of_struct_point)(0) = -1234.0;
 
@@ -1346,7 +1346,7 @@ namespace IMMERSED
       std::vector<char> rdata;
 
       // local coordinates of structrual surface point in parameter space of the fluid element
-      CORE::LINALG::Matrix<fluid_dim, 1> fluid_xi(true);
+      Core::LinAlg::Matrix<fluid_dim, 1> fluid_xi(true);
 
       // loop over points that are not yet matched
       if (matched == 0)
@@ -1362,26 +1362,26 @@ namespace IMMERSED
           {
             // only surface elements (with immersed coupling condition) are relevant to find closest
             // structure point
-            std::vector<Teuchos::RCP<CORE::Elements::Element>> surface_eles =
+            std::vector<Teuchos::RCP<Core::Elements::Element>> surface_eles =
                 structdis->gElement(*eleIter)->Surfaces();
 
             // loop over surface element, find the elements with IMMERSEDCoupling condition
-            for (std::vector<Teuchos::RCP<CORE::Elements::Element>>::iterator surfIter =
+            for (std::vector<Teuchos::RCP<Core::Elements::Element>>::iterator surfIter =
                      surface_eles.begin();
                  surfIter != surface_eles.end(); ++surfIter)
             {
               // pointer to current surface element
-              CORE::Elements::Element* structele = surfIter->getRawPtr();
+              Core::Elements::Element* structele = surfIter->getRawPtr();
 
               // pointer to nodes of current surface element
-              CORE::Nodes::Node** NodesPtr = surfIter->getRawPtr()->Nodes();
+              Core::Nodes::Node** NodesPtr = surfIter->getRawPtr()->Nodes();
 
               int numfsinodes = 0;
 
               // loop over all nodes of current surface element
               for (int surfnode = 0; surfnode < structele->num_node(); ++surfnode)
               {
-                CORE::Nodes::Node* checkNode = NodesPtr[surfnode];
+                Core::Nodes::Node* checkNode = NodesPtr[surfnode];
                 // check whether a IMMERSEDCoupling condition is active on this node
                 if (checkNode->GetCondition("IMMERSEDCoupling") != nullptr) ++numfsinodes;
               }
@@ -1393,9 +1393,9 @@ namespace IMMERSED
                 // get displacements and velocities of structure dis
                 structele->LocationVector(*structdis, la, false);
                 std::vector<double> mydispnp(la[0].lm_.size());
-                CORE::FE::ExtractMyValues(*dispnp, mydispnp, la[0].lm_);
+                Core::FE::ExtractMyValues(*dispnp, mydispnp, la[0].lm_);
                 std::vector<double> myvelnp(la[0].lm_.size());
-                CORE::FE::ExtractMyValues(*velnp, myvelnp, la[0].lm_);
+                Core::FE::ExtractMyValues(*velnp, myvelnp, la[0].lm_);
 
                 // 1.) check if closest point is a node
                 // loop over all nodes of structural surface element
@@ -1435,14 +1435,14 @@ namespace IMMERSED
                   struct_xsi[1] = intpoints.IP().qxg[igp][1];
 
                   // get local coordinates of gp as matrix
-                  CORE::LINALG::Matrix<struct_dim, 1> struct_xi(true);
+                  Core::LinAlg::Matrix<struct_dim, 1> struct_xi(true);
                   for (int i = 0; i < struct_dim; ++i) struct_xi(i) = struct_xsi[i];
 
                   // declare vector of global current coordinates
                   std::vector<double> structsurf_gp_glob_coord(globdim);
 
                   // get current global position of the given int point xi on the structural surface
-                  MORTAR::UTILS::LocalToCurrentGlobal<structdistype>(*(structele), globdim,
+                  Mortar::UTILS::LocalToCurrentGlobal<structdistype>(*(structele), globdim,
                       struct_xsi.data(), mydispnp, structsurf_gp_glob_coord.data());
 
                   // distance between fluid node and given structure gp
@@ -1458,14 +1458,14 @@ namespace IMMERSED
                     stored_dist = dist;
 
                     // evaluate shape functions of structure dis at gp
-                    CORE::FE::shape_function<CORE::FE::CellType::quad4>(struct_xi, shapefcts);
-                    CORE::LINALG::Matrix<4, 3> myvelocitynp(true);
+                    Core::FE::shape_function<Core::FE::CellType::quad4>(struct_xi, shapefcts);
+                    Core::LinAlg::Matrix<4, 3> myvelocitynp(true);
                     for (int node = 0; node < 4; ++node)
                       for (int dim = 0; dim < 3; ++dim)
                         myvelocitynp(node, dim) = myvelnp[node * 3 + dim];
 
                     // calculate velocity in gp
-                    CORE::LINALG::Matrix<3, 1> vel_at_gp(true);
+                    Core::LinAlg::Matrix<3, 1> vel_at_gp(true);
                     vel_at_gp.MultiplyTN(myvelocitynp, shapefcts);
 
                     // update velocity and position
@@ -1493,10 +1493,10 @@ namespace IMMERSED
           // get local coordinates of closest structural surface point in fluid element parameter
           // space
           if (isALE)
-            MORTAR::UTILS::GlobalToCurrentLocal<fluiddistype>(
+            Mortar::UTILS::GlobalToCurrentLocal<fluiddistype>(
                 fluidele, fluideledisp.data(), xvec.data(), &fluid_xi(0), converged, residual);
           else
-            MORTAR::UTILS::GlobalToLocal<fluiddistype>(
+            Mortar::UTILS::GlobalToLocal<fluiddistype>(
                 fluidele, xvec.data(), &fluid_xi(0), converged);
 
           if (converged == false)
@@ -1536,10 +1536,10 @@ namespace IMMERSED
 
       if (doCommunication)
       {
-        CORE::COMM::Exporter exporter(comm);
+        Core::Communication::Exporter exporter(comm);
         // ---- pack data for sending -----
         {
-          CORE::COMM::PackBuffer data;
+          Core::Communication::PackBuffer data;
           data.StartPacking();
           {
             data.AddtoPack(matched);
@@ -1579,17 +1579,18 @@ namespace IMMERSED
 
         // ---- unpack data -----
         std::vector<char>::size_type position = 0;
-        matched = CORE::COMM::ParObject::ExtractInt(position, rdata);
-        owner = CORE::COMM::ParObject::ExtractInt(position, rdata);
-        datalength = CORE::COMM::ParObject::ExtractInt(position, rdata);
+        matched = Core::Communication::ParObject::ExtractInt(position, rdata);
+        owner = Core::Communication::ParObject::ExtractInt(position, rdata);
+        datalength = Core::Communication::ParObject::ExtractInt(position, rdata);
 
         for (int i = 0; i < globdim; ++i)
-          fluid_node_glob_coord[i] = CORE::COMM::ParObject::ExtractDouble(position, rdata);
+          fluid_node_glob_coord[i] = Core::Communication::ParObject::ExtractDouble(position, rdata);
 
         if (matched == 1)
         {
           for (int dim = 0; dim < datalength; ++dim)
-            (*velnp_at_struct_point)(dim) = CORE::COMM::ParObject::ExtractDouble(position, rdata);
+            (*velnp_at_struct_point)(dim) =
+                Core::Communication::ParObject::ExtractDouble(position, rdata);
         }
 
         // wait for all communication to finish
@@ -1615,7 +1616,7 @@ namespace IMMERSED
     return err;
   };
 
-}  // namespace IMMERSED
+}  // namespace Immersed
 
 FOUR_C_NAMESPACE_CLOSE
 

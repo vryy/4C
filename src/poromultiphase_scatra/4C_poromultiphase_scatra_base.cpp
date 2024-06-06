@@ -27,25 +27,25 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
+PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::PoroMultiPhaseScaTraBase(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
       poromulti_(Teuchos::null),
       scatra_(Teuchos::null),
-      fluxreconmethod_(INPAR::POROFLUIDMULTIPHASE::gradreco_none),
+      fluxreconmethod_(Inpar::POROFLUIDMULTIPHASE::gradreco_none),
       ndsporofluid_scatra_(-1),
       timertimestep_("PoroMultiPhaseScaTraBase", true),
       dttimestep_(0.0),
-      divcontype_(CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASESCATRA::DivContAct>(
+      divcontype_(Core::UTILS::IntegralValue<Inpar::PoroMultiPhaseScaTra::DivContAct>(
           globaltimeparams, "DIVERCONT")),
-      artery_coupl_(CORE::UTILS::IntegralValue<int>(globaltimeparams, "ARTERY_COUPLING"))
+      artery_coupl_(Core::UTILS::IntegralValue<int>(globaltimeparams, "ARTERY_COUPLING"))
 {
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::Init(
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& algoparams,
     const Teuchos::ParameterList& poroparams, const Teuchos::ParameterList& structparams,
     const Teuchos::ParameterList& fluidparams, const Teuchos::ParameterList& scatraparams,
@@ -57,7 +57,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   ndsporofluid_scatra_ = ndsporofluid_scatra;
 
   // access the global problem
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // Create the two uncoupled subproblems.
 
@@ -66,18 +66,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   // coupling scheme
   // -------------------------------------------------------------------
   // first of all check for possible couplings
-  INPAR::POROMULTIPHASE::SolutionSchemeOverFields solschemeporo =
-      CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASE::SolutionSchemeOverFields>(
+  Inpar::POROMULTIPHASE::SolutionSchemeOverFields solschemeporo =
+      Core::UTILS::IntegralValue<Inpar::POROMULTIPHASE::SolutionSchemeOverFields>(
           poroparams, "COUPALGO");
-  INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields solschemescatraporo =
-      CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields>(
+  Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields solschemescatraporo =
+      Core::UTILS::IntegralValue<Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields>(
           algoparams, "COUPALGO");
 
   // partitioned -- monolithic not possible --> error
   if (solschemeporo !=
-          INPAR::POROMULTIPHASE::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
+          Inpar::POROMULTIPHASE::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
       solschemescatraporo ==
-          INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::solscheme_twoway_monolithic)
+          Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields::solscheme_twoway_monolithic)
     FOUR_C_THROW(
         "Your requested coupling is not available: possible couplings are:\n"
         "(STRUCTURE <--> FLUID) <--> SCATRA: partitioned -- partitioned_nested\n"
@@ -87,8 +87,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
 
   // monolithic -- partitioned sequential not possible
   if (solschemeporo ==
-          INPAR::POROMULTIPHASE::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
-      solschemescatraporo == INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::
+          Inpar::POROMULTIPHASE::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
+      solschemescatraporo == Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields::
                                  solscheme_twoway_partitioned_sequential)
     FOUR_C_THROW(
         "Your requested coupling is not available: possible couplings are:\n"
@@ -98,12 +98,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
         "YOUR CHOICE                       : monolithic  -- partitioned_sequential");
 
   fluxreconmethod_ =
-      CORE::UTILS::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
+      Core::UTILS::IntegralValue<Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod>(
           fluidparams, "FLUX_PROJ_METHOD");
 
   if (solschemescatraporo ==
-          INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
-      fluxreconmethod_ == INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
+          Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields::solscheme_twoway_monolithic &&
+      fluxreconmethod_ == Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
   {
     FOUR_C_THROW(
         "Monolithic porofluidmultiphase-scatra coupling does not work with L2-projection!\n"
@@ -123,7 +123,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
 
   // scatra problem
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(globaltimeparams, scatraparams,
+  scatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(globaltimeparams, scatraparams,
       problem->SolverParams(linsolvernumber), scatra_disname, true));
 
   // initialize the base algo.
@@ -137,7 +137,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
   if (artery_coupl_)
   {
     // get mesh tying strategy
-    scatramsht_ = Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyArtery>(
+    scatramsht_ = Teuchos::rcp_dynamic_cast<ScaTra::MeshtyingStrategyArtery>(
         scatra_->ScaTraField()->Strategy());
     if (scatramsht_ == Teuchos::null) FOUR_C_THROW("cast to Meshtying strategy failed!");
 
@@ -167,7 +167,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::read_restart(int restart)
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::read_restart(int restart)
 {
   if (restart)
   {
@@ -185,7 +185,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::read_restart(int restart)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Timeloop()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::Timeloop()
 {
   prepare_time_loop();
 
@@ -210,7 +210,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::Timeloop()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::prepare_time_step(bool printheader)
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::prepare_time_step(bool printheader)
 {
   // the global control routine has its own time_ and step_ variables, as well as the single fields
   // keep them in sync!
@@ -231,7 +231,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::prepare_time_step(bool prin
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::prepare_time_loop()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::prepare_time_loop()
 {
   // set structure-based scalar transport values
   SetScatraSolution();
@@ -245,7 +245,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::prepare_time_loop()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::update_and_output()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::update_and_output()
 {
   // set scatra on fluid (necessary for possible domain integrals)
   SetScatraSolution();
@@ -272,9 +272,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::update_and_output()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::CreateFieldTest()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::CreateFieldTest()
 {
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   poromulti_->CreateFieldTest();
   problem->AddFieldTest(scatra_->create_sca_tra_field_test());
@@ -282,11 +282,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::CreateFieldTest()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::SetPoroSolution()
 {
   // safety check
-  Teuchos::RCP<SCATRA::ScaTraTimIntPoroMulti> poroscatra =
-      Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntPoroMulti>(scatra_->ScaTraField());
+  Teuchos::RCP<ScaTra::ScaTraTimIntPoroMulti> poroscatra =
+      Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntPoroMulti>(scatra_->ScaTraField());
   if (poroscatra == Teuchos::null) FOUR_C_THROW("cast to ScaTraTimIntPoroMulti failed!");
 
   // set displacements
@@ -297,7 +297,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
       poromulti_->RelaxedFluidPhinp(), poromulti_->fluid_field()->Phin());
 
   // additionally, set nodal flux if L2-projection is desired
-  if (fluxreconmethod_ == INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
+  if (fluxreconmethod_ == Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod::gradreco_l2)
     poroscatra->set_l2_flux_of_multi_fluid(poromulti_->FluidFlux());
 
   if (artery_coupl_)
@@ -309,7 +309,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetPoroSolution()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vol_frac_species()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vol_frac_species()
 {
   // remove the old one
   ScatraAlgo()->ScaTraField()->remove_dirich_cond(add_dirichmaps_volfrac_spec_);
@@ -326,19 +326,19 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
   for (int iele = 0; iele < elecolmap->NumMyElements(); ++iele)
   {
     // dynamic_cast necessary because virtual inheritance needs runtime information
-    DRT::ELEMENTS::Transport* myele = dynamic_cast<DRT::ELEMENTS::Transport*>(
+    Discret::ELEMENTS::Transport* myele = dynamic_cast<Discret::ELEMENTS::Transport*>(
         ScatraAlgo()->ScaTraField()->discretization()->gElement(elecolmap->GID(iele)));
 
-    const CORE::MAT::Material& material2 = *(myele->Material(2));
+    const Core::Mat::Material& material2 = *(myele->Material(2));
 
     // check the material
-    if (material2.MaterialType() != CORE::Materials::m_fluidporo_multiphase and
-        material2.MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
+    if (material2.MaterialType() != Core::Materials::m_fluidporo_multiphase and
+        material2.MaterialType() != Core::Materials::m_fluidporo_multiphase_reactions)
       FOUR_C_THROW("only poro multiphase and poro multiphase reactions material valid");
 
     // cast fluid material
-    const MAT::FluidPoroMultiPhase& multiphasemat =
-        static_cast<const MAT::FluidPoroMultiPhase&>(material2);
+    const Mat::FluidPoroMultiPhase& multiphasemat =
+        static_cast<const Mat::FluidPoroMultiPhase&>(material2);
 
     const int numfluidphases = multiphasemat.NumFluidPhases();
     const int numvolfrac = multiphasemat.NumVolFrac();
@@ -348,18 +348,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
     // TODO: this works only if we have the same number of phases in every element
     if (numfluidmat == numfluidphases) return;
 
-    const CORE::MAT::Material& material = *(myele->Material());
+    const Core::Mat::Material& material = *(myele->Material());
 
     // cast scatra material
-    const MAT::MatList& scatramat = static_cast<const MAT::MatList&>(material);
+    const Mat::MatList& scatramat = static_cast<const Mat::MatList&>(material);
 
-    if (not(scatramat.MaterialType() == CORE::Materials::m_matlist or
-            scatramat.MaterialType() == CORE::Materials::m_matlist_reactions))
+    if (not(scatramat.MaterialType() == Core::Materials::m_matlist or
+            scatramat.MaterialType() == Core::Materials::m_matlist_reactions))
       FOUR_C_THROW("wrong type of ScaTra-Material");
 
     const int numscatramat = scatramat.NumMat();
 
-    CORE::Nodes::Node** nodes = myele->Nodes();
+    Core::Nodes::Node** nodes = myele->Nodes();
 
     for (int inode = 0; inode < (myele->num_node()); inode++)
     {
@@ -373,17 +373,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
         for (int idof = 0; idof < numscatramat; ++idof)
         {
           int matid = scatramat.MatID(idof);
-          Teuchos::RCP<CORE::MAT::Material> singlemat = scatramat.MaterialById(matid);
-          if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_fluid ||
-              singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_solid ||
-              singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_temperature)
+          Teuchos::RCP<Core::Mat::Material> singlemat = scatramat.MaterialById(matid);
+          if (singlemat->MaterialType() == Core::Materials::m_scatra_multiporo_fluid ||
+              singlemat->MaterialType() == Core::Materials::m_scatra_multiporo_solid ||
+              singlemat->MaterialType() == Core::Materials::m_scatra_multiporo_temperature)
           {
             // do nothing
           }
-          else if (singlemat->MaterialType() == CORE::Materials::m_scatra_multiporo_volfrac)
+          else if (singlemat->MaterialType() == Core::Materials::m_scatra_multiporo_volfrac)
           {
-            const Teuchos::RCP<const MAT::ScatraMatMultiPoroVolFrac>& scatravolfracmat =
-                Teuchos::rcp_dynamic_cast<const MAT::ScatraMatMultiPoroVolFrac>(singlemat);
+            const Teuchos::RCP<const Mat::ScatraMatMultiPoroVolFrac>& scatravolfracmat =
+                Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroVolFrac>(singlemat);
 
             const int scalartophaseid = scatravolfracmat->PhaseID();
             // if not already in original dirich map     &&   if it is not a valid volume fraction
@@ -417,7 +417,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetScatraSolution()
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::SetScatraSolution()
 {
   poromulti_->SetScatraSolution(ndsporofluid_scatra_, scatra_->ScaTraField()->Phinp());
   if (artery_coupl_)
@@ -427,7 +427,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::SetScatraSolution()
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::ScatraDofRowMap()
+Teuchos::RCP<const Epetra_Map> PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::ScatraDofRowMap()
     const
 {
   return scatra_->ScaTraField()->dof_row_map();
@@ -435,11 +435,11 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::S
 
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::HandleDivergence() const
+void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::HandleDivergence() const
 {
   switch (divcontype_)
   {
-    case INPAR::POROMULTIPHASESCATRA::divcont_continue:
+    case Inpar::PoroMultiPhaseScaTra::divcont_continue:
     {
       // warn if itemax is reached without convergence, but proceed to
       // next timestep...
@@ -455,7 +455,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase::HandleDivergence() const
       }
       break;
     }
-    case INPAR::POROMULTIPHASESCATRA::divcont_stop:
+    case Inpar::PoroMultiPhaseScaTra::divcont_stop:
     {
       FOUR_C_THROW("POROMULTIPHASESCATRA nonlinear solver not converged in ITEMAX steps!");
       break;

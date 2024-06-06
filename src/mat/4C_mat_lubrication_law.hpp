@@ -16,16 +16,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     //! interface class for generic lubrication law
-    class LubricationLaw : public CORE::MAT::PAR::Parameter
+    class LubricationLaw : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      explicit LubricationLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit LubricationLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// compute current viscosity and save it
       virtual void ComputeViscosity(
@@ -48,10 +48,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit LubricationLawConstant(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit LubricationLawConstant(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// compute current viscosity and save it
       void ComputeViscosity(const double& press,  ///< (i) lubrication pressure at gauss point
@@ -77,10 +77,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit LubricationLawBarus(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit LubricationLawBarus(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
 
       /// compute current viscosity and save it
@@ -110,10 +110,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit LubricationLawRoeland(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit LubricationLawRoeland(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
 
       /// compute current viscosity and save it
@@ -147,7 +147,7 @@ namespace MAT
 
 
   }  // namespace PAR
-}  // namespace MAT
+}  // namespace Mat
 
 
 FOUR_C_NAMESPACE_CLOSE

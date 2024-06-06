@@ -40,16 +40,16 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void dyn_red_airways_drt() { dyn_red_airways_drt(false); }
 
-Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D)
+Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D)
 {
-  if (GLOBAL::Problem::Instance()->DoesExistDis("red_airway") == false)
+  if (Global::Problem::Instance()->DoesExistDis("red_airway") == false)
   {
     return Teuchos::null;
   }
 
   // 1. Access the discretization
-  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = GLOBAL::Problem::Instance()->GetDis("red_airway");
+  Teuchos::RCP<Discret::Discretization> actdis = Teuchos::null;
+  actdis = Global::Problem::Instance()->GetDis("red_airway");
 
   // Set degrees of freedom in the discretization
   if (!actdis->Filled())
@@ -64,17 +64,17 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   }
 
   // 2. Context for output and restart
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0, 0.0);
 
   // 3. Set pointers and variables for ParameterList rawdyn
   const Teuchos::ParameterList& rawdyn =
-      GLOBAL::Problem::Instance()->reduced_d_airway_dynamic_params();
+      Global::Problem::Instance()->reduced_d_airway_dynamic_params();
 
   // Print default parameters
   if (actdis->Comm().MyPID() == 0)
   {
-    INPUT::PrintDefaultParameters(CORE::IO::cout, rawdyn);
+    Input::PrintDefaultParameters(Core::IO::cout, rawdyn);
   }
 
   // 4. Create a linear solver
@@ -88,15 +88,15 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
         "to a valid number!");
   }
   // Create the solver
-  std::unique_ptr<CORE::LINALG::Solver> solver = std::make_unique<CORE::LINALG::Solver>(
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
+  std::unique_ptr<Core::LinAlg::Solver> solver = std::make_unique<Core::LinAlg::Solver>(
+      Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm());
   actdis->compute_null_space_if_necessary(solver->Params());
 
   // 5. Set parameters in list required for all schemes
   Teuchos::ParameterList airwaystimeparams;
 
   // Number of degrees of freedom
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
   airwaystimeparams.set<int>("number of degrees of freedom", 1 * ndim);
 
   // Time step size
@@ -141,8 +141,8 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   // integration (call the constructor);
   // the only parameter from the list required here is the number of
   // velocity degrees of freedom
-  Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> airwayimplicit = Teuchos::rcp(
-      new AIRWAY::RedAirwayImplicitTimeInt(actdis, std::move(solver), airwaystimeparams, *output));
+  Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> airwayimplicit = Teuchos::rcp(
+      new Airway::RedAirwayImplicitTimeInt(actdis, std::move(solver), airwaystimeparams, *output));
 
   // Initialize state save vectors
   if (CoupledTo3D)
@@ -151,7 +151,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   }
 
   // Initial field from restart or calculated by given function
-  const int restart = GLOBAL::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->Restart();
   if (restart && !CoupledTo3D)
   {
     // Read the restart information, set vectors and variables
@@ -165,12 +165,12 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
     airwayimplicit->Integrate();
 
     // Create resulttest
-    Teuchos::RCP<CORE::UTILS::ResultTest> resulttest =
-        Teuchos::rcp(new AIRWAY::RedAirwayResultTest(*airwayimplicit));
+    Teuchos::RCP<Core::UTILS::ResultTest> resulttest =
+        Teuchos::rcp(new Airway::RedAirwayResultTest(*airwayimplicit));
 
     // Resulttest for 0D problem and testing
-    GLOBAL::Problem::Instance()->AddFieldTest(resulttest);
-    GLOBAL::Problem::Instance()->TestAll(actdis->Comm());
+    Global::Problem::Instance()->AddFieldTest(resulttest);
+    Global::Problem::Instance()->TestAll(actdis->Comm());
 
     return airwayimplicit;
   }
@@ -188,13 +188,13 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
 void redairway_tissue_dyn()
 {
   const Teuchos::ParameterList& rawdyn =
-      GLOBAL::Problem::Instance()->red_airway_tissue_dynamic_params();
-  Teuchos::RCP<DRT::Discretization> actdis = GLOBAL::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<AIRWAY::RedAirwayTissue> redairway_tissue =
-      Teuchos::rcp(new AIRWAY::RedAirwayTissue(actdis->Comm(), rawdyn));
+      Global::Problem::Instance()->red_airway_tissue_dynamic_params();
+  Teuchos::RCP<Discret::Discretization> actdis = Global::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Airway::RedAirwayTissue> redairway_tissue =
+      Teuchos::rcp(new Airway::RedAirwayTissue(actdis->Comm(), rawdyn));
 
   // Read the restart information, set vectors and variables
-  const int restart = GLOBAL::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->Restart();
   if (restart)
   {
     redairway_tissue->read_restart(restart);
@@ -208,11 +208,11 @@ void redairway_tissue_dyn()
 
   // Resulttest for red_airway-tissue coupling
   // create result tests for single fields
-  GLOBAL::Problem::Instance()->AddFieldTest(redairway_tissue->RedAirwayField()->CreateFieldTest());
-  GLOBAL::Problem::Instance()->AddFieldTest(redairway_tissue->structure_field()->CreateFieldTest());
+  Global::Problem::Instance()->AddFieldTest(redairway_tissue->RedAirwayField()->CreateFieldTest());
+  Global::Problem::Instance()->AddFieldTest(redairway_tissue->structure_field()->CreateFieldTest());
 
   // Do the actual testing
-  GLOBAL::Problem::Instance()->TestAll(actdis->Comm());
+  Global::Problem::Instance()->TestAll(actdis->Comm());
 }
 
 FOUR_C_NAMESPACE_CLOSE

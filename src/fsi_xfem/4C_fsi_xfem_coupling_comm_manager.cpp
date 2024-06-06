@@ -28,12 +28,12 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------*
 | constructor - simplified for 1 discretization to couple (public)             ager 03/2016|
 *-----------------------------------------------------------------------------------------*/
-XFEM::CouplingCommManager::CouplingCommManager(
-    Teuchos::RCP<const DRT::Discretization> dis0, std::string cond_name, int startdim, int enddim)
+XFEM::CouplingCommManager::CouplingCommManager(Teuchos::RCP<const Discret::Discretization> dis0,
+    std::string cond_name, int startdim, int enddim)
     : cond_name_(cond_name), startdim_(startdim), enddim_(enddim)
 {
-  std::map<int, Teuchos::RCP<const DRT::Discretization>> dis_map;
-  dis_map.insert(std::pair<int, Teuchos::RCP<const DRT::Discretization>>(0, dis0));
+  std::map<int, Teuchos::RCP<const Discret::Discretization>> dis_map;
+  dis_map.insert(std::pair<int, Teuchos::RCP<const Discret::Discretization>>(0, dis0));
 
   setup(dis_map);
 }
@@ -41,13 +41,14 @@ XFEM::CouplingCommManager::CouplingCommManager(
 /*-----------------------------------------------------------------------------------------*
 | constructor - simplified for 2 discretizations to couple (public)            ager 03/2016|
 *-----------------------------------------------------------------------------------------*/
-XFEM::CouplingCommManager::CouplingCommManager(Teuchos::RCP<const DRT::Discretization> dis0,
-    Teuchos::RCP<const DRT::Discretization> dis1, std::string cond_name, int startdim, int enddim)
+XFEM::CouplingCommManager::CouplingCommManager(Teuchos::RCP<const Discret::Discretization> dis0,
+    Teuchos::RCP<const Discret::Discretization> dis1, std::string cond_name, int startdim,
+    int enddim)
     : cond_name_(cond_name), startdim_(startdim), enddim_(enddim)
 {
-  std::map<int, Teuchos::RCP<const DRT::Discretization>> dis_map;
-  dis_map.insert(std::pair<int, Teuchos::RCP<const DRT::Discretization>>(0, dis0));
-  dis_map.insert(std::pair<int, Teuchos::RCP<const DRT::Discretization>>(1, dis1));
+  std::map<int, Teuchos::RCP<const Discret::Discretization>> dis_map;
+  dis_map.insert(std::pair<int, Teuchos::RCP<const Discret::Discretization>>(0, dis0));
+  dis_map.insert(std::pair<int, Teuchos::RCP<const Discret::Discretization>>(1, dis1));
 
   setup(dis_map);
 }
@@ -56,8 +57,8 @@ XFEM::CouplingCommManager::CouplingCommManager(Teuchos::RCP<const DRT::Discretiz
 | constructor (public)                                                         ager 03/2016|
 *-----------------------------------------------------------------------------------------*/
 XFEM::CouplingCommManager::CouplingCommManager(
-    std::map<int, Teuchos::RCP<const DRT::Discretization>> dis, std::string cond_name, int startdim,
-    int enddim)
+    std::map<int, Teuchos::RCP<const Discret::Discretization>> dis, std::string cond_name,
+    int startdim, int enddim)
     : cond_name_(cond_name), startdim_(startdim), enddim_(enddim)
 {
   setup(dis);
@@ -76,7 +77,7 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
   {
     case CouplingCommManager::full_to_full:
     {
-      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mmeb = GetMapExtractor(idxB);
+      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mmeb = GetMapExtractor(idxB);
       Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::rcp(new Epetra_Vector(*mmeb->Map(1), true));
       InsertVector(idxA, vecA, idxB, tmpvec, CouplingCommManager::full_to_partial, false, scale);
       if (!add)
@@ -93,7 +94,7 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
     }
     case CouplingCommManager::partial_to_full:
     {
-      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mmeb = GetMapExtractor(idxB);
+      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mmeb = GetMapExtractor(idxB);
       Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::rcp(new Epetra_Vector(*mmeb->Map(1), true));
       InsertVector(idxA, vecA, idxB, tmpvec, CouplingCommManager::partial_to_partial, false, scale);
       if (!add)
@@ -135,7 +136,7 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
     }
     case CouplingCommManager::partial_to_global:
     {
-      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mme = get_full_map_extractor();
+      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mme = get_full_map_extractor();
       Teuchos::RCP<Epetra_Vector> fullvec = Teuchos::rcp(new Epetra_Vector(*mme->Map(idxB), true));
       InsertVector(idxA, vecA, idxB, fullvec, CouplingCommManager::partial_to_full, false, scale);
       if (!add)
@@ -146,7 +147,7 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
     }
     case CouplingCommManager::full_to_global:
     {
-      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mme = get_full_map_extractor();
+      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mme = get_full_map_extractor();
       Teuchos::RCP<Epetra_Vector> fullvec = Teuchos::rcp(new Epetra_Vector(*mme->Map(idxB), true));
       InsertVector(idxA, vecA, idxB, fullvec, CouplingCommManager::full_to_full, false, scale);
       if (!add)
@@ -165,7 +166,7 @@ void XFEM::CouplingCommManager::InsertVector(const int idxA, Teuchos::RCP<const 
 | //! Insert a Matrix A into Matrix B (choose type of transfer, add or scaling)     ager 03/2016|
 *----------------------------------------------------------------------------------------------*/
 bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
-    const CORE::LINALG::SparseMatrix& matA, int idxB, CORE::LINALG::SparseMatrix& matB,
+    const Core::LinAlg::SparseMatrix& matA, int idxB, Core::LinAlg::SparseMatrix& matB,
     const CouplingCommManager::MatrixTransferType mttype, double scale, bool exactmatch,
     bool addmatrix)
 {
@@ -205,7 +206,8 @@ bool XFEM::CouplingCommManager::InsertMatrix(int transform_id, int idxA,
 /*-----------------------------------------------------------------------------------------*
 | Setup Coupling_Comm_Manager                                                  ager 06/2016|
 *-----------------------------------------------------------------------------------------*/
-void XFEM::CouplingCommManager::setup(std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
+void XFEM::CouplingCommManager::setup(
+    std::map<int, Teuchos::RCP<const Discret::Discretization>> dis)
 {
   if (cond_name_ != "")  // Setup for Communication on Condition
   {
@@ -226,16 +228,16 @@ void XFEM::CouplingCommManager::setup(std::map<int, Teuchos::RCP<const DRT::Disc
 | Setup MultiMapExtractors for all fields                                      ager 03/2016|
 *-----------------------------------------------------------------------------------------*/
 void XFEM::CouplingCommManager::setup_multi_map_extractors(
-    std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
+    std::map<int, Teuchos::RCP<const Discret::Discretization>> dis)
 {
-  for (std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator dit = dis.begin();
+  for (std::map<int, Teuchos::RCP<const Discret::Discretization>>::iterator dit = dis.begin();
        dit != dis.end(); ++dit)
   {
-    Teuchos::RCP<CORE::Conditions::MultiConditionSelector> mcs =
-        Teuchos::rcp(new CORE::Conditions::MultiConditionSelector());
-    mme_[dit->first] = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
+    Teuchos::RCP<Core::Conditions::MultiConditionSelector> mcs =
+        Teuchos::rcp(new Core::Conditions::MultiConditionSelector());
+    mme_[dit->first] = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
     mcs->AddSelector(Teuchos::rcp(
-        new CORE::Conditions::NDimConditionSelector(*dit->second, cond_name_, startdim_, enddim_)));
+        new Core::Conditions::NDimConditionSelector(*dit->second, cond_name_, startdim_, enddim_)));
     mcs->SetupExtractor(*dit->second, *dit->second->dof_row_map(), *mme_[dit->first]);
   }
 }
@@ -244,7 +246,7 @@ void XFEM::CouplingCommManager::setup_multi_map_extractors(
 | Setup MultiMapExtractors for all fields                                      ager 03/2016|
 *-----------------------------------------------------------------------------------------*/
 void XFEM::CouplingCommManager::setup_full_map_extractors(
-    std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
+    std::map<int, Teuchos::RCP<const Discret::Discretization>> dis)
 {
   if (dis.size() < 2)
     FOUR_C_THROW(
@@ -252,21 +254,21 @@ void XFEM::CouplingCommManager::setup_full_map_extractors(
         "vel "
         "<==> Fluid vel&pres)");
 
-  for (std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator dit = dis.begin();
+  for (std::map<int, Teuchos::RCP<const Discret::Discretization>>::iterator dit = dis.begin();
        dit != dis.end(); ++dit)
   {
-    Teuchos::RCP<CORE::LINALG::MapExtractor> me = Teuchos::rcp(new CORE::LINALG::MapExtractor());
+    Teuchos::RCP<Core::LinAlg::MapExtractor> me = Teuchos::rcp(new Core::LinAlg::MapExtractor());
     if (static_cast<std::size_t>(dit->first) < dis.size() - 1)
     {
-      Teuchos::RCP<CORE::ADAPTER::Coupling> coup = get_coupling(dit->first, dit->first + 1);
+      Teuchos::RCP<Core::Adapter::Coupling> coup = get_coupling(dit->first, dit->first + 1);
       me->Setup(*dit->second->dof_row_map(), coup->MasterDofMap(),
-          CORE::LINALG::SplitMap(*dit->second->dof_row_map(), *coup->MasterDofMap()));
+          Core::LinAlg::SplitMap(*dit->second->dof_row_map(), *coup->MasterDofMap()));
     }
     else
     {
-      Teuchos::RCP<CORE::ADAPTER::Coupling> coup = get_coupling(dit->first - 1, dit->first);
+      Teuchos::RCP<Core::Adapter::Coupling> coup = get_coupling(dit->first - 1, dit->first);
       me->Setup(*dit->second->dof_row_map(), coup->SlaveDofMap(),
-          CORE::LINALG::SplitMap(*dit->second->dof_row_map(), *coup->SlaveDofMap()));
+          Core::LinAlg::SplitMap(*dit->second->dof_row_map(), *coup->SlaveDofMap()));
     }
     mme_[dit->first] = me;
   }
@@ -277,15 +279,15 @@ void XFEM::CouplingCommManager::setup_full_map_extractors(
 | Setup Couplings between different discretizations with the same condition on in  -- ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
 void XFEM::CouplingCommManager::setup_couplings(
-    std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
+    std::map<int, Teuchos::RCP<const Discret::Discretization>> dis)
 {
   if (dis.size() < 2) return;
 
-  for (std::map<int, Teuchos::RCP<CORE::LINALG::MultiMapExtractor>>::iterator mmealpha =
+  for (std::map<int, Teuchos::RCP<Core::LinAlg::MultiMapExtractor>>::iterator mmealpha =
            mme_.begin();
        mmealpha != mme_.end(); ++mmealpha)
   {
-    for (std::map<int, Teuchos::RCP<CORE::LINALG::MultiMapExtractor>>::iterator mmebeta =
+    for (std::map<int, Teuchos::RCP<Core::LinAlg::MultiMapExtractor>>::iterator mmebeta =
              mme_.begin();
          mmebeta != mme_.end(); ++mmebeta)
     {
@@ -294,13 +296,13 @@ void XFEM::CouplingCommManager::setup_couplings(
 
       std::pair<int, int> key = std::pair<int, int>((*mmealpha).first, (*mmebeta).first);
 
-      coup_[key] = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+      coup_[key] = Teuchos::rcp(new Core::Adapter::Coupling());
 
-      std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator alphadis =
+      std::map<int, Teuchos::RCP<const Discret::Discretization>>::iterator alphadis =
           dis.find((*mmealpha).first);
       if (alphadis == dis.end())
         FOUR_C_THROW("Couldn't find discretization for key %d", (*mmealpha).first);
-      std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator betadis =
+      std::map<int, Teuchos::RCP<const Discret::Discretization>>::iterator betadis =
           dis.find((*mmebeta).first);
       if (betadis == dis.end())
         FOUR_C_THROW("Couldn't find discretization for key %d", (*mmebeta).first);
@@ -316,7 +318,7 @@ void XFEM::CouplingCommManager::setup_couplings(
 | Setup Couplings between different discretizations full coupling                  -- ager 07/2016|
 *------------------------------------------------------------------------------------------------*/
 void XFEM::CouplingCommManager::setup_full_couplings(
-    std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
+    std::map<int, Teuchos::RCP<const Discret::Discretization>> dis)
 {
   if (dis.size() < 2) return;
 
@@ -328,11 +330,13 @@ void XFEM::CouplingCommManager::setup_full_couplings(
 
       std::pair<int, int> key = std::pair<int, int>(idx_a, idx_b);
 
-      coup_[key] = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+      coup_[key] = Teuchos::rcp(new Core::Adapter::Coupling());
 
-      std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator alphadis = dis.find(idx_a);
+      std::map<int, Teuchos::RCP<const Discret::Discretization>>::iterator alphadis =
+          dis.find(idx_a);
       if (alphadis == dis.end()) FOUR_C_THROW("Couldn't find discretization for key %d", idx_a);
-      std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator betadis = dis.find(idx_b);
+      std::map<int, Teuchos::RCP<const Discret::Discretization>>::iterator betadis =
+          dis.find(idx_b);
       if (betadis == dis.end()) FOUR_C_THROW("Couldn't find discretization for key %d", idx_b);
 
       coup_[key]->setup_coupling(*(*alphadis).second, *(*betadis).second,
@@ -347,34 +351,34 @@ void XFEM::CouplingCommManager::setup_full_couplings(
 | Setup Full Extractor of all involved discretisations                                ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
 void XFEM::CouplingCommManager::setup_full_extractor(
-    std::map<int, Teuchos::RCP<const DRT::Discretization>> dis)
+    std::map<int, Teuchos::RCP<const Discret::Discretization>> dis)
 {
   if (dis.size() < 2) return;
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
-  for (std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator dit = dis.begin();
+  for (std::map<int, Teuchos::RCP<const Discret::Discretization>>::iterator dit = dis.begin();
        dit != dis.end(); ++dit)
   {
     maps.push_back(Teuchos::rcp(new Epetra_Map(*(*dit).second->dof_row_map())));
   }
 
-  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
-  fullextractor_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*fullmap, maps));
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
+  fullextractor_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*fullmap, maps));
 }
 
 /*------------------------------------------------------------------------------------------------*
 | Get Coupling Converter between Discret A and B                                      ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::ADAPTER::CouplingConverter> XFEM::CouplingCommManager::get_coupling_converter(
+Teuchos::RCP<Core::Adapter::CouplingConverter> XFEM::CouplingCommManager::get_coupling_converter(
     int idxA, int idxB)
 {
   if (idxA < idxB)
   {
-    return Teuchos::rcp(new CORE::ADAPTER::CouplingMasterConverter(*get_coupling(idxA, idxB)));
+    return Teuchos::rcp(new Core::Adapter::CouplingMasterConverter(*get_coupling(idxA, idxB)));
   }
   else if (idxA > idxB)
   {
-    return Teuchos::rcp(new CORE::ADAPTER::CouplingSlaveConverter(*get_coupling(idxB, idxA)));
+    return Teuchos::rcp(new Core::Adapter::CouplingSlaveConverter(*get_coupling(idxB, idxA)));
   }
   else
   {
@@ -389,12 +393,12 @@ Teuchos::RCP<CORE::ADAPTER::CouplingConverter> XFEM::CouplingCommManager::get_co
 /*------------------------------------------------------------------------------------------------*
 | Get Coupling Object between Discret A and B                                      -- ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::ADAPTER::Coupling> XFEM::CouplingCommManager::get_coupling(int idxA, int idxB)
+Teuchos::RCP<Core::Adapter::Coupling> XFEM::CouplingCommManager::get_coupling(int idxA, int idxB)
 {
   if (idxA < idxB)
   {
     std::pair<int, int> key = std::pair<int, int>(idxA, idxB);
-    std::map<std::pair<int, int>, Teuchos::RCP<CORE::ADAPTER::Coupling>>::iterator cit =
+    std::map<std::pair<int, int>, Teuchos::RCP<Core::Adapter::Coupling>>::iterator cit =
         coup_.find(key);
     if (cit != coup_.end())
     {
@@ -417,10 +421,10 @@ Teuchos::RCP<CORE::ADAPTER::Coupling> XFEM::CouplingCommManager::get_coupling(in
 /*------------------------------------------------------------------------------------------------*
 | Get Transform Object between Discret A and B                                        ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform> XFEM::CouplingCommManager::get_transform(
+Teuchos::RCP<Core::LinAlg::MatrixLogicalSplitAndTransform> XFEM::CouplingCommManager::get_transform(
     int transform_id)
 {
-  std::map<int, Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform>>::iterator tit =
+  std::map<int, Teuchos::RCP<Core::LinAlg::MatrixLogicalSplitAndTransform>>::iterator tit =
       transform_.find(transform_id);
   if (tit != transform_.end() && transform_id != -1)
   {
@@ -428,7 +432,7 @@ Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform> XFEM::CouplingCommMan
   }
   else
   {
-    transform_[transform_id] = Teuchos::rcp(new CORE::LINALG::MatrixLogicalSplitAndTransform());
+    transform_[transform_id] = Teuchos::rcp(new Core::LinAlg::MatrixLogicalSplitAndTransform());
     return transform_[transform_id];
   }
   return Teuchos::null;
@@ -437,9 +441,9 @@ Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform> XFEM::CouplingCommMan
 /*------------------------------------------------------------------------------------------------*
 | Get Map Extractor Object for idx                                                    ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::MultiMapExtractor> XFEM::CouplingCommManager::GetMapExtractor(int idx)
+Teuchos::RCP<Core::LinAlg::MultiMapExtractor> XFEM::CouplingCommManager::GetMapExtractor(int idx)
 {
-  std::map<int, Teuchos::RCP<CORE::LINALG::MultiMapExtractor>>::iterator mit = mme_.find(idx);
+  std::map<int, Teuchos::RCP<Core::LinAlg::MultiMapExtractor>>::iterator mit = mme_.find(idx);
   if (mit != mme_.end())
   {
     return mit->second;

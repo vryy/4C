@@ -32,10 +32,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-CONTACT::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele)
-    : MORTAR::Coupling3d(idiscret, dim, quad, params, sele, mele),
-      stype_(CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+CONTACT::Coupling3d::Coupling3d(Discret::Discretization& idiscret, int dim, bool quad,
+    Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele)
+    : Mortar::Coupling3d(idiscret, dim, quad, params, sele, mele),
+      stype_(Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   // empty constructor
 
@@ -52,14 +52,14 @@ bool CONTACT::Coupling3d::auxiliary_plane()
   // for tri3, tri6 elements: xi = eta = 1/3
   double loccenter[2];
 
-  CORE::FE::CellType dt = SlaveIntElement().Shape();
-  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
+  Core::FE::CellType dt = SlaveIntElement().Shape();
+  if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
   {
     loccenter[0] = 1.0 / 3.0;
     loccenter[1] = 1.0 / 3.0;
   }
-  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
-           dt == CORE::FE::CellType::quad9)
+  else if (dt == Core::FE::CellType::quad4 || dt == Core::FE::CellType::quad8 ||
+           dt == Core::FE::CellType::quad9)
   {
     loccenter[0] = 0.0;
     loccenter[1] = 0.0;
@@ -87,7 +87,7 @@ bool CONTACT::Coupling3d::auxiliary_plane()
 /*----------------------------------------------------------------------*
  |  Integration of cells (3D)                                 popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -95,8 +95,8 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
   /* the current integration cell of the slave / master element pair    */
   /**********************************************************************/
 
-  static const INPAR::MORTAR::AlgorithmType algo =
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+  static const Inpar::Mortar::AlgorithmType algo =
+      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   // do nothing if there are no cells
   if (Cells().size() == 0) return false;
@@ -119,11 +119,11 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     // (hassegment_ of a slave node is true if ANY segment/cell
     // is integrated that contributes to this slave node)
     int nnodes = SlaveIntElement().num_node();
-    CORE::Nodes::Node** mynodes = SlaveIntElement().Nodes();
+    Core::Nodes::Node** mynodes = SlaveIntElement().Nodes();
     if (!mynodes) FOUR_C_THROW("Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
-      MORTAR::Node* mycnode = dynamic_cast<MORTAR::Node*>(mynodes[k]);
+      Mortar::Node* mycnode = dynamic_cast<Mortar::Node*>(mynodes[k]);
       if (!mycnode) FOUR_C_THROW("Null pointer!");
       mycnode->HasSegment() = true;
     }
@@ -136,7 +136,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     // (3) quadratic element(s) involved -> linear LM interpolation
     // (4) quadratic element(s) involved -> piecew. linear LM interpolation
     // *******************************************************************
-    INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
+    Inpar::Mortar::LagMultQuad lmtype = LagMultQuad();
 
     // *******************************************************************
     // case (1)
@@ -150,21 +150,21 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     // cases (2) and (3)
     // *******************************************************************
     else if ((Quad() and
-                 (lmtype == INPAR::MORTAR::lagmult_quad or lmtype == INPAR::MORTAR::lagmult_lin or
-                     lmtype == INPAR::MORTAR::lagmult_const)) or
-             algo == INPAR::MORTAR::algorithm_gpts)
+                 (lmtype == Inpar::Mortar::lagmult_quad or lmtype == Inpar::Mortar::lagmult_lin or
+                     lmtype == Inpar::Mortar::lagmult_const)) or
+             algo == Inpar::Mortar::algorithm_gpts)
     {
       // check for standard shape functions and quadratic LM interpolation
-      if (ShapeFcn() == INPAR::MORTAR::shape_standard && lmtype == INPAR::MORTAR::lagmult_quad &&
-          (SlaveElement().Shape() == CORE::FE::CellType::quad8 ||
-              SlaveElement().Shape() == CORE::FE::CellType::tri6))
+      if (ShapeFcn() == Inpar::Mortar::shape_standard && lmtype == Inpar::Mortar::lagmult_quad &&
+          (SlaveElement().Shape() == Core::FE::CellType::quad8 ||
+              SlaveElement().Shape() == Core::FE::CellType::tri6))
         FOUR_C_THROW(
             "Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for "
             "quad9");
 
       // dynamic_cast to make sure to pass in IntElement&
-      MORTAR::IntElement& sintref = dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
-      MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
+      Mortar::IntElement& sintref = dynamic_cast<Mortar::IntElement&>(SlaveIntElement());
+      Mortar::IntElement& mintref = dynamic_cast<Mortar::IntElement&>(MasterIntElement());
 
       // call integrator
       integrator->integrate_deriv_cell3_d_aux_plane_quad(
@@ -174,18 +174,18 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     // *******************************************************************
     // case (4)
     // *******************************************************************
-    else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin)
+    else if (Quad() && lmtype == Inpar::Mortar::lagmult_pwlin)
     {
       // check for dual shape functions
-      if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
-          ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+      if (ShapeFcn() == Inpar::Mortar::shape_dual ||
+          ShapeFcn() == Inpar::Mortar::shape_petrovgalerkin)
         FOUR_C_THROW(
             "Piecewise linear LM interpolation not yet implemented for DUAL 3D quadratic "
             "contact");
 
       // dynamic_cast to make sure to pass in IntElement&
-      MORTAR::IntElement& sintref = dynamic_cast<MORTAR::IntElement&>(SlaveIntElement());
-      MORTAR::IntElement& mintref = dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
+      Mortar::IntElement& sintref = dynamic_cast<Mortar::IntElement&>(SlaveIntElement());
+      Mortar::IntElement& mintref = dynamic_cast<Mortar::IntElement&>(MasterIntElement());
 
       // call integrator
       integrator->integrate_deriv_cell3_d_aux_plane_quad(
@@ -195,7 +195,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
     // *******************************************************************
     // undefined case
     // *******************************************************************
-    else if (Quad() && lmtype == INPAR::MORTAR::lagmult_undefined)
+    else if (Quad() && lmtype == Inpar::Mortar::lagmult_undefined)
     {
       FOUR_C_THROW(
           "Lagrange multiplier interpolation for quadratic elements undefined\n"
@@ -218,7 +218,7 @@ bool CONTACT::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterf
  |  Linearization of clip polygon vertices (3D)               popp 02/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3d::VertexLinearization(
-    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex,
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
     std::map<int, double>& projpar, bool printderiv)
 {
   // linearize all aux.plane slave and master nodes only ONCE
@@ -231,10 +231,10 @@ bool CONTACT::Coupling3d::VertexLinearization(
   const int nmrows = MasterIntElement().num_node();
 
   // prepare storage for slave and master linearizations
-  std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> linsnodes(
-      nsrows, std::vector<CORE::GEN::Pairedvector<int, double>>(3, 3 * SlaveElement().num_node()));
-  std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> linmnodes(
-      nmrows, std::vector<CORE::GEN::Pairedvector<int, double>>(
+  std::vector<std::vector<Core::Gen::Pairedvector<int, double>>> linsnodes(
+      nsrows, std::vector<Core::Gen::Pairedvector<int, double>>(3, 3 * SlaveElement().num_node()));
+  std::vector<std::vector<Core::Gen::Pairedvector<int, double>>> linmnodes(
+      nmrows, std::vector<Core::Gen::Pairedvector<int, double>>(
                   3, 3 * SlaveElement().num_node() + 3 * MasterElement().num_node()));
 
   // compute slave linearizations (nsrows)
@@ -250,11 +250,11 @@ bool CONTACT::Coupling3d::VertexLinearization(
   for (int i = 0; i < (int)Clip().size(); ++i)
   {
     // references to current vertex and its linearization
-    MORTAR::Vertex& currv = Clip()[i];
-    std::vector<CORE::GEN::Pairedvector<int, double>>& currlin = linvertex[i];
+    Mortar::Vertex& currv = Clip()[i];
+    std::vector<Core::Gen::Pairedvector<int, double>>& currlin = linvertex[i];
 
     // decision on vertex type (slave, projmaster, linclip)
-    if (currv.v_type() == MORTAR::Vertex::slave)
+    if (currv.v_type() == Mortar::Vertex::slave)
     {
       // get corresponding slave id
       int sid = currv.Nodeids()[0];
@@ -273,7 +273,7 @@ bool CONTACT::Coupling3d::VertexLinearization(
       // get the correct slave node linearization
       currlin = linsnodes[k];
     }
-    else if (currv.v_type() == MORTAR::Vertex::projmaster)
+    else if (currv.v_type() == Mortar::Vertex::projmaster)
     {
       // get corresponding master id
       int mid = currv.Nodeids()[0];
@@ -292,7 +292,7 @@ bool CONTACT::Coupling3d::VertexLinearization(
       // get the correct master node linearization
       currlin = linmnodes[k];
     }
-    else if (currv.v_type() == MORTAR::Vertex::lineclip)
+    else if (currv.v_type() == Mortar::Vertex::lineclip)
     {
       // get references to the two slave vertices
       int sindex1 = -1;
@@ -305,8 +305,8 @@ bool CONTACT::Coupling3d::VertexLinearization(
       if (sindex1 < 0 || sindex2 < 0 || sindex1 == sindex2)
         FOUR_C_THROW("Lineclip linearization: (S) Something went wrong!");
 
-      MORTAR::Vertex* sv1 = &slave_vertices()[sindex1];
-      MORTAR::Vertex* sv2 = &slave_vertices()[sindex2];
+      Mortar::Vertex* sv1 = &slave_vertices()[sindex1];
+      Mortar::Vertex* sv2 = &slave_vertices()[sindex2];
 
       // get references to the two master vertices
       int mindex1 = -1;
@@ -319,8 +319,8 @@ bool CONTACT::Coupling3d::VertexLinearization(
       if (mindex1 < 0 || mindex2 < 0 || mindex1 == mindex2)
         FOUR_C_THROW("Lineclip linearization: (M) Something went wrong!");
 
-      MORTAR::Vertex* mv1 = &master_vertices()[mindex1];
-      MORTAR::Vertex* mv2 = &master_vertices()[mindex2];
+      Mortar::Vertex* mv1 = &master_vertices()[mindex1];
+      Mortar::Vertex* mv2 = &master_vertices()[mindex2];
 
       // do lineclip vertex linearization
       lineclip_vertex_linearization(currv, currlin, sv1, sv2, mv1, mv2, linsnodes, linmnodes);
@@ -337,21 +337,21 @@ bool CONTACT::Coupling3d::VertexLinearization(
  |  Linearization of slave vertex (3D) AuxPlane               popp 03/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3d::slave_vertex_linearization(
-    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin)
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& currlin)
 {
   // we first need the slave element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
   // for tri3, tri6 elements: xi = eta = 1/3
   double scxi[2];
 
-  CORE::FE::CellType dt = SlaveIntElement().Shape();
-  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
+  Core::FE::CellType dt = SlaveIntElement().Shape();
+  if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
   {
     scxi[0] = 1.0 / 3.0;
     scxi[1] = 1.0 / 3.0;
   }
-  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
-           dt == CORE::FE::CellType::quad9)
+  else if (dt == Core::FE::CellType::quad4 || dt == Core::FE::CellType::quad8 ||
+           dt == Core::FE::CellType::quad9)
   {
     scxi[0] = 0.0;
     scxi[1] = 0.0;
@@ -361,28 +361,28 @@ bool CONTACT::Coupling3d::slave_vertex_linearization(
 
   // evlauate shape functions + derivatives at scxi
   const int nrow = SlaveIntElement().num_node();
-  CORE::LINALG::SerialDenseVector sval(nrow);
-  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
+  Core::LinAlg::SerialDenseVector sval(nrow);
+  Core::LinAlg::SerialDenseMatrix sderiv(nrow, 2, true);
   SlaveIntElement().evaluate_shape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
-  CORE::Nodes::Node** snodes = SlaveIntElement().Nodes();
-  std::vector<MORTAR::Node*> smrtrnodes(nrow);
+  Core::Nodes::Node** snodes = SlaveIntElement().Nodes();
+  std::vector<Mortar::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<Mortar::Node*>(snodes[i]);
     if (!smrtrnodes[i]) FOUR_C_THROW("slave_vertex_linearization: Null pointer!");
   }
 
   // linearization of the IntEle spatial coords
-  std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> nodelin(0);
-  MORTAR::IntElement* sIntEle = dynamic_cast<MORTAR::IntElement*>(&SlaveIntElement());
+  std::vector<std::vector<Core::Gen::Pairedvector<int, double>>> nodelin(0);
+  Mortar::IntElement* sIntEle = dynamic_cast<Mortar::IntElement*>(&SlaveIntElement());
 
   if (sIntEle == nullptr)
   {
     // resize the linearizations
-    nodelin.resize(nrow, std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
+    nodelin.resize(nrow, std::vector<Core::Gen::Pairedvector<int, double>>(3, 1));
 
     // loop over all intEle nodes
     for (int in = 0; in < nrow; ++in)
@@ -392,9 +392,9 @@ bool CONTACT::Coupling3d::slave_vertex_linearization(
     sIntEle->NodeLinearization(nodelin);
 
   // map iterator
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator
       _CI;  // linearization of element center Auxc()
-  std ::vector<CORE::GEN::Pairedvector<int, double>> linauxc(
+  std ::vector<Core::Gen::Pairedvector<int, double>> linauxc(
       3, SlaveElement().num_node());  // assume 3 dofs per node
 
   for (int i = 0; i < nrow; ++i)
@@ -403,13 +403,13 @@ bool CONTACT::Coupling3d::slave_vertex_linearization(
         linauxc[dim][p->first] = sval[i] * p->second;
 
   // linearization of element normal Auxn()
-  std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
+  std::vector<Core::Gen::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
 
   // put everything together for slave vertex linearization
   // loop over all vertices
   for (int i = 0; i < SlaveIntElement().num_node(); ++i)
   {
-    MORTAR::Node* mrtrsnode = dynamic_cast<MORTAR::Node*>(SlaveIntElement().Nodes()[i]);
+    Mortar::Node* mrtrsnode = dynamic_cast<Mortar::Node*>(SlaveIntElement().Nodes()[i]);
     if (!mrtrsnode) FOUR_C_THROW("cast to mortar node failed");
 
     // (1) slave node coordinates part
@@ -476,21 +476,21 @@ bool CONTACT::Coupling3d::slave_vertex_linearization(
  |  Linearization of slave vertex (3D) AuxPlane               popp 03/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3d::master_vertex_linearization(
-    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& currlin)
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& currlin)
 {
   // we first need the slave element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
   // for tri3, tri6 elements: xi = eta = 1/3
   double scxi[2];
 
-  CORE::FE::CellType dt = SlaveIntElement().Shape();
-  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
+  Core::FE::CellType dt = SlaveIntElement().Shape();
+  if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
   {
     scxi[0] = 1.0 / 3.0;
     scxi[1] = 1.0 / 3.0;
   }
-  else if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
-           dt == CORE::FE::CellType::quad9)
+  else if (dt == Core::FE::CellType::quad4 || dt == Core::FE::CellType::quad8 ||
+           dt == Core::FE::CellType::quad9)
   {
     scxi[0] = 0.0;
     scxi[1] = 0.0;
@@ -500,28 +500,28 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
 
   // evlauate shape functions + derivatives at scxi
   int nrow = SlaveIntElement().num_node();
-  CORE::LINALG::SerialDenseVector sval(nrow);
-  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
+  Core::LinAlg::SerialDenseVector sval(nrow);
+  Core::LinAlg::SerialDenseMatrix sderiv(nrow, 2, true);
   SlaveIntElement().evaluate_shape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
-  CORE::Nodes::Node** snodes = SlaveIntElement().Nodes();
-  std::vector<MORTAR::Node*> smrtrnodes(nrow);
+  Core::Nodes::Node** snodes = SlaveIntElement().Nodes();
+  std::vector<Mortar::Node*> smrtrnodes(nrow);
 
   for (int i = 0; i < nrow; ++i)
   {
-    smrtrnodes[i] = dynamic_cast<MORTAR::Node*>(snodes[i]);
+    smrtrnodes[i] = dynamic_cast<Mortar::Node*>(snodes[i]);
     if (!smrtrnodes[i]) FOUR_C_THROW("master_vertex_linearization: Null pointer!");
   }
 
   // linearization of the SlaveIntEle spatial coords
-  std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> snodelin(0);
-  MORTAR::IntElement* sIntEle = dynamic_cast<MORTAR::IntElement*>(&SlaveIntElement());
+  std::vector<std::vector<Core::Gen::Pairedvector<int, double>>> snodelin(0);
+  Mortar::IntElement* sIntEle = dynamic_cast<Mortar::IntElement*>(&SlaveIntElement());
 
   if (sIntEle == nullptr)
   {
     // resize the linearizations
-    snodelin.resize(nrow, std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
+    snodelin.resize(nrow, std::vector<Core::Gen::Pairedvector<int, double>>(3, 1));
 
     // loop over all intEle nodes
     for (int in = 0; in < nrow; ++in)
@@ -531,9 +531,9 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
     sIntEle->NodeLinearization(snodelin);
 
   // map iterator
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator
       _CI;  // linearization of element center Auxc()
-  std ::vector<CORE::GEN::Pairedvector<int, double>> linauxc(
+  std ::vector<Core::Gen::Pairedvector<int, double>> linauxc(
       3, SlaveElement().num_node());  // assume 3 dofs per node
 
   for (int i = 0; i < nrow; ++i)
@@ -542,22 +542,22 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
         linauxc[dim][p->first] = sval[i] * p->second;
 
   // linearization of element normal Auxn()
-  std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
+  std::vector<Core::Gen::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
 
   // linearization of the MasterIntEle spatial coords
-  std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> mnodelin(0);
-  MORTAR::IntElement* mIntEle = dynamic_cast<MORTAR::IntElement*>(&MasterIntElement());
+  std::vector<std::vector<Core::Gen::Pairedvector<int, double>>> mnodelin(0);
+  Mortar::IntElement* mIntEle = dynamic_cast<Mortar::IntElement*>(&MasterIntElement());
 
   if (mIntEle == nullptr)
   {
     // resize the linearizations
     mnodelin.resize(
-        MasterIntElement().num_node(), std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
+        MasterIntElement().num_node(), std::vector<Core::Gen::Pairedvector<int, double>>(3, 1));
 
     // loop over all intEle nodes
     for (int in = 0; in < MasterIntElement().num_node(); ++in)
     {
-      MORTAR::Node* mrtrmnode = dynamic_cast<MORTAR::Node*>(MasterIntElement().Nodes()[in]);
+      Mortar::Node* mrtrmnode = dynamic_cast<Mortar::Node*>(MasterIntElement().Nodes()[in]);
       if (mrtrmnode == nullptr) FOUR_C_THROW("dynamic cast to mortar node went wrong");
 
       for (int dim = 0; dim < 3; ++dim) mnodelin[in][dim][mrtrmnode->Dofs()[dim]] += 1.;
@@ -570,7 +570,7 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
   // loop over all vertices
   for (int i = 0; i < MasterIntElement().num_node(); ++i)
   {
-    MORTAR::Node* mrtrmnode = dynamic_cast<MORTAR::Node*>(MasterIntElement().Nodes()[i]);
+    Mortar::Node* mrtrmnode = dynamic_cast<Mortar::Node*>(MasterIntElement().Nodes()[i]);
     if (!mrtrmnode) FOUR_C_THROW("cast to mortar node failed");
 
     // (1) slave node coordinates part
@@ -636,18 +636,18 @@ bool CONTACT::Coupling3d::master_vertex_linearization(
 /*----------------------------------------------------------------------*
  |  Linearization of lineclip vertex (3D) AuxPlane            popp 03/09|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling3d::lineclip_vertex_linearization(MORTAR::Vertex& currv,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& currlin, MORTAR::Vertex* sv1,
-    MORTAR::Vertex* sv2, MORTAR::Vertex* mv1, MORTAR::Vertex* mv2,
-    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linsnodes,
-    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linmnodes)
+bool CONTACT::Coupling3d::lineclip_vertex_linearization(Mortar::Vertex& currv,
+    std::vector<Core::Gen::Pairedvector<int, double>>& currlin, Mortar::Vertex* sv1,
+    Mortar::Vertex* sv2, Mortar::Vertex* mv1, Mortar::Vertex* mv2,
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linsnodes,
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linmnodes)
 {
   // number of nodes
   const int nsrows = SlaveIntElement().num_node();
   const int nmrows = MasterIntElement().num_node();
 
   // iterator
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
   // compute factor Z
   std::array<double, 3> crossZ = {0.0, 0.0, 0.0};
@@ -735,7 +735,7 @@ bool CONTACT::Coupling3d::lineclip_vertex_linearization(MORTAR::Vertex& currv,
   if (k == nsrows) FOUR_C_THROW("Slave Id1 not found!");
 
   // get the correct slave node linearization
-  std::vector<CORE::GEN::Pairedvector<int, double>>& slavelin0 = linsnodes[k];
+  std::vector<Core::Gen::Pairedvector<int, double>>& slavelin0 = linsnodes[k];
 
   k = 0;
   while (k < nsrows)
@@ -748,7 +748,7 @@ bool CONTACT::Coupling3d::lineclip_vertex_linearization(MORTAR::Vertex& currv,
   if (k == nsrows) FOUR_C_THROW("Slave Id2 not found!");
 
   // get the correct slave node linearization
-  std::vector<CORE::GEN::Pairedvector<int, double>>& slavelin1 = linsnodes[k];
+  std::vector<Core::Gen::Pairedvector<int, double>>& slavelin1 = linsnodes[k];
 
   // master vertex linearization (2x)
   int mid1 = currv.Nodeids()[2];
@@ -766,7 +766,7 @@ bool CONTACT::Coupling3d::lineclip_vertex_linearization(MORTAR::Vertex& currv,
   if (k == nmrows) FOUR_C_THROW("Master Id1 not found!");
 
   // get the correct master node linearization
-  std::vector<CORE::GEN::Pairedvector<int, double>>& masterlin0 = linmnodes[k];
+  std::vector<Core::Gen::Pairedvector<int, double>>& masterlin0 = linmnodes[k];
 
   k = 0;
   while (k < nmrows)
@@ -779,10 +779,10 @@ bool CONTACT::Coupling3d::lineclip_vertex_linearization(MORTAR::Vertex& currv,
   if (k == nmrows) FOUR_C_THROW("Master Id2 not found!");
 
   // get the correct master node linearization
-  std::vector<CORE::GEN::Pairedvector<int, double>>& masterlin1 = linmnodes[k];
+  std::vector<Core::Gen::Pairedvector<int, double>>& masterlin1 = linmnodes[k];
 
   // linearization of element normal Auxn()
-  std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
+  std::vector<Core::Gen::Pairedvector<int, double>>& linauxn = get_deriv_auxn();
 
   const double ZNfac = Zfac / Nfac;
   const double ZNNfac = Zfac / (Nfac * Nfac);
@@ -843,12 +843,12 @@ bool CONTACT::Coupling3d::lineclip_vertex_linearization(MORTAR::Vertex& currv,
  |  Linearization of clip polygon center (3D)                 popp 02/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3d::CenterLinearization(
-    const std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& linvertex,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& lincenter)
+    const std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& linvertex,
+    std::vector<Core::Gen::Pairedvector<int, double>>& lincenter)
 {
   // preparations
   int clipsize = (int)(Clip().size());
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
 
   // number of nodes
   const int nsrows = SlaveElement().num_node();
@@ -906,7 +906,7 @@ bool CONTACT::Coupling3d::CenterLinearization(
   double n = fac;
 
   // first we need linearization of node averaged center
-  std::vector<CORE::GEN::Pairedvector<int, double>> linnac(3, 3 * (nsrows + nmrows));
+  std::vector<Core::Gen::Pairedvector<int, double>> linnac(3, 3 * (nsrows + nmrows));
   const double clipsizeinv = 1.0 / clipsize;
 
   for (int i = 0; i < clipsize; ++i)
@@ -950,7 +950,7 @@ bool CONTACT::Coupling3d::CenterLinearization(
     double Atri = 0.5 * sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
 
     // linearization of cross
-    std::vector<CORE::GEN::Pairedvector<int, double>> lincross(3, 3 * (nsrows + nmrows));
+    std::vector<Core::Gen::Pairedvector<int, double>> lincross(3, 3 * (nsrows + nmrows));
 
     for (CI p = linvertex[i][0].begin(); p != linvertex[i][0].end(); ++p)
     {
@@ -1007,7 +1007,7 @@ bool CONTACT::Coupling3d::CenterLinearization(
     }
 
     // linearization of triangle area
-    CORE::GEN::Pairedvector<int, double> linarea(3 * (nsrows + nmrows));
+    Core::Gen::Pairedvector<int, double> linarea(3 * (nsrows + nmrows));
     for (int k = 0; k < 3; ++k)
       for (CI p = lincross[k].begin(); p != lincross[k].end(); ++p)
         linarea[p->first] += 0.25 / Atri * cross[k] * (p->second);
@@ -1040,9 +1040,9 @@ bool CONTACT::Coupling3d::CenterLinearization(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-CONTACT::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::Element& sele, MORTAR::Element& mele,
-    MORTAR::IntElement& sintele, MORTAR::IntElement& mintele)
+CONTACT::Coupling3dQuad::Coupling3dQuad(Discret::Discretization& idiscret, int dim, bool quad,
+    Teuchos::ParameterList& params, Mortar::Element& sele, Mortar::Element& mele,
+    Mortar::IntElement& sintele, Mortar::IntElement& mintele)
     : CONTACT::Coupling3d(idiscret, dim, quad, params, sele, mele),
       sintele_(sintele),
       mintele_(mintele)
@@ -1061,8 +1061,8 @@ const Epetra_Comm& CONTACT::Coupling3dManager::Comm() const { return idiscret_.C
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-CONTACT::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
-    Teuchos::ParameterList& params, MORTAR::Element* sele, std::vector<MORTAR::Element*> mele)
+CONTACT::Coupling3dManager::Coupling3dManager(Discret::Discretization& idiscret, int dim, bool quad,
+    Teuchos::ParameterList& params, Mortar::Element* sele, std::vector<Mortar::Element*> mele)
     : idiscret_(idiscret),
       dim_(dim),
       quad_(quad),
@@ -1070,7 +1070,7 @@ CONTACT::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int
       sele_(sele),
       mele_(mele),
       ncells_(0),
-      stype_(CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY"))
+      stype_(Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(params, "STRATEGY"))
 {
   return;
 }
@@ -1078,10 +1078,10 @@ CONTACT::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret, int
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/13|
  *----------------------------------------------------------------------*/
-CONTACT::Coupling3dQuadManager::Coupling3dQuadManager(DRT::Discretization& idiscret, int dim,
-    bool quad, Teuchos::ParameterList& params, MORTAR::Element* sele,
-    std::vector<MORTAR::Element*> mele)
-    : MORTAR::Coupling3dQuadManager(idiscret, dim, quad, params, sele, mele),
+CONTACT::Coupling3dQuadManager::Coupling3dQuadManager(Discret::Discretization& idiscret, int dim,
+    bool quad, Teuchos::ParameterList& params, Mortar::Element* sele,
+    std::vector<Mortar::Element*> mele)
+    : Mortar::Coupling3dQuadManager(idiscret, dim, quad, params, sele, mele),
       CONTACT::Coupling3dManager(idiscret, dim, quad, params, sele, mele),
       smintpairs_(-1),
       intcells_(-1)
@@ -1094,14 +1094,14 @@ CONTACT::Coupling3dQuadManager::Coupling3dQuadManager(DRT::Discretization& idisc
  |  Evaluate mortar coupling pairs                            popp 03/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Coupling3dManager::integrate_coupling(
-    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   // get algorithm
-  INPAR::MORTAR::AlgorithmType algo =
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+  Inpar::Mortar::AlgorithmType algo =
+      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   // prepare linearizations
-  if (algo == INPAR::MORTAR::algorithm_mortar)
+  if (algo == Inpar::Mortar::algorithm_mortar)
     dynamic_cast<CONTACT::Element&>(SlaveElement()).PrepareDderiv(MasterElements());
 
   // decide which type of numerical integration scheme
@@ -1109,7 +1109,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
   //**********************************************************************
   // STANDARD INTEGRATION (SEGMENTS)
   //**********************************************************************
-  if (IntType() == INPAR::MORTAR::inttype_segments)
+  if (IntType() == Inpar::Mortar::inttype_segments)
   {
     // loop over all master elements associated with this slave element
     for (int m = 0; m < (int)MasterElements().size(); ++m)
@@ -1134,14 +1134,14 @@ void CONTACT::Coupling3dManager::integrate_coupling(
     for (int i = 0; i < (int)Coupling().size(); ++i)
     {
       // temporary m-matrix linearization of this slave/master pair
-      if (algo == INPAR::MORTAR::algorithm_mortar)
+      if (algo == Inpar::Mortar::algorithm_mortar)
         dynamic_cast<CONTACT::Element&>(SlaveElement()).PrepareMderiv(MasterElements(), i);
 
       // integrate cells
       Coupling()[i]->IntegrateCells(mparams_ptr);
 
       // assemble m-matrix for this slave/master pair
-      if (algo == INPAR::MORTAR::algorithm_mortar)
+      if (algo == Inpar::Mortar::algorithm_mortar)
         dynamic_cast<CONTACT::Element&>(SlaveElement())
             .assemble_mderiv_to_nodes(Coupling()[i]->MasterElement());
     }
@@ -1150,8 +1150,8 @@ void CONTACT::Coupling3dManager::integrate_coupling(
   //**********************************************************************
   // ELEMENT-BASED INTEGRATION
   //**********************************************************************
-  else if (IntType() == INPAR::MORTAR::inttype_elements ||
-           IntType() == INPAR::MORTAR::inttype_elements_BS)
+  else if (IntType() == Inpar::Mortar::inttype_elements ||
+           IntType() == Inpar::Mortar::inttype_elements_BS)
   {
     if ((int)MasterElements().size() == 0) return;
 
@@ -1162,7 +1162,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
 
       /* find all feasible master elements (this check is inherent in the
        * segment based integration)                    hiermeier 04/16 */
-      std::vector<MORTAR::Element*> feasible_ma_eles(MasterElements().size());
+      std::vector<Mortar::Element*> feasible_ma_eles(MasterElements().size());
       find_feasible_master_elements(feasible_ma_eles);
 
       // create an integrator instance with correct num_gp and Dim
@@ -1174,7 +1174,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
           SlaveElement(), feasible_ma_eles, &boundary_ele, &proj, Comm(), mparams_ptr);
 
 
-      if (IntType() == INPAR::MORTAR::inttype_elements_BS)
+      if (IntType() == Inpar::Mortar::inttype_elements_BS)
       {
         if (boundary_ele == true)
         {
@@ -1199,14 +1199,14 @@ void CONTACT::Coupling3dManager::integrate_coupling(
           for (int i = 0; i < (int)Coupling().size(); ++i)
           {
             // temporary m-matrix linearization of this slave/master pair
-            if (algo == INPAR::MORTAR::algorithm_mortar)
+            if (algo == Inpar::Mortar::algorithm_mortar)
               dynamic_cast<CONTACT::Element&>(SlaveElement()).PrepareMderiv(MasterElements(), i);
 
             // integrate cells
             Coupling()[i]->IntegrateCells(mparams_ptr);
 
             // assemble m-matrix for this slave/master pair
-            if (algo == INPAR::MORTAR::algorithm_mortar)
+            if (algo == Inpar::Mortar::algorithm_mortar)
               dynamic_cast<CONTACT::Element&>(SlaveElement())
                   .assemble_mderiv_to_nodes(Coupling()[i]->MasterElement());
           }
@@ -1233,10 +1233,10 @@ void CONTACT::Coupling3dManager::integrate_coupling(
   SlaveElement().MoData().ResetDerivDualShape();
 
   // assemble element contribution to nodes
-  if (algo == INPAR::MORTAR::algorithm_mortar)
+  if (algo == Inpar::Mortar::algorithm_mortar)
   {
-    bool dual = (ShapeFcn() == INPAR::MORTAR::shape_dual) ||
-                (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin);
+    bool dual = (ShapeFcn() == Inpar::Mortar::shape_dual) ||
+                (ShapeFcn() == Inpar::Mortar::shape_petrovgalerkin);
     dynamic_cast<CONTACT::Element&>(SlaveElement()).assemble_dderiv_to_nodes(dual);
   }
   return;
@@ -1247,16 +1247,16 @@ void CONTACT::Coupling3dManager::integrate_coupling(
  |  Evaluate coupling pairs                                 farah 09/14 |
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3dManager::evaluate_coupling(
-    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
-  INPAR::MORTAR::AlgorithmType algo =
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+  Inpar::Mortar::AlgorithmType algo =
+      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact
   //*********************************
-  if (algo == INPAR::MORTAR::algorithm_mortar || algo == INPAR::MORTAR::algorithm_gpts)
+  if (algo == Inpar::Mortar::algorithm_mortar || algo == Inpar::Mortar::algorithm_gpts)
     integrate_coupling(mparams_ptr);
 
   //*********************************
@@ -1266,7 +1266,7 @@ bool CONTACT::Coupling3dManager::evaluate_coupling(
     FOUR_C_THROW("chose contact algorithm not supported!");
 
   // interpolate temperatures in TSI case
-  if (imortar_.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
+  if (imortar_.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
     NTS::Interpolator(imortar_, dim_).interpolate_master_temp3_d(SlaveElement(), MasterElements());
 
   return true;
@@ -1277,14 +1277,14 @@ bool CONTACT::Coupling3dManager::evaluate_coupling(
  |  Evaluate mortar coupling pairs for Quad-coupling         farah 09/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Coupling3dQuadManager::integrate_coupling(
-    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   // get algorithm type
-  INPAR::MORTAR::AlgorithmType algo = CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(
-      MORTAR::Coupling3dQuadManager::imortar_, "ALGORITHM");
+  Inpar::Mortar::AlgorithmType algo = Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(
+      Mortar::Coupling3dQuadManager::imortar_, "ALGORITHM");
 
   // prepare linearizations
-  if (algo == INPAR::MORTAR::algorithm_mortar)
+  if (algo == Inpar::Mortar::algorithm_mortar)
     dynamic_cast<CONTACT::Element&>(SlaveElement()).PrepareDderiv(MasterElements());
 
   // decide which type of numerical integration scheme
@@ -1292,20 +1292,20 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
   //**********************************************************************
   // STANDARD INTEGRATION (SEGMENTS)
   //**********************************************************************
-  if (IntType() == INPAR::MORTAR::inttype_segments)
+  if (IntType() == Inpar::Mortar::inttype_segments)
   {
     Coupling().resize(0);
 
-    // build linear integration elements from quadratic MORTAR::Elements
-    std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
-    std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement>>> mauxelements(
+    // build linear integration elements from quadratic Mortar::Elements
+    std::vector<Teuchos::RCP<Mortar::IntElement>> sauxelements(0);
+    std::vector<std::vector<Teuchos::RCP<Mortar::IntElement>>> mauxelements(
         MasterElements().size());
     split_int_elements(SlaveElement(), sauxelements);
 
     // loop over all master elements associated with this slave element
     for (int m = 0; m < (int)MasterElements().size(); ++m)
     {
-      // build linear integration elements from quadratic MORTAR::Elements
+      // build linear integration elements from quadratic Mortar::Elements
       mauxelements[m].resize(0);
       split_int_elements(*MasterElements()[m], mauxelements[m]);
 
@@ -1331,13 +1331,13 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
     // integrate cells
     for (int i = 0; i < (int)Coupling().size(); ++i)
     {
-      if (algo == INPAR::MORTAR::algorithm_mortar)
+      if (algo == Inpar::Mortar::algorithm_mortar)
         dynamic_cast<CONTACT::Element&>(SlaveElement())
             .PrepareMderiv(MasterElements(), i % mauxelements.size());
 
       Coupling()[i]->IntegrateCells(mparams_ptr);
 
-      if (algo == INPAR::MORTAR::algorithm_mortar)
+      if (algo == Inpar::Mortar::algorithm_mortar)
         dynamic_cast<CONTACT::Element&>(SlaveElement())
             .assemble_mderiv_to_nodes(Coupling()[i]->MasterElement());
     }
@@ -1346,14 +1346,14 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
   //**********************************************************************
-  else if (IntType() == INPAR::MORTAR::inttype_elements ||
-           IntType() == INPAR::MORTAR::inttype_elements_BS)
+  else if (IntType() == Inpar::Mortar::inttype_elements ||
+           IntType() == Inpar::Mortar::inttype_elements_BS)
   {
     // check for standard shape functions and quadratic LM interpolation
-    if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-        LagMultQuad() == INPAR::MORTAR::lagmult_quad &&
-        (SlaveElement().Shape() == CORE::FE::CellType::quad8 ||
-            SlaveElement().Shape() == CORE::FE::CellType::tri6))
+    if (ShapeFcn() == Inpar::Mortar::shape_standard &&
+        LagMultQuad() == Inpar::Mortar::lagmult_quad &&
+        (SlaveElement().Shape() == Core::FE::CellType::quad8 ||
+            SlaveElement().Shape() == Core::FE::CellType::tri6))
       FOUR_C_THROW(
           "Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for "
           "quad9");
@@ -1371,22 +1371,22 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
     integrator->IntegrateDerivEle3D(
         SlaveElement(), MasterElements(), &boundary_ele, &proj, Comm(), mparams_ptr);
 
-    if (IntType() == INPAR::MORTAR::inttype_elements_BS)
+    if (IntType() == Inpar::Mortar::inttype_elements_BS)
     {
       if (boundary_ele == true)
       {
         Coupling().resize(0);
 
-        // build linear integration elements from quadratic MORTAR::Elements
-        std::vector<Teuchos::RCP<MORTAR::IntElement>> sauxelements(0);
-        std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement>>> mauxelements(
+        // build linear integration elements from quadratic Mortar::Elements
+        std::vector<Teuchos::RCP<Mortar::IntElement>> sauxelements(0);
+        std::vector<std::vector<Teuchos::RCP<Mortar::IntElement>>> mauxelements(
             MasterElements().size());
         split_int_elements(SlaveElement(), sauxelements);
 
         // loop over all master elements associated with this slave element
         for (int m = 0; m < (int)MasterElements().size(); ++m)
         {
-          // build linear integration elements from quadratic MORTAR::Elements
+          // build linear integration elements from quadratic Mortar::Elements
           mauxelements[m].resize(0);
           split_int_elements(*MasterElements()[m], mauxelements[m]);
 
@@ -1411,11 +1411,11 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
 
         for (int i = 0; i < (int)Coupling().size(); ++i)
         {
-          if (algo == INPAR::MORTAR::algorithm_mortar)
+          if (algo == Inpar::Mortar::algorithm_mortar)
             dynamic_cast<CONTACT::Element&>(SlaveElement())
                 .PrepareMderiv(MasterElements(), i % mauxelements.size());
           Coupling()[i]->IntegrateCells(mparams_ptr);
-          if (algo == INPAR::MORTAR::algorithm_mortar)
+          if (algo == Inpar::Mortar::algorithm_mortar)
             dynamic_cast<CONTACT::Element&>(SlaveElement())
                 .assemble_mderiv_to_nodes(Coupling()[i]->MasterElement());
         }
@@ -1434,10 +1434,10 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
   SlaveElement().MoData().ResetDualShape();
   SlaveElement().MoData().ResetDerivDualShape();
 
-  if (algo == INPAR::MORTAR::algorithm_mortar)
+  if (algo == Inpar::Mortar::algorithm_mortar)
     dynamic_cast<CONTACT::Element&>(SlaveElement())
-        .assemble_dderiv_to_nodes((ShapeFcn() == INPAR::MORTAR::shape_dual ||
-                                   ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin));
+        .assemble_dderiv_to_nodes((ShapeFcn() == Inpar::Mortar::shape_dual ||
+                                   ShapeFcn() == Inpar::Mortar::shape_petrovgalerkin));
 
   return;
 }
@@ -1447,16 +1447,16 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
  |  Evaluate coupling pairs for Quad-coupling                farah 01/13|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3dQuadManager::evaluate_coupling(
-    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
-  INPAR::MORTAR::AlgorithmType algo =
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM");
+  Inpar::Mortar::AlgorithmType algo =
+      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(Params(), "ALGORITHM");
 
   //*********************************
   // Mortar Contact
   //*********************************
-  if (algo == INPAR::MORTAR::algorithm_mortar || algo == INPAR::MORTAR::algorithm_gpts)
+  if (algo == Inpar::Mortar::algorithm_mortar || algo == Inpar::Mortar::algorithm_gpts)
     integrate_coupling(mparams_ptr);
 
   //*********************************
@@ -1474,23 +1474,23 @@ bool CONTACT::Coupling3dQuadManager::evaluate_coupling(
  *----------------------------------------------------------------------*/
 void CONTACT::Coupling3dManager::consist_dual_shape()
 {
-  static const INPAR::MORTAR::AlgorithmType algo =
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
-  if (algo != INPAR::MORTAR::algorithm_mortar) return;
+  static const Inpar::Mortar::AlgorithmType algo =
+      Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
+  if (algo != Inpar::Mortar::algorithm_mortar) return;
 
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
-  INPAR::MORTAR::ConsistentDualType consistent =
-      CORE::UTILS::IntegralValue<INPAR::MORTAR::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent == INPAR::MORTAR::consistent_none)
+  Inpar::Mortar::ConsistentDualType consistent =
+      Core::UTILS::IntegralValue<Inpar::Mortar::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT");
+  if (ShapeFcn() == Inpar::Mortar::shape_standard || consistent == Inpar::Mortar::consistent_none)
     return;
 
   // Consistent modification not yet checked for constant LM interpolation
-  if (Quad() == true && LagMultQuad() == INPAR::MORTAR::lagmult_const &&
-      consistent != INPAR::MORTAR::consistent_none)
+  if (Quad() == true && LagMultQuad() == Inpar::Mortar::lagmult_const &&
+      consistent != Inpar::Mortar::consistent_none)
     FOUR_C_THROW("Consistent dual shape functions not yet checked for constant LM interpolation!");
 
-  if (consistent == INPAR::MORTAR::consistent_all && IntType() != INPAR::MORTAR::inttype_segments)
+  if (consistent == Inpar::Mortar::consistent_all && IntType() != Inpar::Mortar::inttype_segments)
     FOUR_C_THROW(
         "Consistent dual shape functions on all elements only for segment-based "
         "integration");
@@ -1508,25 +1508,25 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
   // For Lagrange FE, the calculation of dual shape functions for fully
   // projecting elements is ok, since the integrands are polynomials (except
   // the jacobian)
-  if (IntType() == INPAR::MORTAR::inttype_segments &&
-      consistent == INPAR::MORTAR::consistent_boundary)
+  if (IntType() == Inpar::Mortar::inttype_segments &&
+      consistent == Inpar::Mortar::consistent_boundary)
   {
     // check, if slave element is fully projecting
     // for convenience, we don't check each quadrature point
     // but only the element nodes. This usually does the job.
     bool boundary_ele = false;
 
-    CORE::FE::CellType dt_s = SlaveElement().Shape();
+    Core::FE::CellType dt_s = SlaveElement().Shape();
 
     double sxi_test[2] = {0.0, 0.0};
     double alpha_test = 0.0;
     bool proj_test = false;
 
-    CORE::Nodes::Node** mynodes_test = SlaveElement().Nodes();
+    Core::Nodes::Node** mynodes_test = SlaveElement().Nodes();
     if (!mynodes_test) FOUR_C_THROW("has_proj_status: Null pointer!");
 
-    if (dt_s == CORE::FE::CellType::quad4 || dt_s == CORE::FE::CellType::quad8 ||
-        dt_s == CORE::FE::CellType::nurbs9)
+    if (dt_s == Core::FE::CellType::quad4 || dt_s == Core::FE::CellType::quad8 ||
+        dt_s == Core::FE::CellType::nurbs9)
     {
       for (int s_test = 0; s_test < SlaveElement().num_node(); ++s_test)
       {
@@ -1575,19 +1575,19 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         for (int bs_test = 0; bs_test < (int)Coupling().size(); ++bs_test)
         {
           double mxi_test[2] = {0.0, 0.0};
-          MORTAR::Projector::Impl(SlaveElement(), Coupling()[bs_test]->MasterIntElement())
+          Mortar::Projector::Impl(SlaveElement(), Coupling()[bs_test]->MasterIntElement())
               ->ProjectGaussPoint3D(SlaveElement(), sxi_test,
                   Coupling()[bs_test]->MasterIntElement(), mxi_test, alpha_test);
 
-          CORE::FE::CellType dt = Coupling()[bs_test]->MasterIntElement().Shape();
-          if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
-              dt == CORE::FE::CellType::quad9)
+          Core::FE::CellType dt = Coupling()[bs_test]->MasterIntElement().Shape();
+          if (dt == Core::FE::CellType::quad4 || dt == Core::FE::CellType::quad8 ||
+              dt == Core::FE::CellType::quad9)
           {
             if (mxi_test[0] >= -1.0 && mxi_test[1] >= -1.0 && mxi_test[0] <= 1.0 &&
                 mxi_test[1] <= 1.0)
               proj_test = true;
           }
-          else if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
+          else if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
           {
             if (mxi_test[0] >= 0.0 && mxi_test[1] >= 0.0 && mxi_test[0] <= 1.0 &&
                 mxi_test[1] <= 1.0 && mxi_test[0] + mxi_test[1] <= 1.0)
@@ -1602,7 +1602,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
       }
     }
 
-    else if (dt_s == CORE::FE::CellType::tri3 || dt_s == CORE::FE::CellType::tri6)
+    else if (dt_s == Core::FE::CellType::tri3 || dt_s == Core::FE::CellType::tri6)
     {
       for (int s_test = 0; s_test < SlaveElement().num_node(); ++s_test)
       {
@@ -1641,19 +1641,19 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         for (int bs_test = 0; bs_test < (int)Coupling().size(); ++bs_test)
         {
           double mxi_test[2] = {0.0, 0.0};
-          MORTAR::Projector::Impl(SlaveElement(), Coupling()[bs_test]->MasterElement())
+          Mortar::Projector::Impl(SlaveElement(), Coupling()[bs_test]->MasterElement())
               ->ProjectGaussPoint3D(SlaveElement(), sxi_test, Coupling()[bs_test]->MasterElement(),
                   mxi_test, alpha_test);
 
-          CORE::FE::CellType dt = Coupling()[bs_test]->MasterElement().Shape();
-          if (dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
-              dt == CORE::FE::CellType::quad9)
+          Core::FE::CellType dt = Coupling()[bs_test]->MasterElement().Shape();
+          if (dt == Core::FE::CellType::quad4 || dt == Core::FE::CellType::quad8 ||
+              dt == Core::FE::CellType::quad9)
           {
             if (mxi_test[0] >= -1.0 && mxi_test[1] >= -1.0 && mxi_test[0] <= 1.0 &&
                 mxi_test[1] <= 1.0)
               proj_test = true;
           }
-          else if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
+          else if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
           {
             if (mxi_test[0] >= 0.0 && mxi_test[1] >= 0.0 && mxi_test[0] <= 1.0 &&
                 mxi_test[1] <= 1.0 && mxi_test[0] + mxi_test[1] <= 1.0)
@@ -1692,27 +1692,27 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
 
   // Dual shape functions coefficient matrix and linearization
   SlaveElement().MoData().DerivDualShape() =
-      Teuchos::rcp(new CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
-          (nnodes + mnodes) * ndof, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
-  CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
+      Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
+          (nnodes + mnodes) * ndof, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes)));
+  Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& derivae =
       *(SlaveElement().MoData().DerivDualShape());
 
   // various variables
   double detg = 0.0;
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
   // initialize matrices de and me
-  CORE::LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
-  CORE::LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
+  Core::LinAlg::SerialDenseMatrix me(nnodes, nnodes, true);
+  Core::LinAlg::SerialDenseMatrix de(nnodes, nnodes, true);
 
-  CORE::GEN::Pairedvector<int, CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>> derivde_new(
+  Core::Gen::Pairedvector<int, Core::LinAlg::Matrix<max_nnodes + 1, max_nnodes>> derivde_new(
       (nnodes + mnodes) * ndof);
 
   // two-dim arrays of maps for linearization of me/de
-  std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> derivme(
-      nnodes, std::vector<CORE::GEN::Pairedvector<int, double>>(nnodes, (nnodes + mnodes) * ndof));
-  std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> derivde(
-      nnodes, std::vector<CORE::GEN::Pairedvector<int, double>>(nnodes, (nnodes + mnodes) * ndof));
+  std::vector<std::vector<Core::Gen::Pairedvector<int, double>>> derivme(
+      nnodes, std::vector<Core::Gen::Pairedvector<int, double>>(nnodes, (nnodes + mnodes) * ndof));
+  std::vector<std::vector<Core::Gen::Pairedvector<int, double>>> derivde(
+      nnodes, std::vector<Core::Gen::Pairedvector<int, double>>(nnodes, (nnodes + mnodes) * ndof));
 
   double A_tot = 0.;
   // loop over all master elements associated with this slave element
@@ -1728,7 +1728,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
     // loop over all integration cells
     for (int c = 0; c < (int)Coupling()[m]->Cells().size(); ++c)
     {
-      Teuchos::RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
+      Teuchos::RCP<Mortar::IntCell> currcell = Coupling()[m]->Cells()[c];
 
       A_tot += currcell->Area();
 
@@ -1739,12 +1739,12 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
       // there's nothing wrong about other shapes, but as long as they are all
       // tri3 we can perform the jacobian calculation ( and its deriv) outside
       // the Gauss point loop
-      if (currcell->Shape() != CORE::FE::CellType::tri3)
+      if (currcell->Shape() != Core::FE::CellType::tri3)
         FOUR_C_THROW("only tri3 integration cells at the moment. See comment in the code");
 
       detg = currcell->Jacobian();
       // directional derivative of cell Jacobian
-      CORE::GEN::Pairedvector<int, double> derivjaccell((nnodes + ncol) * ndof);
+      Core::Gen::Pairedvector<int, double> derivjaccell((nnodes + ncol) * ndof);
       currcell->DerivJacobian(derivjaccell);
 
       for (int gp = 0; gp < integrator.nGP(); ++gp)
@@ -1760,7 +1760,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         // project Gauss point onto slave integration element
         double sxi[2] = {0.0, 0.0};
         double sprojalpha = 0.0;
-        MORTAR::Projector::Impl(Coupling()[m]->SlaveIntElement())
+        Mortar::Projector::Impl(Coupling()[m]->SlaveIntElement())
             ->project_gauss_point_auxn3_d(
                 globgp, Coupling()[m]->Auxn(), Coupling()[m]->SlaveIntElement(), sxi, sprojalpha);
 
@@ -1769,10 +1769,10 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         double psprojalpha = 0.0;
         if (Quad())
         {
-          MORTAR::IntElement* ie =
-              dynamic_cast<MORTAR::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
+          Mortar::IntElement* ie =
+              dynamic_cast<Mortar::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
           if (ie == nullptr) FOUR_C_THROW("nullptr pointer");
-          MORTAR::Projector::Impl(SlaveElement())
+          Mortar::Projector::Impl(SlaveElement())
               ->project_gauss_point_auxn3_d(
                   globgp, Coupling()[m]->Auxn(), SlaveElement(), psxi, psprojalpha);
           // ie->MapToParent(sxi,psxi); // old way of doing it via affine map... wrong (popp
@@ -1782,27 +1782,27 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
           for (int i = 0; i < 2; ++i) psxi[i] = sxi[i];
 
         // create vector for shape function evaluation
-        CORE::LINALG::SerialDenseVector sval(nnodes);
-        CORE::LINALG::SerialDenseMatrix sderiv(nnodes, 2, true);
+        Core::LinAlg::SerialDenseVector sval(nnodes);
+        Core::LinAlg::SerialDenseMatrix sderiv(nnodes, 2, true);
 
         // evaluate trace space shape functions at Gauss point
-        if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
+        if (LagMultQuad() == Inpar::Mortar::lagmult_lin)
           SlaveElement().evaluate_shape_lag_mult_lin(
-              INPAR::MORTAR::shape_standard, psxi, sval, sderiv, nnodes);
+              Inpar::Mortar::shape_standard, psxi, sval, sderiv, nnodes);
         else
           SlaveElement().evaluate_shape(psxi, sval, sderiv, nnodes);
 
         // additional data for contact calculation (i.e. incl. derivative of dual shape functions
         // coefficient matrix) GP slave coordinate derivatives
-        std::vector<CORE::GEN::Pairedvector<int, double>> dsxigp(2, (nnodes + ncol) * ndof);
+        std::vector<Core::Gen::Pairedvector<int, double>> dsxigp(2, (nnodes + ncol) * ndof);
         // GP slave coordinate derivatives
-        std::vector<CORE::GEN::Pairedvector<int, double>> dpsxigp(2, (nnodes + ncol) * ndof);
+        std::vector<Core::Gen::Pairedvector<int, double>> dpsxigp(2, (nnodes + ncol) * ndof);
         // global GP coordinate derivative on integration element
-        CORE::GEN::Pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp((nnodes + ncol) * ndof);
+        Core::Gen::Pairedvector<int, Core::LinAlg::Matrix<3, 1>> lingp((nnodes + ncol) * ndof);
 
         // compute global GP coordinate derivative
-        static CORE::LINALG::Matrix<3, 1> svalcell;
-        static CORE::LINALG::Matrix<3, 2> sderivcell;
+        static Core::LinAlg::Matrix<3, 1> svalcell;
+        static Core::LinAlg::Matrix<3, 2> sderivcell;
         currcell->evaluate_shape(eta, svalcell, sderivcell);
 
         for (int v = 0; v < 3; ++v)
@@ -1818,8 +1818,8 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         // compute GP slave coordinate derivatives (parent element)
         if (Quad())
         {
-          MORTAR::IntElement* ie =
-              dynamic_cast<MORTAR::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
+          Mortar::IntElement* ie =
+              dynamic_cast<Mortar::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
           if (ie == nullptr) FOUR_C_THROW("wtf");
           integrator.DerivXiGP3DAuxPlane(SlaveElement(), psxi, currcell->Auxn(), dpsxigp,
               psprojalpha, currcell->get_deriv_auxn(), lingp);
@@ -1832,7 +1832,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         double fac = 0.;
         for (_CI p = derivjaccell.begin(); p != derivjaccell.end(); ++p)
         {
-          CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
+          Core::LinAlg::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
           const double& ps = p->second;
           for (int j = 0; j < nnodes; ++j)
           {
@@ -1845,7 +1845,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
         for (int i = 0; i < 2; ++i)
           for (_CI p = dpsxigp[i].begin(); p != dpsxigp[i].end(); ++p)
           {
-            CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
+            Core::LinAlg::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
             const double& ps = p->second;
             for (int j = 0; j < nnodes; ++j)
             {
@@ -1885,40 +1885,40 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
 
   // declare dual shape functions coefficient matrix and
   // inverse of matrix M_e
-  CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
-  CORE::LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
+  Core::LinAlg::SerialDenseMatrix ae(nnodes, nnodes, true);
+  Core::LinAlg::SerialDenseMatrix meinv(nnodes, nnodes, true);
 
   // compute matrix A_e and inverse of matrix M_e for
   // linear interpolation of quadratic element
-  if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
+  if (LagMultQuad() == Inpar::Mortar::lagmult_lin)
   {
     // declare and initialize to zero inverse of Matrix M_e
-    CORE::LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
+    Core::LinAlg::SerialDenseMatrix meinv(nnodes, nnodes, true);
 
-    if (SlaveElement().Shape() == CORE::FE::CellType::tri6)
+    if (SlaveElement().Shape() == Core::FE::CellType::tri6)
     {
       // reduce me to non-zero nodes before inverting
-      CORE::LINALG::Matrix<3, 3> melin;
+      Core::LinAlg::Matrix<3, 3> melin;
       for (int j = 0; j < 3; ++j)
         for (int k = 0; k < 3; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
-      CORE::LINALG::Inverse(melin);
+      Core::LinAlg::Inverse(melin);
 
       // re-inflate inverse of melin to full size
       for (int j = 0; j < 3; ++j)
         for (int k = 0; k < 3; ++k) meinv(j, k) = melin(j, k);
     }
-    else if (SlaveElement().Shape() == CORE::FE::CellType::quad8 ||
-             SlaveElement().Shape() == CORE::FE::CellType::quad9)
+    else if (SlaveElement().Shape() == Core::FE::CellType::quad8 ||
+             SlaveElement().Shape() == Core::FE::CellType::quad9)
     {
       // reduce me to non-zero nodes before inverting
-      CORE::LINALG::Matrix<4, 4> melin;
+      Core::LinAlg::Matrix<4, 4> melin;
       for (int j = 0; j < 4; ++j)
         for (int k = 0; k < 4; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
-      CORE::LINALG::Inverse(melin);
+      Core::LinAlg::Inverse(melin);
 
       // re-inflate inverse of melin to full size
       for (int j = 0; j < 4; ++j)
@@ -1928,22 +1928,22 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
       FOUR_C_THROW("incorrect element shape for linear interpolation of quadratic element!");
 
     // get solution matrix with dual parameters
-    CORE::LINALG::multiply(ae, de, meinv);
+    Core::LinAlg::multiply(ae, de, meinv);
   }
   // compute matrix A_e and inverse of matrix M_e for all other cases
   else
-    meinv = CORE::LINALG::InvertAndMultiplyByCholesky(me, de, ae);
+    meinv = Core::LinAlg::InvertAndMultiplyByCholesky(me, de, ae);
 
   // build linearization of ae and store in derivdual
   // (this is done according to a quite complex formula, which
   // we get from the linearization of the biorthogonality condition:
   // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-  typedef CORE::GEN::Pairedvector<int,
-      CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>>::const_iterator _CIM;
+  typedef Core::Gen::Pairedvector<int,
+      Core::LinAlg::Matrix<max_nnodes + 1, max_nnodes>>::const_iterator _CIM;
   for (_CIM p = derivde_new.begin(); p != derivde_new.end(); ++p)
   {
-    CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
-    CORE::LINALG::SerialDenseMatrix& pt = derivae[p->first];
+    Core::LinAlg::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
+    Core::LinAlg::SerialDenseMatrix& pt = derivae[p->first];
     for (int i = 0; i < nnodes; ++i)
       for (int j = 0; j < nnodes; ++j)
       {
@@ -1955,7 +1955,7 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
   }
 
   // store ae matrix in slave element data container
-  SlaveElement().MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
+  SlaveElement().MoData().DualShape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
 
   return;
 }
@@ -1963,15 +1963,15 @@ void CONTACT::Coupling3dManager::consist_dual_shape()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::Coupling3dManager::find_feasible_master_elements(
-    std::vector<MORTAR::Element*>& feasible_ma_eles) const
+    std::vector<Mortar::Element*>& feasible_ma_eles) const
 {
   // feasibility counter
   std::size_t fcount = 0;
   for (std::size_t m = 0; m < MasterElements().size(); ++m)
   {
-    // Build a instance of the MORTAR::Coupling3d object (no linearization needed).
-    Teuchos::RCP<MORTAR::Coupling3d> coup = Teuchos::rcp(
-        new MORTAR::Coupling3d(idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m)));
+    // Build a instance of the Mortar::Coupling3d object (no linearization needed).
+    Teuchos::RCP<Mortar::Coupling3d> coup = Teuchos::rcp(
+        new Mortar::Coupling3d(idiscret_, dim_, false, imortar_, SlaveElement(), MasterElement(m)));
 
     // Building the master element normals and check the angles.
     if (coup->rough_check_orient())

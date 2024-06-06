@@ -22,17 +22,17 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                    vuong 09/14 |
  *---------------------------------------------------------------------*/
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::VOLMORTAR
+namespace Core::VolMortar
 {
   class VolMortarCoupl;
 
@@ -65,17 +65,17 @@ namespace CORE::VOLMORTAR
       virtual ~DefaultMaterialStrategy() = default;
 
       //! assign material of discretization B
-      virtual void AssignMaterial2To1(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
-          CORE::Elements::Element* ele1, const std::vector<int>& ids_2,
-          Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2);
+      virtual void AssignMaterial2To1(const Core::VolMortar::VolMortarCoupl* volmortar,
+          Core::Elements::Element* ele1, const std::vector<int>& ids_2,
+          Teuchos::RCP<Discret::Discretization> dis1, Teuchos::RCP<Discret::Discretization> dis2);
 
       //! assign material of discretization B
-      virtual void AssignMaterial1To2(const CORE::VOLMORTAR::VolMortarCoupl* volmortar,
-          CORE::Elements::Element* ele2, const std::vector<int>& ids_1,
-          Teuchos::RCP<DRT::Discretization> dis1, Teuchos::RCP<DRT::Discretization> dis2);
+      virtual void AssignMaterial1To2(const Core::VolMortar::VolMortarCoupl* volmortar,
+          Core::Elements::Element* ele2, const std::vector<int>& ids_1,
+          Teuchos::RCP<Discret::Discretization> dis1, Teuchos::RCP<Discret::Discretization> dis2);
     };
   }  // namespace UTILS
-}  // namespace CORE::VOLMORTAR
+}  // namespace Core::VolMortar
 
 
 FOUR_C_NAMESPACE_CLOSE

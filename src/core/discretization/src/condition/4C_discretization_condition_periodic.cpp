@@ -38,8 +38,8 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-CORE::Conditions::PeriodicBoundaryConditions::PeriodicBoundaryConditions(
-    Teuchos::RCP<DRT::Discretization> actdis, bool verbose)
+Core::Conditions::PeriodicBoundaryConditions::PeriodicBoundaryConditions(
+    Teuchos::RCP<Discret::Discretization> actdis, bool verbose)
     : discret_(actdis), verbose_(verbose), pbcdofset_(Teuchos::null)
 {
   // get periodic surface boundary conditions
@@ -85,7 +85,7 @@ CORE::Conditions::PeriodicBoundaryConditions::PeriodicBoundaryConditions(
 
   return;
 
-}  // PeriodicBoundaryConditions(Teuchos::RCP<DRT::Discretization> actdis)
+}  // PeriodicBoundaryConditions(Teuchos::RCP<Discret::Discretization> actdis)
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -98,7 +98,7 @@ CORE::Conditions::PeriodicBoundaryConditions::PeriodicBoundaryConditions(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boundary_conditions()
+void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boundary_conditions()
 {
   if (numpbcpairs_ > 0)
   {
@@ -134,7 +134,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
     if (verbose_)
     {
       Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
-          CORE::COMM::toTeuchosComm<int>(discret_->Comm());
+          Core::Communication::toTeuchosComm<int>(discret_->Comm());
       Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
     }
 
@@ -238,7 +238,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_proc()
+void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_proc()
 {
   if (numpbcpairs_ > 0)
   {
@@ -251,8 +251,8 @@ void CORE::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
     std::map<int, std::vector<int>> midtosid;
 
     // pointers to master and slave condition
-    CORE::Conditions::Condition* mastercond = nullptr;
-    CORE::Conditions::Condition* slavecond = nullptr;
+    Core::Conditions::Condition* mastercond = nullptr;
+    Core::Conditions::Condition* slavecond = nullptr;
 
     // global master node Ids and global slave node Ids
     std::vector<int> masternodeids;
@@ -615,7 +615,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_single_pbc(
+void Core::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_single_pbc(
     std::map<int, std::vector<int>>& midtosid, const std::vector<int> masternodeids,
     const std::vector<int> slavenodeids, const std::vector<int> dofsforpbcplane,
     const double rotangle, const double abstol)
@@ -631,7 +631,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_sing
   tm2_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmidoct_));
 
   // build processor local octree
-  auto nodematchingoctree = CORE::COUPLING::NodeMatchingOctree();
+  auto nodematchingoctree = Core::COUPLING::NodeMatchingOctree();
 
   nodematchingoctree.Init(*discret_, masternodeids, maxnodeperleaf, tol);
   nodematchingoctree.Setup();
@@ -655,7 +655,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_sing
   tm3_ref_ = Teuchos::null;
 
   return;
-}  // CORE::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_single_pbc
+}  // Core::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_single_pbc
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -670,7 +670,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_sing
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void CORE::Conditions::PeriodicBoundaryConditions::add_connectivity(
+void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
     std::map<int, std::vector<int>>& midtosid, const int pbcid)
 {
   // the "inverse" mapping of allcoupled(row/col)nodes
@@ -750,10 +750,10 @@ void CORE::Conditions::PeriodicBoundaryConditions::add_connectivity(
         {
           // get id of masternode and the node itself
           masterid = iter->first;
-          CORE::Nodes::Node* actnode = discret_->gNode(masterid);
+          Core::Nodes::Node* actnode = discret_->gNode(masterid);
 
           // get all periodic boundary conditions on this node
-          std::vector<CORE::Conditions::Condition*> thiscond;
+          std::vector<Core::Conditions::Condition*> thiscond;
           actnode->GetCondition("SurfacePeriodic", thiscond);
 
           if (thiscond.empty())
@@ -799,7 +799,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::add_connectivity(
         const int torank = (myrank + 1) % numproc;              // to
         const int fromrank = (myrank + numproc - 1) % numproc;  // from
 
-        CORE::COMM::Exporter exporter(discret_->Comm());
+        Core::Communication::Exporter exporter(discret_->Comm());
 
 
         for (int irobin = 0; irobin < numproc; ++irobin)
@@ -809,24 +809,24 @@ void CORE::Conditions::PeriodicBoundaryConditions::add_connectivity(
 
           // ---- pack data for sending -----
           {
-            CORE::COMM::PackBuffer data;
+            Core::Communication::PackBuffer data;
 
             std::vector<int> mids;
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
                  iter != multiplecouplings.end(); ++iter)
               mids.push_back(iter->first);
 
-            CORE::COMM::ParObject::AddtoPack(data, mids);
+            Core::Communication::ParObject::AddtoPack(data, mids);
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
                  iter != multiplecouplings.end(); ++iter)
-              CORE::COMM::ParObject::AddtoPack(data, iter->second);
+              Core::Communication::ParObject::AddtoPack(data, iter->second);
 
             data.StartPacking();
 
-            CORE::COMM::ParObject::AddtoPack(data, mids);
+            Core::Communication::ParObject::AddtoPack(data, mids);
             for (std::map<int, std::vector<int>>::const_iterator iter = multiplecouplings.begin();
                  iter != multiplecouplings.end(); ++iter)
-              CORE::COMM::ParObject::AddtoPack(data, iter->second);
+              Core::Communication::ParObject::AddtoPack(data, iter->second);
 
             std::swap(sdata, data());
           }
@@ -849,12 +849,12 @@ void CORE::Conditions::PeriodicBoundaryConditions::add_connectivity(
             multiplecouplings.clear();
             size_t pos = 0;
             std::vector<int> mids;
-            CORE::COMM::ParObject::ExtractfromPack(pos, rdata, mids);
+            Core::Communication::ParObject::ExtractfromPack(pos, rdata, mids);
 
             for (std::vector<int>::const_iterator iter = mids.begin(); iter != mids.end(); ++iter)
             {
               std::vector<int> slvs;
-              CORE::COMM::ParObject::ExtractfromPack(pos, rdata, slvs);
+              Core::Communication::ParObject::ExtractfromPack(pos, rdata, slvs);
               multiplecouplings[*iter] = slvs;
             }
           }
@@ -916,7 +916,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::add_connectivity(
   }
 
   return;
-}  // CORE::Conditions::PeriodicBoundaryConditions::add_connectivity
+}  // Core::Conditions::PeriodicBoundaryConditions::add_connectivity
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -930,7 +930,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::add_connectivity(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_coupling()
+void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_coupling()
 {
   // the "inverse" mapping of allcoupled(row/col)nodes
   //       slave node -> his master node (list of size 1)
@@ -970,19 +970,19 @@ void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     // remove all node gids of slave nodes on this proc
 
     // get all periodic boundary conditions on this node
-    std::vector<CORE::Conditions::Condition*> thiscond;
+    std::vector<Core::Conditions::Condition*> thiscond;
 
-    std::vector<CORE::Conditions::Condition*> linecond;
+    std::vector<Core::Conditions::Condition*> linecond;
     discret_->GetCondition("LinePeriodic", linecond);
 
-    for (std::vector<CORE::Conditions::Condition*>::iterator cond = linecond.begin();
+    for (std::vector<Core::Conditions::Condition*>::iterator cond = linecond.begin();
          cond != linecond.end(); ++cond)
     {
       thiscond.push_back(*cond);
     }
-    std::vector<CORE::Conditions::Condition*> surfcond;
+    std::vector<Core::Conditions::Condition*> surfcond;
     discret_->GetCondition("SurfacePeriodic", surfcond);
-    for (std::vector<CORE::Conditions::Condition*>::iterator cond = surfcond.begin();
+    for (std::vector<Core::Conditions::Condition*>::iterator cond = surfcond.begin();
          cond != surfcond.end(); ++cond)
     {
       thiscond.push_back(*cond);
@@ -1013,7 +1013,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
             // erase the coupled nodes from the map --- they are redundant
             allcoupledrownodes_->erase(*idtodel);
 
-            CORE::Nodes::Node* actnode = discret_->gNode(*idtodel);
+            Core::Nodes::Node* actnode = discret_->gNode(*idtodel);
 
             // check for row nodesactnodes ??????????????????
             if (actnode->Owner() != discret_->Comm().MyPID())
@@ -1189,7 +1189,8 @@ void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
     *allcoupledcolnodes_ = (*allcoupledrownodes_);
     {
       // create an exporter
-      CORE::COMM::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
+      Core::Communication::Exporter exportconnectivity(
+          *newrownodemap, *newcolnodemap, discret_->Comm());
 
       // export information on all master->slave couplings (with multiple
       // couplings)
@@ -1241,7 +1242,8 @@ void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
         *allcoupledcolnodes_ = (*allcoupledrownodes_);
 
         // create an exporter
-        CORE::COMM::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
+        Core::Communication::Exporter exportconnectivity(
+            *newrownodemap, *newcolnodemap, discret_->Comm());
 
         // export information on all master->slave couplings (with multiple
         // couplings)
@@ -1284,7 +1286,8 @@ void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       // connectivity
       {
         // create an exporter
-        CORE::COMM::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
+        Core::Communication::Exporter exportconnectivity(
+            *newrownodemap, *newcolnodemap, discret_->Comm());
         // export information on all slave->master couplings (with multiple
         // couplings)
         exportconnectivity.Export(*allcoupledcolnodes_);
@@ -1309,7 +1312,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       // create a new dofset specialisation for periodic boundary conditions
       // the 'true' flag makes sure that the pbc dofset replaces the old
       // dofset also in the static_dofsets_.
-      pbcdofset_ = Teuchos::rcp(new CORE::Dofsets::PBCDofSet(allcoupledcolnodes_));
+      pbcdofset_ = Teuchos::rcp(new Core::DOFSets::PBCDofSet(allcoupledcolnodes_));
       discret_->ReplaceDofSet(0, pbcdofset_, true);
     }
     else
@@ -1336,7 +1339,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
   }
 
   return;
-}  // CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_coupling
+}  // Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_coupling
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1363,26 +1366,26 @@ void CORE::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
+void Core::Conditions::PeriodicBoundaryConditions::balance_load()
 {
   if (discret_->Comm().NumProc() > 1)
   {
     const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
     // weights for graph partition
-    auto node_weights = CORE::LINALG::CreateVector(*noderowmap, true);
+    auto node_weights = Core::LinAlg::CreateVector(*noderowmap, true);
     node_weights->PutScalar(1.0);
 
     // apply weight of special elements
     for (int node_lid = 0; node_lid < noderowmap->NumMyElements(); ++node_lid)
     {
       const int node_gid = noderowmap->GID(node_lid);
-      CORE::Nodes::Node* node = discret_->gNode(node_gid);
+      Core::Nodes::Node* node = discret_->gNode(node_gid);
       if (!node) FOUR_C_THROW("cant find node");
       double weight = 0.0;
 
       // loop over adjacent elements of this node and find element with highest cost
-      CORE::Elements::Element** surrele = node->Elements();
+      Core::Elements::Element** surrele = node->Elements();
       for (int k = 0; k < node->NumElement(); ++k)
         weight = std::max(weight, surrele[k]->EvaluationCost());
 
@@ -1396,7 +1399,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
     {
       const int master_gid = masterslavepair.first;
       // get masternode
-      CORE::Nodes::Node* master = discret_->gNode(master_gid);
+      Core::Nodes::Node* master = discret_->gNode(master_gid);
 
       if (master->Owner() != discret_->Comm().MyPID()) continue;
 
@@ -1426,7 +1429,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
     for (int ele_lid = 0; ele_lid < discret_->NumMyColElements(); ++ele_lid)
     {
       // get the element
-      CORE::Elements::Element* ele = discret_->lColElement(ele_lid);
+      Core::Elements::Element* ele = discret_->lColElement(ele_lid);
 
       // get its nodes and nodeids
       const int num_nodes_per_ele = ele->num_node();
@@ -1458,7 +1461,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
     for (int ele_lid = 0; ele_lid < discret_->NumMyColElements(); ++ele_lid)
     {
       // get the element
-      CORE::Elements::Element* ele = discret_->lColElement(ele_lid);
+      Core::Elements::Element* ele = discret_->lColElement(ele_lid);
 
       // get its nodes and nodeids
       const int num_nodes_per_ele = ele->num_node();
@@ -1540,14 +1543,14 @@ void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
       for (const auto& masterslavepair : *allcoupledcolnodes_)
       {
         // get masternode
-        CORE::Nodes::Node* master = discret_->gNode(masterslavepair.first);
+        Core::Nodes::Node* master = discret_->gNode(masterslavepair.first);
 
         if (master->Owner() != myrank) continue;
 
         // loop slavenodes
         for (int slave_gids : masterslavepair.second)
         {
-          CORE::Nodes::Node* slave = discret_->gNode(slave_gids);
+          Core::Nodes::Node* slave = discret_->gNode(slave_gids);
 
           // -------------------------------------------------------------
           // connections between master and slavenodes are very strong
@@ -1577,7 +1580,7 @@ void CORE::Conditions::PeriodicBoundaryConditions::balance_load()
       Teuchos::RCP<const Epetra_CrsGraph> const_nodegraph(nodegraph);
 
       auto newnodegraph =
-          CORE::REBALANCE::RebalanceGraph(*const_nodegraph, paramlist, node_weights, edge_weights);
+          Core::Rebalance::RebalanceGraph(*const_nodegraph, paramlist, node_weights, edge_weights);
       newnodegraph->OptimizeStorage();
 
       // the rowmap will become the new distribution of nodes

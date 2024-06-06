@@ -28,7 +28,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   /*!
   \brief A class to manage explicit mpi communications
@@ -214,7 +214,7 @@ namespace CORE::COMM
                                 On output, the map has a distribution of
                                 TargetMap().
     */
-    void Export(std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>& data);
+    void Export(std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& data);
 
     /**@}*/
     /*!
@@ -283,7 +283,7 @@ namespace CORE::COMM
     return immediately on the calling processor - even if communcation has not finished yet. The
     double array must not be altered or destroyed as long as the communication might still be in
     progress. This can be tested for using Exporter::Wait and the request handle returned. The
-    receiving processor should call DRT::Exporter::ReceiveAny to receive the message. Note that
+    receiving processor should call Discret::Exporter::ReceiveAny to receive the message. Note that
     messages from one explicit proc to another explicit proc are non-overtaking meaning they will
     arrive in the order they have been sent.
 
@@ -815,34 +815,34 @@ namespace CORE::COMM
     };
 
   };  // class Exporter
-}  // namespace CORE::COMM
+}  // namespace Core::Communication
 
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
 template <typename T>
-void CORE::COMM::Exporter::Export(std::map<int, Teuchos::RCP<T>>& parobjects)
+void Core::Communication::Exporter::Export(std::map<int, Teuchos::RCP<T>>& parobjects)
 {
   ParObjectExporterHelper<T> helper(parobjects);
   generic_export(helper);
 }
 
 template <typename T>
-void CORE::COMM::Exporter::Export(std::map<int, std::vector<T>>& data)
+void Core::Communication::Exporter::Export(std::map<int, std::vector<T>>& data)
 {
   PODVectorExporterHelper<T> helper(data);
   generic_export(helper);
 }
 
 template <typename T>
-void CORE::COMM::Exporter::Export(std::map<int, std::set<T>>& data)
+void Core::Communication::Exporter::Export(std::map<int, std::set<T>>& data)
 {
   PODSetExporterHelper<T> helper(data);
   generic_export(helper);
 }
 
 template <typename T, typename U>
-void CORE::COMM::Exporter::Export(std::map<int, std::map<T, U>>& data)
+void Core::Communication::Exporter::Export(std::map<int, std::map<T, U>>& data)
 {
   PODMapExporterHelper<T, U> helper(data);
   generic_export(helper);

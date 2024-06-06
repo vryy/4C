@@ -28,10 +28,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::PAR::AAAneohooke::AAAneohooke(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::AAAneohooke::AAAneohooke(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata)
 {
-  Epetra_Map dummy_map(1, 1, 0, *(GLOBAL::Problem::Instance()->GetCommunicators()->LocalComm()));
+  Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::Instance()->GetCommunicators()->LocalComm()));
   for (int i = first; i <= last; i++)
   {
     matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
@@ -43,18 +43,18 @@ MAT::PAR::AAAneohooke::AAAneohooke(Teuchos::RCP<CORE::MAT::PAR::Material> matdat
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::AAAneohooke::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::AAAneohooke::create_material()
 {
-  return Teuchos::rcp(new MAT::AAAneohooke(this));
+  return Teuchos::rcp(new Mat::AAAneohooke(this));
 }
 
-MAT::AAAneohookeType MAT::AAAneohookeType::instance_;
+Mat::AAAneohookeType Mat::AAAneohookeType::instance_;
 
 
 
-CORE::COMM::ParObject* MAT::AAAneohookeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::AAAneohookeType::Create(const std::vector<char>& data)
 {
-  MAT::AAAneohooke* aaa = new MAT::AAAneohooke();
+  Mat::AAAneohooke* aaa = new Mat::AAAneohooke();
   aaa->Unpack(data);
   return aaa;
 }
@@ -62,20 +62,20 @@ CORE::COMM::ParObject* MAT::AAAneohookeType::Create(const std::vector<char>& dat
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-MAT::AAAneohooke::AAAneohooke() : params_(nullptr) {}
+Mat::AAAneohooke::AAAneohooke() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   chfoe 03/08 |
  *----------------------------------------------------------------------*/
-MAT::AAAneohooke::AAAneohooke(MAT::PAR::AAAneohooke* params) : params_(params) {}
+Mat::AAAneohooke::AAAneohooke(Mat::PAR::AAAneohooke* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAAneohooke::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::AAAneohooke::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -91,24 +91,24 @@ void MAT::AAAneohooke::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-void MAT::AAAneohooke::Unpack(const std::vector<char>& data)
+void Mat::AAAneohooke::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::AAAneohooke*>(mat);
+        params_ = static_cast<Mat::PAR::AAAneohooke*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -164,14 +164,14 @@ void MAT::AAAneohooke::Unpack(const std::vector<char>& data)
      with nu = 0.45  we have K =  20 alpha
 
  */
-void MAT::AAAneohooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::AAAneohooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID incase we have element specific material parameters
-  //  int eleID = GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+  //  int eleID = Global::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
 
   // material parameters for isochoric part
   const double youngs = params_->GetParameter(params_->young, eleGID);  // Young's modulus
@@ -185,11 +185,11 @@ void MAT::AAAneohooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
-  CORE::LINALG::Matrix<6, 1> identity(true);
+  Core::LinAlg::Matrix<6, 1> identity(true);
   for (int i = 0; i < 3; i++) identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  CORE::LINALG::Matrix<6, 1> rcg(*glstrain);
+  Core::LinAlg::Matrix<6, 1> rcg(*glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -207,7 +207,7 @@ void MAT::AAAneohooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   //--------------------------------------------------------------------------------------
   // invert C
-  CORE::LINALG::Matrix<6, 1> invc(false);
+  Core::LinAlg::Matrix<6, 1> invc(false);
 
   double invdet = 1. / iiinv;
 
@@ -264,7 +264,7 @@ void MAT::AAAneohooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     FOUR_C_THROW("give valid parameter for differentiation");
 
   // contribution: Cinv
-  CORE::LINALG::Matrix<6, 1> pktwoiso(invc);
+  Core::LinAlg::Matrix<6, 1> pktwoiso(invc);
   pktwoiso.Scale(isochor2);
 
   // contribution: I
@@ -276,7 +276,7 @@ void MAT::AAAneohooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   double scalar = komp / beta2 * (1.0 - pow(detf, -beta2));
 
   // initialise PKtwo with volumetric part
-  CORE::LINALG::Matrix<6, 1> pktwovol(invc);
+  Core::LinAlg::Matrix<6, 1> pktwovol(invc);
   pktwovol.Scale(scalar);
 
   // 3rd step: add everything up
@@ -341,8 +341,8 @@ void MAT::AAAneohooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 /*----------------------------------------------------------------------*
  |  calculate strain energy                                hemmler 02/17|
  *----------------------------------------------------------------------*/
-void MAT::AAAneohooke::StrainEnergy(
-    const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+void Mat::AAAneohooke::StrainEnergy(
+    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   // material parameters for isochoric part
   const double youngs = params_->GetParameter(params_->young, eleGID);  // Young's modulus
@@ -355,11 +355,11 @@ void MAT::AAAneohooke::StrainEnergy(
   double komp = (nue != 0.5) ? 2.0 * alpha / (1.0 - 2.0 * nue) : 0.0;  // bulk modulus
 
   // build identity tensor I
-  CORE::LINALG::Matrix<6, 1> identity(true);
+  Core::LinAlg::Matrix<6, 1> identity(true);
   for (int i = 0; i < 3; i++) identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  CORE::LINALG::Matrix<6, 1> rcg(glstrain);
+  Core::LinAlg::Matrix<6, 1> rcg(glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -382,7 +382,7 @@ void MAT::AAAneohooke::StrainEnergy(
 
 
 
-void MAT::AAAneohooke::VisNames(std::map<std::string, int>& names)
+void Mat::AAAneohooke::VisNames(std::map<std::string, int>& names)
 {
   std::string fiber = "beta";
   names[fiber] = 1;  // scalar
@@ -393,7 +393,7 @@ void MAT::AAAneohooke::VisNames(std::map<std::string, int>& names)
 }
 
 
-bool MAT::AAAneohooke::VisData(
+bool Mat::AAAneohooke::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleGID)
 {
   if (name == "beta")
@@ -410,7 +410,7 @@ bool MAT::AAAneohooke::VisData(
   {
     if ((int)data.size() != 1) FOUR_C_THROW("size mismatch");
     // get element lID incase we have element specific material parameters
-    int eleID = GLOBAL::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+    int eleID = Global::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
     data[0] = eleID;
   }
   else

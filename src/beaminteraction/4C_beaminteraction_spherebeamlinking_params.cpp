@@ -36,12 +36,12 @@ BEAMINTERACTION::SphereBeamLinkingParams::SphereBeamLinkingParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalState const& gstate)
+void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TimeInt::BaseDataGlobalState const& gstate)
 {
   issetup_ = false;
 
   const Teuchos::ParameterList& spherebeamlink_params_list =
-      GLOBAL::Problem::Instance()->beam_interaction_params().sublist("SPHERE BEAM LINK");
+      Global::Problem::Instance()->beam_interaction_params().sublist("SPHERE BEAM LINK");
 
   // time step for stochastic events concering crosslinking
   deltatime_ = spherebeamlink_params_list.get<double>("TIMESTEP");
@@ -91,7 +91,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
 
       // store materials
       mat_.push_back(
-          Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(MAT::Factory(matlinkerpertype_[i])));
+          Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(Mat::Factory(matlinkerpertype_[i])));
       if (mat_.back() == Teuchos::null)
         FOUR_C_THROW("Invalid material given for beam sphere link. \n");
     }
@@ -108,7 +108,7 @@ void BEAMINTERACTION::SphereBeamLinkingParams::Init(STR::TIMINT::BaseDataGlobalS
     if (not(std::find(linkertypes_.begin(), linkertypes_.end(), matlinkerpertype_[type_i]) !=
             linkertypes_.end()))
       linkertypes_.push_back(
-          Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(MAT::Factory(matlinkerpertype_[type_i]))
+          Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(Mat::Factory(matlinkerpertype_[type_i]))
               ->LinkerType());
   }
 

@@ -31,23 +31,23 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 /*==========================================================================*/
 
-namespace DRT
+namespace Discret
 {
   class ResultTest;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   class DofSet;
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class SparseMatrix;
@@ -55,9 +55,9 @@ namespace CORE::LINALG
   class BlockSparseMatrixBase;
   class SparseOperator;
   class KrylovProjector;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace ADAPTER
+namespace Adapter
 {
   class ArtNet;
 }
@@ -72,7 +72,7 @@ namespace POROFLUIDMULTIPHASE
    * \brief implicit time integration for porous multiphase flow problems
    */
 
-  class TimIntImpl : public ADAPTER::PoroFluidMultiphase
+  class TimIntImpl : public Adapter::PoroFluidMultiphase
   {
    public:
     /*========================================================================*/
@@ -80,9 +80,9 @@ namespace POROFLUIDMULTIPHASE
     /*========================================================================*/
 
     //! Standard Constructor
-    TimIntImpl(Teuchos::RCP<DRT::Discretization> dis, const int linsolvernumber,
+    TimIntImpl(Teuchos::RCP<Discret::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
 
     //! initialize time integration
@@ -114,7 +114,7 @@ namespace POROFLUIDMULTIPHASE
     void read_restart(int step) override;
 
     /// create result test for porous fluid field
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
     //! finite difference check for system matrix
     void fd_check();
@@ -168,13 +168,13 @@ namespace POROFLUIDMULTIPHASE
     void prepare_system_for_newton_solve();
 
     //! direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
     {
-      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
+      return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
     };
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const override
     {
       return dbcmaps_with_volfracpress_;
     }
@@ -186,7 +186,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const override;
 
     //! return discretization
-    Teuchos::RCP<DRT::Discretization> discretization() const override { return discret_; }
+    Teuchos::RCP<Discret::Discretization> discretization() const override { return discret_; }
 
     //! access dof row map
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) const override;
@@ -195,7 +195,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
 
     //! direct access to block system matrix of artery poro problem
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     //! output solution and restart data to file
     void Output() override;
@@ -232,7 +232,7 @@ namespace POROFLUIDMULTIPHASE
 
     //! set the initial scalar field phi
     virtual void SetInitialField(
-        const INPAR::POROFLUIDMULTIPHASE::InitialField init,  //!< type of initial field
+        const Inpar::POROFLUIDMULTIPHASE::InitialField init,  //!< type of initial field
         const int startfuncno                                 //!< number of spatial function
     );
 
@@ -296,7 +296,7 @@ namespace POROFLUIDMULTIPHASE
     int num_domain_int_functions() const { return num_domainint_funct_; }
 
     //! return the values of the domain integrals
-    Teuchos::RCP<const CORE::LINALG::SerialDenseVector> DomainIntValues() const
+    Teuchos::RCP<const Core::LinAlg::SerialDenseVector> DomainIntValues() const
     {
       return domain_integrals_;
     }
@@ -369,11 +369,11 @@ namespace POROFLUIDMULTIPHASE
 
     //! call elements to calculate fluid coupling matrix with structure and assemble
     void assemble_fluid_struct_coupling_mat(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs) override;
+        Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs) override;
 
     //! call elements to calculate fluid coupling matrix with scatra and assemble
     void assemble_fluid_scatra_coupling_mat(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs) override;
+        Teuchos::RCP<Core::LinAlg::SparseOperator> k_pfs) override;
 
     //! return the right time-scaling-factor for the true residual
     virtual double residual_scaling() const = 0;
@@ -442,7 +442,7 @@ namespace POROFLUIDMULTIPHASE
     virtual void print_convergence_finish_line();
 
     // return arterial network time integrator
-    Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt() override;
+    Teuchos::RCP<Adapter::ArtNet> ArtNetTimInt() override;
 
     /*========================================================================*/
     //! @name Time, time-step and related methods
@@ -458,7 +458,7 @@ namespace POROFLUIDMULTIPHASE
     /*========================================================================*/
 
     //! linear solver
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
 
     //! solver number in input file
     const int linsolvernumber_;
@@ -510,22 +510,22 @@ namespace POROFLUIDMULTIPHASE
     int num_domainint_funct_;
 
     //! values of domain integrals
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> domain_integrals_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> domain_integrals_;
 
     //! flag for error calculation
-    const INPAR::POROFLUIDMULTIPHASE::CalcError calcerr_;
+    const Inpar::POROFLUIDMULTIPHASE::CalcError calcerr_;
 
     //! flag for flux reconstruction
-    const INPAR::POROFLUIDMULTIPHASE::FluxReconstructionMethod fluxrecon_;
+    const Inpar::POROFLUIDMULTIPHASE::FluxReconstructionMethod fluxrecon_;
 
     //! solver number for flux reconstruction
     const int fluxreconsolvernum_;
 
     //! what to do when nonlinear solution fails
-    enum INPAR::POROFLUIDMULTIPHASE::DivContAct divcontype_;
+    enum Inpar::POROFLUIDMULTIPHASE::DivContAct divcontype_;
 
     //! flag for finite difference check
-    const INPAR::POROFLUIDMULTIPHASE::FdCheck fdcheck_;
+    const Inpar::POROFLUIDMULTIPHASE::FdCheck fdcheck_;
 
     //! perturbation magnitude for finite difference check
     const double fdcheckeps_;
@@ -574,9 +574,9 @@ namespace POROFLUIDMULTIPHASE
     const int uprestart_;
 
     // vector norm for residuals
-    enum INPAR::POROFLUIDMULTIPHASE::VectorNorm vectornormfres_;
+    enum Inpar::POROFLUIDMULTIPHASE::VectorNorm vectornormfres_;
     // vector norm for increments
-    enum INPAR::POROFLUIDMULTIPHASE::VectorNorm vectornorminc_;
+    enum Inpar::POROFLUIDMULTIPHASE::VectorNorm vectornorminc_;
 
     //! convergence tolerance for increments
     double ittolres_;
@@ -655,28 +655,28 @@ namespace POROFLUIDMULTIPHASE
     /*========================================================================*/
 
     //! the porous multiphase flow discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! the discretization writer
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
 
     //! system matrix (either sparse matrix or block sparse matrix)
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;
 
     //! maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! maps for extracting Dirichlet and free DOF sets, here the additional dofs have been added
     //! which have to be zeroed out for the volume fraction pressure since it is not defined if the
     //! corresponding volume fraction is equal to zero (or smaller than minvolfrac)
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_with_volfracpress_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_with_volfracpress_;
 
     //! maps for extracting Dirichlet and free DOF sets with additional starting Dirichlet boundary
     //! condition
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_starting_condition_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_starting_condition_;
 
     //! the vector containing body and surface forces
     Teuchos::RCP<Epetra_Vector> neumann_loads_;

@@ -26,15 +26,15 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace INNER
+    }    // namespace Inner
     namespace LineSearch
     {
       class Backtrack : public Generic
@@ -43,7 +43,7 @@ namespace NOX
         //! Constructor
         Backtrack(const Teuchos::RCP<::NOX::GlobalData>& gd,
             const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
-            const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
+            const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> innerTests,
             Teuchos::ParameterList& params);
 
         /// hard reset
@@ -55,7 +55,7 @@ namespace NOX
         bool compute(::NOX::Abstract::Group& newgrp, double& step,
             const ::NOX::Abstract::Vector& dir, const ::NOX::Solver::Generic& s) override;
 
-        NOX::NLN::INNER::StatusTest::StatusType CheckInnerStatus(
+        NOX::Nln::Inner::StatusTest::StatusType CheckInnerStatus(
             const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
             ::NOX::StatusTest::CheckType checkType) const override;
 
@@ -103,7 +103,7 @@ namespace NOX
         Teuchos::RCP<::NOX::MeritFunction::Generic> merit_function_ptr_;
 
         //! Current step pointer, points to the step variable of the
-        //! NOX::NLN::Solver::LineSearchBased class
+        //! NOX::Nln::Solver::LineSearchBased class
         double* step_ptr_;
 
         //! Default step
@@ -116,7 +116,7 @@ namespace NOX
         ::NOX::StatusTest::CheckType check_type_;
 
         //! inner status type
-        NOX::NLN::INNER::StatusTest::StatusType status_;
+        NOX::Nln::Inner::StatusTest::StatusType status_;
 
         //! search direction
         Teuchos::RCP<const ::NOX::Abstract::Vector> search_direction_ptr_;
@@ -125,10 +125,10 @@ namespace NOX
         Teuchos::RCP<::NOX::StatusTest::Generic> outer_tests_ptr_;
 
         //! line search stopping tests
-        Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> inner_tests_ptr_;
+        Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> inner_tests_ptr_;
       };
     }  // namespace LineSearch
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

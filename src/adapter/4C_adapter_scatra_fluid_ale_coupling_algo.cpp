@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(const Epetra_Comm& comm,
+Adapter::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(const Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn, const std::string condname,
     const Teuchos::ParameterList& solverparams)
     : ScaTraFluidCouplingAlgorithm(
           comm, prbdyn, true, "scatra", solverparams),  // yes, we need the ALE formulation
       AleBaseAlgorithm(prbdyn,
-          GLOBAL::Problem::Instance()->GetDis("ale")),  // construct ale base algorithm as well
+          Global::Problem::Instance()->GetDis("ale")),  // construct ale base algorithm as well
       condname_(condname)
 {
   // keep constructor empty
@@ -38,10 +38,10 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(const 
 /*----------------------------------------------------------------------*
 | Setup                                                     rauch 08/16 |
 *----------------------------------------------------------------------*/
-void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init()
+void Adapter::ScaTraFluidAleCouplingAlgorithm::Init()
 {
   // call Init() in base class
-  ADAPTER::ScaTraFluidCouplingAlgorithm::Init();
+  Adapter::ScaTraFluidCouplingAlgorithm::Init();
 
   ale_ = Teuchos::rcp_dynamic_cast<AleFluidWrapper>(AleBaseAlgorithm::ale_field(), true);
 }
@@ -50,20 +50,20 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Init()
 /*----------------------------------------------------------------------*
 | Init                                                      rauch 08/16 |
 *----------------------------------------------------------------------*/
-void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Setup()
+void Adapter::ScaTraFluidAleCouplingAlgorithm::Setup()
 {
   // call Setup() in base class
-  ADAPTER::ScaTraFluidCouplingAlgorithm::Setup();
+  Adapter::ScaTraFluidCouplingAlgorithm::Setup();
 
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
 
   // set up couplings
-  icoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  icoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
   icoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
       fluid_field()->Interface()->FSICondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->FSICondMap(), condname_, ndim);
 
-  fscoupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  fscoupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
   fscoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
       fluid_field()->Interface()->FSCondMap(), *ale_field()->discretization(),
       ale_field()->Interface()->FSCondMap(), "FREESURFCoupling", ndim);
@@ -72,7 +72,7 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Setup()
   const Epetra_Map* fluidnodemap = fluid_field()->discretization()->NodeRowMap();
   const Epetra_Map* alenodemap = ale_field()->discretization()->NodeRowMap();
 
-  coupfa_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
+  coupfa_ = Teuchos::rcp(new Core::Adapter::Coupling());
   coupfa_->setup_coupling(*fluid_field()->discretization(), *ale_field()->discretization(),
       *fluidnodemap, *alenodemap, ndim);
 
@@ -88,7 +88,7 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::ScaTraFluidAleCouplingAlgorithm::fluid_ale_nonlinear_solve(
+void Adapter::ScaTraFluidAleCouplingAlgorithm::fluid_ale_nonlinear_solve(
     Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel, bool pseudotransient)
 {
   if (idisp != Teuchos::null)
@@ -130,7 +130,7 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::fluid_ale_nonlinear_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::ScaTraFluidAleCouplingAlgorithm::ale_to_fluid_field(
+Teuchos::RCP<Epetra_Vector> Adapter::ScaTraFluidAleCouplingAlgorithm::ale_to_fluid_field(
     Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupfa_->SlaveToMaster(iv);
@@ -139,7 +139,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::ScaTraFluidAleCouplingAlgorithm::ale_to_flu
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::ScaTraFluidAleCouplingAlgorithm::ale_to_fluid_field(
+Teuchos::RCP<Epetra_Vector> Adapter::ScaTraFluidAleCouplingAlgorithm::ale_to_fluid_field(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_->SlaveToMaster(iv);
@@ -148,7 +148,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::ScaTraFluidAleCouplingAlgorithm::ale_to_flu
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::ScaTraFluidAleCouplingAlgorithm::fluid_to_ale(
+Teuchos::RCP<Epetra_Vector> Adapter::ScaTraFluidAleCouplingAlgorithm::fluid_to_ale(
     Teuchos::RCP<Epetra_Vector> iv) const
 {
   return icoupfa_->MasterToSlave(iv);
@@ -157,7 +157,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::ScaTraFluidAleCouplingAlgorithm::fluid_to_a
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::ScaTraFluidAleCouplingAlgorithm::fluid_to_ale(
+Teuchos::RCP<Epetra_Vector> Adapter::ScaTraFluidAleCouplingAlgorithm::fluid_to_ale(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfa_->MasterToSlave(iv);

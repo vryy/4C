@@ -17,16 +17,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
   class TimIntGenAlpha : public virtual ScaTraTimIntImpl
   {
    public:
     /// Standard Constructor
-    TimIntGenAlpha(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::Solver> solver,
-        Teuchos::RCP<Teuchos::ParameterList> params,
+    TimIntGenAlpha(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     void Setup() override;
 
@@ -53,7 +53,7 @@ namespace SCATRA
     void Update() override;
 
     void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
     Teuchos::RCP<Epetra_Vector> Phiaf() override { return phiaf_; }
 
@@ -136,7 +136,7 @@ namespace SCATRA
     double genalphafac_;
   };  // class TimIntGenAlpha
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

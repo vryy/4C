@@ -21,10 +21,10 @@ namespace
 {
   using namespace FourC;
 
-  void SetupSingleStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber1,
-      const CORE::LINALG::Matrix<3, 1>& fiber2, CORE::LINALG::Matrix<3, 3>& structuralTensor)
+  void SetupSingleStructuralTensor(const Core::LinAlg::Matrix<3, 1>& fiber1,
+      const Core::LinAlg::Matrix<3, 1>& fiber2, Core::LinAlg::Matrix<3, 3>& structuralTensor)
   {
-    CORE::LINALG::Matrix<3, 3> fiber1fiber2T(false);
+    Core::LinAlg::Matrix<3, 3> fiber1fiber2T(false);
 
     fiber1fiber2T.MultiplyNT(fiber1, fiber2);
 
@@ -61,7 +61,7 @@ namespace
           eleFibers_[GetFiberIds()[0]], eleFibers_[GetFiberIds()[1]], eleTensors_);
 
       // Setup structural tensors in stress like Voigt notation
-      CORE::LINALG::VOIGT::Stresses::MatrixToVector(eleTensors_, eleTensors_stress_);
+      Core::LinAlg::Voigt::Stresses::MatrixToVector(eleTensors_, eleTensors_stress_);
 
       // setup scalar product
       eleScalarProducts_ = eleFibers_[GetFiberIds()[0]].Dot(eleFibers_[GetFiberIds()[1]]);
@@ -72,7 +72,7 @@ namespace
     void setup_anisotropy_extension(std::array<int, 2> fiber_ids)
     {
       anisotropyExtension_ =
-          std::make_unique<MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension>(1, fiber_ids);
+          std::make_unique<Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension>(1, fiber_ids);
 
       anisotropy_.register_anisotropy_extension(*anisotropyExtension_);
 
@@ -86,12 +86,12 @@ namespace
 
     [[nodiscard]] std::array<int, 2> GetFiberIds() const { return std::get<0>(GetParam()); }
 
-    MAT::Anisotropy anisotropy_;
-    std::unique_ptr<MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension> anisotropyExtension_;
+    Mat::Anisotropy anisotropy_;
+    std::unique_ptr<Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension> anisotropyExtension_;
 
-    std::vector<CORE::LINALG::Matrix<3, 1>> eleFibers_;
-    CORE::LINALG::Matrix<3, 3> eleTensors_;
-    CORE::LINALG::Matrix<6, 1> eleTensors_stress_;
+    std::vector<Core::LinAlg::Matrix<3, 1>> eleFibers_;
+    Core::LinAlg::Matrix<3, 3> eleTensors_;
+    Core::LinAlg::Matrix<6, 1> eleTensors_stress_;
     double eleScalarProducts_;
   };
 

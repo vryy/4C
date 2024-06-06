@@ -17,24 +17,24 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHEquationOfStateBase::SPHEquationOfStateBase()
+ParticleInteraction::SPHEquationOfStateBase::SPHEquationOfStateBase()
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHEquationOfStateBase::Init()
+void ParticleInteraction::SPHEquationOfStateBase::Init()
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::SPHEquationOfStateBase::Setup()
+void ParticleInteraction::SPHEquationOfStateBase::Setup()
 {
   // nothing to do
 }
 
-PARTICLEINTERACTION::SPHEquationOfStateGenTait::SPHEquationOfStateGenTait(
+ParticleInteraction::SPHEquationOfStateGenTait::SPHEquationOfStateGenTait(
     const double& speedofsound, const double& refdensfac, const double& exponent)
-    : PARTICLEINTERACTION::SPHEquationOfStateBase(),
+    : ParticleInteraction::SPHEquationOfStateBase(),
       speedofsound_(speedofsound),
       refdensfac_(refdensfac),
       exponent_(exponent)
@@ -42,7 +42,7 @@ PARTICLEINTERACTION::SPHEquationOfStateGenTait::SPHEquationOfStateGenTait(
   // empty constructor
 }
 
-double PARTICLEINTERACTION::SPHEquationOfStateGenTait::DensityToPressure(
+double ParticleInteraction::SPHEquationOfStateGenTait::DensityToPressure(
     const double& density, const double& density0) const
 {
   if (exponent_ == 1)
@@ -54,7 +54,7 @@ double PARTICLEINTERACTION::SPHEquationOfStateGenTait::DensityToPressure(
   }
 }
 
-double PARTICLEINTERACTION::SPHEquationOfStateGenTait::PressureToDensity(
+double ParticleInteraction::SPHEquationOfStateGenTait::PressureToDensity(
     const double& pressure, const double& density0) const
 {
   if (exponent_ == 1)
@@ -66,7 +66,7 @@ double PARTICLEINTERACTION::SPHEquationOfStateGenTait::PressureToDensity(
   }
 }
 
-double PARTICLEINTERACTION::SPHEquationOfStateGenTait::DensityToEnergy(
+double ParticleInteraction::SPHEquationOfStateGenTait::DensityToEnergy(
     const double& density, const double& mass, const double& density0) const
 {
   // thermodynamic energy E with p=-dE/dV, T=dE/dS (see Espanol2003, Eq.(5))
@@ -89,26 +89,26 @@ double PARTICLEINTERACTION::SPHEquationOfStateGenTait::DensityToEnergy(
   }
 }
 
-PARTICLEINTERACTION::SPHEquationOfStateIdealGas::SPHEquationOfStateIdealGas(
+ParticleInteraction::SPHEquationOfStateIdealGas::SPHEquationOfStateIdealGas(
     const double& speedofsound)
-    : PARTICLEINTERACTION::SPHEquationOfStateBase(), speedofsound_(speedofsound)
+    : ParticleInteraction::SPHEquationOfStateBase(), speedofsound_(speedofsound)
 {
   // empty constructor
 }
 
-double PARTICLEINTERACTION::SPHEquationOfStateIdealGas::DensityToPressure(
+double ParticleInteraction::SPHEquationOfStateIdealGas::DensityToPressure(
     const double& density, const double& density0) const
 {
   return UTILS::Pow<2>(speedofsound_) * density;
 }
 
-double PARTICLEINTERACTION::SPHEquationOfStateIdealGas::PressureToDensity(
+double ParticleInteraction::SPHEquationOfStateIdealGas::PressureToDensity(
     const double& pressure, const double& density0) const
 {
   return pressure / UTILS::Pow<2>(speedofsound_);
 }
 
-double PARTICLEINTERACTION::SPHEquationOfStateIdealGas::DensityToEnergy(
+double ParticleInteraction::SPHEquationOfStateIdealGas::DensityToEnergy(
     const double& density, const double& mass, const double& density0) const
 {
   // thermodynamic energy E with p=-dE/dV, T=dE/dS (see Espanol2003, Eq.(5))

@@ -34,13 +34,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+int Discret::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material post_setup() routine has already been called and call it if
   // not
@@ -49,14 +49,14 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
   // get parameter interface
   set_params_interface_ptr(params);
 
-  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.values(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.values(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.values(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec2(elevec2_epetra.values(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_SOH8, 1> elevec2(elevec2_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  CORE::Elements::ActionType act = CORE::Elements::none;
+  Core::Elements::ActionType act = Core::Elements::none;
 
   if (IsParamsInterface())
   {
@@ -69,43 +69,43 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     if (action == "none")
       FOUR_C_THROW("No action supplied");
     else if (action == "calc_struct_linstiff")
-      act = CORE::Elements::struct_calc_linstiff;
+      act = Core::Elements::struct_calc_linstiff;
     else if (action == "calc_struct_nlnstiff")
-      act = CORE::Elements::struct_calc_nlnstiff;
+      act = Core::Elements::struct_calc_nlnstiff;
     else if (action == "calc_struct_internalforce")
-      act = CORE::Elements::struct_calc_internalforce;
+      act = Core::Elements::struct_calc_internalforce;
     else if (action == "calc_struct_linstiffmass")
-      act = CORE::Elements::struct_calc_linstiffmass;
+      act = Core::Elements::struct_calc_linstiffmass;
     else if (action == "calc_struct_nlnstiffmass")
-      act = CORE::Elements::struct_calc_nlnstiffmass;
+      act = Core::Elements::struct_calc_nlnstiffmass;
     else if (action == "calc_struct_nlnstifflmass")
-      act = CORE::Elements::struct_calc_nlnstifflmass;
+      act = Core::Elements::struct_calc_nlnstifflmass;
     else if (action == "calc_struct_stress")
-      act = CORE::Elements::struct_calc_stress;
+      act = Core::Elements::struct_calc_stress;
     else if (action == "calc_struct_eleload")
-      act = CORE::Elements::struct_calc_eleload;
+      act = Core::Elements::struct_calc_eleload;
     else if (action == "calc_struct_fsiload")
-      act = CORE::Elements::struct_calc_fsiload;
+      act = Core::Elements::struct_calc_fsiload;
     else if (action == "calc_struct_update_istep")
-      act = CORE::Elements::struct_calc_update_istep;
+      act = Core::Elements::struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
-      act = CORE::Elements::struct_calc_reset_istep;
+      act = Core::Elements::struct_calc_reset_istep;
     else if (action == "multi_eas_init")
-      act = CORE::Elements::multi_init_eas;
+      act = Core::Elements::multi_init_eas;
     else if (action == "multi_eas_set")
-      act = CORE::Elements::multi_set_eas;
+      act = Core::Elements::multi_set_eas;
     else if (action == "multi_calc_dens")
-      act = CORE::Elements::multi_calc_dens;
+      act = Core::Elements::multi_calc_dens;
     else if (action == "multi_readrestart")
-      act = CORE::Elements::multi_readrestart;
+      act = Core::Elements::multi_readrestart;
     else if (action == "calc_stc_matrix")
-      act = CORE::Elements::shell_calc_stc_matrix;
+      act = Core::Elements::shell_calc_stc_matrix;
     else if (action == "calc_stc_matrix_inverse")
-      act = CORE::Elements::shell_calc_stc_matrix_inverse;
+      act = Core::Elements::shell_calc_stc_matrix_inverse;
     else if (action == "calc_struct_recover")
-      act = CORE::Elements::struct_calc_recover;
+      act = Core::Elements::struct_calc_recover;
     else if (action == "calc_struct_energy")
-      act = CORE::Elements::struct_calc_energy;
+      act = Core::Elements::struct_calc_energy;
     else if (action == "calc_struct_predict")
       return 0;
     else
@@ -116,7 +116,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
   switch (act)
   {
     // linear stiffness
-    case CORE::Elements::struct_calc_linstiff:
+    case Core::Elements::struct_calc_linstiff:
     {
       // need current displacement and residual forces
       std::vector<double> mydisp(lm.size());
@@ -124,10 +124,10 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       for (double& myre : myres) myre = 0.0;
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != DRT::ELEMENTS::SoHex8::soh8_easmild)
+      if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr, nullptr,
-            nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+            nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
       }
       else
       {
@@ -136,18 +136,18 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+          Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
-            nullptr, nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
-            INPAR::STR::strain_none, INPAR::STR::strain_none);
+            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
+            Inpar::STR::strain_none, Inpar::STR::strain_none);
       }
     }
     break;
 
     // nonlinear stiffness and internal force vector
-    case CORE::Elements::struct_calc_nlnstiff:
+    case Core::Elements::struct_calc_nlnstiff:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -155,14 +155,14 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::ExtractMyValues(*res, myres, lm);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != DRT::ELEMENTS::SoHex8::soh8_easmild)
+      if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, &elevec3, nullptr,
-            nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+            nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
       }
       else
       {
@@ -171,18 +171,18 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+          Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
-            nullptr, &elevec3, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
-            INPAR::STR::strain_none, INPAR::STR::strain_none);
+            nullptr, &elevec3, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
+            Inpar::STR::strain_none, Inpar::STR::strain_none);
       }
     }
     break;
 
     // internal force vector only
-    case CORE::Elements::struct_calc_internalforce:
+    case Core::Elements::struct_calc_internalforce:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -190,16 +190,16 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
+      Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != DRT::ELEMENTS::SoHex8::soh8_easmild)
+      if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
-            params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+            params, Inpar::STR::stress_none, Inpar::STR::strain_none);
       }
       else
       {
@@ -208,24 +208,24 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+          Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
-            nullptr, nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
-            INPAR::STR::strain_none, INPAR::STR::strain_none);
+            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
+            Inpar::STR::strain_none, Inpar::STR::strain_none);
       }
     }
     break;
 
     // linear stiffness and consistent mass matrix
-    case CORE::Elements::struct_calc_linstiffmass:
+    case Core::Elements::struct_calc_linstiffmass:
       FOUR_C_THROW("Case 'calc_struct_linstiffmass' not yet implemented");
       break;
 
     // nonlinear stiffness, internal force vector, and consistent/lumped mass matrix
-    case CORE::Elements::struct_calc_nlnstiffmass:
-    case CORE::Elements::struct_calc_nlnstifflmass:
+    case Core::Elements::struct_calc_nlnstiffmass:
+    case Core::Elements::struct_calc_nlnstifflmass:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -233,15 +233,15 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::ExtractMyValues(*res, myres, lm);
 
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != DRT::ELEMENTS::SoHex8::soh8_easmild)
+      if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, &elevec3, nullptr,
-            nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+            nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
       }
       else
       {
@@ -250,20 +250,20 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+          Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
-            INPAR::STR::strain_none, INPAR::STR::strain_none);
+            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
+            Inpar::STR::strain_none, Inpar::STR::strain_none);
       }
       // lump mass
-      if (act == CORE::Elements::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
+      if (act == Core::Elements::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
     }
     break;
 
     // evaluate stresses and strains at gauss points
-    case CORE::Elements::struct_calc_stress:
+    case Core::Elements::struct_calc_stress:
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
@@ -280,24 +280,24 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
       if (plstraindata == Teuchos::null) FOUR_C_THROW("Cannot get plastic strain 'data'");
 
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::ExtractMyValues(*res, myres, lm);
 
-      CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> stress;
-      CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> strain;
-      CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> plstrain;
+      Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> stress;
+      Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> strain;
+      Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> plstrain;
 
-      auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
-          params, "iostress", INPAR::STR::stress_none);
-      auto iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
-          params, "iostrain", INPAR::STR::strain_none);
-      auto ioplstrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
-          params, "ioplstrain", INPAR::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
+          params, "iostress", Inpar::STR::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
+          params, "iostrain", Inpar::STR::strain_none);
+      auto ioplstrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
+          params, "ioplstrain", Inpar::STR::strain_none);
 
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != DRT::ELEMENTS::SoHex8::soh8_easmild)
+      if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
             params, iostress, iostrain);
@@ -309,28 +309,28 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          CORE::FE::ExtractMyValues(*dispmat, mydispmat, lm);
+          Core::FE::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
             nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
       }
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         AddtoPack(data, stress);
         data.StartPacking();
         AddtoPack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         AddtoPack(data, strain);
         data.StartPacking();
         AddtoPack(data, strain);
         std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
       }
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         AddtoPack(data, plstrain);
         data.StartPacking();
         AddtoPack(data, plstrain);
@@ -339,15 +339,15 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case CORE::Elements::struct_calc_eleload:
+    case Core::Elements::struct_calc_eleload:
       FOUR_C_THROW("this method is not supposed to evaluate a load, use evaluate_neumann(...)");
       break;
 
-    case CORE::Elements::struct_calc_fsiload:
+    case Core::Elements::struct_calc_fsiload:
       FOUR_C_THROW("Case not yet implemented");
       break;
 
-    case CORE::Elements::struct_calc_update_istep:
+    case Core::Elements::struct_calc_update_istep:
     {
       // update internal EAS parameters
       if (eastype_ == soh8_eassosh8)
@@ -355,20 +355,20 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
         const auto* alpha = &easdata_.alpha;  // Alpha_{n+1}
         auto* alphao = &easdata_.alphao;      // Alpha_n
         // alphao := alpha
-        CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
+        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
 
         // store the EAS matrices
         const auto* Kaainv = &easdata_.invKaa;  // Kaa^{-1}_{n+1}
         auto* Kaainvo = &easdata_.invKaao;      // Kaa^{-1}_{n}
-        CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(
+        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, soh8_eassosh8>(
             *Kaainvo, *Kaainv);
 
         const auto* Kda = &easdata_.Kda;  // Kda_{n+1}
         auto* Kdao = &easdata_.Kdao;      // Kda_{n}
-        CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
+        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
 
         // reset EAS internal force
-        CORE::LINALG::SerialDenseMatrix* oldfeas = &easdata_.feas;
+        Core::LinAlg::SerialDenseMatrix* oldfeas = &easdata_.feas;
         oldfeas->putScalar(0.0);
       }
       // Update of history for materials
@@ -376,7 +376,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case CORE::Elements::struct_calc_reset_istep:
+    case Core::Elements::struct_calc_reset_istep:
     {
       // restore internal EAS parameters
       if (eastype_ == soh8_eassosh8)
@@ -384,20 +384,20 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
         auto* alpha = &easdata_.alpha;          // Alpha_{n+1}
         const auto* alphao = &easdata_.alphao;  // Alpha_n
         // alphao := alphao
-        CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
+        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
 
         // store the EAS matrices
         auto* Kaainv = &easdata_.invKaa;          // Kaa^{-1}_{n+1}
         const auto* Kaainvo = &easdata_.invKaao;  // Kaa^{-1}_{n}
-        CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(
+        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, soh8_eassosh8>(
             *Kaainv, *Kaainvo);
 
         const auto* Kda = &easdata_.Kda;  // Kda_{n+1}
         auto* Kdao = &easdata_.Kdao;      // Kda_{n}
-        CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
+        Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
 
         // reset EAS internal force
-        CORE::LINALG::SerialDenseMatrix* oldfeas = &easdata_.feas;
+        Core::LinAlg::SerialDenseMatrix* oldfeas = &easdata_.feas;
         oldfeas->putScalar(0.0);
       }
       // Reset of history (if needed)
@@ -405,7 +405,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case CORE::Elements::multi_calc_dens:
+    case Core::Elements::multi_calc_dens:
     {
       soh8_homog(params);
     }
@@ -415,7 +415,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     // have to be stored in every macroscopic Gauss point
     // allocation and initializiation of these data arrays can only be
     // done in the elements that know the number of EAS parameters
-    case CORE::Elements::multi_init_eas:
+    case Core::Elements::multi_init_eas:
     {
       if (eastype_ != soh8_easnone)
       {
@@ -428,7 +428,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     // have to be stored in every macroscopic Gauss point
     // before any microscale simulation, EAS internal data has to be
     // set accordingly
-    case CORE::Elements::multi_set_eas:
+    case Core::Elements::multi_set_eas:
     {
       if (eastype_ != soh8_easnone)
       {
@@ -438,18 +438,18 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     break;
 
     // read restart of microscale
-    case CORE::Elements::multi_readrestart:
+    case Core::Elements::multi_readrestart:
     {
-      Teuchos::RCP<CORE::MAT::Material> mat = Material();
+      Teuchos::RCP<Core::Mat::Material> mat = Material();
 
-      if (mat->MaterialType() == CORE::Materials::m_struct_multiscale) soh8_read_restart_multi();
+      if (mat->MaterialType() == Core::Materials::m_struct_multiscale) soh8_read_restart_multi();
     }
     break;
 
-    case CORE::Elements::shell_calc_stc_matrix:
+    case Core::Elements::shell_calc_stc_matrix:
     {
-      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
-      if (stc_scaling == INPAR::STR::stc_none)
+      const auto stc_scaling = Core::UTILS::GetAsEnum<Inpar::STR::StcScale>(params, "stc_scaling");
+      if (stc_scaling == Inpar::STR::stc_none)
         FOUR_C_THROW(
             "Action demands to calculate the STC (Scaled Thickness "
             "Conditiong) matrix, but not suitable scaling has been provided.");
@@ -460,10 +460,10 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-    case CORE::Elements::shell_calc_stc_matrix_inverse:
+    case Core::Elements::shell_calc_stc_matrix_inverse:
     {
-      const auto stc_scaling = CORE::UTILS::GetAsEnum<INPAR::STR::StcScale>(params, "stc_scaling");
-      if (stc_scaling == INPAR::STR::stc_none)
+      const auto stc_scaling = Core::UTILS::GetAsEnum<Inpar::STR::StcScale>(params, "stc_scaling");
+      if (stc_scaling == Inpar::STR::stc_none)
         FOUR_C_THROW(
             "Action demands to calculate the STC (Scaled Thickness "
             "Conditiong) matrix, but not suitable scaling has been provided.");
@@ -474,13 +474,13 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
       }
     }
     break;
-    case CORE::Elements::struct_calc_recover:
+    case Core::Elements::struct_calc_recover:
       SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
       break;
-    case CORE::Elements::struct_calc_energy:
+    case Core::Elements::struct_calc_energy:
     {
-      if (eastype_ == DRT::ELEMENTS::SoHex8::soh8_easmild)
+      if (eastype_ == Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
         SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
             elevec2_epetra, elevec3_epetra);
@@ -493,7 +493,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
 
       if (IsParamsInterface())  // new structural time integration
@@ -511,15 +511,15 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
 
       break;
     }
-    case CORE::Elements::struct_calc_predict:
+    case Core::Elements::struct_calc_predict:
     {
       // do nothing here
       break;
     }
-    case CORE::Elements::struct_create_backup:
-    case CORE::Elements::struct_recover_from_backup:
-    case CORE::Elements::struct_calc_mass_volume:
-    case CORE::Elements::analyse_jacobian_determinant:
+    case Core::Elements::struct_create_backup:
+    case Core::Elements::struct_recover_from_backup:
+    case Core::Elements::struct_calc_mass_volume:
+    case Core::Elements::analyse_jacobian_determinant:
     {
       SoHex8::Evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
           elevec2_epetra, elevec3_epetra);
@@ -528,7 +528,7 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
     default:
     {
       FOUR_C_THROW("Unknown type of action for So_sh8: %s | %d",
-          CORE::Elements::ActionType2String(act).c_str(), act);
+          Core::Elements::ActionType2String(act).c_str(), act);
       exit(EXIT_FAILURE);
     }
   }
@@ -537,25 +537,25 @@ int DRT::ELEMENTS::SoSh8::Evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::SoSh8::sosh8_calc_energy(
+double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
     const std::vector<double>& disp, Teuchos::ParameterList& params)
 {
-  if (PRESTRESS::IsMulf(pstype_)) FOUR_C_THROW("mulf is unsupported for the So_sh8 element!");
+  if (Prestress::IsMulf(pstype_)) FOUR_C_THROW("mulf is unsupported for the So_sh8 element!");
 
-  if (kintype_ != INPAR::STR::KinemType::nonlinearTotLag)
+  if (kintype_ != Inpar::STR::KinemType::nonlinearTotLag)
     FOUR_C_THROW("Unsupported kinematic type for the So_sh8 element!");
 
   // initialization of internal energy
   double intenergy = 0.0;
 
   // shape functions and Gauss weights
-  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
+  const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   const static std::vector<double> gpweights = soh8_weights();
 
   // update element geometry
-  CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
-  CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
-  CORE::Nodes::Node** nodes = Nodes();
+  Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
+  Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
+  Core::Nodes::Node** nodes = Nodes();
 
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
@@ -581,15 +581,15 @@ double DRT::ELEMENTS::SoSh8::sosh8_calc_energy(
   // ------------------- EAS-SETUP --------------------------------------------
   /* EAS Technology: declare, intialize, set up, and alpha history */
   // in any case declare variables, sizes etc. only in eascase
-  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
-  std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
-  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, soh8_eassosh8>
+  Core::LinAlg::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
+  std::vector<Core::LinAlg::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
+  Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, soh8_eassosh8>
       M;         // EAS matrix M at current GP, fixed for sosh8
   double detJ0;  // detJ(origin)
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
   // here we already get the inverse transposed T0
-  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> T0invT;  // trafo matrix
+  Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> T0invT;  // trafo matrix
 
   switch (eastype_)
   {
@@ -633,14 +633,14 @@ double DRT::ELEMENTS::SoSh8::sosh8_calc_energy(
   // modified B-operator in local(parameter) element space
 
   // ANS modified rows of bop in local(parameter) coords
-  // CORE::LINALG::Matrix<num_ans*num_sp,NUMDOF_SOH8> B_ans_loc(true); //set to 0
-  CORE::LINALG::Matrix<num_ans * num_sp, NUMDOF_SOH8> B_ans_loc;
+  // Core::LinAlg::Matrix<num_ans*num_sp,NUMDOF_SOH8> B_ans_loc(true); //set to 0
+  Core::LinAlg::Matrix<num_ans * num_sp, NUMDOF_SOH8> B_ans_loc;
   // Jacobian evaluated at all ANS sampling points
-  std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> jac_sps(num_sp);
+  std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> jac_sps(num_sp);
   // CURRENT Jacobian evaluated at all ANS sampling points
-  std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> jac_cur_sps(num_sp);
+  std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> jac_cur_sps(num_sp);
   // pointer to derivs evaluated at all sampling points
-  std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>* deriv_sp =
+  std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>* deriv_sp =
       nullptr;  // derivs eval. at all sampling points
   // evaluate all necessary variables for ANS
   sosh8_anssetup(xrefe, xcurr, &deriv_sp, jac_sps, jac_cur_sps, B_ans_loc);
@@ -661,9 +661,9 @@ double DRT::ELEMENTS::SoSh8::sosh8_calc_energy(
   /* =========================================================================*/
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac;
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac;
     double detJ = 0.0;
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac_cur;
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac_cur;
     double detJ_cur = 0.0;
 
     if (not sosh8_evaluatejacobians(gp, derivs, xrefe, xcurr, jac, detJ, jac_cur, detJ_cur))
@@ -674,22 +674,22 @@ double DRT::ELEMENTS::SoSh8::sosh8_calc_energy(
     }
 
     // set up B-Operator in local(parameter) element space including ANS
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8> bop_loc;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH8> bop_loc;
     sosh8_get_bop_loc(gp, derivs, jac_cur, r, s, B_ans_loc, bop_loc);
 
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> TinvT;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> TinvT;
     sosh8_evaluate_t(jac, TinvT);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8> bop;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH8> bop;
     bop.Multiply(TinvT, bop_loc);
 
     // local GL strain vector lstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> lstrain;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> lstrain;
     sosh8_get_glstrain_loc(gp, jac_cur, jac, jac_sps, jac_cur_sps, r, s, lstrain);
 
     // transformation of local glstrains 'back' to global(material) space
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(true);
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain(true);
     glstrain.Multiply(TinvT, lstrain);
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
@@ -697,10 +697,10 @@ double DRT::ELEMENTS::SoSh8::sosh8_calc_energy(
     {
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
-      CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
+      Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
           soh8_eassosh8>(M.A(), detJ0 / detJ, T0invT.A(), M_GP->at(gp).values());
       // add enhanced strains = M . alpha to GL strains to "unlock" element
-      CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_eassosh8, 1>(
+      Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_eassosh8, 1>(
           1.0, glstrain.A(), 1.0, M.A(), (*alpha).values());
     }  // ------------------------------------------------------------------ EAS
 
@@ -712,7 +712,7 @@ double DRT::ELEMENTS::SoSh8::sosh8_calc_energy(
       return 0.0;
     }
 
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd;
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd;
     sosh8_get_deformationgradient(gp, derivs, xcurr, glstrain, defgrd);
 
     // call material for evaluation of strain energy function
@@ -732,31 +732,31 @@ double DRT::ELEMENTS::SoSh8::sosh8_calc_energy(
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                       // current displacements
-    std::vector<double>& residual,                                   // current residual displ
-    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,     // element stiffness matrix
-    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,      // element mass matrix
-    CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force,      // element internal force vector
-    CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force_str,  // element structural force vector
-    CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
-    CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
+void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                           // current displacements
+    std::vector<double>& residual,                                       // current residual displ
+    Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,         // element stiffness matrix
+    Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,          // element mass matrix
+    Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force,      // element internal force vector
+    Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force_str,  // element structural force vector
+    Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress,  // stresses at GP
+    Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestrain,  // strains at GP
     Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress,  // stress output option
-    const INPAR::STR::StrainType iostrain)  // strain output option
+    const Inpar::STR::StressType iostress,  // stress output option
+    const Inpar::STR::StrainType iostrain)  // strain output option
 {
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
   ** ============================================================================*/
-  const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> shapefcts = soh8_shapefcts();
-  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
+  const static std::vector<Core::LinAlg::Matrix<NUMNOD_SOH8, 1>> shapefcts = soh8_shapefcts();
+  const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   const static std::vector<double> gpweights = soh8_weights();
   /* ============================================================================*/
 
   // update element geometry
-  CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
-  CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
-  CORE::Nodes::Node** nodes = Nodes();
+  Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
+  Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
+  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -780,23 +780,23 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
   // -------- EAS-SETUP -------------------------------------------------------
   /* EAS Technology: declare, intialize, set up, and alpha history */
   // in any case declare variables, sizes etc. only in eascase
-  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
-  std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
-  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, soh8_eassosh8>
+  Core::LinAlg::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
+  std::vector<Core::LinAlg::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
+  Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, soh8_eassosh8>
       M;                                 // EAS matrix M at current GP, fixed for sosh8
-  CORE::LINALG::SerialDenseVector feas;  // EAS portion of internal forces
-  CORE::LINALG::SerialDenseMatrix Kaa;   // EAS matrix Kaa
-  CORE::LINALG::SerialDenseMatrix Kda;   // EAS matrix Kda
+  Core::LinAlg::SerialDenseVector feas;  // EAS portion of internal forces
+  Core::LinAlg::SerialDenseMatrix Kaa;   // EAS matrix Kaa
+  Core::LinAlg::SerialDenseMatrix Kda;   // EAS matrix Kda
   double detJ0;                          // detJ(origin)
-  CORE::LINALG::SerialDenseMatrix* oldfeas = nullptr;    // EAS history
-  CORE::LINALG::SerialDenseMatrix* oldKaainv = nullptr;  // EAS history
-  CORE::LINALG::SerialDenseMatrix* oldKda = nullptr;     // EAS history
-  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;    // EAS increment
+  Core::LinAlg::SerialDenseMatrix* oldfeas = nullptr;    // EAS history
+  Core::LinAlg::SerialDenseMatrix* oldKaainv = nullptr;  // EAS history
+  Core::LinAlg::SerialDenseMatrix* oldKda = nullptr;     // EAS history
+  Core::LinAlg::SerialDenseMatrix* eas_inc = nullptr;    // EAS increment
 
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
   // here we already get the inverse transposed T0
-  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> T0invT;  // trafo matrix
+  Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> T0invT;  // trafo matrix
 
   switch (eastype_)
   {
@@ -824,7 +824,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
       if (not IsParamsInterface())
       {
         // we need the (residual) displacement at the previous step
-        CORE::LINALG::SerialDenseVector res_d(NUMDOF_SOH8);
+        Core::LinAlg::SerialDenseVector res_d(NUMDOF_SOH8);
         for (int i = 0; i < NUMDOF_SOH8; ++i)
         {
           res_d(i) = residual[i];
@@ -845,12 +845,12 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
         else
         {
           // add Kda . res_d to feas
-          CORE::LINALG::DENSEFUNCTIONS::multiply<double, soh8_eassosh8, NUMDOF_SOH8, 1>(
+          Core::LinAlg::DenseFunctions::multiply<double, soh8_eassosh8, NUMDOF_SOH8, 1>(
               1.0, *oldfeas, 1.0, *oldKda, res_d);
           // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-          CORE::LINALG::DENSEFUNCTIONS::multiply<double, soh8_eassosh8, soh8_eassosh8, 1>(
+          Core::LinAlg::DenseFunctions::multiply<double, soh8_eassosh8, soh8_eassosh8, 1>(
               0.0, *eas_inc, -1.0, *oldKaainv, *oldfeas);
-          CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(
+          Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(
               1., alpha->values(), 1., eas_inc->values());
         }
       }
@@ -895,14 +895,14 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
   // modified B-operator in local(parameter) element space
 
   // ANS modified rows of bop in local(parameter) coords
-  // CORE::LINALG::Matrix<num_ans*num_sp,NUMDOF_SOH8> B_ans_loc(true); //set to 0
-  CORE::LINALG::Matrix<num_ans * num_sp, NUMDOF_SOH8> B_ans_loc;
+  // Core::LinAlg::Matrix<num_ans*num_sp,NUMDOF_SOH8> B_ans_loc(true); //set to 0
+  Core::LinAlg::Matrix<num_ans * num_sp, NUMDOF_SOH8> B_ans_loc;
   // Jacobian evaluated at all ANS sampling points
-  std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> jac_sps(num_sp);
+  std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> jac_sps(num_sp);
   // CURRENT Jacobian evaluated at all ANS sampling points
-  std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> jac_cur_sps(num_sp);
+  std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> jac_cur_sps(num_sp);
   // pointer to derivs evaluated at all sampling points
-  std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>* deriv_sp =
+  std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>* deriv_sp =
       nullptr;  // derivs eval. at all sampling points
   // evaluate all necessary variables for ANS
   sosh8_anssetup(xrefe, xcurr, &deriv_sp, jac_sps, jac_cur_sps, B_ans_loc);
@@ -923,9 +923,9 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
   /* =========================================================================*/
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac;
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac;
     double detJ = 0.0;
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac_cur;
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac_cur;
     double detJ_cur = 0.0;
 
     if (not sosh8_evaluatejacobians(gp, derivs, xrefe, xcurr, jac, detJ, jac_cur, detJ_cur))
@@ -940,22 +940,22 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
     }
 
     // set up B-Operator in local(parameter) element space including ANS
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8> bop_loc;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH8> bop_loc;
     sosh8_get_bop_loc(gp, derivs, jac_cur, r, s, B_ans_loc, bop_loc);
 
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> TinvT;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> TinvT;
     sosh8_evaluate_t(jac, TinvT);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8> bop;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH8> bop;
     bop.Multiply(TinvT, bop_loc);
 
     // local GL strain vector lstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> lstrain;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> lstrain;
     sosh8_get_glstrain_loc(gp, jac_cur, jac, jac_sps, jac_cur_sps, r, s, lstrain);
 
     // transformation of local glstrains 'back' to global(material) space
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(true);
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain(true);
     glstrain.Multiply(TinvT, lstrain);
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
@@ -963,10 +963,10 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
     {
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
-      CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
+      Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
           soh8_eassosh8>(M.A(), detJ0 / detJ, T0invT.A(), M_GP->at(gp).values());
       // add enhanced strains = M . alpha to GL strains to "unlock" element
-      CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_eassosh8, 1>(
+      Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_eassosh8, 1>(
           1.0, glstrain.A(), 1.0, M.A(), (*alpha).values());
     }  // ------------------------------------------------------------------ EAS
 
@@ -986,7 +986,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
     // return gp strains if necessary
     switch (iostrain)
     {
-      case INPAR::STR::strain_gl:
+      case Inpar::STR::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
@@ -996,12 +996,12 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
 
         break;
       }
-      case INPAR::STR::strain_ea:
+      case Inpar::STR::strain_ea:
       {
         FOUR_C_THROW("no Euler-Almansi strains available for sosh8");
         break;
       }
-      case INPAR::STR::strain_none:
+      case Inpar::STR::strain_none:
       {
         break;
       }
@@ -1012,7 +1012,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
       }
     }
 
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd;
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd;
     sosh8_get_deformationgradient(gp, derivs, xcurr, glstrain, defgrd);
     const double det_defgrd = defgrd.Determinant();
     if (det_defgrd <= 0.0)
@@ -1023,32 +1023,32 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
     }
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses if necessary
     switch (iostress)
     {
-      case INPAR::STR::stress_2pk:
+      case Inpar::STR::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
-        for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
+        for (int i = 0; i < Mat::NUM_STRESS_3D; ++i)
         {
           (*elestress)(gp, i) = stress(i);
         }
 
         break;
       }
-      case INPAR::STR::stress_cauchy:
+      case Inpar::STR::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         sosh8_cauchy(elestress, gp, defgrd, glstrain, stress);
 
         break;
       }
-      case INPAR::STR::stress_none:
+      case Inpar::STR::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress option not available");
@@ -1071,7 +1071,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8> cb;
+      Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH8> cb;
       cb.Multiply(cmat, bop);  // temporary C . B
       stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
 
@@ -1081,7 +1081,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
       {
         for (int jnod = 0; jnod < NUMNOD_SOH8; ++jnod)
         {
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> G_ij;
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> G_ij;
           G_ij(0) = derivs[gp](0, inod) * derivs[gp](0, jnod);  // rr-dir
           G_ij(1) = derivs[gp](1, inod) * derivs[gp](1, jnod);  // ss-dir
           G_ij(3) = derivs[gp](0, inod) * derivs[gp](1, jnod) +
@@ -1124,7 +1124,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
             FOUR_C_THROW("Cannot build geometric stiffness matrix on your ANS-choice!");
 
           // transformation of local(parameter) space 'back' to global(material) space
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> G_ij_glob;
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> G_ij_glob;
           G_ij_glob.Multiply(TinvT, G_ij);
 
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
@@ -1141,15 +1141,15 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
       if (eastype_ != soh8_easnone)
       {
         // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
-        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, soh8_eassosh8> cM;  // temporary c . M
+        Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, soh8_eassosh8> cM;  // temporary c . M
         cM.Multiply(cmat, M);
-        CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_eassosh8, MAT::NUM_STRESS_3D,
+        Core::LinAlg::DenseFunctions::multiplyTN<double, soh8_eassosh8, Mat::NUM_STRESS_3D,
             soh8_eassosh8>(1.0, Kaa.values(), detJ_w, M.A(), cM.A());
         // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
-        CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_eassosh8, MAT::NUM_STRESS_3D,
+        Core::LinAlg::DenseFunctions::multiplyTN<double, soh8_eassosh8, Mat::NUM_STRESS_3D,
             NUMDOF_SOH8>(1.0, Kda.values(), detJ_w, M.A(), cb.A());
         // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
-        CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_eassosh8, MAT::NUM_STRESS_3D, 1>(
+        Core::LinAlg::DenseFunctions::multiplyTN<double, soh8_eassosh8, Mat::NUM_STRESS_3D, 1>(
             1.0, feas.values(), detJ_w, M.A(), stress.A());
       }  // ------------------------------------------------------------------ EAS
     }    // if (stiffmatrix != nullptr)
@@ -1180,7 +1180,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
   if (eastype_ != soh8_easnone && split_res)
     // only add for row-map elements
     if (params.get<int>("MyPID") == Owner())
-      params.get<double>("cond_rhs_norm") += pow(CORE::LINALG::Norm2(feas), 2.);
+      params.get<double>("cond_rhs_norm") += pow(Core::LinAlg::Norm2(feas), 2.);
 
   if (force != nullptr && stiffmatrix != nullptr)
   {
@@ -1189,21 +1189,21 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
     if (eastype_ == soh8_eassosh8)
     {
       // we need the inverse of Kaa
-      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+      using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+      using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
       Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
       solve_for_inverseKaa.setMatrix(Teuchos::rcpFromRef(Kaa));
       solve_for_inverseKaa.invert();
 
-      CORE::LINALG::SerialDenseMatrix KdaTKaa(
+      Core::LinAlg::SerialDenseMatrix KdaTKaa(
           NUMDOF_SOH8, soh8_eassosh8);  // temporary Kda^T.Kaa^{-1}
-      CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMDOF_SOH8, soh8_eassosh8, soh8_eassosh8>(
+      Core::LinAlg::DenseFunctions::multiplyTN<double, NUMDOF_SOH8, soh8_eassosh8, soh8_eassosh8>(
           KdaTKaa, Kda, Kaa);
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
-      CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMDOF_SOH8, soh8_eassosh8, NUMDOF_SOH8>(
+      Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_eassosh8, NUMDOF_SOH8>(
           1.0, stiffmatrix->A(), -1.0, KdaTKaa.values(), Kda.values());
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
-      CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMDOF_SOH8, soh8_eassosh8, 1>(
+      Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_eassosh8, 1>(
           1.0, force->A(), -1.0, KdaTKaa.values(), feas.values());
 
       // store current EAS data in history
@@ -1217,26 +1217,26 @@ void DRT::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location
   }
 
   return;
-}  // DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass
+}  // Discret::ELEMENTS::So_sh8::sosh8_nlnstiffmass
 
 
 
 /*----------------------------------------------------------------------*
  |  setup of constant ANS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::sosh8_anssetup(
-    const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe,  // material element coords
-    const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,  // current element coords
-    std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>**
+void Discret::ELEMENTS::SoSh8::sosh8_anssetup(
+    const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe,  // material element coords
+    const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,  // current element coords
+    std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>**
         deriv_sp,  // derivs eval. at all sampling points
-    std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>&
+    std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>&
         jac_sps,  // jac at all sampling points
-    std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>&
+    std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>&
         jac_cur_sps,  // current jac at all sampling points
-    CORE::LINALG::Matrix<num_ans * num_sp, NUMDOF_SOH8>& B_ans_loc) const  // modified B
+    Core::LinAlg::Matrix<num_ans * num_sp, NUMDOF_SOH8>& B_ans_loc) const  // modified B
 {
   // static matrix object of derivs at sampling points, kept in memory
-  static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> df_sp(num_sp);
+  static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> df_sp(num_sp);
   static bool dfsp_eval;  // flag for re-evaluate everything
 
   if (dfsp_eval != 0)
@@ -1326,7 +1326,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_anssetup(
   ** evaluated at all sampling points
   */
   // loop over each sampling point
-  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac_cur;
+  Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac_cur;
   for (int sp = 0; sp < num_sp; ++sp)
   {
     /* compute the CURRENT Jacobian matrix at the sampling point:
@@ -1360,12 +1360,12 @@ void DRT::ELEMENTS::SoSh8::sosh8_anssetup(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoSh8::sosh8_evaluatejacobians(const unsigned gp,
-    const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
-    const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe,
-    const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_ref, double& detJ_ref,
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr, double& detJ_curr) const
+bool Discret::ELEMENTS::SoSh8::sosh8_evaluatejacobians(const unsigned gp,
+    const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
+    const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe,
+    const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_ref, double& detJ_ref,
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr, double& detJ_curr) const
 {
   sosh8_evaluatejacobian(gp, derivs, xrefe, jac_ref, detJ_ref);
   if (detJ_ref == 0.0)
@@ -1385,10 +1385,10 @@ bool DRT::ELEMENTS::SoSh8::sosh8_evaluatejacobians(const unsigned gp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::sosh8_evaluatejacobian(const unsigned gp,
-    const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
-    const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& x,
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac, double& detJ) const
+void Discret::ELEMENTS::SoSh8::sosh8_evaluatejacobian(const unsigned gp,
+    const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
+    const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& x,
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac, double& detJ) const
 {
   /* compute the Jacobian matrix which looks like:
   **         [ x_,r  y_,r  z_,r ]
@@ -1403,10 +1403,10 @@ void DRT::ELEMENTS::SoSh8::sosh8_evaluatejacobian(const unsigned gp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::SoSh8::sosh8_third_invariant(
-    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain) const
+double Discret::ELEMENTS::SoSh8::sosh8_third_invariant(
+    const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain) const
 {
-  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> rcg(glstrain);
+  Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> rcg(glstrain);
   rcg.Scale(2.0);
   for (unsigned i = 0; i < 3; ++i) rcg(i) += 1.0;
 
@@ -1420,11 +1420,11 @@ double DRT::ELEMENTS::SoSh8::sosh8_third_invariant(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::sosh8_get_bop_loc(const unsigned gp,
-    const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
-    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr, const double* r,
-    const double* s, const CORE::LINALG::Matrix<num_ans * num_sp, NUMDOF_SOH8>& B_ans_loc,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8>& bop_loc) const
+void Discret::ELEMENTS::SoSh8::sosh8_get_bop_loc(const unsigned gp,
+    const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
+    const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr, const double* r,
+    const double* s, const Core::LinAlg::Matrix<num_ans * num_sp, NUMDOF_SOH8>& B_ans_loc,
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH8>& bop_loc) const
 {
   // set up B-Operator in local(parameter) element space including ANS
   for (int inode = 0; inode < NUMNOD_SOH8; ++inode)
@@ -1493,12 +1493,12 @@ void DRT::ELEMENTS::SoSh8::sosh8_get_bop_loc(const unsigned gp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::sosh8_get_glstrain_loc(const unsigned gp,
-    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr,
-    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,
-    const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>& jac_sps,
-    const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>& jac_cur_sps, const double* r,
-    const double* s, CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& lstrain) const
+void Discret::ELEMENTS::SoSh8::sosh8_get_glstrain_loc(const unsigned gp,
+    const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr,
+    const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,
+    const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>& jac_sps,
+    const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>& jac_cur_sps, const double* r,
+    const double* s, Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& lstrain) const
 {
   // evaluate glstrains in local(parameter) coords
   // Err = 0.5 * (dx/dr * dx/dr^T - dX/dr * dX/dr^T)
@@ -1605,18 +1605,18 @@ void DRT::ELEMENTS::SoSh8::sosh8_get_glstrain_loc(const unsigned gp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
-    const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
-    const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,
-    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd) const
+void Discret::ELEMENTS::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
+    const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
+    const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,
+    const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain,
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd) const
 {
   /* Caution!! the defgrd can not be modified with ANS to remedy locking
      To get the consistent F a spectral decomposition would be necessary, see sosh8_cauchy.
      However if one only maps e.g. stresses from current to material configuration,
      I have never noticed any difference to applying just the disp_based F
      which is therefore computed and passed here (no significant add. computation time).  */
-  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ;
+  Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ;
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   // by N_XYZ = J^-1 * N_rst
   N_XYZ.Multiply(invJ_[gp], derivs[gp]);
@@ -1630,16 +1630,16 @@ void DRT::ELEMENTS::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
 
   // calculate deformation gradient consistent with modified GL strain tensor
   if ((eastype_ != soh8_easnone || anstype_ == ansnone) &&
-      (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->needs_defgrd()))
+      (Teuchos::rcp_static_cast<Mat::So3Material>(Material())->needs_defgrd()))
     calc_consistent_defgrd(defgrd, glstrain, defgrd);
 }
 
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::sosh8_evaluate_t(
-    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT)
+void Discret::ELEMENTS::SoSh8::sosh8_evaluate_t(
+    const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& TinvT)
 {
   // build T^T transformation matrix which maps
   // between global (r,s,t)-coordinates and local (x,y,z)-coords
@@ -1690,7 +1690,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_evaluate_t(
   TinvT(5, 5) = jac(0, 0) * jac(2, 2) + jac(2, 0) * jac(0, 2);
 
   // now evaluate T^{-T} with solver
-  CORE::LINALG::FixedSizeSerialDenseSolver<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D, 1>
+  Core::LinAlg::FixedSizeSerialDenseSolver<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D, 1>
       solve_for_inverseT;
   solve_for_inverseT.SetMatrix(TinvT);
   int err2 = solve_for_inverseT.Factor();
@@ -1702,11 +1702,11 @@ void DRT::ELEMENTS::SoSh8::sosh8_evaluate_t(
 /*----------------------------------------------------------------------*
  |  return Cauchy stress at gp                                 maf 06/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::sosh8_cauchy(
-    CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress, const int gp,
-    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
-    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
-    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress)
+void Discret::ELEMENTS::SoSh8::sosh8_cauchy(
+    Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress, const int gp,
+    const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
+    const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain,
+    const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& stress)
 {
 #if consistent_F
   // double disp1 = defgrd.NormOne();
@@ -1718,20 +1718,20 @@ void DRT::ELEMENTS::SoSh8::sosh8_cauchy(
    * and finally F^mod = RU^mod */
 
   // polar decomposition of displacement based F
-  CORE::LINALG::SerialDenseMatrix u(NUMDIM_SOH8, NUMDIM_SOH8);
-  CORE::LINALG::SerialDenseMatrix s(NUMDIM_SOH8, NUMDIM_SOH8);
-  CORE::LINALG::SerialDenseMatrix v(NUMDIM_SOH8, NUMDIM_SOH8);
+  Core::LinAlg::SerialDenseMatrix u(NUMDIM_SOH8, NUMDIM_SOH8);
+  Core::LinAlg::SerialDenseMatrix s(NUMDIM_SOH8, NUMDIM_SOH8);
+  Core::LinAlg::SerialDenseMatrix v(NUMDIM_SOH8, NUMDIM_SOH8);
   SVD(defgrd, u, s, v);  // Singular Value Decomposition
-  CORE::LINALG::SerialDenseMatrix rot(NUMDIM_SOH8, NUMDIM_SOH8);
-  CORE::LINALG::multiply(rot, u, v);
+  Core::LinAlg::SerialDenseMatrix rot(NUMDIM_SOH8, NUMDIM_SOH8);
+  Core::LinAlg::multiply(rot, u, v);
   // temp.Multiply('N','N',1.0,v,s,0.0);
-  // CORE::LINALG::SerialDenseMatrix stretch_disp(NUMDIM_SOH8,NUMDIM_SOH8);
+  // Core::LinAlg::SerialDenseMatrix stretch_disp(NUMDIM_SOH8,NUMDIM_SOH8);
   // stretch_disp.Multiply('N','T',1.0,temp,v,0.0);
   // defgrd.Multiply('N','N',1.0,rot,stretch_disp,0.0);
   // std::cout << defgrd;
 
   // get modified squared stretch (U^mod)^2 from glstrain
-  CORE::LINALG::SerialDenseMatrix Usq_mod(NUMDIM_SOH8, NUMDIM_SOH8);
+  Core::LinAlg::SerialDenseMatrix Usq_mod(NUMDIM_SOH8, NUMDIM_SOH8);
   for (int i = 0; i < NUMDIM_SOH8; ++i) Usq_mod(i, i) = 2.0 * glstrain(i) + 1.0;
   // off-diagonal terms are already twice in the Voigt-GLstrain-vector
   Usq_mod(0, 1) = glstrain(3);
@@ -1742,15 +1742,15 @@ void DRT::ELEMENTS::SoSh8::sosh8_cauchy(
   Usq_mod(2, 0) = glstrain(5);
   // polar decomposition of (U^mod)^2
   SVD(Usq_mod, u, s, v);  // Singular Value Decomposition
-  CORE::LINALG::SerialDenseMatrix U_mod(NUMDIM_SOH8, NUMDIM_SOH8);
+  Core::LinAlg::SerialDenseMatrix U_mod(NUMDIM_SOH8, NUMDIM_SOH8);
   for (int i = 0; i < NUMDIM_SOH8; ++i) s(i, i) = sqrt(s(i, i));
-  CORE::LINALG::SerialDenseMatrix temp2(NUMDIM_SOH8, NUMDIM_SOH8);
-  CORE::LINALG::multiply(temp2, u, s);
-  CORE::LINALG::multiply(U_mod, temp2, v);
+  Core::LinAlg::SerialDenseMatrix temp2(NUMDIM_SOH8, NUMDIM_SOH8);
+  Core::LinAlg::multiply(temp2, u, s);
+  Core::LinAlg::multiply(U_mod, temp2, v);
 
   // F^mod = RU^mod
-  CORE::LINALG::SerialDenseMatrix defgrd_consistent(NUMDIM_SOH8, NUMDIM_SOH8);
-  CORE::LINALG::multiply(defgrd_consistent, rot, U_mod);
+  Core::LinAlg::SerialDenseMatrix defgrd_consistent(NUMDIM_SOH8, NUMDIM_SOH8);
+  Core::LinAlg::multiply(defgrd_consistent, rot, U_mod);
   defgrd.SetView(defgrd_consistent.A());
 
   /*
@@ -1765,7 +1765,7 @@ void DRT::ELEMENTS::SoSh8::sosh8_cauchy(
 
   double detF = defgrd.Determinant();
 
-  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> pkstress;
+  Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> pkstress;
   pkstress(0, 0) = stress(0);
   pkstress(0, 1) = stress(3);
   pkstress(0, 2) = stress(5);
@@ -1776,8 +1776,8 @@ void DRT::ELEMENTS::SoSh8::sosh8_cauchy(
   pkstress(2, 1) = pkstress(1, 2);
   pkstress(2, 2) = stress(2);
 
-  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchystress;
-  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> temp;
+  Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchystress;
+  Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> temp;
   temp.Multiply(1.0 / detF, defgrd, pkstress);
   cauchystress.MultiplyNT(temp, defgrd);
 
@@ -1791,14 +1791,14 @@ void DRT::ELEMENTS::SoSh8::sosh8_cauchy(
   return;
 }
 
-void DRT::ELEMENTS::SoSh8::do_calc_stc_matrix(
-    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1, const INPAR::STR::StcScale stc_scaling,
-    const int stc_layer, std::vector<int>& lm, DRT::Discretization& discretization,
+void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
+    Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1, const Inpar::STR::StcScale stc_scaling,
+    const int stc_layer, std::vector<int>& lm, Discret::Discretization& discretization,
     bool calcinverse)
 {
   /// Compute C based on element aspect ratio
   double stc_fact = 1.0;
-  if (stc_scaling == INPAR::STR::stc_currsym)
+  if (stc_scaling == Inpar::STR::stc_currsym)
   {
     // stc_fact = sqrt(sosh8_calcaspectratio());
     stc_fact = sosh8_calcaspectratio();
@@ -1829,19 +1829,19 @@ void DRT::ELEMENTS::SoSh8::do_calc_stc_matrix(
     factor4 = 1 - stc_fact;
   }
 
-  if (stc_scaling == INPAR::STR::stc_curr or stc_scaling == INPAR::STR::stc_currsym)
+  if (stc_scaling == Inpar::STR::stc_curr or stc_scaling == Inpar::STR::stc_currsym)
   {
-    CORE::LINALG::Matrix<NUMDOF_SOH8, 1> adjele(true);
-    CORE::Nodes::Node** nodes = Nodes();
+    Core::LinAlg::Matrix<NUMDOF_SOH8, 1> adjele(true);
+    Core::Nodes::Node** nodes = Nodes();
 
-    std::vector<CORE::Conditions::Condition*> cond0;
-    std::vector<CORE::Conditions::Condition*> condFSI0;
+    std::vector<Core::Conditions::Condition*> cond0;
+    std::vector<Core::Conditions::Condition*> condFSI0;
     int condnum0 = 1000;    // minimun STCid of layer with nodes 0..3
     bool current0 = false;  // layer with nodes 0..4 to be scaled
     (nodes[0])->GetCondition("STC Layer", cond0);
     (nodes[0])->GetCondition("FSICoupling", condFSI0);
-    std::vector<CORE::Conditions::Condition*> cond1;
-    std::vector<CORE::Conditions::Condition*> condFSI1;
+    std::vector<Core::Conditions::Condition*> cond1;
+    std::vector<Core::Conditions::Condition*> condFSI1;
     int condnum1 = 1000;    // minimun STCid of layer with nodes 4..7
     bool current1 = false;  // minimun STCid of layer with nodes 4..7
     (nodes[NUMNOD_SOH8 / 2])->GetCondition("STC Layer", cond1);
@@ -1994,7 +1994,7 @@ void DRT::ELEMENTS::SoSh8::do_calc_stc_matrix(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
+int Discret::ELEMENTS::SoSh8Type::Initialize(Discret::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 
@@ -2006,7 +2006,7 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
   {
     // get the actual element
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
 
     if (!actele->nodes_rearranged_)
@@ -2015,32 +2015,32 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
       switch (actele->thickdir_)
       {
         // check for automatic definition of thickness direction
-        case DRT::ELEMENTS::SoSh8::autoj:
+        case Discret::ELEMENTS::SoSh8::autoj:
         {
           actele->thickdir_ = actele->sosh8_findthickdir();
           altered = true;
           break;
         }
         // check for enforced definition of thickness direction
-        case DRT::ELEMENTS::SoSh8::globx:
+        case Discret::ELEMENTS::SoSh8::globx:
         {
-          CORE::LINALG::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
+          Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(0) = 1.0;
           actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
           altered = true;
           break;
         }
-        case DRT::ELEMENTS::SoSh8::globy:
+        case Discret::ELEMENTS::SoSh8::globy:
         {
-          CORE::LINALG::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
+          Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(1) = 1.0;
           actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
           altered = true;
           break;
         }
-        case DRT::ELEMENTS::SoSh8::globz:
+        case Discret::ELEMENTS::SoSh8::globz:
         {
-          CORE::LINALG::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
+          Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(2) = 1.0;
           actele->thickdir_ = actele->sosh8_enfthickdir(thickdirglo);
           altered = true;
@@ -2050,13 +2050,13 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
           break;
       }
 
-      if (altered and (actele->thickdir_ != DRT::ELEMENTS::SoSh8::undefined))
+      if (altered and (actele->thickdir_ != Discret::ELEMENTS::SoSh8::undefined))
       {
         // special element-dependent input of material parameters
-        if (actele->Material()->MaterialType() == CORE::Materials::m_viscoanisotropic)
+        if (actele->Material()->MaterialType() == Core::Materials::m_viscoanisotropic)
         {
-          MAT::ViscoAnisotropic* visco =
-              dynamic_cast<MAT::ViscoAnisotropic*>(actele->Material().get());
+          Mat::ViscoAnisotropic* visco =
+              dynamic_cast<Mat::ViscoAnisotropic*>(actele->Material().get());
           visco->Setup(NUMGPT_SOH8, actele->thickvec_);
           if (actele->thickvec_.size() == 0)
             FOUR_C_THROW("zero size thickness vector for element %d", actele->Id());
@@ -2067,15 +2067,15 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
 
       switch (actele->thickdir_)
       {
-        case DRT::ELEMENTS::SoSh8::globx:
-        case DRT::ELEMENTS::SoSh8::globy:
-        case DRT::ELEMENTS::SoSh8::globz:
+        case Discret::ELEMENTS::SoSh8::globx:
+        case Discret::ELEMENTS::SoSh8::globy:
+        case Discret::ELEMENTS::SoSh8::globz:
         {
           FOUR_C_THROW("This should have been replaced by auto(r|s|t)");
           break;
         }
-        case DRT::ELEMENTS::SoSh8::autor:
-        case DRT::ELEMENTS::SoSh8::enfor:
+        case Discret::ELEMENTS::SoSh8::autor:
+        case Discret::ELEMENTS::SoSh8::enfor:
         {
           // resorting of nodes,
           // such that previous local r-dir is local t-dir afterwards
@@ -2093,8 +2093,8 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case DRT::ELEMENTS::SoSh8::autos:
-        case DRT::ELEMENTS::SoSh8::enfos:
+        case Discret::ELEMENTS::SoSh8::autos:
+        case Discret::ELEMENTS::SoSh8::enfos:
         {
           // resorting of nodes,
           // such that previous local s-dir is local t-dir afterwards
@@ -2110,8 +2110,8 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case DRT::ELEMENTS::SoSh8::autot:
-        case DRT::ELEMENTS::SoSh8::enfot:
+        case Discret::ELEMENTS::SoSh8::autot:
+        case Discret::ELEMENTS::SoSh8::enfot:
         {
           // no resorting necessary
           for (int node = 0; node < 8; ++node)
@@ -2122,32 +2122,32 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case DRT::ELEMENTS::SoSh8::undefined:
+        case Discret::ELEMENTS::SoSh8::undefined:
         {
-          if (actele->eastype_ == DRT::ELEMENTS::SoSh8::soh8_eassosh8)
+          if (actele->eastype_ == Discret::ELEMENTS::SoSh8::soh8_eassosh8)
           {
             // here comes plan B: morph So_sh8 to So_hex8
-            actele->soh8_reiniteas(DRT::ELEMENTS::SoHex8::soh8_easmild);
+            actele->soh8_reiniteas(Discret::ELEMENTS::SoHex8::soh8_easmild);
             actele->anstype_ = SoSh8::ansnone;
             actele->init_jacobian_mapping();
             num_morphed_so_hex8_easmild++;
           }
-          else if (actele->eastype_ == DRT::ELEMENTS::SoSh8::soh8_easnone)
+          else if (actele->eastype_ == Discret::ELEMENTS::SoSh8::soh8_easnone)
           {
             // here comes plan B: morph So_sh8 to So_hex8
-            actele->soh8_reiniteas(DRT::ELEMENTS::SoHex8::soh8_easnone);
+            actele->soh8_reiniteas(Discret::ELEMENTS::SoHex8::soh8_easnone);
             actele->anstype_ = SoSh8::ansnone;
             actele->init_jacobian_mapping();
             num_morphed_so_hex8_easnone++;
           }
-          else if (actele->eastype_ == DRT::ELEMENTS::SoHex8::soh8_easmild)
+          else if (actele->eastype_ == Discret::ELEMENTS::SoHex8::soh8_easmild)
           {
             // this might happen in post filter (for morped sosh8->soh8)
-            actele->soh8_reiniteas(DRT::ELEMENTS::SoHex8::soh8_easmild);
+            actele->soh8_reiniteas(Discret::ELEMENTS::SoHex8::soh8_easmild);
             actele->anstype_ = SoSh8::ansnone;
             actele->init_jacobian_mapping();
           }
-          else if (actele->eastype_ == DRT::ELEMENTS::SoHex8::soh8_easnone)
+          else if (actele->eastype_ == Discret::ELEMENTS::SoHex8::soh8_easnone)
           {
             // this might happen in post filter (for morped sosh8->soh8)
             actele->anstype_ = SoSh8::ansnone;
@@ -2157,7 +2157,7 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
             FOUR_C_THROW("Undefined EAS type");
           break;
         }
-        case DRT::ELEMENTS::SoSh8::none:
+        case Discret::ELEMENTS::SoSh8::none:
           break;
         default:
           FOUR_C_THROW("no thickness direction for So_sh8");
@@ -2191,7 +2191,7 @@ int DRT::ELEMENTS::SoSh8Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::SoSh8*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
     actele->init_jacobian_mapping();
   }

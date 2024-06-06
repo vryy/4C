@@ -24,13 +24,13 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |
  *---------------------------------------------------------------------*/
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::VOLMORTAR
+namespace Core::VolMortar
 {
   class Cell
   {
@@ -39,8 +39,8 @@ namespace CORE::VOLMORTAR
     \brief constructor
 
     */
-    Cell(int id, int nvertices, const CORE::LINALG::SerialDenseMatrix& coords,
-        const CORE::FE::CellType& shape);
+    Cell(int id, int nvertices, const Core::LinAlg::SerialDenseMatrix& coords,
+        const Core::FE::CellType& shape);
 
     /*!
     \brief destructor
@@ -76,7 +76,7 @@ namespace CORE::VOLMORTAR
     \brief get shape
 
     */
-    virtual CORE::FE::CellType Shape() const { return shape_; }
+    virtual Core::FE::CellType Shape() const { return shape_; }
 
     /*!
     \brief get cell volume
@@ -87,12 +87,12 @@ namespace CORE::VOLMORTAR
     //@}
    protected:
     int id_;                                  // local ID of this cell
-    CORE::LINALG::SerialDenseMatrix coords_;  // coords of cell vertices (dim,vertices)
-    CORE::FE::CellType shape_;                // shape of this element (always tet4)
+    Core::LinAlg::SerialDenseMatrix coords_;  // coords of cell vertices (dim,vertices)
+    Core::FE::CellType shape_;                // shape of this element (always tet4)
     double vol_;                              // integration cell volume
   };
 
-}  // namespace CORE::VOLMORTAR
+}  // namespace Core::VolMortar
 
 FOUR_C_NAMESPACE_CLOSE
 

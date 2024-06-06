@@ -39,8 +39,8 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
      * @param [in] constraint_vector constraint vector
      * @param [in] displacements \f$D_{n+1}\f$
      */
-    virtual void EvaluateEquation(CORE::LINALG::SparseMatrix& Q_dd,
-        CORE::LINALG::SparseMatrix& Q_dL, CORE::LINALG::SparseMatrix& Q_Ld,
+    virtual void EvaluateEquation(Core::LinAlg::SparseMatrix& Q_dd,
+        Core::LinAlg::SparseMatrix& Q_dL, Core::LinAlg::SparseMatrix& Q_Ld,
         Epetra_Vector& constraint_vector, const Epetra_Vector& D_np1) = 0;
 
     /*! \brief Return the number of multi point constraints the object contains
@@ -85,8 +85,8 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     LinearCoupledEquation(int id, const std::vector<int>& dofs, std::vector<double> coefficients);
 
     //! derived
-    void EvaluateEquation(CORE::LINALG::SparseMatrix& Q_dd, CORE::LINALG::SparseMatrix& Q_dL,
-        CORE::LINALG::SparseMatrix& Q_Ld, Epetra_Vector& constraint_vector,
+    void EvaluateEquation(Core::LinAlg::SparseMatrix& Q_dd, Core::LinAlg::SparseMatrix& Q_dL,
+        Core::LinAlg::SparseMatrix& Q_Ld, Epetra_Vector& constraint_vector,
         const Epetra_Vector& D_np1) override;
 
    private:

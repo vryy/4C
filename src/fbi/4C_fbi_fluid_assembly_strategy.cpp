@@ -25,19 +25,19 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 
-void FBI::UTILS::FBIAssemblyStrategy::Assemble(const DRT::Discretization& discretization1,
-    const DRT::Discretization& discretization2, std::vector<int> const& elegid,
-    std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
-    std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
+void FBI::UTILS::FBIAssemblyStrategy::Assemble(const Discret::Discretization& discretization1,
+    const Discret::Discretization& discretization2, std::vector<int> const& elegid,
+    std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
+    std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
     Teuchos::RCP<Epetra_FEVector>& f1, Teuchos::RCP<Epetra_FEVector>& f2,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>& c11, Teuchos::RCP<CORE::LINALG::SparseOperator> c22,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>& c12, Teuchos::RCP<CORE::LINALG::SparseMatrix>& c21)
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& c11, Teuchos::RCP<Core::LinAlg::SparseOperator> c22,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& c12, Teuchos::RCP<Core::LinAlg::SparseMatrix>& c21)
 {
   // the entries of elevecX  belong to the Dofs of the element with GID elegidX
   // the rows    of elematXY belong to the Dofs of the element with GID elegidX
   // the columns of elematXY belong to the Dofs of the element with GID elegidY
-  const CORE::Elements::Element* ele1 = discretization1.gElement(elegid[0]);
-  const CORE::Elements::Element* ele2 = discretization2.gElement(elegid[1]);
+  const Core::Elements::Element* ele1 = discretization1.gElement(elegid[0]);
+  const Core::Elements::Element* ele2 = discretization2.gElement(elegid[1]);
 
   // get element location vector and ownerships
   std::vector<int> lmrow1;
@@ -82,11 +82,11 @@ void FBI::UTILS::FBIAssemblyStrategy::Assemble(const DRT::Discretization& discre
  *----------------------------------------------------------------------------*/
 
 void FBI::UTILS::FBIAssemblyStrategy::AssembleFluidMatrix(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> cff, int elegid, const std::vector<int>& lmstride,
-    const CORE::LINALG::SerialDenseMatrix& elemat, const std::vector<int>& lmrow,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> cff, int elegid, const std::vector<int>& lmstride,
+    const Core::LinAlg::SerialDenseMatrix& elemat, const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {
-  Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(cff, true)->FEAssemble(
+  Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(cff, true)->FEAssemble(
       elemat, lmrow, lmcol);
 }
 

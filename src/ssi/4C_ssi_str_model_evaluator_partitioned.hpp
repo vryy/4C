@@ -18,10 +18,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class Structure;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace SSI
 {
@@ -44,20 +44,20 @@ namespace STR
 
       //! @name Functions which are derived from the base generic class
       //! @{
-      [[nodiscard]] INPAR::STR::ModelType Type() const override
+      [[nodiscard]] Inpar::STR::ModelType Type() const override
       {
-        return INPAR::STR::model_partitioned_coupling;
+        return Inpar::STR::model_partitioned_coupling;
       }
 
       bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
 
       bool assemble_jacobian(
-          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
+          Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override;
 
       void determine_stress_strain() override{};
 
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) override;
+          const NOX::Nln::Group& curr_grp) override;
       //! @}
 
      private:

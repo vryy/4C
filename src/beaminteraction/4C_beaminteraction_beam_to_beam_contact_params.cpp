@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::BeamToBeamContactParams::BeamToBeamContactParams()
     : isinit_(false),
       issetup_(false),
-      strategy_(INPAR::BEAMCONTACT::bstr_none),
-      penalty_law_(INPAR::BEAMCONTACT::pl_lp),
+      strategy_(Inpar::BEAMCONTACT::bstr_none),
+      penalty_law_(Inpar::BEAMCONTACT::pl_lp),
       btb_penalty_law_regularization_g0_(-1.0),
       btb_penalty_law_regularization_f0_(-1.0),
       btb_penalty_law_regularization_c0_(-1.0),
@@ -48,21 +48,21 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
 
   // Teuchos parameter list for beam contact
   const Teuchos::ParameterList& beam_contact_params_list =
-      GLOBAL::Problem::Instance()->beam_contact_params();
+      Global::Problem::Instance()->beam_contact_params();
 
   /****************************************************************************/
   // get and check required parameters
   /****************************************************************************/
-  strategy_ = CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::Strategy>(
+  strategy_ = Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::Strategy>(
       beam_contact_params_list, "BEAMS_STRATEGY");
 
-  if (strategy_ != INPAR::BEAMCONTACT::bstr_penalty)
+  if (strategy_ != Inpar::BEAMCONTACT::bstr_penalty)
     FOUR_C_THROW(
         "currently only a penalty strategy is supported for beam contact"
         " if not using the 'old' beam contact manager!");
 
   /****************************************************************************/
-  penalty_law_ = CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(
+  penalty_law_ = Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
       beam_contact_params_list, "BEAMS_PENALTYLAW");
 
   /****************************************************************************/
@@ -71,7 +71,7 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
   btb_penalty_law_regularization_c0_ = beam_contact_params_list.get<double>("BEAMS_PENREGPARAM_C0");
 
   // Todo check and refine these safety checks
-  if (penalty_law_ != INPAR::BEAMCONTACT::pl_lp and penalty_law_ != INPAR::BEAMCONTACT::pl_qp)
+  if (penalty_law_ != Inpar::BEAMCONTACT::pl_lp and penalty_law_ != Inpar::BEAMCONTACT::pl_qp)
   {
     if (btb_penalty_law_regularization_g0_ == -1.0 or btb_penalty_law_regularization_f0_ == -1.0 or
         btb_penalty_law_regularization_c0_ == -1.0)
@@ -83,7 +83,7 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
   // Todo check this parameter
   gap_shift_ = beam_contact_params_list.get<double>("BEAMS_GAPSHIFTPARAM");
 
-  if (gap_shift_ != 0.0 and penalty_law_ != INPAR::BEAMCONTACT::pl_lpqp)
+  if (gap_shift_ != 0.0 and penalty_law_ != Inpar::BEAMCONTACT::pl_lpqp)
     FOUR_C_THROW("BEAMS_GAPSHIFTPARAM only possible for penalty law LinPosQuadPen!");
 
   /****************************************************************************/
@@ -94,7 +94,7 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
 
 
   // input parameters required for all-angle-beam contact formulation ...
-  if (CORE::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_SEGCON"))
+  if (Core::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_SEGCON"))
   {
     /****************************************************************************/
     btb_line_penalty_param_ = beam_contact_params_list.get<double>("BEAMS_BTBLINEPENALTYPARAM");
@@ -151,42 +151,42 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
 
   /****************************************************************************/
   btb_endpoint_penalty_ =
-      CORE::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_ENDPOINTPENALTY");
+      Core::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_ENDPOINTPENALTY");
 
   /****************************************************************************/
   // safety checks for currently unsupported parameter settings
   /****************************************************************************/
-  if (CORE::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_NEWGAP"))
+  if (Core::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_NEWGAP"))
     FOUR_C_THROW("BEAMS_NEWGAP currently not supported!");
 
   /****************************************************************************/
   // for the time being only allow all-angle-beam contact formulation ...
-  if (not CORE::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_SEGCON"))
+  if (not Core::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_SEGCON"))
     FOUR_C_THROW(
         "only all-angle-beam contact (BEAMS_SEGCON) formulation tested yet"
         " in new beam interaction framework!");
 
   /****************************************************************************/
-  if (CORE::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_DEBUG"))
+  if (Core::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_DEBUG"))
     FOUR_C_THROW("get rid of this nasty BEAMS_DEBUG flag");
 
   /****************************************************************************/
-  if (CORE::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_INACTIVESTIFF"))
+  if (Core::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_INACTIVESTIFF"))
     FOUR_C_THROW("get rid of BEAMS_INACTIVESTIFF flag; no longer supported!");
 
   /****************************************************************************/
-  if (CORE::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_BTSOL") or
+  if (Core::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_BTSOL") or
       beam_contact_params_list.get<double>("BEAMS_BTSPENALTYPARAM") != 0.0)
     FOUR_C_THROW("currently only beam-to-(BEAM/SPHERE) contact supported!");
 
   /****************************************************************************/
-  if (CORE::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_SMOOTHING") !=
-      INPAR::BEAMCONTACT::bsm_none)
+  if (Core::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_SMOOTHING") !=
+      Inpar::BEAMCONTACT::bsm_none)
     FOUR_C_THROW("BEAMS_SMOOTHING currently not supported!");
 
   /****************************************************************************/
-  if (CORE::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_DAMPING") !=
-          INPAR::BEAMCONTACT::bd_no or
+  if (Core::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_DAMPING") !=
+          Inpar::BEAMCONTACT::bd_no or
       beam_contact_params_list.get<double>("BEAMS_DAMPINGPARAM") != -1000.0 or
       beam_contact_params_list.get<double>("BEAMS_DAMPREGPARAM1") != -1000.0 or
       beam_contact_params_list.get<double>("BEAMS_DAMPREGPARAM2") != -1000.0)
@@ -201,9 +201,9 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
   if (btb_basicstiff_gap_ != -1.0) FOUR_C_THROW("BEAMS_BASICSTIFFGAP currently not supported!");
 
   /****************************************************************************/
-  if (CORE::UTILS::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(
-          beam_contact_params_list, "BEAMS_OCTREE") != INPAR::BEAMCONTACT::boct_none or
-      CORE::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_ADDITEXT") != true or
+  if (Core::UTILS::IntegralValue<Inpar::BEAMCONTACT::OctreeType>(
+          beam_contact_params_list, "BEAMS_OCTREE") != Inpar::BEAMCONTACT::boct_none or
+      Core::UTILS::IntegralValue<int>(beam_contact_params_list, "BEAMS_ADDITEXT") != true or
       beam_contact_params_list.get<int>("BEAMS_TREEDEPTH") != 6 or
       beam_contact_params_list.get<int>("BEAMS_BOXESINOCT") != 8)
     FOUR_C_THROW(

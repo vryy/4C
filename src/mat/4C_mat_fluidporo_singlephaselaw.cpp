@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroPhaseLaw::FluidPoroPhaseLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::FluidPoroPhaseLaw::FluidPoroPhaseLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata)
 {
   return;
@@ -28,45 +28,45 @@ MAT::PAR::FluidPoroPhaseLaw::FluidPoroPhaseLaw(Teuchos::RCP<CORE::MAT::PAR::Mate
 /*----------------------------------------------------------------------*
  *  factory method for phase law                       vuong 08/16      |
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int phaselawId)
+Mat::PAR::FluidPoroPhaseLaw* Mat::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int phaselawId)
 {
   // retrieve problem instance to read from
-  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // for the sake of safety
-  if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (Global::Problem::Instance(probinst)->Materials() == Teuchos::null)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (Global::Problem::Instance(probinst)->Materials()->Num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
   // retrieve validated input line of material ID in question
-  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(phaselawId);
+  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(phaselawId);
 
   // phase law
-  MAT::PAR::FluidPoroPhaseLaw* phaselaw = nullptr;
+  Mat::PAR::FluidPoroPhaseLaw* phaselaw = nullptr;
 
   // build the pressure-saturation law
   switch (curmat->Type())
   {
-    case CORE::Materials::m_fluidporo_phaselaw_linear:
+    case Core::Materials::m_fluidporo_phaselaw_linear:
     {
-      phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawLinear*>(curmat);
+      phaselaw = static_cast<Mat::PAR::FluidPoroPhaseLawLinear*>(curmat);
       break;
     }
-    case CORE::Materials::m_fluidporo_phaselaw_tangent:
+    case Core::Materials::m_fluidporo_phaselaw_tangent:
     {
-      phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat);
+      phaselaw = static_cast<Mat::PAR::FluidPoroPhaseLawTangent*>(curmat);
       break;
     }
-    case CORE::Materials::m_fluidporo_phaselaw_constraint:
+    case Core::Materials::m_fluidporo_phaselaw_constraint:
     {
-      phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawConstraint*>(curmat);
+      phaselaw = static_cast<Mat::PAR::FluidPoroPhaseLawConstraint*>(curmat);
       break;
     }
-    case CORE::Materials::m_fluidporo_phaselaw_byfunction:
+    case Core::Materials::m_fluidporo_phaselaw_byfunction:
     {
-      phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawByFunction*>(curmat);
+      phaselaw = static_cast<Mat::PAR::FluidPoroPhaseLawByFunction*>(curmat);
       break;
     }
     default:
@@ -79,8 +79,8 @@ MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int pha
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : FluidPoroPhaseLaw(matdata),
       numdof_(matdata->Get<int>("NUMDOF")),
       presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
@@ -97,7 +97,7 @@ MAT::PAR::FluidPoroPhaseLawLinear::FluidPoroPhaseLawLinear(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateSaturation(const std::vector<double>& pressure)
+double Mat::PAR::FluidPoroPhaseLawLinear::EvaluateSaturation(const std::vector<double>& pressure)
 {
   // check if sizes fit
   if (pressure.size() != presids_.size())
@@ -113,7 +113,7 @@ double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateSaturation(const std::vector<d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawLinear::evaluate_deriv_of_saturation_wrt_pressure(
+double Mat::PAR::FluidPoroPhaseLawLinear::evaluate_deriv_of_saturation_wrt_pressure(
     int doftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
@@ -130,7 +130,7 @@ double MAT::PAR::FluidPoroPhaseLawLinear::evaluate_deriv_of_saturation_wrt_press
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawLinear::evaluate_second_deriv_of_saturation_wrt_pressure(
+double Mat::PAR::FluidPoroPhaseLawLinear::evaluate_second_deriv_of_saturation_wrt_pressure(
     int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
@@ -144,7 +144,7 @@ double MAT::PAR::FluidPoroPhaseLawLinear::evaluate_second_deriv_of_saturation_wr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawLinear::evaluate_deriv_of_pressure_wrt_saturation(
+double Mat::PAR::FluidPoroPhaseLawLinear::evaluate_deriv_of_pressure_wrt_saturation(
     int doftoderive, double saturation)
 {
   if (presids_[doftoderive] == 0) return 0.0;
@@ -156,7 +156,7 @@ double MAT::PAR::FluidPoroPhaseLawLinear::evaluate_deriv_of_pressure_wrt_saturat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateGenPressure(double saturation)
+double Mat::PAR::FluidPoroPhaseLawLinear::EvaluateGenPressure(double saturation)
 {
   double presval = 1.0 / reltensions_ * (saturation - sat0_);
 
@@ -168,8 +168,8 @@ double MAT::PAR::FluidPoroPhaseLawLinear::EvaluateGenPressure(double saturation)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroPhaseLawTangent::FluidPoroPhaseLawTangent(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::FluidPoroPhaseLawTangent::FluidPoroPhaseLawTangent(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : FluidPoroPhaseLaw(matdata),
       numdof_(matdata->Get<int>("NUMDOF")),
       presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
@@ -187,7 +187,7 @@ MAT::PAR::FluidPoroPhaseLawTangent::FluidPoroPhaseLawTangent(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateSaturation(const std::vector<double>& pressure)
+double Mat::PAR::FluidPoroPhaseLawTangent::EvaluateSaturation(const std::vector<double>& pressure)
 {
   // check if sizes fit
   if (pressure.size() != presids_.size())
@@ -203,7 +203,7 @@ double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateSaturation(const std::vector<
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawTangent::evaluate_deriv_of_saturation_wrt_pressure(
+double Mat::PAR::FluidPoroPhaseLawTangent::evaluate_deriv_of_saturation_wrt_pressure(
     int doftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
@@ -224,7 +224,7 @@ double MAT::PAR::FluidPoroPhaseLawTangent::evaluate_deriv_of_saturation_wrt_pres
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawTangent::evaluate_second_deriv_of_saturation_wrt_pressure(
+double Mat::PAR::FluidPoroPhaseLawTangent::evaluate_second_deriv_of_saturation_wrt_pressure(
     int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
@@ -254,7 +254,7 @@ double MAT::PAR::FluidPoroPhaseLawTangent::evaluate_second_deriv_of_saturation_w
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawTangent::evaluate_deriv_of_pressure_wrt_saturation(
+double Mat::PAR::FluidPoroPhaseLawTangent::evaluate_deriv_of_pressure_wrt_saturation(
     int doftoderive, double saturation)
 {
   if (presids_[doftoderive] == 0) return 0.0;
@@ -268,7 +268,7 @@ double MAT::PAR::FluidPoroPhaseLawTangent::evaluate_deriv_of_pressure_wrt_satura
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateGenPressure(double saturation)
+double Mat::PAR::FluidPoroPhaseLawTangent::EvaluateGenPressure(double saturation)
 {
   double presval =
       1.0 / reltensions_ * std::tan(0.5 * M_PI * std::pow(sat0_ - saturation, 1.0 / exp_));
@@ -281,8 +281,8 @@ double MAT::PAR::FluidPoroPhaseLawTangent::EvaluateGenPressure(double saturation
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : FluidPoroPhaseLaw(matdata),
       numdof_(matdata->Get<int>("NUMDOF")),
       presids_(matdata->Get<std::vector<int>>("PRESCOEFF")),
@@ -297,9 +297,9 @@ MAT::PAR::FluidPoroPhaseLawByFunction::FluidPoroPhaseLawByFunction(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::PAR::FluidPoroPhaseLawByFunction::Initialize()
+void Mat::PAR::FluidPoroPhaseLawByFunction::Initialize()
 {
-  switch (GLOBAL::Problem::Instance()->NDim())
+  switch (Global::Problem::Instance()->NDim())
   {
     case 1:
       return initialize_internal<1>();
@@ -308,21 +308,21 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::Initialize()
     case 3:
       return initialize_internal<3>();
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void MAT::PAR::FluidPoroPhaseLawByFunction::initialize_internal()
+void Mat::PAR::FluidPoroPhaseLawByFunction::initialize_internal()
 {
-  if (GLOBAL::Problem::Instance()
-          ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
+  if (Global::Problem::Instance()
+          ->FunctionById<Core::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
           .NumberComponents() != 1)
     FOUR_C_THROW("expected only one component for the saturation evaluation");
-  if (GLOBAL::Problem::Instance()
-          ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
+  if (Global::Problem::Instance()
+          ->FunctionById<Core::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
           .NumberComponents() != 1)
     FOUR_C_THROW("expected only one component for the pressure evaluation");
 
@@ -339,10 +339,10 @@ void MAT::PAR::FluidPoroPhaseLawByFunction::initialize_internal()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturation(
+double Mat::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturation(
     const std::vector<double>& pressure)
 {
-  switch (GLOBAL::Problem::Instance()->NDim())
+  switch (Global::Problem::Instance()->NDim())
   {
     case 1:
       return evaluate_saturation_internal<1>(pressure);
@@ -351,7 +351,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturation(
     case 3:
       return evaluate_saturation_internal<3>(pressure);
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
       return 0.0;
   }
 }
@@ -359,7 +359,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateSaturation(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_saturation_internal(
+double Mat::PAR::FluidPoroPhaseLawByFunction::evaluate_saturation_internal(
     const std::vector<double>& pressure)
 {
   // check if sizes fit
@@ -372,17 +372,17 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_saturation_internal(
   // directly write into entry without checking the name for performance reasons
   dp_[0].second = presval;
 
-  return GLOBAL::Problem::Instance()
-      ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
+  return Global::Problem::Instance()
+      ->FunctionById<Core::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
       .Evaluate(dp_, {}, 0);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_saturation_wrt_pressure(
+double Mat::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_saturation_wrt_pressure(
     int doftoderive, const std::vector<double>& pressure)
 {
-  switch (GLOBAL::Problem::Instance()->NDim())
+  switch (Global::Problem::Instance()->NDim())
   {
     case 1:
       return evaluate_deriv_of_saturation_wrt_pressure_internal<1>(doftoderive, pressure);
@@ -391,7 +391,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_saturation_wrt_p
     case 3:
       return evaluate_deriv_of_saturation_wrt_pressure_internal<3>(doftoderive, pressure);
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
       return 0.0;
   }
 }
@@ -399,7 +399,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_saturation_wrt_p
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_saturation_wrt_pressure_internal(
+double Mat::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_saturation_wrt_pressure_internal(
     int doftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
@@ -414,8 +414,8 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_saturation_wrt_p
   dp_[0].second = presval;
 
   std::vector<double> deriv =
-      GLOBAL::Problem::Instance()
-          ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
+      Global::Problem::Instance()
+          ->FunctionById<Core::UTILS::FunctionOfAnything>(functionID_saturation_ - 1)
           .EvaluateDerivative(dp_, {}, 0);
 
   return deriv[0] * presids_[doftoderive];
@@ -423,7 +423,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_saturation_wrt_p
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_second_deriv_of_saturation_wrt_pressure(
+double Mat::PAR::FluidPoroPhaseLawByFunction::evaluate_second_deriv_of_saturation_wrt_pressure(
     int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure)
 {
   // check if sizes fit
@@ -437,10 +437,10 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_second_deriv_of_saturatio
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_pressure_wrt_saturation(
+double Mat::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_pressure_wrt_saturation(
     int doftoderive, double saturation)
 {
-  switch (GLOBAL::Problem::Instance()->NDim())
+  switch (Global::Problem::Instance()->NDim())
   {
     case 1:
       return evaluate_deriv_of_pressure_wrt_saturation_internal<1>(doftoderive, saturation);
@@ -449,7 +449,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_pressure_wrt_sat
     case 3:
       return evaluate_deriv_of_pressure_wrt_saturation_internal<3>(doftoderive, saturation);
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
       return 0.0;
   }
 }
@@ -458,7 +458,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_pressure_wrt_sat
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_pressure_wrt_saturation_internal(
+double Mat::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_pressure_wrt_saturation_internal(
     int doftoderive, double saturation)
 {
   if (presids_[doftoderive] == 0) return 0.0;
@@ -467,8 +467,8 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_pressure_wrt_sat
   s_[0].second = saturation;
 
   std::vector<double> deriv =
-      GLOBAL::Problem::Instance()
-          ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
+      Global::Problem::Instance()
+          ->FunctionById<Core::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
           .EvaluateDerivative(s_, {}, 0);
 
   return deriv[0] * presids_[doftoderive];
@@ -476,9 +476,9 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_deriv_of_pressure_wrt_sat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressure(double saturation)
+double Mat::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressure(double saturation)
 {
-  switch (GLOBAL::Problem::Instance()->NDim())
+  switch (Global::Problem::Instance()->NDim())
   {
     case 1:
       return evaluate_gen_pressure_internal<1>(saturation);
@@ -487,7 +487,7 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressure(double saturat
     case 3:
       return evaluate_gen_pressure_internal<3>(saturation);
     default:
-      FOUR_C_THROW("Unsupported dimension %d.", GLOBAL::Problem::Instance()->NDim());
+      FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::Instance()->NDim());
       return 0.0;
   }
 }
@@ -495,13 +495,13 @@ double MAT::PAR::FluidPoroPhaseLawByFunction::EvaluateGenPressure(double saturat
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-double MAT::PAR::FluidPoroPhaseLawByFunction::evaluate_gen_pressure_internal(double saturation)
+double Mat::PAR::FluidPoroPhaseLawByFunction::evaluate_gen_pressure_internal(double saturation)
 {
   // directly write into entry without checking the name for performance reasons
   s_[0].second = saturation;
 
-  return GLOBAL::Problem::Instance()
-      ->FunctionById<CORE::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
+  return Global::Problem::Instance()
+      ->FunctionById<Core::UTILS::FunctionOfAnything>(functionID_pressure_ - 1)
       .Evaluate(s_, {}, 0);
 }
 

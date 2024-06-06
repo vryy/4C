@@ -23,11 +23,11 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // Forward declarations.
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 namespace GEOMETRYPAIR
 {
   template <typename scalar_type, typename line, typename surface>
@@ -106,8 +106,8 @@ namespace BEAMINTERACTION
      * @param element2 Pointer to the second element
      * @param geometry_evaluation_data_ptr Evaluation data that will be linked to the pair.
      */
-    void CreateGeometryPair(const CORE::Elements::Element* element1,
-        const CORE::Elements::Element* element2,
+    void CreateGeometryPair(const Core::Elements::Element* element1,
+        const Core::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
         override;
 
@@ -132,7 +132,7 @@ namespace BEAMINTERACTION
      * @return 3D vector with the difference in the positions / displacements at the projection
      * point.
      */
-    CORE::LINALG::Matrix<3, 1, scalar_type> evaluate_coupling(
+    Core::LinAlg::Matrix<3, 1, scalar_type> evaluate_coupling(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& evaluation_point) const;
 
     /**
@@ -140,7 +140,7 @@ namespace BEAMINTERACTION
      * @param discret (in) discretization.
      * @return Vector with the GIDs of this pair.
      */
-    std::vector<int> get_pair_gid(const DRT::Discretization& discret) const;
+    std::vector<int> get_pair_gid(const Discret::Discretization& discret) const;
 
    private:
     /**

@@ -21,11 +21,11 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::BeamToSolidParamsBase::BeamToSolidParamsBase()
     : isinit_(false),
       issetup_(false),
-      constraint_enforcement_(INPAR::BEAMTOSOLID::BeamToSolidConstraintEnforcement::none),
-      contact_discretization_(INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none),
-      mortar_shape_function_(INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none),
+      constraint_enforcement_(Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::none),
+      contact_discretization_(Inpar::BeamToSolid::BeamToSolidContactDiscretization::none),
+      mortar_shape_function_(Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::none),
       penalty_parameter_(-1.0),
-      gauss_rule_(CORE::FE::GaussRule1D::undefined),
+      gauss_rule_(Core::FE::GaussRule1D::undefined),
       rotational_coupling_(false)
 {
   // Empty Constructor.
@@ -42,17 +42,17 @@ void BEAMINTERACTION::BeamToSolidParamsBase::SetBaseParams(
   {
     // Constraint enforcement.
     constraint_enforcement_ =
-        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidConstraintEnforcement>(
+        Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidConstraintEnforcement>(
             beam_to_solid_params_list, "CONSTRAINT_STRATEGY");
 
     // Contact discretization to be used.
     contact_discretization_ =
-        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+        Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
             beam_to_solid_params_list, "CONTACT_DISCRETIZATION");
 
     // Contact discretization to be used.
     mortar_shape_function_ =
-        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions>(
+        Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidMortarShapefunctions>(
             beam_to_solid_params_list, "MORTAR_SHAPE_FUNCTION");
 
     // Penalty parameter.
@@ -62,7 +62,7 @@ void BEAMINTERACTION::BeamToSolidParamsBase::SetBaseParams(
 
     // Gauss rule for integration along the beam (segments).
     gauss_rule_ =
-        INPAR::GEOMETRYPAIR::IntToGaussRule1D(beam_to_solid_params_list.get<int>("GAUSS_POINTS"));
+        Inpar::GEOMETRYPAIR::IntToGaussRule1D(beam_to_solid_params_list.get<int>("GAUSS_POINTS"));
   }
 
   isinit_ = true;

@@ -21,10 +21,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::TimIntOneStepTheta::TimIntOneStepTheta(Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, const int probnum)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output, const int probnum)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output, probnum),
       theta_(params_->get<double>("THETA")),
       fsphinp_(Teuchos::null)
@@ -37,7 +37,7 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(Teuchos::RCP<DRT::Discretization>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::Init()
+void ScaTra::TimIntOneStepTheta::Init()
 {
   // initialize base class
   ScaTraTimIntImpl::Init();
@@ -45,7 +45,7 @@ void SCATRA::TimIntOneStepTheta::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::Setup()
+void ScaTra::TimIntOneStepTheta::Setup()
 {
   // setup base class
   ScaTraTimIntImpl::Setup();
@@ -58,9 +58,9 @@ void SCATRA::TimIntOneStepTheta::Setup()
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // fine-scale vector at time n+1
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
-      turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-    fsphinp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  if (fssgd_ != Inpar::ScaTra::fssugrdiff_no or
+      turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
+    fsphinp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // set element parameters
@@ -85,10 +85,10 @@ void SCATRA::TimIntOneStepTheta::Setup()
   {
     if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") == "isotropic")
     {
-      homisoturb_forcing_ = Teuchos::rcp(new SCATRA::HomIsoTurbScalarForcing(this));
+      homisoturb_forcing_ = Teuchos::rcp(new ScaTra::HomIsoTurbScalarForcing(this));
       // initialize forcing algorithm
       homisoturb_forcing_->SetInitialSpectrum(
-          CORE::UTILS::IntegralValue<INPAR::SCATRA::InitialField>(*params_, "INITIALFIELD"));
+          Core::UTILS::IntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
     }
   }
 
@@ -101,8 +101,8 @@ void SCATRA::TimIntOneStepTheta::Setup()
     Teuchos::ParameterList eleparams;
 
     // set action
-    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-        "action", SCATRA::Action::micro_scale_initialize, eleparams);
+    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+        "action", ScaTra::Action::micro_scale_initialize, eleparams);
 
     // loop over macro-scale elements
     discret_->Evaluate(
@@ -112,12 +112,12 @@ void SCATRA::TimIntOneStepTheta::Setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::set_element_time_parameter(bool forcedincrementalsolver) const
+void ScaTra::TimIntOneStepTheta::set_element_time_parameter(bool forcedincrementalsolver) const
 {
   Teuchos::ParameterList eleparams;
 
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::set_time_parameter, eleparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);
   if (!forcedincrementalsolver)
@@ -138,14 +138,14 @@ void SCATRA::TimIntOneStepTheta::set_element_time_parameter(bool forcedincrement
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
+void ScaTra::TimIntOneStepTheta::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
 }
 
 /*----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::print_time_step_info()
+void ScaTra::TimIntOneStepTheta::print_time_step_info()
 {
   if (myrank_ == 0 and not micro_scale_)
   {
@@ -161,7 +161,7 @@ void SCATRA::TimIntOneStepTheta::print_time_step_info()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::set_old_part_of_righthandside()
+void ScaTra::TimIntOneStepTheta::set_old_part_of_righthandside()
 {
   // call base class routine
   ScaTraTimIntImpl::set_old_part_of_righthandside();
@@ -172,7 +172,7 @@ void SCATRA::TimIntOneStepTheta::set_old_part_of_righthandside()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::explicit_predictor() const
+void ScaTra::TimIntOneStepTheta::explicit_predictor() const
 {
   // call base class routine
   ScaTraTimIntImpl::explicit_predictor();
@@ -183,14 +183,14 @@ void SCATRA::TimIntOneStepTheta::explicit_predictor() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::add_neumann_to_residual()
+void ScaTra::TimIntOneStepTheta::add_neumann_to_residual()
 {
   residual_->Update(theta_ * dta_, *neumann_loads_, 1.0);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::av_m3_separation()
+void ScaTra::TimIntOneStepTheta::av_m3_separation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -204,9 +204,9 @@ void SCATRA::TimIntOneStepTheta::av_m3_separation()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::dynamic_computation_of_cs()
+void ScaTra::TimIntOneStepTheta::dynamic_computation_of_cs()
 {
-  if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+  if (turbmodel_ == Inpar::FLUID::dynamic_smagorinsky)
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
@@ -218,9 +218,9 @@ void SCATRA::TimIntOneStepTheta::dynamic_computation_of_cs()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::dynamic_computation_of_cv()
+void ScaTra::TimIntOneStepTheta::dynamic_computation_of_cv()
 {
-  if (turbmodel_ == INPAR::FLUID::dynamic_vreman)
+  if (turbmodel_ == Inpar::FLUID::dynamic_vreman)
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
@@ -230,7 +230,7 @@ void SCATRA::TimIntOneStepTheta::dynamic_computation_of_cv()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::add_time_integration_specific_vectors(bool forcedincrementalsolver)
+void ScaTra::TimIntOneStepTheta::add_time_integration_specific_vectors(bool forcedincrementalsolver)
 {
   // call base class routine
   ScaTraTimIntImpl::add_time_integration_specific_vectors(forcedincrementalsolver);
@@ -241,7 +241,7 @@ void SCATRA::TimIntOneStepTheta::add_time_integration_specific_vectors(bool forc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::compute_time_derivative()
+void ScaTra::TimIntOneStepTheta::compute_time_derivative()
 {
   // call base class routine
   ScaTraTimIntImpl::compute_time_derivative();
@@ -261,7 +261,7 @@ void SCATRA::TimIntOneStepTheta::compute_time_derivative()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::Update()
+void ScaTra::TimIntOneStepTheta::Update()
 {
   // compute time derivative at time n+1
   compute_time_derivative();
@@ -271,8 +271,8 @@ void SCATRA::TimIntOneStepTheta::Update()
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
-  if (calcflux_domain_ != INPAR::SCATRA::flux_none or
-      calcflux_boundary_ != INPAR::SCATRA::flux_none)
+  if (calcflux_domain_ != Inpar::ScaTra::flux_none or
+      calcflux_boundary_ != Inpar::ScaTra::flux_none)
   {
     if (IsResultStep() or do_boundary_flux_statistics()) CalcFlux(true);
   }
@@ -297,8 +297,8 @@ void SCATRA::TimIntOneStepTheta::Update()
     Teuchos::ParameterList eleparams;
 
     // set action
-    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-        "action", SCATRA::Action::micro_scale_update, eleparams);
+    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+        "action", ScaTra::Action::micro_scale_update, eleparams);
 
     // loop over macro-scale elements
     discret_->Evaluate(
@@ -308,7 +308,7 @@ void SCATRA::TimIntOneStepTheta::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::write_restart() const
+void ScaTra::TimIntOneStepTheta::write_restart() const
 {
   // call base class routine
   ScaTraTimIntImpl::write_restart();
@@ -323,20 +323,20 @@ void SCATRA::TimIntOneStepTheta::write_restart() const
 
 /*----------------------------------------------------------------------*
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::read_restart(
-    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
+void ScaTra::TimIntOneStepTheta::read_restart(
+    const int step, Teuchos::RCP<Core::IO::InputControl> input)
 {
   // call base class routine
   ScaTraTimIntImpl::read_restart(step, input);
 
-  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
   {
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
-        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+        discret_, Global::Problem::Instance()->InputControlFile(), step));
   }
   else
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
   time_ = reader->ReadDouble("time");
   step_ = reader->ReadInt("step");
@@ -352,8 +352,8 @@ void SCATRA::TimIntOneStepTheta::read_restart(
 
   read_restart_problem_specific(step, *reader);
 
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
-      turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+  if (fssgd_ != Inpar::ScaTra::fssugrdiff_no or
+      turbmodel_ == Inpar::FLUID::multifractal_subgrid_scales)
     av_m3_preparation();
 
   // read restart on micro scale in multi-scale simulations if necessary
@@ -365,8 +365,8 @@ void SCATRA::TimIntOneStepTheta::read_restart(
     Teuchos::ParameterList eleparams;
 
     // set action
-    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-        "action", SCATRA::Action::micro_scale_read_restart, eleparams);
+    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+        "action", ScaTra::Action::micro_scale_read_restart, eleparams);
 
     // loop over macro-scale elements
     discret_->Evaluate(eleparams);
@@ -375,7 +375,7 @@ void SCATRA::TimIntOneStepTheta::read_restart(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::calc_initial_time_derivative()
+void ScaTra::TimIntOneStepTheta::calc_initial_time_derivative()
 {
   pre_calc_initial_time_derivative();
 
@@ -387,7 +387,7 @@ void SCATRA::TimIntOneStepTheta::calc_initial_time_derivative()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::pre_calc_initial_time_derivative()
+void ScaTra::TimIntOneStepTheta::pre_calc_initial_time_derivative()
 {
   // standard general element parameter without stabilization
   set_element_general_parameters(true);
@@ -404,7 +404,7 @@ void SCATRA::TimIntOneStepTheta::pre_calc_initial_time_derivative()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::post_calc_initial_time_derivative()
+void ScaTra::TimIntOneStepTheta::post_calc_initial_time_derivative()
 {  // and finally undo our temporary settings
   set_element_general_parameters(false);
   set_element_time_parameter(false);
@@ -413,10 +413,10 @@ void SCATRA::TimIntOneStepTheta::post_calc_initial_time_derivative()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::set_state(Teuchos::RCP<Epetra_Vector> phin,
+void ScaTra::TimIntOneStepTheta::set_state(Teuchos::RCP<Epetra_Vector> phin,
     Teuchos::RCP<Epetra_Vector> phinp, Teuchos::RCP<Epetra_Vector> phidtn,
     Teuchos::RCP<Epetra_Vector> phidtnp, Teuchos::RCP<Epetra_Vector> hist,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, const std::vector<double>& phinp_macro,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output, const std::vector<double>& phinp_macro,
     const int step, const double time)
 {
   phin_ = phin;
@@ -433,7 +433,7 @@ void SCATRA::TimIntOneStepTheta::set_state(Teuchos::RCP<Epetra_Vector> phin,
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::ClearState()
+void ScaTra::TimIntOneStepTheta::ClearState()
 {
   phin_ = Teuchos::null;
   phinp_ = Teuchos::null;

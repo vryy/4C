@@ -26,10 +26,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntRedModels::TimIntRedModels(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+FLD::TimIntRedModels::TimIntRedModels(const Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       traction_vel_comp_adder_bc_(Teuchos::null),
       coupled3D_redDbc_art_(Teuchos::null),
@@ -79,9 +79,9 @@ void FLD::TimIntRedModels::Init()
     // Check if one-dimensional artery network problem exist
     if (ART_timeInt_ != Teuchos::null)
     {
-      CORE::IO::DiscretizationWriter output_redD(ART_timeInt_->discretization(),
-          GLOBAL::Problem::Instance()->OutputControlFile(),
-          GLOBAL::Problem::Instance()->spatial_approximation_type());
+      Core::IO::DiscretizationWriter output_redD(ART_timeInt_->discretization(),
+          Global::Problem::Instance()->OutputControlFile(),
+          Global::Problem::Instance()->spatial_approximation_type());
       discret_->ClearState();
       discret_->set_state("velaf", zeros_);
       if (alefluid_)
@@ -89,7 +89,7 @@ void FLD::TimIntRedModels::Init()
         discret_->set_state("dispnp", dispnp_);
       }
       coupled3D_redDbc_art_ =
-          Teuchos::rcp(new UTILS::FluidCouplingWrapper<ADAPTER::ArtNet>(discret_,
+          Teuchos::rcp(new UTILS::FluidCouplingWrapper<Adapter::ArtNet>(discret_,
               ART_timeInt_->discretization(), ART_timeInt_, output_redD, dta_, ART_timeInt_->Dt()));
     }
 
@@ -98,9 +98,9 @@ void FLD::TimIntRedModels::Init()
     // Check if one-dimensional artery network problem exist
     if (airway_imp_timeInt_ != Teuchos::null)
     {
-      CORE::IO::DiscretizationWriter output_redD(airway_imp_timeInt_->discretization(),
-          GLOBAL::Problem::Instance()->OutputControlFile(),
-          GLOBAL::Problem::Instance()->spatial_approximation_type());
+      Core::IO::DiscretizationWriter output_redD(airway_imp_timeInt_->discretization(),
+          Global::Problem::Instance()->OutputControlFile(),
+          Global::Problem::Instance()->spatial_approximation_type());
       discret_->ClearState();
       discret_->set_state("velaf", zeros_);
       if (alefluid_)
@@ -108,7 +108,7 @@ void FLD::TimIntRedModels::Init()
         discret_->set_state("dispnp", dispnp_);
       }
       coupled3D_redDbc_airways_ =
-          Teuchos::rcp(new UTILS::FluidCouplingWrapper<AIRWAY::RedAirwayImplicitTimeInt>(discret_,
+          Teuchos::rcp(new UTILS::FluidCouplingWrapper<Airway::RedAirwayImplicitTimeInt>(discret_,
               airway_imp_timeInt_->discretization(), airway_imp_timeInt_, output_redD, dta_,
               airway_imp_timeInt_->Dt()));
     }
@@ -267,8 +267,8 @@ void FLD::TimIntRedModels::OutputReducedD()
  *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::read_restart(int step)
 {
-  CORE::IO::DiscretizationReader reader(
-      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader reader(
+      discret_, Global::Problem::Instance()->InputControlFile(), step);
 
   vol_surf_flow_bc_->read_restart(reader);
 
@@ -415,7 +415,7 @@ void FLD::TimIntRedModels::av_m3_preparation()
   av_m3_assemble_mat_and_rhs(eleparams);
 
   // apply Womersley as a Dirichlet BC
-  CORE::LINALG::apply_dirichlet_to_system(
+  Core::LinAlg::apply_dirichlet_to_system(
       *sysmat_, *incvel_, *residual_, *zeros_, *(vol_surf_flow_bc_maps_));
 
   // get scale-separation matrix
@@ -428,7 +428,7 @@ void FLD::TimIntRedModels::av_m3_preparation()
 void FLD::TimIntRedModels::CustomSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
   // apply Womersley as a Dirichlet BC
-  CORE::LINALG::apply_dirichlet_to_system(*incvel_, *residual_, *relax, *(vol_surf_flow_bc_maps_));
+  Core::LinAlg::apply_dirichlet_to_system(*incvel_, *residual_, *relax, *(vol_surf_flow_bc_maps_));
 
   // apply Womersley as a Dirichlet BC
   sysmat_->ApplyDirichlet(*(vol_surf_flow_bc_maps_));
@@ -492,14 +492,14 @@ void FLD::TimIntRedModels::apply_dirichlet_to_system()
   if (LocsysManager() != Teuchos::null)
   {
     // apply Womersley as a Dirichlet BC
-    CORE::LINALG::apply_dirichlet_to_system(
-        *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(sysmat_), *incvel_, *residual_,
+    Core::LinAlg::apply_dirichlet_to_system(
+        *Core::LinAlg::CastToSparseMatrixAndCheckSuccess(sysmat_), *incvel_, *residual_,
         *locsysman_->Trafo(), *zeros_, *(vol_surf_flow_bc_maps_));
   }
   else
   {
     // apply Womersley as a Dirichlet BC
-    CORE::LINALG::apply_dirichlet_to_system(
+    Core::LinAlg::apply_dirichlet_to_system(
         *sysmat_, *incvel_, *residual_, *zeros_, *(vol_surf_flow_bc_maps_));
   }
 }

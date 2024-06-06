@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -27,14 +27,14 @@ namespace DRT
 namespace STR
 {
   /// Determine norm of force residual
-  double calculate_vector_norm(const enum INPAR::STR::VectorNorm norm,  ///< type of norm to use
+  double calculate_vector_norm(const enum Inpar::STR::VectorNorm norm,  ///< type of norm to use
       const Teuchos::RCP<Epetra_Vector> vect,                           ///< the vector of interest
       const int numneglect =
           0  ///< number of DOFs that have to be neglected for possible length scaling
   );
 
   /// specific MultiMapExtractor to handle the structure field
-  class MapExtractor : public CORE::LINALG::MultiMapExtractor
+  class MapExtractor : public Core::LinAlg::MultiMapExtractor
   {
    public:
     enum
@@ -50,10 +50,11 @@ namespace STR
     };
 
     /// setup the whole thing
-    void Setup(const DRT::Discretization& dis, const Epetra_Map& fullmap, bool overlapping = false);
+    void Setup(
+        const Discret::Discretization& dis, const Epetra_Map& fullmap, bool overlapping = false);
 
     /// get all element gids those nodes are touched by any condition
-    Teuchos::RCP<std::set<int>> conditioned_element_map(const DRT::Discretization& dis) const;
+    Teuchos::RCP<std::set<int>> conditioned_element_map(const Discret::Discretization& dis) const;
 
     MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
     MAP_EXTRACTOR_VECTOR_METHODS(FSICond, cond_fsi)

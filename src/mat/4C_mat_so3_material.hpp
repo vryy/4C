@@ -21,14 +21,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  class So3Material : public CORE::MAT::Material
+  class So3Material : public Core::Mat::Material
   {
    public:
     int UniqueParObjectId() const override = 0;
 
-    void Pack(CORE::COMM::PackBuffer& data) const override = 0;
+    void Pack(Core::Communication::PackBuffer& data) const override = 0;
 
     void Unpack(const std::vector<char>& data) override = 0;
 
@@ -44,9 +44,9 @@ namespace MAT
      * @param[in] gp       Current Gauss point
      * @param[in] eleGID   Global element ID
      */
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrad,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+    virtual void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrad,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) = 0;
 
     /*!
@@ -60,9 +60,9 @@ namespace MAT
      * @param[in] gp            Current Gauss point
      * @param[in] eleGID        Global element ID
      */
-    virtual void EvaluateNonLinMass(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* linmass_disp, CORE::LINALG::Matrix<6, 1>* linmass_vel, int gp,
+    virtual void EvaluateNonLinMass(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* linmass_disp, Core::LinAlg::Matrix<6, 1>* linmass_vel, int gp,
         int eleGID)
     {
       FOUR_C_THROW("Material of type %d does not support evaluation of nonlinear mass matrix",
@@ -78,7 +78,7 @@ namespace MAT
      * @param[in] eleGID   Global element ID
      */
     virtual void StrainEnergy(
-        const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID)
+        const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID)
     {
       FOUR_C_THROW("Material of type %d does not support calculation of strain energy",
           this->MaterialType());
@@ -132,15 +132,15 @@ namespace MAT
      *                                   \mathbf{\sigma} \cdot \mathbf{n} \cdot
      *                                   \mathbf{v}}{\mathrm{d} \mathbf{F} \mathrm{d} T } \f])
      */
-    virtual void evaluate_cauchy_n_dir_and_derivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
-        const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
-        double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
-        CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
-        CORE::LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
-        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
-        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
+    virtual void evaluate_cauchy_n_dir_and_derivatives(const Core::LinAlg::Matrix<3, 3>& defgrd,
+        const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir,
+        double& cauchy_n_dir, Core::LinAlg::Matrix<3, 1>* d_cauchyndir_dn,
+        Core::LinAlg::Matrix<3, 1>* d_cauchyndir_ddir, Core::LinAlg::Matrix<9, 1>* d_cauchyndir_dF,
+        Core::LinAlg::Matrix<9, 9>* d2_cauchyndir_dF2,
+        Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_dn,
+        Core::LinAlg::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
         const double* concentration, const double* temp, double* d_cauchyndir_dT,
-        CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
+        Core::LinAlg::Matrix<9, 1>* d2_cauchyndir_dF_dT)
     {
       FOUR_C_THROW("evaluate_cauchy_n_dir_and_derivatives not implemented for material of type %d",
           this->MaterialType());
@@ -153,8 +153,8 @@ namespace MAT
      * @param[in] concentration Concentration at Gauss point
      * @param[out] d_F_dx       Derivative of deformation gradient w.r.t. degree of freedom x
      */
-    virtual void evaluate_linearization_od(const CORE::LINALG::Matrix<3, 3>& defgrd,
-        double concentration, CORE::LINALG::Matrix<9, 1>* d_F_dx)
+    virtual void evaluate_linearization_od(const Core::LinAlg::Matrix<3, 3>& defgrd,
+        double concentration, Core::LinAlg::Matrix<9, 1>* d_F_dx)
     {
       FOUR_C_THROW("evaluate_linearization_od not implemented for material of type %d",
           this->MaterialType());
@@ -171,7 +171,7 @@ namespace MAT
     /*!
      * @brief Check if element kinematics and material kinematics are compatible
      */
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem) = 0;
+    virtual void ValidKinematics(Inpar::STR::KinemType kinem) = 0;
 
     /*!
      * @brief Set up for materials with GP data (e.g., history variables)
@@ -179,13 +179,13 @@ namespace MAT
      * @param[in] numgp   Current Gauss point
      * @param[in] linedef Linedefinition
      */
-    virtual void Setup(int numgp, INPUT::LineDefinition* linedef) {}
+    virtual void Setup(int numgp, Input::LineDefinition* linedef) {}
 
     /*!
      * @brief Post setup routine which will be called after all elements were read and set up
      *
      * This method will be called after the input phase to setup the material with
-     * input data that has not yet been read during the Setup(int,INPUT::LineDefinition*) call.
+     * input data that has not yet been read during the Setup(int,Input::LineDefinition*) call.
      *
      * @param[in] params Container for additional information passed from the element
      * @param[in] eleGID Global element ID
@@ -218,7 +218,7 @@ namespace MAT
      * @param[in] params Container for additional information
      * @param[in] eleGID Global element ID
      */
-    virtual void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
+    virtual void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
         Teuchos::ParameterList& params, int const eleGID)
     {
     }
@@ -298,7 +298,7 @@ namespace MAT
      * @return true if data is set by the material, otherwise false
      */
     virtual bool EvaluateOutputData(
-        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
     {
       return false;
     }
@@ -312,7 +312,7 @@ namespace MAT
     virtual bool needs_defgrd() { return false; }
     //@}
   };
-}  // namespace MAT
+}  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

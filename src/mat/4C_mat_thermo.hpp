@@ -16,12 +16,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  class ThermoMaterial : public CORE::MAT::Material, public TRAIT::Thermo
+  class ThermoMaterial : public Core::Mat::Material, public Trait::Thermo
   {
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

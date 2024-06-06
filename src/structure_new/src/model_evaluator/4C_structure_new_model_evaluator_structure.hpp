@@ -23,16 +23,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationVisualizationWriterMesh;
 }
 class BeamDiscretizationRuntimeOutputWriter;
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace STR
 {
@@ -51,7 +51,7 @@ namespace STR
       //! @{
 
       //! derived
-      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_structure; }
+      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_structure; }
 
       //! derived
       void Reset(const Epetra_Vector& x) override;
@@ -85,18 +85,18 @@ namespace STR
 
       //! derived
       bool assemble_jacobian(
-          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
+          Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
       void write_restart(
-          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
-      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
+      void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) override;
+          const NOX::Nln::Group& curr_grp) override;
 
       //! derived
       void RunRecover() override;
@@ -109,7 +109,7 @@ namespace STR
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
-      void Predict(const INPAR::STR::PredEnum& pred_type) override;
+      void Predict(const Inpar::STR::PredEnum& pred_type) override;
 
       //! derived
       void UpdateStepState(const double& timefac_n) override;
@@ -151,7 +151,7 @@ namespace STR
       void ResetStepState() override;
 
       //! derived
-      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
       void runtime_pre_output_step_state() override;
@@ -176,7 +176,7 @@ namespace STR
 
       //! [derived]
       void assemble_jacobian_contributions_from_element_level_for_ptc(
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n) override;
+          Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n) override;
 
       //! [derived]
       void CreateBackupState(const Epetra_Vector& dir) override;
@@ -213,11 +213,11 @@ namespace STR
        *
        *  \author hiermeier \date 02/18 */
       bool pre_apply_force_stiff_external(
-          Epetra_Vector& fextnp, CORE::LINALG::SparseMatrix& stiff) const;
+          Epetra_Vector& fextnp, Core::LinAlg::SparseMatrix& stiff) const;
 
       //! Set the params_interface in the parameter list and call the other evaluate_neumann routine
       void evaluate_neumann(const Teuchos::RCP<Epetra_Vector>& eval_vec,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat);
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat);
 
       /*! \brief Check if the given parameter list is valid and call the
        *  evaluate_neumann routine of the discretization
@@ -228,11 +228,11 @@ namespace STR
        *  \date 08/15
        *  \author hiermeier */
       void evaluate_neumann(Teuchos::ParameterList& p, const Teuchos::RCP<Epetra_Vector>& eval_vec,
-          const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat);
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat);
 
       //! Set the params_interface in the parameter list and call the other evaluate_internal
       //! routine
-      void evaluate_internal(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+      void evaluate_internal(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief Check if the given parameter list is valid and call the
@@ -244,13 +244,13 @@ namespace STR
        *  \date 08/15
        *  \author hiermeier */
       void evaluate_internal(Teuchos::ParameterList& p,
-          Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+          Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief  Set the params_interface in the parameter list and call the other
        * evaluate_internal_specified_elements routine */
       void evaluate_internal_specified_elements(
-          Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+          Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated);
 
       /*! \brief  Check if the given parameter list is valid and call the
@@ -258,7 +258,7 @@ namespace STR
        *
        *  \author grill */
       void evaluate_internal_specified_elements(Teuchos::ParameterList& p,
-          Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+          Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated);
 
       /*! \brief Add static structural internal force and stiffness matrix to the
@@ -273,7 +273,7 @@ namespace STR
        *
        *  \date 09/16
        *  \author hiermeier */
-      void static_contributions(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+      void static_contributions(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief Add static structural internal force to the evaluate call (default)
@@ -298,7 +298,7 @@ namespace STR
        *
        *  \date 09/16
        *  \author hiermeier */
-      void material_damping_contributions(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat);
+      void material_damping_contributions(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat);
 
       /*! \brief Add mass matrix and inertial force to the evaluate call (optional)
        *
@@ -317,7 +317,7 @@ namespace STR
        *
        *  \date 09/16
        *  \author hiermeier */
-      void inertial_contributions(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+      void inertial_contributions(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
           Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief Add inertial force to the evaluate call (optional)
@@ -487,22 +487,22 @@ namespace STR
       const Epetra_Vector& dis_np() const;
 
       //! structural stiffness block
-      CORE::LINALG::SparseMatrix& stiff() const;
+      Core::LinAlg::SparseMatrix& stiff() const;
 
       //! modified stiffness block
-      CORE::LINALG::SparseMatrix& stiff_ptc() const;
+      Core::LinAlg::SparseMatrix& stiff_ptc() const;
 
       //! structural mass matrix
-      CORE::LINALG::SparseOperator& mass();
+      Core::LinAlg::SparseOperator& mass();
 
       //! structural mass matrix (read-only)
-      const CORE::LINALG::SparseOperator& mass() const;
+      const Core::LinAlg::SparseOperator& mass() const;
 
       //! structural damping matrix
-      CORE::LINALG::SparseOperator& damp();
+      Core::LinAlg::SparseOperator& damp();
 
       //! structural damping matrix
-      const CORE::LINALG::SparseOperator& damp() const;
+      const Core::LinAlg::SparseOperator& damp() const;
 
       //! @}
 
@@ -511,16 +511,16 @@ namespace STR
       double* dt_ele_ptr_;
 
       //! mass linearization type
-      enum INPAR::STR::MassLin masslin_type_;
+      enum Inpar::STR::MassLin masslin_type_;
 
       //! @name class only variables
       //! @{
 
       //! structural stiffness matrix
-      CORE::LINALG::SparseMatrix* stiff_ptr_;
+      Core::LinAlg::SparseMatrix* stiff_ptr_;
 
       //! contains ptc stiffness contributions calculated on elements
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptc_ptr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptc_ptr_;
 
       /*! \brief displacement increment
        *  Necessary for the EAS reconstruction, incremental strain evaluation,
@@ -528,9 +528,9 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> dis_incr_ptr_;
 
       //! visualization parameters
-      CORE::IO::VisualizationParameters visualization_params_;
+      Core::IO::VisualizationParameters visualization_params_;
 
-      Teuchos::RCP<CORE::IO::DiscretizationVisualizationWriterMesh> vtu_writer_ptr_;
+      Teuchos::RCP<Core::IO::DiscretizationVisualizationWriterMesh> vtu_writer_ptr_;
 
       //! beam discretization runtime output writer
       Teuchos::RCP<BeamDiscretizationRuntimeOutputWriter> beam_vtu_writer_ptr_;

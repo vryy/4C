@@ -23,12 +23,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   /*!
   \brief handles restart after a certain walltime interval, step interval or on a user signal
@@ -81,7 +81,7 @@ namespace CORE::IO
     /// signal which was caught by the signal handler
     volatile static int signal_;
   };
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 
 FOUR_C_NAMESPACE_CLOSE

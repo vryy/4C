@@ -13,20 +13,20 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::IsoMooneyRivlin::IsoMooneyRivlin(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::IsoMooneyRivlin::IsoMooneyRivlin(
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), c1_(matdata->Get<double>("C1")), c2_(matdata->Get<double>("C2"))
 {
 }
 
-MAT::ELASTIC::IsoMooneyRivlin::IsoMooneyRivlin(MAT::ELASTIC::PAR::IsoMooneyRivlin* params)
+Mat::Elastic::IsoMooneyRivlin::IsoMooneyRivlin(Mat::Elastic::PAR::IsoMooneyRivlin* params)
     : params_(params)
 {
 }
 
-void MAT::ELASTIC::IsoMooneyRivlin::AddStrainEnergy(double& psi,
-    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
-    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
+void Mat::Elastic::IsoMooneyRivlin::AddStrainEnergy(double& psi,
+    const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
+    const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double c1 = params_->c1_;
   const double c2 = params_->c2_;
@@ -36,8 +36,8 @@ void MAT::ELASTIC::IsoMooneyRivlin::AddStrainEnergy(double& psi,
   psi += c1 * (modinv(0) - 3.) + c2 * (modinv(1) - 3.);
 }
 
-void MAT::ELASTIC::IsoMooneyRivlin::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
-    CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
+void Mat::Elastic::IsoMooneyRivlin::add_derivatives_modified(Core::LinAlg::Matrix<3, 1>& dPmodI,
+    Core::LinAlg::Matrix<6, 1>& ddPmodII, const Core::LinAlg::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {
   const double c1 = params_->c1_;

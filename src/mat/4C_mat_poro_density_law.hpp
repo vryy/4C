@@ -16,16 +16,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     //! interface class for generic density law
-    class PoroDensityLaw : public CORE::MAT::PAR::Parameter
+    class PoroDensityLaw : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      explicit PoroDensityLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+      explicit PoroDensityLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
           : Parameter(matdata){};
 
       //! compute derivative of density w.r.t. pressure
@@ -59,7 +59,7 @@ namespace MAT
       virtual double InvBulkmodulus() const = 0;
 
       /// factory method
-      static MAT::PAR::PoroDensityLaw* CreateDensityLaw(int matID);
+      static Mat::PAR::PoroDensityLaw* CreateDensityLaw(int matID);
     };
 
     //! class for constant density law
@@ -67,11 +67,11 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit PoroDensityLawConstant(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+      explicit PoroDensityLawConstant(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
           : PoroDensityLaw(matdata){};
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override { return Teuchos::null; };
+      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
 
       //! compute derivative of density w.r.t. pressure
       double compute_cur_density_derivative(
@@ -124,10 +124,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      explicit PoroDensityLawExp(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit PoroDensityLawExp(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! compute derivative of density w.r.t. pressure
       double compute_cur_density_derivative(
@@ -168,7 +168,7 @@ namespace MAT
     };
 
   }  // namespace PAR
-}  // namespace MAT
+}  // namespace Mat
 
 
 

@@ -21,17 +21,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace SCATRA
+namespace ScaTra
 {
   class TimIntLomaGenAlpha : public virtual ScaTraTimIntLoma, public virtual TimIntGenAlpha
   {
    public:
     /// Standard Constructor
-    TimIntLomaGenAlpha(Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    TimIntLomaGenAlpha(Teuchos::RCP<Discret::Discretization> dis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
 
     /// initialize time integration scheme
@@ -57,7 +57,7 @@ namespace SCATRA
 
     /// read restart data
     void read_restart(
-        const int step, Teuchos::RCP<CORE::IO::InputControl> input = Teuchos::null) override;
+        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
     /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
     double ThermPressAf() override { return thermpressaf_; }
@@ -97,7 +97,7 @@ namespace SCATRA
 
   };  // class TimIntLomaGenAlpha
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

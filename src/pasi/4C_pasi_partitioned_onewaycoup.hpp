@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PASI
+namespace PaSI
 {
   /*!
    * \brief one way coupled partitioned algorithm
@@ -69,7 +69,7 @@ namespace PASI
     void output() override;
   };
 
-}  // namespace PASI
+}  // namespace PaSI
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

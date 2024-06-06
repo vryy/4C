@@ -21,26 +21,26 @@ means are computed as time averages
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
 }
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   class DofSet;
 }
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
-namespace CORE::IO
+}  // namespace Discret
+namespace Core::IO
 {
   class DiscretizationReader;
   class DiscretizationWriter;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 
 namespace FLD
@@ -69,12 +69,12 @@ namespace FLD
     \param (in) the discretisation (containing nodes, dofs etc.)
 
     */
-    TurbulenceStatisticsGeneralMean(Teuchos::RCP<DRT::Discretization> discret, std::string homdir,
-        CORE::LINALG::MapExtractor& velpressplitter, const bool withscatra);
+    TurbulenceStatisticsGeneralMean(Teuchos::RCP<Discret::Discretization> discret,
+        std::string homdir, Core::LinAlg::MapExtractor& velpressplitter, const bool withscatra);
 
-    TurbulenceStatisticsGeneralMean(Teuchos::RCP<DRT::Discretization> discret,
-        Teuchos::RCP<const CORE::Dofsets::DofSet> standarddofset, std::string homdir,
-        CORE::LINALG::MapExtractor& velpressplitter, const bool withscatra);
+    TurbulenceStatisticsGeneralMean(Teuchos::RCP<Discret::Discretization> discret,
+        Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset, std::string homdir,
+        Core::LinAlg::MapExtractor& velpressplitter, const bool withscatra);
 
     /*!
     \brief Destructor (public)
@@ -118,7 +118,7 @@ namespace FLD
     \param (in) input reader to allow restart
 
     */
-    void ReadOldStatistics(CORE::IO::DiscretizationReader& input);
+    void ReadOldStatistics(Core::IO::DiscretizationReader& input);
 
 
     /*!
@@ -127,7 +127,7 @@ namespace FLD
     \param (in) input reader to allow restart
 
     */
-    void read_old_statistics_sca_tra(CORE::IO::DiscretizationReader& input);
+    void read_old_statistics_sca_tra(Core::IO::DiscretizationReader& input);
 
 
     /*!
@@ -136,7 +136,7 @@ namespace FLD
     \param (in) output context
 
     */
-    void WriteOldAverageVec(CORE::IO::DiscretizationWriter& output);
+    void WriteOldAverageVec(Core::IO::DiscretizationWriter& output);
 
     //! @name Misc
 
@@ -168,37 +168,37 @@ namespace FLD
     \brief Redistribute all statistics vectors
 
     */
-    void Redistribute(Teuchos::RCP<const CORE::Dofsets::DofSet> standarddofset,
-        Teuchos::RCP<DRT::Discretization> discret);
+    void Redistribute(Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset,
+        Teuchos::RCP<Discret::Discretization> discret);
 
     /*!
     \brief Add results from scalar transport field solver to statistics
 
     */
     void AddScaTraResults(
-        Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> myphinp);
+        Teuchos::RCP<Discret::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> myphinp);
 
     /*!
     \brief Do output of ScaTra mean field for visualization/restart
            (statistics was already written during call of DoOutput())
 
     */
-    void DoOutputForScaTra(CORE::IO::DiscretizationWriter& output, int step);
+    void DoOutputForScaTra(Core::IO::DiscretizationWriter& output, int step);
 
     //@}
 
    private:
     //! the fluid discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! dofset containing fluid standard dofs (no XFEM dofs)
-    Teuchos::RCP<const CORE::Dofsets::DofSet> standarddofset_;
+    Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset_;
 
     //! the scatra discretization
-    Teuchos::RCP<DRT::Discretization> scatradis_;
+    Teuchos::RCP<Discret::Discretization> scatradis_;
 
     //! a splitter between velocities and pressure dofs
-    CORE::LINALG::MapExtractor& velpressplitter_;
+    Core::LinAlg::MapExtractor& velpressplitter_;
 
     //! vector containing homogeneous directions
     std::vector<int> homdir_;

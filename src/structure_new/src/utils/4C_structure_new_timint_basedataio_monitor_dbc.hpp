@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     /** \brief Input data container for monitoring reaction forces for structural (time) integration
      *
@@ -124,7 +124,7 @@ namespace STR
       /// @}
     };
 
-  }  // namespace TIMINT
+  }  // namespace TimeInt
 }  // namespace STR
 
 

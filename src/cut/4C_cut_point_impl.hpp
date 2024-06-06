@@ -17,11 +17,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
-    namespace IMPL
+    namespace Impl
     {
       class LineBetweenFilter
       {
@@ -67,7 +67,7 @@ namespace CORE::GEO
         Element* element_;
       };
 
-    }  // namespace IMPL
+    }  // namespace Impl
 
     template <class Filter>
     Line* Point::find(Filter& filter, bool unique)
@@ -97,24 +97,24 @@ namespace CORE::GEO
 
     inline Line* Point::CommonLine(Point* other)
     {
-      IMPL::LineBetweenFilter filter(this, other);
+      Impl::LineBetweenFilter filter(this, other);
       return find(filter, true);
     }
 
     inline Line* Point::CutLine(Side* side, bool unique)
     {
-      IMPL::LineHasSideFilter filter(side);
+      Impl::LineHasSideFilter filter(side);
       return find(filter, unique);
     }
 
     inline Line* Point::CutLine(Line* line, Side* side, Element* element)
     {
-      IMPL::NextLineOnElementCutFilter filter(line, side, element);
+      Impl::NextLineOnElementCutFilter filter(line, side, element);
       return find(filter, true);
     }
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

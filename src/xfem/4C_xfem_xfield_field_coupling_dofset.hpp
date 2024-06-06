@@ -30,7 +30,7 @@ namespace XFEM
      *  by returning the maximum number of DoF's at one coupling node.
      *
      *  \author hiermeier \date 09/16 */
-    class CouplingDofSet : public CORE::Dofsets::FixedSizeDofSet
+    class CouplingDofSet : public Core::DOFSets::FixedSizeDofSet
     {
      public:
       /** \brief constructor of the coupling DoF set
@@ -62,7 +62,7 @@ namespace XFEM
        *  \param nodal_dofset_id (in) : id of the nodal dofset
        *
        *  \author hiermeier \date 10/16 */
-      void Dof(std::vector<int>& dofs, const CORE::Nodes::Node* node,
+      void Dof(std::vector<int>& dofs, const Core::Nodes::Node* node,
           unsigned nodal_dofset_id) const override;
 
       /** \brief Get the number of standard DoFs per coupling node
@@ -74,7 +74,7 @@ namespace XFEM
       int num_standard_dof_per_node() const;
 
      protected:
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override;
+      int NumDofPerNode(const Core::Nodes::Node& node) const override;
 
      private:
       /** \brief Get the number of DoFs of the node with the given nodal global ID

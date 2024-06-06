@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
@@ -106,15 +106,15 @@ namespace NOX
           double min_vol_change_ = 1.0;
 
           /// global status of the test
-          NOX::NLN::INNER::StatusTest::StatusType status_ =
-              NOX::NLN::INNER::StatusTest::status_unevaluated;
+          NOX::Nln::Inner::StatusTest::StatusType status_ =
+              NOX::Nln::Inner::StatusTest::status_unevaluated;
 
           /// reference the ostream object
           const ::NOX::Utils& utils_;
         };
       }  // namespace StatusTest
-    }    // namespace INNER
-  }      // namespace NLN
+    }    // namespace Inner
+  }      // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

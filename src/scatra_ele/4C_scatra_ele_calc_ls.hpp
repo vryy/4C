@@ -17,11 +17,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleCalcLS : public ScaTraEleCalc<distype>
     {
      private:
@@ -37,26 +37,26 @@ namespace DRT
       static ScaTraEleCalcLS<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, const SCATRA::Action& action,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
      private:
       // calculate error compared to analytical solution
-      void cal_error_compared_to_analyt_solution(const CORE::Elements::Element* ele,
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephizero,
-          Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& errors);
+      void cal_error_compared_to_analyt_solution(const Core::Elements::Element* ele,
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephizero,
+          Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& errors);
 
       // smoothed heaviside function
       void smooth_heaviside_function(const double charelelength, const double phi, double& smoothH);
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

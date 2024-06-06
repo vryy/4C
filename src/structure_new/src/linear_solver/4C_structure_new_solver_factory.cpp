@@ -42,46 +42,46 @@ STR::SOLVER::Factory::Factory()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolvers(
-    const std::set<enum INPAR::STR::ModelType>& modeltypes, const Teuchos::ParameterList& sdyn,
-    DRT::Discretization& actdis) const
+    const std::set<enum Inpar::STR::ModelType>& modeltypes, const Teuchos::ParameterList& sdyn,
+    Discret::Discretization& actdis) const
 {
   // create a new standard map
   Teuchos::RCP<LinSolMap> linsolvers = Teuchos::rcp(new LinSolMap());
 
-  std::set<enum INPAR::STR::ModelType>::const_iterator mt_iter;
+  std::set<enum Inpar::STR::ModelType>::const_iterator mt_iter;
   // loop over all model types
   for (mt_iter = modeltypes.begin(); mt_iter != modeltypes.end(); ++mt_iter)
   {
     switch (*mt_iter)
     {
-      case INPAR::STR::model_structure:
-      case INPAR::STR::model_springdashpot:
-      case INPAR::STR::model_browniandyn:
-      case INPAR::STR::model_beaminteraction:
-      case INPAR::STR::model_basic_coupling:
-      case INPAR::STR::model_monolithic_coupling:
-      case INPAR::STR::model_partitioned_coupling:
-      case INPAR::STR::model_beam_interaction_old:
-      case INPAR::STR::model_constraints:
+      case Inpar::STR::model_structure:
+      case Inpar::STR::model_springdashpot:
+      case Inpar::STR::model_browniandyn:
+      case Inpar::STR::model_beaminteraction:
+      case Inpar::STR::model_basic_coupling:
+      case Inpar::STR::model_monolithic_coupling:
+      case Inpar::STR::model_partitioned_coupling:
+      case Inpar::STR::model_beam_interaction_old:
+      case Inpar::STR::model_constraints:
       {
         /* Check if the structural linear solver was already added and skip
          * if true. */
-        LinSolMap::iterator iter = linsolvers->find(INPAR::STR::model_structure);
+        LinSolMap::iterator iter = linsolvers->find(Inpar::STR::model_structure);
         if (iter == linsolvers->end())
-          (*linsolvers)[INPAR::STR::model_structure] = build_structure_lin_solver(sdyn, actdis);
+          (*linsolvers)[Inpar::STR::model_structure] = build_structure_lin_solver(sdyn, actdis);
         break;
       }
       /* ToDo Check if this makes sense for simulations where both, meshtying and
        *      contact, are present. If we need two linsolvers, please adjust the
        *      implementation (maps for pre-conditioning, etc.). */
-      case INPAR::STR::model_contact:
-      case INPAR::STR::model_meshtying:
+      case Inpar::STR::model_contact:
+      case Inpar::STR::model_meshtying:
         (*linsolvers)[*mt_iter] = build_meshtying_contact_lin_solver(actdis);
         break;
-      case INPAR::STR::model_lag_pen_constraint:
+      case Inpar::STR::model_lag_pen_constraint:
         (*linsolvers)[*mt_iter] = build_lag_pen_constraint_lin_solver(sdyn, actdis);
         break;
-      case INPAR::STR::model_cardiovascular0d:
+      case Inpar::STR::model_cardiovascular0d:
         (*linsolvers)[*mt_iter] = build_cardiovascular0_d_lin_solver(sdyn, actdis);
         break;
       default:
@@ -97,8 +97,8 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolv
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_structure_lin_solver(
-    const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const
+Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_structure_lin_solver(
+    const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const
 {
   // get the linear solver number used for structural problems
   const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -110,25 +110,25 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_structure_lin_sol
         "Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
 
   const Teuchos::ParameterList& linsolverparams =
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
+      Global::Problem::Instance()->SolverParams(linsolvernumber);
 
-  Teuchos::RCP<CORE::LINALG::Solver> linsolver =
-      Teuchos::rcp(new CORE::LINALG::Solver(linsolverparams, actdis.Comm()));
+  Teuchos::RCP<Core::LinAlg::Solver> linsolver =
+      Teuchos::rcp(new Core::LinAlg::Solver(linsolverparams, actdis.Comm()));
 
   const auto azprectype =
-      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(linsolverparams, "AZPREC");
+      Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(linsolverparams, "AZPREC");
 
   switch (azprectype)
   {
-    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml:
-    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid:
-    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_ml_fluid2:
-    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu:
+    case Core::LinearSolver::PreconditionerType::multigrid_ml:
+    case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid:
+    case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2:
+    case Core::LinearSolver::PreconditionerType::multigrid_muelu:
     {
       actdis.compute_null_space_if_necessary(linsolver->Params());
       break;
     }
-    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_beamsolid:
+    case Core::LinearSolver::PreconditionerType::multigrid_muelu_beamsolid:
     {
       // Create the beam and solid maps
       std::vector<int> solidDofs(0);
@@ -137,16 +137,16 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_structure_lin_sol
       // right now we only allow euler-bernoulli beam elements
       for (int i = 0; i < actdis.NumMyRowElements(); i++)
       {
-        CORE::Elements::Element* element = actdis.lRowElement(i);
+        Core::Elements::Element* element = actdis.lRowElement(i);
 
         if (BEAMINTERACTION::UTILS::IsBeamElement(*element) &&
-            (element->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance()))
+            (element->ElementType() != Discret::ELEMENTS::Beam3ebType::Instance()))
           FOUR_C_THROW("Only beam3eb elements are currently allowed!");
       }
 
       for (int i = 0; i < actdis.NumMyRowNodes(); i++)
       {
-        const CORE::Nodes::Node* node = actdis.lRowNode(i);
+        const Core::Nodes::Node* node = actdis.lRowNode(i);
 
         if (BEAMINTERACTION::UTILS::IsBeamNode(*node))
           actdis.Dof(node, beamDofs);
@@ -183,17 +183,17 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_structure_lin_sol
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
-    DRT::Discretization& actdis) const
+Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
+    Discret::Discretization& actdis) const
 {
-  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& mcparams = Global::Problem::Instance()->contact_dynamic_params();
 
-  const enum INPAR::CONTACT::SolvingStrategy sol_type =
-      static_cast<INPAR::CONTACT::SolvingStrategy>(
-          CORE::UTILS::IntegralValue<int>(mcparams, "STRATEGY"));
+  const enum Inpar::CONTACT::SolvingStrategy sol_type =
+      static_cast<Inpar::CONTACT::SolvingStrategy>(
+          Core::UTILS::IntegralValue<int>(mcparams, "STRATEGY"));
 
-  const enum INPAR::CONTACT::SystemType sys_type =
-      static_cast<INPAR::CONTACT::SystemType>(CORE::UTILS::IntegralValue<int>(mcparams, "SYSTEM"));
+  const enum Inpar::CONTACT::SystemType sys_type =
+      static_cast<Inpar::CONTACT::SystemType>(Core::UTILS::IntegralValue<int>(mcparams, "SYSTEM"));
 
   const int lin_solver_id = mcparams.get<int>("LINEAR_SOLVER");
 
@@ -202,15 +202,15 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_meshtying_contact
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
-    DRT::Discretization& actdis, enum INPAR::CONTACT::SolvingStrategy sol_type,
-    enum INPAR::CONTACT::SystemType sys_type, const int lin_solver_id)
+Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
+    Discret::Discretization& actdis, enum Inpar::CONTACT::SolvingStrategy sol_type,
+    enum Inpar::CONTACT::SystemType sys_type, const int lin_solver_id)
 {
-  Teuchos::RCP<CORE::LINALG::Solver> linsolver = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::null;
 
   // get mortar information
-  std::vector<CORE::Conditions::Condition*> mtcond(0);
-  std::vector<CORE::Conditions::Condition*> ccond(0);
+  std::vector<Core::Conditions::Condition*> mtcond(0);
+  std::vector<Core::Conditions::Condition*> ccond(0);
   actdis.GetCondition("Mortar", mtcond);
   actdis.GetCondition("Contact", ccond);
   bool onlymeshtying = false;
@@ -224,12 +224,12 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_meshtying_contact
   switch (sol_type)
   {
     // treat the steepest ascent strategy as a condensed system
-    case INPAR::CONTACT::solution_steepest_ascent:
-      sys_type = INPAR::CONTACT::system_condensed;
+    case Inpar::CONTACT::solution_steepest_ascent:
+      sys_type = Inpar::CONTACT::system_condensed;
       break;
     // in case of the combo strategy, the actual linear solver can change during
     // the simulation and is therefore provided by the strategy
-    case INPAR::CONTACT::solution_combo:
+    case Inpar::CONTACT::solution_combo:
       return Teuchos::null;
     default:
       // do nothing
@@ -238,7 +238,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_meshtying_contact
 
   switch (sys_type)
   {
-    case INPAR::CONTACT::system_saddlepoint:
+    case Inpar::CONTACT::system_saddlepoint:
     {
       // meshtying/contact for structure
       // check if the meshtying/contact solver has a valid solver number
@@ -250,19 +250,19 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_meshtying_contact
       // plausibility check
 
       // solver can be either UMFPACK (direct solver) or an iterative solver
-      const auto sol = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(
-          GLOBAL::Problem::Instance()->SolverParams(lin_solver_id), "SOLVER");
-      const auto prec = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
-          GLOBAL::Problem::Instance()->SolverParams(lin_solver_id), "AZPREC");
-      if (sol != CORE::LINEAR_SOLVER::SolverType::umfpack &&
-          sol != CORE::LINEAR_SOLVER::SolverType::superlu)
+      const auto sol = Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(
+          Global::Problem::Instance()->SolverParams(lin_solver_id), "SOLVER");
+      const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
+          Global::Problem::Instance()->SolverParams(lin_solver_id), "AZPREC");
+      if (sol != Core::LinearSolver::SolverType::umfpack &&
+          sol != Core::LinearSolver::SolverType::superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner like CheapSIMPLE
-        if (prec != CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple &&
+        if (prec != Core::LinearSolver::PreconditionerType::cheap_simple &&
             prec !=
-                CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp)  // TODO adapt
-                                                                                     // error
-                                                                                     // message
+                Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)  // TODO adapt
+                                                                                    // error
+                                                                                    // message
           FOUR_C_THROW(
               "You have chosen an iterative linear solver. For mortar/Contact in saddlepoint "
               "formulation you have to choose a block preconditioner such as SIMPLE. Choose "
@@ -272,8 +272,8 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_meshtying_contact
       }
 
       // build meshtying/contact solver
-      linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
-          GLOBAL::Problem::Instance()->SolverParams(lin_solver_id), actdis.Comm()));
+      linsolver = Teuchos::rcp(new Core::LinAlg::Solver(
+          Global::Problem::Instance()->SolverParams(lin_solver_id), actdis.Comm()));
 
       actdis.compute_null_space_if_necessary(linsolver->Params());
 
@@ -287,19 +287,19 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_meshtying_contact
             "this cannot be: no saddlepoint problem for beamcontact "
             "or pure structure problem.");
 
-      if (sol_type == INPAR::CONTACT::solution_lagmult or
-          sol_type == INPAR::CONTACT::solution_augmented or
-          sol_type == INPAR::CONTACT::solution_std_lagrange or
-          sol_type == INPAR::CONTACT::solution_steepest_ascent_sp)
+      if (sol_type == Inpar::CONTACT::solution_lagmult or
+          sol_type == Inpar::CONTACT::solution_augmented or
+          sol_type == Inpar::CONTACT::solution_std_lagrange or
+          sol_type == Inpar::CONTACT::solution_steepest_ascent_sp)
       {
         // provide null space information
-        if (prec == CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple)
+        if (prec == Core::LinearSolver::PreconditionerType::cheap_simple)
         {
           // Inverse2 is created within blockpreconditioners.cpp
           actdis.compute_null_space_if_necessary(
               linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"));
         }
-        else if (prec == CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu_contactsp)
+        else if (prec == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
         { /* do nothing here */
         }
       }
@@ -315,8 +315,8 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_meshtying_contact
             "Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
       // build meshtying solver
-      linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
-          GLOBAL::Problem::Instance()->SolverParams(lin_solver_id), actdis.Comm()));
+      linsolver = Teuchos::rcp(new Core::LinAlg::Solver(
+          Global::Problem::Instance()->SolverParams(lin_solver_id), actdis.Comm()));
       actdis.compute_null_space_if_necessary(linsolver->Params());
     }
     break;
@@ -328,52 +328,52 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_meshtying_contact
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_lag_pen_constraint_lin_solver(
-    const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const
+Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_lag_pen_constraint_lin_solver(
+    const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const
 {
-  Teuchos::RCP<CORE::LINALG::Solver> linsolver = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::null;
 
-  const Teuchos::ParameterList& mcparams = GLOBAL::Problem::Instance()->contact_dynamic_params();
+  const Teuchos::ParameterList& mcparams = Global::Problem::Instance()->contact_dynamic_params();
   const Teuchos::ParameterList& strparams =
-      GLOBAL::Problem::Instance()->structural_dynamic_params();
+      Global::Problem::Instance()->structural_dynamic_params();
 
   // solution algorithm - direct, simple or Uzawa
-  INPAR::STR::ConSolveAlgo algochoice =
-      CORE::UTILS::IntegralValue<INPAR::STR::ConSolveAlgo>(strparams, "UZAWAALGO");
+  Inpar::STR::ConSolveAlgo algochoice =
+      Core::UTILS::IntegralValue<Inpar::STR::ConSolveAlgo>(strparams, "UZAWAALGO");
 
   switch (algochoice)
   {
-    case INPAR::STR::consolve_direct:
+    case Inpar::STR::consolve_direct:
     {
       const int linsolvernumber = strparams.get<int>("LINEAR_SOLVER");
 
       // build constraint-structural linear solver
-      linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
-          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
+      linsolver = Teuchos::rcp(new Core::LinAlg::Solver(
+          Global::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
 
-      linsolver->Params() = CORE::LINALG::Solver::translate_solver_parameters(
-          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
+      linsolver->Params() = Core::LinAlg::Solver::translate_solver_parameters(
+          Global::Problem::Instance()->SolverParams(linsolvernumber));
     }
     break;
-    case INPAR::STR::consolve_simple:
+    case Inpar::STR::consolve_simple:
     {
       const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
 
       // build constraint-structural linear solver
-      linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
-          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
+      linsolver = Teuchos::rcp(new Core::LinAlg::Solver(
+          Global::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
 
-      linsolver->Params() = CORE::LINALG::Solver::translate_solver_parameters(
-          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
+      linsolver->Params() = Core::LinAlg::Solver::translate_solver_parameters(
+          Global::Problem::Instance()->SolverParams(linsolvernumber));
 
       if (!linsolver->Params().isSublist("Belos Parameters"))
         FOUR_C_THROW("Iterative solver expected!");
 
-      const auto prec = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
-          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
+      const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
+          Global::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       switch (prec)
       {
-        case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
+        case Core::LinearSolver::PreconditionerType::cheap_simple:
         {
           // add Inverse1 block for velocity dofs
           // tell Inverse1 block about nodal_block_information
@@ -398,7 +398,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_lag_pen_constrain
       }
     }
     break;
-    case INPAR::STR::consolve_uzawa:
+    case Inpar::STR::consolve_uzawa:
     {
       FOUR_C_THROW(
           "Uzawa-type solution techniques for constraints aren't supported anymore within the new "
@@ -415,39 +415,39 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_lag_pen_constrain
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_cardiovascular0_d_lin_solver(
-    const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const
+Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_cardiovascular0_d_lin_solver(
+    const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis) const
 {
-  Teuchos::RCP<CORE::LINALG::Solver> linsolver = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::null;
 
 
   const Teuchos::ParameterList& cardvasc0dstructparams =
-      GLOBAL::Problem::Instance()->cardiovascular0_d_structural_params();
+      Global::Problem::Instance()->cardiovascular0_d_structural_params();
   const int linsolvernumber = cardvasc0dstructparams.get<int>("LINEAR_COUPLED_SOLVER");
 
   // build 0D cardiovascular-structural linear solver
-  linsolver = Teuchos::rcp(new CORE::LINALG::Solver(
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
+  linsolver = Teuchos::rcp(new Core::LinAlg::Solver(
+      Global::Problem::Instance()->SolverParams(linsolvernumber), actdis.Comm()));
 
-  linsolver->Params() = CORE::LINALG::Solver::translate_solver_parameters(
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber));
+  linsolver->Params() = Core::LinAlg::Solver::translate_solver_parameters(
+      Global::Problem::Instance()->SolverParams(linsolvernumber));
 
   // solution algorithm - direct or simple
-  INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice =
-      CORE::UTILS::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo>(
+  Inpar::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice =
+      Core::UTILS::IntegralValue<Inpar::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo>(
           cardvasc0dstructparams, "SOLALGORITHM");
 
   switch (algochoice)
   {
-    case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_direct:
+    case Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_direct:
       break;
-    case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_simple:
+    case Inpar::CARDIOVASCULAR0D::cardvasc0dsolve_simple:
     {
-      const auto prec = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
-          GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
+      const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
+          Global::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       switch (prec)
       {
-        case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
+        case Core::LinearSolver::PreconditionerType::cheap_simple:
         {
           // add Inverse1 block for velocity dofs
           // tell Inverse1 block about nodal_block_information
@@ -482,9 +482,9 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::build_cardiovascular0_d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
-STR::SOLVER::BuildLinSolvers(const std::set<enum INPAR::STR::ModelType>& modeltypes,
-    const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis)
+Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+STR::SOLVER::BuildLinSolvers(const std::set<enum Inpar::STR::ModelType>& modeltypes,
+    const Teuchos::ParameterList& sdyn, Discret::Discretization& actdis)
 {
   Factory factory;
   return factory.BuildLinSolvers(modeltypes, sdyn, actdis);

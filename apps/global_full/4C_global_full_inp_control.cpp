@@ -29,18 +29,18 @@ void ntainp_ccadiscret(
 {
   using namespace FourC;
 
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetCommunicators()->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = problem->GetCommunicators()->GlobalComm();
   int group = problem->GetCommunicators()->GroupId();
-  CORE::COMM::NestedParallelismType npType = problem->GetCommunicators()->NpType();
+  Core::Communication::NestedParallelismType npType = problem->GetCommunicators()->NpType();
 
 
 
   // and now the actual reading
-  CORE::IO::DatFileReader reader(inputfile_name, lcomm);
+  Core::IO::DatFileReader reader(inputfile_name, lcomm);
 
-  GLOBAL::ReadParameter(*problem, reader);
+  Global::ReadParameter(*problem, reader);
 
   SetupParallelOutput(outputfile_kenner, lcomm, group);
 
@@ -48,42 +48,42 @@ void ntainp_ccadiscret(
   problem->OpenControlFile(*lcomm, inputfile_name, outputfile_kenner, restartfile_kenner);
 
   // input of materials
-  GLOBAL::ReadMaterials(*problem, reader);
+  Global::ReadMaterials(*problem, reader);
 
   // input of materials
-  GLOBAL::ReadContactConstitutiveLaws(*problem, reader);
+  Global::ReadContactConstitutiveLaws(*problem, reader);
 
   // input of materials of cloned fields (if needed)
-  GLOBAL::ReadCloningMaterialMap(*problem, reader);
+  Global::ReadCloningMaterialMap(*problem, reader);
 
   {
-    CORE::UTILS::FunctionManager function_manager;
+    Core::UTILS::FunctionManager function_manager;
     GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
     function_manager.ReadInput(reader);
     problem->SetFunctionManager(std::move(function_manager));
   }
 
   // input of particles
-  GLOBAL::ReadParticles(*problem, reader);
+  Global::ReadParticles(*problem, reader);
 
   switch (npType)
   {
-    case CORE::COMM::NestedParallelismType::no_nested_parallelism:
-    case CORE::COMM::NestedParallelismType::every_group_read_dat_file:
-    case CORE::COMM::NestedParallelismType::separate_dat_files:
+    case Core::Communication::NestedParallelismType::no_nested_parallelism:
+    case Core::Communication::NestedParallelismType::every_group_read_dat_file:
+    case Core::Communication::NestedParallelismType::separate_dat_files:
       // input of fields
-      GLOBAL::ReadFields(*problem, reader);
+      Global::ReadFields(*problem, reader);
 
       // read result tests
-      GLOBAL::ReadResult(*problem, reader);
+      Global::ReadResult(*problem, reader);
 
       // read all types of geometry related conditions (e.g. boundary conditions)
       // Also read time and space functions and local coord systems
-      GLOBAL::ReadConditions(*problem, reader);
+      Global::ReadConditions(*problem, reader);
 
       // read all knot information for isogeometric analysis
       // and add it to the (derived) nurbs discretization
-      GLOBAL::ReadKnots(*problem, reader);
+      Global::ReadKnots(*problem, reader);
       break;
     default:
       FOUR_C_THROW("nptype (nested parallelity type) not recognized");
@@ -106,13 +106,13 @@ void SetupParallelOutput(std::string& outputfile_kenner, Teuchos::RCP<Epetra_Com
   using namespace FourC;
 
   // configure the parallel output environment
-  const Teuchos::ParameterList& io = GLOBAL::Problem::Instance()->IOParams();
-  bool screen = CORE::UTILS::IntegralValue<int>(io, "WRITE_TO_SCREEN");
-  bool file = CORE::UTILS::IntegralValue<int>(io, "WRITE_TO_FILE");
-  bool preGrpID = CORE::UTILS::IntegralValue<int>(io, "PREFIX_GROUP_ID");
+  const Teuchos::ParameterList& io = Global::Problem::Instance()->IOParams();
+  bool screen = Core::UTILS::IntegralValue<int>(io, "WRITE_TO_SCREEN");
+  bool file = Core::UTILS::IntegralValue<int>(io, "WRITE_TO_FILE");
+  bool preGrpID = Core::UTILS::IntegralValue<int>(io, "PREFIX_GROUP_ID");
   int oproc = io.get<int>("LIMIT_OUTP_TO_PROC");
-  auto level = CORE::UTILS::IntegralValue<CORE::IO::Verbositylevel>(io, "VERBOSITY");
+  auto level = Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(io, "VERBOSITY");
 
-  CORE::IO::cout.setup(
+  Core::IO::cout.setup(
       screen, file, preGrpID, level, std::move(lcomm), oproc, group, outputfile_kenner);
 }

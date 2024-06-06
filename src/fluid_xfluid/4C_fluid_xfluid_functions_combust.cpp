@@ -16,18 +16,18 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateCombustFunction(
-      const std::vector<INPUT::LineDefinition>& function_line_defs)
+  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> CreateCombustFunction(
+      const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
     if (function_line_defs.front().HaveNamed("ZALESAKSDISK"))
     {
-      return Teuchos::rcp(new DRT::UTILS::ZalesaksDiskFunction());
+      return Teuchos::rcp(new Discret::UTILS::ZalesaksDiskFunction());
     }
     else if (function_line_defs.front().HaveNamed("COLLAPSINGWATERCOLUMN"))
     {
-      return Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunction());
+      return Teuchos::rcp(new Discret::UTILS::CollapsingWaterColumnFunction());
     }
     else
     {
@@ -36,13 +36,13 @@ namespace
   }
 }  // namespace
 
-void DRT::UTILS::AddValidCombustFunctions(CORE::UTILS::FunctionManager& function_manager)
+void Discret::UTILS::AddValidCombustFunctions(Core::UTILS::FunctionManager& function_manager)
 {
-  INPUT::LineDefinition zalesaksdisk =
-      INPUT::LineDefinition::Builder().AddTag("ZALESAKSDISK").Build();
+  Input::LineDefinition zalesaksdisk =
+      Input::LineDefinition::Builder().AddTag("ZALESAKSDISK").Build();
 
-  INPUT::LineDefinition collapsingwatercolumn =
-      INPUT::LineDefinition::Builder().AddTag("COLLAPSINGWATERCOLUMN").Build();
+  Input::LineDefinition collapsingwatercolumn =
+      Input::LineDefinition::Builder().AddTag("COLLAPSINGWATERCOLUMN").Build();
 
   function_manager.add_function_definition(
       {std::move(zalesaksdisk), std::move(collapsingwatercolumn)}, CreateCombustFunction);
@@ -50,7 +50,7 @@ void DRT::UTILS::AddValidCombustFunctions(CORE::UTILS::FunctionManager& function
 
 
 
-double DRT::UTILS::ZalesaksDiskFunction::Evaluate(
+double Discret::UTILS::ZalesaksDiskFunction::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // the disk consists of 3 lines and a part of a circle and four points
@@ -123,7 +123,7 @@ double DRT::UTILS::ZalesaksDiskFunction::Evaluate(
 }
 
 
-double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(
+double Discret::UTILS::CollapsingWaterColumnFunction::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // here calculation of distance (sign is already taken in consideration)

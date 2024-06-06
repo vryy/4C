@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void MORTAR::INTERFACEUTILS::ComputeParallelDistributionStatistics(
+void Mortar::InterfaceUtils::ComputeParallelDistributionStatistics(
     const std::vector<int>& quantityAcrossAllRanks, int& minOverAllRanks, int& maxOverAllRanks,
     double& meanOverAllRanks)
 {
@@ -28,7 +28,7 @@ void MORTAR::INTERFACEUTILS::ComputeParallelDistributionStatistics(
                      static_cast<double>(quantityAcrossAllRanks.size());
 }
 
-void MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+void Mortar::InterfaceUtils::ComputeAndPrintRowOfParallelDistributionStatisctics(
     const std::string& nameOfQuantity, const std::vector<int>& quantityAcrossAllRanks,
     const bool printOnThisRank)
 {
@@ -38,7 +38,7 @@ void MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics
     int maxOverAllRanks = -1;
     double meanOverAllRanks = -1.0;
 
-    MORTAR::INTERFACEUTILS::ComputeParallelDistributionStatistics(
+    Mortar::InterfaceUtils::ComputeParallelDistributionStatistics(
         quantityAcrossAllRanks, minOverAllRanks, maxOverAllRanks, meanOverAllRanks);
 
     std::stringstream maxToMinRatio;

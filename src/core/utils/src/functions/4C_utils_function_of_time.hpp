@@ -25,7 +25,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   /*!
    * \brief interface for time-dependent functions.
@@ -80,7 +80,7 @@ namespace CORE::UTILS
     using FirstDerivativeType = Sacado::Fad::DFad<double>;
 
     //! vector of parsed expressions
-    std::vector<Teuchos::RCP<CORE::UTILS::SymbolicExpression<ValueType>>> expr_;
+    std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<ValueType>>> expr_;
 
 
     //! vector of the function variables and all their definitions
@@ -89,9 +89,9 @@ namespace CORE::UTILS
 
   //! create a vector function of time from multiple expressions
   Teuchos::RCP<FunctionOfTime> TryCreateFunctionOfTime(
-      const std::vector<INPUT::LineDefinition>& function_line_defs);
+      const std::vector<Input::LineDefinition>& function_line_defs);
 
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

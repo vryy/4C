@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHPhaseChangeBase::SPHPhaseChangeBase(const Teuchos::ParameterList& params)
+ParticleInteraction::SPHPhaseChangeBase::SPHPhaseChangeBase(const Teuchos::ParameterList& params)
     : params_sph_(params),
       belowphase_(PARTICLEENGINE::Phase1),
       abovephase_(PARTICLEENGINE::Phase2),
@@ -34,7 +34,7 @@ PARTICLEINTERACTION::SPHPhaseChangeBase::SPHPhaseChangeBase(const Teuchos::Param
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeBase::Init()
+void ParticleInteraction::SPHPhaseChangeBase::Init()
 {
   // read from input file
   std::string word;
@@ -105,10 +105,10 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::Init()
   }
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeBase::Setup(
+void ParticleInteraction::SPHPhaseChangeBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle)
+    const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+    const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -129,7 +129,7 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::Setup(
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeBase::evaluate_phase_change_from_below_to_above_phase(
+void ParticleInteraction::SPHPhaseChangeBase::evaluate_phase_change_from_below_to_above_phase(
     std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase,
     std::vector<std::set<int>>& particlestoremove,
     std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>>& particlestoinsert)
@@ -159,13 +159,13 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::evaluate_phase_change_from_below_t
   const double* state = container->GetPtrToState(transitionstate_, 0);
 
   // get material for particle types
-  const MAT::PAR::ParticleMaterialBase* material_source =
+  const Mat::PAR::ParticleMaterialBase* material_source =
       particlematerial_->get_ptr_to_particle_mat_parameter(type_source);
-  const MAT::PAR::ParticleMaterialBase* material_target =
+  const Mat::PAR::ParticleMaterialBase* material_target =
       particlematerial_->get_ptr_to_particle_mat_parameter(type_target);
 
   // get equation of state of target particle type
-  const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_target;
+  const ParticleInteraction::SPHEquationOfStateBase* equationofstate_target;
   if (not isboundaryrigid_target)
     equationofstate_target =
         equationofstatebundle_->get_ptr_to_specific_equation_of_state(type_target);
@@ -213,7 +213,7 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::evaluate_phase_change_from_below_t
   }
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeBase::evaluate_phase_change_from_above_to_below_phase(
+void ParticleInteraction::SPHPhaseChangeBase::evaluate_phase_change_from_above_to_below_phase(
     std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase,
     std::vector<std::set<int>>& particlestoremove,
     std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>>& particlestoinsert)
@@ -243,13 +243,13 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::evaluate_phase_change_from_above_t
   const double* state = container->GetPtrToState(transitionstate_, 0);
 
   // get material for particle types
-  const MAT::PAR::ParticleMaterialBase* material_source =
+  const Mat::PAR::ParticleMaterialBase* material_source =
       particlematerial_->get_ptr_to_particle_mat_parameter(type_source);
-  const MAT::PAR::ParticleMaterialBase* material_target =
+  const Mat::PAR::ParticleMaterialBase* material_target =
       particlematerial_->get_ptr_to_particle_mat_parameter(type_target);
 
   // get equation of state of target particle type
-  const PARTICLEINTERACTION::SPHEquationOfStateBase* equationofstate_target;
+  const ParticleInteraction::SPHEquationOfStateBase* equationofstate_target;
   if (not isboundaryrigid_target)
     equationofstate_target =
         equationofstatebundle_->get_ptr_to_specific_equation_of_state(type_target);
@@ -297,14 +297,14 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::evaluate_phase_change_from_above_t
   }
 }
 
-PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarBelowToAbove::SPHPhaseChangeOneWayScalarBelowToAbove(
+ParticleInteraction::SPHPhaseChangeOneWayScalarBelowToAbove::SPHPhaseChangeOneWayScalarBelowToAbove(
     const Teuchos::ParameterList& params)
     : SPHPhaseChangeBase::SPHPhaseChangeBase(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarBelowToAbove::EvaluatePhaseChange(
+void ParticleInteraction::SPHPhaseChangeOneWayScalarBelowToAbove::EvaluatePhaseChange(
     std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const
 {
   // determine size of vectors indexed by particle types
@@ -325,14 +325,14 @@ void PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarBelowToAbove::EvaluatePhaseC
   particleengineinterface_->hand_over_particles_to_be_inserted(particlestoinsert);
 }
 
-PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarAboveToBelow::SPHPhaseChangeOneWayScalarAboveToBelow(
+ParticleInteraction::SPHPhaseChangeOneWayScalarAboveToBelow::SPHPhaseChangeOneWayScalarAboveToBelow(
     const Teuchos::ParameterList& params)
     : SPHPhaseChangeBase::SPHPhaseChangeBase(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarAboveToBelow::EvaluatePhaseChange(
+void ParticleInteraction::SPHPhaseChangeOneWayScalarAboveToBelow::EvaluatePhaseChange(
     std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const
 {
   // determine size of vectors indexed by particle types
@@ -353,14 +353,14 @@ void PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarAboveToBelow::EvaluatePhaseC
   particleengineinterface_->hand_over_particles_to_be_inserted(particlestoinsert);
 }
 
-PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::SPHPhaseChangeTwoWayScalar(
+ParticleInteraction::SPHPhaseChangeTwoWayScalar::SPHPhaseChangeTwoWayScalar(
     const Teuchos::ParameterList& params)
     : SPHPhaseChangeBase::SPHPhaseChangeBase(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange(
+void ParticleInteraction::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange(
     std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const
 {
   // determine size of vectors indexed by particle types

@@ -39,18 +39,18 @@ class VtuWriter : public VtkWriterBase
 
   //! write the geometry defining this unstructured grid
   void write_geometry_unstructured_grid(const std::vector<double>& point_coordinates,
-      const std::vector<CORE::IO::index_type>& point_cell_connectivity,
-      const std::vector<CORE::IO::index_type>& cell_offset, const std::vector<uint8_t>& cell_types,
-      const std::vector<CORE::IO::index_type>& face_connectivity,
-      const std::vector<CORE::IO::index_type>& face_offset);
+      const std::vector<Core::IO::index_type>& point_cell_connectivity,
+      const std::vector<Core::IO::index_type>& cell_offset, const std::vector<uint8_t>& cell_types,
+      const std::vector<Core::IO::index_type>& face_connectivity,
+      const std::vector<Core::IO::index_type>& face_offset);
 
 
   //! write a data vector with num_component values of type T per point
-  void write_point_data_vector(const CORE::IO::visualization_vector_type_variant& data,
+  void write_point_data_vector(const Core::IO::visualization_vector_type_variant& data,
       unsigned int num_components_per_point, const std::string& name);
 
   //! write a data vector with num_component values of type T per cell
-  void WriteCellDataVector(const CORE::IO::visualization_vector_type_variant& data,
+  void WriteCellDataVector(const Core::IO::visualization_vector_type_variant& data,
       unsigned int num_components_per_cell, const std::string& name);
 
 

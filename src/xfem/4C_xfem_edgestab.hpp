@@ -24,7 +24,7 @@ continuous interior penalty) scheme
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class DiscretizationFaces;
@@ -34,34 +34,34 @@ namespace DRT
     class Fluid;
     class FluidIntFace;
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::FE
+namespace Core::FE
 {
   class AssembleStrategy;
 }
 
-namespace CORE::MAT
+namespace Core::Mat
 {
   class Material;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   class CutWizard;
 
-  namespace CUT
+  namespace Cut
   {
     class SideHandle;
   }
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
@@ -80,11 +80,11 @@ namespace XFEM
     //! routine
     void evaluate_edge_stab_ghost_penalty(
         Teuchos::ParameterList& eleparams,                      ///< element parameter list
-        Teuchos::RCP<DRT::Discretization> discret,              ///< discretization
-        DRT::ELEMENTS::FluidIntFace* faceele,                   ///< face element
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+        Teuchos::RCP<Discret::Discretization> discret,          ///< discretization
+        Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
         Teuchos::RCP<Epetra_Vector> systemvector,               ///< systemvector
-        Teuchos::RCP<CORE::GEO::CutWizard> wizard,              ///< cut wizard
+        Teuchos::RCP<Core::Geo::CutWizard> wizard,              ///< cut wizard
         bool include_inner,        ///< stabilize also facets with inside position
         bool include_inner_faces,  ///< stabilize also faces with inside position if possible
         bool gmsh_eos_out = true   ///< stabilization gmsh output
@@ -93,35 +93,35 @@ namespace XFEM
     //! calls the evaluate and assemble routine for edge based stabilization and ghost penaly in the
     //! XFEM
     void assemble_edge_stab_ghost_penalty(
-        Teuchos::ParameterList& eleparams,       ///< element parameter list
-        const INPAR::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
-        DRT::ELEMENTS::FluidIntFace* intface,    ///< internal face element
-        Teuchos::RCP<CORE::MAT::Material>& material_m,  ///< material of the master side
-        Teuchos::RCP<CORE::MAT::Material>& material_s,  ///< material of the slave side
-        std::vector<int>& nds_master,        ///< nodal dofset vector w.r.t. master element
-        std::vector<int>& nds_slave,         ///< nodal dofset vector w.r.t. slave element
-        DRT::DiscretizationFaces& xdiscret,  ///< discretization with faces
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+        Teuchos::ParameterList& eleparams,         ///< element parameter list
+        const Inpar::XFEM::FaceType& face_type,    ///< which type of face std, ghost, ghost-penalty
+        Discret::ELEMENTS::FluidIntFace* intface,  ///< internal face element
+        Teuchos::RCP<Core::Mat::Material>& material_m,  ///< material of the master side
+        Teuchos::RCP<Core::Mat::Material>& material_s,  ///< material of the slave side
+        std::vector<int>& nds_master,            ///< nodal dofset vector w.r.t. master element
+        std::vector<int>& nds_slave,             ///< nodal dofset vector w.r.t. slave element
+        Discret::DiscretizationFaces& xdiscret,  ///< discretization with faces
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
         Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
     );
 
     //! prepares edge based stabilization for standard fluid
     void EvaluateEdgeStabStd(Teuchos::ParameterList& eleparams,  ///< element parameter list
-        Teuchos::RCP<DRT::Discretization> discret,               ///< discretization
-        DRT::ELEMENTS::FluidIntFace* faceele,                    ///< face element
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,   ///< systemmatrix
+        Teuchos::RCP<Discret::Discretization> discret,           ///< discretization
+        Discret::ELEMENTS::FluidIntFace* faceele,                ///< face element
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
         Teuchos::RCP<Epetra_Vector> systemvector                 ///< systemvector
     );
 
     //! prepares edge based stabilization for fluid-fluid applications, where we want to apply
     //! EOS pressure stabilizing terms to the interface-contributing embedded fluid elements
     void evaluate_edge_stab_boundary_gp(
-        Teuchos::ParameterList& eleparams,          ///< element parameter list
-        Teuchos::RCP<DRT::Discretization> discret,  ///< discretization
-        Teuchos::RCP<DRT::Discretization>
+        Teuchos::ParameterList& eleparams,              ///< element parameter list
+        Teuchos::RCP<Discret::Discretization> discret,  ///< discretization
+        Teuchos::RCP<Discret::Discretization>
             boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
-        DRT::ELEMENTS::FluidIntFace* faceele,                   ///< face element
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+        Discret::ELEMENTS::FluidIntFace* faceele,               ///< face element
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
         Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
     );
 
@@ -134,8 +134,8 @@ namespace XFEM
 
    private:
     //! get the cut side for face's element identified using the sorted node ids
-    CORE::GEO::CUT::SideHandle* get_face(
-        CORE::Elements::Element* faceele, Teuchos::RCP<CORE::GEO::CutWizard> wizard);
+    Core::Geo::Cut::SideHandle* get_face(
+        Core::Elements::Element* faceele, Teuchos::RCP<Core::Geo::CutWizard> wizard);
 
     // reset maps for output
     void reset();

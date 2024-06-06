@@ -21,22 +21,22 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ScatraMatPoroECM::ScatraMatPoroECM(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ScatraMatPoroECM::ScatraMatPoroECM(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : ScatraReactionMat(matdata), reacscale_(matdata->Get<double>("REACSCALE"))
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraMatPoroECM::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatPoroECM::create_material()
 {
-  return Teuchos::rcp(new MAT::ScatraMatPoroECM(this));
+  return Teuchos::rcp(new Mat::ScatraMatPoroECM(this));
 }
 
 
-MAT::ScatraMatPoroECMType MAT::ScatraMatPoroECMType::instance_;
+Mat::ScatraMatPoroECMType Mat::ScatraMatPoroECMType::instance_;
 
-CORE::COMM::ParObject* MAT::ScatraMatPoroECMType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ScatraMatPoroECMType::Create(const std::vector<char>& data)
 {
-  MAT::ScatraMatPoroECM* scatra_mat = new MAT::ScatraMatPoroECM();
+  Mat::ScatraMatPoroECM* scatra_mat = new Mat::ScatraMatPoroECM();
   scatra_mat->Unpack(data);
   return scatra_mat;
 }
@@ -44,21 +44,21 @@ CORE::COMM::ParObject* MAT::ScatraMatPoroECMType::Create(const std::vector<char>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMatPoroECM::ScatraMatPoroECM() : params_(nullptr), reaccoeff_(0.0) {}
+Mat::ScatraMatPoroECM::ScatraMatPoroECM() : params_(nullptr), reaccoeff_(0.0) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMatPoroECM::ScatraMatPoroECM(MAT::PAR::ScatraMatPoroECM* params)
+Mat::ScatraMatPoroECM::ScatraMatPoroECM(Mat::PAR::ScatraMatPoroECM* params)
     : ScatraReactionMat(params), params_(params), reaccoeff_(0.0)
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatPoroECM::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ScatraMatPoroECM::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -79,24 +79,24 @@ void MAT::ScatraMatPoroECM::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatPoroECM::Unpack(const std::vector<char>& data)
+void Mat::ScatraMatPoroECM::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ScatraMatPoroECM*>(mat);
+        params_ = static_cast<Mat::PAR::ScatraMatPoroECM*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -113,7 +113,7 @@ void MAT::ScatraMatPoroECM::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatPoroECM::ComputeReacCoeff(double chempot)
+void Mat::ScatraMatPoroECM::ComputeReacCoeff(double chempot)
 {
   reaccoeff_ = params_->reaccoeff_ * exp(params_->reacscale_ * chempot);
   return;

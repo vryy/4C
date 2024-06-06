@@ -26,11 +26,11 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  template <CORE::FE::CellType celltype>
-  INPUT::LineDefinition::Builder GetDefaultLineDefinitionBuilder()
+  template <Core::FE::CellType celltype>
+  Input::LineDefinition::Builder GetDefaultLineDefinitionBuilder()
   {
-    return INPUT::LineDefinition::Builder()
-        .AddIntVector(CORE::FE::CellTypeToString(celltype), CORE::FE::num_nodes<celltype>)
+    return Input::LineDefinition::Builder()
+        .AddIntVector(Core::FE::CellTypeToString(celltype), Core::FE::num_nodes<celltype>)
         .AddNamedInt("MAT")
         .AddNamedString("KINEM")
         .add_optional_named_double_vector("RAD", 3)
@@ -44,145 +44,146 @@ namespace
   }
 }  // namespace
 
-DRT::ELEMENTS::SolidPoroType DRT::ELEMENTS::SolidPoroType::instance_;
+Discret::ELEMENTS::SolidPoroType Discret::ELEMENTS::SolidPoroType::instance_;
 
-DRT::ELEMENTS::SolidPoroType& DRT::ELEMENTS::SolidPoroType::Instance() { return instance_; }
+Discret::ELEMENTS::SolidPoroType& Discret::ELEMENTS::SolidPoroType::Instance() { return instance_; }
 
-void DRT::ELEMENTS::SolidPoroType::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::SolidPoroType::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defsgeneral = definitions["SOLIDPORO"];
+  std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["SOLIDPORO"];
 
-  defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::hex8)] =
-      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::hex8>()
+  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex8)] =
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex8>()
           .add_optional_named_string("EAS")
           .AddOptionalTag("FBAR")
           .Build();
 
-  defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::hex27)] =
-      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::hex27>().Build();
+  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::hex27)] =
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::hex27>().Build();
 
 
-  defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::tet4)] =
-      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::tet4>().Build();
+  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet4)] =
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet4>().Build();
 
-  defsgeneral[CORE::FE::CellTypeToString(CORE::FE::CellType::tet10)] =
-      GetDefaultLineDefinitionBuilder<CORE::FE::CellType::tet10>().Build();
+  defsgeneral[Core::FE::CellTypeToString(Core::FE::CellType::tet10)] =
+      GetDefaultLineDefinitionBuilder<Core::FE::CellType::tet10>().Build();
 }
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SolidPoroType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidPoroType::Create(
     const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLIDPORO") return Create(id, owner);
   return Teuchos::null;
 }
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SolidPoroType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidPoroType::Create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::SolidPoro(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::SolidPoro(id, owner));
 }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::SolidPoroType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SolidPoroType::Create(
+    const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::SolidPoro(-1, -1);
+  auto* object = new Discret::ELEMENTS::SolidPoro(-1, -1);
   object->Unpack(data);
   return object;
 }
 
-void DRT::ELEMENTS::SolidPoroType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::SolidPoroType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SolidPoroType::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidPoroType::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-DRT::ELEMENTS::SolidPoro::SolidPoro(int id, int owner) : CORE::Elements::Element(id, owner) {}
+Discret::ELEMENTS::SolidPoro::SolidPoro(int id, int owner) : Core::Elements::Element(id, owner) {}
 
-CORE::Elements::Element* DRT::ELEMENTS::SolidPoro::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SolidPoro::Clone() const
 {
-  return new DRT::ELEMENTS::SolidPoro(*this);
+  return new Discret::ELEMENTS::SolidPoro(*this);
 }
 
-int DRT::ELEMENTS::SolidPoro::NumLine() const
+int Discret::ELEMENTS::SolidPoro::NumLine() const
 {
-  return CORE::FE::getNumberOfElementLines(celltype_);
+  return Core::FE::getNumberOfElementLines(celltype_);
 }
 
-int DRT::ELEMENTS::SolidPoro::NumSurface() const
+int Discret::ELEMENTS::SolidPoro::NumSurface() const
 {
-  return CORE::FE::getNumberOfElementSurfaces(celltype_);
+  return Core::FE::getNumberOfElementSurfaces(celltype_);
 }
 
-int DRT::ELEMENTS::SolidPoro::NumVolume() const
+int Discret::ELEMENTS::SolidPoro::NumVolume() const
 {
-  return CORE::FE::getNumberOfElementVolumes(celltype_);
+  return Core::FE::getNumberOfElementVolumes(celltype_);
 }
 
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SolidPoro::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SolidPoro::Lines()
 {
-  return CORE::COMM::GetElementLines<StructuralLine, SolidPoro>(*this);
+  return Core::Communication::GetElementLines<StructuralLine, SolidPoro>(*this);
 }
 
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::SolidPoro::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SolidPoro::Surfaces()
 {
-  return CORE::COMM::GetElementSurfaces<StructuralSurface, SolidPoro>(*this);
+  return Core::Communication::GetElementSurfaces<StructuralSurface, SolidPoro>(*this);
 }
 
-void DRT::ELEMENTS::SolidPoro::set_params_interface_ptr(const Teuchos::ParameterList& p)
+void Discret::ELEMENTS::SolidPoro::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
-        p.get<Teuchos::RCP<CORE::Elements::ParamsInterface>>("interface"));
+        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   }
   else
     interface_ptr_ = Teuchos::null;
 }
 
-bool DRT::ELEMENTS::SolidPoro::ReadElement(
-    const std::string& eletype, const std::string& elecelltype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::SolidPoro::ReadElement(
+    const std::string& eletype, const std::string& elecelltype, Input::LineDefinition* linedef)
 {
   // read base element
   // set cell type
-  celltype_ = CORE::FE::StringToCellType(elecelltype);
+  celltype_ = Core::FE::StringToCellType(elecelltype);
 
   // read number of material model
-  SetMaterial(0, MAT::Factory(STR::UTILS::READELEMENT::ReadElementMaterial(linedef)));
+  SetMaterial(0, Mat::Factory(STR::UTILS::ReadElement::ReadElementMaterial(linedef)));
 
   // kinematic type
-  solid_ele_property_.kintype = STR::UTILS::READELEMENT::ReadElementKinematicType(linedef);
+  solid_ele_property_.kintype = STR::UTILS::ReadElement::ReadElementKinematicType(linedef);
 
   // check element technology
   if (linedef->HaveNamed("TECH"))
   {
-    if (STR::UTILS::READELEMENT::ReadElementTechnology(linedef) != ElementTechnology::none)
+    if (STR::UTILS::ReadElement::ReadElementTechnology(linedef) != ElementTechnology::none)
       FOUR_C_THROW("SOLIDPORO elements do not support any element technology!");
   }
 
   // read scalar transport implementation type
   if (linedef->HaveNamed("POROTYPE"))
   {
-    poro_ele_property_.porotype = STR::UTILS::READELEMENT::ReadPoroType(linedef);
+    poro_ele_property_.porotype = STR::UTILS::ReadElement::ReadPoroType(linedef);
   }
   else
   {
-    poro_ele_property_.porotype = INPAR::PORO::PoroType::undefined;
+    poro_ele_property_.porotype = Inpar::Poro::PoroType::undefined;
   }
 
   // read scalar transport implementation type
   if (linedef->HaveNamed("TYPE"))
   {
-    poro_ele_property_.impltype = STR::UTILS::READELEMENT::ReadType(linedef);
+    poro_ele_property_.impltype = STR::UTILS::ReadElement::ReadType(linedef);
   }
   else
   {
-    poro_ele_property_.impltype = INPAR::SCATRA::impltype_undefined;
+    poro_ele_property_.impltype = Inpar::ScaTra::impltype_undefined;
   }
 
   solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);
@@ -199,21 +200,21 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
   return true;
 }
 
-MAT::So3Material& DRT::ELEMENTS::SolidPoro::SolidPoroMaterial(int nummat) const
+Mat::So3Material& Discret::ELEMENTS::SolidPoro::SolidPoroMaterial(int nummat) const
 {
-  return *Teuchos::rcp_dynamic_cast<MAT::So3Material>(
-      CORE::Elements::Element::Material(nummat), true);
+  return *Teuchos::rcp_dynamic_cast<Mat::So3Material>(
+      Core::Elements::Element::Material(nummat), true);
 }
 
-void DRT::ELEMENTS::SolidPoro::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::SolidPoro::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   AddtoPack(data, UniqueParObjectId());
 
   // add base class Element
-  CORE::Elements::Element::Pack(data);
+  Core::Elements::Element::Pack(data);
 
   AddtoPack(data, (int)celltype_);
 
@@ -226,11 +227,11 @@ void DRT::ELEMENTS::SolidPoro::Pack(CORE::COMM::PackBuffer& data) const
   data.AddtoPack(material_post_setup_);
 
   // optional data, e.g., EAS data
-  DRT::ELEMENTS::Pack(solid_calc_variant_, data);
-  DRT::ELEMENTS::Pack(solidporo_calc_variant_, data);
+  Discret::ELEMENTS::Pack(solid_calc_variant_, data);
+  Discret::ELEMENTS::Pack(solidporo_calc_variant_, data);
 }
 
-void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
@@ -239,71 +240,71 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  CORE::Elements::Element::Unpack(basedata);
+  Core::Elements::Element::Unpack(basedata);
 
-  celltype_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  celltype_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
 
   ExtractFromPack(position, data, solid_ele_property_);
 
-  poro_ele_property_.porotype = static_cast<INPAR::PORO::PoroType>(ExtractInt(position, data));
+  poro_ele_property_.porotype = static_cast<Inpar::Poro::PoroType>(ExtractInt(position, data));
 
-  poro_ele_property_.impltype = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position, data));
+  poro_ele_property_.impltype = static_cast<Inpar::ScaTra::ImplType>(ExtractInt(position, data));
 
-  CORE::COMM::ParObject::ExtractfromPack(position, data, material_post_setup_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, material_post_setup_);
 
   // reset solid and poro interfaces
   solid_calc_variant_ = CreateSolidCalculationInterface(celltype_, solid_ele_property_);
   solidporo_calc_variant_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
 
-  DRT::ELEMENTS::Unpack(solid_calc_variant_, position, data);
-  DRT::ELEMENTS::Unpack(solidporo_calc_variant_, position, data);
+  Discret::ELEMENTS::Unpack(solid_calc_variant_, position, data);
+  Discret::ELEMENTS::Unpack(solidporo_calc_variant_, position, data);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
 }
 
-void DRT::ELEMENTS::SolidPoro::VisNames(std::map<std::string, int>& names)
+void Discret::ELEMENTS::SolidPoro::VisNames(std::map<std::string, int>& names)
 {
-  CORE::Elements::Element::VisNames(names);
+  Core::Elements::Element::VisNames(names);
   SolidPoroMaterial().VisNames(names);
 }
 
-bool DRT::ELEMENTS::SolidPoro::VisData(const std::string& name, std::vector<double>& data)
+bool Discret::ELEMENTS::SolidPoro::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (CORE::Elements::Element::VisData(name, data)) return true;
+  if (Core::Elements::Element::VisData(name, data)) return true;
 
   return SolidPoroMaterial().VisData(name, data, Id());
 }
 
-MAT::StructPoro& DRT::ELEMENTS::SolidPoro::StructPoroMaterial(int nummat) const
+Mat::StructPoro& Discret::ELEMENTS::SolidPoro::StructPoroMaterial(int nummat) const
 {
   auto porostruct_mat =
-      Teuchos::rcp_dynamic_cast<MAT::StructPoro>(CORE::Elements::Element::Material(nummat), true);
+      Teuchos::rcp_dynamic_cast<Mat::StructPoro>(Core::Elements::Element::Material(nummat), true);
 
   if (porostruct_mat == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
 
-  if (porostruct_mat->MaterialType() != CORE::Materials::m_structporo and
-      porostruct_mat->MaterialType() != CORE::Materials::m_structpororeaction and
-      porostruct_mat->MaterialType() != CORE::Materials::m_structpororeactionECM)
+  if (porostruct_mat->MaterialType() != Core::Materials::m_structporo and
+      porostruct_mat->MaterialType() != Core::Materials::m_structpororeaction and
+      porostruct_mat->MaterialType() != Core::Materials::m_structpororeactionECM)
     FOUR_C_THROW("invalid structure material for poroelasticity");
 
   return *porostruct_mat;
 }
-MAT::FluidPoroMultiPhase& DRT::ELEMENTS::SolidPoro::fluid_poro_multi_material(int nummat) const
+Mat::FluidPoroMultiPhase& Discret::ELEMENTS::SolidPoro::fluid_poro_multi_material(int nummat) const
 {
   if (this->NumMaterial() <= 1)
   {
     FOUR_C_THROW("No second material defined for SolidPoro element %i", Id());
   }
 
-  auto fluidmulti_mat = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(
-      CORE::Elements::Element::Material(1), true);
+  auto fluidmulti_mat = Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(
+      Core::Elements::Element::Material(1), true);
 
   if (fluidmulti_mat == Teuchos::null)
     FOUR_C_THROW("cast to multiphase fluid poro material failed");
-  if (fluidmulti_mat->MaterialType() != CORE::Materials::m_fluidporo_multiphase and
-      fluidmulti_mat->MaterialType() != CORE::Materials::m_fluidporo_multiphase_reactions)
+  if (fluidmulti_mat->MaterialType() != Core::Materials::m_fluidporo_multiphase and
+      fluidmulti_mat->MaterialType() != Core::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW("invalid fluid material for poro-multiphase-elasticity");
   if (fluidmulti_mat->NumFluidPhases() == 0)
   {

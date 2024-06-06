@@ -24,23 +24,23 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for de St. Venant--Kirchhoff
-    class CrosslinkerMat : public CORE::MAT::PAR::Parameter
+    class CrosslinkerMat : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      CrosslinkerMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      CrosslinkerMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// number of material for underlying linker element
       int const link_element_matnum_;
 
       /// type of joint
-      INPAR::BEAMINTERACTION::JointType jointtype_;
+      Inpar::BEAMINTERACTION::JointType jointtype_;
 
       /// distance between the two binding domains of a linker
       double const linkinglength_;
@@ -67,26 +67,26 @@ namespace MAT
       double const nobonddistsphere;
 
       /// type of crosslinker
-      INPAR::BEAMINTERACTION::CrosslinkerType linkertype_;
+      Inpar::BEAMINTERACTION::CrosslinkerType linkertype_;
 
 
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class CrosslinkerMat
 
   }  // namespace PAR
 
-  class CrosslinkerMatType : public CORE::COMM::ParObjectType
+  class CrosslinkerMatType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "CrosslinkerMatType"; }
 
     static CrosslinkerMatType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static CrosslinkerMatType instance_;
@@ -94,14 +94,14 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Crosslinker Material
-  class CrosslinkerMat : public CORE::MAT::Material
+  class CrosslinkerMat : public Core::Mat::Material
   {
    public:
     /// construct empty material object
     CrosslinkerMat();
 
     /// construct the material object given material parameters
-    explicit CrosslinkerMat(MAT::PAR::CrosslinkerMat* params);
+    explicit CrosslinkerMat(Mat::PAR::CrosslinkerMat* params);
 
     //! @name Packing and Unpacking
 
@@ -126,7 +126,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -147,13 +147,13 @@ namespace MAT
     //! @name Access methods
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_crosslinkermat;
+      return Core::Materials::m_crosslinkermat;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new CrosslinkerMat(*this));
     }
@@ -162,7 +162,7 @@ namespace MAT
     virtual double beam_elast_hyper_mat_num() const { return params_->link_element_matnum_; }
 
     /// force depedent off rate according to bells equation
-    virtual INPAR::BEAMINTERACTION::JointType JointType() const { return params_->jointtype_; };
+    virtual Inpar::BEAMINTERACTION::JointType JointType() const { return params_->jointtype_; };
 
     /// distance between the two binding domains of a linker
     virtual double LinkingLength() const { return params_->linkinglength_; }
@@ -189,21 +189,21 @@ namespace MAT
     virtual double NoBondDistSphere() const { return params_->nobonddistsphere; };
 
     /// force depedent off rate according to bells equation
-    virtual INPAR::BEAMINTERACTION::CrosslinkerType LinkerType() const
+    virtual Inpar::BEAMINTERACTION::CrosslinkerType LinkerType() const
     {
       return params_->linkertype_;
     };
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     //@}
 
    private:
     /// my material parameters
-    MAT::PAR::CrosslinkerMat* params_;
+    Mat::PAR::CrosslinkerMat* params_;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 
 

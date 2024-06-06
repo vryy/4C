@@ -47,9 +47,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::pre_e
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::EvaluateAndAssemble(
-    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const Teuchos::RCP<const Discret::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
@@ -68,7 +68,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
     FOUR_C_THROW("There can be a maximum of one segment!");
 
   // Check that the beam element is a Simo--Reissner beam.
-  auto beam_ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(this->Element1());
+  auto beam_ele = dynamic_cast<const Discret::ELEMENTS::Beam3r*>(this->Element1());
   if (beam_ele == nullptr)
     FOUR_C_THROW("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
 
@@ -83,8 +83,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
   auto set_q_fad = [](const auto& q_original, auto& q_fad, unsigned int fad_offset = 0)
   {
     for (unsigned int i_dof = 0; i_dof < q_original.numRows(); i_dof++)
-      q_fad(i_dof) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_pair>::apply(
-          n_dof_fad_, fad_offset + i_dof, CORE::FADUTILS::CastToDouble(q_original(i_dof)));
+      q_fad(i_dof) = Core::FADUtils::HigherOrderFadValue<scalar_type_pair>::apply(
+          n_dof_fad_, fad_offset + i_dof, Core::FADUtils::CastToDouble(q_original(i_dof)));
   };
   auto q_beam =
       GEOMETRYPAIR::InitializeElementData<beam, scalar_type_pair>::Initialize(this->Element1());
@@ -99,35 +99,35 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
           nullptr);
 
   // Initialize pair wise vectors and matrices.
-  CORE::LINALG::Matrix<n_dof_pair_, 1, double> force_pair(true);
-  CORE::LINALG::Matrix<n_dof_pair_, n_dof_pair_, double> stiff_pair(true);
-  CORE::LINALG::Matrix<n_dof_pair_, 1, scalar_type_pair> force_pair_local;
-  CORE::LINALG::Matrix<n_dof_pair_, 3, double> d_force_d_psi;
-  CORE::LINALG::Matrix<n_dof_pair_, n_dof_rot_, double> local_stiffness_rot;
+  Core::LinAlg::Matrix<n_dof_pair_, 1, double> force_pair(true);
+  Core::LinAlg::Matrix<n_dof_pair_, n_dof_pair_, double> stiff_pair(true);
+  Core::LinAlg::Matrix<n_dof_pair_, 1, scalar_type_pair> force_pair_local;
+  Core::LinAlg::Matrix<n_dof_pair_, 3, double> d_force_d_psi;
+  Core::LinAlg::Matrix<n_dof_pair_, n_dof_rot_, double> local_stiffness_rot;
 
   // Shape function matrices.
-  CORE::LINALG::Matrix<3, solid::n_dof_, scalar_type_pair> N;
-  CORE::LINALG::Matrix<3, beam::n_dof_, scalar_type_pair> H;
-  CORE::LINALG::Matrix<3, n_dof_rot_, scalar_type_pair> L;
-  std::vector<CORE::LINALG::Matrix<3, 3, double>> I_tilde_vector;
-  CORE::LINALG::Matrix<3, n_dof_rot_, double> I_tilde;
+  Core::LinAlg::Matrix<3, solid::n_dof_, scalar_type_pair> N;
+  Core::LinAlg::Matrix<3, beam::n_dof_, scalar_type_pair> H;
+  Core::LinAlg::Matrix<3, n_dof_rot_, scalar_type_pair> L;
+  std::vector<Core::LinAlg::Matrix<3, 3, double>> I_tilde_vector;
+  Core::LinAlg::Matrix<3, n_dof_rot_, double> I_tilde;
 
   // Initialize vector and matrix variables for the Gauss integration.
-  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
-  CORE::LINALG::Matrix<3, 1, scalar_type_pair> cross_section_vector_ref;
-  CORE::LINALG::Matrix<3, 1, scalar_type_pair> cross_section_vector_current;
-  CORE::LINALG::Matrix<3, 1, scalar_type_pair> pos_beam;
-  CORE::LINALG::Matrix<3, 1, scalar_type_pair> pos_solid;
-  CORE::LINALG::Matrix<4, 1, double> quaternion_double;
-  CORE::LINALG::Matrix<3, 1, double> rotation_vector_double;
-  CORE::LINALG::Matrix<4, 1, scalar_type_pair> quaternion_fad;
-  CORE::LINALG::Matrix<3, 1, scalar_type_pair> rotation_vector_fad;
-  CORE::LINALG::Matrix<3, 3, scalar_type_pair> triad_fad;
-  CORE::LINALG::Matrix<3, 3, double> T_beam_double;
-  CORE::LINALG::Matrix<3, n_dof_rot_, double> T_times_I_tilde;
-  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_pair> temp_solid_force;
-  CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type_pair> temp_beam_force;
-  CORE::LINALG::Matrix<n_dof_rot_, 1, scalar_type_pair> temp_beam_force_rot;
+  Core::LinAlg::Matrix<3, 1, double> dr_beam_ref;
+  Core::LinAlg::Matrix<3, 1, scalar_type_pair> cross_section_vector_ref;
+  Core::LinAlg::Matrix<3, 1, scalar_type_pair> cross_section_vector_current;
+  Core::LinAlg::Matrix<3, 1, scalar_type_pair> pos_beam;
+  Core::LinAlg::Matrix<3, 1, scalar_type_pair> pos_solid;
+  Core::LinAlg::Matrix<4, 1, double> quaternion_double;
+  Core::LinAlg::Matrix<3, 1, double> rotation_vector_double;
+  Core::LinAlg::Matrix<4, 1, scalar_type_pair> quaternion_fad;
+  Core::LinAlg::Matrix<3, 1, scalar_type_pair> rotation_vector_fad;
+  Core::LinAlg::Matrix<3, 3, scalar_type_pair> triad_fad;
+  Core::LinAlg::Matrix<3, 3, double> T_beam_double;
+  Core::LinAlg::Matrix<3, n_dof_rot_, double> T_times_I_tilde;
+  Core::LinAlg::Matrix<solid::n_dof_, 1, scalar_type_pair> temp_solid_force;
+  Core::LinAlg::Matrix<beam::n_dof_, 1, scalar_type_pair> temp_beam_force;
+  Core::LinAlg::Matrix<n_dof_rot_, 1, scalar_type_pair> temp_beam_force_rot;
 
   // Initialize scalar variables.
   double eta = 1e10;
@@ -168,11 +168,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
 
       // Get the rotation vector at this Gauss point.
       triad_interpolation_scheme_.get_interpolated_quaternion_at_xi(quaternion_double, eta);
-      CORE::LARGEROTATIONS::quaterniontoangle(quaternion_double, rotation_vector_double);
-      T_beam_double = CORE::LARGEROTATIONS::Tmatrix(rotation_vector_double);
+      Core::LargeRotations::quaterniontoangle(quaternion_double, rotation_vector_double);
+      T_beam_double = Core::LargeRotations::Tmatrix(rotation_vector_double);
       set_q_fad(rotation_vector_double, rotation_vector_fad, beam::n_dof_ + solid::n_dof_);
-      CORE::LARGEROTATIONS::angletoquaternion(rotation_vector_fad, quaternion_fad);
-      CORE::LARGEROTATIONS::quaterniontotriad(quaternion_fad, triad_fad);
+      Core::LargeRotations::angletoquaternion(rotation_vector_fad, quaternion_fad);
+      Core::LargeRotations::quaterniontotriad(quaternion_fad, triad_fad);
     }
 
     // Get the shape function matrices.
@@ -215,7 +215,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
     // Evaluate the force on the rotational beam DOFs.
     // In comparison to the mentioned paper, the relative cross section vector is also contained
     // here, but it cancels out in the cross product with itself.
-    CORE::LINALG::Matrix<3, 1, scalar_type_pair> temp_beam_rot_cross;
+    Core::LinAlg::Matrix<3, 1, scalar_type_pair> temp_beam_rot_cross;
     temp_beam_rot_cross.CrossProduct(cross_section_vector_current, r_diff);
     temp_beam_force_rot.MultiplyTN(L, temp_beam_rot_cross);
     for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
@@ -223,7 +223,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
 
     // Add to pair force contributions.
     force_pair_local.Scale(integration_factor);
-    force_pair += CORE::FADUTILS::CastToDouble(force_pair_local);
+    force_pair += Core::FADUtils::CastToDouble(force_pair_local);
 
     // The rotational stiffness contributions have to be handled separately due to the non-additive
     // nature of the rotational DOFs.
@@ -252,10 +252,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
   }
 
   // Get the GIDs of this pair.
-  CORE::LINALG::Matrix<n_dof_pair_, 1, int> gid_pair;
+  Core::LinAlg::Matrix<n_dof_pair_, 1, int> gid_pair;
 
   // Beam centerline GIDs.
-  CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+  Core::LinAlg::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
   UTILS::GetElementCenterlineGIDIndices(*discret, this->Element1(), beam_centerline_gid);
   for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
     gid_pair(i_dof_beam) = beam_centerline_gid(i_dof_beam);
@@ -287,7 +287,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::ResetRotationState(
-    const DRT::Discretization& discret, const Teuchos::RCP<const Epetra_Vector>& ia_discolnp)
+    const Discret::Discretization& discret, const Teuchos::RCP<const Epetra_Vector>& ia_discolnp)
 {
   GetBeamTriadInterpolationScheme(discret, ia_discolnp, this->Element1(),
       triad_interpolation_scheme_, this->triad_interpolation_scheme_ref_);
@@ -298,7 +298,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Reset
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::get_triad_at_xi_double(
-    const double xi, CORE::LINALG::Matrix<3, 3, double>& triad, const bool reference) const
+    const double xi, Core::LinAlg::Matrix<3, 3, double>& triad, const bool reference) const
 {
   if (reference)
   {

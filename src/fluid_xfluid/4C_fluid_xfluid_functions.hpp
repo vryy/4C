@@ -17,22 +17,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   class FunctionManager;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
   namespace UTILS
   {
     /// add valid xfluid-specific function lines
-    void AddValidXfluidFunctions(CORE::UTILS::FunctionManager& function_manager);
+    void AddValidXfluidFunctions(Core::UTILS::FunctionManager& function_manager);
 
     /// special implementation level set cut utilizing xfluid
-    class GerstenbergerForwardfacingStep : public CORE::UTILS::FunctionOfSpaceTime
+    class GerstenbergerForwardfacingStep : public Core::UTILS::FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -55,7 +55,7 @@ namespace DRT
      *   at the time t_dist = n*PI/2   n=0,1,2,3,...
      *   and maximum velocity at t_max  = n*PI/4   n=1,2,3,4,...
      */
-    class MovingLevelSetCylinder : public CORE::UTILS::FunctionOfSpaceTime
+    class MovingLevelSetCylinder : public Core::UTILS::FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -123,7 +123,7 @@ namespace DRT
      *   0)
      *   1) Increasing sliplength in shape of sphere.
      */
-    class MovingLSTorus : public CORE::UTILS::FunctionOfSpaceTime
+    class MovingLSTorus : public Core::UTILS::FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -232,7 +232,7 @@ namespace DRT
      * @brief Stationary Taylor-Couette flow with Navier-Slip type boundary condition at inner
      * cylinder.
      */
-    class TaylorCouetteFlow : public CORE::UTILS::FunctionOfSpaceTime
+    class TaylorCouetteFlow : public Core::UTILS::FunctionOfSpaceTime
     {
      public:
       /// ctor (for NavSlip at both boundaries)
@@ -268,7 +268,7 @@ namespace DRT
      * Oseen test case (can be solved with Nav-Stokes as well as the advective velocity.
      * is chosen as the analytic solution to the Nav-Stokes equations).
      */
-    class UrquizaBoxFlow : public CORE::UTILS::FunctionOfSpaceTime
+    class UrquizaBoxFlow : public Core::UTILS::FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -339,7 +339,7 @@ namespace DRT
       }
     };
   }  // namespace UTILS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

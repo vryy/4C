@@ -19,21 +19,21 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace STR
 {
-  namespace TIMINT
+  namespace TimeInt
   {
     class ParamsRuntimeOutput;
   }
 }  // namespace STR
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MultiMapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace BEAMINTERACTION
 {
   class BeamToSolidVolumeMeshtyingVisualizationOutputParams;
 }
-namespace ADAPTER
+namespace Adapter
 {
   class FBIStructureWrapper : public FSIStructureWrapper
   {
@@ -84,14 +84,14 @@ namespace ADAPTER
     virtual void setup_multi_map_extractor();
 
     /// Get Runtime Output data
-    virtual Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> GetIOData();
+    virtual Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> GetIOData();
 
    private:
     /// Map extractor seperating the beam elements from the structure elements
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> eletypeextractor_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> eletypeextractor_;
 
   };  // class FSIStructureWrapper
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

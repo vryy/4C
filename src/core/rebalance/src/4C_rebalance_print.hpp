@@ -15,18 +15,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::REBALANCE::UTILS
+namespace Core::Rebalance::UTILS
 {
   /*! \brief Prints details on the distribution/partitioning of the distribution
    */
-  void print_parallel_distribution(const DRT::Discretization& dis);
+  void print_parallel_distribution(const Discret::Discretization& dis);
 
-}  // namespace CORE::REBALANCE::UTILS
+}  // namespace Core::Rebalance::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

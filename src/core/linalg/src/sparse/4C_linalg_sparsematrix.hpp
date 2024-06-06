@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   // forward declarations:
   class BlockSparseMatrixBase;
@@ -95,7 +95,7 @@ namespace CORE::LINALG
     SparseMatrix(T...) = delete;
     /// construction of sparse matrix
     SparseMatrix(Teuchos::RCP<Epetra_CrsGraph> crsgraph,
-        Teuchos::RCP<CORE::LINALG::MultiMapExtractor> dbcmaps);
+        Teuchos::RCP<Core::LinAlg::MultiMapExtractor> dbcmaps);
 
     /// construction of sparse matrix
     SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet = true,
@@ -179,14 +179,14 @@ namespace CORE::LINALG
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
     void Assemble(int eid, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lm,
+        const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lm,
         const std::vector<int>& lmowner) override
     {
       Assemble(eid, lmstride, Aele, lm, lmowner, lm);
     }
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    virtual void Assemble(int eid, const CORE::LINALG::SerialDenseMatrix& Aele,
+    virtual void Assemble(int eid, const Core::LinAlg::SerialDenseMatrix& Aele,
         const std::vector<int>& lm, const std::vector<int>& lmowner)
     {
       Assemble(eid, Aele, lm, lmowner, lm);
@@ -194,11 +194,11 @@ namespace CORE::LINALG
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
     void Assemble(int eid, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) override;
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    void Assemble(int eid, const CORE::LINALG::SerialDenseMatrix& Aele,
+    void Assemble(int eid, const Core::LinAlg::SerialDenseMatrix& Aele,
         const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
         const std::vector<int>& lmcol);
 
@@ -230,7 +230,7 @@ namespace CORE::LINALG
       values are set. This is needed if the method is called in a loop over
       column elements (which is the standard in 4C) to avoid multiple same entries.
      */
-    void FEAssemble(const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+    void FEAssemble(const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
 
     /*!
@@ -241,7 +241,7 @@ namespace CORE::LINALG
       values to their owning procs, such that fill_complete can be safely
       called on this matrix.
      */
-    void FEAssemble(const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+    void FEAssemble(const Core::LinAlg::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmcol);
 
     /*!
@@ -297,7 +297,7 @@ namespace CORE::LINALG
     /// is needed to treat efficiently Dirichlet BCs with local co-ordinate systems.
     /// The transformation matrix #trafo basically holds rotation matrices
     /// for the DOFs of the nodes.
-    void apply_dirichlet_with_trafo(const CORE::LINALG::SparseMatrix& trafo,
+    void apply_dirichlet_with_trafo(const Core::LinAlg::SparseMatrix& trafo,
         const Epetra_Map& dbctoggle, bool diagonalblock = true, bool complete = true);
 
     /// create matrix that contains all Dirichlet lines from my
@@ -387,7 +387,7 @@ namespace CORE::LINALG
     \param scalarA    (in)     : scaling factor for #A
     \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==Teuchos::null)
     */
-    void Put(const CORE::LINALG::SparseMatrix& A, const double scalarA,
+    void Put(const Core::LinAlg::SparseMatrix& A, const double scalarA,
         Teuchos::RCP<const Epetra_Map> rowmap);
 
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
@@ -498,7 +498,7 @@ namespace CORE::LINALG
             BlockSparseMatrix.
      */
     template <class Strategy>
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<Strategy>> Split(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Strategy>> Split(
         const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const;
 
     /// binary dump of matrix for debugging
@@ -526,7 +526,7 @@ namespace CORE::LINALG
     Teuchos::RCP<Epetra_CrsGraph> graph_;
 
     /// Dirichlet row map (if known)
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> dbcmaps_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> dbcmaps_;
 
     /// whether to modify the matrix graph on apply Dirichlet
     bool explicitdirichlet_;
@@ -539,7 +539,7 @@ namespace CORE::LINALG
   };
 
   /// output of SparseMatrix
-  std::ostream& operator<<(std::ostream& os, const CORE::LINALG::SparseMatrix& mat);
+  std::ostream& operator<<(std::ostream& os, const Core::LinAlg::SparseMatrix& mat);
 
   /// matrix matrix multiplication
   Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B,
@@ -550,23 +550,23 @@ namespace CORE::LINALG
       bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput = true);
 
   /// merge 2x2 system
-  Teuchos::RCP<SparseMatrix> Merge(const CORE::LINALG::SparseMatrix& Aii,
-      const CORE::LINALG::SparseMatrix& Aig, const CORE::LINALG::SparseMatrix& Agi,
-      const CORE::LINALG::SparseMatrix& Agg);
+  Teuchos::RCP<SparseMatrix> Merge(const Core::LinAlg::SparseMatrix& Aii,
+      const Core::LinAlg::SparseMatrix& Aig, const Core::LinAlg::SparseMatrix& Agi,
+      const Core::LinAlg::SparseMatrix& Agg);
 
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> Eye(const Epetra_Map& map);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> Eye(const Epetra_Map& map);
 
   //! Cast matrix of type SparseOperator to const SparseMatrix and check in debug mode if cast was
   //! successful
-  Teuchos::RCP<const CORE::LINALG::SparseMatrix> CastToConstSparseMatrixAndCheckSuccess(
-      Teuchos::RCP<const CORE::LINALG::SparseOperator> input_matrix);
+  Teuchos::RCP<const Core::LinAlg::SparseMatrix> CastToConstSparseMatrixAndCheckSuccess(
+      Teuchos::RCP<const Core::LinAlg::SparseOperator> input_matrix);
 
   //! Cast matrix of type SparseOperator to SparseMatrix and check in debug mode if cast was
   //! successful
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> CastToSparseMatrixAndCheckSuccess(
-      Teuchos::RCP<CORE::LINALG::SparseOperator> input_matrix);
-}  // namespace CORE::LINALG
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> CastToSparseMatrixAndCheckSuccess(
+      Teuchos::RCP<Core::LinAlg::SparseOperator> input_matrix);
+}  // namespace Core::LinAlg
 
 
 
@@ -586,13 +586,13 @@ namespace CORE::LINALG
         BlockSparseMatrix.
  */
 template <class Strategy>
-Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<Strategy>> CORE::LINALG::SparseMatrix::Split(
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Strategy>> Core::LinAlg::SparseMatrix::Split(
     const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const
 {
   // initialize resulting BlockSparseMatrix. no need to provide estimates of nonzeros because
   // all entries will be inserted at once anyway
   Teuchos::RCP<BlockSparseMatrix<Strategy>> blockA =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<Strategy>(
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Strategy>(
           domainmaps, rangemaps, 0, explicitdirichlet_, savegraph_));
 
   // perform matrix splitting

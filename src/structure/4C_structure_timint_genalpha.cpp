@@ -78,21 +78,21 @@ void STR::TimIntGenAlpha::VerifyCoeff()
   // are exclusively(!) carried out at the end-point t_{n+1} of each time interval, but
   // never explicitly at some generalized midpoint, such as t_{n+1-\alpha_f}. Thus, any
   // cumbersome extrapolation of history variables, etc. becomes obsolete.
-  if (midavg_ != INPAR::STR::midavg_trlike)
+  if (midavg_ != Inpar::STR::midavg_trlike)
     FOUR_C_THROW("mid-averaging of internal forces only implemented TR-like");
   else
-    std::cout << "   midavg = " << INPAR::STR::MidAverageString(midavg_) << '\n';
+    std::cout << "   midavg = " << Inpar::STR::MidAverageString(midavg_) << '\n';
 }
 
 /*----------------------------------------------------------------------*/
 /* constructor */
 STR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      midavg_(CORE::UTILS::IntegralValue<INPAR::STR::MidAverageEnum>(
+      midavg_(Core::UTILS::IntegralValue<Inpar::STR::MidAverageEnum>(
           sdynparams.sublist("GENALPHA"), "GENAVG")),
       beta_(sdynparams.sublist("GENALPHA").get<double>("BETA")),
       gamma_(sdynparams.sublist("GENALPHA").get<double>("GAMMA")),
@@ -126,7 +126,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call Init() in base class
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -137,7 +137,7 @@ void STR::TimIntGenAlpha::Init(const Teuchos::ParameterList& timeparams,
   // info to user about current time integration scheme and its parametrization
   if (myrank_ == 0)
   {
-    CORE::IO::cout << "with generalised-alpha" << CORE::IO::endl;
+    Core::IO::cout << "with generalised-alpha" << Core::IO::endl;
     VerifyCoeff();
 
     std::cout << "   p_dis = " << method_order_of_accuracy_dis() << '\n'
@@ -171,42 +171,42 @@ void STR::TimIntGenAlpha::Setup()
   // create state vectors
 
   // mid-displacements
-  dism_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  dism_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // mid-velocities
-  velm_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  velm_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // mid-accelerations
-  accm_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  accm_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // create force vectors
 
   // internal force vector F_{int;n} at last time
-  fint_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fint_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // internal mid-force vector F_{int;n+1-alpha_f}
-  fintm_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fintm_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // internal force vector F_{int;n+1} at new time
-  fintn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // external force vector F_ext at last times
-  fext_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fext_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // external mid-force vector F_{ext;n+1-alpha_f}
-  fextm_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fextm_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // external force vector F_{n+1} at new time
-  fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // set initial external force vector
   apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
 
   // inertial force vector F_{int;n} at last time
-  finert_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  finert_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // inertial mid-force vector F_{int;n+1-alpha_f}
-  finertm_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  finertm_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // inertial force vector F_{int;n+1} at new time
-  finertn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  finertn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // viscous mid-point force vector F_visc
-  fviscm_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fviscm_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // structural rhs for newton line search
-  if (fresn_str_ != Teuchos::null) fint_str_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  if (fresn_str_ != Teuchos::null) fint_str_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // create parameter list
   Teuchos::ParameterList params;
@@ -225,7 +225,7 @@ void STR::TimIntGenAlpha::Setup()
   pwindk.set("time_step_size", (*dt_)[0]);
   apply_force_stiff_cardiovascular0_d((*time_)[0], (*dis_)(0), fint_, stiff_, pwindk);
 
-  if (HaveNonlinearMass() == INPAR::STR::ml_none)
+  if (HaveNonlinearMass() == Inpar::STR::ml_none)
   {
     // set initial internal force vector
     apply_force_stiff_internal(
@@ -243,7 +243,7 @@ void STR::TimIntGenAlpha::Setup()
 
     nonlinear_mass_sanity_check(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0), &sdynparams_);
 
-    if (HaveNonlinearMass() == INPAR::STR::ml_rotations and !SolelyBeam3Elements(discret_))
+    if (HaveNonlinearMass() == Inpar::STR::ml_rotations and !SolelyBeam3Elements(discret_))
     {
       FOUR_C_THROW(
           "Multiplicative Gen-Alpha time integration scheme only implemented for beam elements so "
@@ -353,13 +353,13 @@ void STR::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList& 
   // ************************** (2) INTERNAL FORCES ***************************
   fintn_->PutScalar(0.0);
   // build new internal forces and stiffness
-  if (HaveNonlinearMass() == INPAR::STR::ml_none)
+  if (HaveNonlinearMass() == Inpar::STR::ml_none)
   {
     apply_force_stiff_internal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_, params);
   }
   else
   {
-    if (pred_ != INPAR::STR::pred_constdis)
+    if (pred_ != Inpar::STR::pred_constdis)
     {
       FOUR_C_THROW(
           "Only the predictor predict_const_dis_consist_vel_acc() allowed for dynamic beam3r "
@@ -417,7 +417,7 @@ void STR::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList& 
   // ************************** (3) INERTIA FORCES ***************************
 
   // build new inertia forces and stiffness
-  if (HaveNonlinearMass() == INPAR::STR::ml_none)
+  if (HaveNonlinearMass() == Inpar::STR::ml_none)
   {
     // build new inertia forces and stiffness
     finertm_->PutScalar(0.0);
@@ -434,7 +434,7 @@ void STR::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList& 
   // ************************** (4) DAMPING FORCES ****************************
 
   // viscous forces due to Rayleigh damping
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  if (damping_ == Inpar::STR::damp_rayleigh)
   {
     damp_->Multiply(false, *velm_, *fviscm_);
   }
@@ -442,7 +442,7 @@ void STR::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList& 
   // ******************** Finally, put everything together ********************
 
   // build residual and tangent matrix for standard case
-  if (HaveNonlinearMass() != INPAR::STR::ml_rotations)
+  if (HaveNonlinearMass() != Inpar::STR::ml_rotations)
   {
     // build residual
     //    Res = M . A_{n+1-alpha_m}
@@ -452,7 +452,7 @@ void STR::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList& 
     fres_->Update(-1.0, *fextm_, 0.0);
     fres_->Update(1.0, *fintm_, 1.0);
     fres_->Update(1.0, *finertm_, 1.0);
-    if (damping_ == INPAR::STR::damp_rayleigh)
+    if (damping_ == Inpar::STR::damp_rayleigh)
     {
       fres_->Update(1.0, *fviscm_, 1.0);
     }
@@ -463,7 +463,7 @@ void STR::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList& 
     //                + (1 - alpha_f) K_{T}
 
     stiff_->Add(*mass_, false, (1. - alpham_) / (beta_ * (*dt_)[0] * (*dt_)[0]), 1. - alphaf_);
-    if (damping_ == INPAR::STR::damp_rayleigh)
+    if (damping_ == Inpar::STR::damp_rayleigh)
     {
       stiff_->Add(*damp_, false, (1. - alphaf_) * gamma_ / (beta_ * (*dt_)[0]), 1.0);
     }
@@ -492,8 +492,8 @@ void STR::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList& 
     fresn_str_->Update(alphaf_, *fint_str_, 1. - alphaf_);
     fresn_str_->Update(-1.0, *fextm_, 1.0);
     fresn_str_->Update(1.0, *finertm_, 1.0);
-    if (damping_ == INPAR::STR::damp_rayleigh) fresn_str_->Update(1.0, *fviscm_, 1.0);
-    CORE::LINALG::apply_dirichlet_to_system(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
+    if (damping_ == Inpar::STR::damp_rayleigh) fresn_str_->Update(1.0, *fviscm_, 1.0);
+    Core::LinAlg::apply_dirichlet_to_system(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   // close stiffness matrix
@@ -509,7 +509,7 @@ void STR::TimIntGenAlpha::evaluate_force_stiff_residual_relax(Teuchos::Parameter
   evaluate_force_stiff_residual(params);
 
   // overwrite the residual forces #fres_ with interface load
-  if (HaveNonlinearMass() != INPAR::STR::ml_rotations)
+  if (HaveNonlinearMass() != Inpar::STR::ml_rotations)
   {
     // standard case
     fres_->Update(-1 + alphaf_, *fifc_, 0.0);
@@ -547,7 +547,7 @@ void STR::TimIntGenAlpha::evaluate_force_residual()
   fintn_->PutScalar(0.0);
 
   // build new internal forces and stiffness
-  if (HaveNonlinearMass() == INPAR::STR::ml_none)
+  if (HaveNonlinearMass() == Inpar::STR::ml_none)
   {
     apply_force_internal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_);
   }
@@ -563,7 +563,7 @@ void STR::TimIntGenAlpha::evaluate_force_residual()
   // ************************** (3) INERTIAL FORCES ***************************
 
   // build new inertia forces and stiffness
-  if (HaveNonlinearMass() == INPAR::STR::ml_none)
+  if (HaveNonlinearMass() == Inpar::STR::ml_none)
   {
     // build new inertia forces and stiffness
     finertm_->PutScalar(0.0);
@@ -578,7 +578,7 @@ void STR::TimIntGenAlpha::evaluate_force_residual()
   // ************************** (4) DAMPING FORCES ****************************
 
   // viscous forces due to Rayleigh damping
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  if (damping_ == Inpar::STR::damp_rayleigh)
   {
     damp_->Multiply(false, *velm_, *fviscm_);
   }
@@ -586,7 +586,7 @@ void STR::TimIntGenAlpha::evaluate_force_residual()
   // ******************** Finally, put everything together ********************
 
   // build residual and tangent matrix for standard case
-  if (HaveNonlinearMass() != INPAR::STR::ml_rotations)
+  if (HaveNonlinearMass() != Inpar::STR::ml_rotations)
   {
     // build residual
     //    Res = M . A_{n+1-alpha_m}
@@ -596,7 +596,7 @@ void STR::TimIntGenAlpha::evaluate_force_residual()
     fres_->Update(-1.0, *fextm_, 0.0);
     fres_->Update(1.0, *fintm_, 1.0);
     fres_->Update(1.0, *finertm_, 1.0);
-    if (damping_ == INPAR::STR::damp_rayleigh)
+    if (damping_ == Inpar::STR::damp_rayleigh)
     {
       fres_->Update(1.0, *fviscm_, 1.0);
     }
@@ -616,9 +616,9 @@ void STR::TimIntGenAlpha::evaluate_force_residual()
     fresn_str_->Update(alphaf_, *fint_str_, 1. - alphaf_);
     fresn_str_->Update(-1.0, *fextm_, 1.0);
     fresn_str_->Update(1.0, *finertm_, 1.0);
-    if (damping_ == INPAR::STR::damp_rayleigh) fresn_str_->Update(1.0, *fviscm_, 1.0);
+    if (damping_ == Inpar::STR::damp_rayleigh) fresn_str_->Update(1.0, *fviscm_, 1.0);
 
-    CORE::LINALG::apply_dirichlet_to_system(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
+    Core::LinAlg::apply_dirichlet_to_system(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
   }
 }
 
@@ -664,7 +664,7 @@ double STR::TimIntGenAlpha::CalcRefNormForce()
 
   // norm of viscous forces
   double fviscnorm = 0.0;
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  if (damping_ == Inpar::STR::damp_rayleigh)
   {
     fviscnorm = STR::calculate_vector_norm(iternorm_, fviscm_);
   }
@@ -806,13 +806,13 @@ void STR::TimIntGenAlpha::UpdateStepElement()
     discret_->set_state("acceleration", (*acc_)(0));
 
     Teuchos::RCP<Epetra_Vector> update_disp;
-    update_disp = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+    update_disp = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
     Teuchos::RCP<Epetra_Vector> update_vel;
-    update_vel = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+    update_vel = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
     Teuchos::RCP<Epetra_Vector> update_acc;
-    update_acc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+    update_acc = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
 
     discret_->Evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);
@@ -832,8 +832,8 @@ void STR::TimIntGenAlpha::UpdateStepElement()
 /* read and/or calculate forces for restart */
 void STR::TimIntGenAlpha::ReadRestartForce()
 {
-  CORE::IO::DiscretizationReader reader(
-      discret_, GLOBAL::Problem::Instance()->InputControlFile(), step_);
+  Core::IO::DiscretizationReader reader(
+      discret_, Global::Problem::Instance()->InputControlFile(), step_);
   reader.ReadVector(fext_, "fexternal");
   reader.ReadVector(fint_, "fint");
   reader.ReadVector(finert_, "finert");
@@ -841,7 +841,7 @@ void STR::TimIntGenAlpha::ReadRestartForce()
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+void STR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   output->WriteVector("fexternal", fext_);
   output->WriteVector("fint", fint_);
@@ -854,8 +854,8 @@ void STR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<CORE::IO::Discretizatio
  *----------------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::build_res_stiff_nl_mass_rot(Teuchos::RCP<Epetra_Vector> fres_,
     Teuchos::RCP<Epetra_Vector> fextn_, Teuchos::RCP<Epetra_Vector> fintn_,
-    Teuchos::RCP<Epetra_Vector> finertn_, Teuchos::RCP<CORE::LINALG::SparseOperator> stiff_,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> mass_)
+    Teuchos::RCP<Epetra_Vector> finertn_, Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> mass_)
 {
   /* build residual
    *    Res = F_{inert;n+1}
@@ -883,14 +883,14 @@ void STR::TimIntGenAlpha::build_res_stiff_nl_mass_rot(Teuchos::RCP<Epetra_Vector
  * Check, if there are solely beam elements in the whole             meier 05/14
  * discretization
  *----------------------------------------------------------------------------*/
-bool STR::TimIntGenAlpha::SolelyBeam3Elements(Teuchos::RCP<DRT::Discretization> actdis)
+bool STR::TimIntGenAlpha::SolelyBeam3Elements(Teuchos::RCP<Discret::Discretization> actdis)
 {
   bool solelybeameles = true;
 
   for (int i = 0; i < actdis->NumMyRowElements(); i++)
   {
-    CORE::Elements::Element* element = actdis->lColElement(i);
-    CORE::Nodes::Node* node = (element->Nodes())[0];
+    Core::Elements::Element* element = actdis->lColElement(i);
+    Core::Nodes::Node* node = (element->Nodes())[0];
     int numdof = actdis->NumDof(node);
 
     // So far we simply check, if we have at least 6 DoFs per node, which is only true for beam

@@ -55,7 +55,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
       sizeratiomin_(tap.get<double>("SIZERATIOMIN")),
       sizeratioscale_(tap.get<double>("SIZERATIOSCALE")),
       errctrl_(ctrl_dis),  // PROVIDE INPUT PARAMETER
-      errnorm_(CORE::UTILS::IntegralValue<INPAR::STR::VectorNorm>(tap, "LOCERRNORM")),
+      errnorm_(Core::UTILS::IntegralValue<Inpar::STR::VectorNorm>(tap, "LOCERRNORM")),
       errtol_(tap.get<double>("LOCERRTOL")),
       errorder_(1),  // CHANGE THIS CONSTANT
       adaptstepmax_(tap.get<int>("ADAPTSTEPMAX")),
@@ -83,7 +83,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
       outsizefile_(Teuchos::null)
 {
   // allocate displacement local error vector
-  locerrdisn_ = CORE::LINALG::CreateVector(*(discret_->dof_row_map()), true);
+  locerrdisn_ = Core::LinAlg::CreateVector(*(discret_->dof_row_map()), true);
 
   // check whether energyout_ file handle was attached
   if ((not sti_->AttachedEnergyFile()) and (outeneperiod_ != 0.0) and (myrank_ == 0))
@@ -99,7 +99,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
 
   // enable restart for adaptive timestepping - however initial timestep size is still read from
   // datfile! (mhv 01/2015)
-  const int restart = GLOBAL::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->Restart();
   if (restart)
   {
     // read restart of marching time-integrator and reset initial time and step for adaptive loop
@@ -172,9 +172,9 @@ int STR::TimAda::Integrate()
       // adjust step-size and prepare repetition of current step
       if (not accepted)
       {
-        CORE::IO::cout << "Repeating step with stepsize = " << stpsiznew << CORE::IO::endl;
-        CORE::IO::cout << "- - - - - - - - - - - - - - - - - - - - - - - - -"
-                       << " - - - - - - - - - - - - - - -" << CORE::IO::endl;
+        Core::IO::cout << "Repeating step with stepsize = " << stpsiznew << Core::IO::endl;
+        Core::IO::cout << "- - - - - - - - - - - - - - - - - - - - - - - - -"
+                       << " - - - - - - - - - - - - - - -" << Core::IO::endl;
 
         stepsize_ = stpsiznew;
 
@@ -257,7 +257,7 @@ void STR::TimAda::evaluate_local_error_dis()
 
   // blank Dirichlet DOFs since they always carry the exact solution
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(locerrdisn_->Map(), true));
-  CORE::LINALG::apply_dirichlet_to_system(
+  Core::LinAlg::apply_dirichlet_to_system(
       *locerrdisn_, *zeros, *(sti_->GetDBCMapExtractor()->CondMap()));
 }
 
@@ -471,7 +471,7 @@ void STR::TimAda::PrintConstants(std::ostream& str) const
       << "   Max size ratio = " << sizeratiomax_ << std::endl
       << "   Min size ratio = " << sizeratiomin_ << std::endl
       << "   Size ratio scale = " << sizeratioscale_ << std::endl
-      << "   Error norm = " << INPAR::STR::VectorNormString(errnorm_) << std::endl
+      << "   Error norm = " << Inpar::STR::VectorNormString(errnorm_) << std::endl
       << "   Error order = " << errorder_ << std::endl
       << "   Error tolerance = " << errtol_ << std::endl
       << "   Max adaptations = " << adaptstepmax_ << std::endl;
@@ -509,7 +509,7 @@ void STR::TimAda::AttachFileStepSize()
   if (outsizefile_.is_null())
   {
     std::string filename =
-        GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + ".stepsize";
+        Global::Problem::Instance()->OutputControlFile()->FileName() + ".stepsize";
     outsizefile_ = Teuchos::rcp(new std::ofstream(filename.c_str()));
     (*outsizefile_) << "# timestep time step-size adaptations" << std::endl;
   }

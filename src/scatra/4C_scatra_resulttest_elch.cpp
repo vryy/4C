@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               fang 03/15 |
  *----------------------------------------------------------------------*/
-SCATRA::ElchResultTest::ElchResultTest(Teuchos::RCP<ScaTraTimIntElch> elchtimint)
+ScaTra::ElchResultTest::ElchResultTest(Teuchos::RCP<ScaTraTimIntElch> elchtimint)
     : ScaTraResultTest::ScaTraResultTest(elchtimint)
 {
   return;
@@ -27,7 +27,7 @@ SCATRA::ElchResultTest::ElchResultTest(Teuchos::RCP<ScaTraTimIntElch> elchtimint
 /*----------------------------------------------------------------------*
  | get special result to be tested                           fang 03/15 |
  *----------------------------------------------------------------------*/
-double SCATRA::ElchResultTest::result_special(const std::string quantity) const
+double ScaTra::ElchResultTest::result_special(const std::string quantity) const
 {
   // initialize variable for result
   double result(0.);
@@ -70,6 +70,6 @@ double SCATRA::ElchResultTest::result_special(const std::string quantity) const
     result = ScaTraResultTest::result_special(quantity);
 
   return result;
-}  // SCATRA::ElchResultTest::result_special
+}  // ScaTra::ElchResultTest::result_special
 
 FOUR_C_NAMESPACE_CLOSE

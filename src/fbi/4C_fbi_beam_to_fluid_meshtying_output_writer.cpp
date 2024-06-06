@@ -51,8 +51,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Init()
  *
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
-    const CORE::IO::VisualizationParameters& visualization_params,
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+    const Core::IO::VisualizationParameters& visualization_params,
+    Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr)
 {
   check_init();
@@ -107,13 +107,13 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
  *
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_runtime(
-    const Teuchos::RCP<ADAPTER::FBIConstraintenforcer>& couplingenforcer, int i_step,
+    const Teuchos::RCP<Adapter::FBIConstraintenforcer>& couplingenforcer, int i_step,
     double time) const
 {
   check_init_setup();
 
   auto [output_time, output_step] =
-      CORE::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_, time, i_step);
+      Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_, time, i_step);
   write_output_beam_to_fluid_mesh_tying(couplingenforcer, output_step, output_time);
 }
 
@@ -121,7 +121,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_runtime(
  *
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_fluid_mesh_tying(
-    const Teuchos::RCP<ADAPTER::FBIConstraintenforcer>& couplingenforcer, int i_step,
+    const Teuchos::RCP<Adapter::FBIConstraintenforcer>& couplingenforcer, int i_step,
     double time) const
 {
   // Parameter list that will be passed to all contact pairs when they create their visualization.
@@ -151,7 +151,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
          i_lid < couplingenforcer->GetStructure()->GetDiscretization()->NumMyRowNodes(); i_lid++)
     {
       gid_node.clear();
-      CORE::Nodes::Node* current_node =
+      Core::Nodes::Node* current_node =
           couplingenforcer->GetStructure()->GetDiscretization()->lRowNode(i_lid);
       couplingenforcer->GetStructure()->GetDiscretization()->Dof(current_node, gid_node);
       if (BEAMINTERACTION::UTILS::IsBeamNode(*current_node))
@@ -163,7 +163,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
     // Extract the forces and add them to the discretization.
     Teuchos::RCP<Epetra_Vector> force_beam =
         Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(beam_dof_map, true));
-    CORE::LINALG::Export(*couplingenforcer->assemble_structure_coupling_residual(), *force_beam);
+    Core::LinAlg::Export(*couplingenforcer->assemble_structure_coupling_residual(), *force_beam);
 
 
     visualization->add_discretization_nodal_data("force", force_beam);

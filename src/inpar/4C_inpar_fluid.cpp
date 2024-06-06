@@ -21,9 +21,9 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
+  using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -42,12 +42,12 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &fdyn);
 
   // number of linear solver used for fluid problem
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "LINEAR_SOLVER", -1, "number of linear solver used for fluid dynamics", &fdyn);
 
   // number of linear solver used for fluid problem (former fluid pressure solver for SIMPLER
   // preconditioning with fluid)
-  CORE::UTILS::IntParameter("SIMPLER_SOLVER", -1,
+  Core::UTILS::IntParameter("SIMPLER_SOLVER", -1,
       "number of linear solver used for fluid dynamics (ONLY NECESSARY FOR BlockGaussSeidel solver "
       "block within fluid mehstying case any more!!!!)",
       &fdyn);
@@ -61,7 +61,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // Set ML-solver number for smooting of residual-based calculated wallshearstress via plain
   // aggregation.
-  CORE::UTILS::IntParameter("WSS_ML_AGR_SOLVER", -1,
+  Core::UTILS::IntParameter("WSS_ML_AGR_SOLVER", -1,
       "Set ML-solver number for smoothing of residual-based calculated wallshearstress via plain "
       "aggregation.",
       &fdyn);
@@ -80,7 +80,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   setStringToIntegralParameter<int>("GEOMETRY", "full", "How the geometry is specified",
       tuple<std::string>("full", "box", "file"),
-      tuple<int>(CORE::IO::geometry_full, CORE::IO::geometry_box, CORE::IO::geometry_file), &fdyn);
+      tuple<int>(Core::IO::geometry_full, Core::IO::geometry_box, Core::IO::geometry_file), &fdyn);
 
   setStringToIntegralParameter<int>("NONLINITER", "fixed_point_like", "Nonlinear iteration scheme",
       tuple<std::string>("fixed_point_like", "Newton"), tuple<int>(fixed_point_like, Newton),
@@ -97,7 +97,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("compute L2 errors of increments (relative) and residuals (absolute)"),
       tuple<int>(fncc_L2), &fdyn);
 
-  CORE::UTILS::BoolParameter("INCONSISTENT_RESIDUAL", "No",
+  Core::UTILS::BoolParameter("INCONSISTENT_RESIDUAL", "No",
       "do not evaluate residual after solution has converged (->faster)", &fdyn);
 
   {
@@ -131,10 +131,10 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
         "INITIALFIELD", "zero_field", "Initial field for fluid problem", name, label, &fdyn);
   }
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "OSEENFIELDFUNCNO", -1, "function number of Oseen advective field", &fdyn);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "LIFTDRAG", "No", "Calculate lift and drag forces along specified boundary", &fdyn);
 
   setStringToIntegralParameter<int>("CONVFORM", "convective", "form of convective term",
@@ -155,7 +155,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "scheme for determination of gridvelocity from displacements",
       tuple<std::string>("BE", "BDF2", "OST"), tuple<int>(BE, BDF2, OST), &fdyn);
 
-  CORE::UTILS::BoolParameter("ALLDOFCOUPLED", "Yes", "all dof (incl. pressure) are coupled", &fdyn);
+  Core::UTILS::BoolParameter("ALLDOFCOUPLED", "Yes", "all dof (incl. pressure) are coupled", &fdyn);
 
   {
     Teuchos::Tuple<std::string, 16> name;
@@ -197,25 +197,25 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     setStringToIntegralParameter<int>(
         "CALCERROR", "no", "Flag to (de)activate error calculations", name, label, &fdyn);
   }
-  CORE::UTILS::IntParameter("CALCERRORFUNCNO", -1, "Function for Error Calculation", &fdyn);
+  Core::UTILS::IntParameter("CALCERRORFUNCNO", -1, "Function for Error Calculation", &fdyn);
 
-  CORE::UTILS::IntParameter("CORRTERMFUNCNO", -1,
+  Core::UTILS::IntParameter("CORRTERMFUNCNO", -1,
       "Function for calculation of the correction term for the weakly compressible problem", &fdyn);
 
-  CORE::UTILS::IntParameter("BODYFORCEFUNCNO", -1,
+  Core::UTILS::IntParameter("BODYFORCEFUNCNO", -1,
       "Function for calculation of the body force for the weakly compressible problem", &fdyn);
 
-  CORE::UTILS::DoubleParameter("STAB_DEN_REF", 0.0,
+  Core::UTILS::DoubleParameter("STAB_DEN_REF", 0.0,
       "Reference stabilization parameter for the density for the HDG weakly compressible "
       "formulation",
       &fdyn);
 
-  CORE::UTILS::DoubleParameter("STAB_MOM_REF", 0.0,
+  Core::UTILS::DoubleParameter("STAB_MOM_REF", 0.0,
       "Reference stabilization parameter for the momentum for the HDG weakly compressible "
       "formulation",
       &fdyn);
 
-  CORE::UTILS::IntParameter("VARVISCFUNCNO", -1,
+  Core::UTILS::IntParameter("VARVISCFUNCNO", -1,
       "Function for calculation of a variable viscosity for the weakly compressible problem",
       &fdyn);
 
@@ -234,53 +234,53 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
         name, label, &fdyn);
   }
 
-  CORE::UTILS::DoubleParameter("REFMACH", 1.0, "Reference Mach number", &fdyn);
+  Core::UTILS::DoubleParameter("REFMACH", 1.0, "Reference Mach number", &fdyn);
 
-  CORE::UTILS::BoolParameter("BLOCKMATRIX", "No",
+  Core::UTILS::BoolParameter("BLOCKMATRIX", "No",
       "Indicates if system matrix should be assembled into a sparse block matrix type.", &fdyn);
 
-  CORE::UTILS::BoolParameter("ADAPTCONV", "No",
+  Core::UTILS::BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution", &fdyn);
-  CORE::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.1,
+  Core::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &fdyn);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "INFNORMSCALING", "no", "Scale blocks of matrix with row infnorm?", &fdyn);
 
-  CORE::UTILS::BoolParameter("GMSH_OUTPUT", "No", "write output to gmsh files", &fdyn);
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter("GMSH_OUTPUT", "No", "write output to gmsh files", &fdyn);
+  Core::UTILS::BoolParameter(
       "COMPUTE_DIVU", "No", "Compute divergence of velocity field at the element center", &fdyn);
-  CORE::UTILS::BoolParameter("COMPUTE_EKIN", "No",
+  Core::UTILS::BoolParameter("COMPUTE_EKIN", "No",
       "Compute kinetic energy at the end of each time step and write it to file.", &fdyn);
-  CORE::UTILS::BoolParameter("NEW_OST", "No",
+  Core::UTILS::BoolParameter("NEW_OST", "No",
       "Solve the Navier-Stokes equation with the new One Step Theta algorithm",
       &fdyn);  // TODO: To be removed.
-  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &fdyn);
-  CORE::UTILS::IntParameter("RESTARTEVRY", 20, "Increment for writing restart", &fdyn);
-  CORE::UTILS::IntParameter("NUMSTEP", 1, "Total number of Timesteps", &fdyn);
-  CORE::UTILS::IntParameter("STEADYSTEP", -1, "steady state check every step", &fdyn);
-  CORE::UTILS::IntParameter("NUMSTASTEPS", 0, "Number of Steps for Starting Scheme", &fdyn);
-  CORE::UTILS::IntParameter("STARTFUNCNO", -1, "Function for Initial Starting Field", &fdyn);
-  CORE::UTILS::IntParameter("ITEMAX", 10, "max. number of nonlin. iterations", &fdyn);
-  CORE::UTILS::IntParameter("INITSTATITEMAX", 5,
+  Core::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &fdyn);
+  Core::UTILS::IntParameter("RESTARTEVRY", 20, "Increment for writing restart", &fdyn);
+  Core::UTILS::IntParameter("NUMSTEP", 1, "Total number of Timesteps", &fdyn);
+  Core::UTILS::IntParameter("STEADYSTEP", -1, "steady state check every step", &fdyn);
+  Core::UTILS::IntParameter("NUMSTASTEPS", 0, "Number of Steps for Starting Scheme", &fdyn);
+  Core::UTILS::IntParameter("STARTFUNCNO", -1, "Function for Initial Starting Field", &fdyn);
+  Core::UTILS::IntParameter("ITEMAX", 10, "max. number of nonlin. iterations", &fdyn);
+  Core::UTILS::IntParameter("INITSTATITEMAX", 5,
       "max number of nonlinear iterations for initial stationary solution", &fdyn);
-  CORE::UTILS::DoubleParameter("TIMESTEP", 0.01, "Time increment dt", &fdyn);
-  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &fdyn);
-  CORE::UTILS::DoubleParameter("ALPHA_M", 1.0, "Time integration factor", &fdyn);
-  CORE::UTILS::DoubleParameter("ALPHA_F", 1.0, "Time integration factor", &fdyn);
-  CORE::UTILS::DoubleParameter("GAMMA", 1.0, "Time integration factor", &fdyn);
-  CORE::UTILS::DoubleParameter("THETA", 0.66, "Time integration factor", &fdyn);
+  Core::UTILS::DoubleParameter("TIMESTEP", 0.01, "Time increment dt", &fdyn);
+  Core::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &fdyn);
+  Core::UTILS::DoubleParameter("ALPHA_M", 1.0, "Time integration factor", &fdyn);
+  Core::UTILS::DoubleParameter("ALPHA_F", 1.0, "Time integration factor", &fdyn);
+  Core::UTILS::DoubleParameter("GAMMA", 1.0, "Time integration factor", &fdyn);
+  Core::UTILS::DoubleParameter("THETA", 0.66, "Time integration factor", &fdyn);
 
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "START_THETA", 1.0, "Time integration factor for starting scheme", &fdyn);
 
   setStringToIntegralParameter<int>("STRONG_REDD_3D_COUPLING_TYPE", "no",
       "Flag to (de)activate potential Strong 3D redD coupling", tuple<std::string>("no", "yes"),
       tuple<std::string>("Weak coupling", "Strong coupling"), tuple<int>(0, 1), &fdyn);
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "VELGRAD_PROJ_SOLVER", -1, "Number of linear solver used for L2 projection", &fdyn);
 
   setStringToIntegralParameter<int>("VELGRAD_PROJ_METHOD", "none",
@@ -295,23 +295,23 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           ),
       &fdyn);
 
-  CORE::UTILS::BoolParameter("OFF_PROC_ASSEMBLY", "No",
+  Core::UTILS::BoolParameter("OFF_PROC_ASSEMBLY", "No",
       "Do not evaluate ghosted elements but communicate them --> faster if element call is "
       "expensive",
       &fdyn);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_nln = fdyn.sublist("NONLINEAR SOLVER TOLERANCES", false, "");
 
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "TOL_VEL_RES", 1e-6, "Tolerance for convergence check of velocity residual", &fdyn_nln);
 
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "TOL_VEL_INC", 1e-6, "Tolerance for convergence check of velocity increment", &fdyn_nln);
 
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "TOL_PRES_RES", 1e-6, "Tolerance for convergence check of pressure residual", &fdyn_nln);
 
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "TOL_PRES_INC", 1e-6, "Tolerance for convergence check of pressure increment", &fdyn_nln);
 
   /*----------------------------------------------------------------------*/
@@ -331,11 +331,11 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           stabtype_nostab, stabtype_residualbased, stabtype_edgebased, stabtype_pressureprojection),
       &fdyn_stab);
 
-  CORE::UTILS::BoolParameter("INCONSISTENT", "No",
+  Core::UTILS::BoolParameter("INCONSISTENT", "No",
       "residual based without second derivatives (i.e. only consistent for tau->0, but faster)",
       &fdyn_stab);
 
-  CORE::UTILS::BoolParameter("Reconstruct_Sec_Der", "No",
+  Core::UTILS::BoolParameter("Reconstruct_Sec_Der", "No",
       "residual computed with a reconstruction of the second derivatives via projection or "
       "superconvergent patch recovery",
       &fdyn_stab);
@@ -357,9 +357,9 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Use transient term including a linearisation of 1/tau"),
       tuple<int>(inertia_stab_drop, inertia_stab_keep, inertia_stab_keep_complete), &fdyn_stab);
 
-  CORE::UTILS::BoolParameter("PSPG", "Yes", "Flag to (de)activate PSPG stabilization.", &fdyn_stab);
-  CORE::UTILS::BoolParameter("SUPG", "Yes", "Flag to (de)activate SUPG stabilization.", &fdyn_stab);
-  CORE::UTILS::BoolParameter("GRAD_DIV", "Yes", "Flag to (de)activate grad-div term.", &fdyn_stab);
+  Core::UTILS::BoolParameter("PSPG", "Yes", "Flag to (de)activate PSPG stabilization.", &fdyn_stab);
+  Core::UTILS::BoolParameter("SUPG", "Yes", "Flag to (de)activate SUPG stabilization.", &fdyn_stab);
+  Core::UTILS::BoolParameter("GRAD_DIV", "Yes", "Flag to (de)activate grad-div term.", &fdyn_stab);
 
   setStringToIntegralParameter<int>("VSTAB", "no_vstab",
       "Flag to (de)activate viscous term in residual-based stabilization.",
@@ -479,7 +479,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // these parameters active additional terms in loma continuity equation
   // which might be identified as SUPG-/cross- and Reynolds-stress term
-  CORE::UTILS::BoolParameter("LOMA_CONTI_SUPG", "No",
+  Core::UTILS::BoolParameter("LOMA_CONTI_SUPG", "No",
       "Flag to (de)activate SUPG stabilization in loma continuity equation.", &fdyn_stab);
 
   setStringToIntegralParameter<int>("LOMA_CONTI_CROSS_STRESS", "no_cross",
@@ -580,7 +580,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   //! special least-squares condition for pseudo 2D examples where pressure level is determined via
   //! Krylov-projection
-  CORE::UTILS::BoolParameter("PRES_KRYLOV_2Dz", "No",
+  Core::UTILS::BoolParameter("PRES_KRYLOV_2Dz", "No",
       "residual based without second derivatives (i.e. only consistent for tau->0, but faster)",
       &fdyn_edge_based_stab);
 
@@ -605,19 +605,19 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "definition of EOS_tau_schott_massing_burman_dangelo_zunino for stationary problems",
           "definition of EOS_tau_burman",
           "definition of EOS_tau related to residual-based stabilization", "no chosen definition"),
-      tuple<int>(INPAR::FLUID::EOS_tau_burman_fernandez_hansbo,
-          INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt,
-          INPAR::FLUID::EOS_tau_braack_burman_john_lube,
-          INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump,
-          INPAR::FLUID::EOS_tau_franca_barrenechea_valentin_wall,
-          INPAR::FLUID::EOS_tau_burman_fernandez,
-          INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino,
-          INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt,
-          INPAR::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino,
-          INPAR::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino_wo_dt,
-          INPAR::FLUID::EOS_tau_burman,
-          INPAR::FLUID::EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling,
-          INPAR::FLUID::EOS_tau_not_defined),
+      tuple<int>(Inpar::FLUID::EOS_tau_burman_fernandez_hansbo,
+          Inpar::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt,
+          Inpar::FLUID::EOS_tau_braack_burman_john_lube,
+          Inpar::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump,
+          Inpar::FLUID::EOS_tau_franca_barrenechea_valentin_wall,
+          Inpar::FLUID::EOS_tau_burman_fernandez,
+          Inpar::FLUID::EOS_tau_burman_hansbo_dangelo_zunino,
+          Inpar::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt,
+          Inpar::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino,
+          Inpar::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino_wo_dt,
+          Inpar::FLUID::EOS_tau_burman,
+          Inpar::FLUID::EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling,
+          Inpar::FLUID::EOS_tau_not_defined),
       &fdyn_edge_based_stab);
 
   //! this parameter selects how the element length of Edge-based stabilization is defined
@@ -641,9 +641,9 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_porostab = fdyn.sublist("POROUS-FLOW STABILIZATION", false, "");
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "STAB_BIOT", "No", "Flag to (de)activate BIOT stabilization.", &fdyn_porostab);
-  CORE::UTILS::DoubleParameter("STAB_BIOT_SCALING", 1.0,
+  Core::UTILS::DoubleParameter("STAB_BIOT_SCALING", 1.0,
       "Scaling factor for stabilization parameter for biot stabilization of porous flow.",
       &fdyn_porostab);
 
@@ -658,11 +658,11 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Use an edge-based stabilization, especially for XFEM"),
       tuple<int>(stabtype_nostab, stabtype_residualbased, stabtype_edgebased), &fdyn_porostab);
 
-  CORE::UTILS::BoolParameter("INCONSISTENT", "No",
+  Core::UTILS::BoolParameter("INCONSISTENT", "No",
       "residual based without second derivatives (i.e. only consistent for tau->0, but faster)",
       &fdyn_porostab);
 
-  CORE::UTILS::BoolParameter("Reconstruct_Sec_Der", "No",
+  Core::UTILS::BoolParameter("Reconstruct_Sec_Der", "No",
       "residual computed with a reconstruction of the second derivatives via projection or "
       "superconvergent patch recovery",
       &fdyn_porostab);
@@ -684,11 +684,11 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Use transient term including a linearisation of 1/tau"),
       tuple<int>(inertia_stab_drop, inertia_stab_keep, inertia_stab_keep_complete), &fdyn_porostab);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "PSPG", "Yes", "Flag to (de)activate PSPG stabilization.", &fdyn_porostab);
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "SUPG", "Yes", "Flag to (de)activate SUPG stabilization.", &fdyn_porostab);
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "GRAD_DIV", "Yes", "Flag to (de)activate grad-div term.", &fdyn_porostab);
 
   setStringToIntegralParameter<int>("VSTAB", "no_vstab",
@@ -787,7 +787,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // these parameters active additional terms in loma continuity equation
   // which might be identified as SUPG-/cross- and Reynolds-stress term
-  CORE::UTILS::BoolParameter("LOMA_CONTI_SUPG", "No",
+  Core::UTILS::BoolParameter("LOMA_CONTI_SUPG", "No",
       "Flag to (de)activate SUPG stabilization in loma continuity equation.", &fdyn_porostab);
 
   setStringToIntegralParameter<int>("LOMA_CONTI_CROSS_STRESS", "no_cross",
@@ -857,21 +857,21 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // turbulence specific output and statistics
   //----------------------------------------------------------------------
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "SAMPLING_START", 10000000, "Time step after when sampling shall be started", &fdyn_turbu);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "SAMPLING_STOP", 1, "Time step when sampling shall be stopped", &fdyn_turbu);
-  CORE::UTILS::IntParameter("DUMPING_PERIOD", 1,
+  Core::UTILS::IntParameter("DUMPING_PERIOD", 1,
       "Period of time steps after which statistical data shall be dumped", &fdyn_turbu);
 
-  CORE::UTILS::BoolParameter("SUBGRID_DISSIPATION", "No",
+  Core::UTILS::BoolParameter("SUBGRID_DISSIPATION", "No",
       "Flag to (de)activate estimation of subgrid-scale dissipation (only for seclected flows).",
       &fdyn_turbu);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "OUTMEAN", "No", "Flag to (de)activate averaged paraview output", &fdyn_turbu);
 
-  CORE::UTILS::BoolParameter("TURBMODEL_LS", "Yes",
+  Core::UTILS::BoolParameter("TURBMODEL_LS", "Yes",
       "Flag to (de)activate turbulence model in level-set equation", &fdyn_turbu);
 
   //----------------------------------------------------------------------
@@ -1012,7 +1012,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // CHANNEL FLOW
   //--------------
 
-  CORE::UTILS::DoubleParameter("CHAN_AMPL_INIT_DIST", 0.1,
+  Core::UTILS::DoubleParameter("CHAN_AMPL_INIT_DIST", 0.1,
       "Max. amplitude of the random disturbance in percent of the initial value in mean flow "
       "direction.",
       &fdyn_turbu);
@@ -1022,23 +1022,23 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("linear_compensation_from_intermediate_spectrum", "fixed_power_input"),
       tuple<int>(linear_compensation_from_intermediate_spectrum, fixed_power_input), &fdyn_turbu);
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "CHA_NUMSUBDIVISIONS", 5, "Number of homogenious sampling planes in element", &fdyn_turbu);
 
   // HIT
   //--------------
 
-  CORE::UTILS::IntParameter("FORCING_TIME_STEPS", 0,
+  Core::UTILS::IntParameter("FORCING_TIME_STEPS", 0,
       "Number of time steps during which forcing is applied. Decaying homogeneous isotropic "
       "turbulence only.",
       &fdyn_turbu);
 
-  CORE::UTILS::DoubleParameter("THRESHOLD_WAVENUMBER", 0.0,
+  Core::UTILS::DoubleParameter("THRESHOLD_WAVENUMBER", 0.0,
       "Forcing is only applied to wave numbers lower or equal than the given threshold wave "
       "number.",
       &fdyn_turbu);
 
-  CORE::UTILS::DoubleParameter("POWER_INPUT", 0.0, "power of forcing", &fdyn_turbu);
+  Core::UTILS::DoubleParameter("POWER_INPUT", 0.0, "power of forcing", &fdyn_turbu);
 
   setStringToIntegralParameter<int>("SCALAR_FORCING", "no", "Define forcing for scalar field.",
       tuple<std::string>("no", "isotropic", "mean_scalar_gradient"),
@@ -1047,30 +1047,30 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Force scalar field by imposed mean-scalar gradient."),
       tuple<int>(0, 1, 2), &fdyn_turbu);
 
-  CORE::UTILS::DoubleParameter("MEAN_SCALAR_GRADIENT", 0.0,
+  Core::UTILS::DoubleParameter("MEAN_SCALAR_GRADIENT", 0.0,
       "Value of imposed mean-scalar gradient to force scalar field.", &fdyn_turbu);
 
   // filtering with xfem
   //--------------
 
-  CORE::UTILS::BoolParameter("EXCLUDE_XFEM", "No",
+  Core::UTILS::BoolParameter("EXCLUDE_XFEM", "No",
       "Flag to (de)activate XFEM dofs in calculation of fine-scale velocity.", &fdyn_turbu);
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for Smagorinsky model
   Teuchos::ParameterList& fdyn_turbsgv = fdyn.sublist("SUBGRID VISCOSITY", false, "");
 
-  CORE::UTILS::DoubleParameter("C_SMAGORINSKY", 0.0,
+  Core::UTILS::DoubleParameter("C_SMAGORINSKY", 0.0,
       "Constant for the Smagorinsky model. Something between 0.1 to 0.24. Vreman constant if the "
       "constant vreman model is applied (something between 0.07 and 0.01).",
       &fdyn_turbsgv);
-  CORE::UTILS::DoubleParameter("C_YOSHIZAWA", -1.0,
+  Core::UTILS::DoubleParameter("C_YOSHIZAWA", -1.0,
       "Constant for the compressible Smagorinsky model: isotropic part of subgrid-stress tensor. "
       "About 0.09 or 0.0066. Ci will not be squared!",
       &fdyn_turbsgv);
-  CORE::UTILS::BoolParameter("C_SMAGORINSKY_AVERAGED", "No",
+  Core::UTILS::BoolParameter("C_SMAGORINSKY_AVERAGED", "No",
       "Flag to (de)activate averaged Smagorinksy constant", &fdyn_turbsgv);
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "C_INCLUDE_CI", "No", "Flag to (de)inclusion of Yoshizawa model", &fdyn_turbsgv);
   // remark: following Moin et al. 1991, the extension of the dynamic Smagorinsky model to
   // compressibel flow
@@ -1083,12 +1083,12 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   //           if C_INCLUDE_CI==true and C_YOSHIZAWA<0.0 then C_YOSHIZAWA is determined dynamically
   //        else all values are taken from input
 
-  CORE::UTILS::DoubleParameter("CHANNEL_L_TAU", 0.0,
+  Core::UTILS::DoubleParameter("CHANNEL_L_TAU", 0.0,
       "Used for normalisation of the wall normal distance in the Van \nDriest Damping function. "
       "May be taken from the output of \nthe apply_mesh_stretching.pl preprocessing script.",
       &fdyn_turbsgv);
 
-  CORE::UTILS::DoubleParameter("C_TURBPRANDTL", 1.0,
+  Core::UTILS::DoubleParameter("C_TURBPRANDTL", 1.0,
       "(Constant) turbulent Prandtl number for the Smagorinsky model in scalar transport.",
       &fdyn_turbsgv);
 
@@ -1102,7 +1102,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // sublist with additional input parameters for Smagorinsky model
   Teuchos::ParameterList& fdyn_wallmodel = fdyn.sublist("WALL MODEL", false, "");
 
-  CORE::UTILS::BoolParameter("X_WALL", "No", "Flag to switch on the xwall model", &fdyn_wallmodel);
+  Core::UTILS::BoolParameter("X_WALL", "No", "Flag to switch on the xwall model", &fdyn_wallmodel);
 
   setStringToIntegralParameter<int>("Tauw_Type", "constant",
       "Methods for calculating/updating the wall shear stress necessary for Spalding's law.",
@@ -1119,7 +1119,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Gradient via shape functions and nodal values.", "First gradient, then residual."),
       tuple<int>(0, 1, 3), &fdyn_wallmodel);
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "Switch_Step", -1, "Switch from gradient to residual based tauw.", &fdyn_wallmodel);
 
   setStringToIntegralParameter<int>("Projection", "No",
@@ -1130,13 +1130,13 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "L2 projection with continuity constraint."),
       tuple<int>(0, 1, 2), &fdyn_wallmodel);
 
-  CORE::UTILS::DoubleParameter("C_Tauw", 1.0,
+  Core::UTILS::DoubleParameter("C_Tauw", 1.0,
       "Constant wall shear stress for Spalding's law, if applicable", &fdyn_wallmodel);
 
-  CORE::UTILS::DoubleParameter("Min_Tauw", 2.0e-9,
+  Core::UTILS::DoubleParameter("Min_Tauw", 2.0e-9,
       "Minimum wall shear stress preventing system to become singular", &fdyn_wallmodel);
 
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "Inc_Tauw", 1.0, "Increment of Tauw of full step, between 0.0 and 1.0", &fdyn_wallmodel);
 
   setStringToIntegralParameter<int>("Blending_Type", "none",
@@ -1146,25 +1146,25 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "interface"),
       tuple<int>(0, 1), &fdyn_wallmodel);
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "GP_Wall_Normal", 3, "Gauss points in wall normal direction", &fdyn_wallmodel);
-  CORE::UTILS::IntParameter("GP_Wall_Normal_Off_Wall", 3,
+  Core::UTILS::IntParameter("GP_Wall_Normal_Off_Wall", 3,
       "Gauss points in wall normal direction, off-wall elements", &fdyn_wallmodel);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "GP_Wall_Parallel", 3, "Gauss points in wall parallel direction", &fdyn_wallmodel);
 
-  CORE::UTILS::BoolParameter("Treat_Tauw_on_Dirichlet_Inflow", "No",
+  Core::UTILS::BoolParameter("Treat_Tauw_on_Dirichlet_Inflow", "No",
       "Flag to treat residual on Dirichlet inflow nodes for calculation of wall shear stress",
       &fdyn_wallmodel);
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "PROJECTION_SOLVER", -1, "Set solver number for l2-projection.", &fdyn_wallmodel);
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for multifractal subgrid-scales
   Teuchos::ParameterList& fdyn_turbmfs = fdyn.sublist("MULTIFRACTAL SUBGRID SCALES", false, "");
 
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "CSGS", 0.0, "Modelparameter of multifractal subgrid-scales.", &fdyn_turbmfs);
 
   setStringToIntegralParameter<int>("SCALE_SEPARATION", "no_scale_sep",
@@ -1174,15 +1174,15 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "scale separation by algebraic multigrid operator"),
       tuple<int>(0, 1, 2), &fdyn_turbmfs);
 
-  CORE::UTILS::IntParameter("ML_SOLVER", -1,
+  Core::UTILS::IntParameter("ML_SOLVER", -1,
       "Set solver number for scale separation via level set transfer operators from plain "
       "aggregation.",
       &fdyn_turbmfs);
 
-  CORE::UTILS::BoolParameter("CALC_N", "No",
+  Core::UTILS::BoolParameter("CALC_N", "No",
       "Flag to (de)activate calculation of N from the Reynolds number.", &fdyn_turbmfs);
 
-  CORE::UTILS::DoubleParameter("N", 1.0, "Set grid to viscous scale ratio.", &fdyn_turbmfs);
+  Core::UTILS::DoubleParameter("N", 1.0, "Set grid to viscous scale ratio.", &fdyn_turbmfs);
 
   setStringToIntegralParameter<int>("REF_LENGTH", "cube_edge",
       "Specify the reference length for Re-dependent N.",
@@ -1200,11 +1200,11 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("norm of strain rate", "resolved velocity", "fine-scale velocity"),
       tuple<int>(0, 1, 2), &fdyn_turbmfs);
 
-  CORE::UTILS::DoubleParameter("C_NU", 1.0,
+  Core::UTILS::DoubleParameter("C_NU", 1.0,
       "Proportionality constant between Re and ratio viscous scale to element length.",
       &fdyn_turbmfs);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "NEAR_WALL_LIMIT", "No", "Flag to (de)activate near-wall limit.", &fdyn_turbmfs);
 
   setStringToIntegralParameter<int>("EVALUATION_B", "element_center",
@@ -1212,41 +1212,41 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("evaluate B at element center", "evaluate B at integration point"),
       tuple<int>(0, 1), &fdyn_turbmfs);
 
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "BETA", 0.0, "Cross- and Reynolds-stress terms only on right-hand-side.", &fdyn_turbmfs);
 
   setStringToIntegralParameter<int>("CONVFORM", "convective", "form of convective term",
       tuple<std::string>("convective", "conservative"), tuple<int>(0, 1), &fdyn_turbmfs);
 
-  CORE::UTILS::DoubleParameter("CSGS_PHI", 0.0,
+  Core::UTILS::DoubleParameter("CSGS_PHI", 0.0,
       "Modelparameter of multifractal subgrid-scales for scalar transport.", &fdyn_turbmfs);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "ADAPT_CSGS_PHI", "No", "Flag to (de)activate adaption of CsgsD to CsgsB.", &fdyn_turbmfs);
 
-  CORE::UTILS::BoolParameter("NEAR_WALL_LIMIT_CSGS_PHI", "No",
+  Core::UTILS::BoolParameter("NEAR_WALL_LIMIT_CSGS_PHI", "No",
       "Flag to (de)activate near-wall limit for scalar field.", &fdyn_turbmfs);
 
-  CORE::UTILS::BoolParameter("CONSISTENT_FLUID_RESIDUAL", "No",
+  Core::UTILS::BoolParameter("CONSISTENT_FLUID_RESIDUAL", "No",
       "Flag to (de)activate the consistency term for residual-based stabilization.", &fdyn_turbmfs);
 
-  CORE::UTILS::DoubleParameter("C_DIFF", 1.0,
+  Core::UTILS::DoubleParameter("C_DIFF", 1.0,
       "Proportionality constant between Re*Pr and ratio dissipative scale to element length. "
       "Usually equal cnu.",
       &fdyn_turbmfs);
 
-  CORE::UTILS::BoolParameter("SET_FINE_SCALE_VEL", "No",
+  Core::UTILS::BoolParameter("SET_FINE_SCALE_VEL", "No",
       "Flag to set fine-scale velocity for parallel nightly tests.", &fdyn_turbmfs);
 
   // activate cross- and Reynolds-stress terms in loma continuity equation
-  CORE::UTILS::BoolParameter("LOMA_CONTI", "No",
+  Core::UTILS::BoolParameter("LOMA_CONTI", "No",
       "Flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation.",
       &fdyn_turbmfs);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_turbinf = fdyn.sublist("TURBULENT INFLOW", false, "");
 
-  CORE::UTILS::BoolParameter("TURBULENTINFLOW", "No",
+  Core::UTILS::BoolParameter("TURBULENTINFLOW", "No",
       "Flag to (de)activate potential separate turbulent inflow section", &fdyn_turbinf);
 
   setStringToIntegralParameter<int>("INITIALINFLOWFIELD", "zero_field",
@@ -1256,15 +1256,15 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           initfield_disturbed_field_from_function),
       &fdyn_turbinf);
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "INFLOWFUNC", -1, "Function number for initial flow field in inflow section", &fdyn_turbinf);
 
-  CORE::UTILS::DoubleParameter("INFLOW_INIT_DIST", 0.1,
+  Core::UTILS::DoubleParameter("INFLOW_INIT_DIST", 0.1,
       "Max. amplitude of the random disturbance in percent of the initial value in mean flow "
       "direction.",
       &fdyn_turbinf);
 
-  CORE::UTILS::IntParameter("NUMINFLOWSTEP", 1,
+  Core::UTILS::IntParameter("NUMINFLOWSTEP", 1,
       "Total number of time steps for development of turbulent flow", &fdyn_turbinf);
 
   setStringToIntegralParameter<int>("CANONICAL_INFLOW", "no",
@@ -1284,7 +1284,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "is essentially a statistically one dimensional flow."),
       tuple<int>(0, 1, 2, 3, 4), &fdyn_turbinf);
 
-  CORE::UTILS::DoubleParameter("INFLOW_CHA_SIDE", 0.0,
+  Core::UTILS::DoubleParameter("INFLOW_CHA_SIDE", 0.0,
       "Most right side of inflow channel. Necessary to define sampling domain.", &fdyn_turbinf);
 
   setStringToIntegralParameter<int>("INFLOW_HOMDIR", "not_specified",
@@ -1298,11 +1298,11 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Wall normal direction is x, average in y and z direction"),
       tuple<int>(0, 1, 2, 3, 4, 5, 6), &fdyn_turbinf);
 
-  CORE::UTILS::IntParameter("INFLOW_SAMPLING_START", 10000000,
+  Core::UTILS::IntParameter("INFLOW_SAMPLING_START", 10000000,
       "Time step after when sampling shall be started", &fdyn_turbinf);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "INFLOW_SAMPLING_STOP", 1, "Time step when sampling shall be stopped", &fdyn_turbinf);
-  CORE::UTILS::IntParameter("INFLOW_DUMPING_PERIOD", 1,
+  Core::UTILS::IntParameter("INFLOW_DUMPING_PERIOD", 1,
       "Period of time steps after which statistical data shall be dumped", &fdyn_turbinf);
 
   /*----------------------------------------------------------------------*/
@@ -1317,78 +1317,78 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           ),
       tuple<int>(const_dt, cfl_number, only_print_cfl_number), &fdyn_timintada);
 
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "CFL_NUMBER", -1.0, "CFL number for adaptive time step", &fdyn_timintada);
-  CORE::UTILS::IntParameter("FREEZE_ADAPTIVE_DT_AT", 1000000,
+  Core::UTILS::IntParameter("FREEZE_ADAPTIVE_DT_AT", 1000000,
       "keep time step constant after this step, otherwise turbulence statistics sampling is not "
       "consistent",
       &fdyn_timintada);
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "ADAPTIVE_DT_INC", 0.8, "Increment of whole step for adaptive dt via CFL", &fdyn_timintada);
 }
 
 
 
-void INPAR::LOMA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::LowMach::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
+  using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   Teuchos::ParameterList& lomacontrol = list->sublist(
       "LOMA CONTROL", false, "control parameters for low-Mach-number flow problems\n");
 
-  CORE::UTILS::BoolParameter("MONOLITHIC", "no", "monolithic solver", &lomacontrol);
-  CORE::UTILS::IntParameter("NUMSTEP", 24, "Total number of time steps", &lomacontrol);
-  CORE::UTILS::DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &lomacontrol);
-  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &lomacontrol);
-  CORE::UTILS::IntParameter("ITEMAX", 10, "Maximum number of outer iterations", &lomacontrol);
-  CORE::UTILS::IntParameter("ITEMAX_BEFORE_SAMPLING", 1,
+  Core::UTILS::BoolParameter("MONOLITHIC", "no", "monolithic solver", &lomacontrol);
+  Core::UTILS::IntParameter("NUMSTEP", 24, "Total number of time steps", &lomacontrol);
+  Core::UTILS::DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &lomacontrol);
+  Core::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &lomacontrol);
+  Core::UTILS::IntParameter("ITEMAX", 10, "Maximum number of outer iterations", &lomacontrol);
+  Core::UTILS::IntParameter("ITEMAX_BEFORE_SAMPLING", 1,
       "Maximum number of outer iterations before sampling (for turbulent flows only)",
       &lomacontrol);
-  CORE::UTILS::DoubleParameter("CONVTOL", 1e-6, "Tolerance for convergence check", &lomacontrol);
-  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &lomacontrol);
-  CORE::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &lomacontrol);
+  Core::UTILS::DoubleParameter("CONVTOL", 1e-6, "Tolerance for convergence check", &lomacontrol);
+  Core::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &lomacontrol);
+  Core::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &lomacontrol);
   setStringToIntegralParameter<int>("CONSTHERMPRESS", "Yes",
       "treatment of thermodynamic pressure in time",
       tuple<std::string>("No_energy", "No_mass", "Yes"), tuple<int>(0, 1, 2), &lomacontrol);
-  CORE::UTILS::BoolParameter("SGS_MATERIAL_UPDATE", "no",
+  Core::UTILS::BoolParameter("SGS_MATERIAL_UPDATE", "no",
       "update material by adding subgrid-scale scalar field", &lomacontrol);
 
   // number of linear solver used for LOMA solver
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "LINEAR_SOLVER", -1, "number of linear solver used for LOMA problem", &lomacontrol);
 }
 
 
 
-void INPAR::FLUID::SetValidConditions(
-    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
+void Inpar::FLUID::SetValidConditions(
+    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
-  using namespace INPUT;
+  using namespace Input;
 
   /*--------------------------------------------------------------------*/
   // transfer boundary condition for turbulent inflow
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> tbc_turb_inflow_components;
+  std::vector<Teuchos::RCP<Input::LineComponent>> tbc_turb_inflow_components;
 
-  tbc_turb_inflow_components.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("ID")));
-  tbc_turb_inflow_components.push_back(Teuchos::rcp(new INPUT::IntComponent("id", {0, true})));
-  tbc_turb_inflow_components.push_back(Teuchos::rcp(new INPUT::SelectionComponent("toggle",
+  tbc_turb_inflow_components.push_back(Teuchos::rcp(new Input::SeparatorComponent("ID")));
+  tbc_turb_inflow_components.push_back(Teuchos::rcp(new Input::IntComponent("id", {0, true})));
+  tbc_turb_inflow_components.push_back(Teuchos::rcp(new Input::SelectionComponent("toggle",
       "master", Teuchos::tuple<std::string>("master", "slave"),
       Teuchos::tuple<std::string>("master", "slave"))));
-  tbc_turb_inflow_components.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("DIRECTION")));
+  tbc_turb_inflow_components.push_back(Teuchos::rcp(new Input::SeparatorComponent("DIRECTION")));
   tbc_turb_inflow_components.push_back(
-      Teuchos::rcp(new INPUT::SelectionComponent("transfer direction", "x",
+      Teuchos::rcp(new Input::SelectionComponent("transfer direction", "x",
           Teuchos::tuple<std::string>("x", "y", "z"), Teuchos::tuple<std::string>("x", "y", "z"))));
   tbc_turb_inflow_components.push_back(
-      Teuchos::rcp(new INPUT::IntComponent("curve", {0, true, true})));
+      Teuchos::rcp(new Input::IntComponent("curve", {0, true, true})));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> tbc_turb_inflow =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> tbc_turb_inflow =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURF TURBULENT INFLOW TRANSFER", "TransferTurbulentInflow",
-          "TransferTurbulentInflow", CORE::Conditions::TransferTurbulentInflow, true,
-          CORE::Conditions::geometry_type_surface));
+          "TransferTurbulentInflow", Core::Conditions::TransferTurbulentInflow, true,
+          Core::Conditions::geometry_type_surface));
 
   // we attach all the components of this condition to this weak line DBC
   for (unsigned i = 0; i < tbc_turb_inflow_components.size(); ++i)
@@ -1402,10 +1402,10 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // separate domain for turbulent inflow generation
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> turbulentinflowgeneration =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("FLUID TURBULENT INFLOW VOLUME",
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> turbulentinflowgeneration =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("FLUID TURBULENT INFLOW VOLUME",
           "TurbulentInflowSection", "TurbulentInflowSection",
-          CORE::Conditions::TurbulentInflowSection, true, CORE::Conditions::geometry_type_volume));
+          Core::Conditions::TurbulentInflowSection, true, Core::Conditions::geometry_type_volume));
 
   condlist.push_back(turbulentinflowgeneration);
 
@@ -1413,45 +1413,45 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // flow-dependent pressure conditions
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> flowdeppressurecomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> flowdeppressurecomponents;
 
   // flow-dependent pressure conditions can be imposed either based on
   // (out)flow rate or (out)flow volume (e.g., for air-cushion condition)
   flowdeppressurecomponents.push_back(
-      Teuchos::rcp(new INPUT::SelectionComponent("type of flow dependence", "flow_rate",
+      Teuchos::rcp(new Input::SelectionComponent("type of flow dependence", "flow_rate",
           Teuchos::tuple<std::string>("flow_rate", "flow_volume", "fixed_pressure"),
           Teuchos::tuple<std::string>("flow_rate", "flow_volume", "fixed_pressure"))));
 
   // constant coefficient for (linear) flow-rate-based condition
   // and constant fixed pressure
-  flowdeppressurecomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("ConstCoeff")));
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new Input::RealComponent("ConstCoeff")));
 
   // linear coefficient for (linear) flow-rate-based condition
-  flowdeppressurecomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("LinCoeff")));
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new Input::RealComponent("LinCoeff")));
 
   // initial (air-cushion) volume outside of boundary
-  flowdeppressurecomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("InitialVolume")));
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new Input::RealComponent("InitialVolume")));
 
   // reference pressure outside of boundary
-  flowdeppressurecomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("ReferencePressure")));
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new Input::RealComponent("ReferencePressure")));
 
   // adiabatic exponent
-  flowdeppressurecomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("AdiabaticExponent")));
+  flowdeppressurecomponents.push_back(Teuchos::rcp(new Input::RealComponent("AdiabaticExponent")));
 
   // values for time curve
   flowdeppressurecomponents.push_back(
-      Teuchos::rcp(new INPUT::IntComponent("curve", {0, true, true})));
+      Teuchos::rcp(new Input::IntComponent("curve", {0, true, true})));
 
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> lineflowdeppressure = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN LINE FLOW-DEPENDENT PRESSURE CONDITIONS",
-          "LineFlowDepPressure", "LineFlowDepPressure", CORE::Conditions::LineFlowDepPressure, true,
-          CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineflowdeppressure = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN LINE FLOW-DEPENDENT PRESSURE CONDITIONS",
+          "LineFlowDepPressure", "LineFlowDepPressure", Core::Conditions::LineFlowDepPressure, true,
+          Core::Conditions::geometry_type_line));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfflowdeppressure = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN SURFACE FLOW-DEPENDENT PRESSURE CONDITIONS",
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfflowdeppressure = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN SURFACE FLOW-DEPENDENT PRESSURE CONDITIONS",
           "SurfaceFlowDepPressure", "SurfaceFlowDepPressure",
-          CORE::Conditions::SurfaceFlowDepPressure, true, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::SurfaceFlowDepPressure, true, Core::Conditions::geometry_type_surface));
 
   // we attach all the components of this condition to this weak line DBC
   for (unsigned i = 0; i < flowdeppressurecomponents.size(); ++i)
@@ -1467,22 +1467,22 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Slip Supplemental Curved Boundary conditions
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> slipsuppcomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> slipsuppcomponents;
 
-  slipsuppcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("USEUPDATEDNODEPOS")));
-  slipsuppcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("useupdatednodepos")));
+  slipsuppcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("USEUPDATEDNODEPOS")));
+  slipsuppcomponents.push_back(Teuchos::rcp(new Input::IntComponent("useupdatednodepos")));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> lineslipsupp =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineslipsupp =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE SLIP SUPPLEMENTAL CURVED BOUNDARY CONDITIONS", "LineSlipSupp",
-          "LineSlipSupp", CORE::Conditions::LineSlipSupp, true,
-          CORE::Conditions::geometry_type_line));
+          "LineSlipSupp", Core::Conditions::LineSlipSupp, true,
+          Core::Conditions::geometry_type_line));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfslipsupp =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfslipsupp =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURFACE SLIP SUPPLEMENTAL CURVED BOUNDARY CONDITIONS", "SurfaceSlipSupp",
-          "SurfaceSlipSupp", CORE::Conditions::SurfaceSlipSupp, true,
-          CORE::Conditions::geometry_type_surface));
+          "SurfaceSlipSupp", Core::Conditions::SurfaceSlipSupp, true,
+          Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < slipsuppcomponents.size(); ++i)
   {
@@ -1496,20 +1496,20 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Navier-slip boundary conditions
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> navierslipcomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> navierslipcomponents;
 
-  navierslipcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("SLIPCOEFFICIENT")));
-  navierslipcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("slipcoefficient")));
+  navierslipcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("SLIPCOEFFICIENT")));
+  navierslipcomponents.push_back(Teuchos::rcp(new Input::RealComponent("slipcoefficient")));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linenavierslip =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linenavierslip =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE NAVIER-SLIP BOUNDARY CONDITIONS", "LineNavierSlip", "LineNavierSlip",
-          CORE::Conditions::LineNavierSlip, true, CORE::Conditions::geometry_type_line));
+          Core::Conditions::LineNavierSlip, true, Core::Conditions::geometry_type_line));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfnavierslip =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfnavierslip =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURF NAVIER-SLIP BOUNDARY CONDITIONS", "SurfNavierSlip", "SurfNavierSlip",
-          CORE::Conditions::SurfNavierSlip, true, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::SurfNavierSlip, true, Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < navierslipcomponents.size(); ++i)
   {
@@ -1523,26 +1523,26 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // consistent outflow bcs for conservative element formulations
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfconsistentoutflowconsistency =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfconsistentoutflowconsistency =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY",
           "SurfaceConservativeOutflowConsistency", "SurfaceConservativeOutflowConsistency",
-          CORE::Conditions::SurfaceConservativeOutflowConsistency, true,
-          CORE::Conditions::geometry_type_surface));
+          Core::Conditions::SurfaceConservativeOutflowConsistency, true,
+          Core::Conditions::geometry_type_surface));
 
   condlist.push_back(surfconsistentoutflowconsistency);
 
   /*--------------------------------------------------------------------*/
   // Neumann condition for fluid that can handle inflow/backflow
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linefluidneumanninflow =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("FLUID NEUMANN INFLOW LINE CONDITIONS",
-          "FluidNeumannInflow", "Line Fluid Neumann Inflow", CORE::Conditions::FluidNeumannInflow,
-          true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surffluidneumanninflow =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("FLUID NEUMANN INFLOW SURF CONDITIONS",
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linefluidneumanninflow =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("FLUID NEUMANN INFLOW LINE CONDITIONS",
+          "FluidNeumannInflow", "Line Fluid Neumann Inflow", Core::Conditions::FluidNeumannInflow,
+          true, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surffluidneumanninflow =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("FLUID NEUMANN INFLOW SURF CONDITIONS",
           "FluidNeumannInflow", "Surface Fluid Neumann Inflow",
-          CORE::Conditions::FluidNeumannInflow, true, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::FluidNeumannInflow, true, Core::Conditions::geometry_type_surface));
 
   condlist.push_back(linefluidneumanninflow);
   condlist.push_back(surffluidneumanninflow);
@@ -1550,44 +1550,44 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // mixed/hybrid Dirichlet conditions
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> mixhybDirichletcomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> mixhybDirichletcomponents;
 
   // we provide a vector of 3 values for velocities
-  mixhybDirichletcomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("val", 3)));
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new Input::RealVectorComponent("val", 3)));
 
   // and optional spatial functions
   mixhybDirichletcomponents.push_back(
-      Teuchos::rcp(new INPUT::IntVectorComponent("funct", 3, {0, false, false, true})));
+      Teuchos::rcp(new Input::IntVectorComponent("funct", 3, {0, false, false, true})));
 
   // characteristic velocity
-  mixhybDirichletcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("u_C")));
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new Input::RealComponent("u_C")));
 
   // the penalty parameter could be computed dynamically (using Spaldings
   // law of the wall) or using a fixed value (1)
   mixhybDirichletcomponents.push_back(
-      Teuchos::rcp(new INPUT::SelectionComponent("Definition of penalty parameter", "constant",
+      Teuchos::rcp(new Input::SelectionComponent("Definition of penalty parameter", "constant",
           Teuchos::tuple<std::string>("constant", "Spalding"),
           Teuchos::tuple<std::string>("constant", "Spalding"))));
 
   // scaling factor for penalty parameter tauB
-  mixhybDirichletcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("hB_divided_by")));
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new Input::RealComponent("hB_divided_by")));
 
   // if Spaldings law is used, this defines the way how the traction at y is computed from utau
-  mixhybDirichletcomponents.push_back(Teuchos::rcp(new INPUT::SelectionComponent("utau_computation",
+  mixhybDirichletcomponents.push_back(Teuchos::rcp(new Input::SelectionComponent("utau_computation",
       "at_wall", Teuchos::tuple<std::string>("at_wall", "viscous_tangent"),
       Teuchos::tuple<std::string>("at_wall", "viscous_tangent"))));
 
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linemixhybDirichlet = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS",
-          "LineMixHybDirichlet", "LineMixHybDirichlet", CORE::Conditions::LineMixHybDirichlet, true,
-          CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linemixhybDirichlet = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS",
+          "LineMixHybDirichlet", "LineMixHybDirichlet", Core::Conditions::LineMixHybDirichlet, true,
+          Core::Conditions::geometry_type_line));
 
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfmixhybDirichlet = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS",
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfmixhybDirichlet = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS",
           "SurfaceMixHybDirichlet", "SurfaceMixHybDirichlet",
-          CORE::Conditions::SurfaceMixHybDirichlet, true, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::SurfaceMixHybDirichlet, true, Core::Conditions::geometry_type_surface));
 
   // we attach all the components of this condition to this condition
   for (unsigned i = 0; i < mixhybDirichletcomponents.size(); ++i)
@@ -1603,47 +1603,47 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // surface tension
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surftension =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("SURFACE TENSION CONDITIONS",
-          "SurfaceStress", "Surface Stress (ideal water)", CORE::Conditions::SurfaceTension, true,
-          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surftension =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("SURFACE TENSION CONDITIONS",
+          "SurfaceStress", "Surface Stress (ideal water)", Core::Conditions::SurfaceTension, true,
+          Core::Conditions::geometry_type_surface));
 
-  surftension->AddComponent(Teuchos::rcp(new INPUT::IntComponent("curve", {0, true, true})));
-  INPUT::AddNamedReal(surftension, "gamma");
+  surftension->AddComponent(Teuchos::rcp(new Input::IntComponent("curve", {0, true, true})));
+  Input::AddNamedReal(surftension, "gamma");
 
   condlist.push_back(surftension);
 
   /*--------------------------------------------------------------------*/
   // FREESURF
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> freesurfcomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> freesurfcomponents;
 
-  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("FIELD")));
-  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SelectionComponent("field", "fluid",
+  freesurfcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("FIELD")));
+  freesurfcomponents.push_back(Teuchos::rcp(new Input::SelectionComponent("field", "fluid",
       Teuchos::tuple<std::string>("fluid", "ale"), Teuchos::tuple<std::string>("fluid", "ale"))));
 
-  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("COUPLING")));
-  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SelectionComponent("coupling", "lagrange",
+  freesurfcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("COUPLING")));
+  freesurfcomponents.push_back(Teuchos::rcp(new Input::SelectionComponent("coupling", "lagrange",
       Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
           "meantangentialvelocity", "meantangentialvelocityscaled"),
       Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
           "meantangentialvelocity", "meantangentialvelocityscaled"),
       true)));
 
-  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("VAL")));
-  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("val")));
+  freesurfcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("VAL")));
+  freesurfcomponents.push_back(Teuchos::rcp(new Input::RealComponent("val")));
 
-  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("NODENORMALFUNCT")));
-  freesurfcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("nodenormalfunct")));
+  freesurfcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("NODENORMALFUNCT")));
+  freesurfcomponents.push_back(Teuchos::rcp(new Input::IntComponent("nodenormalfunct")));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linefreesurf =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linefreesurf =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN FLUID FREE SURFACE LINE CONDITIONS", "FREESURFCoupling", "FREESURF Coupling",
-          CORE::Conditions::FREESURFCoupling, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surffreesurf =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::FREESURFCoupling, true, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surffreesurf =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN FLUID FREE SURFACE SURF CONDITIONS", "FREESURFCoupling", "FREESURF Coupling",
-          CORE::Conditions::FREESURFCoupling, true, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::FREESURFCoupling, true, Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < freesurfcomponents.size(); ++i)
   {
@@ -1657,16 +1657,16 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // fluid stress
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> fluidstresscomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> fluidstresscomponents;
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linefluidstress = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN FLUID STRESS CALC LINE CONDITIONS",
-          "FluidStressCalc", "Line Fluid Stress Calculation", CORE::Conditions::FluidStressCalc,
-          true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surffluidstress = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN FLUID STRESS CALC SURF CONDITIONS",
-          "FluidStressCalc", "Surf Fluid Stress Calculation", CORE::Conditions::FluidStressCalc,
-          true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linefluidstress = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN FLUID STRESS CALC LINE CONDITIONS",
+          "FluidStressCalc", "Line Fluid Stress Calculation", Core::Conditions::FluidStressCalc,
+          true, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surffluidstress = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN FLUID STRESS CALC SURF CONDITIONS",
+          "FluidStressCalc", "Surf Fluid Stress Calculation", Core::Conditions::FluidStressCalc,
+          true, Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < fluidstresscomponents.size(); ++i)
   {
@@ -1680,23 +1680,23 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // lift & drag
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> liftdragcomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> liftdragcomponents;
 
-  liftdragcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("label")));
-  liftdragcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("CENTER")));
-  liftdragcomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("centerCoord", 3)));
+  liftdragcomponents.push_back(Teuchos::rcp(new Input::IntComponent("label")));
+  liftdragcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("CENTER")));
+  liftdragcomponents.push_back(Teuchos::rcp(new Input::RealVectorComponent("centerCoord", 3)));
   // optional
-  liftdragcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("AXIS", "", true)));
-  liftdragcomponents.push_back(Teuchos::rcp(new INPUT::RealVectorComponent("axis", 3, {0, true})));
+  liftdragcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("AXIS", "", true)));
+  liftdragcomponents.push_back(Teuchos::rcp(new Input::RealVectorComponent("axis", 3, {0, true})));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> lineliftdrag =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN FLUID LINE LIFT&DRAG",
-          "LIFTDRAG", "Line LIFTDRAG", CORE::Conditions::LineLIFTDRAG, true,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfliftdrag =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN FLUID SURF LIFT&DRAG",
-          "LIFTDRAG", "Surface LIFTDRAG", CORE::Conditions::SurfLIFTDRAG, true,
-          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineliftdrag =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FLUID LINE LIFT&DRAG",
+          "LIFTDRAG", "Line LIFTDRAG", Core::Conditions::LineLIFTDRAG, true,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfliftdrag =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FLUID SURF LIFT&DRAG",
+          "LIFTDRAG", "Surface LIFTDRAG", Core::Conditions::SurfLIFTDRAG, true,
+          Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < liftdragcomponents.size(); ++i)
   {
@@ -1711,13 +1711,13 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // flow rate through line
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> lineflowratecomponents;
-  lineflowratecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
+  std::vector<Teuchos::RCP<Input::LineComponent>> lineflowratecomponents;
+  lineflowratecomponents.push_back(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> lineflowrate =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN FLOW RATE LINE CONDITIONS",
-          "LineFlowRate", "Line Flow Rate", CORE::Conditions::FlowRateThroughLine_2D, true,
-          CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineflowrate =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FLOW RATE LINE CONDITIONS",
+          "LineFlowRate", "Line Flow Rate", Core::Conditions::FlowRateThroughLine_2D, true,
+          Core::Conditions::geometry_type_line));
 
   for (unsigned i = 0; i < lineflowratecomponents.size(); ++i)
   {
@@ -1728,13 +1728,13 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // flow rate through surface
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> flowratecomponents;
-  flowratecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
+  std::vector<Teuchos::RCP<Input::LineComponent>> flowratecomponents;
+  flowratecomponents.push_back(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfflowrate =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN FLOW RATE SURF CONDITIONS",
-          "SurfFlowRate", "Surface Flow Rate", CORE::Conditions::FlowRateThroughSurface_3D, true,
-          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfflowrate =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FLOW RATE SURF CONDITIONS",
+          "SurfFlowRate", "Surface Flow Rate", Core::Conditions::FlowRateThroughSurface_3D, true,
+          Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < flowratecomponents.size(); ++i)
   {
@@ -1745,13 +1745,13 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // impuls rate through surface
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> impulsratecomponents;
-  impulsratecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
+  std::vector<Teuchos::RCP<Input::LineComponent>> impulsratecomponents;
+  impulsratecomponents.push_back(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfimpulsrate =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN IMPULS RATE SURF CONDITIONS",
-          "SurfImpulsRate", "Surface Impuls Rate", CORE::Conditions::ImpulsRateThroughSurface_3D,
-          true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfimpulsrate =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN IMPULS RATE SURF CONDITIONS",
+          "SurfImpulsRate", "Surface Impuls Rate", Core::Conditions::ImpulsRateThroughSurface_3D,
+          true, Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < impulsratecomponents.size(); ++i)
   {
@@ -1762,58 +1762,58 @@ void INPAR::FLUID::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // Volumetric surface flow profile condition
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volumetric_surface_flow_cond =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volumetric_surface_flow_cond =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURF VOLUMETRIC FLOW CONDITIONS", "VolumetricSurfaceFlowCond",
-          "volumetric surface flow condition", CORE::Conditions::VolumetricSurfaceFlowCond, true,
-          CORE::Conditions::geometry_type_surface));
+          "volumetric surface flow condition", Core::Conditions::VolumetricSurfaceFlowCond, true,
+          Core::Conditions::geometry_type_surface));
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> inflownormalcomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> inflownormalcomponents;
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent(
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent(
       "ConditionType", "WOMERSLEY", Teuchos::tuple<std::string>("WOMERSLEY", "POLYNOMIAL"),
       Teuchos::tuple<std::string>("WOMERSLEY", "POLYNOMIAL"), true)));
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent("prebiased",
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent("prebiased",
       "NOTPREBIASED", Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"),
       Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"), true)));
 
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent("FlowType",
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent("FlowType",
       "InFlow", Teuchos::tuple<std::string>("InFlow", "OutFlow"),
       Teuchos::tuple<std::string>("InFlow", "OutFlow"), true)));
 
   volumetric_surface_flow_cond->AddComponent(
-      Teuchos::rcp(new INPUT::SelectionComponent("CorrectionFlag", "WithOutCorrection",
+      Teuchos::rcp(new Input::SelectionComponent("CorrectionFlag", "WithOutCorrection",
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"),
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"), true)));
-  INPUT::AddNamedReal(volumetric_surface_flow_cond, "Period");
-  INPUT::AddNamedInt(volumetric_surface_flow_cond, "Order");
-  INPUT::AddNamedInt(volumetric_surface_flow_cond, "Harmonics");
-  INPUT::AddNamedReal(volumetric_surface_flow_cond, "Val");
-  INPUT::AddNamedInt(volumetric_surface_flow_cond, "Funct");
+  Input::AddNamedReal(volumetric_surface_flow_cond, "Period");
+  Input::AddNamedInt(volumetric_surface_flow_cond, "Order");
+  Input::AddNamedInt(volumetric_surface_flow_cond, "Harmonics");
+  Input::AddNamedReal(volumetric_surface_flow_cond, "Val");
+  Input::AddNamedInt(volumetric_surface_flow_cond, "Funct");
 
   volumetric_surface_flow_cond->AddComponent(
-      Teuchos::rcp(new INPUT::SelectionComponent("NORMAL", "SelfEvaluateNormal",
+      Teuchos::rcp(new Input::SelectionComponent("NORMAL", "SelfEvaluateNormal",
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"),
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"), true)));
 
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("n1")));
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("n2")));
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("n3")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("n1")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("n2")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("n3")));
 
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent(
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent(
       "CenterOfMass", "SelfEvaluateCenterOfMass",
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"),
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"), true)));
 
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("c1")));
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("c2")));
-  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("c3")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("c1")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("c2")));
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("c3")));
 
   condlist.push_back(volumetric_surface_flow_cond);
 
@@ -1822,84 +1822,84 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Volumetric flow border nodes condition
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volumetric_border_nodes_cond = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN LINE VOLUMETRIC FLOW BORDER NODES",
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volumetric_border_nodes_cond = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN LINE VOLUMETRIC FLOW BORDER NODES",
           "VolumetricFlowBorderNodesCond", "volumetric flow border nodes condition",
-          CORE::Conditions::VolumetricFlowBorderNodes, true, CORE::Conditions::geometry_type_line));
+          Core::Conditions::VolumetricFlowBorderNodes, true, Core::Conditions::geometry_type_line));
 
-  volumetric_border_nodes_cond->AddComponent(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
+  volumetric_border_nodes_cond->AddComponent(Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
 
   condlist.push_back(volumetric_border_nodes_cond);
 
   /*--------------------------------------------------------------------*/
   // Volumetric surface total traction corrector
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> total_traction_correction_cond =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> total_traction_correction_cond =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURF TOTAL TRACTION CORRECTION CONDITIONS", "TotalTractionCorrectionCond",
-          "total traction correction condition", CORE::Conditions::TotalTractionCorrectionCond,
-          true, CORE::Conditions::geometry_type_surface));
+          "total traction correction condition", Core::Conditions::TotalTractionCorrectionCond,
+          true, Core::Conditions::geometry_type_surface));
 
 
   total_traction_correction_cond->AddComponent(
-      Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
+      Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent(
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent(
       "ConditionType", "POLYNOMIAL", Teuchos::tuple<std::string>("POLYNOMIAL", "WOMERSLEY"),
       Teuchos::tuple<std::string>("POLYNOMIAL", "WOMERSLEY"), true)));
 
   total_traction_correction_cond->AddComponent(
-      Teuchos::rcp(new INPUT::SelectionComponent("prebiased", "NOTPREBIASED",
+      Teuchos::rcp(new Input::SelectionComponent("prebiased", "NOTPREBIASED",
           Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"),
           Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"), true)));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent(
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent(
       "FlowType", "InFlow", Teuchos::tuple<std::string>("InFlow", "OutFlow"),
       Teuchos::tuple<std::string>("InFlow", "OutFlow"), true)));
 
   total_traction_correction_cond->AddComponent(
-      Teuchos::rcp(new INPUT::SelectionComponent("CorrectionFlag", "WithOutCorrection",
+      Teuchos::rcp(new Input::SelectionComponent("CorrectionFlag", "WithOutCorrection",
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"),
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"), true)));
-  INPUT::AddNamedReal(total_traction_correction_cond, "Period");
-  INPUT::AddNamedInt(total_traction_correction_cond, "Order");
-  INPUT::AddNamedInt(total_traction_correction_cond, "Harmonics");
-  INPUT::AddNamedReal(total_traction_correction_cond, "Val");
-  INPUT::AddNamedInt(total_traction_correction_cond, "Funct");
+  Input::AddNamedReal(total_traction_correction_cond, "Period");
+  Input::AddNamedInt(total_traction_correction_cond, "Order");
+  Input::AddNamedInt(total_traction_correction_cond, "Harmonics");
+  Input::AddNamedReal(total_traction_correction_cond, "Val");
+  Input::AddNamedInt(total_traction_correction_cond, "Funct");
 
   total_traction_correction_cond->AddComponent(
-      Teuchos::rcp(new INPUT::SelectionComponent("NORMAL", "SelfEvaluateNormal",
+      Teuchos::rcp(new Input::SelectionComponent("NORMAL", "SelfEvaluateNormal",
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"),
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"), true)));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("n1")));
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("n2")));
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("n3")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("n1")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("n2")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("n3")));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::SelectionComponent(
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::SelectionComponent(
       "CenterOfMass", "SelfEvaluateCenterOfMass",
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"),
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"), true)));
 
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("c1")));
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("c2")));
-  total_traction_correction_cond->AddComponent(Teuchos::rcp(new INPUT::RealComponent("c3")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("c1")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("c2")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new Input::RealComponent("c3")));
 
   condlist.push_back(total_traction_correction_cond);
 
   /*--------------------------------------------------------------------*/
   // Volumetric flow traction correction border nodes condition
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> traction_corrector_border_nodes_cond =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> traction_corrector_border_nodes_cond =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE TOTAL TRACTION CORRECTION BORDER NODES",
           "TotalTractionCorrectionBorderNodesCond",
           "total traction correction border nodes condition",
-          CORE::Conditions::TotalTractionCorrectionBorderNodes, true,
-          CORE::Conditions::geometry_type_line));
+          Core::Conditions::TotalTractionCorrectionBorderNodes, true,
+          Core::Conditions::geometry_type_line));
 
   traction_corrector_border_nodes_cond->AddComponent(
-      Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
+      Teuchos::rcp(new Input::IntComponent("ConditionID")));
 
 
   condlist.push_back(traction_corrector_border_nodes_cond);
@@ -1909,99 +1909,99 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // no penetration for darcy flow in porous media
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> nopenetration_surf =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> nopenetration_surf =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURFACE NORMAL NO PENETRATION CONDITION", "no_penetration", "No Penetration",
-          CORE::Conditions::no_penetration, true, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::no_penetration, true, Core::Conditions::geometry_type_surface));
 
   condlist.push_back(nopenetration_surf);
 
   /*--------------------------------------------------------------------*/
   // no penetration for darcy flow in porous media
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> nopenetration_line =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> nopenetration_line =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE NORMAL NO PENETRATION CONDITION", "no_penetration", "No Penetration",
-          CORE::Conditions::no_penetration, true, CORE::Conditions::geometry_type_line));
+          Core::Conditions::no_penetration, true, Core::Conditions::geometry_type_line));
 
   condlist.push_back(nopenetration_line);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of coupling terms in porous media
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> porocoupling_vol =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOLUME POROCOUPLING CONDITION",
-          "PoroCoupling", "Poro Coupling", CORE::Conditions::PoroCoupling, true,
-          CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> porocoupling_vol =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOLUME POROCOUPLING CONDITION",
+          "PoroCoupling", "Poro Coupling", Core::Conditions::PoroCoupling, true,
+          Core::Conditions::geometry_type_volume));
 
   condlist.push_back(porocoupling_vol);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of coupling terms in porous media
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> porocoupling_surf =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> porocoupling_surf =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURFACE POROCOUPLING CONDITION", "PoroCoupling", "Poro Coupling",
-          CORE::Conditions::PoroCoupling, true, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::PoroCoupling, true, Core::Conditions::geometry_type_surface));
 
   condlist.push_back(porocoupling_surf);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in porous media problems
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> poropartint_surf =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> poropartint_surf =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURFACE PORO PARTIAL INTEGRATION", "PoroPartInt", "Poro Partial Integration",
-          CORE::Conditions::PoroPartInt, true, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::PoroPartInt, true, Core::Conditions::geometry_type_surface));
 
   condlist.push_back(poropartint_surf);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in porous media problems
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> poropartint_line =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE PORO PARTIAL INTEGRATION",
-          "PoroPartInt", "Poro Partial Integration", CORE::Conditions::PoroPartInt, true,
-          CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> poropartint_line =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE PORO PARTIAL INTEGRATION",
+          "PoroPartInt", "Poro Partial Integration", Core::Conditions::PoroPartInt, true,
+          Core::Conditions::geometry_type_line));
 
   condlist.push_back(poropartint_line);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in porous media problems
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> poropresint_surf =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> poropresint_surf =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURFACE PORO PRESSURE INTEGRATION", "PoroPresInt", "Poro Pressure Integration",
-          CORE::Conditions::PoroPresInt, true, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::PoroPresInt, true, Core::Conditions::geometry_type_surface));
 
   condlist.push_back(poropresint_surf);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in porous media problems
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> poropresint_line =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> poropresint_line =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE PORO PRESSURE INTEGRATION", "PoroPresInt", "Poro Pressure Integration",
-          CORE::Conditions::PoroPresInt, true, CORE::Conditions::geometry_type_line));
+          Core::Conditions::PoroPresInt, true, Core::Conditions::geometry_type_line));
 
   condlist.push_back(poropresint_line);
 
   /*--------------------------------------------------------------------*/
   // Fluctuating Hydrodynamics Statistics on a surface
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> flucthydrostatsurfcomponents;
-  flucthydrostatsurfcomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
+  std::vector<Teuchos::RCP<Input::LineComponent>> flucthydrostatsurfcomponents;
+  flucthydrostatsurfcomponents.push_back(Teuchos::rcp(new Input::IntComponent("ConditionID")));
   flucthydrostatsurfcomponents.push_back(
-      Teuchos::rcp(new INPUT::SelectionComponent("evaluation type", "nodalbased",
+      Teuchos::rcp(new Input::SelectionComponent("evaluation type", "nodalbased",
           Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"),
           Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"))));
 
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> fluctHydro_statisticsSurf =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> fluctHydro_statisticsSurf =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN FLUCTHYDRO STATISTICS SURF CONDITIONS", "FluctHydroStatisticsSurf",
-          "FluctHydro_StatisticsSurf", CORE::Conditions::FluctHydro_StatisticsSurf, true,
-          CORE::Conditions::geometry_type_surface));
+          "FluctHydro_StatisticsSurf", Core::Conditions::FluctHydro_StatisticsSurf, true,
+          Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < flucthydrostatsurfcomponents.size(); ++i)
     fluctHydro_statisticsSurf->AddComponent(flucthydrostatsurfcomponents[i]);
@@ -2011,17 +2011,17 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Fluctuating Hydrodynamics Statistics on a line
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> flucthydrostatlinecomponents;
-  flucthydrostatlinecomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("ConditionID")));
+  std::vector<Teuchos::RCP<Input::LineComponent>> flucthydrostatlinecomponents;
+  flucthydrostatlinecomponents.push_back(Teuchos::rcp(new Input::IntComponent("ConditionID")));
   flucthydrostatlinecomponents.push_back(
-      Teuchos::rcp(new INPUT::SelectionComponent("evaluation type", "nodalbased",
+      Teuchos::rcp(new Input::SelectionComponent("evaluation type", "nodalbased",
           Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"),
           Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"))));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> fluctHydro_statisticsLine = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN FLUCTHYDRO STATISTICS LINE CONDITIONS",
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> fluctHydro_statisticsLine = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN FLUCTHYDRO STATISTICS LINE CONDITIONS",
           "FluctHydroStatisticsLine", "FluctHydro_StatisticsLine",
-          CORE::Conditions::FluctHydro_StatisticsLine, true, CORE::Conditions::geometry_type_line));
+          Core::Conditions::FluctHydro_StatisticsLine, true, Core::Conditions::geometry_type_line));
 
   for (unsigned i = 0; i < flucthydrostatlinecomponents.size(); ++i)
     fluctHydro_statisticsLine->AddComponent(flucthydrostatlinecomponents[i]);

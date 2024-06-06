@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   /// A DofSet that owns a predefined number of dofs
   /*!
@@ -109,35 +109,35 @@ namespace CORE::Dofsets
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start) override
+        const Discret::Discretization& dis, const unsigned dspos, const int start) override
     {
       // redistribute internal vectors if necessary
       if (numdofpernodenodewise_ != Teuchos::null and
           not numdofpernodenodewise_->Map().SameAs(*dis.NodeColMap()))
       {
         Epetra_IntVector numdofpernodenodewise_rowmap(*dis.NodeRowMap());
-        CORE::LINALG::Export(*numdofpernodenodewise_, numdofpernodenodewise_rowmap);
+        Core::LinAlg::Export(*numdofpernodenodewise_, numdofpernodenodewise_rowmap);
         numdofpernodenodewise_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
-        CORE::LINALG::Export(numdofpernodenodewise_rowmap, *numdofpernodenodewise_);
+        Core::LinAlg::Export(numdofpernodenodewise_rowmap, *numdofpernodenodewise_);
       }
       if (numdofperelementelewise_ != Teuchos::null and
           not numdofperelementelewise_->Map().SameAs(*dis.ElementColMap()))
       {
         Epetra_IntVector numdofperelementelewise_rowmap(*dis.ElementRowMap());
-        CORE::LINALG::Export(*numdofperelementelewise_, numdofperelementelewise_rowmap);
+        Core::LinAlg::Export(*numdofperelementelewise_, numdofperelementelewise_rowmap);
         numdofperelementelewise_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
-        CORE::LINALG::Export(numdofperelementelewise_rowmap, *numdofperelementelewise_);
+        Core::LinAlg::Export(numdofperelementelewise_rowmap, *numdofperelementelewise_);
       }
       if (numdofperfacefacewise_ != Teuchos::null)
         FOUR_C_THROW("Redistribution not yet implemented!");
 
       // call base class routine
-      return CORE::Dofsets::DofSet::assign_degrees_of_freedom(dis, dspos, start);
+      return Core::DOFSets::DofSet::assign_degrees_of_freedom(dis, dspos, start);
     }
 
    protected:
     /// get number of nodal dofs
-    int NumDofPerNode(const CORE::Nodes::Node& node) const override
+    int NumDofPerNode(const Core::Nodes::Node& node) const override
     {
       if (numdofpernodenodewise_ == Teuchos::null)
         return numdofpernode_;
@@ -146,7 +146,7 @@ namespace CORE::Dofsets
     }
 
     /// get number of element dofs for this element
-    int num_dof_per_element(const CORE::Elements::Element& element) const override
+    int num_dof_per_element(const Core::Elements::Element& element) const override
     {
       if (numdofperelementelewise_ == Teuchos::null)
         return numdofperelement_;
@@ -155,7 +155,7 @@ namespace CORE::Dofsets
     }
 
     /// get number of element dofs for this element
-    int num_dof_per_face(const CORE::Elements::Element& element, int face) const override
+    int num_dof_per_face(const Core::Elements::Element& element, int face) const override
     {
       if (numdofperfacefacewise_ == Teuchos::null)
         return numdofperface_;
@@ -191,7 +191,7 @@ namespace CORE::Dofsets
 
   };  // DofSetPredefinedDoFNumber
 
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -32,32 +32,32 @@ namespace STR
   }  // namespace ELEMENTS
 }  // namespace STR
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    class Torsion3Type : public CORE::Elements::ElementType
+    class Torsion3Type : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "Torsion3Type"; }
 
       static Torsion3Type& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -68,7 +68,7 @@ namespace DRT
     \brief three dimensional torsion element
 
     */
-    class Torsion3 : public CORE::Elements::Element
+    class Torsion3 : public Core::Elements::Element
     {
      public:
       //! @name Friends
@@ -101,12 +101,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
     .
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
      \brief Get shape type of element
      */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
 
       /*!
@@ -126,7 +126,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -136,7 +136,7 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      CORE::Elements::ElementType& ElementType() const override { return Torsion3Type::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return Torsion3Type::Instance(); }
 
       //@}
 
@@ -149,13 +149,13 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
 
       /*!
       \brief Get number of degrees of freedom of a single node
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override
+      int NumDofPerNode(const Core::Nodes::Node& node) const override
       {
         /*note: this is not necessarily the number of DOF assigned to this node by the
          *discretization finally, but only the number of DOF requested for this node by this
@@ -190,7 +190,7 @@ namespace DRT
 
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
 
       //@}
@@ -225,11 +225,11 @@ namespace DRT
                                   given in params
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -250,10 +250,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
@@ -275,7 +275,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override;
 
      protected:
       /** \brief get access to the interface
@@ -307,12 +307,12 @@ namespace DRT
       //! @name Internal calculation methods
 
       //! calculation of nonlinear stiffness and mass matrix
-      void t3_nlnstiffmass(std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
-          CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector* force);
+      void t3_nlnstiffmass(std::vector<double>& disp, Core::LinAlg::SerialDenseMatrix* stiffmatrix,
+          Core::LinAlg::SerialDenseMatrix* massmatrix, Core::LinAlg::SerialDenseVector* force);
 
       //! calculation of elastic energy
       void t3_energy(Teuchos::ParameterList& params, std::vector<double>& disp,
-          CORE::LINALG::SerialDenseVector* intenergy);
+          Core::LinAlg::SerialDenseVector* intenergy);
 
 
       //@}
@@ -337,11 +337,11 @@ namespace DRT
 
 
     // << operator
-    std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& ele);
+    std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& ele);
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 

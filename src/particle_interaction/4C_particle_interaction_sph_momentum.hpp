@@ -36,7 +36,7 @@ namespace PARTICLEWALL
   class WallHandlerInterface;
 }
 
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHKernelBase;
   class MaterialHandler;
@@ -46,20 +46,20 @@ namespace PARTICLEINTERACTION
   class SPHVirtualWallParticle;
   class SPHMomentumFormulationBase;
   class SPHArtificialViscosity;
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     class ParticleMaterialSPHFluid;
   }
-}  // namespace MAT
+}  // namespace Mat
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class SPHMomentum final
   {
@@ -84,12 +84,12 @@ namespace PARTICLEINTERACTION
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle);
+        const std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel,
+        const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+        const std::shared_ptr<ParticleInteraction::InteractionWriter> particleinteractionwriter,
+        const std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle,
+        const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs,
+        const std::shared_ptr<ParticleInteraction::SPHVirtualWallParticle> virtualwallparticle);
 
     //! insert momentum evaluation dependent states
     void insert_particle_states_of_particle_types(
@@ -131,37 +131,37 @@ namespace PARTICLEINTERACTION
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
     //! kernel handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
+    std::shared_ptr<ParticleInteraction::SPHKernelBase> kernel_;
 
     //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+    std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial_;
 
     //! particle interaction writer
-    std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter_;
+    std::shared_ptr<ParticleInteraction::InteractionWriter> particleinteractionwriter_;
 
     //! equation of state bundle
-    std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
+    std::shared_ptr<ParticleInteraction::SPHEquationOfStateBundle> equationofstatebundle_;
 
     //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+    std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs_;
 
     //! virtual wall particle handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHVirtualWallParticle> virtualwallparticle_;
+    std::shared_ptr<ParticleInteraction::SPHVirtualWallParticle> virtualwallparticle_;
 
     //! momentum formulation handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationBase> momentumformulation_;
+    std::unique_ptr<ParticleInteraction::SPHMomentumFormulationBase> momentumformulation_;
 
     //! artificial viscosity handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity> artificialviscosity_;
+    std::unique_ptr<ParticleInteraction::SPHArtificialViscosity> artificialviscosity_;
 
     //! type of boundary particle interaction
-    INPAR::PARTICLE::BoundaryParticleInteraction boundaryparticleinteraction_;
+    Inpar::PARTICLE::BoundaryParticleInteraction boundaryparticleinteraction_;
 
     //! type of transport velocity formulation
-    INPAR::PARTICLE::TransportVelocityFormulation transportvelocityformulation_;
+    Inpar::PARTICLE::TransportVelocityFormulation transportvelocityformulation_;
 
     //! pointer to fluid material of particle types
-    std::vector<const MAT::PAR::ParticleMaterialSPHFluid*> fluidmaterial_;
+    std::vector<const Mat::PAR::ParticleMaterialSPHFluid*> fluidmaterial_;
 
     //! write particle-wall interaction output
     const bool writeparticlewallinteraction_;
@@ -179,7 +179,7 @@ namespace PARTICLEINTERACTION
     std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

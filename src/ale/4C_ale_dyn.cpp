@@ -27,19 +27,19 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> actdis = GLOBAL::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<Discret::Discretization> actdis = Global::Problem::Instance()->GetDis("ale");
 
   // -------------------------------------------------------------------
   // ask ALE::AleBaseAlgorithm for the ale time integrator
   // -------------------------------------------------------------------
-  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
-      new ADAPTER::AleBaseAlgorithm(GLOBAL::Problem::Instance()->AleDynamicParams(), actdis));
-  Teuchos::RCP<ADAPTER::Ale> aletimint = ale->ale_field();
+  Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::rcp(
+      new Adapter::AleBaseAlgorithm(Global::Problem::Instance()->AleDynamicParams(), actdis));
+  Teuchos::RCP<Adapter::Ale> aletimint = ale->ale_field();
 
   // -------------------------------------------------------------------
   // read the restart information, set vectors and variables if necessary
   // -------------------------------------------------------------------
-  const int restart = GLOBAL::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->Restart();
   if (restart) aletimint->read_restart(restart);
 
   // -------------------------------------------------------------------
@@ -52,8 +52,8 @@ void dyn_ale_drt()
   // do the result test
   // -------------------------------------------------------------------
   // test results
-  GLOBAL::Problem::Instance()->AddFieldTest(aletimint->CreateFieldTest());
-  GLOBAL::Problem::Instance()->TestAll(actdis->Comm());
+  Global::Problem::Instance()->AddFieldTest(aletimint->CreateFieldTest());
+  Global::Problem::Instance()->TestAll(actdis->Comm());
 
   return;
 }

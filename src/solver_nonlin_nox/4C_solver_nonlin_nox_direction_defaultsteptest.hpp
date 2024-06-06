@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     class Group;
     namespace Direction
@@ -105,7 +105,7 @@ namespace NOX
           /// return diagonal with the value one at the location of bad element DOFs
           Teuchos::RCP<Epetra_Vector> getCurrentDiagonal(
               const ::NOX::Abstract::Group& grp) const override;
-          Teuchos::RCP<Epetra_Vector> getCurrentDiagonal(const NOX::NLN::Group& grp) const;
+          Teuchos::RCP<Epetra_Vector> getCurrentDiagonal(const NOX::Nln::Group& grp) const;
 
           /// fill the diagonal with the value one at the location of bad element DOFs
           inline void fillDiagonal(Epetra_Vector& diagonal) const override
@@ -139,10 +139,10 @@ namespace NOX
           void identify_bad_elements(::NOX::Abstract::Group& grp, int& gnew_num_bad_eles);
 
           /// fill my bad dofs set and return the number of newly bad elements
-          int fill_my_bad_dofs(NOX::NLN::Group& grp);
+          int fill_my_bad_dofs(NOX::Nln::Group& grp);
 
           /// return an empty diagonal vector
-          Teuchos::RCP<Epetra_Vector> get_empty_diagonal(const NOX::NLN::Group& grp) const;
+          Teuchos::RCP<Epetra_Vector> get_empty_diagonal(const NOX::Nln::Group& grp) const;
 
           /// fill the diagonal vector at all dofs of bad elements
           void fill_diagonal_at_bad_dofs(Epetra_Vector& diagonal) const;
@@ -174,7 +174,7 @@ namespace NOX
         };
       }  // namespace Test
     }    // namespace Direction
-  }      // namespace NLN
+  }      // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

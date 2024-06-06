@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Visualize mortar stuff with gmsh                          popp 08/08|
  *----------------------------------------------------------------------*/
-void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
+void Mortar::Interface::VisualizeGmsh(const int step, const int iter)
 {
   //**********************************************************************
   // GMSH output of all interface elements
@@ -32,7 +32,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
   // basic information
   std::ostringstream filename;
   const std::string filebase =
-      GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+      Global::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
   filename << "o/gmsh_output/" << filebase << "_mt_id";
   if (id_ < 10)
     filename << 0;
@@ -123,9 +123,9 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
       //******************************************************************
       for (int i = 0; i < idiscret_->NumMyRowElements(); ++i)
       {
-        MORTAR::Element* element = dynamic_cast<MORTAR::Element*>(idiscret_->lRowElement(i));
+        Mortar::Element* element = dynamic_cast<Mortar::Element*>(idiscret_->lRowElement(i));
         int nnodes = element->num_node();
-        CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
+        Core::LinAlg::SerialDenseMatrix coord(3, nnodes);
         element->GetNodalCoords(coord);
         double color = (double)element->Owner();
 
@@ -133,7 +133,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
         double xi[2] = {0.0, 0.0};
 
         // 2D linear case (2noded line elements)
-        if (element->Shape() == CORE::FE::CellType::line2)
+        if (element->Shape() == Core::FE::CellType::line2)
         {
           if (element->IsSlave())
           {
@@ -162,7 +162,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 2D quadratic case (3noded line elements)
-        if (element->Shape() == CORE::FE::CellType::line3)
+        if (element->Shape() == Core::FE::CellType::line3)
         {
           if (element->IsSlave())
           {
@@ -197,7 +197,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D linear case (3noded triangular elements)
-        if (element->Shape() == CORE::FE::CellType::tri3)
+        if (element->Shape() == Core::FE::CellType::tri3)
         {
           if (element->IsSlave())
           {
@@ -234,7 +234,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D bilinear case (4noded quadrilateral elements)
-        if (element->Shape() == CORE::FE::CellType::quad4)
+        if (element->Shape() == Core::FE::CellType::quad4)
         {
           if (element->IsSlave())
           {
@@ -273,7 +273,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D quadratic case (6noded triangular elements)
-        if (element->Shape() == CORE::FE::CellType::tri6)
+        if (element->Shape() == Core::FE::CellType::tri6)
         {
           if (element->IsSlave())
           {
@@ -324,7 +324,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D serendipity case (8noded quadrilateral elements)
-        if (element->Shape() == CORE::FE::CellType::quad8)
+        if (element->Shape() == Core::FE::CellType::quad8)
         {
           if (element->IsSlave())
           {
@@ -459,7 +459,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
         }
 
         // 3D biquadratic case (9noded quadrilateral elements)
-        if (element->Shape() == CORE::FE::CellType::quad9)
+        if (element->Shape() == Core::FE::CellType::quad9)
         {
           if (element->IsSlave())
           {
@@ -582,7 +582,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
       for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
       {
         int gid = snoderowmap_->GID(i);
-        CORE::Nodes::Node* node = idiscret_->gNode(gid);
+        Core::Nodes::Node* node = idiscret_->gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
         Node* mtrnode = dynamic_cast<Node*>(node);
         if (!mtrnode) FOUR_C_THROW("Static Cast to Node* failed");
@@ -636,7 +636,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
   // create files for visualization of slave dops for every layer
   std::ostringstream filenametn;
   const std::string filebasetn =
-      GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+      Global::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
   filenametn << "o/gmsh_output/" << filebasetn << "_";
 
   if (step < 10)
@@ -807,7 +807,7 @@ void MORTAR::Interface::VisualizeGmsh(const int step, const int iter)
 #ifdef MORTARGMSHCTN
   std::ostringstream filenamectn;
   const std::string filebasectn =
-      GLOBAL::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+      Global::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
   filenamectn << "o/gmsh_output/" << filebasectn << "_";
   if (step < 10)
     filenamectn << 0 << 0 << 0 << 0;

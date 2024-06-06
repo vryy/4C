@@ -1,6 +1,6 @@
 /*-----------------------------------------------------------------------*/
 /*! \file
-\brief A class to perform projections of nodes onto opposing MORTAR::Elements
+\brief A class to perform projections of nodes onto opposing Mortar::Elements
 
 \level 1
 
@@ -26,60 +26,60 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  impl. for aux.-plane based projection                    farah 01/14|
  *----------------------------------------------------------------------*/
-MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& ele)
+Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& ele)
 {
   switch (ele.Shape())
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      return ProjectorCalc<CORE::FE::CellType::quad4>::Instance();
+      return ProjectorCalc<Core::FE::CellType::quad4>::Instance();
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
-      return ProjectorCalc<CORE::FE::CellType::quad8>::Instance();
+      return ProjectorCalc<Core::FE::CellType::quad8>::Instance();
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      return ProjectorCalc<CORE::FE::CellType::quad9>::Instance();
+      return ProjectorCalc<Core::FE::CellType::quad9>::Instance();
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      return ProjectorCalc<CORE::FE::CellType::tri3>::Instance();
+      return ProjectorCalc<Core::FE::CellType::tri3>::Instance();
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      return ProjectorCalc<CORE::FE::CellType::tri6>::Instance();
+      return ProjectorCalc<Core::FE::CellType::tri6>::Instance();
     }
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      return ProjectorCalc<CORE::FE::CellType::line2>::Instance();
+      return ProjectorCalc<Core::FE::CellType::line2>::Instance();
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
-      return ProjectorCalc<CORE::FE::CellType::line3>::Instance();
+      return ProjectorCalc<Core::FE::CellType::line3>::Instance();
     }
       //==================================================
       //                     NURBS
       //==================================================
-    case CORE::FE::CellType::nurbs2:
+    case Core::FE::CellType::nurbs2:
     {
-      return ProjectorCalc<CORE::FE::CellType::nurbs2>::Instance();
+      return ProjectorCalc<Core::FE::CellType::nurbs2>::Instance();
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
-      return ProjectorCalc<CORE::FE::CellType::nurbs3>::Instance();
+      return ProjectorCalc<Core::FE::CellType::nurbs3>::Instance();
     }
-    case CORE::FE::CellType::nurbs4:
+    case Core::FE::CellType::nurbs4:
     {
-      return ProjectorCalc<CORE::FE::CellType::nurbs4>::Instance();
+      return ProjectorCalc<Core::FE::CellType::nurbs4>::Instance();
     }
-    case CORE::FE::CellType::nurbs8:
+    case Core::FE::CellType::nurbs8:
     {
-      return ProjectorCalc<CORE::FE::CellType::nurbs8>::Instance();
+      return ProjectorCalc<Core::FE::CellType::nurbs8>::Instance();
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
-      return ProjectorCalc<CORE::FE::CellType::nurbs9>::Instance();
+      return ProjectorCalc<Core::FE::CellType::nurbs9>::Instance();
     }
     default:
       FOUR_C_THROW(
@@ -92,43 +92,43 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& ele)
 /*----------------------------------------------------------------------*
  |  impl. for element based projection                       farah 04/14|
  *----------------------------------------------------------------------*/
-MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Element& mele)
+Mortar::Projector* Mortar::Projector::Impl(Mortar::Element& sele, Mortar::Element& mele)
 {
   switch (sele.Shape())
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
       switch (mele.Shape())
       {
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad4,
-              CORE::FE::CellType::quad4>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad4,
+              Core::FE::CellType::quad4>::Instance();
         }
-        case CORE::FE::CellType::quad8:
+        case Core::FE::CellType::quad8:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad4,
-              CORE::FE::CellType::quad8>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad4,
+              Core::FE::CellType::quad8>::Instance();
         }
-        case CORE::FE::CellType::quad9:
+        case Core::FE::CellType::quad9:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad4,
-              CORE::FE::CellType::quad9>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad4,
+              Core::FE::CellType::quad9>::Instance();
         }
-        case CORE::FE::CellType::tri3:
+        case Core::FE::CellType::tri3:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad4,
-              CORE::FE::CellType::tri3>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad4,
+              Core::FE::CellType::tri3>::Instance();
         }
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::tri6:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad4,
-              CORE::FE::CellType::tri6>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad4,
+              Core::FE::CellType::tri6>::Instance();
         }
-        case CORE::FE::CellType::nurbs9:
+        case Core::FE::CellType::nurbs9:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad4,
-              CORE::FE::CellType::nurbs9>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad4,
+              Core::FE::CellType::nurbs9>::Instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -136,34 +136,34 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       }
       break;
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
       switch (mele.Shape())
       {
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad8,
-              CORE::FE::CellType::quad4>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad8,
+              Core::FE::CellType::quad4>::Instance();
         }
-        case CORE::FE::CellType::quad8:
+        case Core::FE::CellType::quad8:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad8,
-              CORE::FE::CellType::quad8>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad8,
+              Core::FE::CellType::quad8>::Instance();
         }
-        case CORE::FE::CellType::quad9:
+        case Core::FE::CellType::quad9:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad8,
-              CORE::FE::CellType::quad9>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad8,
+              Core::FE::CellType::quad9>::Instance();
         }
-        case CORE::FE::CellType::tri3:
+        case Core::FE::CellType::tri3:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad8,
-              CORE::FE::CellType::tri3>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad8,
+              Core::FE::CellType::tri3>::Instance();
         }
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::tri6:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad8,
-              CORE::FE::CellType::tri6>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad8,
+              Core::FE::CellType::tri6>::Instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -171,34 +171,34 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       }
       break;
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
       switch (mele.Shape())
       {
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad9,
-              CORE::FE::CellType::quad4>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad9,
+              Core::FE::CellType::quad4>::Instance();
         }
-        case CORE::FE::CellType::quad8:
+        case Core::FE::CellType::quad8:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad9,
-              CORE::FE::CellType::quad8>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad9,
+              Core::FE::CellType::quad8>::Instance();
         }
-        case CORE::FE::CellType::quad9:
+        case Core::FE::CellType::quad9:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad9,
-              CORE::FE::CellType::quad9>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad9,
+              Core::FE::CellType::quad9>::Instance();
         }
-        case CORE::FE::CellType::tri3:
+        case Core::FE::CellType::tri3:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad9,
-              CORE::FE::CellType::tri3>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad9,
+              Core::FE::CellType::tri3>::Instance();
         }
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::tri6:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::quad9,
-              CORE::FE::CellType::tri6>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::quad9,
+              Core::FE::CellType::tri6>::Instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -206,34 +206,34 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       }
       break;
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
       switch (mele.Shape())
       {
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::tri3,
-              CORE::FE::CellType::quad4>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::tri3,
+              Core::FE::CellType::quad4>::Instance();
         }
-        case CORE::FE::CellType::quad8:
+        case Core::FE::CellType::quad8:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::tri3,
-              CORE::FE::CellType::quad8>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::tri3,
+              Core::FE::CellType::quad8>::Instance();
         }
-        case CORE::FE::CellType::quad9:
+        case Core::FE::CellType::quad9:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::tri3,
-              CORE::FE::CellType::quad9>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::tri3,
+              Core::FE::CellType::quad9>::Instance();
         }
-        case CORE::FE::CellType::tri3:
+        case Core::FE::CellType::tri3:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::tri3,
-              CORE::FE::CellType::tri3>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::tri3,
+              Core::FE::CellType::tri3>::Instance();
         }
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::tri6:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::tri3,
-              CORE::FE::CellType::tri6>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::tri3,
+              Core::FE::CellType::tri6>::Instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -241,34 +241,34 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       }
       break;
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
       switch (mele.Shape())
       {
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::tri6,
-              CORE::FE::CellType::quad4>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::tri6,
+              Core::FE::CellType::quad4>::Instance();
         }
-        case CORE::FE::CellType::quad8:
+        case Core::FE::CellType::quad8:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::tri6,
-              CORE::FE::CellType::quad8>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::tri6,
+              Core::FE::CellType::quad8>::Instance();
         }
-        case CORE::FE::CellType::quad9:
+        case Core::FE::CellType::quad9:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::tri6,
-              CORE::FE::CellType::quad9>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::tri6,
+              Core::FE::CellType::quad9>::Instance();
         }
-        case CORE::FE::CellType::tri3:
+        case Core::FE::CellType::tri3:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::tri6,
-              CORE::FE::CellType::tri3>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::tri6,
+              Core::FE::CellType::tri3>::Instance();
         }
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::tri6:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::tri6,
-              CORE::FE::CellType::tri6>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::tri6,
+              Core::FE::CellType::tri6>::Instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -276,19 +276,19 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       }
       break;
     }
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
       switch (mele.Shape())
       {
-        case CORE::FE::CellType::line2:
+        case Core::FE::CellType::line2:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::line2,
-              CORE::FE::CellType::line2>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::line2,
+              Core::FE::CellType::line2>::Instance();
         }
-        case CORE::FE::CellType::line3:
+        case Core::FE::CellType::line3:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::line2,
-              CORE::FE::CellType::line3>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::line2,
+              Core::FE::CellType::line3>::Instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -296,19 +296,19 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       }
       break;
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
       switch (mele.Shape())
       {
-        case CORE::FE::CellType::line2:
+        case Core::FE::CellType::line2:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::line3,
-              CORE::FE::CellType::line2>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::line3,
+              Core::FE::CellType::line2>::Instance();
         }
-        case CORE::FE::CellType::line3:
+        case Core::FE::CellType::line3:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::line3,
-              CORE::FE::CellType::line3>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::line3,
+              Core::FE::CellType::line3>::Instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -319,19 +319,19 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       //==================================================
       //                     NURBS
       //==================================================
-    case CORE::FE::CellType::nurbs2:
+    case Core::FE::CellType::nurbs2:
     {
       switch (mele.Shape())
       {
-        case CORE::FE::CellType::nurbs2:
+        case Core::FE::CellType::nurbs2:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs2,
-              CORE::FE::CellType::nurbs2>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs2,
+              Core::FE::CellType::nurbs2>::Instance();
         }
-        case CORE::FE::CellType::nurbs3:
+        case Core::FE::CellType::nurbs3:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs2,
-              CORE::FE::CellType::nurbs3>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs2,
+              Core::FE::CellType::nurbs3>::Instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -339,19 +339,19 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       }
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
       switch (mele.Shape())
       {
-        case CORE::FE::CellType::nurbs2:
+        case Core::FE::CellType::nurbs2:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs3,
-              CORE::FE::CellType::nurbs2>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs3,
+              Core::FE::CellType::nurbs2>::Instance();
         }
-        case CORE::FE::CellType::nurbs3:
+        case Core::FE::CellType::nurbs3:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs3,
-              CORE::FE::CellType::nurbs3>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs3,
+              Core::FE::CellType::nurbs3>::Instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -359,24 +359,24 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       }
       break;
     }
-    case CORE::FE::CellType::nurbs4:
+    case Core::FE::CellType::nurbs4:
     {
       switch (mele.Shape())
       {
-        case CORE::FE::CellType::nurbs4:
+        case Core::FE::CellType::nurbs4:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs4,
-              CORE::FE::CellType::nurbs4>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs4,
+              Core::FE::CellType::nurbs4>::Instance();
         }
-        case CORE::FE::CellType::nurbs8:
+        case Core::FE::CellType::nurbs8:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs4,
-              CORE::FE::CellType::nurbs8>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs4,
+              Core::FE::CellType::nurbs8>::Instance();
         }
-        case CORE::FE::CellType::nurbs9:
+        case Core::FE::CellType::nurbs9:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs4,
-              CORE::FE::CellType::nurbs9>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs4,
+              Core::FE::CellType::nurbs9>::Instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -384,24 +384,24 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       }
       break;
     }
-    case CORE::FE::CellType::nurbs8:
+    case Core::FE::CellType::nurbs8:
     {
       switch (mele.Shape())
       {
-        case CORE::FE::CellType::nurbs4:
+        case Core::FE::CellType::nurbs4:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs8,
-              CORE::FE::CellType::nurbs4>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs8,
+              Core::FE::CellType::nurbs4>::Instance();
         }
-        case CORE::FE::CellType::nurbs8:
+        case Core::FE::CellType::nurbs8:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs8,
-              CORE::FE::CellType::nurbs8>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs8,
+              Core::FE::CellType::nurbs8>::Instance();
         }
-        case CORE::FE::CellType::nurbs9:
+        case Core::FE::CellType::nurbs9:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs8,
-              CORE::FE::CellType::nurbs9>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs8,
+              Core::FE::CellType::nurbs9>::Instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -409,29 +409,29 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
       }
       break;
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
       switch (mele.Shape())
       {
-        case CORE::FE::CellType::nurbs4:
+        case Core::FE::CellType::nurbs4:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs9,
-              CORE::FE::CellType::nurbs4>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs9,
+              Core::FE::CellType::nurbs4>::Instance();
         }
-        case CORE::FE::CellType::nurbs8:
+        case Core::FE::CellType::nurbs8:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs9,
-              CORE::FE::CellType::nurbs8>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs9,
+              Core::FE::CellType::nurbs8>::Instance();
         }
-        case CORE::FE::CellType::nurbs9:
+        case Core::FE::CellType::nurbs9:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs9,
-              CORE::FE::CellType::nurbs9>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs9,
+              Core::FE::CellType::nurbs9>::Instance();
         }
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
         {
-          return ProjectorCalcEleBased<CORE::FE::CellType::nurbs9,
-              CORE::FE::CellType::quad4>::Instance();
+          return ProjectorCalcEleBased<Core::FE::CellType::nurbs9,
+              Core::FE::CellType::quad4>::Instance();
         }
         default:
           FOUR_C_THROW("Element shape not supported!");
@@ -450,8 +450,8 @@ MORTAR::Projector* MORTAR::Projector::Impl(MORTAR::Element& sele, MORTAR::Elemen
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-MORTAR::ProjectorCalc<distype>::ProjectorCalc()
+template <Core::FE::CellType distype>
+Mortar::ProjectorCalc<distype>::ProjectorCalc()
 {
   // nothing
 }
@@ -459,35 +459,35 @@ MORTAR::ProjectorCalc<distype>::ProjectorCalc()
 /*----------------------------------------------------------------------*
  |  ctor ele-based (public)                                  farah 04/14|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectorCalcEleBased()
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectorCalcEleBased()
 {
   // nothing
 }
 
-template <CORE::FE::CellType distype>
-MORTAR::ProjectorCalc<distype>* MORTAR::ProjectorCalc<distype>::Instance(
-    CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Mortar::ProjectorCalc<distype>* Mortar::ProjectorCalc<distype>::Instance(
+    Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []() {
-        return std::unique_ptr<MORTAR::ProjectorCalc<distype>>(
-            new MORTAR::ProjectorCalc<distype>());
+        return std::unique_ptr<Mortar::ProjectorCalc<distype>>(
+            new Mortar::ProjectorCalc<distype>());
       });
 
   return singleton_owner.Instance(action);
 }
 
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-MORTAR::ProjectorCalcEleBased<distypeS, distypeM>*
-MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::Instance(CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+Mortar::ProjectorCalcEleBased<distypeS, distypeM>*
+Mortar::ProjectorCalcEleBased<distypeS, distypeM>::Instance(Core::UTILS::SingletonAction action)
 {
-  static CORE::UTILS::SingletonOwner<MORTAR::ProjectorCalcEleBased<distypeS, distypeM>>
+  static Core::UTILS::SingletonOwner<Mortar::ProjectorCalcEleBased<distypeS, distypeM>>
       singleton_owner(
           []()
           {
-            return std::unique_ptr<MORTAR::ProjectorCalcEleBased<distypeS, distypeM>>(
-                new MORTAR::ProjectorCalcEleBased<distypeS, distypeM>());
+            return std::unique_ptr<Mortar::ProjectorCalcEleBased<distypeS, distypeM>>(
+                new Mortar::ProjectorCalcEleBased<distypeS, distypeM>());
           });
 
   return singleton_owner.Instance(action);
@@ -497,9 +497,9 @@ MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::Instance(CORE::UTILS::Singlet
 /*----------------------------------------------------------------------*
  |  Project a node along its nodal normal (public)            popp 01/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::ProjectNodalNormal(
-    MORTAR::Node& node, MORTAR::Element& ele, double* xi)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::ProjectNodalNormal(
+    Mortar::Node& node, Mortar::Element& ele, double* xi)
 {
   bool ok = true;
   if (ndim_ == 2)
@@ -538,7 +538,7 @@ bool MORTAR::ProjectorCalc<distype>::ProjectNodalNormal(
       // These cases are harmless, as these nodes then do not participate in
       // the overlap detection anyway!
       // std::cout << "***WARNING*** ProjectNodalNormal:" << " Newton unconverged for NodeID "
-      //     << node.Id() << " and MORTAR::ElementID " << ele.Id() << std::endl;
+      //     << node.Id() << " and Mortar::ElementID " << ele.Id() << std::endl;
     }
 
     /*
@@ -559,9 +559,9 @@ bool MORTAR::ProjectorCalc<distype>::ProjectNodalNormal(
 /*----------------------------------------------------------------------*
  |  Project a node along element's normal field (public)      popp 01/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::project_element_normal(
-    MORTAR::Node& node, MORTAR::Element& ele, double* xi)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::project_element_normal(
+    Mortar::Node& node, Mortar::Element& ele, double* xi)
 {
   bool ok = true;
   if (ndim_ == 2)
@@ -601,7 +601,7 @@ bool MORTAR::ProjectorCalc<distype>::project_element_normal(
       // These cases are harmless, as these nodes then do not participate in
       // the overlap detection anyway!
       // std::cout << "***WARNING*** project_element_normal:" << " Newton unconverged for NodeID "
-      //     << node.Id() << " and MORTAR::ElementID " << ele.Id() << std::endl;
+      //     << node.Id() << " and Mortar::ElementID " << ele.Id() << std::endl;
     }
 
     /*
@@ -622,30 +622,30 @@ bool MORTAR::ProjectorCalc<distype>::project_element_normal(
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (public)           popp 01/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
-    MORTAR::Element& gpele, const double* gpeta, MORTAR::Element& ele, double* xi)
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
+    Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele, double* xi)
 {
   bool ok = true;
   if (ndim_ == 2)
   {
-    CORE::LINALG::Matrix<ns_, 1> val;
-    CORE::LINALG::Matrix<ndim_, ns_> coord;
+    Core::LinAlg::Matrix<ns_, 1> val;
+    Core::LinAlg::Matrix<ndim_, ns_> coord;
 
-    CORE::Nodes::Node** mynodes = gpele.Nodes();
+    Core::Nodes::Node** mynodes = gpele.Nodes();
     if (!mynodes) FOUR_C_THROW("ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    if (distypeS == CORE::FE::CellType::nurbs2 || distypeS == CORE::FE::CellType::nurbs3)
+    if (distypeS == Core::FE::CellType::nurbs2 || distypeS == Core::FE::CellType::nurbs3)
     {
-      CORE::LINALG::SerialDenseVector auxval(ns_);
-      CORE::LINALG::SerialDenseMatrix deriv(ns_, 1);
+      Core::LinAlg::SerialDenseVector auxval(ns_);
+      Core::LinAlg::SerialDenseMatrix deriv(ns_, 1);
       gpele.evaluate_shape(gpeta, auxval, deriv, gpele.num_node());
 
       for (int i = 0; i < ns_; ++i) val(i) = auxval(i);
     }
     else
-      CORE::FE::shape_function_1D(val, gpeta[0], distypeS);
+      Core::FE::shape_function_1D(val, gpeta[0], distypeS);
 
     // get interpolated GP normal and GP coordinates
     double gpn[ndim_];
@@ -697,7 +697,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
       return ok;
 
       //      FOUR_C_THROW("ProjectGaussPoint: Newton unconverged for GP at xi=%d"
-      //          " from MORTAR::ElementID %i", gpeta[0], gpele.Id());
+      //          " from Mortar::ElementID %i", gpeta[0], gpele.Id());
     }
   }
 
@@ -710,19 +710,19 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
 /*----------------------------------------------------------------------*
  | Check projection for warped elements quad4 elements       farah 01/13|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::check_projection4_auxplane(
-    MORTAR::Element& ele, double* ngp, double* globgp)
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::check_projection4_auxplane(
+    Mortar::Element& ele, double* ngp, double* globgp)
 {
-  if (ele.Shape() == CORE::FE::CellType::tri3) FOUR_C_THROW("ELEMENT SHAPE TRI3 -- NO WARPING");
+  if (ele.Shape() == Core::FE::CellType::tri3) FOUR_C_THROW("ELEMENT SHAPE TRI3 -- NO WARPING");
 
-  if (ele.Shape() != CORE::FE::CellType::quad4)
+  if (ele.Shape() != Core::FE::CellType::quad4)
   {
     return true;
   }
 
   int nnode = ele.num_node();
-  CORE::Nodes::Node** mynodes = ele.Nodes();
+  Core::Nodes::Node** mynodes = ele.Nodes();
   if (!mynodes) FOUR_C_THROW("Project: Null pointer!");
 
   // compute base-vectors
@@ -731,8 +731,8 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::check_projection4_auxpla
   std::vector<double> auxn(3);
   std::vector<double> auxc(3);
   std::vector<double> proj_gp(3);
-  CORE::LINALG::Matrix<3, 3> P;
-  CORE::LINALG::Matrix<3, 3> T;
+  Core::LinAlg::Matrix<3, 3> P;
+  Core::LinAlg::Matrix<3, 3> T;
   std::array<double, 3> n = {0.0, 0.0, 0.0};
   double length_t = 0.0;
   double length_n = 0.0;
@@ -867,33 +867,33 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::check_projection4_auxpla
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (3D)               popp 11/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
-    MORTAR::Element& gpele, const double* gpeta, MORTAR::Element& ele, double* xi, double& par)
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
+    Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele, double* xi, double& par)
 {
   if (ndim_ == 3)
   {
-    CORE::LINALG::Matrix<ns_, 1> val;
-    CORE::LINALG::Matrix<ndim_, ns_> coord;
+    Core::LinAlg::Matrix<ns_, 1> val;
+    Core::LinAlg::Matrix<ndim_, ns_> coord;
     coord.Clear();
 
-    CORE::Nodes::Node** mypoints = gpele.Points();
-    CORE::Nodes::Node** mynodes = gpele.Nodes();
+    Core::Nodes::Node** mypoints = gpele.Points();
+    Core::Nodes::Node** mynodes = gpele.Nodes();
     if (!mypoints) FOUR_C_THROW("ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    if (distypeS == CORE::FE::CellType::nurbs4 || distypeS == CORE::FE::CellType::nurbs8 ||
-        distypeS == CORE::FE::CellType::nurbs9)
+    if (distypeS == Core::FE::CellType::nurbs4 || distypeS == Core::FE::CellType::nurbs8 ||
+        distypeS == Core::FE::CellType::nurbs9)
     {
-      CORE::LINALG::SerialDenseVector auxval(ns_);
-      CORE::LINALG::SerialDenseMatrix deriv(ns_, 2);
+      Core::LinAlg::SerialDenseVector auxval(ns_);
+      Core::LinAlg::SerialDenseMatrix deriv(ns_, 2);
       gpele.evaluate_shape(gpeta, auxval, deriv, gpele.num_node());
 
       for (int i = 0; i < ns_; ++i) val(i) = auxval(i);
     }
     else
     {
-      CORE::FE::shape_function_2D(val, gpeta[0], gpeta[1], distypeS);
+      Core::FE::shape_function_2D(val, gpeta[0], gpeta[1], distypeS);
     }
 
     // get interpolated GP normal and GP coordinates
@@ -927,10 +927,10 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
     }
 
     // start in the element center
-    CORE::FE::CellType dt = ele.Shape();
+    Core::FE::CellType dt = ele.Shape();
     double eta[2] = {0.0, 0.0};
 
-    if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
+    if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
     {
       eta[0] = 1.0 / 3.0;
       eta[1] = 1.0 / 3.0;
@@ -943,7 +943,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
     double f[3] = {0.0, 0.0, 0.0};
 
     // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-    CORE::LINALG::Matrix<3, 3> df;
+    Core::LinAlg::Matrix<3, 3> df;
     // start iteration
     int k = 0;
     double conv = 0.0;
@@ -1011,20 +1011,20 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along AuxPlane normal (3D)          popp 11/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::project_gauss_point_auxn3_d(
-    const double* globgp, const double* auxn, MORTAR::Element& ele, double* xi, double& par)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::project_gauss_point_auxn3_d(
+    const double* globgp, const double* auxn, Mortar::Element& ele, double* xi, double& par)
 {
   if (ndim_ == 3)
   {
     // start in the element center
-    CORE::FE::CellType dt = ele.Shape();
+    Core::FE::CellType dt = ele.Shape();
     double eta[2] = {0.0, 0.0};
 
     switch (dt)
     {
-      case CORE::FE::CellType::tri3:
-      case CORE::FE::CellType::tri6:
+      case Core::FE::CellType::tri3:
+      case Core::FE::CellType::tri6:
       {
         eta[0] = 1.0 / 3.0;
         eta[1] = 1.0 / 3.0;
@@ -1043,7 +1043,7 @@ bool MORTAR::ProjectorCalc<distype>::project_gauss_point_auxn3_d(
     double f[3] = {0.0, 0.0, 0.0};
 
     // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-    CORE::LINALG::Matrix<3, 3> df;
+    Core::LinAlg::Matrix<3, 3> df;
 
     // start iteration
     int k = 0;
@@ -1075,7 +1075,7 @@ bool MORTAR::ProjectorCalc<distype>::project_gauss_point_auxn3_d(
     {
       //      std::cout << "res= " << conv << std::endl;
       //      FOUR_C_THROW("project_gauss_point_auxn3_d: Newton unconverged for GP"
-      //          "at xi = (%f,%f,%f) onto MORTAR::ElementID %i", globgp[0], globgp[1],
+      //          "at xi = (%f,%f,%f) onto Mortar::ElementID %i", globgp[0], globgp[1],
       //          globgp[2], ele.Id());
       xi[0] = 1e12;
       xi[1] = 1e12;
@@ -1102,9 +1102,9 @@ bool MORTAR::ProjectorCalc<distype>::project_gauss_point_auxn3_d(
 /*----------------------------------------------------------------------*
  |  Project snode onto melement with master normal           farah 01/16|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d(
-    MORTAR::Node& snode, MORTAR::Element& mele, double* xi, double* normal, double& dist)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal3_d(
+    Mortar::Node& snode, Mortar::Element& mele, double* xi, double* normal, double& dist)
 {
   if (ndim_ != 3) FOUR_C_THROW("project_s_node_by_m_normal3_d is only for 3D problems!");
 
@@ -1112,8 +1112,8 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d(
   double eta[2] = {0.0, 0.0};
   switch (distype)
   {
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::tri6:
     {
       eta[0] = 1.0 / 3.0;
       eta[1] = 1.0 / 3.0;
@@ -1130,7 +1130,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d(
   std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  CORE::LINALG::Matrix<3, 3> df;
+  Core::LinAlg::Matrix<3, 3> df;
 
   // start iteration
   int k = 0;
@@ -1150,7 +1150,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d(
     double normalpart[3] = {0.0, 0.0, 0.0};
 
     // calc xmaster
-    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
+    Mortar::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
 
     // calc normal part
     double length = mele.compute_unit_normal_at_xi(eta, unormal);
@@ -1174,16 +1174,16 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d(
     // master coordinate grad
     double meta0[3] = {0.0, 0.0, 0.0};  // x,xi_0
     double meta1[3] = {0.0, 0.0, 0.0};  // x,xi_1
-    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
-    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta1, 2);
+    Mortar::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
+    Mortar::UTILS::LocalToGlobal<distype>(mele, eta, meta1, 2);
 
     // normal grad
-    CORE::LINALG::Matrix<3, n_> secderiv;
+    Core::LinAlg::Matrix<3, n_> secderiv;
     std::array<double, 3> meta00 = {0.0, 0.0, 0.0};  // x , xi_0 xi_0
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
-    CORE::FE::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
+    Core::FE::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
 
     for (int i = 0; i < n_; ++i)
     {
@@ -1271,16 +1271,16 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d(
 /*----------------------------------------------------------------------*
  |  Project snode onto melement with master normal           farah 01/16|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d_lin(MORTAR::Node& snode,
-    MORTAR::Element& mele, double* xi, double* normal, double& dist,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal3_d_lin(Mortar::Node& snode,
+    Mortar::Element& mele, double* xi, double* normal, double& dist,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 3) FOUR_C_THROW("project_s_node_by_m_normal3_d is only for 3D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
-  if (distype == CORE::FE::CellType::tri3 || distype == CORE::FE::CellType::tri6)
+  if (distype == Core::FE::CellType::tri3 || distype == Core::FE::CellType::tri6)
   {
     eta[0] = 1.0 / 3.0;
     eta[1] = 1.0 / 3.0;
@@ -1293,7 +1293,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d_lin(MORTAR::N
   std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  CORE::LINALG::Matrix<3, 3> df;
+  Core::LinAlg::Matrix<3, 3> df;
 
   // start iteration
   int k = 0;
@@ -1313,7 +1313,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d_lin(MORTAR::N
     double normalpart[3] = {0.0, 0.0, 0.0};
 
     // calc xmaster
-    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
+    Mortar::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
 
     // calc normal part
     double length = mele.compute_unit_normal_at_xi(eta, unormal);
@@ -1337,16 +1337,16 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d_lin(MORTAR::N
     // master coordinate grad
     std::array<double, 3> meta0 = {0.0, 0.0, 0.0};  // x , xi_0
     std::array<double, 3> meta1 = {0.0, 0.0, 0.0};  // x , xi_1
-    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
-    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta1, 2);
+    Mortar::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
+    Mortar::UTILS::LocalToGlobal<distype>(mele, eta, meta1, 2);
 
     // normal grad
-    CORE::LINALG::Matrix<3, n_> secderiv;
+    Core::LinAlg::Matrix<3, n_> secderiv;
     std::array<double, 3> meta00 = {0.0, 0.0, 0.0};  // x , xi_0 xi_0
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
-    CORE::FE::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
+    Core::FE::shape_function_2D_deriv2(secderiv, eta[0], eta[1], distype);
 
     for (int i = 0; i < n_; ++i)
     {
@@ -1434,10 +1434,10 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal3_d_lin(MORTAR::N
 /*----------------------------------------------------------------------*
  |  Project snode onto melement with master normal           farah 08/16|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MORTAR::Node& snode,
-    MORTAR::Element& mele, double* xi, double* normal, double& dist,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mortar::Node& snode,
+    Mortar::Element& mele, double* xi, double* normal, double& dist,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 3) FOUR_C_THROW("project_s_node_by_m_normal3_d_lin is only for 3D problems!");
 
@@ -1451,7 +1451,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MOR
   std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  CORE::LINALG::Matrix<3, 3> df;
+  Core::LinAlg::Matrix<3, 3> df;
 
   // start iteration
   int k = 0;
@@ -1463,11 +1463,11 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MOR
     //  F CALCULATION                             //
     //**********************************************
     // get shape function value
-    CORE::LINALG::Matrix<n_, 1> mval;
-    CORE::LINALG::Matrix<2, n_> mderiv;
+    Core::LinAlg::Matrix<n_, 1> mval;
+    Core::LinAlg::Matrix<2, n_> mderiv;
 
-    CORE::FE::shape_function_2D(mval, eta[0], eta[1], distype);
-    CORE::FE::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
+    Core::FE::shape_function_2D(mval, eta[0], eta[1], distype);
+    Core::FE::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
 
     // build interpolation of master node coordinates for current eta
     std::array<double, 3> xm = {0.0, 0.0, 0.0};
@@ -1581,11 +1581,11 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MOR
   dist = alpha;
 
   // get shape function value
-  CORE::LINALG::Matrix<n_, 1> mval;
-  CORE::LINALG::Matrix<2, n_> mderiv;
+  Core::LinAlg::Matrix<n_, 1> mval;
+  Core::LinAlg::Matrix<2, n_> mderiv;
 
-  CORE::FE::shape_function_2D(mval, eta[0], eta[1], distype);
-  CORE::FE::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
+  Core::FE::shape_function_2D(mval, eta[0], eta[1], distype);
+  Core::FE::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
 
   // calc normal part
   normal[0] = 0.0;
@@ -1606,28 +1606,28 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MOR
   //   Lin deta = - inv(dF) * Lin F             //
   //**********************************************
   // prepare linearizations
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
   // get linsize
   int linsize = 0;
   for (int i = 0; i < n_; ++i)
   {
-    CORE::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
     linsize += mnode->GetLinsize();
   }
 
-  std::vector<CORE::GEN::Pairedvector<int, double>> xmLin(3, n_);  // nnode entry per dimension
-  std::vector<CORE::GEN::Pairedvector<int, double>> xsLin(3, 1);   // one entry per dimension
+  std::vector<Core::Gen::Pairedvector<int, double>> xmLin(3, n_);  // nnode entry per dimension
+  std::vector<Core::Gen::Pairedvector<int, double>> xsLin(3, 1);   // one entry per dimension
 
-  std::vector<CORE::GEN::Pairedvector<int, double>> normalpartLin(
+  std::vector<Core::Gen::Pairedvector<int, double>> normalpartLin(
       3, linsize);  // linsize of all mnodes
-  std::vector<CORE::GEN::Pairedvector<int, double>> auxnormalLin(
+  std::vector<Core::Gen::Pairedvector<int, double>> auxnormalLin(
       3, linsize);  // linsize of all mnodes
 
-  std::vector<CORE::GEN::Pairedvector<int, double>> etaLin(3, linsize + n_ + 1);  // added all sizes
-  std::vector<CORE::GEN::Pairedvector<int, double>> fLin(3, linsize + n_ + 1);    // added all sizes
+  std::vector<Core::Gen::Pairedvector<int, double>> etaLin(3, linsize + n_ + 1);  // added all sizes
+  std::vector<Core::Gen::Pairedvector<int, double>> fLin(3, linsize + n_ + 1);    // added all sizes
 
 
   //--------------------------
@@ -1635,7 +1635,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MOR
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    CORE::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
@@ -1647,7 +1647,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MOR
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    CORE::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -1695,16 +1695,16 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MOR
   //**********************************************
   //   Lin N                                    //
   //**********************************************
-  std::vector<CORE::GEN::Pairedvector<int, double>> n_eta0_deriv(
+  std::vector<Core::Gen::Pairedvector<int, double>> n_eta0_deriv(
       3, linsize + n_ + 1);  // added all sizes
-  std::vector<CORE::GEN::Pairedvector<int, double>> n_eta1_deriv(
+  std::vector<Core::Gen::Pairedvector<int, double>> n_eta1_deriv(
       3, linsize + n_ + 1);                                                 // added all sizes
-  std::vector<CORE::GEN::Pairedvector<int, double>> n_n_deriv(3, linsize);  // linsize
+  std::vector<Core::Gen::Pairedvector<int, double>> n_n_deriv(3, linsize);  // linsize
 
   for (int k = 0; k < n_; ++k)
   {
     // get master node
-    CORE::Nodes::Node* node = mele.Nodes()[k];
+    Core::Nodes::Node* node = mele.Nodes()[k];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -1749,10 +1749,10 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(MOR
 /*----------------------------------------------------------------------*
  |  Project snode onto melement with master normal           farah 05/16|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(MORTAR::Node& snode,
-    MORTAR::Element& mele, double* xi, double* normal, double& dist,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mortar::Node& snode,
+    Mortar::Element& mele, double* xi, double* normal, double& dist,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 2) FOUR_C_THROW("project_s_node_by_m_normal2_d_lin is only for 2D problems!");
 
@@ -1766,7 +1766,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(MOR
   std::array<double, 2> f = {0.0, 0.0};
 
   // gradient of f (df/deta[0], df/dalpha)
-  CORE::LINALG::Matrix<2, 2> df;
+  Core::LinAlg::Matrix<2, 2> df;
 
   // start iteration
   int k = 0;
@@ -1778,11 +1778,11 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(MOR
     //  F CALCULATION                             //
     //**********************************************
     // get shape function value
-    CORE::LINALG::Matrix<n_, 1> mval;
-    CORE::LINALG::Matrix<1, n_> mderiv;
+    Core::LinAlg::Matrix<n_, 1> mval;
+    Core::LinAlg::Matrix<1, n_> mderiv;
 
-    CORE::FE::shape_function_1D(mval, eta[0], distype);
-    CORE::FE::shape_function_1D_deriv1(mderiv, eta[0], distype);
+    Core::FE::shape_function_1D(mval, eta[0], distype);
+    Core::FE::shape_function_1D_deriv1(mderiv, eta[0], distype);
 
     // build interpolation of master node coordinates for current eta
     std::array<double, 3> xm = {0.0, 0.0, 0.0};
@@ -1890,11 +1890,11 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(MOR
   dist = alpha;
 
   // get shape function value
-  CORE::LINALG::Matrix<n_, 1> mval;
-  CORE::LINALG::Matrix<1, n_> mderiv;
+  Core::LinAlg::Matrix<n_, 1> mval;
+  Core::LinAlg::Matrix<1, n_> mderiv;
 
-  CORE::FE::shape_function_1D(mval, eta[0], distype);
-  CORE::FE::shape_function_1D_deriv1(mderiv, eta[0], distype);
+  Core::FE::shape_function_1D(mval, eta[0], distype);
+  Core::FE::shape_function_1D_deriv1(mderiv, eta[0], distype);
 
   // calc normal part
   normal[0] = 0.0;
@@ -1915,20 +1915,20 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(MOR
   //   Lin deta = - inv(dF) * Lin F             //
   //**********************************************
   // prepare linearizations
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
-  std::vector<CORE::GEN::Pairedvector<int, double>> etaLin(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> fLin(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> xmLin(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> normalpartLin(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> xsLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> etaLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> fLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> xmLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> normalpartLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> xsLin(3, 1000);
 
   //--------------------------
   // master part:
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    CORE::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
@@ -1937,14 +1937,14 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(MOR
 
   //--------------------------
   // normal part:
-  std::vector<CORE::GEN::Pairedvector<int, double>> x_0Lin(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> auxnormalLin(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> auxnormalunitLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> x_0Lin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> auxnormalLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> auxnormalunitLin(3, 1000);
 
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    CORE::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -1992,15 +1992,15 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(MOR
   //**********************************************
   //   Lin N                                    //
   //**********************************************
-  std::vector<CORE::GEN::Pairedvector<int, double>> n_eta0_deriv(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> n_eta1_deriv(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> n_n_deriv(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> normaltolineLinaux(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> n_eta0_deriv(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> n_eta1_deriv(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> n_n_deriv(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> normaltolineLinaux(3, 1000);
 
   for (int k = 0; k < n_; ++k)
   {
     // get master node
-    CORE::Nodes::Node* node = mele.Nodes()[k];
+    Core::Nodes::Node* node = mele.Nodes()[k];
     if (!node) FOUR_C_THROW("Cannot find master node");
     CONTACT::Node* mnode = dynamic_cast<CONTACT::Node*>(node);
 
@@ -2037,9 +2037,9 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(MOR
 /*----------------------------------------------------------------------*
  |  Project snode onto melement with master element normal   farah 01/16|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d(
-    MORTAR::Node& snode, MORTAR::Element& mele, double* xi, double* normal, double& dist)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d(
+    Mortar::Node& snode, Mortar::Element& mele, double* xi, double* normal, double& dist)
 {
   if (ndim_ != 2) FOUR_C_THROW("project_s_node_by_m_normal2_d is only for 2D problems!");
 
@@ -2053,7 +2053,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d(
   std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  CORE::LINALG::Matrix<3, 3> df;
+  Core::LinAlg::Matrix<3, 3> df;
 
   // start iteration
   int k = 0;
@@ -2073,7 +2073,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d(
     double normalpart[3] = {0.0, 0.0, 0.0};
 
     // calc xmaster
-    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
+    Mortar::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
 
     // calc normal part
     double length = mele.compute_unit_normal_at_xi(eta, unormal);
@@ -2098,15 +2098,15 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d(
     // master coordinate grad
     double meta0[3] = {0.0, 0.0, 0.0};  // x,xi_0
     double meta1[3] = {0.0, 0.0, 1.0};  // x,xi_1
-    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
+    Mortar::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
 
     // normal grad
-    CORE::LINALG::Matrix<1, n_> secderiv;
+    Core::LinAlg::Matrix<1, n_> secderiv;
     std::array<double, 3> meta00 = {0.0, 0.0, 0.0};  // x , xi_0 xi_0
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
-    CORE::FE::shape_function_1D_deriv2(secderiv, eta[0], distype);
+    Core::FE::shape_function_1D_deriv2(secderiv, eta[0], distype);
 
     for (int i = 0; i < n_; ++i)
     {
@@ -2187,10 +2187,10 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d(
 /*----------------------------------------------------------------------*
  |  Project snode onto melement with master normal + Lin     farah 01/16|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::Node& snode,
-    MORTAR::Element& mele, double* xi, double* normal, double& dist,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(Mortar::Node& snode,
+    Mortar::Element& mele, double* xi, double* normal, double& dist,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ != 2) FOUR_C_THROW("project_s_node_by_m_normal2_d is only for 2D problems!");
 
@@ -2204,7 +2204,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::N
   std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  CORE::LINALG::Matrix<3, 3> df;
+  Core::LinAlg::Matrix<3, 3> df;
 
   // start iteration
   int k = 0;
@@ -2224,7 +2224,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::N
     double normalpart[3] = {0.0, 0.0, 0.0};
 
     // calc xmaster
-    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
+    Mortar::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
 
     // calc normal part
     double length = mele.compute_unit_normal_at_xi(eta, unormal);
@@ -2249,15 +2249,15 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::N
     // master coordinate grad
     double meta0[3] = {0.0, 0.0, 0.0};  // x,xi_0
     double meta1[3] = {0.0, 0.0, 1.0};  // x,xi_1
-    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
+    Mortar::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
 
     // normal grad
-    CORE::LINALG::Matrix<1, n_> secderiv;
+    Core::LinAlg::Matrix<1, n_> secderiv;
     std::array<double, 3> meta00 = {0.0, 0.0, 0.0};  // x , xi_0 xi_0
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
 
-    CORE::FE::shape_function_1D_deriv2(secderiv, eta[0], distype);
+    Core::FE::shape_function_1D_deriv2(secderiv, eta[0], distype);
 
     for (int i = 0; i < n_; ++i)
     {
@@ -2339,23 +2339,23 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::N
   //   Lin deta = - inv(dF) * Lin F             //
   //**********************************************
   // prepare linearizations
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator _CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
 
-  std::vector<CORE::GEN::Pairedvector<int, double>> etaLin(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> fLin(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> xmLin(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> normalpartLin(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> xsLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> etaLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> fLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> xmLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> normalpartLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> xsLin(3, 1000);
 
   //--------------------------
   // master part:
-  CORE::LINALG::Matrix<n_, 1> val;
-  CORE::FE::shape_function_1D(val, eta[0], distype);
+  Core::LinAlg::Matrix<n_, 1> val;
+  Core::FE::shape_function_1D(val, eta[0], distype);
 
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    CORE::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
@@ -2364,16 +2364,16 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::N
 
   //--------------------------
   // normal part:
-  std::vector<CORE::GEN::Pairedvector<int, double>> x_0Lin(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> auxnormalLin(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> auxnormalunitLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> x_0Lin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> auxnormalLin(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> auxnormalunitLin(3, 1000);
 
-  CORE::LINALG::Matrix<1, n_> deriv1;
-  CORE::FE::shape_function_1D_deriv1(deriv1, eta[0], distype);
+  Core::LinAlg::Matrix<1, n_> deriv1;
+  Core::FE::shape_function_1D_deriv1(deriv1, eta[0], distype);
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    CORE::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
@@ -2393,7 +2393,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::N
   linnormalaux[2] = normal[2] * normallength;
 
   // derivative weighting matrix for current element
-  CORE::LINALG::Matrix<3, 3> W;
+  Core::LinAlg::Matrix<3, 3> W;
   const double lcubeinv = 1.0 / (normallength * normallength * normallength);
 
   for (int j = 0; j < 3; ++j)
@@ -2453,18 +2453,18 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::N
   //**********************************************
   //   Lin N                                    //
   //**********************************************
-  std::vector<CORE::GEN::Pairedvector<int, double>> x_0Linnew(3, 1000);
-  std::vector<CORE::GEN::Pairedvector<int, double>> normaltolineLinaux(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> x_0Linnew(3, 1000);
+  std::vector<Core::Gen::Pairedvector<int, double>> normaltolineLinaux(3, 1000);
 
-  CORE::LINALG::Matrix<1, n_> deriv;
-  CORE::FE::shape_function_1D_deriv1(deriv, eta[0], distype);
+  Core::LinAlg::Matrix<1, n_> deriv;
+  Core::FE::shape_function_1D_deriv1(deriv, eta[0], distype);
 
-  CORE::LINALG::Matrix<1, n_> deriv2;
-  CORE::FE::shape_function_1D_deriv2(deriv2, eta[0], distype);
+  Core::LinAlg::Matrix<1, n_> deriv2;
+  Core::FE::shape_function_1D_deriv2(deriv2, eta[0], distype);
   for (int i = 0; i < n_; ++i)
   {
     // get master node
-    CORE::Nodes::Node* node = mele.Nodes()[i];
+    Core::Nodes::Node* node = mele.Nodes()[i];
     if (!node) FOUR_C_THROW("Cannot find master node");
     Node* mnode = dynamic_cast<Node*>(node);
 
@@ -2484,7 +2484,7 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::N
     (normaltolineLinaux[1])[p->first] -= (p->second);
 
   // normalize lin
-  CORE::LINALG::Matrix<3, 3> Wfinal;
+  Core::LinAlg::Matrix<3, 3> Wfinal;
   //  const double lcubeinv = 1.0 / (normallength * normallength * normallength);
 
   for (int j = 0; j < 3; ++j)
@@ -2516,9 +2516,9 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(MORTAR::N
 /*----------------------------------------------------------------------*
  |  Project snode onto melement with master element normal   farah 01/16|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal(
-    MORTAR::Node& snode, MORTAR::Element& mele, double* xi, double* normal, double& dist)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal(
+    Mortar::Node& snode, Mortar::Element& mele, double* xi, double* normal, double& dist)
 {
   if (ndim_ == 2)
   {
@@ -2540,10 +2540,10 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal(
 /*----------------------------------------------------------------------*
  |  Project snode onto melement with master element normal   farah 01/16|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal_lin(MORTAR::Node& snode,
-    MORTAR::Element& mele, double* xi, double* normal, double& dist,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal_lin(Mortar::Node& snode,
+    Mortar::Element& mele, double* xi, double* normal, double& dist,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
   bool success = false;
 
@@ -2568,10 +2568,10 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal_lin(MORTAR
 /*----------------------------------------------------------------------*
  |  Project snode onto melement with master normal           farah 01/16|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal_lin(MORTAR::Node& snode,
-    MORTAR::Element& mele, double* xi, double* normal, double& dist,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& normaltolineLin)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_lin(Mortar::Node& snode,
+    Mortar::Element& mele, double* xi, double* normal, double& dist,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normaltolineLin)
 {
   if (ndim_ == 2)
   {
@@ -2592,9 +2592,9 @@ bool MORTAR::ProjectorCalc<distype>::project_s_node_by_m_normal_lin(MORTAR::Node
 /*----------------------------------------------------------------------*
  |  Evaluate F for nodal normal case (public)                 popp 01/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-double MORTAR::ProjectorCalc<distype>::evaluate_f_nodal_normal(
-    MORTAR::Node& node, MORTAR::Element& ele, const double* eta)
+template <Core::FE::CellType distype>
+double Mortar::ProjectorCalc<distype>::evaluate_f_nodal_normal(
+    Mortar::Node& node, Mortar::Element& ele, const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xim - xs ) x ns,
    or to be more precise the third component of this vector function!
@@ -2607,7 +2607,7 @@ double MORTAR::ProjectorCalc<distype>::evaluate_f_nodal_normal(
 
   // build interpolation of master node coordinates for current eta
   double nx[ndim_];
-  MORTAR::UTILS::LocalToGlobal<distype>(ele, eta, nx, 0);
+  Mortar::UTILS::LocalToGlobal<distype>(ele, eta, nx, 0);
 
   // subtract slave node coordinates
   for (int i = 0; i < ndim_; ++i) nx[i] -= node.xspatial()[i];
@@ -2621,9 +2621,9 @@ double MORTAR::ProjectorCalc<distype>::evaluate_f_nodal_normal(
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for nodal normal case (public)             popp 01/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-double MORTAR::ProjectorCalc<distype>::evaluate_grad_f_nodal_normal(
-    MORTAR::Node& node, MORTAR::Element& ele, const double* eta)
+template <Core::FE::CellType distype>
+double Mortar::ProjectorCalc<distype>::evaluate_grad_f_nodal_normal(
+    Mortar::Node& node, Mortar::Element& ele, const double* eta)
 {
   /* Evaluate the function GradF(eta)
    = Ni,eta * xim * nys - Ni,eta * yim * nxs,
@@ -2637,7 +2637,7 @@ double MORTAR::ProjectorCalc<distype>::evaluate_grad_f_nodal_normal(
   // build interpolation of master node coordinates for current eta
   // use shape function derivatives for interpolation (hence "1")
   double nxeta[ndim_];
-  MORTAR::UTILS::LocalToGlobal<distype>(ele, eta, nxeta, 1);
+  Mortar::UTILS::LocalToGlobal<distype>(ele, eta, nxeta, 1);
 
   // calculate GradF
   fgrad = nxeta[0] * node.MoData().n()[1] - nxeta[1] * node.MoData().n()[0];
@@ -2648,9 +2648,9 @@ double MORTAR::ProjectorCalc<distype>::evaluate_grad_f_nodal_normal(
 /*----------------------------------------------------------------------*
  |  Evaluate F for element normal case (public)               popp 01/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-double MORTAR::ProjectorCalc<distype>::evaluate_f_element_normal(
-    MORTAR::Node& node, MORTAR::Element& ele, const double* eta)
+template <Core::FE::CellType distype>
+double Mortar::ProjectorCalc<distype>::evaluate_f_element_normal(
+    Mortar::Node& node, Mortar::Element& ele, const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xis - xm ) x ( Nj * njs),
    or to be more precise the third component of this vector function!
@@ -2663,23 +2663,23 @@ double MORTAR::ProjectorCalc<distype>::evaluate_f_element_normal(
   double fval = 0.0;
 
   // collect necessary data (slave side)
-  CORE::Nodes::Node** mynodes = ele.Nodes();
+  Core::Nodes::Node** mynodes = ele.Nodes();
   if (!mynodes) FOUR_C_THROW("evaluate_f_element_normal: Null pointer!");
 
-  CORE::LINALG::Matrix<n_, 1> val;
-  CORE::LINALG::Matrix<ndim_, n_> coord;
+  Core::LinAlg::Matrix<n_, 1> val;
+  Core::LinAlg::Matrix<ndim_, n_> coord;
 
   // get shape function values and derivatives at gpeta
-  if (distype == CORE::FE::CellType::nurbs2 || distype == CORE::FE::CellType::nurbs3)
+  if (distype == Core::FE::CellType::nurbs2 || distype == Core::FE::CellType::nurbs3)
   {
-    CORE::LINALG::SerialDenseVector auxval(n_);
-    CORE::LINALG::SerialDenseMatrix deriv(n_, 1);
+    Core::LinAlg::SerialDenseVector auxval(n_);
+    Core::LinAlg::SerialDenseMatrix deriv(n_, 1);
     ele.evaluate_shape(eta, auxval, deriv, ele.num_node());
 
     for (int i = 0; i < n_; ++i) val(i) = auxval(i);
   }
   else
-    CORE::FE::shape_function_1D(val, eta[0], distype);
+    Core::FE::shape_function_1D(val, eta[0], distype);
 
   // get interpolated normal and proj. coordinates for current eta
   double nn[ndim_];
@@ -2716,9 +2716,9 @@ double MORTAR::ProjectorCalc<distype>::evaluate_f_element_normal(
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for element normal case (public)           popp 01/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-double MORTAR::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
-    MORTAR::Node& node, MORTAR::Element& ele, const double* eta)
+template <Core::FE::CellType distype>
+double Mortar::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
+    Mortar::Node& node, Mortar::Element& ele, const double* eta)
 {
   if (ndim_ == 3) FOUR_C_THROW("This Projector is only for 2D Problems!");
 
@@ -2736,18 +2736,18 @@ double MORTAR::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
   double fgrad = 0.0;
 
   // collect necessary data (slave side)
-  CORE::LINALG::Matrix<n_, 1> val;
-  CORE::LINALG::Matrix<ndim_ - 1, n_> deriv;
-  CORE::LINALG::Matrix<ndim_, n_> coord;
+  Core::LinAlg::Matrix<n_, 1> val;
+  Core::LinAlg::Matrix<ndim_ - 1, n_> deriv;
+  Core::LinAlg::Matrix<ndim_, n_> coord;
 
-  CORE::Nodes::Node** mynodes = ele.Nodes();
+  Core::Nodes::Node** mynodes = ele.Nodes();
   if (!mynodes) FOUR_C_THROW("evaluate_grad_f_element_normal: Null pointer!");
 
   // get shape function values and derivatives at gpeta
-  if (distype == CORE::FE::CellType::nurbs2 || distype == CORE::FE::CellType::nurbs3)
+  if (distype == Core::FE::CellType::nurbs2 || distype == Core::FE::CellType::nurbs3)
   {
-    CORE::LINALG::SerialDenseVector auxval(n_);
-    CORE::LINALG::SerialDenseMatrix auxderiv(n_, 1);
+    Core::LinAlg::SerialDenseVector auxval(n_);
+    Core::LinAlg::SerialDenseMatrix auxderiv(n_, 1);
     ele.evaluate_shape(eta, auxval, auxderiv, ele.num_node());
 
     for (int i = 0; i < n_; ++i)
@@ -2758,8 +2758,8 @@ double MORTAR::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
   }
   else
   {
-    CORE::FE::shape_function_1D(val, eta[0], distype);
-    CORE::FE::shape_function_1D_deriv1(deriv, eta[0], distype);
+    Core::FE::shape_function_1D(val, eta[0], distype);
+    Core::FE::shape_function_1D_deriv1(deriv, eta[0], distype);
   }
 
   // get interpolated normal and proj. coordinates for current eta
@@ -2801,9 +2801,9 @@ double MORTAR::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
 /*----------------------------------------------------------------------*
  |  Evaluate F for Gauss point case (public)                  popp 01/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point2_d(
-    const double* gpx, const double* gpn, MORTAR::Element& ele, const double* eta)
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+double Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point2_d(
+    const double* gpx, const double* gpn, Mortar::Element& ele, const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xim - gpx ) x gpn,
    or to be more precise the third component of this vector function!
@@ -2817,7 +2817,7 @@ double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point
 
   // build interpolation of master node coordinates for current eta
   double nx[ndim_];
-  MORTAR::UTILS::LocalToGlobal<distypeM>(ele, eta, nx, 0);
+  Mortar::UTILS::LocalToGlobal<distypeM>(ele, eta, nx, 0);
 
   // subtract GP coordinates
   nx[0] -= gpx[0];
@@ -2832,9 +2832,9 @@ double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for Gauss point case (public)              popp 01/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_point2_d(
-    const double* gpn, MORTAR::Element& ele, const double* eta)
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+double Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_point2_d(
+    const double* gpn, Mortar::Element& ele, const double* eta)
 {
   /* Evaluate the function GradF(eta)
    = Ni,eta * xim * gpny - Ni,eta * yim * gpnx,
@@ -2848,7 +2848,7 @@ double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_
   // build interpolation of master node coordinates for current eta
   // use shape function derivatives for interpolation (hence "1")
   double nxeta[ndim_];
-  MORTAR::UTILS::LocalToGlobal<distypeM>(ele, eta, nxeta, 1);
+  Mortar::UTILS::LocalToGlobal<distypeM>(ele, eta, nxeta, 1);
 
   // calculate GradF
   fgrad = nxeta[0] * gpn[1] - nxeta[1] * gpn[0];
@@ -2859,9 +2859,9 @@ double MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_
 /*----------------------------------------------------------------------*
  |  Evaluate F for Gauss point case (3D)                      popp 11/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point3_d(double* f,
-    const double* gpx, const double* gpn, MORTAR::Element& ele, const double* eta,
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point3_d(double* f,
+    const double* gpx, const double* gpn, Mortar::Element& ele, const double* eta,
     const double& alpha)
 {
   /* Evaluate the function F(eta,alpha) = Ni * xi - alpha * gpn - gpx
@@ -2874,7 +2874,7 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point3_
 
   // build interpolation of ele node coordinates for current eta
   double nx[ndim_];
-  MORTAR::UTILS::LocalToGlobal<distypeM>(ele, eta, nx, 0);
+  Mortar::UTILS::LocalToGlobal<distypeM>(ele, eta, nx, 0);
 
   // evaluate function f
   for (int i = 0; i < ndim_; ++i) f[i] = nx[i] - alpha * gpn[i] - gpx[i];
@@ -2885,9 +2885,9 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point3_
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for Gauss point case (3D)                  popp 11/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
-bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_point3_d(
-    CORE::LINALG::Matrix<3, 3>& fgrad, const double* gpx, const double* gpn, MORTAR::Element& ele,
+template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_point3_d(
+    Core::LinAlg::Matrix<3, 3>& fgrad, const double* gpx, const double* gpn, Mortar::Element& ele,
     const double* eta, const double& alpha)
 {
   /* Evaluate the gradient of the function F(eta,alpha) = Ni * xi -
@@ -2905,8 +2905,8 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_po
   //  ele.LocalToGlobal(eta,nxeta2,2);
   double* nxeta1 = &fgrad(0, 0);
   double* nxeta2 = &fgrad(0, 1);
-  MORTAR::UTILS::LocalToGlobal<distypeM>(ele, eta, nxeta1, 1);
-  MORTAR::UTILS::LocalToGlobal<distypeM>(ele, eta, nxeta2, 2);
+  Mortar::UTILS::LocalToGlobal<distypeM>(ele, eta, nxeta1, 1);
+  Mortar::UTILS::LocalToGlobal<distypeM>(ele, eta, nxeta2, 2);
 
   // evaluate function f gradient
   for (int i = 0; i < ndim_; ++i) fgrad(i, 2) = -gpn[i];
@@ -2917,9 +2917,9 @@ bool MORTAR::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_po
 /*----------------------------------------------------------------------*
  |  Evaluate F for AuxPlane Gauss point case (3D)             popp 11/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::evaluate_f_gauss_point_auxn3_d(double* f, const double* globgp,
-    const double* auxn, MORTAR::Element& ele, const double* eta, const double& alpha)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::evaluate_f_gauss_point_auxn3_d(double* f, const double* globgp,
+    const double* auxn, Mortar::Element& ele, const double* eta, const double& alpha)
 {
   /* Evaluate the function F(eta,alpha) = Ni * xi - alpha * auxn - globgp
    which is a vector-valued function with 3 components!
@@ -2931,7 +2931,7 @@ bool MORTAR::ProjectorCalc<distype>::evaluate_f_gauss_point_auxn3_d(double* f, c
 
   // build interpolation of ele node coordinates for current eta
   double nx[ndim_];
-  MORTAR::UTILS::LocalToGlobal<distype>(ele, eta, nx, 0);
+  Mortar::UTILS::LocalToGlobal<distype>(ele, eta, nx, 0);
 
   // evaluate function f
   for (int i = 0; i < ndim_; ++i) f[i] = nx[i] - alpha * auxn[i] - globgp[i];
@@ -2942,10 +2942,10 @@ bool MORTAR::ProjectorCalc<distype>::evaluate_f_gauss_point_auxn3_d(double* f, c
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for AuxPlane Gauss point case (3D)         popp 11/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-bool MORTAR::ProjectorCalc<distype>::evaluate_grad_f_gauss_point_auxn3_d(
-    CORE::LINALG::Matrix<3, 3>& fgrad, const double* globgp, const double* auxn,
-    MORTAR::Element& ele, const double* eta, const double& alpha)
+template <Core::FE::CellType distype>
+bool Mortar::ProjectorCalc<distype>::evaluate_grad_f_gauss_point_auxn3_d(
+    Core::LinAlg::Matrix<3, 3>& fgrad, const double* globgp, const double* auxn,
+    Mortar::Element& ele, const double* eta, const double& alpha)
 {
   /* Evaluate the gradient of the function F(eta,alpha) = Ni * xi -
    - alpha * auxn - globgp, which is a (3x3)-matrix!
@@ -2960,8 +2960,8 @@ bool MORTAR::ProjectorCalc<distype>::evaluate_grad_f_gauss_point_auxn3_d(
   //  double nxeta2[ndim_];
   double* nxeta1 = &fgrad(0, 0);
   double* nxeta2 = &fgrad(0, 1);
-  MORTAR::UTILS::LocalToGlobal<distype>(ele, eta, nxeta1, 1);
-  MORTAR::UTILS::LocalToGlobal<distype>(ele, eta, nxeta2, 2);
+  Mortar::UTILS::LocalToGlobal<distype>(ele, eta, nxeta1, 1);
+  Mortar::UTILS::LocalToGlobal<distype>(ele, eta, nxeta2, 2);
 
   // evaluate function f gradient
   for (int i = 0; i < ndim_; ++i) fgrad(i, 2) = -auxn[i];

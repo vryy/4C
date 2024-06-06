@@ -84,7 +84,7 @@ STR::MODELEVALUATOR::PartitionedFSI::get_last_time_step_solution_ptr() const
 bool STR::MODELEVALUATOR::PartitionedFSI::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  CORE::LINALG::AssembleMyVector(1.0, f, -timefac_np, *interface_force_np_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, -timefac_np, *interface_force_np_ptr_);
   return true;
 }
 
@@ -108,23 +108,23 @@ void STR::MODELEVALUATOR::PartitionedFSI::UpdateStepState(const double& timefac_
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_relaxation_linear(
-    Teuchos::RCP<ADAPTER::Structure> structure)
+    Teuchos::RCP<Adapter::Structure> structure)
 {
   // print to screen
   if (g_state().dof_row_map()->Comm().MyPID() == 0)
     std::cout << "\n DO SRUCTURAL RELAXATION SOLVE ..." << std::endl;
 
   // cast adapter structure to implicit time integrator
-  Teuchos::RCP<STR::TIMINT::Implicit> ti_impl =
-      Teuchos::rcp_dynamic_cast<STR::TIMINT::Implicit>(structure, true);
+  Teuchos::RCP<STR::TimeInt::Implicit> ti_impl =
+      Teuchos::rcp_dynamic_cast<STR::TimeInt::Implicit>(structure, true);
 
   // get the nonlinear solver pointer
-  STR::NLN::SOLVER::Generic& nlnsolver =
-      const_cast<STR::NLN::SOLVER::Generic&>(*(ti_impl->GetNlnSolverPtr()));
+  STR::Nln::SOLVER::Generic& nlnsolver =
+      const_cast<STR::Nln::SOLVER::Generic&>(*(ti_impl->GetNlnSolverPtr()));
 
   // get the solution group
   ::NOX::Abstract::Group& grp = nlnsolver.SolutionGroup();
-  NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
+  NOX::Nln::Group* grp_ptr = dynamic_cast<NOX::Nln::Group*>(&grp);
   if (grp_ptr == nullptr) FOUR_C_THROW("Dynamic cast failed!");
 
   // get nox parameter
@@ -132,7 +132,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
 
   // create new state vector
   Teuchos::RCP<::NOX::Epetra::Vector> x_ptr =
-      g_state().CreateGlobalVector(TIMINT::BaseDataGlobalState::VecInitType::last_time_step,
+      g_state().CreateGlobalVector(TimeInt::BaseDataGlobalState::VecInitType::last_time_step,
           ti_impl->ImplIntPtr()->ModelEvalPtr());
   // Set the solution vector in the nox group. This will reset all isValid
   // flags.
@@ -153,7 +153,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
   // ---------------------------------------------------------------------------
   // Check if we are using a Newton direction
   // ---------------------------------------------------------------------------
-  const std::string dir_str(NOX::NLN::AUX::GetDirectionMethodListName(noxparams));
+  const std::string dir_str(NOX::Nln::Aux::GetDirectionMethodListName(noxparams));
   if (dir_str != "Newton")
     FOUR_C_THROW(
         "The RelaxationSolve is currently only working for the direction-"
@@ -183,7 +183,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::PartitionedFSI::GetInOutput() const
+const STR::TimeInt::BaseDataIO& STR::MODELEVALUATOR::PartitionedFSI::GetInOutput() const
 {
   check_init();
   return GInOutput();

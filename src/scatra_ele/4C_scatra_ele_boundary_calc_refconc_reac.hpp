@@ -16,14 +16,14 @@ concentrations and with advanced reaction terms
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcRefConcReac : public ScaTraEleBoundaryCalc<distype, probdim>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
+      typedef Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
       using my::nen_;
       using my::nsd_;
       using my::nsd_ele_;
@@ -36,9 +36,9 @@ namespace DRT
      protected:
       //! Factor needed for the calculation of reference concentrations
       double fac_for_ref_conc(const int iquad,      ///< current boundary integration point
-          const CORE::Elements::FaceElement* bele,  ///< current boundary element
+          const Core::Elements::FaceElement* bele,  ///< current boundary element
           Teuchos::ParameterList& params,           ///< parameter list
-          DRT::Discretization& discretization       ///< discretization
+          Discret::Discretization& discretization   ///< discretization
           ) override;
 
      private:
@@ -46,20 +46,20 @@ namespace DRT
       ScaTraEleBoundaryCalcRefConcReac(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      template <CORE::FE::CellType bdistype,
-          CORE::FE::CellType pdistype>
+      template <Core::FE::CellType bdistype,
+          Core::FE::CellType pdistype>
       double calc_jat_int_point(const int iquad,    ///< current boundary integration point
-          const CORE::Elements::FaceElement* bele,  ///< current boundary element
-          const CORE::Elements::Element* pele,      ///< current parent element
+          const Core::Elements::FaceElement* bele,  ///< current boundary element
+          const Core::Elements::Element* pele,      ///< current parent element
           Teuchos::ParameterList& params,           ///< parameter list
-          DRT::Discretization& discretization       ///< discretization
+          Discret::Discretization& discretization   ///< discretization
       );
 
     };  // class ScaTraEleBoundaryCalcRefConcReac
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

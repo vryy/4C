@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-ADAPTER::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
+Adapter::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond)
 {
   // make sure
@@ -33,8 +33,8 @@ ADAPTER::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discret
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void ADAPTER::FluidFBI::set_coupling_contributions(
-    Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix)
+void Adapter::FluidFBI::set_coupling_contributions(
+    Teuchos::RCP<const Core::LinAlg::SparseOperator> matrix)
 {
   Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)
       ->set_coupling_contributions(matrix);
@@ -43,7 +43,7 @@ void ADAPTER::FluidFBI::set_coupling_contributions(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void ADAPTER::FluidFBI::ResetExternalForces()
+void Adapter::FluidFBI::ResetExternalForces()
 {
   Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->ResetExternalForces();
 }
@@ -51,7 +51,7 @@ void ADAPTER::FluidFBI::ResetExternalForces()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<const FLD::Meshtying> ADAPTER::FluidFBI::GetMeshtying()
+Teuchos::RCP<const FLD::Meshtying> Adapter::FluidFBI::GetMeshtying()
 {
   return Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->GetMeshtying();
 }

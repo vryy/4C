@@ -23,7 +23,7 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class FBIConstraintenforcer;
 
@@ -55,7 +55,7 @@ namespace ADAPTER
     static Teuchos::RCP<FBIConstraintenforcer> CreateEnforcer(
         const Teuchos::ParameterList& fsidyn, const Teuchos::ParameterList& fbidyn);
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

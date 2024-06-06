@@ -34,7 +34,7 @@ namespace STI
     \author fang
     \date 01/2017
   */
-  class STIResultTest : public CORE::UTILS::ResultTest
+  class STIResultTest : public Core::UTILS::ResultTest
   {
    public:
     //! constructor
@@ -44,7 +44,7 @@ namespace STI
 
     //! test special quantity not associated with a particular element or node
     void TestSpecial(
-        INPUT::LineDefinition& res,  //!< input file line containing result test specification
+        Input::LineDefinition& res,  //!< input file line containing result test specification
         int& nerr,                   //!< number of failed result tests
         int& test_count              ///< number of result tests
         ) override;

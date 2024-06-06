@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace FLUID
   {
@@ -399,17 +399,17 @@ namespace INPAR
 
     /// set fluid-specific conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace FLUID
 
-  namespace LOMA
+  namespace LowMach
   {
     /// set the low mach number parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
-  }  // namespace LOMA
+  }  // namespace LowMach
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

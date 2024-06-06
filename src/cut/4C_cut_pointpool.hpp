@@ -23,9 +23,9 @@ created
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Point;
     class Edge;
@@ -146,7 +146,7 @@ namespace CORE::GEO
       Teuchos::RCP<BoundingBox> bb_;
 
       /// point coordinates where the current bounding box is split into 8 children bboxes
-      CORE::LINALG::Matrix<3, 1> splitpoint_;
+      Core::LinAlg::Matrix<3, 1> splitpoint_;
 
       /// norm
       double norm_;
@@ -200,7 +200,7 @@ namespace CORE::GEO
       {
         if (tolerance == 0.0)
         {
-          CORE::LINALG::Matrix<3, 1> px(x);
+          Core::LinAlg::Matrix<3, 1> px(x);
           return (px.NormInf() * POSITIONTOL);
         }
         else
@@ -249,8 +249,8 @@ namespace CORE::GEO
       /// problem dimension
       const unsigned probdim_;
     };
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

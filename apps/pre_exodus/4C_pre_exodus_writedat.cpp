@@ -140,8 +140,8 @@ void EXODUS::WriteDatConditions(
 {
   using namespace FourC;
 
-  Teuchos::RCP<std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>> condlist =
-      INPUT::ValidConditions();
+  Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> condlist =
+      Input::ValidConditions();
 
   // count how often we have one specific condition
   std::map<std::string, std::vector<int>> count_cond;
@@ -166,16 +166,16 @@ void EXODUS::WriteDatConditions(
     std::string geo;
     switch (condition->GeometryType())
     {
-      case CORE::Conditions::geometry_type_point:
+      case Core::Conditions::geometry_type_point:
         geo = "DPOINT ";
         break;
-      case CORE::Conditions::geometry_type_line:
+      case Core::Conditions::geometry_type_line:
         geo = "DLINE  ";
         break;
-      case CORE::Conditions::geometry_type_surface:
+      case Core::Conditions::geometry_type_surface:
         geo = "DSURF  ";
         break;
-      case CORE::Conditions::geometry_type_volume:
+      case Core::Conditions::geometry_type_volume:
         geo = "DVOL   ";
         break;
       default:
@@ -348,19 +348,19 @@ void EXODUS::WriteDatDesignTopology(
   {
     switch (conditiondefinition.gtype)
     {
-      case CORE::Conditions::geometry_type_point:
+      case Core::Conditions::geometry_type_point:
         dpoints.insert(std::make_pair(conditiondefinition.e_id, conditiondefinition));
         break;
-      case CORE::Conditions::geometry_type_line:
+      case Core::Conditions::geometry_type_line:
         dlines.insert(std::make_pair(conditiondefinition.e_id, conditiondefinition));
         break;
-      case CORE::Conditions::geometry_type_surface:
+      case Core::Conditions::geometry_type_surface:
         dsurfs.insert(std::make_pair(conditiondefinition.e_id, conditiondefinition));
         break;
-      case CORE::Conditions::geometry_type_volume:
+      case Core::Conditions::geometry_type_volume:
         dvols.insert(std::make_pair(conditiondefinition.e_id, conditiondefinition));
         break;
-      case CORE::Conditions::geometry_type_no_geom:
+      case Core::Conditions::geometry_type_no_geom:
         // do nothing
         break;
       default:
@@ -597,7 +597,7 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
     dat << " " << acte.ename;  // e.g. "SOLIDH8"
-    dat << " " << CORE::FE::CellTypeToString(PreShapeToDrt(eb->GetShape()));
+    dat << " " << Core::FE::CellTypeToString(PreShapeToDrt(eb->GetShape()));
     dat << "  ";
     for (auto node : nodes) dat << node << " ";
     dat << "   " << acte.desc;  // e.g. "MAT 1"

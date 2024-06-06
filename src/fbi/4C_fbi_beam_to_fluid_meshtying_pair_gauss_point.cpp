@@ -36,9 +36,9 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam,
 
 template <typename beam, typename fluid>
 bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
-    CORE::LINALG::SerialDenseVector* forcevec1, CORE::LINALG::SerialDenseVector* forcevec2,
-    CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
-    CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22)
+    Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
+    Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
+    Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
 {
   // Call Evaluate on the geometry Pair
   if (!this->meshtying_is_evaluated_)
@@ -52,18 +52,18 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
   if (this->line_to_3D_segments_.size() == 0) return false;
 
   // Initialize variables for position and force vectors.
-  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_beam;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_fluid;
-  CORE::LINALG::Matrix<3, 1, scalar_type> v_beam;
-  CORE::LINALG::Matrix<3, 1, scalar_type> v_fluid;
-  CORE::LINALG::Matrix<3, 1, scalar_type> force;
-  CORE::LINALG::Matrix<3, 1, scalar_type> force2;
-  CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
-  CORE::LINALG::Matrix<fluid::n_dof_, 1, scalar_type> force_element_2(true);
-  CORE::LINALG::Matrix<fluid::n_dof_, 1, scalar_type> force_element_f(true);
-  CORE::LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
-  CORE::LINALG::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
+  Core::LinAlg::Matrix<3, 1, double> dr_beam_ref;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_beam;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_fluid;
+  Core::LinAlg::Matrix<3, 1, scalar_type> v_beam;
+  Core::LinAlg::Matrix<3, 1, scalar_type> v_fluid;
+  Core::LinAlg::Matrix<3, 1, scalar_type> force;
+  Core::LinAlg::Matrix<3, 1, scalar_type> force2;
+  Core::LinAlg::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
+  Core::LinAlg::Matrix<fluid::n_dof_, 1, scalar_type> force_element_2(true);
+  Core::LinAlg::Matrix<fluid::n_dof_, 1, scalar_type> force_element_f(true);
+  Core::LinAlg::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
+  Core::LinAlg::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
 
   // Resize and initialize the return variables.
   if (forcevec1 != nullptr) forcevec1->size(beam::n_dof_);
@@ -178,11 +178,11 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
         for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
           (*forcevec1)(i_dof1) +=
               (*stiffmat11)(i_dof1, i_dof2) *
-              CORE::FADUTILS::CastToDouble(this->ele1vel_.element_position_(i_dof2));
+              Core::FADUtils::CastToDouble(this->ele1vel_.element_position_(i_dof2));
         for (unsigned int i_dof2 = 0; i_dof2 < fluid::n_dof_; i_dof2++)
           (*forcevec1)(i_dof1) -=
               (*stiffmat12)(i_dof1, i_dof2) *
-              CORE::FADUTILS::CastToDouble(this->ele2vel_.element_position_(i_dof2));
+              Core::FADUtils::CastToDouble(this->ele2vel_.element_position_(i_dof2));
       }
     }
 
@@ -198,11 +198,11 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
           for (unsigned int i_dof2 = 0; i_dof2 < fluid::n_dof_; i_dof2++)
             (*forcevec2)(i_dof1) +=
                 (*stiffmat22)(i_dof1, i_dof2) *
-                CORE::FADUTILS::CastToDouble(this->ele2vel_.element_position_(i_dof2));
+                Core::FADUtils::CastToDouble(this->ele2vel_.element_position_(i_dof2));
           for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
             (*forcevec2)(i_dof1) -=
                 (*stiffmat21)(i_dof1, i_dof2) *
-                CORE::FADUTILS::CastToDouble(this->ele1vel_.element_position_(i_dof2));
+                Core::FADUtils::CastToDouble(this->ele1vel_.element_position_(i_dof2));
         }
       }
       else
@@ -212,7 +212,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
           for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
             (*forcevec2)(i_dof1) -=
                 (*stiffmat21)(i_dof1, i_dof2) *
-                CORE::FADUTILS::CastToDouble(this->ele1vel_.element_position_(i_dof2));
+                Core::FADUtils::CastToDouble(this->ele1vel_.element_position_(i_dof2));
         }
     }
   }

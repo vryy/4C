@@ -25,33 +25,33 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |
  *---------------------------------------------------------------------*/
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   class SearchTree;
 }
 
-namespace MORTAR
+namespace Mortar
 {
   class IntCell;
   class Vertex;
-}  // namespace MORTAR
+}  // namespace Mortar
 
-namespace CORE::VOLMORTAR
+namespace Core::VolMortar
 {
   class Cell;
 
@@ -119,11 +119,12 @@ namespace CORE::VOLMORTAR
      \brief Constructor
 
      */
-    VolMortarCoupl(int dim, Teuchos::RCP<DRT::Discretization> dis1,
-        Teuchos::RCP<DRT::Discretization> dis2, const Teuchos::ParameterList& volmortar_parameters,
+    VolMortarCoupl(int dim, Teuchos::RCP<Discret::Discretization> dis1,
+        Teuchos::RCP<Discret::Discretization> dis2,
+        const Teuchos::ParameterList& volmortar_parameters,
         std::vector<int>* coupleddof12 = nullptr, std::vector<int>* coupleddof21 = nullptr,
         std::pair<int, int>* dofset12 = nullptr, std::pair<int, int>* dofset21 = nullptr,
-        Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy =
+        Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy =
             Teuchos::null);
 
     /*!
@@ -138,7 +139,7 @@ namespace CORE::VOLMORTAR
     virtual void EvaluateVolmortar();
 
     /*!
-     \brief Evaluate consistent interpolation (NO CORE::VOLMORTAR)
+     \brief Evaluate consistent interpolation (NO Core::VOLMORTAR)
 
      */
     virtual void evaluate_consistent_interpolation();
@@ -147,13 +148,13 @@ namespace CORE::VOLMORTAR
      \brief get projection matrix 2 --> 1
 
      */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetPMatrix12() { return p12_; };
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetPMatrix12() { return p12_; };
 
     /*!
      \brief get projection matrix 1 --> 2
 
      */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetPMatrix21() { return p21_; };
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetPMatrix21() { return p21_; };
 
     /*!
      \brief assign materials
@@ -167,14 +168,14 @@ namespace CORE::VOLMORTAR
 
      */
     virtual void assemble_consistent_interpolation_p12(
-        CORE::Nodes::Node* node, std::vector<int>& foundeles);
+        Core::Nodes::Node* node, std::vector<int>& foundeles);
 
     /*!
      \brief Assemble p matrix for cons. interpolation approach
 
      */
     virtual void assemble_consistent_interpolation_p21(
-        CORE::Nodes::Node* node, std::vector<int>& foundeles);
+        Core::Nodes::Node* node, std::vector<int>& foundeles);
 
     /*!
      \brief get auxiliary plane normal (2D)
@@ -186,7 +187,7 @@ namespace CORE::VOLMORTAR
      \brief Build maps based n coupling dofs
 
      */
-    virtual void build_maps(Teuchos::RCP<DRT::Discretization>& dis,
+    virtual void build_maps(Teuchos::RCP<Discret::Discretization>& dis,
         Teuchos::RCP<const Epetra_Map>& dofmap, const std::vector<int>* coupleddof,
         const int* nodes, int numnode, int dofset);
 
@@ -194,34 +195,34 @@ namespace CORE::VOLMORTAR
      \brief calc dops for background mesh
 
      */
-    virtual std::map<int, CORE::LINALG::Matrix<9, 2>> calc_background_dops(
-        Teuchos::RCP<DRT::Discretization> searchdis);
+    virtual std::map<int, Core::LinAlg::Matrix<9, 2>> calc_background_dops(
+        Teuchos::RCP<Discret::Discretization> searchdis);
 
     /*!
      \brief calc dops for one element
 
      */
-    virtual CORE::LINALG::Matrix<9, 2> calc_dop(CORE::Elements::Element& ele);
+    virtual Core::LinAlg::Matrix<9, 2> calc_dop(Core::Elements::Element& ele);
 
     /*!
      \brief center triangulation (if delaunay fails)
 
      */
-    virtual bool center_triangulation(std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells,
-        std::vector<MORTAR::Vertex>& clip, double tol);
+    virtual bool center_triangulation(std::vector<Teuchos::RCP<Mortar::IntCell>>& cells,
+        std::vector<Mortar::Vertex>& clip, double tol);
 
     /*!
      \brief check if we need cut (3D)
 
      */
-    virtual bool check_cut(CORE::Elements::Element& sele, CORE::Elements::Element& mele);
+    virtual bool check_cut(Core::Elements::Element& sele, Core::Elements::Element& mele);
 
     /*!
      \brief check if we can integrate element-wise (3D)
 
      */
     virtual bool check_ele_integration(
-        CORE::Elements::Element& sele, CORE::Elements::Element& mele);
+        Core::Elements::Element& sele, Core::Elements::Element& mele);
 
     /*!
      \brief check initial coupling constraint
@@ -245,41 +246,41 @@ namespace CORE::VOLMORTAR
      \brief compute trafo operator
 
      */
-    virtual void create_trafo_operator(CORE::Elements::Element& ele,
-        Teuchos::RCP<DRT::Discretization> searchdis, bool dis, std::set<int>& donebefore);
+    virtual void create_trafo_operator(Core::Elements::Element& ele,
+        Teuchos::RCP<Discret::Discretization> searchdis, bool dis, std::set<int>& donebefore);
 
     /*!
      \brief define vertices for 2D polygon clipping (master)
 
      */
     virtual void define_vertices_master(
-        CORE::Elements::Element& ele, std::vector<MORTAR::Vertex>& slave_vertices);
+        Core::Elements::Element& ele, std::vector<Mortar::Vertex>& slave_vertices);
 
     /*!
      \brief define vertices for 2D polygon clipping (slave)
 
      */
     virtual void define_vertices_slave(
-        CORE::Elements::Element& ele, std::vector<MORTAR::Vertex>& slave_vertices);
+        Core::Elements::Element& ele, std::vector<Mortar::Vertex>& slave_vertices);
 
     /*!
      \brief create integration cells for 2D volmortar
 
      */
-    virtual bool delaunay_triangulation(std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells,
-        std::vector<MORTAR::Vertex>& clip, double tol);
+    virtual bool delaunay_triangulation(std::vector<Teuchos::RCP<Mortar::IntCell>>& cells,
+        std::vector<Mortar::Vertex>& clip, double tol);
 
     /*!
      \brief Get discretization of Omega_1
 
      */
-    virtual Teuchos::RCP<const DRT::Discretization> discret1() const { return dis1_; }
+    virtual Teuchos::RCP<const Discret::Discretization> discret1() const { return dis1_; }
 
     /*!
      \brief Get discretization of Omega_2
 
      */
-    virtual Teuchos::RCP<DRT::Discretization> discret2() const { return dis2_; }
+    virtual Teuchos::RCP<Discret::Discretization> discret2() const { return dis2_; }
 
     /*!
      \brief Evaluate element-based
@@ -297,19 +298,19 @@ namespace CORE::VOLMORTAR
      \brief Evaluate segment-based for 2D problems
 
      */
-    virtual void evaluate_segments2_d(CORE::Elements::Element& Aele, CORE::Elements::Element& Bele);
+    virtual void evaluate_segments2_d(Core::Elements::Element& Aele, Core::Elements::Element& Bele);
 
     /*!
      \brief Evaluate segment-based for 3D problems
 
      */
-    virtual void evaluate_segments3_d(CORE::Elements::Element* Aele, CORE::Elements::Element* Bele);
+    virtual void evaluate_segments3_d(Core::Elements::Element* Aele, Core::Elements::Element* Bele);
 
     /*!
      \brief get adjacent node ids for quadr. dual shape functions (trafo calculation)
 
      */
-    std::vector<int> get_adjacent_nodes(CORE::FE::CellType shape, int& lid);
+    std::vector<int> get_adjacent_nodes(Core::FE::CellType shape, int& lid);
 
     /*!
      \brief Initialize / reset volmortar coupling
@@ -327,55 +328,55 @@ namespace CORE::VOLMORTAR
      \brief Initialize search tree
 
      */
-    virtual Teuchos::RCP<CORE::GEO::SearchTree> init_search(
-        Teuchos::RCP<DRT::Discretization> searchdis);
+    virtual Teuchos::RCP<Core::Geo::SearchTree> init_search(
+        Teuchos::RCP<Discret::Discretization> searchdis);
 
     /*!
      \brief perform 2D integration
 
      */
-    virtual void integrate2_d(CORE::Elements::Element& sele, CORE::Elements::Element& mele,
-        std::vector<Teuchos::RCP<MORTAR::IntCell>>& cells);
+    virtual void integrate2_d(Core::Elements::Element& sele, Core::Elements::Element& mele,
+        std::vector<Teuchos::RCP<Mortar::IntCell>>& cells);
 
     /*!
      \brief perform 3D element-wise integration
 
      */
     virtual void integrate3_d(
-        CORE::Elements::Element& sele, CORE::Elements::Element& mele, int domain);
+        Core::Elements::Element& sele, Core::Elements::Element& mele, int domain);
 
     /*!
      \brief perform 3D element-wise integration for P12
 
      */
     virtual void integrate3_d_ele_based_p12(
-        CORE::Elements::Element& Aele, std::vector<int>& foundeles);
+        Core::Elements::Element& Aele, std::vector<int>& foundeles);
 
     /*!
      \brief perform 3D element-wise integration for BDis
 
      */
     virtual void integrate3_d_ele_based_p21(
-        CORE::Elements::Element& Bele, std::vector<int>& foundeles);
+        Core::Elements::Element& Bele, std::vector<int>& foundeles);
 
     /*!
      \brief perform 3D element-wise integration for ADis for meshinit
 
      */
     virtual void integrate3_d_ele_based_a_dis_mesh_init(
-        CORE::Elements::Element& Aele, std::vector<int>& foundeles, int dofseta, int dofsetb);
+        Core::Elements::Element& Aele, std::vector<int>& foundeles, int dofseta, int dofsetb);
 
     /*!
      \brief perform 3D element-wise integration for BDis for meshinit
 
      */
     virtual void integrate3_d_ele_based_b_dis_mesh_init(
-        CORE::Elements::Element& Bele, std::vector<int>& foundeles, int dofsetb, int dofseta);
+        Core::Elements::Element& Bele, std::vector<int>& foundeles, int dofsetb, int dofseta);
     /*!
      \brief perform 3D integration of created cells
 
      */
-    virtual void integrate3_d_cell(CORE::Elements::Element& sele, CORE::Elements::Element& mele,
+    virtual void integrate3_d_cell(Core::Elements::Element& sele, Core::Elements::Element& mele,
         std::vector<Teuchos::RCP<Cell>>& cells);
 
     /*!
@@ -383,7 +384,7 @@ namespace CORE::VOLMORTAR
 
      */
     virtual void integrate3_d_cell_direct_divergence(
-        CORE::Elements::Element& sele, CORE::Elements::Element& mele, bool switched_conf = false);
+        Core::Elements::Element& sele, Core::Elements::Element& mele, bool switched_conf = false);
     /*!
      \brief perform mesh init procedure
 
@@ -401,15 +402,15 @@ namespace CORE::VOLMORTAR
 
      */
     virtual void perform_cut(
-        CORE::Elements::Element* sele, CORE::Elements::Element* mele, bool switched_conf = false);
+        Core::Elements::Element* sele, Core::Elements::Element* mele, bool switched_conf = false);
 
     /*!
      \brief perform 2D polygon clipping
 
      */
-    virtual bool polygon_clipping_convex_hull(std::vector<MORTAR::Vertex>& poly1,
-        std::vector<MORTAR::Vertex>& poly2, std::vector<MORTAR::Vertex>& respoly,
-        CORE::Elements::Element& sele, CORE::Elements::Element& mele, double& tol);
+    virtual bool polygon_clipping_convex_hull(std::vector<Mortar::Vertex>& poly1,
+        std::vector<Mortar::Vertex>& poly2, std::vector<Mortar::Vertex>& respoly,
+        Core::Elements::Element& sele, Core::Elements::Element& mele, double& tol);
 
     /*!
      \brief Output for evaluation status -- progress
@@ -427,9 +428,9 @@ namespace CORE::VOLMORTAR
      \brief search algorithm
 
      */
-    virtual std::vector<int> search(CORE::Elements::Element& ele,
-        Teuchos::RCP<CORE::GEO::SearchTree> SearchTree,
-        std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
+    virtual std::vector<int> search(Core::Elements::Element& ele,
+        Teuchos::RCP<Core::Geo::SearchTree> SearchTree,
+        std::map<int, Core::LinAlg::Matrix<9, 2>>& currentKDOPs);
 
     // don't want = operator and cctor
     VolMortarCoupl operator=(const VolMortarCoupl& old);
@@ -449,26 +450,26 @@ namespace CORE::VOLMORTAR
     //@}
 
     //! @name discretizations
-    Teuchos::RCP<DRT::Discretization> dis1_;  /// the discretization Omega_1
-    Teuchos::RCP<DRT::Discretization> dis2_;  /// the discretization Omega_2
+    Teuchos::RCP<Discret::Discretization> dis1_;  /// the discretization Omega_1
+    Teuchos::RCP<Discret::Discretization> dis2_;  /// the discretization Omega_2
     //@}
 
     //! @name mortar matrices and projector
     // s1 = D1^-1 * M12 * s2  = P12 * s2
     // s2 = D2^-1 * M21 * s1  = P21 * s1
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> d1_;   /// global Mortar matrix D1  for Omega_1
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> d2_;   /// global Mortar matrix D2  for Omega_2
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> m12_;  /// global Mortar matrix M12 for Omega_1
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> m21_;  /// global Mortar matrix M21 for Omega_2
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> d1_;   /// global Mortar matrix D1  for Omega_1
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> d2_;   /// global Mortar matrix D2  for Omega_2
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> m12_;  /// global Mortar matrix M12 for Omega_1
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> m21_;  /// global Mortar matrix M21 for Omega_2
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         p12_;  /// global Mortar projection matrix P Omega_2 -> Omega_1
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         p21_;  /// global Mortar projection matrix P Omega_1 -> Omega_2
     //@}
 
     //! @name trafo matrices for quadr. elements
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> t1_;  /// global trafo matrix for Omega_1
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> t2_;  /// global trafo matrix for Omega_2
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> t1_;  /// global trafo matrix for Omega_1
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> t2_;  /// global trafo matrix for Omega_2
     //@}
 
     //! @name maps
@@ -497,17 +498,17 @@ namespace CORE::VOLMORTAR
     //@}
 
     // cut specific quantities
-    CORE::GEO::CUT::plain_volumecell_set
+    Core::Geo::Cut::plain_volumecell_set
         volcell_;  /// set of volume cells for direct divergence integration
 
     // search algorithm
-    CORE::LINALG::Matrix<9, 3> dopnormals_;  /// dop normals for seach algorithm
+    Core::LinAlg::Matrix<9, 3> dopnormals_;  /// dop normals for seach algorithm
 
     // input
     DualQuad dualquad_;  /// type of quadratic weighting interpolation
 
     /// strategy for element information transfer (mainly material, but can be more)
-    Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy_;
+    Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy_;
 
     //! @name mesh initialization
 
@@ -517,15 +518,15 @@ namespace CORE::VOLMORTAR
     Teuchos::RCP<Epetra_Map> mergedmap_;
 
     // mortar matrices for mesh init
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrix_xa_;  /// global Mortar matrix D for field A
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrix_xb_;  /// global Mortar matrix D for field B
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> mmatrix_xa_;  /// global Mortar matrix M for field A
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> mmatrix_xb_;  /// global Mortar matrix M for field B
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix_xa_;  /// global Mortar matrix D for field A
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix_xb_;  /// global Mortar matrix D for field B
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix_xa_;  /// global Mortar matrix M for field A
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix_xb_;  /// global Mortar matrix M for field B
 
     //@}
   };
 
-}  // namespace CORE::VOLMORTAR
+}  // namespace Core::VolMortar
 
 
 FOUR_C_NAMESPACE_CLOSE

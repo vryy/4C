@@ -69,9 +69,9 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum INPAR::STR::TimAdaKind MethodName() const override
+    enum Inpar::STR::TimAdaKind MethodName() const override
     {
-      return INPAR::STR::timada_kind_zienxie;
+      return Inpar::STR::timada_kind_zienxie;
     }
 
     //! Provide local order of accuracy

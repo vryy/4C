@@ -21,16 +21,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace ELEMAG
+namespace EleMag
 {
   class ElemagTimeInt;
 
-  class ElemagResultTest : public CORE::UTILS::ResultTest
+  class ElemagResultTest : public Core::UTILS::ResultTest
   {
    public:
     /*!
@@ -43,19 +43,19 @@ namespace ELEMAG
     /*!
       Possible position flags is only "pressure"
      */
-    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// Teuchos::RCP to elemagstical discretization
-    Teuchos::RCP<DRT::Discretization> dis_;
+    Teuchos::RCP<Discret::Discretization> dis_;
     /// Teuchos::RCP to solution vector
     Teuchos::RCP<Epetra_Vector> mysol_;
     /// Error vector
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> error_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> error_;
 
   };  // class ElemagResultTest
 
-}  // namespace ELEMAG
+}  // namespace EleMag
 
 FOUR_C_NAMESPACE_CLOSE
 

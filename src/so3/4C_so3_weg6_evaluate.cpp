@@ -30,26 +30,26 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+int Discret::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material post_setup() routine has already been called and call it if
   // not
   ensure_material_post_setup(params);
 
-  CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat1(elemat1_epetra.values(), true);
-  CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat2(elemat2_epetra.values(), true);
-  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec1(elevec1_epetra.values(), true);
-  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec2(elevec2_epetra.values(), true);
-  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec3(elevec3_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat1(elemat1_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat2(elemat2_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_WEG6, 1> elevec1(elevec1_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_WEG6, 1> elevec2(elevec2_epetra.values(), true);
+  Core::LinAlg::Matrix<NUMDOF_WEG6, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::SoWeg6::ActionType act = SoWeg6::none;
+  Discret::ELEMENTS::SoWeg6::ActionType act = SoWeg6::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -105,8 +105,8 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
-          nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
-          INPAR::STR::strain_none);
+          nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
+          Inpar::STR::strain_none);
     }
     break;
 
@@ -120,14 +120,14 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::ExtractMyValues(*res, myres, lm);
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
-          nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
-          INPAR::STR::strain_none);
+          nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
+          Inpar::STR::strain_none);
     }
     break;
 
@@ -141,16 +141,16 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null || res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> myemat(true);  // set to zero
+      Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> myemat(true);  // set to zero
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
-          nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
-          INPAR::STR::strain_none);
+          nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
+          Inpar::STR::strain_none);
     }
     break;
 
@@ -176,18 +176,18 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'acceleration'");
 
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myvel(lm.size());
-      CORE::FE::ExtractMyValues(*vel, myvel, lm);
+      Core::FE::ExtractMyValues(*vel, myvel, lm);
       std::vector<double> myacc(lm.size());
-      CORE::FE::ExtractMyValues(*acc, myacc, lm);
+      Core::FE::ExtractMyValues(*acc, myacc, lm);
       std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
+      Core::FE::ExtractMyValues(*res, myres, lm);
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       sow6_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2, &elevec1,
-          &elevec2, &elevec3, nullptr, nullptr, params, INPAR::STR::stress_none,
-          INPAR::STR::strain_none);
+          &elevec2, &elevec3, nullptr, nullptr, params, Inpar::STR::stress_none,
+          Inpar::STR::strain_none);
     }
     break;
 
@@ -205,15 +205,15 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
       if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get strain 'data'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
-      CORE::FE::ExtractMyValues(*res, myres, lm);
-      CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D> stress;
-      CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D> strain;
-      auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
-          params, "iostress", INPAR::STR::stress_none);
-      auto iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
-          params, "iostrain", INPAR::STR::strain_none);
+      Core::FE::ExtractMyValues(*res, myres, lm);
+      Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> stress;
+      Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> strain;
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
+          params, "iostress", Inpar::STR::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
+          params, "iostrain", Inpar::STR::strain_none);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
@@ -221,14 +221,14 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
           nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
 
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         AddtoPack(data, stress);
         data.StartPacking();
         AddtoPack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         AddtoPack(data, strain);
         data.StartPacking();
         AddtoPack(data, strain);
@@ -246,8 +246,8 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       /* ============================================================================*
       ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for Wedge_6 with 6 GAUSS POINTS*
       ** ============================================================================*/
-      const static std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
-      const static std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs =
+      const static std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
+      const static std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs =
           sow6_derivs();
       const static std::vector<double> gpweights = sow6_weights();
       /* ============================================================================*/
@@ -259,14 +259,14 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // update element geometry
-      CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;  // material coord. of element
-      CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xcurr;  // current  coord. of element
-      CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;
+      Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;  // material coord. of element
+      Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xcurr;  // current  coord. of element
+      Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;
 
-      CORE::Nodes::Node** nodes = Nodes();
+      Core::Nodes::Node** nodes = Nodes();
       for (int i = 0; i < NUMNOD_WEG6; ++i)
       {
         const auto& x = nodes[i]->X();
@@ -278,7 +278,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
         xcurr(i, 1) = xrefe(i, 1) + mydisp[i * NODDOF_WEG6 + 1];
         xcurr(i, 2) = xrefe(i, 2) + mydisp[i * NODDOF_WEG6 + 2];
 
-        if (PRESTRESS::IsMulf(pstype_))
+        if (Prestress::IsMulf(pstype_))
         {
           xdisp(i, 0) = mydisp[i * NODDOF_WEG6 + 0];
           xdisp(i, 1) = mydisp[i * NODDOF_WEG6 + 1];
@@ -296,7 +296,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
         **     J^-1 = [ x_,s  y_,s  z_,s ]
         **            [ x_,t  y_,t  z_,t ]
         */
-        CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_XYZ;
+        Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_XYZ;
         // compute derivatives N_XYZ at gp w.r.t. material coordinates
         // by N_XYZ = J^-1 * N_rst
         N_XYZ.Multiply(invJ_[gp], derivs[gp]);
@@ -304,15 +304,15 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
         // Gauss weights and Jacobian determinant
         double fac = detJ_[gp] * gpweights[gp];
 
-        CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
+        Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
 
-        if (PRESTRESS::IsMulf(pstype_))
+        if (Prestress::IsMulf(pstype_))
         {
           // get Jacobian mapping wrt to the stored configuration
-          CORE::LINALG::Matrix<3, 3> invJdef;
+          Core::LinAlg::Matrix<3, 3> invJdef;
           prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
           // get derivatives wrt to last spatial configuration
-          CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
+          Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
           N_xyz.Multiply(invJdef, derivs[gp]);
 
           // build multiplicative incremental defgrd
@@ -322,11 +322,11 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
           defgrd(2, 2) += 1.0;
 
           // get stored old incremental F
-          CORE::LINALG::Matrix<3, 3> Fhist;
+          Core::LinAlg::Matrix<3, 3> Fhist;
           prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
 
           // build total defgrd = delta F * F_old
-          CORE::LINALG::Matrix<3, 3> Fnew;
+          Core::LinAlg::Matrix<3, 3> Fnew;
           Fnew.Multiply(defgrd, Fhist);
           defgrd = Fnew;
         }
@@ -335,12 +335,12 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
           defgrd.MultiplyTT(xcurr, N_XYZ);
 
         // Right Cauchy-Green tensor = F^T * F
-        CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchygreen;
+        Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchygreen;
         cauchygreen.MultiplyTN(defgrd, defgrd);
 
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-        CORE::LINALG::Matrix<6, 1> glstrain(false);
+        Core::LinAlg::Matrix<6, 1> glstrain(false);
         glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
         glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
         glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -396,16 +396,16 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get displacement state");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       // build def gradient for every gauss point
-      CORE::LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_WEG6, 9);
+      Core::LinAlg::SerialDenseMatrix gpdefgrd(NUMGPT_WEG6, 9);
       def_gradient(mydisp, gpdefgrd, *prestress_);
 
       // update deformation gradient and put back to storage
-      CORE::LINALG::Matrix<3, 3> deltaF;
-      CORE::LINALG::Matrix<3, 3> Fhist;
-      CORE::LINALG::Matrix<3, 3> Fnew;
+      Core::LinAlg::Matrix<3, 3> deltaF;
+      Core::LinAlg::Matrix<3, 3> Fhist;
+      Core::LinAlg::Matrix<3, 3> Fnew;
       for (int gp = 0; gp < NUMGPT_WEG6; ++gp)
       {
         prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
@@ -418,7 +418,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
       update_jacobian_mapping(mydisp, *prestress_);
 
       // Update constraintmixture material
-      if (Material()->MaterialType() == CORE::Materials::m_constraintmixture)
+      if (Material()->MaterialType() == Core::Materials::m_constraintmixture)
       {
         SolidMaterial()->Update();
       }
@@ -442,33 +442,33 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
         if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
         if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
-        const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+        const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>
             gpstressmap = params.get<
-                Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
+                Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
                 "gpstressmap", Teuchos::null);
         if (gpstressmap == Teuchos::null)
           FOUR_C_THROW("no gp stress map available for writing gpstresses");
-        const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+        const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>
             gpstrainmap = params.get<
-                Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
+                Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
                 "gpstrainmap", Teuchos::null);
         if (gpstrainmap == Teuchos::null)
           FOUR_C_THROW("no gp strain map available for writing gpstrains");
         std::vector<double> mydisp(lm.size());
-        CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+        Core::FE::ExtractMyValues(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
-        CORE::FE::ExtractMyValues(*res, myres, lm);
-        CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D> stress;
-        CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D> strain;
-        auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
-            params, "iostress", INPAR::STR::stress_none);
-        auto iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
-            params, "iostrain", INPAR::STR::strain_none);
+        Core::FE::ExtractMyValues(*res, myres, lm);
+        Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> stress;
+        Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> strain;
+        auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
+            params, "iostress", Inpar::STR::stress_none);
+        auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
+            params, "iostrain", Inpar::STR::strain_none);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
 
         // if a linear analysis is desired
-        if (kintype_ == INPAR::STR::KinemType::linear)
+        if (kintype_ == Inpar::STR::KinemType::linear)
         {
           FOUR_C_THROW("Linear case not implemented");
         }
@@ -480,28 +480,28 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
         // add stresses to global map
         // get EleID Id()
         int gid = Id();
-        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
-            Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-        gpstress->shape(NUMGPT_WEG6, MAT::NUM_STRESS_3D);
+        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
+            Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+        gpstress->shape(NUMGPT_WEG6, Mat::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
         for (int i = 0; i < NUMGPT_WEG6; i++)
         {
-          for (int j = 0; j < MAT::NUM_STRESS_3D; j++)
+          for (int j = 0; j < Mat::NUM_STRESS_3D; j++)
           {
             (*gpstress)(i, j) = stress(i, j);
           }
         }
 
         // strains
-        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstrain =
-            Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-        gpstrain->shape(NUMGPT_WEG6, MAT::NUM_STRESS_3D);
+        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstrain =
+            Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+        gpstrain->shape(NUMGPT_WEG6, Mat::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
         for (int i = 0; i < NUMGPT_WEG6; i++)
         {
-          for (int j = 0; j < MAT::NUM_STRESS_3D; j++)
+          for (int j = 0; j < Mat::NUM_STRESS_3D; j++)
           {
             (*gpstrain)(i, j) = strain(i, j);
           }
@@ -512,7 +512,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
         (*gpstrainmap)[gid] = gpstrain;
 
         {
-          CORE::COMM::PackBuffer data;
+          Core::Communication::PackBuffer data;
           AddtoPack(data, stress);
           data.StartPacking();
           AddtoPack(data, stress);
@@ -520,7 +520,7 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
         }
 
         {
-          CORE::COMM::PackBuffer data;
+          Core::Communication::PackBuffer data;
           AddtoPack(data, strain);
           data.StartPacking();
           AddtoPack(data, strain);
@@ -543,10 +543,10 @@ int DRT::ELEMENTS::SoWeg6::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoWeg6::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::SoWeg6::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   FOUR_C_THROW("Body force of wedge6 not implemented");
   return 0;
@@ -555,19 +555,19 @@ int DRT::ELEMENTS::SoWeg6::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoWeg6::init_jacobian_mapping()
+void Discret::ELEMENTS::SoWeg6::init_jacobian_mapping()
 {
   /* pointer to (static) shape function array
    * for each node, evaluated at each gp*/
-  CORE::LINALG::Matrix<NUMNOD_WEG6, NUMGPT_WEG6>* shapefct;
+  Core::LinAlg::Matrix<NUMNOD_WEG6, NUMGPT_WEG6>* shapefct;
   /* pointer to (static) shape function derivatives array
    * for each node wrt to each direction, evaluated at each gp*/
-  CORE::LINALG::Matrix<NUMGPT_WEG6 * NUMDIM_WEG6, NUMNOD_WEG6>* deriv;
+  Core::LinAlg::Matrix<NUMGPT_WEG6 * NUMDIM_WEG6, NUMNOD_WEG6>* deriv;
   /* pointer to (static) weight factors at each gp */
-  CORE::LINALG::Matrix<NUMGPT_WEG6, 1>* weights;
+  Core::LinAlg::Matrix<NUMGPT_WEG6, 1>* weights;
   sow6_shapederiv(&shapefct, &deriv, &weights);  // call to evaluate
 
-  CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;
+  Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;
   for (int i = 0; i < NUMNOD_WEG6; ++i)
   {
     xrefe(i, 0) = Nodes()[i]->X()[0];
@@ -576,7 +576,7 @@ void DRT::ELEMENTS::SoWeg6::init_jacobian_mapping()
   }
   invJ_.resize(NUMGPT_WEG6);
   detJ_.resize(NUMGPT_WEG6);
-  CORE::LINALG::Matrix<NUMDIM_WEG6, NUMGPT_WEG6> deriv_gp;
+  Core::LinAlg::Matrix<NUMDIM_WEG6, NUMGPT_WEG6> deriv_gp;
   for (int gp = 0; gp < NUMGPT_WEG6; ++gp)
   {
     // get submatrix of deriv at actual gp
@@ -587,49 +587,49 @@ void DRT::ELEMENTS::SoWeg6::init_jacobian_mapping()
     detJ_[gp] = invJ_[gp].Invert();
     if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
-    if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_))
+    if (Prestress::IsMulfActive(time_, pstype_, pstime_))
       if (!(prestress_->is_init()))
         prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
 
   }  // for (int gp=0; gp<NUMGPT_WEG6; ++gp)
 
-  if (PRESTRESS::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
+  if (Prestress::IsMulfActive(time_, pstype_, pstime_)) prestress_->is_init() = true;
 }
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                       // current displacements
-    std::vector<double>* vel,                                        // current velocities
-    std::vector<double>* acc,                                        // current accelerations
-    std::vector<double>& residual,                                   // current residual displ
+void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                           // current displacements
+    std::vector<double>* vel,                                            // current velocities
+    std::vector<double>* acc,                                            // current accelerations
+    std::vector<double>& residual,                                       // current residual displ
     std::vector<double>& dispmat,                                 // current material displacements
-    CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* stiffmatrix,  // element stiffness matrix
-    CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* massmatrix,   // element mass matrix
-    CORE::LINALG::Matrix<NUMDOF_WEG6, 1>* force,                  // element internal force vector
-    CORE::LINALG::Matrix<NUMDOF_WEG6, 1>* forceinert,             // element inertial force vector
-    CORE::LINALG::Matrix<NUMDOF_WEG6, 1>* force_str,              // element structural force vector
-    CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
-    CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
+    Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* stiffmatrix,  // element stiffness matrix
+    Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* massmatrix,   // element mass matrix
+    Core::LinAlg::Matrix<NUMDOF_WEG6, 1>* force,                  // element internal force vector
+    Core::LinAlg::Matrix<NUMDOF_WEG6, 1>* forceinert,             // element inertial force vector
+    Core::LinAlg::Matrix<NUMDOF_WEG6, 1>* force_str,              // element structural force vector
+    Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D>* elestress,  // stresses at GP
+    Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D>* elestrain,  // strains at GP
     Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress,  // stress output option
-    const INPAR::STR::StrainType iostrain)  // strain output option
+    const Inpar::STR::StressType iostress,  // stress output option
+    const Inpar::STR::StrainType iostrain)  // strain output option
 {
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for Wedge_6 with 6 GAUSS POINTS*
   ** ============================================================================*/
-  const static std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
-  const static std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs = sow6_derivs();
+  const static std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
+  const static std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs = sow6_derivs();
   const static std::vector<double> gpweights = sow6_weights();
   /* ============================================================================*/
 
   // update element geometry
-  CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;  // material coord. of element
-  CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xcurr;  // current  coord. of element
-  CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;
+  Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;  // material coord. of element
+  Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xcurr;  // current  coord. of element
+  Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;
 
-  CORE::Nodes::Node** nodes = Nodes();
+  Core::Nodes::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_WEG6; ++i)
   {
     const auto& x = nodes[i]->X();
@@ -641,7 +641,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
     xcurr(i, 1) = xrefe(i, 1) + disp[i * NODDOF_WEG6 + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_WEG6 + 2];
 
-    if (PRESTRESS::IsMulf(pstype_))
+    if (Prestress::IsMulf(pstype_))
     {
       xdisp(i, 0) = disp[i * NODDOF_WEG6 + 0];
       xdisp(i, 1) = disp[i * NODDOF_WEG6 + 1];
@@ -659,21 +659,21 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
     **     J^-1 = [ x_,s  y_,s  z_,s ]
     **            [ x_,t  y_,t  z_,t ]
     */
-    CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_XYZ;
+    Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_XYZ;
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
-    CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
+    Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
 
-    if (PRESTRESS::IsMulf(pstype_))
+    if (Prestress::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
-      CORE::LINALG::Matrix<3, 3> invJdef;
+      Core::LinAlg::Matrix<3, 3> invJdef;
       prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
       // get derivatives wrt to last spatial configuration
-      CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
+      Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
       N_xyz.Multiply(invJdef, derivs[gp]);
 
       // build multiplicative incremental defgrd
@@ -683,11 +683,11 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
       defgrd(2, 2) += 1.0;
 
       // get stored old incremental F
-      CORE::LINALG::Matrix<3, 3> Fhist;
+      Core::LinAlg::Matrix<3, 3> Fhist;
       prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
 
       // build total defgrd = delta F * F_old
-      CORE::LINALG::Matrix<3, 3> Fnew;
+      Core::LinAlg::Matrix<3, 3> Fnew;
       Fnew.Multiply(defgrd, Fhist);
       defgrd = Fnew;
     }
@@ -696,12 +696,12 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
       defgrd.MultiplyTT(xcurr, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
-    CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchygreen;
+    Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    CORE::LINALG::Matrix<6, 1> glstrain(false);
+    Core::LinAlg::Matrix<6, 1> glstrain(false);
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -712,19 +712,19 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
     // return gp strains (only in case of stress/strain output)
     switch (iostrain)
     {
-      case INPAR::STR::strain_gl:
+      case Inpar::STR::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
-      case INPAR::STR::strain_ea:
+      case Inpar::STR::strain_ea:
       {
         if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
 
         // rewriting Green-Lagrange strains in matrix format
-        CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> gl;
+        Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> gl;
         gl(0, 0) = glstrain(0);
         gl(0, 1) = 0.5 * glstrain(3);
         gl(0, 2) = 0.5 * glstrain(5);
@@ -736,12 +736,12 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
         gl(2, 2) = glstrain(2);
 
         // inverse of deformation gradient
-        CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>
+        Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>
             invdefgrd;  // make a copy here otherwise defgrd is destroyed!
         invdefgrd.Invert(defgrd);
 
-        CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> temp;
-        CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> euler_almansi;
+        Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> temp;
+        Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> euler_almansi;
         temp.Multiply(gl, invdefgrd);
         euler_almansi.MultiplyTN(invdefgrd, temp);
 
@@ -753,7 +753,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
         (*elestrain)(gp, 5) = euler_almansi(0, 2);
       }
       break;
-      case INPAR::STR::strain_none:
+      case Inpar::STR::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain type not available");
@@ -780,7 +780,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_WEG6> bop;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_WEG6> bop;
     for (int i = 0; i < NUMNOD_WEG6; ++i)
     {
       bop(0, NODDOF_WEG6 * i + 0) = defgrd(0, 0) * N_XYZ(0, i);
@@ -805,16 +805,16 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
     }
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
 
-    if (Material()->MaterialType() == CORE::Materials::m_constraintmixture ||
-        Material()->MaterialType() == CORE::Materials::m_mixture)
+    if (Material()->MaterialType() == Core::Materials::m_constraintmixture ||
+        Material()->MaterialType() == Core::Materials::m_mixture)
     {
       // gp reference coordinates
-      CORE::LINALG::Matrix<NUMNOD_WEG6, 1> funct(true);
+      Core::LinAlg::Matrix<NUMNOD_WEG6, 1> funct(true);
       funct = shapefcts[gp];
-      CORE::LINALG::Matrix<NUMDIM_WEG6, 1> point(true);
+      Core::LinAlg::Matrix<NUMDIM_WEG6, 1> point(true);
       point.MultiplyTN(xrefe, funct);
       params.set("gp_coords_ref", point);
     }
@@ -825,18 +825,18 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
     // return gp stresses
     switch (iostress)
     {
-      case INPAR::STR::stress_2pk:
+      case Inpar::STR::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("no stress data available");
-        for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
+        for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
-      case INPAR::STR::stress_cauchy:
+      case Inpar::STR::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("no stress data available");
         const double detF = defgrd.Determinant();
 
-        CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> pkstress;
+        Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> pkstress;
         pkstress(0, 0) = stress(0);
         pkstress(0, 1) = stress(3);
         pkstress(0, 2) = stress(5);
@@ -847,8 +847,8 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
         pkstress(2, 1) = pkstress(1, 2);
         pkstress(2, 2) = stress(2);
 
-        CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> temp;
-        CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchystress;
+        Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> temp;
+        Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchystress;
         temp.Multiply(1.0 / detF, defgrd, pkstress);
         cauchystress.MultiplyNT(temp, defgrd);
 
@@ -860,7 +860,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
         (*elestress)(gp, 5) = cauchystress(0, 2);
       }
       break;
-      case INPAR::STR::stress_none:
+      case Inpar::STR::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");
@@ -880,12 +880,12 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_WEG6> cb;
+      Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_WEG6> cb;
       cb.Multiply(cmat, bop);  // temporary C . B
       stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
-      CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> sfac(stress);  // auxiliary integrated stress
+      Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> sfac(stress);  // auxiliary integrated stress
       sfac.Scale(detJ_w);                      // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       std::vector<double> SmB_L(NUMDIM_WEG6);  // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
@@ -946,9 +946,9 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
             timintfac_dis = params.get<double>("timintfac_dis");
             timintfac_vel = params.get<double>("timintfac_vel");
           }
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass_disp(true);
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass_vel(true);
-          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass(true);
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> linmass_disp(true);
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> linmass_vel(true);
+          Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> linmass(true);
 
           // evaluate derivative of mass w.r.t. to right cauchy green tensor
           SolidMaterial()->EvaluateNonLinMass(
@@ -961,7 +961,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
           linmass.Update(1.0, linmass_disp, 1.0, linmass_vel, 0.0);
 
           // evaluate accelerations at time n+1 at gauss point
-          CORE::LINALG::Matrix<NUMDIM_WEG6, 1> myacc(true);
+          Core::LinAlg::Matrix<NUMDIM_WEG6, 1> myacc(true);
           for (int idim = 0; idim < NUMDIM_WEG6; ++idim)
             for (int inod = 0; inod < NUMNOD_WEG6; ++inod)
               myacc(idim) += shapefcts[gp](inod) * (*acc)[idim + (inod * NUMDIM_WEG6)];
@@ -970,7 +970,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
           {
             // integrate linearisation of mass matrix
             //(B^T . d\rho/d disp . a) * detJ * w(gp)
-            CORE::LINALG::Matrix<1, NUMDOF_WEG6> cb;
+            Core::LinAlg::Matrix<1, NUMDOF_WEG6> cb;
             cb.MultiplyTN(linmass_disp, bop);
             for (int inod = 0; inod < NUMNOD_WEG6; ++inod)
             {
@@ -1010,20 +1010,20 @@ void DRT::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fcts at all 6 Gauss Points           maf 09/08|
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::SoWeg6::sow6_shapefcts()
+std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> Discret::ELEMENTS::SoWeg6::sow6_shapefcts()
 {
-  std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts(NUMGPT_WEG6);
+  std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> shapefcts(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up nodal f at each gp
-  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::wedge_6point;
-  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
+  const Core::FE::GaussRule3D gaussrule = Core::FE::GaussRule3D::wedge_6point;
+  const Core::FE::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::FE::shape_function_3D(shapefcts[igp], r, s, t, CORE::FE::CellType::wedge6);
+    Core::FE::shape_function_3D(shapefcts[igp], r, s, t, Core::FE::CellType::wedge6);
   }
   return shapefcts;
 }
@@ -1031,20 +1031,20 @@ std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::SoWeg6::sow6_sh
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fct-derivs at all 6 Gauss Points     maf 09/08|
  *----------------------------------------------------------------------*/
-std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> DRT::ELEMENTS::SoWeg6::sow6_derivs()
+std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> Discret::ELEMENTS::SoWeg6::sow6_derivs()
 {
-  std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs(NUMGPT_WEG6);
+  std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
-  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::wedge_6point;
-  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
+  const Core::FE::GaussRule3D gaussrule = Core::FE::GaussRule3D::wedge_6point;
+  const Core::FE::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
     const double r = intpoints.qxg[igp][0];
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::FE::shape_function_3D_deriv1(derivs[igp], r, s, t, CORE::FE::CellType::wedge6);
+    Core::FE::shape_function_3D_deriv1(derivs[igp], r, s, t, Core::FE::CellType::wedge6);
   }
   return derivs;
 }
@@ -1052,11 +1052,11 @@ std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> DRT::ELEMENTS::SoWeg
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Weights at all 6 Gauss Points              maf 09/08|
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::SoWeg6::sow6_weights()
+std::vector<double> Discret::ELEMENTS::SoWeg6::sow6_weights()
 {
   std::vector<double> weights(NUMGPT_WEG6);
-  const CORE::FE::GaussRule3D gaussrule = CORE::FE::GaussRule3D::wedge_6point;
-  const CORE::FE::IntegrationPoints3D intpoints(gaussrule);
+  const Core::FE::GaussRule3D gaussrule = Core::FE::GaussRule3D::wedge_6point;
+  const Core::FE::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < NUMGPT_WEG6; ++i)
   {
     weights[i] = intpoints.qwgt[i];
@@ -1068,15 +1068,15 @@ std::vector<double> DRT::ELEMENTS::SoWeg6::sow6_weights()
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives for So_hex8                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoWeg6::sow6_shapederiv(
-    CORE::LINALG::Matrix<NUMNOD_WEG6, NUMGPT_WEG6>** shapefct,  // pointer to pointer of shapefct
-    CORE::LINALG::Matrix<NUMDOF_WEG6, NUMNOD_WEG6>** deriv,     // pointer to pointer of derivs
-    CORE::LINALG::Matrix<NUMGPT_WEG6, 1>** weights)             // pointer to pointer of weights
+void Discret::ELEMENTS::SoWeg6::sow6_shapederiv(
+    Core::LinAlg::Matrix<NUMNOD_WEG6, NUMGPT_WEG6>** shapefct,  // pointer to pointer of shapefct
+    Core::LinAlg::Matrix<NUMDOF_WEG6, NUMNOD_WEG6>** deriv,     // pointer to pointer of derivs
+    Core::LinAlg::Matrix<NUMGPT_WEG6, 1>** weights)             // pointer to pointer of weights
 {
   // static matrix objects, kept in memory
-  static CORE::LINALG::Matrix<NUMNOD_WEG6, NUMGPT_WEG6> f;    // shape functions
-  static CORE::LINALG::Matrix<NUMDOF_WEG6, NUMNOD_WEG6> df;   // derivatives
-  static CORE::LINALG::Matrix<NUMGPT_WEG6, 1> weightfactors;  // weights for each gp
+  static Core::LinAlg::Matrix<NUMNOD_WEG6, NUMGPT_WEG6> f;    // shape functions
+  static Core::LinAlg::Matrix<NUMDOF_WEG6, NUMNOD_WEG6> df;   // derivatives
+  static Core::LinAlg::Matrix<NUMGPT_WEG6, 1> weightfactors;  // weights for each gp
   static bool fdf_eval;                                       // flag for re-evaluate everything
 
 
@@ -1092,18 +1092,18 @@ void DRT::ELEMENTS::SoWeg6::sow6_shapederiv(
     // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
     // fill up nodal f at each gp
     // fill up df w.r.t. rst directions (NUMDIM) at each gp
-    const CORE::FE::GaussRule3D gaussrule_ = CORE::FE::GaussRule3D::wedge_6point;
-    const CORE::FE::IntegrationPoints3D intpoints(gaussrule_);
+    const Core::FE::GaussRule3D gaussrule_ = Core::FE::GaussRule3D::wedge_6point;
+    const Core::FE::IntegrationPoints3D intpoints(gaussrule_);
     for (int igp = 0; igp < intpoints.nquad; ++igp)
     {
       const double r = intpoints.qxg[igp][0];
       const double s = intpoints.qxg[igp][1];
       const double t = intpoints.qxg[igp][2];
 
-      CORE::LINALG::Matrix<NUMNOD_WEG6, 1> funct;
-      CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> deriv;
-      CORE::FE::shape_function_3D(funct, r, s, t, CORE::FE::CellType::wedge6);
-      CORE::FE::shape_function_3D_deriv1(deriv, r, s, t, CORE::FE::CellType::wedge6);
+      Core::LinAlg::Matrix<NUMNOD_WEG6, 1> funct;
+      Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> deriv;
+      Core::FE::shape_function_3D(funct, r, s, t, Core::FE::CellType::wedge6);
+      Core::FE::shape_function_3D_deriv1(deriv, r, s, t, Core::FE::CellType::wedge6);
       for (int inode = 0; inode < NUMNOD_WEG6; ++inode)
       {
         f(inode, igp) = funct(inode);
@@ -1125,7 +1125,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_shapederiv(
 /*----------------------------------------------------------------------*
  |  lump mass matrix                                         bborn 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoWeg6::sow6_lumpmass(CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* emass)
+void Discret::ELEMENTS::SoWeg6::sow6_lumpmass(Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -1147,12 +1147,12 @@ void DRT::ELEMENTS::SoWeg6::sow6_lumpmass(CORE::LINALG::Matrix<NUMDOF_WEG6, NUMD
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoWeg6Type::Initialize(DRT::Discretization& dis)
+int Discret::ELEMENTS::SoWeg6Type::Initialize(Discret::Discretization& dis)
 {
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<DRT::ELEMENTS::SoWeg6*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<Discret::ELEMENTS::SoWeg6*>(dis.lColElement(i));
     if (!actele) FOUR_C_THROW("cast to So_weg6* failed");
     actele->init_jacobian_mapping();
   }
@@ -1162,14 +1162,14 @@ int DRT::ELEMENTS::SoWeg6Type::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoWeg6::def_gradient(const std::vector<double>& disp,
-    CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
+void Discret::ELEMENTS::SoWeg6::def_gradient(const std::vector<double>& disp,
+    Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::ELEMENTS::PreStress& prestress)
 {
-  const static std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
-  const static std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs = sow6_derivs();
+  const static std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
+  const static std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs = sow6_derivs();
 
   // update element geometry
-  CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;  // current  coord. of element
+  Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;  // current  coord. of element
   for (int i = 0; i < NUMNOD_WEG6; ++i)
   {
     xdisp(i, 0) = disp[i * NODDOF_WEG6 + 0];
@@ -1180,15 +1180,15 @@ void DRT::ELEMENTS::SoWeg6::def_gradient(const std::vector<double>& disp,
   for (int gp = 0; gp < NUMGPT_WEG6; ++gp)
   {
     // get Jacobian mapping wrt to the stored deformed configuration
-    CORE::LINALG::Matrix<3, 3> invJdef;
+    Core::LinAlg::Matrix<3, 3> invJdef;
     prestress.StoragetoMatrix(gp, invJdef, prestress.JHistory());
 
     // by N_XYZ = J^-1 * N_rst
-    CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
+    Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
     N_xyz.Multiply(invJdef, derivs[gp]);
 
     // build defgrd (independent of xrefe!)
-    CORE::LINALG::Matrix<3, 3> defgrd;
+    Core::LinAlg::Matrix<3, 3> defgrd;
     defgrd.MultiplyTT(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
@@ -1202,14 +1202,14 @@ void DRT::ELEMENTS::SoWeg6::def_gradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoWeg6::update_jacobian_mapping(
-    const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
+void Discret::ELEMENTS::SoWeg6::update_jacobian_mapping(
+    const std::vector<double>& disp, Discret::ELEMENTS::PreStress& prestress)
 {
-  const static std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
-  const static std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs = sow6_derivs();
+  const static std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
+  const static std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs = sow6_derivs();
 
   // get incremental disp
-  CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;
+  Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;
   for (int i = 0; i < NUMNOD_WEG6; ++i)
   {
     xdisp(i, 0) = disp[i * NODDOF_WEG6 + 0];
@@ -1217,11 +1217,11 @@ void DRT::ELEMENTS::SoWeg6::update_jacobian_mapping(
     xdisp(i, 2) = disp[i * NODDOF_WEG6 + 2];
   }
 
-  CORE::LINALG::Matrix<3, 3> invJhist;
-  CORE::LINALG::Matrix<3, 3> invJ;
-  CORE::LINALG::Matrix<3, 3> defgrd;
-  CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
-  CORE::LINALG::Matrix<3, 3> invJnew;
+  Core::LinAlg::Matrix<3, 3> invJhist;
+  Core::LinAlg::Matrix<3, 3> invJ;
+  Core::LinAlg::Matrix<3, 3> defgrd;
+  Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
+  Core::LinAlg::Matrix<3, 3> invJnew;
   for (int gp = 0; gp < NUMGPT_WEG6; ++gp)
   {
     // get the invJ old state
@@ -1247,21 +1247,21 @@ void DRT::ELEMENTS::SoWeg6::update_jacobian_mapping(
 /*----------------------------------------------------------------------*
  |  remodeling of fiber directions (protected)               tinkl 01/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                  // current displacements
-    Teuchos::ParameterList& params,                             // algorithmic parameters e.g. time
-    const Teuchos::RCP<CORE::MAT::Material>& mat)               // material
+void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                      // current displacements
+    Teuchos::ParameterList& params,                // algorithmic parameters e.g. time
+    const Teuchos::RCP<Core::Mat::Material>& mat)  // material
 {
-  if ((Material()->MaterialType() == CORE::Materials::m_constraintmixture) ||
-      (Material()->MaterialType() == CORE::Materials::m_elasthyper))
+  if ((Material()->MaterialType() == Core::Materials::m_constraintmixture) ||
+      (Material()->MaterialType() == Core::Materials::m_elasthyper))
   {
     // in a first step ommit everything with prestress and EAS!!
-    const static std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs = sow6_derivs();
+    const static std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs = sow6_derivs();
 
     // update element geometry
-    CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xcurr;  // current  coord. of element
-    CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;
-    CORE::Nodes::Node** nodes = Nodes();
+    Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xcurr;  // current  coord. of element
+    Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xdisp;
+    Core::Nodes::Node** nodes = Nodes();
     for (int i = 0; i < NUMNOD_WEG6; ++i)
     {
       const auto& x = nodes[i]->X();
@@ -1269,7 +1269,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matr
       xcurr(i, 1) = x[1] + disp[i * NODDOF_WEG6 + 1];
       xcurr(i, 2) = x[2] + disp[i * NODDOF_WEG6 + 2];
 
-      if (PRESTRESS::IsMulf(pstype_))
+      if (Prestress::IsMulf(pstype_))
       {
         xdisp(i, 0) = disp[i * NODDOF_WEG6 + 0];
         xdisp(i, 1) = disp[i * NODDOF_WEG6 + 1];
@@ -1279,13 +1279,13 @@ void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matr
     /* =========================================================================*/
     /* ================================================= Loop over Gauss Points */
     /* =========================================================================*/
-    CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_XYZ;
+    Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_XYZ;
     // interpolated values of stress and defgrd for remodeling
-    CORE::LINALG::Matrix<3, 3> avg_stress(true);
-    CORE::LINALG::Matrix<3, 3> avg_defgrd(true);
+    Core::LinAlg::Matrix<3, 3> avg_stress(true);
+    Core::LinAlg::Matrix<3, 3> avg_defgrd(true);
 
     // build deformation gradient wrt to material configuration
-    CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
+    Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
     for (int gp = 0; gp < NUMGPT_WEG6; ++gp)
     {
       /* get the inverse of the Jacobian matrix which looks like:
@@ -1297,13 +1297,13 @@ void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matr
       // by N_XYZ = J^-1 * N_rst
       N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
-      if (PRESTRESS::IsMulf(pstype_))
+      if (Prestress::IsMulf(pstype_))
       {
         // get Jacobian mapping wrt to the stored configuration
-        CORE::LINALG::Matrix<3, 3> invJdef;
+        Core::LinAlg::Matrix<3, 3> invJdef;
         prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
         // get derivatives wrt to last spatial configuration
-        CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
+        Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
         N_xyz.Multiply(invJdef, derivs[gp]);
 
         // build multiplicative incremental defgrd
@@ -1313,11 +1313,11 @@ void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matr
         defgrd(2, 2) += 1.0;
 
         // get stored old incremental F
-        CORE::LINALG::Matrix<3, 3> Fhist;
+        Core::LinAlg::Matrix<3, 3> Fhist;
         prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
 
         // build total defgrd = delta F * F_old
-        CORE::LINALG::Matrix<3, 3> Fnew;
+        Core::LinAlg::Matrix<3, 3> Fnew;
         Fnew.Multiply(defgrd, Fhist);
         defgrd = Fnew;
       }
@@ -1326,14 +1326,14 @@ void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matr
         defgrd.MultiplyTT(xcurr, N_XYZ);
 
       // Right Cauchy-Green tensor = F^T * F
-      CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchygreen;
+      Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchygreen;
       cauchygreen.MultiplyTN(defgrd, defgrd);
 
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
       // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-      //    CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-      //    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
-      CORE::LINALG::Matrix<6, 1> glstrain(false);
+      //    Core::LinAlg::SerialDenseVector glstrain_epetra(Mat::NUM_STRESS_3D);
+      //    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
+      Core::LinAlg::Matrix<6, 1> glstrain(false);
       glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
       glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
       glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -1342,8 +1342,8 @@ void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matr
       glstrain(5) = cauchygreen(2, 0);
 
       // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-      CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
+      Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
+      Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
 
       SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1351,7 +1351,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matr
       // Cauchy stress
       const double detF = defgrd.Determinant();
 
-      CORE::LINALG::Matrix<3, 3> pkstress;
+      Core::LinAlg::Matrix<3, 3> pkstress;
       pkstress(0, 0) = stress(0);
       pkstress(0, 1) = stress(3);
       pkstress(0, 2) = stress(5);
@@ -1362,22 +1362,22 @@ void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matr
       pkstress(2, 1) = pkstress(1, 2);
       pkstress(2, 2) = stress(2);
 
-      CORE::LINALG::Matrix<3, 3> temp(true);
-      CORE::LINALG::Matrix<3, 3> cauchystress(true);
+      Core::LinAlg::Matrix<3, 3> temp(true);
+      Core::LinAlg::Matrix<3, 3> cauchystress(true);
       temp.Multiply(1.0 / detF, defgrd, pkstress);
       cauchystress.MultiplyNT(temp, defgrd);
 
       // evaluate eigenproblem based on stress of previous step
-      CORE::LINALG::Matrix<3, 3> lambda(true);
-      CORE::LINALG::Matrix<3, 3> locsys(true);
-      CORE::LINALG::SYEV(cauchystress, lambda, locsys);
+      Core::LinAlg::Matrix<3, 3> lambda(true);
+      Core::LinAlg::Matrix<3, 3> locsys(true);
+      Core::LinAlg::SYEV(cauchystress, lambda, locsys);
 
-      if (mat->MaterialType() == CORE::Materials::m_constraintmixture)
+      if (mat->MaterialType() == Core::Materials::m_constraintmixture)
       {
-        auto* comi = dynamic_cast<MAT::ConstraintMixture*>(mat.get());
+        auto* comi = dynamic_cast<Mat::ConstraintMixture*>(mat.get());
         comi->EvaluateFiberVecs(gp, locsys, defgrd);
       }
-      else if (mat->MaterialType() == CORE::Materials::m_elasthyper)
+      else if (mat->MaterialType() == Core::Materials::m_elasthyper)
       {
         // we only have fibers at element center, thus we interpolate stress and defgrd
         avg_stress.Update(1.0 / NUMGPT_WEG6, cauchystress, 1.0);
@@ -1388,12 +1388,12 @@ void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matr
 
     }  // end loop over gauss points
 
-    if (mat->MaterialType() == CORE::Materials::m_elasthyper)
+    if (mat->MaterialType() == Core::Materials::m_elasthyper)
     {
       // evaluate eigenproblem based on stress of previous step
-      CORE::LINALG::Matrix<3, 3> lambda(true);
-      CORE::LINALG::Matrix<3, 3> locsys(true);
-      CORE::LINALG::SYEV(avg_stress, lambda, locsys);
+      Core::LinAlg::Matrix<3, 3> lambda(true);
+      Core::LinAlg::Matrix<3, 3> locsys(true);
+      Core::LinAlg::SYEV(avg_stress, lambda, locsys);
 
       // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
       double newgamma = atan2(lambda(1, 1), lambda(2, 2));
@@ -1401,7 +1401,7 @@ void DRT::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matr
       if (lambda(1, 1) < 0) newgamma = 0.0;
 
       // new fiber vectors
-      auto* elast = dynamic_cast<MAT::ElastHyper*>(mat.get());
+      auto* elast = dynamic_cast<Mat::ElastHyper*>(mat.get());
       elast->EvaluateFiberVecs(newgamma, locsys, avg_defgrd);
     }
   }

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 namespace STR
 {
-  namespace PREDICT
+  namespace Predict
   {
     class Generic;
 
@@ -38,17 +38,17 @@ namespace STR
       virtual ~Factory() = default;
 
       //! build the desired predictor
-      Teuchos::RCP<STR::PREDICT::Generic> BuildPredictor(
-          const enum INPAR::STR::PredEnum& predType) const;
+      Teuchos::RCP<STR::Predict::Generic> BuildPredictor(
+          const enum Inpar::STR::PredEnum& predType) const;
     };
 
-    /*! \brief Non-member function, which relates to the STR::PREDICT::Factory class
+    /*! \brief Non-member function, which relates to the STR::Predict::Factory class
      *
      * \note Call this method from outside!
      */
-    Teuchos::RCP<STR::PREDICT::Generic> BuildPredictor(const enum INPAR::STR::PredEnum& predType);
+    Teuchos::RCP<STR::Predict::Generic> BuildPredictor(const enum Inpar::STR::PredEnum& predType);
 
-  }  // namespace PREDICT
+  }  // namespace Predict
 }  // namespace STR
 
 

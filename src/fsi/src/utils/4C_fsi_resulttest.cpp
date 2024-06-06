@@ -33,9 +33,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FSI::FSIResultTest::FSIResultTest(
     Teuchos::RCP<FSI::Monolithic>& fsi, const Teuchos::ParameterList& fsidyn)
-    : CORE::UTILS::ResultTest("FSI"), fsi_(fsi)
+    : Core::UTILS::ResultTest("FSI"), fsi_(fsi)
 {
-  int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+  int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_iter_monolithicfluidsplit:
@@ -154,9 +154,9 @@ FSI::FSIResultTest::FSIResultTest(
 /*----------------------------------------------------------------------*/
 FSI::FSIResultTest::FSIResultTest(
     Teuchos::RCP<FSI::MonolithicNoNOX> fsi, const Teuchos::ParameterList& fsidyn)
-    : CORE::UTILS::ResultTest("FSI")
+    : Core::UTILS::ResultTest("FSI")
 {
-  int coupling = CORE::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
+  int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_iter_fluidfluid_monolithicstructuresplit_nonox:
@@ -202,7 +202,7 @@ FSI::FSIResultTest::FSIResultTest(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FSIResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void FSI::FSIResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   int node;
   res.ExtractInt("NODE", node);
@@ -221,7 +221,7 @@ void FSI::FSIResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& t
   {
     if (slavedisc_->HaveGlobalNode(node))
     {
-      const CORE::Nodes::Node* actnode = slavedisc_->gNode(node);
+      const Core::Nodes::Node* actnode = slavedisc_->gNode(node);
 
       // Strange! It seems we might actually have a global node around
       // even if it does not belong to us. But here we are just
@@ -270,7 +270,7 @@ void FSI::FSIResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& t
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FSIResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void FSI::FSIResultTest::TestElement(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   FOUR_C_THROW("FSI ELEMENT test not implemented, yet.");
 
@@ -279,7 +279,7 @@ void FSI::FSIResultTest::TestElement(INPUT::LineDefinition& res, int& nerr, int&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FSIResultTest::TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void FSI::FSIResultTest::TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   std::string quantity;
   res.ExtractString("QUANTITY", quantity);

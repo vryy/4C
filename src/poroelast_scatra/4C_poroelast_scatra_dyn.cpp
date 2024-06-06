@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 void poro_scatra_drt()
 {
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // 1.- Initialization
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
@@ -30,13 +30,13 @@ void poro_scatra_drt()
   // 2.- Parameter reading
   const Teuchos::ParameterList& poroscatradynparams = problem->poro_scatra_control_params();
 
-  POROELASTSCATRA::UTILS::SetupPoroScatraDiscretizations<
-      POROELASTSCATRA::UTILS::PoroelastCloneStrategyforScatraElements,
-      POROELASTSCATRA::UTILS::PoroScatraCloneStrategy>();
+  PoroElastScaTra::UTILS::SetupPoroScatraDiscretizations<
+      PoroElastScaTra::UTILS::PoroelastCloneStrategyforScatraElements,
+      PoroElastScaTra::UTILS::PoroScatraCloneStrategy>();
 
   // 3.- Creation of Poroelastic + Scalar_Transport problem. (discretization called inside)
-  Teuchos::RCP<POROELASTSCATRA::PoroScatraBase> poro_scatra =
-      POROELASTSCATRA::UTILS::CreatePoroScatraAlgorithm(poroscatradynparams, comm);
+  Teuchos::RCP<PoroElastScaTra::PoroScatraBase> poro_scatra =
+      PoroElastScaTra::UTILS::CreatePoroScatraAlgorithm(poroscatradynparams, comm);
 
   // 3.1- Read restart if needed. (discretization called inside)
   const int restart = problem->Restart();

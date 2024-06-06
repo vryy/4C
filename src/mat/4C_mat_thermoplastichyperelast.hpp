@@ -41,17 +41,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     //! material parameters for neo-Hooke
-    class ThermoPlasticHyperElast : public CORE::MAT::PAR::Parameter
+    class ThermoPlasticHyperElast : public Core::Mat::PAR::Parameter
     {
      public:
       //! standard constructor
-      ThermoPlasticHyperElast(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ThermoPlasticHyperElast(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! @name material parameters
       //@{
@@ -84,21 +84,21 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class ThermoPlasticHyperElast
 
   }  // namespace PAR
 
 
-  class ThermoPlasticHyperElastType : public CORE::COMM::ParObjectType
+  class ThermoPlasticHyperElastType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ThermoPlasticHyperElastType"; }
 
     static ThermoPlasticHyperElastType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ThermoPlasticHyperElastType instance_;
@@ -114,7 +114,7 @@ namespace MAT
     ThermoPlasticHyperElast();
 
     //! construct the material object given material parameters
-    explicit ThermoPlasticHyperElast(MAT::PAR::ThermoPlasticHyperElast* params);
+    explicit ThermoPlasticHyperElast(Mat::PAR::ThermoPlasticHyperElast* params);
 
     //! @name Packing and Unpacking
 
@@ -139,7 +139,7 @@ namespace MAT
 
     \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -160,20 +160,20 @@ namespace MAT
     //! @name Access methods
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_thermoplhyperelast;
+      return Core::Materials::m_thermoplhyperelast;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (!(kinem == Inpar::STR::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ThermoPlasticHyperElast(*this));
     }
@@ -215,7 +215,7 @@ namespace MAT
     virtual double InitTemp() const { return params_->inittemp_; }
 
     //! return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     //! return accumulated strain at Gauss points
     //! use the old vector (last_) for postprocessing
@@ -233,7 +233,7 @@ namespace MAT
 
     //! linearisation of the mechanical dissipation w.r.t. displacements d_{n+1}
     //! contribution to K_Td
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> MechDiss_kTd(int gp) const
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> MechDiss_kTd(int gp) const
     {
       return (mechdiss_k_td_->at(gp));
     }
@@ -247,14 +247,14 @@ namespace MAT
 
     //! linearisation of thermoplastic heating w.r.t. temperatures T_{n+1}
     //! contribution to K_Td
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> thermo_plast_heating_k_td(int gp) const
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> thermo_plast_heating_k_td(int gp) const
     {
       return (thrplheat_k_td_->at(gp));
     }
 
     //! linearisation of material tangent w.r.t. temperatures T_{n+1}
     //! contribution to K_dT
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> CMat_kdT(int gp) const { return (cmat_kd_t_->at(gp)); }
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> CMat_kdT(int gp) const { return (cmat_kd_t_->at(gp)); }
 
     //! check if history variables are already initialised
     bool Initialized() const { return (isinit_ and (defgrdcurr_ != Teuchos::null)); }
@@ -270,27 +270,27 @@ namespace MAT
     //! @name Evaluation methods
 
     //! initialise internal stress variables
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     //! update internal stress variables
     void Update() override;
 
     //! evaluate material law
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>*
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>*
                       defgrd,  //!< input deformation gradient for multiplicative sp
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>*
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>*
             glstrain,                    //!< input Green-Lagrange strain (redundant with defo
                                          //   but used for neo-hooke evaluation; maybe remove
         Teuchos::ParameterList& params,  //!< input paramter list (e.g. Young's, ...)
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>*
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>*
             stress,  //!< output (mandatory) second Piola-Kirchhoff stress
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>*
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>*
             cmat,  //!< output (mandatory) material stiffness matrix
         int gp,    ///< Gauss point
         int eleGID) override;
 
     //! evaluate the elasto-plastic tangent
-    void setup_cmat_elasto_plastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+    void setup_cmat_elasto_plastic(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
                                        cmat,  //!< elasto-plastic tangent modulus (out)
         double Dgamma,                        //!< plastic multiplier
         double Hiso_temp,           //!< temperature-dependent linear isotropic hardening modulus
@@ -298,54 +298,54 @@ namespace MAT
         double sigma_y0_temp,       //!< temperature-dependent flow/yield stress
         double mubar,               //!< deformation-dependent shear modulus
         double q_trial,             //!< trial von Mises equivalent stress
-        const CORE::LINALG::Matrix<3, 3>& defgrd,  //!< F_{n+1}
-        CORE::LINALG::Matrix<3, 3> invdefgrdcurr,  //!< inverse of F_{n+1}
-        CORE::LINALG::Matrix<3, 3> n,              //!< spatial flow vector
+        const Core::LinAlg::Matrix<3, 3>& defgrd,  //!< F_{n+1}
+        Core::LinAlg::Matrix<3, 3> invdefgrdcurr,  //!< inverse of F_{n+1}
+        Core::LinAlg::Matrix<3, 3> n,              //!< spatial flow vector
         double bulk,                               //!< bulk modulus
         int gp                                     //!< current Gauss-point
     );
 
     //! calculate updated value of bebar_{n+1}
-    void calculate_current_bebar(const CORE::LINALG::Matrix<3, 3>& devtau,  //!< s_{n+1}
+    void calculate_current_bebar(const Core::LinAlg::Matrix<3, 3>& devtau,  //!< s_{n+1}
         double G,                                                           //!< shear modulus
-        const CORE::LINALG::Matrix<3, 3>& id2,  //!< second-order identity
+        const Core::LinAlg::Matrix<3, 3>& id2,  //!< second-order identity
         int gp                                  //!< current Gauss-point
     );
 
 
     //! main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
-    void Evaluate(const CORE::LINALG::Matrix<1, 1>& Ntemp,  //!< temperature of element
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& ctemp,  //!< temperature-dependent material tangent
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+    void Evaluate(const Core::LinAlg::Matrix<1, 1>& Ntemp,  //!< temperature of element
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& ctemp,  //!< temperature-dependent material tangent
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             cmat_T,                                          //!< temperature-dependent mechanical
                                                              //!< material tangent
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stresstemp,  //!< temperature-dependent stress term
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stresstemp,  //!< temperature-dependent stress term
         Teuchos::ParameterList& params                       //!< parameter list
     );
 
     //! computes temperature-dependent isotropic thermal elasticity tensor in
     //! matrix notion for 3d
     void setup_cthermo(
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& ctemp,  //!< temperature dependent material tangent
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& ctemp,  //!< temperature dependent material tangent
         Teuchos::ParameterList& params                  //!< parameter list
     );
 
     //! computes temperature-dependent isotropic mechanical elasticity tensor in
     //! matrix notion for 3d
-    void SetupCmatThermo(const CORE::LINALG::Matrix<1, 1>& Ntemp,
-        CORE::LINALG::Matrix<6, 6>& cmat_T, Teuchos::ParameterList& params);
+    void SetupCmatThermo(const Core::LinAlg::Matrix<1, 1>& Ntemp,
+        Core::LinAlg::Matrix<6, 6>& cmat_T, Teuchos::ParameterList& params);
 
     //! calculates stress-temperature modulus
     double st_modulus();
 
     //! finite difference check of material tangent
-    void fd_check(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress,  // updated stress sigma_n+1
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+    void fd_check(Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& stress,  // updated stress sigma_n+1
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             cmat,  // material tangent calculated with FD of stresses
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
             cmatFD,                               // material tangent calculated with FD of stresses
-        const CORE::LINALG::Matrix<1, 1>& Ntemp,  // scalar-valued current temperature
+        const Core::LinAlg::Matrix<1, 1>& Ntemp,  // scalar-valued current temperature
         Teuchos::ParameterList& params            // parameter list including F,C^{-1},...
     );
 
@@ -356,20 +356,20 @@ namespace MAT
 
    private:
     //! my material parameters
-    MAT::PAR::ThermoPlasticHyperElast* params_;
+    Mat::PAR::ThermoPlasticHyperElast* params_;
 
     //! @name Internal / history variables
 
     //! plastic history variables
     //! old (i.e. at t_n)  deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>> defgrdlast_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 3>>> defgrdlast_;
     //! current (i.e. at t_n+1) deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>> defgrdcurr_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 3>>> defgrdcurr_;
 
     //! old (i.e. at t_n) elastic, isochoric right Cauchy-Green tensor
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>> bebarlast_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 3>>> bebarlast_;
     //! current (i.e. at t_n+1) elastic, isochoric right Cauchy-Green tensor
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>> bebarcurr_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 3>>> bebarcurr_;
 
     //! old (i.e. at t_n) accumulated plastic strain
     Teuchos::RCP<std::vector<double>> accplstrainlast_;
@@ -385,20 +385,20 @@ namespace MAT
     //! current (i.e. at t_n+1) linearised mechanical dissipation w.r.t. T_{n+1}
     Teuchos::RCP<std::vector<double>> mechdiss_k_tt_;
     //! current (i.e. at t_n+1) linearised mechanical dissipation w.r.t. d_{n+1}
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>> mechdiss_k_td_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<6, 1>>> mechdiss_k_td_;
     //! current (i.e. at t_n+1) thermoplastic heating term
     Teuchos::RCP<std::vector<double>> thrplheat_;
     //! current (i.e. at t_n+1) thermoplastic heating term
     Teuchos::RCP<std::vector<double>> thrplheat_k_tt_;
     //! current (i.e. at t_n+1) thermoplastic heating term w.r.t. d_{n+1}
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>> thrplheat_k_td_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<6, 1>>> thrplheat_k_td_;
 
     //@}
 
     //! @name Linearisation terms for structural equation
 
     //! current (i.e. at t_n+1) linearised material tangent w.r.t. T_{n+1}
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>> cmat_kd_t_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<6, 1>>> cmat_kd_t_;
 
     //@}
 
@@ -411,7 +411,7 @@ namespace MAT
 
   };  // class ThermoPlasticHyperElast
 
-}  // namespace MAT
+}  // namespace Mat
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

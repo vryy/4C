@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituentElastHyperDamage::MixtureConstituentElastHyperDamage(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : MixtureConstituentElastHyperBase(matdata),
       damage_function_id_(matdata->Get<int>("DAMAGE_FUNCT"))
 {
@@ -44,18 +44,18 @@ MIXTURE::MixtureConstituentElastHyperDamage::MixtureConstituentElastHyperDamage(
 }
 
 // Returns the material type
-CORE::Materials::MaterialType MIXTURE::MixtureConstituentElastHyperDamage::MaterialType() const
+Core::Materials::MaterialType MIXTURE::MixtureConstituentElastHyperDamage::MaterialType() const
 {
-  return CORE::Materials::mix_elasthyper_damage;
+  return Core::Materials::mix_elasthyper_damage;
 }
 
 // Pack the constituent
 void MIXTURE::MixtureConstituentElastHyperDamage::PackConstituent(
-    CORE::COMM::PackBuffer& data) const
+    Core::Communication::PackBuffer& data) const
 {
   MixtureConstituentElastHyperBase::PackConstituent(data);
 
-  CORE::COMM::ParObject::AddtoPack(data, current_reference_growth_);
+  Core::Communication::ParObject::AddtoPack(data, current_reference_growth_);
 }
 
 // Unpack the constituent
@@ -64,12 +64,12 @@ void MIXTURE::MixtureConstituentElastHyperDamage::UnpackConstituent(
 {
   MixtureConstituentElastHyperBase::UnpackConstituent(position, data);
 
-  CORE::COMM::ParObject::ExtractfromPack(position, data, current_reference_growth_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, current_reference_growth_);
 }
 
 // Reads the element from the input file
 void MIXTURE::MixtureConstituentElastHyperDamage::ReadElement(
-    int numgp, INPUT::LineDefinition* linedef)
+    int numgp, Input::LineDefinition* linedef)
 {
   MixtureConstituentElastHyperBase::ReadElement(numgp, linedef);
 
@@ -77,10 +77,10 @@ void MIXTURE::MixtureConstituentElastHyperDamage::ReadElement(
 }
 
 // Updates all summands
-void MIXTURE::MixtureConstituentElastHyperDamage::Update(CORE::LINALG::Matrix<3, 3> const& defgrd,
+void MIXTURE::MixtureConstituentElastHyperDamage::Update(Core::LinAlg::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
-  const auto& reference_coordinates = params.get<CORE::LINALG::Matrix<3, 1>>("gp_coords_ref");
+  const auto& reference_coordinates = params.get<Core::LinAlg::Matrix<3, 1>>("gp_coords_ref");
 
   double totaltime = params.get<double>("total time", -1);
   if (totaltime < 0.0)
@@ -89,8 +89,8 @@ void MIXTURE::MixtureConstituentElastHyperDamage::Update(CORE::LINALG::Matrix<3,
   }
 
   current_reference_growth_[gp] =
-      GLOBAL::Problem::Instance()
-          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
+      Global::Problem::Instance()
+          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
           .Evaluate(reference_coordinates.A(), totaltime, 0);
 
   MixtureConstituentElastHyperBase::Update(defgrd, params, gp, eleGID);
@@ -101,24 +101,24 @@ double MIXTURE::MixtureConstituentElastHyperDamage::GetGrowthScalar(int gp) cons
   return current_reference_growth_[gp];
 }
 
-void MIXTURE::MixtureConstituentElastHyperDamage::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
-    const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
+void MIXTURE::MixtureConstituentElastHyperDamage::Evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+    const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   FOUR_C_THROW("This constituent does not support Evaluation without an elastic part.");
 }
 
 void MIXTURE::MixtureConstituentElastHyperDamage::EvaluateElasticPart(
-    const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<3, 3>& iFextin,
-    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-    CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
+    const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<3, 3>& iFextin,
+    Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+    Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   // Compute total inelastic deformation gradient
-  static CORE::LINALG::Matrix<3, 3> iFin(false);
+  static Core::LinAlg::Matrix<3, 3> iFin(false);
   iFin.MultiplyNN(iFextin, prestretch_tensor(gp));
 
   // Evaluate 3D elastic part
-  MAT::ElastHyperEvaluateElasticPart(
+  Mat::ElastHyperEvaluateElasticPart(
       F, iFin, S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
 }
 FOUR_C_NAMESPACE_CLOSE

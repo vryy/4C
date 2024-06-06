@@ -18,11 +18,11 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
     class LagrangeMultiplierFunction;
     class PenaltyUpdate;
-    namespace STEEPESTASCENT
+    namespace SteepestAscent
     {
       /*--------------------------------------------------------------------------*/
       class DataContainer
@@ -82,14 +82,14 @@ namespace CONTACT
           return *lm_func_ptr_;
         }
 
-        Teuchos::RCP<const AUG::PenaltyUpdate> PenaltyUpdatePtr() const
+        Teuchos::RCP<const Aug::PenaltyUpdate> PenaltyUpdatePtr() const
         {
           return penalty_update_ptr_.getConst();
         }
 
-        Teuchos::RCP<AUG::PenaltyUpdate>& PenaltyUpdatePtr() { return penalty_update_ptr_; }
+        Teuchos::RCP<Aug::PenaltyUpdate>& PenaltyUpdatePtr() { return penalty_update_ptr_; }
 
-        AUG::PenaltyUpdate& PenaltyUpdate()
+        Aug::PenaltyUpdate& PenaltyUpdate()
         {
           if (penalty_update_ptr_.is_null())
             FOUR_C_THROW("The lm_func_ptr_ is not initialized correctly!");
@@ -120,22 +120,22 @@ namespace CONTACT
         Teuchos::RCP<LagrangeMultiplierFunction> lm_func_ptr_ = Teuchos::null;
 
         /// pointer to the cn-correction object
-        Teuchos::RCP<AUG::PenaltyUpdate> penalty_update_ptr_ = Teuchos::null;
+        Teuchos::RCP<Aug::PenaltyUpdate> penalty_update_ptr_ = Teuchos::null;
 
       };  // class DataContainer
-    }     // namespace STEEPESTASCENT
+    }     // namespace SteepestAscent
 
-    namespace STEEPESTASCENT_SP
+    namespace SteepestAscentSaddlePoint
     {
       /*--------------------------------------------------------------------------*/
       /** \brief Saddle-point variant of the modified Newton approach.
        *
        * \author hiermeier \date 08/18 */
-      class Strategy : public AUG::Strategy
+      class Strategy : public Aug::Strategy
       {
         /** The combo_strategy is a wrapper class for a set of augmented Lagrangian
          *  strategies and needs access to all methods. */
-        friend class CONTACT::AUG::ComboStrategy;
+        friend class CONTACT::Aug::ComboStrategy;
 
        public:
         /// constructor
@@ -145,9 +145,9 @@ namespace CONTACT
             const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
 
         /// derived
-        INPAR::CONTACT::SolvingStrategy Type() const override
+        Inpar::CONTACT::SolvingStrategy Type() const override
         {
-          return INPAR::CONTACT::solution_steepest_ascent_sp;
+          return Inpar::CONTACT::solution_steepest_ascent_sp;
         }
 
        protected:
@@ -168,7 +168,7 @@ namespace CONTACT
         /// derived
         void run_post_apply_jacobian_inverse(const CONTACT::ParamsInterface& cparams,
             const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
-            const NOX::NLN::Group& grp) override;
+            const NOX::Nln::Group& grp) override;
 
         /// initiate the actual update of the cn-value (increase or decrease)
         void run_post_iterate(const CONTACT::ParamsInterface& cparams) override;
@@ -185,13 +185,13 @@ namespace CONTACT
 
         /// used to add the modified diagonal entries
         void add_contributions_to_matrix_block_lm_lm(
-            CORE::LINALG::SparseMatrix& kzz) const override;
+            Core::LinAlg::SparseMatrix& kzz) const override;
 
         /// Returns the diagonal modification vector for the active dofs
         Teuchos::RCP<Epetra_Vector> get_kzz_diag_modification() const;
       };
-    }  // namespace STEEPESTASCENT_SP
-  }    // namespace AUG
+    }  // namespace SteepestAscentSaddlePoint
+  }    // namespace Aug
 }  // namespace CONTACT
 
 

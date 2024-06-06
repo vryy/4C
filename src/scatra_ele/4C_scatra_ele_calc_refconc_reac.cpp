@@ -17,11 +17,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::ScaTraEleCalcRefConcReac(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::ScaTraEleCalcRefConcReac(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
-      DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(
+    : Discret::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
+      Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(
           numdofpernode, numscal, disname),
       j_(1.0),
       c_inv_(true),
@@ -32,12 +32,12 @@ DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::ScaTraEleCalcRefConcReac(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>*
-DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>*
+Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcRefConcReac<distype>>(
@@ -45,17 +45,17 @@ DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 //!
 /*----------------------------------------------------------------------------*
  |  Set reac. body force, reaction coefficient and derivatives     thon 02/16 |
  *---------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_advanced_reaction_terms(
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_advanced_reaction_terms(
     const int k,                                            //!< index of current scalar
-    const Teuchos::RCP<MAT::MatListReactions> matreaclist,  //!< index of current scalar
+    const Teuchos::RCP<Mat::MatListReactions> matreaclist,  //!< index of current scalar
     const double* gpcoord                                   //!< current Gauss-point coordinates
 )
 {
@@ -73,9 +73,9 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_advanced_reaction_ter
 /*------------------------------------------------------------------------------------------*
  |  calculation of convective element matrix: add conservative contributions     thon 02/16 |
  *------------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_conv_add_cons(
-    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_conv_add_cons(
+    Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
     const double densnp)
 {
   FOUR_C_THROW(
@@ -85,8 +85,8 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_conv_add_cons(
 /*------------------------------------------------------------------------------*
  | set internal variables                                           thon 02/16  |
  *------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_internal_variables_for_mat_and_rhs()
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_internal_variables_for_mat_and_rhs()
 {
   // do the usual and...
   advreac::set_internal_variables_for_mat_and_rhs();
@@ -94,19 +94,19 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_internal_variables_fo
   /////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////
   // spatial node coordinates
-  CORE::LINALG::Matrix<nsd_, nen_> xyze(my::xyze_);
+  Core::LinAlg::Matrix<nsd_, nen_> xyze(my::xyze_);
   xyze += my::edispnp_;
 
   //! transposed jacobian "dx/ds"
-  CORE::LINALG::Matrix<nsd_, nsd_> dxds(true);
+  Core::LinAlg::Matrix<nsd_, nsd_> dxds(true);
   dxds.MultiplyNT(my::deriv_, xyze);
 
   // deformation gradtient dx/dX = dx/ds * ds/dX = dx/ds * (dX/ds)^(-1)
-  CORE::LINALG::Matrix<nsd_, nsd_> F(true);
+  Core::LinAlg::Matrix<nsd_, nsd_> F(true);
   F.MultiplyTT(dxds, my::xij_);
 
   // inverse of jacobian "dx/dX"
-  CORE::LINALG::Matrix<nsd_, nsd_> F_inv(true);
+  Core::LinAlg::Matrix<nsd_, nsd_> F_inv(true);
   j_ = F_inv.Invert(F);
 
   // calculate inverse of cauchy-green stress tensor
@@ -119,17 +119,17 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_internal_variables_fo
 
   for (unsigned i = 0; i < 3; i++)
   {
-    CORE::LINALG::Matrix<nsd_, nen_> xyze_epsilon(my::xyze_);
+    Core::LinAlg::Matrix<nsd_, nen_> xyze_epsilon(my::xyze_);
     for (unsigned j = 0; j < nen_; ++j) xyze_epsilon(i, j) = xyze_epsilon(i, j) + epsilon;
 
-    CORE::LINALG::Matrix<nsd_, nsd_> xjm_epsilon(true);
+    Core::LinAlg::Matrix<nsd_, nsd_> xjm_epsilon(true);
     xjm_epsilon.MultiplyNT(my::deriv_, xyze_epsilon);
 
-    CORE::LINALG::Matrix<nsd_, nsd_> xij_epsilon(true);
+    Core::LinAlg::Matrix<nsd_, nsd_> xij_epsilon(true);
     xij_epsilon.Invert(xjm_epsilon);
 
     // dx/dX = dx/ds * ds/dX = dx/ds * (dX/ds)^(-1)
-    CORE::LINALG::Matrix<nsd_, nsd_> F_epsilon(true);
+    Core::LinAlg::Matrix<nsd_, nsd_> F_epsilon(true);
     F_epsilon.MultiplyTT(dxds, xij_epsilon);
 
     // inverse of transposed jacobian "ds/dX"
@@ -145,11 +145,11 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_internal_variables_fo
 /*------------------------------------------------------------------- *
  |  calculation of diffusive element matrix                thon 02/16 |
  *--------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_diff(
-    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_diff(
+    Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
-  CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens(c_inv_);
+  Core::LinAlg::Matrix<nsd_, nsd_> Diff_tens(c_inv_);
   Diff_tens.Scale(my::diffmanager_->GetIsotropicDiff(k));
 
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -176,7 +176,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_diff(
 
 
 
-  CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens2(c_inv_);
+  Core::LinAlg::Matrix<nsd_, nsd_> Diff_tens2(c_inv_);
   Diff_tens2.Scale(my::diffmanager_->GetIsotropicDiff(k) / j_);
 
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -206,17 +206,17 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_diff(
 /*-------------------------------------------------------------------- *
  |  standard Galerkin diffusive term on right hand side     ehrl 11/13 |
  *---------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_rhs_diff(
-    CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_rhs_diff(
+    Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
   /////////////////////////////////////////////////////////////////////
   // \D* \grad c_0 \times \grad \phi ...
   /////////////////////////////////////////////////////////////////////
-  CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens(c_inv_);
+  Core::LinAlg::Matrix<nsd_, nsd_> Diff_tens(c_inv_);
   Diff_tens.Scale(my::diffmanager_->GetIsotropicDiff(k));
 
-  const CORE::LINALG::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
+  const Core::LinAlg::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -238,7 +238,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_rhs_diff(
   /////////////////////////////////////////////////////////////////////
   // ... + \D* c_0/J * \grad J \times \grad \phi
   /////////////////////////////////////////////////////////////////////
-  CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens2(c_inv_);
+  Core::LinAlg::Matrix<nsd_, nsd_> Diff_tens2(c_inv_);
   Diff_tens2.Scale(my::diffmanager_->GetIsotropicDiff(k) / j_ * my::scatravarmanager_->Phinp(k));
 
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -266,26 +266,26 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_rhs_diff(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::line3>;
+template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::quad9>;
+template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::quad4>;
+// template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::quad9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::pyramid5>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::hex8>;
+// template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::tet10>;
+// template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::pyramid5>;
+template class Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::nurbs9>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcRefConcReac<CORE::FE::CellType::nurbs27>;
+// Discret::ELEMENTS::ScaTraEleCalcRefConcReac<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

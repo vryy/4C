@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::NLN::SOLVER::Generic::Generic()
+STR::Nln::SOLVER::Generic::Generic()
     : isinit_(false),
       issetup_(false),
       gstate_ptr_(Teuchos::null),
@@ -36,11 +36,11 @@ STR::NLN::SOLVER::Generic::Generic()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::Generic::Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate,
-    const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& sdyn,
-    const Teuchos::RCP<STR::TIMINT::NoxInterface>& noxinterface,
+void STR::Nln::SOLVER::Generic::Init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate,
+    const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn,
+    const Teuchos::RCP<STR::TimeInt::NoxInterface>& noxinterface,
     const Teuchos::RCP<STR::Integrator>& integrator,
-    const Teuchos::RCP<const STR::TIMINT::Base>& timint)
+    const Teuchos::RCP<const STR::TimeInt::Base>& timint)
 {
   // We have to call Setup() after Init()
   issetup_ = false;
@@ -57,7 +57,7 @@ void STR::NLN::SOLVER::Generic::Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Abstract::Group>& STR::NLN::SOLVER::Generic::group_ptr()
+Teuchos::RCP<::NOX::Abstract::Group>& STR::Nln::SOLVER::Generic::group_ptr()
 {
   check_init();
 
@@ -66,7 +66,7 @@ Teuchos::RCP<::NOX::Abstract::Group>& STR::NLN::SOLVER::Generic::group_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::group()
+::NOX::Abstract::Group& STR::Nln::SOLVER::Generic::group()
 {
   check_init();
   FOUR_C_ASSERT(!group_ptr_.is_null(), "The group pointer should be initialized beforehand!");
@@ -75,11 +75,11 @@ Teuchos::RCP<::NOX::Abstract::Group>& STR::NLN::SOLVER::Generic::group_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::SolutionGroup() { return group(); }
+::NOX::Abstract::Group& STR::Nln::SOLVER::Generic::SolutionGroup() { return group(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const ::NOX::Abstract::Group& STR::NLN::SOLVER::Generic::get_solution_group() const
+const ::NOX::Abstract::Group& STR::Nln::SOLVER::Generic::get_solution_group() const
 {
   check_init_setup();
   FOUR_C_ASSERT(!group_ptr_.is_null(), "The group pointer should be initialized beforehand!");

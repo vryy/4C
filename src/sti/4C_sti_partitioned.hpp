@@ -48,7 +48,7 @@ namespace STI
     void solve_two_way();
 
     //! type of coupling between scatra and thermo fields
-    const INPAR::STI::CouplingType couplingtype_;
+    const Inpar::STI::CouplingType couplingtype_;
 
     //! maximum value of Aitken relaxation parameter
     const double omegamax_;

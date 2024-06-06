@@ -36,22 +36,22 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | forward declarations                                gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class EquilibrationSparse;
   enum class EquilibrationMethod;
   class MapExtractor;
   class Solver;
-}  // namespace CORE::LINALG
-namespace DRT
+}  // namespace Core::LinAlg
+namespace Discret
 {
   class Discretization;
   class DiscretizationHDG;
   class ResultTest;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
@@ -59,7 +59,7 @@ namespace CORE::IO
 /*----------------------------------------------------------------------*
  | general time integration for electromagnetics       gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-namespace ELEMAG
+namespace EleMag
 {
   /*!
   \brief Base class functions for time integration of electromagnetics
@@ -74,10 +74,10 @@ namespace ELEMAG
   {
    public:
     /// Constructor.
-    ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG>& actdis,
-        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    ElemagTimeInt(const Teuchos::RCP<Discret::DiscretizationHDG>& actdis,
+        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output);
+        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output);
 
     /// Virtual destructor.
     virtual ~ElemagTimeInt() = default;
@@ -97,12 +97,12 @@ namespace ELEMAG
     {
       switch (elemagdyna_)
       {
-        case INPAR::ELEMAG::DynamicType::elemag_bdf1:
+        case Inpar::EleMag::DynamicType::elemag_bdf1:
           return "BDF1";
         // break;
-        case INPAR::ELEMAG::DynamicType::elemag_bdf2:
+        case Inpar::EleMag::DynamicType::elemag_bdf2:
           return "BDF2";
-        case INPAR::ELEMAG::DynamicType::elemag_bdf4:
+        case Inpar::EleMag::DynamicType::elemag_bdf4:
           return "BDF4";
           // break;
         default:
@@ -128,23 +128,23 @@ namespace ELEMAG
     /*!
     \brief Set initial field by given function or null function.
     */
-    virtual void SetInitialField(const INPAR::ELEMAG::InitialField init, int startfuncno);
+    virtual void SetInitialField(const Inpar::EleMag::InitialField init, int startfuncno);
 
     /*!
     \brief Import initial electric field from scatra solution
     */
     void set_initial_electric_field(
-        Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<DRT::Discretization>& scatradis);
+        Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<Discret::Discretization>& scatradis);
 
     /*!
     \brief Compare the numerical solution to the analytical one.
     */
-    virtual Teuchos::RCP<CORE::LINALG::SerialDenseVector> compute_error();
+    virtual Teuchos::RCP<Core::LinAlg::SerialDenseVector> compute_error();
 
     /*!
     \brief Print the computed errors to screen.
     */
-    virtual void PrintErrors(Teuchos::RCP<CORE::LINALG::SerialDenseVector>& errors);
+    virtual void PrintErrors(Teuchos::RCP<Core::LinAlg::SerialDenseVector>& errors);
     /*!
     \brief ProjectfieldTest is used for debugging purposes.
 
@@ -249,7 +249,7 @@ namespace ELEMAG
     Epetra_CrsMatrix SystemMatrix()
     {
       return (
-          *Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_, true)->EpetraMatrix());
+          *Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_, true)->EpetraMatrix());
     };
 
     /*!
@@ -288,21 +288,21 @@ namespace ELEMAG
     /*!
     \brief returns pointer to the discretization
     */
-    Teuchos::RCP<DRT::Discretization> discretization();
+    Teuchos::RCP<Discret::Discretization> discretization();
 
     /*!
     \brief create result test
     */
-    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest();
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest();
 
    protected:
     /// discretization, solver, parameter list and output
-    Teuchos::RCP<DRT::DiscretizationHDG> discret_;
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Discret::DiscretizationHDG> discret_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
     Teuchos::RCP<Teuchos::ParameterList> params_;
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
 
-    INPAR::ELEMAG::DynamicType elemagdyna_;  /// time integration scheme
+    Inpar::EleMag::DynamicType elemagdyna_;  /// time integration scheme
 
     int myrank_;  /// processor id
 
@@ -331,19 +331,19 @@ namespace ELEMAG
 
     int sourcefuncno_;  /// Source function number
 
-    CORE::LINALG::EquilibrationMethod equilibration_method_;  /// equilibration method
+    Core::LinAlg::EquilibrationMethod equilibration_method_;  /// equilibration method
 
     /// system matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
 
     /// residual vector
     Teuchos::RCP<Epetra_Vector> residual_;
 
     /// all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<CORE::LINALG::EquilibrationSparse> equilibration_;
+    Teuchos::RCP<Core::LinAlg::EquilibrationSparse> equilibration_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     /// vector of zeros to be used for enforcing zero Dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;
@@ -367,7 +367,7 @@ namespace ELEMAG
     Teuchos::RCP<Epetra_Vector> permeability;
   };
 
-}  // namespace ELEMAG
+}  // namespace EleMag
 
 FOUR_C_NAMESPACE_CLOSE
 

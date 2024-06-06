@@ -19,12 +19,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace STR::TIMINT
+namespace STR::TimeInt
 {
   class Base;
-}  // namespace STR::TIMINT
+}  // namespace STR::TimeInt
 
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief Adaptive time loop for structural simulations
    *
@@ -37,9 +37,9 @@ namespace ADAPTER
     explicit StructureTimeAdaJoint(Teuchos::RCP<Structure> structure);
 
     //! Provide the name
-    enum INPAR::STR::TimAdaKind MethodName() const override
+    enum Inpar::STR::TimAdaKind MethodName() const override
     {
-      return INPAR::STR::timada_kind_joint_explicit;
+      return Inpar::STR::timada_kind_joint_explicit;
     }
 
     std::string MethodTitle() const override;
@@ -68,7 +68,7 @@ namespace ADAPTER
     enum AdaEnum ada_;
 
     //! the auxiliary integrator
-    Teuchos::RCP<STR::TIMINT::Base> sta_;
+    Teuchos::RCP<STR::TimeInt::Base> sta_;
 
     //! wrapper of the auxiliary integrator
     Teuchos::RCP<Structure> sta_wrapper_;
@@ -96,7 +96,7 @@ namespace ADAPTER
     void reset_step() override;
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

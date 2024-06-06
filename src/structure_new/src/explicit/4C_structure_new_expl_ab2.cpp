@@ -122,15 +122,15 @@ void STR::EXPLICIT::AdamsBashforth2::set_state(const Epetra_Vector& x)
 void STR::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
-  CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(
-    CORE::LINALG::SparseOperator& jac) const
+    Core::LinAlg::SparseOperator& jac) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
   // set mass matrix
   stiff_ptr->Add(*global_state().GetMassMatrix(), false, 1.0, 0.0);
 }
@@ -138,7 +138,7 @@ void STR::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::EXPLICIT::AdamsBashforth2::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
   // write dynamic forces
@@ -150,7 +150,7 @@ void STR::EXPLICIT::AdamsBashforth2::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::AdamsBashforth2::read_restart(CORE::IO::DiscretizationReader& ioreader)
+void STR::EXPLICIT::AdamsBashforth2::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.ReadVector(finertian_ptr_, "finert");

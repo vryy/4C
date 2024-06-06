@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::INTERFACE::AssembleStrategy::AssembleStrategy(Interface* interface)
+CONTACT::Aug::INTERFACE::AssembleStrategy::AssembleStrategy(Interface* interface)
     : inter_(interface),
       interface_data_ptr_(inter().shared_interface_data_ptr().get()),
       idiscret_(inter().Discret())
@@ -33,7 +33,7 @@ CONTACT::AUG::INTERFACE::AssembleStrategy::AssembleStrategy(Interface* interface
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map& CONTACT::AUG::INTERFACE::AssembleStrategy::sl_node_row_map(
+const Epetra_Map& CONTACT::Aug::INTERFACE::AssembleStrategy::sl_node_row_map(
     const enum MapType map_type) const
 {
   switch (map_type)
@@ -50,7 +50,7 @@ const Epetra_Map& CONTACT::AUG::INTERFACE::AssembleStrategy::sl_node_row_map(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map& CONTACT::AUG::INTERFACE::AssembleStrategy::sl_n_dof_row_map(
+const Epetra_Map& CONTACT::Aug::INTERFACE::AssembleStrategy::sl_n_dof_row_map(
     const enum MapType map_type) const
 {
   switch (map_type)
@@ -68,7 +68,7 @@ const Epetra_Map& CONTACT::AUG::INTERFACE::AssembleStrategy::sl_n_dof_row_map(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::NodeBasedAssembleStrategy(
+CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::NodeBasedAssembleStrategy(
     Interface* inter)
     : AssembleStrategy(inter)
 {
@@ -78,8 +78,8 @@ CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::NodeBasedAs
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleBMatrix(
-    CORE::LINALG::SparseMatrix& BMatrix) const
+void CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleBMatrix(
+    Core::LinAlg::SparseMatrix& BMatrix) const
 {
   const int nummyndof = i_data().SNDofRowMap()->NumMyElements();
   const int* myndofs = i_data().SNDofRowMap()->MyGlobalElements();
@@ -95,7 +95,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
   {
     const int sgid = mysnodegids[i];
 
-    CORE::Nodes::Node* node = idiscret_.gNode(sgid);
+    Core::Nodes::Node* node = idiscret_.gNode(sgid);
     Node* cnode = dynamic_cast<Node*>(node);
     if (not cnode) FOUR_C_THROW("Dynamic cast failed!");
 
@@ -117,7 +117,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
+void CONTACT::Aug::SteepestAscent::INTERFACE::NodeBasedAssembleStrategy<
     assemble_policy>::Add_Var_A_GG(Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const
 {
   /* do nothing */
@@ -126,7 +126,7 @@ void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Add_Var_A_GG(
+void CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Add_Var_A_GG(
     Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const
 {
   Epetra_Vector sl_force_g_col(*i_data().SDofColMap(), true);
@@ -166,14 +166,14 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Add_Va
     int err = sl_force_g_row.Export(sl_force_g_col, exCol2Row, Add);
     if (err) FOUR_C_THROW("Export failed with error code %d.", err);
 
-    CORE::LINALG::AssembleMyVector(1.0, sl_force_g, 1.0, sl_force_g_row);
+    Core::LinAlg::AssembleMyVector(1.0, sl_force_g, 1.0, sl_force_g_row);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
+void CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<
     assemble_policy>::assemble_sl_force_lm_inactive(Epetra_Vector& sl_force_lm_inactive,
     const Epetra_Vector& cnVec, const double inactive_scale) const
 {
@@ -216,7 +216,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
     int err = sl_force_lmi_row.Export(sl_force_lmi_col, exCol2Row, Add);
     if (err) FOUR_C_THROW("Export failed with error code %d.", err);
 
-    CORE::LINALG::AssembleMyVector(1.0, sl_force_lm_inactive, 1.0, sl_force_lmi_row);
+    Core::LinAlg::AssembleMyVector(1.0, sl_force_lm_inactive, 1.0, sl_force_lmi_row);
   }
 
   // consistency check
@@ -235,8 +235,8 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
-    assemble_policy>::assemble_inactive_dd_matrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
+void CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<
+    assemble_policy>::assemble_inactive_dd_matrix(Core::LinAlg::SparseMatrix& inactive_dd_matrix,
     const Epetra_Vector& cnVec, const double inactive_scale) const
 {
   // loop over all active augmented slave nodes of the interface
@@ -271,8 +271,8 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::assemble_dg_lm_lin_matrix(
-    CORE::LINALG::SparseMatrix& dGLmLinMatrix) const
+void CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::assemble_dg_lm_lin_matrix(
+    Core::LinAlg::SparseMatrix& dGLmLinMatrix) const
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -320,8 +320,8 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::assemb
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
-    assemble_policy>::assemble_dgg_lin_matrix(CORE::LINALG::SparseMatrix& dGGLinMatrix,
+void CONTACT::Aug::SteepestAscent::INTERFACE::NodeBasedAssembleStrategy<
+    assemble_policy>::assemble_dgg_lin_matrix(Core::LinAlg::SparseMatrix& dGGLinMatrix,
     const Epetra_Vector& cnVec) const
 {
   // loop over all active augmented slave nodes of the interface
@@ -397,8 +397,8 @@ void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::assemble_dgg_lin_matrix(
-    CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const
+void CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::assemble_dgg_lin_matrix(
+    Core::LinAlg::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const
 {
   // loop over all active augmented slave nodes of the interface
   const int nummyanodes = i_data().ActiveNodes()->NumMyElements();
@@ -522,8 +522,8 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::assemb
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
-void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
-    assemble_policy>::assemble_d_lm_nw_gap_lin_matrix(CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix,
+void CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<
+    assemble_policy>::assemble_d_lm_nw_gap_lin_matrix(Core::LinAlg::SparseMatrix& dLmNWGapLinMatrix,
     const enum MapType map_type) const
 {
   // loop over all active augmented slave nodes of the interface
@@ -556,9 +556,9 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_Var_A_Lin_GG(const double cn_awgap_ainv,
+void CONTACT::Aug::INTERFACE::CompleteAssemblePolicy::Add_Var_A_Lin_GG(const double cn_awgap_ainv,
     const double awgap, const NodeDataContainer& augdata,
-    CORE::LINALG::SparseMatrix& dGGLinMatrix) const
+    Core::LinAlg::SparseMatrix& dGGLinMatrix) const
 {
   const Deriv1stMap& d_a = augdata.GetDeriv1st_Kappa();
   const Deriv1stMap& d_wgap_sl_c = augdata.get_deriv1st_w_gap_sl_complete();
@@ -578,8 +578,8 @@ void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_Var_A_Lin_GG(const dou
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_DD_A_GG(const double cn_awgap_awgap,
-    const NodeDataContainer& augdata, CORE::LINALG::SparseMatrix& dGGLinMatrix) const
+void CONTACT::Aug::INTERFACE::CompleteAssemblePolicy::Add_DD_A_GG(const double cn_awgap_awgap,
+    const NodeDataContainer& augdata, Core::LinAlg::SparseMatrix& dGGLinMatrix) const
 {
   const Deriv2ndMap& dd_kappa = augdata.GetDeriv2nd_Kappa();
   // sanity check
@@ -596,9 +596,9 @@ void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_DD_A_GG(const double c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::assemble_inactive_dd_matrix(
+void CONTACT::Aug::INTERFACE::CompleteAssemblePolicy::assemble_inactive_dd_matrix(
     const double scale, const NodeDataContainer& augdata,
-    CORE::LINALG::SparseMatrix& inactive_dd_matrix) const
+    Core::LinAlg::SparseMatrix& inactive_dd_matrix) const
 {
   const Deriv2ndMap& dd_a = augdata.GetDeriv2nd_A();
   // sanity check
@@ -622,7 +622,7 @@ void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::assemble_inactive_dd_matri
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_Var_A_GG(
+bool CONTACT::Aug::INTERFACE::CompleteAssemblePolicy::Add_Var_A_GG(
     const double cn, const NodeDataContainer& augdata, Epetra_Vector& sl_force_g) const
 {
   const Deriv1stMap& d_kappa = augdata.GetDeriv1st_Kappa();
@@ -644,7 +644,7 @@ bool CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_Var_A_GG(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::assemble_sl_force_lm_inactive(
+bool CONTACT::Aug::INTERFACE::CompleteAssemblePolicy::assemble_sl_force_lm_inactive(
     const double scale, const NodeDataContainer& augdata, Epetra_Vector& sl_force_lminactive) const
 {
   const Deriv1stMap& d_a = augdata.GetDeriv1st_A();
@@ -663,18 +663,18 @@ bool CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::assemble_sl_force_lm_inact
 }
 
 
-template class CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
-    CONTACT::AUG::INTERFACE::EmptyAssemblePolicy>;
-template class CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
-    CONTACT::AUG::INTERFACE::IncompleteAssemblePolicy>;
-template class CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
-    CONTACT::AUG::INTERFACE::CompleteAssemblePolicy>;
+template class CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<
+    CONTACT::Aug::INTERFACE::EmptyAssemblePolicy>;
+template class CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<
+    CONTACT::Aug::INTERFACE::IncompleteAssemblePolicy>;
+template class CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<
+    CONTACT::Aug::INTERFACE::CompleteAssemblePolicy>;
 
-template class CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
-    CONTACT::AUG::INTERFACE::EmptyAssemblePolicy>;
-template class CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
-    CONTACT::AUG::INTERFACE::IncompleteAssemblePolicy>;
-template class CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
-    CONTACT::AUG::INTERFACE::CompleteAssemblePolicy>;
+template class CONTACT::Aug::SteepestAscent::INTERFACE::NodeBasedAssembleStrategy<
+    CONTACT::Aug::INTERFACE::EmptyAssemblePolicy>;
+template class CONTACT::Aug::SteepestAscent::INTERFACE::NodeBasedAssembleStrategy<
+    CONTACT::Aug::INTERFACE::IncompleteAssemblePolicy>;
+template class CONTACT::Aug::SteepestAscent::INTERFACE::NodeBasedAssembleStrategy<
+    CONTACT::Aug::INTERFACE::CompleteAssemblePolicy>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -18,9 +18,9 @@ coordinate system
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Options;
     class Point;
@@ -106,8 +106,8 @@ namespace CORE::GEO
       static const unsigned side_split_[4][3];
     };
 
-  } /* namespace CUT */
-}  // namespace CORE::GEO
+  } /* namespace Cut */
+}  // namespace Core::Geo
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

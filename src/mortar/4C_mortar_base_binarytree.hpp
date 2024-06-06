@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -32,7 +32,7 @@ namespace CONTACT
   class UnbiasedSelfBinaryTree;
 }  // namespace CONTACT
 
-namespace MORTAR
+namespace Mortar
 {
   /*!
   \brief A base class for binary tree nodes
@@ -60,8 +60,8 @@ namespace MORTAR
     \param [in] layer:       current layer of tree node
 
     */
-    BaseBinaryTreeNode(DRT::Discretization& discret, std::vector<int> elelist,
-        const CORE::LINALG::SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
+    BaseBinaryTreeNode(Discret::Discretization& discret, std::vector<int> elelist,
+        const Core::LinAlg::SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
         const bool& useauxpos, const int layer);
 
 
@@ -147,13 +147,13 @@ namespace MORTAR
     \brief Get discretization of the interface
 
     */
-    DRT::Discretization& discret() const { return idiscret_; }
+    Discret::Discretization& discret() const { return idiscret_; }
 
     /*!
     \brief Return pointer to normals of DOP
 
     */
-    const CORE::LINALG::SerialDenseMatrix& dopnormals() const { return dopnormals_; }
+    const Core::LinAlg::SerialDenseMatrix& dopnormals() const { return dopnormals_; }
 
     /*!
     \brief Return pointer to element list of tree node
@@ -183,7 +183,7 @@ namespace MORTAR
     \brief Return pointer to slabs of DOP
 
     */
-    CORE::LINALG::SerialDenseMatrix& slabs() { return slabs_; }
+    Core::LinAlg::SerialDenseMatrix& slabs() { return slabs_; }
 
     /*!
     \brief Return bool indicating whether auxiliary position is used when computing dops
@@ -196,17 +196,17 @@ namespace MORTAR
     //! dimension of the problem
     const int dim_;
     //! reference to DOP normals
-    const CORE::LINALG::SerialDenseMatrix& dopnormals_;
+    const Core::LinAlg::SerialDenseMatrix& dopnormals_;
     //! list containing the gids of all elements of the tree node
     std::vector<int> elelist_;
     //! interface discretization
-    DRT::Discretization& idiscret_;
+    Discret::Discretization& idiscret_;
     //! number of vertices
     const int kdop_;
     //! layer of tree node in tree (0=root node!)
     int layer_;
     //! geometry slabs of tree node, saved as Min|Max
-    CORE::LINALG::SerialDenseMatrix slabs_;
+    Core::LinAlg::SerialDenseMatrix slabs_;
     //! auxiliary position is used when computing dops
     const bool useauxpos_;
   };  // class BaseBinaryTreeNode
@@ -225,7 +225,7 @@ namespace MORTAR
     \param [in] dim:     dimension of the problem
     \param [in] eps:     factor used to enlarge dops
     */
-    BaseBinaryTree(DRT::Discretization& discret, int dim, double eps);
+    BaseBinaryTree(Discret::Discretization& discret, int dim, double eps);
 
 
     //! @name Evaluation methods
@@ -261,13 +261,13 @@ namespace MORTAR
     \brief Get discretization of the interface
 
     */
-    DRT::Discretization& discret() const { return idiscret_; }
+    Discret::Discretization& discret() const { return idiscret_; }
 
     /*!
     \brief Get matrix of DOP normals
 
     */
-    const CORE::LINALG::SerialDenseMatrix& dop_normals() const { return dopnormals_; }
+    const Core::LinAlg::SerialDenseMatrix& dop_normals() const { return dopnormals_; }
 
     /*!
     \brief Return factor "enlarge" to enlarge dops
@@ -296,11 +296,11 @@ namespace MORTAR
     virtual void init_internal_variables() = 0;
 
     //! interface discretization
-    DRT::Discretization& idiscret_;
+    Discret::Discretization& idiscret_;
     //! problem dimension (2D or 3D)
     const int dim_;
     //! normals of DOP
-    CORE::LINALG::SerialDenseMatrix dopnormals_;
+    Core::LinAlg::SerialDenseMatrix dopnormals_;
     //! needed to enlarge dops
     double enlarge_;
     //! epsilon for enlarging dops (of user)
@@ -308,7 +308,7 @@ namespace MORTAR
     //! set k for DOP (8 for 2D, 18 for 3D)
     int kdop_;
   };  // class BaseBinaryTree
-}  // namespace MORTAR
+}  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE
 

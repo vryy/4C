@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::LevelSetIntersection::LevelSetIntersection(
+Core::Geo::Cut::LevelSetIntersection::LevelSetIntersection(
     const Epetra_Comm& comm, bool create_side)
     : ParentIntersection(comm.MyPID()), side_(Teuchos::null), comm_(&comm)
 {
@@ -26,7 +26,7 @@ CORE::GEO::CUT::LevelSetIntersection::LevelSetIntersection(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::LevelSetIntersection::LevelSetIntersection(int myrank, bool create_side)
+Core::Geo::Cut::LevelSetIntersection::LevelSetIntersection(int myrank, bool create_side)
     : ParentIntersection(myrank), side_(Teuchos::null), comm_(nullptr)
 {
   if (create_side) AddCutSide(1);
@@ -34,7 +34,7 @@ CORE::GEO::CUT::LevelSetIntersection::LevelSetIntersection(int myrank, bool crea
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::LevelSetIntersection::AddCutSide(int levelset_sid)
+void Core::Geo::Cut::LevelSetIntersection::AddCutSide(int levelset_sid)
 {
   if (!side_.is_null()) FOUR_C_THROW("currently only one levelset-side is supported");
 
@@ -44,9 +44,9 @@ void CORE::GEO::CUT::LevelSetIntersection::AddCutSide(int levelset_sid)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::add_element(int eid,
-    const std::vector<int>& nids, const CORE::LINALG::SerialDenseMatrix& xyz,
-    CORE::FE::CellType distype, const double* lsv, const bool lsv_only_plus_domain,
+Core::Geo::Cut::ElementHandle* Core::Geo::Cut::LevelSetIntersection::add_element(int eid,
+    const std::vector<int>& nids, const Core::LinAlg::SerialDenseMatrix& xyz,
+    Core::FE::CellType distype, const double* lsv, const bool lsv_only_plus_domain,
     const bool& check_lsv)
 {
   int numnode = nids.size();
@@ -87,9 +87,9 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::add_element
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::LevelSetIntersection::Cut_Mesh(bool screenoutput)
+void Core::Geo::Cut::LevelSetIntersection::Cut_Mesh(bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 1/3 --- Cut");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 1/3 --- Cut");
 
   Mesh& m = NormalMesh();
 
@@ -161,8 +161,8 @@ void CORE::GEO::CUT::LevelSetIntersection::Cut_Mesh(bool screenoutput)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::LevelSetIntersection::Cut(
-    bool include_inner, bool screenoutput, INPAR::CUT::VCellGaussPts VCellGP)
+void Core::Geo::Cut::LevelSetIntersection::Cut(
+    bool include_inner, bool screenoutput, Inpar::Cut::VCellGaussPts VCellGP)
 {
   // ###########################################################################
   //  STEP 1/3 CUT THE MESH
@@ -195,10 +195,10 @@ void CORE::GEO::CUT::LevelSetIntersection::Cut(
     if (myrank_ == 0 and screenoutput)
       std::cout << "\n\t * 5/6 create_integration_cells ..." << std::flush;
 
-    if (VCellGP == INPAR::CUT::VCellGaussPts_Tessellation)
+    if (VCellGP == Inpar::Cut::VCellGaussPts_Tessellation)
       m.create_integration_cells(0);
     else
-      m.direct_divergence_gauss_rule(true, INPAR::CUT::BCellGaussPts_Tessellation);
+      m.direct_divergence_gauss_rule(true, Inpar::Cut::BCellGaussPts_Tessellation);
 
     if (myrank_ == 0 and screenoutput)
     {
@@ -226,6 +226,6 @@ void CORE::GEO::CUT::LevelSetIntersection::Cut(
   }
   // ######################################################################################
 
-}  // CORE::GEO::CUT::LevelSetIntersection::Cut
+}  // Core::Geo::Cut::LevelSetIntersection::Cut
 
 FOUR_C_NAMESPACE_CLOSE

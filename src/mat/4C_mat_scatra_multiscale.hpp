@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   // forward declaration
   class ScatraMultiScaleGP;
@@ -28,11 +28,11 @@ namespace MAT
     {
      public:
       //! constructor
-      ScatraMultiScale(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ScatraMultiScale(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
 
       //! create material
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! return porosity
       double Porosity() const { return porosity_; };
@@ -49,19 +49,19 @@ namespace MAT
       //! tortuosity
       const double tortuosity_;
       //@}
-    };  // class MAT::PAR::ScatraMultiScale
+    };  // class Mat::PAR::ScatraMultiScale
   }     // namespace PAR
 
 
   /*----------------------------------------------------------------------*/
-  class ScatraMultiScaleType : public CORE::COMM::ParObjectType
+  class ScatraMultiScaleType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ScatraMultiScaleType"; };
 
     static ScatraMultiScaleType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMultiScaleType instance_;
@@ -77,7 +77,7 @@ namespace MAT
     ScatraMultiScale();
 
     //! construct material with specific material parameters
-    explicit ScatraMultiScale(MAT::PAR::ScatraMultiScale* params);
+    explicit ScatraMultiScale(Mat::PAR::ScatraMultiScale* params);
 
     //! @name packing and unpacking
     /*!
@@ -101,7 +101,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -118,13 +118,13 @@ namespace MAT
     //@}
 
     //! return material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_scatra_multiscale;
+      return Core::Materials::m_scatra_multiscale;
     };
 
     //! clone material
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraMultiScale(*this));
     };
@@ -137,12 +137,12 @@ namespace MAT
 
    private:
     //! return material parameters
-    const MAT::PAR::ScatraMicroMacroCoupling* params() const override { return params_; };
+    const Mat::PAR::ScatraMicroMacroCoupling* params() const override { return params_; };
 
     //! material parameters
-    MAT::PAR::ScatraMultiScale* params_;
+    Mat::PAR::ScatraMultiScale* params_;
   };
-}  // namespace MAT
+}  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

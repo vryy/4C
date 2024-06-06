@@ -39,11 +39,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class DiscretizationFaces;
-}  // namespace DRT
+}  // namespace Discret
 
 namespace UTILS
 {
@@ -63,26 +63,26 @@ namespace CONTACT
   class MeshtyingContactBridge;
 }  // namespace CONTACT
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class MapExtractor;
   class SparseMatrix;
   class SparseOperator;
   class BlockSparseMatrixBase;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::Conditions
+namespace Core::Conditions
 {
   class LocsysManager;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
-namespace MOR
+namespace ModelOrderRed
 {
   class ProperOrthogonalDecomposition;
 }
@@ -119,7 +119,7 @@ namespace STR
    * \author bborn
    * \date 06/08
    */
-  class TimInt : public ADAPTER::Structure
+  class TimInt : public Adapter::Structure
   {
     //! Structural time adaptivity is friend
     friend class TimAda;
@@ -140,10 +140,10 @@ namespace STR
         const Teuchos::ParameterList& ioparams,              //!< ioflags
         const Teuchos::ParameterList& sdynparams,            //!< input parameters
         const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
-        Teuchos::RCP<CORE::LINALG::Solver> solver,           //!< the solver
-        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,    //!< the solver for contact/meshtying
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
+        Teuchos::RCP<Discret::Discretization> actdis,        //!< current discretisation
+        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
+        Teuchos::RCP<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact/meshtying
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     /*! \brief Initialize this object
@@ -169,7 +169,7 @@ namespace STR
     \author rauch  */
     virtual void Init(const Teuchos::ParameterList& timeparams,
         const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver);
+        Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -271,8 +271,8 @@ namespace STR
     }
 
     //! do something in case nonlinear solution does not converge for some reason
-    INPAR::STR::ConvergenceStatus PerformErrorAction(
-        INPAR::STR::ConvergenceStatus nonlinsoldiv) override;
+    Inpar::STR::ConvergenceStatus PerformErrorAction(
+        Inpar::STR::ConvergenceStatus nonlinsoldiv) override;
 
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;
@@ -283,7 +283,7 @@ namespace STR
      *  Do the nonlinear solve, i.e. (multiple) corrector,
      *  for the time step. All boundary conditions have been set.
      */
-    INPAR::STR::ConvergenceStatus Solve() override = 0;
+    Inpar::STR::ConvergenceStatus Solve() override = 0;
 
     //! Linear structure solve with just an interface load
     Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override = 0;
@@ -391,7 +391,7 @@ namespace STR
     void determine_optional_quantity();
 
     /// create result test for encapsulated structure algorithm
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
     //@}
 
@@ -479,7 +479,7 @@ namespace STR
     void OutputMicro();
 
     //! Write internal and external forces (if necessary for restart)
-    virtual void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) = 0;
+    virtual void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) = 0;
 
     //! Check whether energy output file is attached
     bool AttachedEnergyFile()
@@ -566,10 +566,10 @@ namespace STR
     //@{
 
     //! Provide Name
-    virtual enum INPAR::STR::DynamicType MethodName() const = 0;
+    virtual enum Inpar::STR::DynamicType MethodName() const = 0;
 
     //! Provide title
-    std::string MethodTitle() const { return INPAR::STR::DynamicTypeString(MethodName()); }
+    std::string MethodTitle() const { return Inpar::STR::DynamicTypeString(MethodName()); }
 
     //! Return true, if time integrator is implicit
     virtual bool MethodImplicit() = 0;
@@ -608,7 +608,7 @@ namespace STR
     //@{
 
     //! Access discretisation
-    Teuchos::RCP<DRT::Discretization> discretization() override
+    Teuchos::RCP<Discret::Discretization> discretization() override
     {
       // Here a 'false' must be used. This is due to
       // the fact that TimInt possesses a references
@@ -631,16 +631,16 @@ namespace STR
     const Epetra_Map* DofRowMapView() override;
 
     //! Access solver, one of these have to be removed (see below)
-    Teuchos::RCP<CORE::LINALG::Solver> Solver() { return solver_; }
+    Teuchos::RCP<Core::LinAlg::Solver> Solver() { return solver_; }
 
     //! Access solver, one of these have to be removed (see above)
-    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return solver_; }
+    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override { return solver_; }
 
     //! Access solver for contact/meshtying problems
-    Teuchos::RCP<CORE::LINALG::Solver> ContactSolver() { return contactsolver_; }
+    Teuchos::RCP<Core::LinAlg::Solver> ContactSolver() { return contactsolver_; }
 
     //! Access output object
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() override { return output_; }
+    Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() override { return output_; }
 
     //! Read restart values
     void read_restart(const int step  //!< restart step
@@ -701,7 +701,7 @@ namespace STR
     Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
 
     /// set evaluation action
-    void SetActionType(const CORE::Elements::ActionType& action) override
+    void SetActionType(const Core::Elements::ActionType& action) override
     {
       FOUR_C_THROW("new structural time integration only...");
     }
@@ -781,18 +781,18 @@ namespace STR
 
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
 
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
     //! switch structure field to block matrix in fsi simulations
-    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override = 0;
+    void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override = 0;
 
     //! Return sparse mass matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> MassMatrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> MassMatrix();
 
     //! domain map of system matrix
     const Epetra_Map& DomainMap() const override;
@@ -810,10 +810,10 @@ namespace STR
     Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override = 0;
 
     //! get type of thickness scaling for thin shell structures
-    INPAR::STR::StcScale GetSTCAlgo() override = 0;
+    Inpar::STR::StcScale GetSTCAlgo() override = 0;
 
     //! Access to scaling matrix for STC
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override = 0;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override = 0;
 
 
     //@}
@@ -862,16 +862,16 @@ namespace STR
 
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
     {
       return dbcmaps_;
     }
 
     //! Return (rotatory) transformation matrix of local co-ordinate systems
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> get_loc_sys_trafo() const;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_loc_sys_trafo() const;
 
     //! Return locsys manager
-    Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() override { return locsysman_; }
+    Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override { return locsysman_; }
 
     //@}
 
@@ -920,13 +920,13 @@ namespace STR
     }
 
     /// do we have this model
-    bool HaveModel(INPAR::STR::ModelType model) override
+    bool HaveModel(Inpar::STR::ModelType model) override
     {
       FOUR_C_THROW("new structural time integration only");
       return false;
     }
 
-    STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override
+    STR::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::STR::ModelType mtype) override
     {
       FOUR_C_THROW("new time integration only");
       exit(EXIT_FAILURE);
@@ -1035,23 +1035,23 @@ namespace STR
 
     //! @name General purpose algorithm members
     //@{
-    Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
+    Teuchos::RCP<Discret::Discretization> discret_;  //!< attached discretisation
 
     // face discretization (only initialized for edge-based stabilization)
-    Teuchos::RCP<DRT::DiscretizationFaces> facediscret_;
+    Teuchos::RCP<Discret::DiscretizationFaces> facediscret_;
 
     int myrank_;                                 //!< ID of actual processor in parallel
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver (no contact/meshtying)
-    Teuchos::RCP<CORE::LINALG::Solver>
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver (no contact/meshtying)
+    Teuchos::RCP<Core::LinAlg::Solver>
         contactsolver_;           //!< linear algebraic solver (for contact/meshtying)
     bool solveradapttol_;         //!< adapt solver tolerance
     double solveradaptolbetter_;  //!< tolerance to which is adapted ????
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;  //!< map extractor object
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;  //!< map extractor object
                                                         //!< containing non-overlapping
                                                         //!< map of global DOFs on Dirichlet
                                                         //!< boundary conditions
 
-    enum INPAR::STR::DivContAct divcontype_;  //!< what to do when nonlinear solution fails
+    enum Inpar::STR::DivContAct divcontype_;  //!< what to do when nonlinear solution fails
     int divconrefinementlevel_;  //!< number of refinement level in case of divercontype_ ==
                                  //!< adapt_step
     int divconnumfinestep_;      //!< number of converged time steps on current refinement level
@@ -1064,7 +1064,7 @@ namespace STR
 
     //! @name Printing and output
     //@{
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;  //!< binary output
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;  //!< binary output
     int printscreen_;                          //!< print infos to standard out every n steps
     bool printlogo_;                           //!< print the logo (or not)?
     bool printiter_;                           //!< print intermediate iterations during solution
@@ -1077,11 +1077,11 @@ namespace STR
     bool writestate_;                          //!< write state on/off
     bool writevelacc_;                         //!< write velocity and acceleration on/off
     int writeresultsevery_;                    //!< write state/stress/strain every given step
-    INPAR::STR::StressType writestress_;       //!< stress output type
-    INPAR::STR::StressType writecouplstress_;  //!< output type of coupling stress
-    INPAR::STR::StrainType writestrain_;       //!< strain output type
-    INPAR::STR::StrainType writeplstrain_;     //!< plastic strain output type
-    INPAR::STR::OptQuantityType writeoptquantity_;  //!< stress output type
+    Inpar::STR::StressType writestress_;       //!< stress output type
+    Inpar::STR::StressType writecouplstress_;  //!< output type of coupling stress
+    Inpar::STR::StrainType writestrain_;       //!< strain output type
+    Inpar::STR::StrainType writeplstrain_;     //!< plastic strain output type
+    Inpar::STR::OptQuantityType writeoptquantity_;  //!< stress output type
     int writeenergyevery_;                          //!< write system energy every given step
     bool writesurfactant_;                          //!< write surfactant output
     bool writerotation_;                            //!< write strutural rotation tensor output
@@ -1104,7 +1104,7 @@ namespace STR
     //!
     //! Rayleigh damping means \f${C} = c_\text{K} {K} + c_\text{M} {M}\f$
     //@{
-    enum INPAR::STR::DampKind damping_;  //!< damping type
+    enum Inpar::STR::DampKind damping_;  //!< damping type
     double dampk_;                       //!< damping factor for stiffness \f$c_\text{K}\f$
     double dampm_;                       //!< damping factor for mass \f$c_\text{M}\f$
     //@}
@@ -1129,10 +1129,10 @@ namespace STR
     Teuchos::RCP<CONTACT::Beam3cmanager> beamcman_;
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<CORE::Conditions::LocsysManager> locsysman_;
+    Teuchos::RCP<Core::Conditions::LocsysManager> locsysman_;
 
     //! Map to differentiate pressure and displacement/velocity DOFs
-    Teuchos::RCP<CORE::LINALG::MapExtractor> pressure_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> pressure_;
 
     //! elements with micro-materials
     bool havemicromat_;
@@ -1144,10 +1144,10 @@ namespace STR
 
     //! @name General control parameters
     //@{
-    Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>>
+    Teuchos::RCP<TimeStepping::TimIntMStep<double>>
         time_;      //!< time \f$t_{n}\f$ of last converged step
     double timen_;  //!< target time \f$t_{n+1}\f$
-    Teuchos::RCP<TIMESTEPPING::TimIntMStep<double>> dt_;  //!< time step size \f$\Delta t\f$
+    Teuchos::RCP<TimeStepping::TimIntMStep<double>> dt_;  //!< time step size \f$\Delta t\f$
     double timemax_;                                      //!< final time \f$t_\text{fin}\f$
     int stepmax_;                                         //!< final step \f$N\f$
     int step_;                                            //!< time step index \f$n\f$
@@ -1167,16 +1167,16 @@ namespace STR
     //@{
 
     //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> dis_;
+    Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> dis_;
 
     //! global material displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> dismat_;
+    Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> dismat_;
 
     //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
-    Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> vel_;
+    Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> vel_;
 
     //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-    Teuchos::RCP<TIMESTEPPING::TimIntMStep<Epetra_Vector>> acc_;
+    Teuchos::RCP<TimeStepping::TimIntMStep<Epetra_Vector>> acc_;
 
     //!< global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
@@ -1209,13 +1209,13 @@ namespace STR
     //! @name System matrices
     //@{
     //! holds eventually effective stiffness
-    Teuchos::RCP<CORE::LINALG::SparseOperator> stiff_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_;
 
     //! mass matrix (constant)
-    Teuchos::RCP<CORE::LINALG::SparseOperator> mass_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> mass_;
 
     //! damping matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> damp_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> damp_;
     //@}
 
     //! @name Time measurement
@@ -1234,10 +1234,10 @@ namespace STR
 
     //! @name porous media specific stuff
     //@{
-    Teuchos::RCP<CORE::LINALG::MapExtractor> porositysplitter_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> porositysplitter_;
     //@}
 
-    Teuchos::RCP<MOR::ProperOrthogonalDecomposition> mor_;  //!< model order reduction
+    Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor_;  //!< model order reduction
 
    private:
     //! flag indicating if class is setup

@@ -37,25 +37,25 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE
+namespace Core
 {
   namespace UTILS
   {
     class FunctionOfAnything;
   }
-}  // namespace CORE
+}  // namespace Core
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     //! material parameters for neo-Hooke
-    class PlasticNlnLogNeoHooke : public CORE::MAT::PAR::Parameter
+    class PlasticNlnLogNeoHooke : public Core::Mat::PAR::Parameter
     {
      public:
       //! standard constructor
-      PlasticNlnLogNeoHooke(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      PlasticNlnLogNeoHooke(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! @name material parameters
       //@{
@@ -89,21 +89,21 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class PlasticNlnLogNeoHooke
 
   }  // namespace PAR
 
 
-  class PlasticNlnLogNeoHookeType : public CORE::COMM::ParObjectType
+  class PlasticNlnLogNeoHookeType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "PlasticNlnLogNeoHookeType"; }
 
     static PlasticNlnLogNeoHookeType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static PlasticNlnLogNeoHookeType instance_;
@@ -120,7 +120,7 @@ namespace MAT
     PlasticNlnLogNeoHooke();
 
     //! construct the material object given material parameters
-    explicit PlasticNlnLogNeoHooke(MAT::PAR::PlasticNlnLogNeoHooke* params);
+    explicit PlasticNlnLogNeoHooke(Mat::PAR::PlasticNlnLogNeoHooke* params);
 
     //! @name Packing and Unpacking
 
@@ -145,7 +145,7 @@ namespace MAT
 
     \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -166,20 +166,20 @@ namespace MAT
     //! @name Access methods
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_plnlnlogneohooke;
+      return Core::Materials::m_plnlnlogneohooke;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (!(kinem == Inpar::STR::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new PlasticNlnLogNeoHooke(*this));
     }
@@ -188,7 +188,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     //! return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     //! return accumulated strain at Gauss points
     //! use the old vector (last_) for postprocessing
@@ -215,7 +215,7 @@ namespace MAT
 
     //! return visualization data for direct VTK output
     bool EvaluateOutputData(
-        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
     /// Return whether the material requires the deformation gradient for its evaluation
     bool needs_defgrd() override { return true; };
@@ -225,31 +225,31 @@ namespace MAT
     //! @name Evaluation methods
 
     //! initialise internal stress variables
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     //! update internal stress variables
     void Update() override;
 
     //! evaluate material law
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>*
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>*
                       defgrd,  //!< input deformation gradient for multiplicative sp
-        const CORE::LINALG::Matrix<6, 1>*
+        const Core::LinAlg::Matrix<6, 1>*
             glstrain,                        //!< input Green-Lagrange strain (redundant with defo
                                              //   but used for neo-hooke evaluation; maybe remove
         Teuchos::ParameterList& params,      //!< input parameter list (e.g. Young's, ...)
-        CORE::LINALG::Matrix<6, 1>* stress,  //!< output (mandatory) second Piola-Kirchhoff stress
-        CORE::LINALG::Matrix<6, 6>* cmat,    //!< output (mandatory) material stiffness matrix
+        Core::LinAlg::Matrix<6, 1>* stress,  //!< output (mandatory) second Piola-Kirchhoff stress
+        Core::LinAlg::Matrix<6, 6>* cmat,    //!< output (mandatory) material stiffness matrix
         int gp,                              //!< Gauss point
         int eleGID) override;
 
    private:
     //! my material parameters
-    MAT::PAR::PlasticNlnLogNeoHooke* params_;
+    Mat::PAR::PlasticNlnLogNeoHooke* params_;
 
     //! inverse right cauchy green of plastic strain
-    std::vector<CORE::LINALG::Matrix<3, 3>> invplrcglast_;
+    std::vector<Core::LinAlg::Matrix<3, 3>> invplrcglast_;
     //! inverse right cauchy green of plastic strain
-    std::vector<CORE::LINALG::Matrix<3, 3>> invplrcgcurr_;
+    std::vector<Core::LinAlg::Matrix<3, 3>> invplrcgcurr_;
 
     //! old (i.e. at t_n) accumulated plastic strain
     std::vector<double> accplstrainlast_;
@@ -258,13 +258,13 @@ namespace MAT
     //! active yielding between t_n and t_n+1
     std::vector<double> activeyield_;
 
-    const CORE::UTILS::FunctionOfAnything* hardening_function_{nullptr};
+    const Core::UTILS::FunctionOfAnything* hardening_function_{nullptr};
 
     //! indicator if #Initialize routine has been called
     bool isinit_;
   };  // class PlasticNlnLogNeoHooke
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 /*----------------------------------------------------------------------*/

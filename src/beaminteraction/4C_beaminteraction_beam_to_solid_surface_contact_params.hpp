@@ -57,7 +57,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the contact type.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidSurfaceContact GetContactType() const
+    inline Inpar::BeamToSolid::BeamToSolidSurfaceContact GetContactType() const
     {
       return contact_type_;
     }
@@ -65,7 +65,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Returns the type of penalty law.
      */
-    inline INPAR::BEAMTOSOLID::BeamToSolidSurfaceContactPenaltyLaw GetPenaltyLaw() const
+    inline Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw GetPenaltyLaw() const
     {
       return penalty_law_;
     }
@@ -86,10 +86,10 @@ namespace BEAMINTERACTION
 
    private:
     //! Type of contact constraints.
-    INPAR::BEAMTOSOLID::BeamToSolidSurfaceContact contact_type_;
+    Inpar::BeamToSolid::BeamToSolidSurfaceContact contact_type_;
 
     //! Type of penalty law.
-    INPAR::BEAMTOSOLID::BeamToSolidSurfaceContactPenaltyLaw penalty_law_;
+    Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw penalty_law_;
 
     //! Regularization parameter for the penalty law.
     double penalty_parameter_g0_;

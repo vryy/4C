@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace FLUIDPORO
   {
@@ -46,11 +46,11 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     //! material parameters for fluid poro
     //! This object exists only once for each read Newton fluid.
-    class FluidPoro : public CORE::MAT::PAR::Parameter
+    class FluidPoro : public Core::Mat::PAR::Parameter
     {
      public:
       //! standard constructor
-      FluidPoro(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      FluidPoro(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! set initial porosity from structural material and calculate
       //! permeability_correction_factor_
@@ -81,19 +81,19 @@ namespace MAT
       double initial_porosity_;
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
     };
 
   }  // namespace PAR
 
-  class FluidPoroType : public CORE::COMM::ParObjectType
+  class FluidPoroType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "FluidPoroType"; }
 
     static FluidPoroType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroType instance_;
@@ -102,14 +102,14 @@ namespace MAT
   /*----------------------------------------------------------------------*/
   //! Wrapper for poro fluid flow material
   //! This object exists (several times) at every element
-  class FluidPoro : public CORE::MAT::Material
+  class FluidPoro : public Core::Mat::Material
   {
    public:
     //! construct empty material object
     FluidPoro();
 
     //! construct the material object given material parameters
-    explicit FluidPoro(MAT::PAR::FluidPoro* params);
+    explicit FluidPoro(Mat::PAR::FluidPoro* params);
 
     //! @name Packing and Unpacking
 
@@ -131,7 +131,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -150,25 +150,25 @@ namespace MAT
     //!@}
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_fluidporo;
+      return Core::Materials::m_fluidporo;
     }
 
     //! return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoro(*this));
     }
 
     //! compute reaction tensor - 2D
-    void compute_reaction_tensor(CORE::LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
+    void compute_reaction_tensor(Core::LinAlg::Matrix<2, 2>& reaction_tensor, const double& J,
         const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions = {},
         const std::vector<double>& anisotropic_permeability_coeffs = {}) const;
 
     //! compute reaction tensor - 3D
-    void compute_reaction_tensor(CORE::LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
+    void compute_reaction_tensor(Core::LinAlg::Matrix<3, 3>& reaction_tensor, const double& J,
         const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions = {},
         const std::vector<double>& anisotropic_permeability_coeffs = {}) const;
@@ -177,12 +177,12 @@ namespace MAT
     double compute_reaction_coeff() const;
 
     //! compute linearization of reaction tensor - 2D
-    void compute_lin_mat_reaction_tensor(CORE::LINALG::Matrix<2, 2>& linreac_dphi,
-        CORE::LINALG::Matrix<2, 2>& linreac_dJ, const double& J, const double& porosity) const;
+    void compute_lin_mat_reaction_tensor(Core::LinAlg::Matrix<2, 2>& linreac_dphi,
+        Core::LinAlg::Matrix<2, 2>& linreac_dJ, const double& J, const double& porosity) const;
 
     //! compute linearization of reaction tensor - 3D
-    void compute_lin_mat_reaction_tensor(CORE::LINALG::Matrix<3, 3>& linreac_dphi,
-        CORE::LINALG::Matrix<3, 3>& linreac_dJ, const double& J, const double& porosity) const;
+    void compute_lin_mat_reaction_tensor(Core::LinAlg::Matrix<3, 3>& linreac_dphi,
+        Core::LinAlg::Matrix<3, 3>& linreac_dJ, const double& J, const double& porosity) const;
 
     //! effective viscosity (zero for Darcy and greater than zero for Darcy-Brinkman)
     double EffectiveViscosity() const;
@@ -203,7 +203,7 @@ namespace MAT
     }
 
     //! Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     //! flag indicating a varying permeability
     bool VaryingPermeability() const { return params_->varying_permeability_; }
@@ -211,18 +211,18 @@ namespace MAT
     //! flag indicating nodal orthotropy
     bool IsNodalOrthotropic() const
     {
-      return params_->permeability_func_ == MAT::PAR::const_material_nodal_orthotropic;
+      return params_->permeability_func_ == Mat::PAR::const_material_nodal_orthotropic;
     }
 
    private:
     //! my material parameters
-    MAT::PAR::FluidPoro* params_;
+    Mat::PAR::FluidPoro* params_;
 
     //! anisotropy strategy (isotropy, transverse isotropy, orthotropy, or nodal orthotropy)
-    Teuchos::RCP<MAT::FLUIDPORO::PoroAnisotropyStrategyBase> anisotropy_strategy_;
+    Teuchos::RCP<Mat::FLUIDPORO::PoroAnisotropyStrategyBase> anisotropy_strategy_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

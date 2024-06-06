@@ -13,13 +13,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoTet10::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoTet10::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   SolidMaterial()->Setup(NUMGPT_SOTET10, linedef);
 
@@ -29,12 +29,12 @@ bool DRT::ELEMENTS::SoTet10::ReadElement(
   // geometrically linear
   if (buffer == "linear")
   {
-    kintype_ = INPAR::STR::KinemType::linear;
+    kintype_ = Inpar::STR::KinemType::linear;
     FOUR_C_THROW("Reading of SO_TET10 element failed only nonlinear kinematics implemented");
   }
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
-    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
   // geometrically non-linear with Updated Lagrangean approach
   else
     FOUR_C_THROW("Reading of SO_TET10 element failed KINEM unknown");

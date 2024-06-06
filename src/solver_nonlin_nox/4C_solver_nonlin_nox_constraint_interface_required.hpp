@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Required interface for constrained problems.
-       (necessary for the NOX::NLN::CONSTRAINT::Group
+       (necessary for the NOX::Nln::CONSTRAINT::Group
         and the evaluation of special constraint status
         tests)
 
@@ -26,15 +26,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration...
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class SerialDenseVector;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace CONSTRAINT
     {
@@ -61,7 +61,7 @@ namespace NOX
            *  which we try to minimize and the subjected constraint equations.
            *  Typical examples are the Lagrangian function value and the augmented Lagrangian
            *  function value. */
-          virtual double GetModelValue(NOX::NLN::MeritFunction::MeritFctName name) const
+          virtual double GetModelValue(NOX::Nln::MeritFunction::MeritFctName name) const
           {
             FOUR_C_THROW("GetObjectiveModelValue() is not implemented!");
             exit(EXIT_FAILURE);
@@ -69,9 +69,9 @@ namespace NOX
 
           //! Get the desired linearization terms of the objective model
           virtual double get_linearized_model_terms(const Epetra_Vector& dir,
-              const enum NOX::NLN::MeritFunction::MeritFctName name,
-              const enum NOX::NLN::MeritFunction::LinOrder order,
-              const enum NOX::NLN::MeritFunction::LinType type) const
+              const enum NOX::Nln::MeritFunction::MeritFctName name,
+              const enum NOX::Nln::MeritFunction::LinOrder order,
+              const enum NOX::Nln::MeritFunction::LinType type) const
           {
             FOUR_C_THROW("GetLinearizedObjectiveModelTerms() is not implemented!");
             exit(EXIT_FAILURE);
@@ -84,40 +84,40 @@ namespace NOX
 
           //! Returns the constraint right-hand-side norms
           double get_constraint_rhs_norms(
-              const Epetra_Vector& F, NOX::NLN::StatusTest::QuantityType chQ) const
+              const Epetra_Vector& F, NOX::Nln::StatusTest::QuantityType chQ) const
           {
             return get_constraint_rhs_norms(F, chQ, ::NOX::Abstract::Vector::TwoNorm, false);
           };
           double get_constraint_rhs_norms(const Epetra_Vector& F,
-              NOX::NLN::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type) const
+              NOX::Nln::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type) const
           {
             return get_constraint_rhs_norms(F, chQ, type, false);
           };
           virtual double get_constraint_rhs_norms(const Epetra_Vector& F,
-              NOX::NLN::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type,
+              NOX::Nln::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type,
               bool isScaled) const = 0;
 
           //! Returns the Root Mean Square (abbr.: RMS) of the Lagrange multiplier updates
           double get_lagrange_multiplier_update_rms(const Epetra_Vector& xNew,
               const Epetra_Vector& xOld, double aTol, double rTol,
-              NOX::NLN::StatusTest::QuantityType checkQuantity) const
+              NOX::Nln::StatusTest::QuantityType checkQuantity) const
           {
             return get_lagrange_multiplier_update_rms(xNew, xOld, aTol, rTol, checkQuantity, false);
           };
           virtual double get_lagrange_multiplier_update_rms(const Epetra_Vector& xNew,
               const Epetra_Vector& xOld, double aTol, double rTol,
-              NOX::NLN::StatusTest::QuantityType checkQuantity,
+              NOX::Nln::StatusTest::QuantityType checkQuantity,
               bool disable_implicit_weighting) const = 0;
 
           //! Returns the increment norm of the largange multiplier DoFs
           virtual double get_lagrange_multiplier_update_norms(const Epetra_Vector& xNew,
-              const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
+              const Epetra_Vector& xOld, NOX::Nln::StatusTest::QuantityType checkQuantity,
               ::NOX::Abstract::Vector::NormType type = ::NOX::Abstract::Vector::TwoNorm,
               bool isScaled = false) const = 0;
 
           //! Returns the previous solution norm of the largange multiplier DoFs
           virtual double get_previous_lagrange_multiplier_norms(const Epetra_Vector& xOld,
-              NOX::NLN::StatusTest::QuantityType checkQuantity,
+              NOX::Nln::StatusTest::QuantityType checkQuantity,
               ::NOX::Abstract::Vector::NormType type = ::NOX::Abstract::Vector::TwoNorm,
               bool isScaled = false) const = 0;
 
@@ -125,20 +125,20 @@ namespace NOX
            *  This is optional and only relevant for inequality constraint problems. */
           //! @{
           virtual enum ::NOX::StatusTest::StatusType GetActiveSetInfo(
-              enum NOX::NLN::StatusTest::QuantityType qt, int& activeset_size) const
+              enum NOX::Nln::StatusTest::QuantityType qt, int& activeset_size) const
           {
             activeset_size = -1;
             return ::NOX::StatusTest::Unevaluated;
           }
 
           virtual Teuchos::RCP<const Epetra_Map> get_current_active_set_map(
-              enum NOX::NLN::StatusTest::QuantityType qt) const
+              enum NOX::Nln::StatusTest::QuantityType qt) const
           {
             return Teuchos::null;
           };
 
           virtual Teuchos::RCP<const Epetra_Map> GetOldActiveSetMap(
-              enum NOX::NLN::StatusTest::QuantityType qt) const
+              enum NOX::Nln::StatusTest::QuantityType qt) const
           {
             return Teuchos::null;
           };
@@ -147,11 +147,11 @@ namespace NOX
         };
       }  // end namespace Interface
       // typedef
-      typedef std::map<NOX::NLN::SolutionType,
-          Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required>>
+      typedef std::map<NOX::Nln::SolutionType,
+          Teuchos::RCP<NOX::Nln::CONSTRAINT::Interface::Required>>
           ReqInterfaceMap;
     }  // namespace CONSTRAINT
-  }    // end namespace NLN
+  }    // end namespace Nln
 }  // end namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

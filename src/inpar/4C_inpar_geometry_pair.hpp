@@ -24,7 +24,7 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR
+namespace Inpar
 {
   namespace GEOMETRYPAIR
   {
@@ -62,7 +62,7 @@ namespace INPAR
     /**
      * \brief Map number of gauss points to 1D gauss rule
      */
-    CORE::FE::GaussRule1D IntToGaussRule1D(const int n_gauss_points);
+    Core::FE::GaussRule1D IntToGaussRule1D(const int n_gauss_points);
 
     /**
      * \brief Set valid input parameters for line to 3D geometry pairs.
@@ -86,7 +86,7 @@ namespace INPAR
 
   }  // namespace GEOMETRYPAIR
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 
 FOUR_C_NAMESPACE_CLOSE

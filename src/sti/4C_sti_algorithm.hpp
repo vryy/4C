@@ -22,21 +22,21 @@ class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class ScaTraBaseAlgorithm;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace SCATRA
+namespace ScaTra
 {
   class MeshtyingStrategyS2I;
   class ScaTraTimIntImpl;
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 namespace STI
 {
   //! monolithic algorithm for scatra-thermo interaction
-  class Algorithm : public ADAPTER::AlgorithmBase
+  class Algorithm : public Adapter::AlgorithmBase
   {
    public:
     //! return counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
@@ -48,10 +48,10 @@ namespace STI
         ) override;
 
     //! access scatra time integrator
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const { return scatra_->ScaTraField(); };
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTraField() const { return scatra_->ScaTraField(); };
 
     //! access thermo time integrator
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() const { return thermo_->ScaTraField(); };
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ThermoField() const { return thermo_->ScaTraField(); };
 
     //! time loop
     void TimeLoop();
@@ -82,16 +82,16 @@ namespace STI
     ) const;
 
     //! scatra time integrator
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_;
 
     //! thermo time integrator
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    Teuchos::RCP<SCATRA::MeshtyingStrategyS2I> strategyscatra_;
+    Teuchos::RCP<ScaTra::MeshtyingStrategyS2I> strategyscatra_;
 
     //! meshtying strategy for scatra-scatra interface coupling on thermo discretization
-    Teuchos::RCP<SCATRA::MeshtyingStrategyS2I> strategythermo_;
+    Teuchos::RCP<ScaTra::MeshtyingStrategyS2I> strategythermo_;
 
     //! input parameters for scatra and thermo fields
     Teuchos::RCP<Teuchos::ParameterList> fieldparameters_;
@@ -128,7 +128,7 @@ namespace STI
 
     //! update scatra and thermo fields after time step evaluation
     void update() override;
-  };  // class Algorithm : public ADAPTER::AlgorithmBase
+  };  // class Algorithm : public Adapter::AlgorithmBase
 }  // namespace STI
 FOUR_C_NAMESPACE_CLOSE
 

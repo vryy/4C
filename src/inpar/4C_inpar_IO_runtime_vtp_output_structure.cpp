@@ -16,9 +16,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR
+namespace Inpar
 {
-  namespace IO_RUNTIME_VTP_STRUCTURE
+  namespace IORuntimeVTPStructure
   {
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
@@ -34,36 +34,36 @@ namespace INPAR
 
 
       // output interval regarding steps: write output every INTERVAL_STEPS steps
-      CORE::UTILS::IntParameter("INTERVAL_STEPS", -1,
+      Core::UTILS::IntParameter("INTERVAL_STEPS", -1,
           "write VTP output at runtime every INTERVAL_STEPS steps", &sublist_IO_VTP_structure);
 
-      CORE::UTILS::IntParameter("STEP_OFFSET", 0,
+      Core::UTILS::IntParameter("STEP_OFFSET", 0,
           "An offset added to the current step to shift the steps to be written.",
           &sublist_IO_VTP_structure);
 
       // whether to write output in every iteration of the nonlinear solver
-      CORE::UTILS::BoolParameter("EVERY_ITERATION", "No",
+      Core::UTILS::BoolParameter("EVERY_ITERATION", "No",
           "write output in every iteration of the nonlinear solver", &sublist_IO_VTP_structure);
 
       // write owner at every visualization point
-      CORE::UTILS::BoolParameter(
+      Core::UTILS::BoolParameter(
           "OWNER", "No", "write owner of every point", &sublist_IO_VTP_structure);
 
       // write orientation at every visualization point
-      CORE::UTILS::BoolParameter("ORIENTATIONANDLENGTH", "No", "write orientation at every point",
+      Core::UTILS::BoolParameter("ORIENTATIONANDLENGTH", "No", "write orientation at every point",
           &sublist_IO_VTP_structure);
 
       // write number of bonds at every visualization point
-      CORE::UTILS::BoolParameter(
+      Core::UTILS::BoolParameter(
           "NUMBEROFBONDS", "No", "write number of bonds of every point", &sublist_IO_VTP_structure);
 
       // write force actin in linker
-      CORE::UTILS::BoolParameter(
+      Core::UTILS::BoolParameter(
           "LINKINGFORCE", "No", "write force acting in linker", &sublist_IO_VTP_structure);
     }
 
 
-  }  // namespace IO_RUNTIME_VTP_STRUCTURE
-}  // namespace INPAR
+  }  // namespace IORuntimeVTPStructure
+}  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE

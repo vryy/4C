@@ -29,7 +29,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -102,7 +102,7 @@ reason to deep copy any of the local map and vector variables.
 \author u.kue
 */
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   class DofSet : public DofSetBase
   {
@@ -117,7 +117,7 @@ namespace CORE::Dofsets
     //! @name Access methods
 
     /// Get number of dofs for given node
-    int NumDof(const CORE::Nodes::Node* node) const override
+    int NumDof(const Core::Nodes::Node* node) const override
     {
       int lid = node->LID();
       if (lid == -1) return 0;
@@ -125,7 +125,7 @@ namespace CORE::Dofsets
     }
 
     /// Get number of dofs for given element
-    int NumDof(const CORE::Elements::Element* element) const override
+    int NumDof(const Core::Elements::Element* element) const override
     {
       // check if this is a face element
       int lid = element->LID();
@@ -137,7 +137,7 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of a dof for given node
-    int Dof(const CORE::Nodes::Node* node, int dof) const override
+    int Dof(const Core::Nodes::Node* node, int dof) const override
     {
       int lid = node->LID();
       if (lid == -1) return -1;
@@ -148,7 +148,7 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of a dof for given element
-    int Dof(const CORE::Elements::Element* element, int dof) const override
+    int Dof(const Core::Elements::Element* element, int dof) const override
     {
       int lid = element->LID();
       if (lid == -1) return -1;
@@ -159,7 +159,7 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of all dofs of a node
-    std::vector<int> Dof(const CORE::Nodes::Node* node) const override
+    std::vector<int> Dof(const Core::Nodes::Node* node) const override
     {
       const int lid = node->LID();
       if (lid == -1) return std::vector<int>();
@@ -177,7 +177,7 @@ namespace CORE::Dofsets
 
     /// Get the gid of all dofs of a node
     void Dof(std::vector<int>& dof,     ///< vector of dof gids (to be filled)
-        const CORE::Nodes::Node* node,  ///< the node
+        const Core::Nodes::Node* node,  ///< the node
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
@@ -186,7 +186,7 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const CORE::Elements::Element* element) const override
+    std::vector<int> Dof(const Core::Elements::Element* element) const override
     {
       int lid = element->LID();
       if (lid == -1) return std::vector<int>();
@@ -201,7 +201,7 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const CORE::Nodes::Node* node, std::vector<int>& lm) const override
+    void Dof(const Core::Nodes::Node* node, std::vector<int>& lm) const override
     {
       int lid = node->LID();
       if (lid == -1) return;
@@ -217,7 +217,7 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const CORE::Nodes::Node* node,  ///< node, for which you want the dof positions
+    void Dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,  ///< first index of vector at which will be written to end
         std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
     ) const override
@@ -237,7 +237,7 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of all dofs of a element
-    void Dof(const CORE::Elements::Element* element, std::vector<int>& lm) const override
+    void Dof(const Core::Elements::Element* element, std::vector<int>& lm) const override
     {
       int lid = element->LID();
       if (lid == -1) return;
@@ -250,9 +250,9 @@ namespace CORE::Dofsets
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(const CORE::Elements::Element*
+    void Dof(const Core::Elements::Element*
                  element,  ///< element which provides its expected number of DOFs per node
-        const CORE::Nodes::Node* node,  ///< node, for which you want the DOF positions
+        const Core::Nodes::Node* node,  ///< node, for which you want the DOF positions
         std::vector<int>& lm  ///< already allocated vector to be filled with DOF positions
     ) const override
     {
@@ -300,7 +300,7 @@ namespace CORE::Dofsets
     @return Maximum dof number of this dofset
     */
     int assign_degrees_of_freedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
+        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables
     void Reset() override;
@@ -327,10 +327,10 @@ namespace CORE::Dofsets
 
    protected:
     /// get number of nodal dofs
-    int NumDofPerNode(const CORE::Nodes::Node& node) const override
+    int NumDofPerNode(const Core::Nodes::Node& node) const override
     {
       const int numele = node.NumElement();
-      const CORE::Elements::Element* const* myele = node.Elements();
+      const Core::Elements::Element* const* myele = node.Elements();
       int numdf = 0;
       for (int j = 0; j < numele; ++j) numdf = std::max(numdf, NumDofPerNode(*myele[j], node));
       return numdf;
@@ -338,18 +338,18 @@ namespace CORE::Dofsets
 
     /// get number of nodal dofs for this element at this node
     virtual int NumDofPerNode(
-        const CORE::Elements::Element& element, const CORE::Nodes::Node& node) const
+        const Core::Elements::Element& element, const Core::Nodes::Node& node) const
     {
       return element.NumDofPerNode(node);
     }
 
     /// get number of element dofs for this element
-    virtual int num_dof_per_element(const CORE::Elements::Element& element) const
+    virtual int num_dof_per_element(const Core::Elements::Element& element) const
     {
       return element.num_dof_per_element();
     }
 
-    virtual int num_dof_per_face(const CORE::Elements::Element& element, int face) const
+    virtual int num_dof_per_face(const Core::Elements::Element& element, int face) const
     {
       return element.num_dof_per_face(face);
     }
@@ -358,10 +358,10 @@ namespace CORE::Dofsets
     virtual void get_reserved_max_num_dofper_node(int& maxnodenumdf) { return; };
 
     /// get first number to be used as Dof GID in assign_degrees_of_freedom
-    virtual int get_first_gid_number_to_be_used(const DRT::Discretization& dis) const;
+    virtual int get_first_gid_number_to_be_used(const Discret::Discretization& dis) const;
 
     /// get minimal node GID to be used in assign_degrees_of_freedom
-    virtual int get_minimal_node_gid_if_relevant(const DRT::Discretization& dis) const;
+    virtual int get_minimal_node_gid_if_relevant(const Discret::Discretization& dis) const;
 
     /// filled flag
     bool filled_;
@@ -429,11 +429,11 @@ namespace CORE::Dofsets
     //***************************************************************************
 
   };  // class DofSet
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const CORE::Dofsets::DofSet& dofset);
+std::ostream& operator<<(std::ostream& os, const Core::DOFSets::DofSet& dofset);
 
 
 FOUR_C_NAMESPACE_CLOSE

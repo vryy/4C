@@ -19,12 +19,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace STR::TIMINT
+namespace STR::TimeInt
 {
   class Base;
-}  // namespace STR::TIMINT
+}  // namespace STR::TimeInt
 
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief Time step size adaptivity with Zienkiewicz-Xie error indicator
    *        only for lower or equal than second order accurate marching
@@ -45,9 +45,9 @@ namespace ADAPTER
     }
 
     //! Provide the name
-    enum INPAR::STR::TimAdaKind MethodName() const override
+    enum Inpar::STR::TimAdaKind MethodName() const override
     {
-      return INPAR::STR::timada_kind_zienxie;
+      return Inpar::STR::timada_kind_zienxie;
     }
 
     std::string MethodTitle() const override { return "ZienkiewiczXie"; }
@@ -86,7 +86,7 @@ namespace ADAPTER
     void update_auxiliar() override;
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

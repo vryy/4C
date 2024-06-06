@@ -21,9 +21,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace POROMULTIPHASESCATRA
+  namespace PoroMultiPhaseScaTra
   {
     /// Type of coupling strategy for poro scatra problems
     enum SolutionSchemeOverFields
@@ -64,19 +64,19 @@ namespace INPAR
     {
       switch (norm)
       {
-        case INPAR::POROMULTIPHASESCATRA::norm_l1:
+        case Inpar::PoroMultiPhaseScaTra::norm_l1:
           return "L1";
           break;
-        case INPAR::POROMULTIPHASESCATRA::norm_l1_scaled:
+        case Inpar::PoroMultiPhaseScaTra::norm_l1_scaled:
           return "L1_scaled";
           break;
-        case INPAR::POROMULTIPHASESCATRA::norm_l2:
+        case Inpar::PoroMultiPhaseScaTra::norm_l2:
           return "L2";
           break;
-        case INPAR::POROMULTIPHASESCATRA::norm_rms:
+        case Inpar::PoroMultiPhaseScaTra::norm_rms:
           return "Rms";
           break;
-        case INPAR::POROMULTIPHASESCATRA::norm_inf:
+        case Inpar::PoroMultiPhaseScaTra::norm_inf:
           return "Inf";
           break;
         default:
@@ -90,11 +90,11 @@ namespace INPAR
 
     /// set the poromultiphasescatra conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
-  }  // namespace POROMULTIPHASESCATRA
+  }  // namespace PoroMultiPhaseScaTra
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 
 

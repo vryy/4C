@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 01/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::ScaTraEleBoundaryCalcElch(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::ScaTraEleBoundaryCalcElch(
     const int numdofpernode, const int numscal, const std::string& disname)
     :  // constructor of base class
       my::ScaTraEleBoundaryCalc(numdofpernode, numscal, disname),
 
       // instance of parameter class for electrochemistry problems
-      elchparams_(DRT::ELEMENTS::ScaTraEleParameterElch::Instance(disname)),
+      elchparams_(Discret::ELEMENTS::ScaTraEleParameterElch::Instance(disname)),
 
       // instance of utility class supporting element evaluation
       utils_(ScaTraEleUtilsElch<distype>::Instance(numdofpernode, numscal, disname))
@@ -39,31 +39,31 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::ScaTraEleBoundaryCal
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_action(
-    CORE::Elements::FaceElement* ele,                 //!< boundary element
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_action(
+    Core::Elements::FaceElement* ele,                 //!< boundary element
     Teuchos::ParameterList& params,                   //!< parameter list
-    DRT::Discretization& discretization,              //!< discretization
-    SCATRA::BoundaryAction action,                    //!< action
-    CORE::Elements::Element::LocationArray& la,       //!< location array
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-    CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+    Discret::Discretization& discretization,          //!< discretization
+    ScaTra::BoundaryAction action,                    //!< action
+    Core::Elements::Element::LocationArray& la,       //!< location array
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
+    Core::LinAlg::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
 )
 {
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::BoundaryAction::calc_elch_linearize_nernst:
+    case ScaTra::BoundaryAction::calc_elch_linearize_nernst:
     {
       calc_nernst_linearization(ele, params, discretization, la, elemat1_epetra, elevec1_epetra);
 
       break;
     }
 
-    case SCATRA::BoundaryAction::calc_elch_cell_voltage:
+    case ScaTra::BoundaryAction::calc_elch_cell_voltage:
     {
       calc_cell_voltage(ele, params, discretization, la, elevec1_epetra);
 
@@ -86,26 +86,26 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_action(
 /*----------------------------------------------------------------------*
  | process an electrode kinetics boundary condition          fang 08/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_boundary_kinetics(
-    CORE::Elements::FaceElement* ele,                 ///< current element
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_boundary_kinetics(
+    Core::Elements::FaceElement* ele,                 ///< current element
     Teuchos::ParameterList& params,                   ///< parameter list
-    DRT::Discretization& discretization,              ///< discretization
-    CORE::Elements::Element::LocationArray& la,       ///< location array
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  ///< element matrix
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector
+    Discret::Discretization& discretization,          ///< discretization
+    Core::Elements::Element::LocationArray& la,       ///< location array
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  ///< element matrix
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {
   // state and history variables at element nodes
   my::extract_node_values(discretization, la);
-  std::vector<CORE::LINALG::Matrix<nen_, 1>> ehist(
-      my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+  std::vector<Core::LinAlg::Matrix<nen_, 1>> ehist(
+      my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
   my::extract_node_values(ehist, discretization, la, "hist");
 
   // get current condition
-  Teuchos::RCP<CORE::Conditions::Condition> cond =
-      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
+  Teuchos::RCP<Core::Conditions::Condition> cond =
+      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKinetics'");
 
   // access parameters of the condition
@@ -137,9 +137,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_bound
     int reactspecies = 0;
     for (int kk = 0; kk < my::numscal_; ++kk) reactspecies += abs((*stoich)[kk]);
 
-    if (reactspecies > 1 and (kinetics == INPAR::ELCH::butler_volmer or
-                                 kinetics == INPAR::ELCH::butler_volmer_yang1997 or
-                                 kinetics == INPAR::ELCH::tafel or kinetics == INPAR::ELCH::linear))
+    if (reactspecies > 1 and (kinetics == Inpar::ElCh::butler_volmer or
+                                 kinetics == Inpar::ElCh::butler_volmer_yang1997 or
+                                 kinetics == Inpar::ElCh::tafel or kinetics == Inpar::ElCh::linear))
       FOUR_C_THROW(
           "Kinetic model Butler-Volmer / Butler-Volmer-Yang / Tafel and Linear: \n"
           "Only one educt and no product is allowed in the implemented version");
@@ -158,7 +158,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_bound
   if (curvenum >= 0)
   {
     const double curvefac =
-        GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).Evaluate(
             time);
     // adjust potential at metal side accordingly
     pot0 *= curvefac;
@@ -194,8 +194,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_bound
   else
   {
     // extract local values from the global vector
-    std::vector<CORE::LINALG::Matrix<nen_, 1>> ephidtnp(
-        my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+    std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(
+        my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));
     my::extract_node_values(ephidtnp, discretization, la, "phidtnp");
 
     if (not is_stationary)
@@ -212,27 +212,27 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_bound
   }
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_boundary_kinetics
+}  // Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_boundary_kinetics
 
 
 /*----------------------------------------------------------------------*
  | calculate linearization of nernst equation                     ehrl  |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst_linearization(
-    CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst_linearization(
+    Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {
-  Teuchos::RCP<CORE::Conditions::Condition> cond =
-      params.get<Teuchos::RCP<CORE::Conditions::Condition>>("condition");
+  Teuchos::RCP<Core::Conditions::Condition> cond =
+      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
   if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ElchBoundaryKinetics'");
 
   const auto kinetics = cond->parameters().Get<int>("kinetic model");
 
   // Nernst-BC
-  if (kinetics == INPAR::ELCH::nernst)
+  if (kinetics == Inpar::ElCh::nernst)
   {
     // extract local values from the global vector
     my::extract_node_values(discretization, la);
@@ -264,7 +264,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst_lin
     if (curvenum >= 0)
     {
       const double curvefac =
-          GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curvenum).Evaluate(
+          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curvenum).Evaluate(
               time);
       // adjust potential at metal side accordingly
       pot0 *= curvefac;
@@ -282,8 +282,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst_lin
       /*----------------------------------------------------------------------*
        |               start loop over integration points                     |
        *----------------------------------------------------------------------*/
-      const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-          SCATRA::DisTypeToOptGaussRule<distype>::rule);
+      const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+          ScaTra::DisTypeToOptGaussRule<distype>::rule);
       for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
       {
         const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
@@ -315,20 +315,20 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst_lin
         }
       }  // end of loop over integration points gpid
     }    // end loop over scalars
-  }      // end if(kinetics == INPAR::ELCH::nernst)
+  }      // end if(kinetics == Inpar::ElCh::nernst)
 }
 
 
 /*----------------------------------------------------------------------*
  | calculate cell voltage                                    fang 01/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_cell_voltage(
-    const CORE::Elements::Element* ele,          //!< the element we are dealing with
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_cell_voltage(
+    const Core::Elements::Element* ele,          //!< the element we are dealing with
     Teuchos::ParameterList& params,              //!< parameter list
-    DRT::Discretization& discretization,         //!< discretization
-    CORE::Elements::Element::LocationArray& la,  //!< location array
-    CORE::LINALG::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
+    Discret::Discretization& discretization,     //!< discretization
+    Core::Elements::Element::LocationArray& la,  //!< location array
+    Core::LinAlg::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
 )
 {
   // extract local nodal values of electric potential from global state vector
@@ -339,8 +339,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_cell_volta
   double intdomain(0.);
 
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -372,17 +372,18 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_cell_volta
 /*----------------------------------------------------------------------*
  | evaluate an electrode kinetics boundary condition          gjb 01/09 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_elch_boundary_kinetics(
-    const CORE::Elements::Element* ele,     ///< current element
-    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix
-    CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype,
+    probdim>::evaluate_elch_boundary_kinetics(const Core::Elements::Element*
+                                                  ele,  ///< current element
+    Core::LinAlg::SerialDenseMatrix& emat,              ///< element matrix
+    Core::LinAlg::SerialDenseVector& erhs,              ///< element right-hand side vector
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
     double timefac,                                           ///< time factor
-    Teuchos::RCP<const CORE::MAT::Material> material,         ///< material
-    Teuchos::RCP<CORE::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
+    Teuchos::RCP<const Core::Mat::Material> material,         ///< material
+    Teuchos::RCP<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
     const int nume,                                  ///< number of transferred electrons
     const std::vector<int> stoich,                   ///< stoichiometry of the reaction
     const int kinetics,                              ///< desired electrode kinetics model
@@ -395,8 +396,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_elch_b
   const double faraday = elchparams_->Faraday();
 
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all scalars
   for (int k = 0; k < my::numscal_; ++k)
@@ -437,21 +438,22 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_elch_b
   }    // loop over all scalars
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_elch_boundary_kinetics
+}  // Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype,
+   // probdim>::evaluate_elch_boundary_kinetics
 
 
 /*----------------------------------------------------------------------*
  | evaluate electrode kinetics status information             gjb 01/09 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_electrode_status(
-    const CORE::Elements::Element* ele,              ///< current element
-    CORE::LINALG::SerialDenseVector& scalars,        ///< scalars to be integrated
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_electrode_status(
+    const Core::Elements::Element* ele,              ///< current element
+    Core::LinAlg::SerialDenseVector& scalars,        ///< scalars to be integrated
     Teuchos::ParameterList& params,                  ///< parameter list
-    Teuchos::RCP<CORE::Conditions::Condition> cond,  ///< condition
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+    Teuchos::RCP<Core::Conditions::Condition> cond,  ///< condition
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
     const int kinetics,             ///< desired electrode kinetics model
     const std::vector<int> stoich,  ///< stoichiometry of the reaction
     const int nume,                 ///< number of transferred electrons
@@ -482,8 +484,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_electr
     FOUR_C_THROW("Boundary porosity has to be between 0 and 1, or -1 by default!");
 
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   bool statistics = false;
 
@@ -517,21 +519,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_electr
     FOUR_C_THROW(
         "There is no oxidized species O (stoich<0) defined in your input file!! \n"
         " Statistics could not be evaluated");
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_electrode_status
+}  // Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_electrode_status
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<CORE::FE::CellType::nurbs9, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<Core::FE::CellType::quad9, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<Core::FE::CellType::tri6, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<Core::FE::CellType::line3, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<Core::FE::CellType::nurbs3, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<Core::FE::CellType::nurbs9, 3>;
 
 FOUR_C_NAMESPACE_CLOSE

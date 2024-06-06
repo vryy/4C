@@ -25,12 +25,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
  *----------------------------------------------------------------------*/
-namespace ADAPTER
+namespace Adapter
 {
   class ScaTraBaseAlgorithm;
 }
 
-namespace POROELAST
+namespace PoroElast
 {
   class PoroBase;
 }
@@ -38,7 +38,7 @@ namespace POROELAST
 /*----------------------------------------------------------------------*
  |                                                                       |
  *----------------------------------------------------------------------*/
-namespace POROELASTSCATRA
+namespace PoroElastScaTra
 {
   /// partitioned algorithm for scalar transport in porous media
   class PoroScatraPart : public PoroScatraBase
@@ -55,7 +55,7 @@ namespace POROELASTSCATRA
     //! algorithm)
     virtual void do_scatra_step() = 0;
   };
-}  // namespace POROELASTSCATRA
+}  // namespace PoroElastScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

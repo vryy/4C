@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of string helper methods for namespace DRT::UTILS
+\brief A collection of string helper methods for namespace Discret::UTILS
 
 \level 1
 
@@ -12,7 +12,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   std::string Trim(const std::string& line)
   {
@@ -100,7 +100,7 @@ namespace CORE::UTILS
   {
     return SplitStringList(str, std::string(1, separator));
   }
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
 
 FOUR_C_NAMESPACE_CLOSE

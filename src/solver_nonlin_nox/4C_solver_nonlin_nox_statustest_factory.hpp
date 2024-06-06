@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace StatusTest
     {
@@ -109,9 +109,9 @@ namespace NOX
         Teuchos::RCP<const ::NOX::StatusTest::Factory> noxfactory_;
 
       };  // class Factory
-      /*! \brief Nonmember helper function for the NOX::NLN::StatusTest::Factory.
+      /*! \brief Nonmember helper function for the NOX::Nln::StatusTest::Factory.
        *
-       *  \relates NOX::NLN::StatusTest::Factory
+       *  \relates NOX::Nln::StatusTest::Factory
        *
        */
       Teuchos::RCP<::NOX::StatusTest::Generic> build_outer_status_tests(Teuchos::ParameterList& p,
@@ -119,7 +119,7 @@ namespace NOX
           std::map<std::string, Teuchos::RCP<::NOX::StatusTest::Generic>>* tagged_tests = nullptr);
 
     }  // namespace StatusTest
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

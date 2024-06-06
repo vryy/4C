@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
     enum class MapType : char
     {
@@ -37,7 +37,7 @@ namespace CONTACT
       slave,
       master
     };
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 FOUR_C_NAMESPACE_CLOSE

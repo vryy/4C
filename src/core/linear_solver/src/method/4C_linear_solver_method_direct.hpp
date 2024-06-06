@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINEAR_SOLVER
+namespace Core::LinearSolver
 {
   /// direct linear solver (using amesos)
   template <class MatrixType, class VectorType>
@@ -41,7 +41,7 @@ namespace CORE::LINEAR_SOLVER
      */
     void Setup(Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x,
         Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
-        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null) override;
+        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector = Teuchos::null) override;
 
     //! Actual call to the underlying amesos solver
     int Solve() override;
@@ -74,9 +74,9 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<EpetraExt::LinearProblem_Reindex2> reindexer_;
 
     //! Krylov projector if necessary
-    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;
+    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;
   };
-}  // namespace CORE::LINEAR_SOLVER
+}  // namespace Core::LinearSolver
 
 FOUR_C_NAMESPACE_CLOSE
 

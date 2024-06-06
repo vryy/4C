@@ -31,11 +31,11 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class BlockSparseMatrixBase;
-}  // namespace CORE::LINALG
-namespace ADAPTER
+}  // namespace Core::LinAlg
+namespace Adapter
 {
   class StructureTimeAda;
 }
@@ -48,14 +48,14 @@ namespace STR
   {
     class Generic;
   }  // namespace MODELEVALUATOR
-  namespace TIMINT
+  namespace TimeInt
   {
     /** \brief Abstract class for all time integration strategies
      *
      *  \author Michael Hiermeier */
-    class Base : public ADAPTER::StructureNew, CORE::IO::EveryIterationWriterInterface
+    class Base : public Adapter::StructureNew, Core::IO::EveryIterationWriterInterface
     {
-      friend class ADAPTER::StructureTimeAda;
+      friend class Adapter::StructureTimeAda;
 
      public:
       /// constructor
@@ -63,9 +63,9 @@ namespace STR
 
 
       /// initialize (all already existing) class variables
-      virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio,
-          const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> datasdyn,
-          const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate);
+      virtual void Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio,
+          const Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn,
+          const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> dataglobalstate);
 
       /// setup of the new class variables
       void Setup() override;
@@ -98,7 +98,7 @@ namespace STR
       /// @name General access methods
       ///@{
       /// Access discretization (structure only)
-      Teuchos::RCP<DRT::Discretization> discretization() override;
+      Teuchos::RCP<Discret::Discretization> discretization() override;
 
       /// Access to pointer to DoF row map of the discretization (structure only)
       const Epetra_Map* DofRowMapView() override
@@ -123,25 +123,25 @@ namespace STR
       }
 
       /// Access linear structural solver
-      Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override
+      Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override
       {
         check_init();
-        return datasdyn_->GetLinSolvers()[INPAR::STR::model_structure];
+        return datasdyn_->GetLinSolvers()[Inpar::STR::model_structure];
       }
 
       /// Return MapExtractor for Dirichlet boundary conditions
-      Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override;
-      [[nodiscard]] Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const;
+      Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override;
+      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const;
 
       //! Return locsys manager
-      Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() override;
+      Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override;
 
       //! Return the desired model evaluator (read-only)
       [[nodiscard]] const STR::MODELEVALUATOR::Generic& ModelEvaluator(
-          INPAR::STR::ModelType mtype) const override;
+          Inpar::STR::ModelType mtype) const override;
 
       //! Return the desired model evaluator (read and write)
-      STR::MODELEVALUATOR::Generic& ModelEvaluator(INPAR::STR::ModelType mtype) override;
+      STR::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::STR::ModelType mtype) override;
 
       ///@}
 
@@ -186,7 +186,7 @@ namespace STR
        * This will be checked:
        * See \ref CheckStateInSyncWithNOXGroup
        *
-       * See also \ref ADAPTER::StructureNew::set_state
+       * See also \ref Adapter::StructureNew::set_state
        */
       Teuchos::RCP<Epetra_Vector> WriteAccessDispNp() override
       {
@@ -265,14 +265,14 @@ namespace STR
       bool HaveConstraint() override
       {
         check_init_setup();
-        return datasdyn_->HaveModelType(INPAR::STR::model_lag_pen_constraint);
+        return datasdyn_->HaveModelType(Inpar::STR::model_lag_pen_constraint);
       }
 
       /// do we need a semi-smooth Newton-type plasticity algorithm
       virtual bool have_semi_smooth_plasticity()
       {
         check_init_setup();
-        return datasdyn_->HaveEleTech(INPAR::STR::EleTech::plasticity);
+        return datasdyn_->HaveEleTech(Inpar::STR::EleTech::plasticity);
       }
 
       /// FixMe get constraint manager defined in the structure
@@ -290,7 +290,7 @@ namespace STR
       }
 
       /// do we have this model
-      bool HaveModel(INPAR::STR::ModelType model) override
+      bool HaveModel(Inpar::STR::ModelType model) override
       {
         return datasdyn_->HaveModelType(model);
       }
@@ -414,7 +414,7 @@ namespace STR
       }
 
       //! Get divcont type
-      [[nodiscard]] virtual enum INPAR::STR::DivContAct GetDivergenceAction() const
+      [[nodiscard]] virtual enum Inpar::STR::DivContAct GetDivergenceAction() const
       {
         check_init_setup();
         return datasdyn_->GetDivergenceAction();
@@ -470,7 +470,7 @@ namespace STR
       }
 
       /// set evaluation action
-      void SetActionType(const CORE::Elements::ActionType& action) override;
+      void SetActionType(const Core::Elements::ActionType& action) override;
 
       // group id in nested parallelity
       [[nodiscard]] int GroupId() const;
@@ -504,7 +504,7 @@ namespace STR
       /// Output writer related routines (file and screen output)
       /// @{
       /// Access output object
-      Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter() override
+      Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter() override
       {
         return data_io().GetOutputPtr();
       }
@@ -530,7 +530,7 @@ namespace STR
       }
 
       /// create result test for encapsulated structure algorithm
-      Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+      Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
       /** \brief Get data that is written during restart
        *
@@ -696,10 +696,10 @@ namespace STR
       //@{
 
       //! Provide Name
-      virtual enum INPAR::STR::DynamicType MethodName() const = 0;
+      virtual enum Inpar::STR::DynamicType MethodName() const = 0;
 
       //! Provide title
-      std::string MethodTitle() const { return INPAR::STR::DynamicTypeString(MethodName()); }
+      std::string MethodTitle() const { return Inpar::STR::DynamicTypeString(MethodName()); }
 
       //! Return true, if time integrator is implicit
       virtual bool IsImplicit() const = 0;
@@ -822,11 +822,11 @@ namespace STR
       void output_state();
 
       /** \brief output of the current state */
-      void output_state(CORE::IO::DiscretizationWriter& iowriter, bool write_owner) const;
+      void output_state(Core::IO::DiscretizationWriter& iowriter, bool write_owner) const;
 
       /** \brief output of the debug state */
       void OutputDebugState(
-          CORE::IO::DiscretizationWriter& iowriter, bool write_owner) const override;
+          Core::IO::DiscretizationWriter& iowriter, bool write_owner) const override;
 
       /// output during runtime
       void runtime_output_state();
@@ -835,7 +835,7 @@ namespace STR
       void output_reaction_forces();
 
       /// output element volumes
-      void output_element_volume(CORE::IO::DiscretizationWriter& iowriter) const;
+      void output_element_volume(Core::IO::DiscretizationWriter& iowriter) const;
 
       /// output stress and/or strain state
       void output_stress_strain();
@@ -918,7 +918,7 @@ namespace STR
       /// pointer to the dirichlet boundary condition handler
       Teuchos::RCP<STR::Dbc> dbc_ptr_;
     };  // class Base
-  }     // namespace TIMINT
+  }     // namespace TimeInt
 }  // namespace STR
 
 

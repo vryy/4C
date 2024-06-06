@@ -27,21 +27,21 @@ FOUR_C_NAMESPACE_OPEN
 
 // Forward declaration
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 namespace BEAMINTERACTION
 {
   class BeamContactPair;
@@ -61,7 +61,7 @@ namespace FBI
   }
 }  // namespace FBI
 
-namespace ADAPTER
+namespace Adapter
 {
   class ConstraintEnforcerFactory;
 
@@ -90,7 +90,7 @@ namespace ADAPTER
      * \params[in] fluidmeshtying bool indicating if fluid meshtying is included
      */
     virtual void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying);
+        Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix, bool fluidmeshtying);
 
     /**
      * \brief Computes the coupling matrices
@@ -100,8 +100,8 @@ namespace ADAPTER
      * other.
      *
      */
-    virtual void Evaluate(Teuchos::RCP<const DRT::Discretization> discretization1,
-        Teuchos::RCP<const DRT::Discretization> discretization2,
+    virtual void Evaluate(Teuchos::RCP<const Discret::Discretization> discretization1,
+        Teuchos::RCP<const Discret::Discretization> discretization2,
         Teuchos::RCP<const Epetra_Vector> fluid_vel,
         Teuchos::RCP<const Epetra_Vector> beam_vel) = 0;
 
@@ -116,7 +116,7 @@ namespace ADAPTER
         Teuchos::RCP<BEAMINTERACTION::BeamContactPair> interactionpair);
 
     /// Creates a fluid_beam_meshtying pair
-    virtual void CreatePair(std::vector<CORE::Elements::Element const*> elements,
+    virtual void CreatePair(std::vector<Core::Elements::Element const*> elements,
         std::vector<double> beam_centerline_dofvec, std::vector<double> fluid_nodal_dofvec);
 
     // Get function for the meshtying pairs meshtying_pairs_
@@ -149,16 +149,16 @@ namespace ADAPTER
     virtual void PrepareFluidSolve() = 0;
 
     /// Matrix containing only structure side contributions \f$C_{ss}\f$
-    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCss() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetCss() const = 0;
 
     /// Matrix containing only fluid side contributions \f$C_{ff}\f$
-    virtual Teuchos::RCP<const CORE::LINALG::SparseOperator> GetCff() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::SparseOperator> GetCff() const = 0;
 
     /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
-    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCfs() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetCfs() const = 0;
 
     /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
-    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCsf() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetCsf() const = 0;
 
     /// Force vector acting on the fluid side \f$f_f\f$
     virtual Teuchos::RCP<const Epetra_FEVector> get_fluid_coupling_residual() const = 0;
@@ -167,7 +167,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_FEVector> get_structure_coupling_residual() const = 0;
 
    protected:
-    /** \brief You will have to use the ADAPTER::ConstraintEnforcerFactory
+    /** \brief You will have to use the Adapter::ConstraintEnforcerFactory
      *
      */
     FBIConstraintBridge();
@@ -185,7 +185,7 @@ namespace ADAPTER
     /// data container holding all geometry related evaluation data
     Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> geometry_evaluation_data_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

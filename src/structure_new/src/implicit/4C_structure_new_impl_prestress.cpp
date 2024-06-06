@@ -23,27 +23,27 @@ namespace
 {
   inline bool IsMaterialIterative()
   {
-    return Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-               GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS") ==
-           INPAR::STR::PreStress::material_iterative;
+    return Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+               Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS") ==
+           Inpar::STR::PreStress::material_iterative;
   }
 
   inline bool IsMaterialIterativeActive(const double currentTime)
   {
-    INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-        GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+    Inpar::STR::PreStress pstype = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+        Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     double pstime =
-        GLOBAL::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
-    return pstype == INPAR::STR::PreStress::material_iterative && currentTime <= pstime + 1.0e-15;
+        Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
+    return pstype == Inpar::STR::PreStress::material_iterative && currentTime <= pstime + 1.0e-15;
   }
 
   static inline bool IsMulfActive(const double currentTime)
   {
-    INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-        GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+    Inpar::STR::PreStress pstype = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+        Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     double pstime =
-        GLOBAL::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
-    return pstype == INPAR::STR::PreStress::mulf && currentTime <= pstime + 1.0e-15;
+        Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
+    return pstype == Inpar::STR::PreStress::mulf && currentTime <= pstime + 1.0e-15;
   }
 }  // namespace
 
@@ -56,7 +56,7 @@ STR::IMPLICIT::PreStress::PreStress() : absolute_displacement_norm_(1e9)
 
 
 void STR::IMPLICIT::PreStress::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
 
@@ -102,7 +102,7 @@ void STR::IMPLICIT::PreStress::post_update()
 
   {
     if (global_state().GetMyRank() == 0)
-      CORE::IO::cout << "====== Resetting Displacements" << CORE::IO::endl;
+      Core::IO::cout << "====== Resetting Displacements" << Core::IO::endl;
     // This is a MULF step, hence we do not update the displacements at the end of the
     // timestep. This is achieved by resetting the displacements, velocities and
     // accelerations.
@@ -115,9 +115,9 @@ void STR::IMPLICIT::PreStress::post_update()
     // Print prestress status update
     if (global_state().GetMyRank() == 0)
     {
-      CORE::IO::cout << "====== Iterative Prestress Status" << CORE::IO::endl;
-      CORE::IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
-                     << CORE::IO::endl;
+      Core::IO::cout << "====== Iterative Prestress Status" << Core::IO::endl;
+      Core::IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
+                     << Core::IO::endl;
     }
   }
 }
@@ -137,9 +137,9 @@ bool STR::IMPLICIT::PreStress::EarlyStopping() const
   {
     if (global_state().GetMyRank() == 0)
     {
-      CORE::IO::cout << "Prestress is converged. Stopping simulation." << CORE::IO::endl;
-      CORE::IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
-                     << CORE::IO::endl;
+      Core::IO::cout << "Prestress is converged. Stopping simulation." << Core::IO::endl;
+      Core::IO::cout << "abs-dis-inf-norm:                    " << absolute_displacement_norm_
+                     << Core::IO::endl;
     }
     return true;
   }

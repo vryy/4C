@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
@@ -26,8 +26,8 @@ namespace FLD
     \param numdof (in):  number of degrees of freedom
     \param dimnsp (in):  dimension of the nullspace
                          */
-  CORE::LINALG::SerialDenseMatrix ComputeFluidNullSpace(
-      const CORE::Nodes::Node& node, const int numdof, const int dimnsp);
+  Core::LinAlg::SerialDenseMatrix ComputeFluidNullSpace(
+      const Core::Nodes::Node& node, const int numdof, const int dimnsp);
 }  // namespace FLD
 
 FOUR_C_NAMESPACE_CLOSE

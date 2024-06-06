@@ -31,82 +31,82 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(
-    const CORE::Elements::Element* ele, const enum INPAR::SCATRA::ImplType impltype,
+Discret::ELEMENTS::ScaTraBoundaryInterface* Discret::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(
+    const Core::Elements::Element* ele, const enum Inpar::ScaTra::ImplType impltype,
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   // number of space dimensions
-  const int ndim = disname != "scatra_micro" ? GLOBAL::Problem::Instance()->NDim() : 1;
+  const int ndim = disname != "scatra_micro" ? Global::Problem::Instance()->NDim() : 1;
 
   switch (ele->Shape())
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
       if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::quad4, 3>(
+        return define_problem_type<Core::FE::CellType::quad4, 3>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
       if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::quad8, 3>(
+        return define_problem_type<Core::FE::CellType::quad8, 3>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
       if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::quad9, 3>(
+        return define_problem_type<Core::FE::CellType::quad9, 3>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
       if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::tri3, 3>(
+        return define_problem_type<Core::FE::CellType::tri3, 3>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
       if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::tri6, 3>(
+        return define_problem_type<Core::FE::CellType::tri6, 3>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
     }
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
       if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::line2, 2>(
+        return define_problem_type<Core::FE::CellType::line2, 2>(
             impltype, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return define_problem_type<CORE::FE::CellType::line2, 3>(
+        return define_problem_type<Core::FE::CellType::line2, 3>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
       if (ndim == 2)
-        return define_problem_type<CORE::FE::CellType::line3, 2>(
+        return define_problem_type<Core::FE::CellType::line3, 2>(
             impltype, numdofpernode, numscal, disname);
       else
         FOUR_C_THROW("invalid problem dimension!");
     }
-    case CORE::FE::CellType::nurbs3:  // 1D nurbs boundary element
+    case Core::FE::CellType::nurbs3:  // 1D nurbs boundary element
     {
-      return define_problem_type<CORE::FE::CellType::nurbs3, 2>(
+      return define_problem_type<Core::FE::CellType::nurbs3, 2>(
           impltype, numdofpernode, numscal, disname);
     }
-    case CORE::FE::CellType::nurbs9:  // 2D nurbs boundary element
+    case Core::FE::CellType::nurbs9:  // 2D nurbs boundary element
     {
-      return define_problem_type<CORE::FE::CellType::nurbs9, 3>(
+      return define_problem_type<Core::FE::CellType::nurbs9, 3>(
           impltype, numdofpernode, numscal, disname);
     }
     default:
@@ -124,81 +124,82 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
 /*-------------------------------------------------------------------------------------------*
  | return instance of element evaluation class depending on implementation type   fang 02/15 |
  *-------------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::define_problem_type(
-    const enum INPAR::SCATRA::ImplType impltype, const int numdofpernode, const int numscal,
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraBoundaryInterface*
+Discret::ELEMENTS::ScaTraBoundaryFactory::define_problem_type(
+    const enum Inpar::ScaTra::ImplType impltype, const int numdofpernode, const int numscal,
     const std::string& disname)
 {
   switch (impltype)
   {
-    case INPAR::SCATRA::impltype_advreac:
-    case INPAR::SCATRA::impltype_aniso:
-    case INPAR::SCATRA::impltype_cardiac_monodomain:
-    case INPAR::SCATRA::impltype_chemo:
-    case INPAR::SCATRA::impltype_chemoreac:
-    case INPAR::SCATRA::impltype_levelset:
-    case INPAR::SCATRA::impltype_std:
-    case INPAR::SCATRA::impltype_thermo_elch_diffcond:
-    case INPAR::SCATRA::impltype_multipororeac:
+    case Inpar::ScaTra::impltype_advreac:
+    case Inpar::ScaTra::impltype_aniso:
+    case Inpar::ScaTra::impltype_cardiac_monodomain:
+    case Inpar::ScaTra::impltype_chemo:
+    case Inpar::ScaTra::impltype_chemoreac:
+    case Inpar::ScaTra::impltype_levelset:
+    case Inpar::ScaTra::impltype_std:
+    case Inpar::ScaTra::impltype_thermo_elch_diffcond:
+    case Inpar::ScaTra::impltype_multipororeac:
     {
-      return DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleBoundaryCalcStd<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
       break;
     }
-    case INPAR::SCATRA::impltype_loma:
+    case Inpar::ScaTra::impltype_loma:
     {
-      return DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
       break;
     }
-    case INPAR::SCATRA::impltype_elch_electrode:
+    case Inpar::ScaTra::impltype_elch_electrode:
     {
-      return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
       break;
     }
-    case INPAR::SCATRA::impltype_elch_electrode_thermo:
+    case Inpar::ScaTra::impltype_elch_electrode_thermo:
     {
-      return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
+          probdim>::Instance(numdofpernode, numscal, disname);
+      break;
+    }
+    case Inpar::ScaTra::impltype_elch_diffcond:
+    case Inpar::ScaTra::impltype_elch_diffcond_thermo:
+    {
+      return Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
       break;
     }
-    case INPAR::SCATRA::impltype_elch_diffcond:
-    case INPAR::SCATRA::impltype_elch_diffcond_thermo:
+    case Inpar::ScaTra::impltype_elch_NP:
     {
-      return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
       break;
     }
-    case INPAR::SCATRA::impltype_elch_NP:
+    case Inpar::ScaTra::impltype_poro:
+    case Inpar::ScaTra::impltype_pororeac:
     {
-      return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
       break;
     }
-    case INPAR::SCATRA::impltype_poro:
-    case INPAR::SCATRA::impltype_pororeac:
+    case Inpar::ScaTra::impltype_refconcreac:
     {
-      return DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
       break;
     }
-    case INPAR::SCATRA::impltype_refconcreac:
+    case Inpar::ScaTra::impltype_thermo_elch_electrode:
     {
-      return DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::Instance(
+      return Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
       break;
     }
-    case INPAR::SCATRA::impltype_thermo_elch_electrode:
+    case Inpar::ScaTra::impltype_elch_electrode_growth:
     {
-      return DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Instance(
-          numdofpernode, numscal, disname);
-      break;
-    }
-    case INPAR::SCATRA::impltype_elch_electrode_growth:
-    {
-      return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::Instance(
-          numdofpernode, numscal, disname);
+      return Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
+          probdim>::Instance(numdofpernode, numscal, disname);
       break;
     }
     default:

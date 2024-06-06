@@ -48,7 +48,7 @@ namespace
       for (std::size_t i = 0; i < 2; ++i)
       {
         eleTensors_[i].MultiplyNT(eleFibers_[i], eleFibers_[i]);
-        CORE::LINALG::VOIGT::Stresses::MatrixToVector(eleTensors_[i], eleTensors_stress_[i]);
+        Core::LinAlg::Voigt::Stresses::MatrixToVector(eleTensors_[i], eleTensors_stress_[i]);
       }
 
       setup_anisotropy_extension();
@@ -57,13 +57,13 @@ namespace
     void setup_anisotropy_extension()
     {
       int fiber_id = std::get<0>(GetParam());
-      auto strategy = Teuchos::rcp(new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr));
-      anisotropyExtension_ = std::make_unique<MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension>(
+      auto strategy = Teuchos::rcp(new Mat::Elastic::StructuralTensorStrategyStandard(nullptr));
+      anisotropyExtension_ = std::make_unique<Mat::Elastic::CoupAnisoExpoAnisotropyExtension>(
           1, 0.0, false, strategy, fiber_id);
       anisotropyExtension_->register_needed_tensors(
-          MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
-          MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
-          MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
+          Mat::FiberAnisotropyExtension<1>::FIBER_VECTORS |
+          Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS |
+          Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
       anisotropy_.register_anisotropy_extension(*anisotropyExtension_);
       anisotropy_.set_number_of_gauss_points(2);
 
@@ -75,12 +75,12 @@ namespace
 
     [[nodiscard]] int GetFiberId() const { return std::get<0>(GetParam()); }
 
-    MAT::Anisotropy anisotropy_;
-    std::unique_ptr<MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension> anisotropyExtension_;
+    Mat::Anisotropy anisotropy_;
+    std::unique_ptr<Mat::Elastic::CoupAnisoExpoAnisotropyExtension> anisotropyExtension_;
 
-    std::vector<CORE::LINALG::Matrix<3, 1>> eleFibers_;
-    std::vector<CORE::LINALG::Matrix<3, 3>> eleTensors_;
-    std::vector<CORE::LINALG::Matrix<6, 1>> eleTensors_stress_;
+    std::vector<Core::LinAlg::Matrix<3, 1>> eleFibers_;
+    std::vector<Core::LinAlg::Matrix<3, 3>> eleTensors_;
+    std::vector<Core::LinAlg::Matrix<6, 1>> eleTensors_stress_;
   };
 
   TEST_P(CoupAnisoExpoAnisotropyExtensionElementFiberTest, GetScalarProduct)

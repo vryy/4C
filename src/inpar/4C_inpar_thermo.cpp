@@ -21,9 +21,9 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
+  using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -35,10 +35,10 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(dyna_statics, dyna_onesteptheta, dyna_genalpha, dyna_expleuler), &tdyn);
 
   // output type
-  CORE::UTILS::IntParameter("RESULTSEVRY", 1,
+  Core::UTILS::IntParameter("RESULTSEVRY", 1,
       "save temperature and other global quantities every RESULTSEVRY steps", &tdyn);
-  CORE::UTILS::IntParameter("RESEVRYERGY", 0, "write system energies every requested step", &tdyn);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter("RESEVRYERGY", 0, "write system energies every requested step", &tdyn);
+  Core::UTILS::IntParameter(
       "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &tdyn);
 
   setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
@@ -47,22 +47,22 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(initfield_zero_field, initfield_field_by_function, initfield_field_by_condition),
       &tdyn);
 
-  CORE::UTILS::IntParameter("INITFUNCNO", -1, "function number for thermal initial field", &tdyn);
+  Core::UTILS::IntParameter("INITFUNCNO", -1, "function number for thermal initial field", &tdyn);
 
   // Time loop control
-  CORE::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size", &tdyn);
-  CORE::UTILS::IntParameter("NUMSTEP", 200, "maximum number of steps", &tdyn);
-  CORE::UTILS::DoubleParameter("MAXTIME", 5.0, "maximum time", &tdyn);
+  Core::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size", &tdyn);
+  Core::UTILS::IntParameter("NUMSTEP", 200, "maximum number of steps", &tdyn);
+  Core::UTILS::DoubleParameter("MAXTIME", 5.0, "maximum time", &tdyn);
 
   // Iterationparameters
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "TOLTEMP", 1.0E-10, "tolerance in the temperature norm of the Newton iteration", &tdyn);
 
   setStringToIntegralParameter<int>("NORM_TEMP", "Abs",
       "type of norm for temperature convergence check", tuple<std::string>("Abs", "Rel", "Mix"),
       tuple<int>(convnorm_abs, convnorm_rel, convnorm_mix), &tdyn);
 
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "TOLRES", 1.0E-08, "tolerance in the residual norm for the Newton iteration", &tdyn);
 
   setStringToIntegralParameter<int>("NORM_RESF", "Abs",
@@ -73,10 +73,10 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "binary operator to combine temperature and residual force values",
       tuple<std::string>("And", "Or"), tuple<int>(bop_and, bop_or), &tdyn);
 
-  CORE::UTILS::IntParameter("MAXITER", 50,
+  Core::UTILS::IntParameter("MAXITER", 50,
       "maximum number of iterations allowed for Newton-Raphson iteration before failure", &tdyn);
 
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "MINITER", 0, "minimum number of iterations to be done within Newton-Raphson loop", &tdyn);
 
   setStringToIntegralParameter<int>("ITERNORM", "L2", "type of norm to be applied to residuals",
@@ -90,7 +90,7 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           divcont_repeat_simulation),
       &tdyn);
 
-  CORE::UTILS::IntParameter("MAXDIVCONREFINEMENTLEVEL", 10,
+  Core::UTILS::IntParameter("MAXDIVCONREFINEMENTLEVEL", 10,
       "number of times timestep is halved in case nonlinear solver diverges", &tdyn);
 
   setStringToIntegralParameter<int>("NLNSOL", "fullnewton", "Nonlinear solution technique",
@@ -103,29 +103,29 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(pred_vague, pred_consttemp, pred_consttemprate, pred_tangtemp), &tdyn);
 
   // convergence criteria solver adaptivity
-  CORE::UTILS::BoolParameter("ADAPTCONV", "No",
+  Core::UTILS::BoolParameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution", &tdyn);
-  CORE::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.1,
+  Core::UTILS::DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &tdyn);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "LUMPCAPA", "No", "Lump the capacity matrix for explicit time integration", &tdyn);
 
   // number of linear solver used for thermal problems
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "LINEAR_SOLVER", -1, "number of linear solver used for thermal problems", &tdyn);
 
   // where the geometry comes from
   setStringToIntegralParameter<int>("GEOMETRY", "full", "How the geometry is specified",
       tuple<std::string>("full", "box", "file"),
-      tuple<int>(CORE::IO::geometry_full, CORE::IO::geometry_box, CORE::IO::geometry_file), &tdyn);
+      tuple<int>(Core::IO::geometry_full, Core::IO::geometry_box, Core::IO::geometry_file), &tdyn);
 
   setStringToIntegralParameter<int>("CALCERROR", "No",
       "compute error compared to analytical solution", tuple<std::string>("No", "byfunct"),
       tuple<int>(no_error_calculation, calcerror_byfunct), &tdyn);
-  CORE::UTILS::IntParameter("CALCERRORFUNCNO", -1, "Function for Error Calculation", &tdyn);
+  Core::UTILS::IntParameter("CALCERRORFUNCNO", -1, "Function for Error Calculation", &tdyn);
 
   /*----------------------------------------------------------------------*/
   /* parameters for generalised-alpha thermal integrator */
@@ -136,60 +136,60 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(midavg_vague, midavg_imrlike, midavg_trlike), &tgenalpha);
 
   // default values correspond to midpoint-rule
-  CORE::UTILS::DoubleParameter("GAMMA", 0.5, "Generalised-alpha factor in (0,1]", &tgenalpha);
-  CORE::UTILS::DoubleParameter("ALPHA_M", 0.5, "Generalised-alpha factor in [0.5,1)", &tgenalpha);
-  CORE::UTILS::DoubleParameter("ALPHA_F", 0.5, "Generalised-alpha factor in [0.5,1)", &tgenalpha);
-  CORE::UTILS::DoubleParameter("RHO_INF", -1.0, "Generalised-alpha factor in [0,1]", &tgenalpha);
+  Core::UTILS::DoubleParameter("GAMMA", 0.5, "Generalised-alpha factor in (0,1]", &tgenalpha);
+  Core::UTILS::DoubleParameter("ALPHA_M", 0.5, "Generalised-alpha factor in [0.5,1)", &tgenalpha);
+  Core::UTILS::DoubleParameter("ALPHA_F", 0.5, "Generalised-alpha factor in [0.5,1)", &tgenalpha);
+  Core::UTILS::DoubleParameter("RHO_INF", -1.0, "Generalised-alpha factor in [0,1]", &tgenalpha);
 
   /*----------------------------------------------------------------------*/
   /* parameters for one-step-theta thermal integrator */
   Teuchos::ParameterList& tonesteptheta = tdyn.sublist("ONESTEPTHETA", false, "");
 
-  CORE::UTILS::DoubleParameter("THETA", 0.5, "One-step-theta factor in (0,1]", &tonesteptheta);
+  Core::UTILS::DoubleParameter("THETA", 0.5, "One-step-theta factor in (0,1]", &tonesteptheta);
 }
 
 
 
-void INPAR::THR::SetValidConditions(
-    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
+void Inpar::THR::SetValidConditions(
+    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
-  using namespace INPUT;
+  using namespace Input;
 
   /*--------------------------------------------------------------------*/
   // Convective heat transfer (Newton's law of heat transfer)
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> thermoconvectcomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> thermoconvectcomponents;
 
   // decide here if approximation is sufficient
   // --> Tempn (old temperature T_n)
   // or if the exact solution is needed
   // --> Tempnp (current temperature solution T_n+1) with linearisation
-  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::SelectionComponent("temperature state",
+  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::SelectionComponent("temperature state",
       "Tempnp", Teuchos::tuple<std::string>("Tempnp", "Tempn"),
       Teuchos::tuple<std::string>("Tempnp", "Tempn"))));
   // heat transfer coefficient h
-  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("coeff")));
-  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("coeff")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("coeff")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::RealComponent("coeff")));
   // surrounding (fluid) temperature T_oo
-  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("surtemp")));
-  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::RealComponent("surtemp")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("surtemp")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::RealComponent("surtemp")));
   // time curve to increase the surrounding (fluid) temperature T_oo in time
-  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("surtempfunct")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("surtempfunct")));
   thermoconvectcomponents.push_back(
-      Teuchos::rcp(new INPUT::IntComponent("surtempfunct", {0, true, true})));
+      Teuchos::rcp(new Input::IntComponent("surtempfunct", {0, true, true})));
   // time curve to increase the complete boundary condition, i.e., the heat flux
-  thermoconvectcomponents.push_back(Teuchos::rcp(new INPUT::SeparatorComponent("funct")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new Input::SeparatorComponent("funct")));
   thermoconvectcomponents.push_back(
-      Teuchos::rcp(new INPUT::IntComponent("funct", {0, true, true})));
+      Teuchos::rcp(new Input::IntComponent("funct", {0, true, true})));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linethermoconvect = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN THERMO CONVECTION LINE CONDITIONS",
-          "ThermoConvections", "Line Thermo Convections", CORE::Conditions::ThermoConvections, true,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfthermoconvect = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN THERMO CONVECTION SURF CONDITIONS",
-          "ThermoConvections", "Surface Thermo Convections", CORE::Conditions::ThermoConvections,
-          true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linethermoconvect = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN THERMO CONVECTION LINE CONDITIONS",
+          "ThermoConvections", "Line Thermo Convections", Core::Conditions::ThermoConvections, true,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfthermoconvect = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN THERMO CONVECTION SURF CONDITIONS",
+          "ThermoConvections", "Surface Thermo Convections", Core::Conditions::ThermoConvections,
+          true, Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < thermoconvectcomponents.size(); ++i)
   {
@@ -203,27 +203,27 @@ void INPAR::THR::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Robin boundary conditions for heat transfer
   // NOTE: this condition must be
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> thermorobinline =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN THERMO ROBIN LINE CONDITIONS",
-          "ThermoRobin", "Thermo Robin boundary condition", CORE::Conditions::ThermoRobin, true,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> thermorobinsurf =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN THERMO ROBIN SURF CONDITIONS",
-          "ThermoRobin", "Thermo Robin boundary condition", CORE::Conditions::ThermoRobin, true,
-          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> thermorobinline =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN THERMO ROBIN LINE CONDITIONS",
+          "ThermoRobin", "Thermo Robin boundary condition", Core::Conditions::ThermoRobin, true,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> thermorobinsurf =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN THERMO ROBIN SURF CONDITIONS",
+          "ThermoRobin", "Thermo Robin boundary condition", Core::Conditions::ThermoRobin, true,
+          Core::Conditions::geometry_type_surface));
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> thermorobincomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> thermorobincomponents;
 
-  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("NUMSCAL")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::IntComponent("numscal")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("ONOFF")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("numscal")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
   thermorobincomponents.emplace_back(
-      Teuchos::rcp(new INPUT::IntVectorComponent("onoff", INPUT::LengthFromInt("numscal"))));
+      Teuchos::rcp(new Input::IntVectorComponent("onoff", Input::LengthFromInt("numscal"))));
 
-  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("PREFACTOR")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::RealComponent("prefactor")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::SeparatorComponent("REFVALUE")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new INPUT::RealComponent("refvalue")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("PREFACTOR")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("prefactor")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("REFVALUE")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("refvalue")));
 
   for (const auto& thermorobincomponent : thermorobincomponents)
   {

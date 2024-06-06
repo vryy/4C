@@ -27,9 +27,9 @@ FOUR_C_NAMESPACE_OPEN
  */
 template <typename scalar_type, typename line, typename volume>
 GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::GeometryPairLineToVolumeGaussPointProjectionCrossSection(const CORE::Elements::Element*
+    volume>::GeometryPairLineToVolumeGaussPointProjectionCrossSection(const Core::Elements::Element*
                                                                           element1,
-    const CORE::Elements::Element* element2,
+    const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
     : GeometryPairLineToVolume<scalar_type, line, volume>(element1, element2, evaluation_data)
 {
@@ -59,14 +59,14 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
     volume>::pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
     const ElementData<volume, scalar_type>& element_data_volume,
     std::vector<LineSegment<scalar_type>>& segments,
-    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>*
+    const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>*
         line_triad_interpolation) const
 {
   // Get the Gauss point projection tracker for this line element.
   std::vector<bool>& line_projection_tracker = get_line_projection_vector();
 
   // Gauss rule.
-  CORE::FE::IntegrationPoints1D gauss_points_axis =
+  Core::FE::IntegrationPoints1D gauss_points_axis =
       this->line_to_3d_evaluation_data_->GetGaussPoints();
   unsigned int n_gauss_points_axis =
       this->line_to_3d_evaluation_data_->get_number_of_gauss_points();
@@ -76,20 +76,20 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   // Initilaize variables for the projection.
   scalar_type eta;
   double alpha;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_line;
-  CORE::LINALG::Matrix<3, 3, scalar_type> triad;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_cross_section;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
-  CORE::LINALG::Matrix<3, 1, scalar_type> eta_cross_section(true);
-  CORE::LINALG::Matrix<2, 1, scalar_type> eta_cross_section_2d;
-  CORE::LINALG::Matrix<3, 1, scalar_type> xi_volume;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_line;
+  Core::LinAlg::Matrix<3, 3, scalar_type> triad;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_cross_section;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_surface;
+  Core::LinAlg::Matrix<3, 1, scalar_type> eta_cross_section(true);
+  Core::LinAlg::Matrix<2, 1, scalar_type> eta_cross_section_2d;
+  Core::LinAlg::Matrix<3, 1, scalar_type> xi_volume;
   ProjectionResult projection_result;
   segments.clear();
   bool one_projects = false;
   LineSegment<scalar_type> projection_point_segment;
 
   // Get the radius from the beam element.
-  const double radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(this->Element1()))
+  const double radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->Element1()))
                             ->get_circular_cross_section_radius_for_interactions();
 
   // Loop over Gauss points and check if they project to this volume.

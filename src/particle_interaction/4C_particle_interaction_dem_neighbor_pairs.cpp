@@ -26,17 +26,17 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::DEMNeighborPairs::DEMNeighborPairs()
+ParticleInteraction::DEMNeighborPairs::DEMNeighborPairs()
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::Init()
+void ParticleInteraction::DEMNeighborPairs::Init()
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::Setup(
+void ParticleInteraction::DEMNeighborPairs::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface)
 {
@@ -50,7 +50,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::Setup(
   particlewallinterface_ = particlewallinterface;
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_neighbor_pairs()
+void ParticleInteraction::DEMNeighborPairs::evaluate_neighbor_pairs()
 {
   // evaluate particle pairs
   evaluate_particle_pairs();
@@ -59,7 +59,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_neighbor_pairs()
   if (particlewallinterface_) evaluate_particle_wall_pairs();
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_neighbor_pairs_adhesion(
+void ParticleInteraction::DEMNeighborPairs::evaluate_neighbor_pairs_adhesion(
     const double& adhesion_distance)
 {
   // evaluate adhesion particle pairs
@@ -69,9 +69,9 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_neighbor_pairs_adhesion(
   if (particlewallinterface_) evaluate_particle_wall_pairs_adhesion(adhesion_distance);
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_pairs()
+void ParticleInteraction::DEMNeighborPairs::evaluate_particle_pairs()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_pairs");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::DEMNeighborPairs::evaluate_particle_pairs");
 
   // clear particle pair data
   particlepairdata_.clear();
@@ -149,15 +149,15 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_pairs()
   }
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs()
+void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs");
 
   // clear particle-wall pair data
   particlewallpairdata_.clear();
 
   // relate particles to index of particle-wall pairs (considering object type of contact point)
-  std::unordered_map<int, std::vector<std::pair<CORE::GEO::ObjectType, int>>>
+  std::unordered_map<int, std::vector<std::pair<Core::Geo::ObjectType, int>>>
       particletoindexofparticlewallpairs;
 
   // index of particle-wall pairs
@@ -183,20 +183,20 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs()
     const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
 
     // get position of particle i
-    const CORE::LINALG::Matrix<3, 1> pos_i(
+    const Core::LinAlg::Matrix<3, 1> pos_i(
         container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i));
 
     // get pointer to column wall element
-    CORE::Elements::Element* ele = potentialneighbors.second;
+    Core::Elements::Element* ele = potentialneighbors.second;
 
     // determine nodal positions of column wall element
-    std::map<int, CORE::LINALG::Matrix<3, 1>> colelenodalpos;
+    std::map<int, Core::LinAlg::Matrix<3, 1>> colelenodalpos;
     particlewallinterface_->determine_col_wall_ele_nodal_pos(ele, colelenodalpos);
 
     // get coordinates of closest point on current column wall element to particle
-    CORE::LINALG::Matrix<3, 1> closestpos;
-    CORE::GEO::ObjectType objecttype =
-        CORE::GEO::nearest3DObjectOnElement(ele, colelenodalpos, pos_i, closestpos);
+    Core::LinAlg::Matrix<3, 1> closestpos;
+    Core::Geo::ObjectType objecttype =
+        Core::Geo::nearest3DObjectOnElement(ele, colelenodalpos, pos_i, closestpos);
 
     // vector from particle i to wall contact point j
     double r_ji[3];
@@ -242,10 +242,10 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs()
       UTILS::VecSetScale(particlewallpair.e_ji_, (1.0 / absdist), r_ji);
 
       // get coordinates of wall contact point in element parameter space
-      CORE::LINALG::Matrix<2, 1> elecoords(true);
-      const CORE::LINALG::SerialDenseMatrix xyze(
-          CORE::GEO::getCurrentNodalPositions(ele, colelenodalpos));
-      CORE::GEO::CurrentToSurfaceElementCoordinates(ele->Shape(), xyze, closestpos, elecoords);
+      Core::LinAlg::Matrix<2, 1> elecoords(true);
+      const Core::LinAlg::SerialDenseMatrix xyze(
+          Core::Geo::getCurrentNodalPositions(ele, colelenodalpos));
+      Core::Geo::CurrentToSurfaceElementCoordinates(ele->Shape(), xyze, closestpos, elecoords);
 
       // set parameter space coordinates of wall contact point
       particlewallpair.elecoords_[0] = elecoords(0, 0);
@@ -260,7 +260,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs()
   for (auto& particleIt : particletoindexofparticlewallpairs)
   {
     // get reference to index of particle-wall pairs for current particle
-    std::vector<std::pair<CORE::GEO::ObjectType, int>>& indexofparticlewallpairs =
+    std::vector<std::pair<Core::Geo::ObjectType, int>>& indexofparticlewallpairs =
         particleIt.second;
 
     // only one particle-wall pair for current particle
@@ -287,7 +287,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs()
     const double adaptedtol = 1.0e-7 * rad_i[0];
 
     // iterate over particle-wall pairs (master)
-    for (std::pair<CORE::GEO::ObjectType, int>& master : indexofparticlewallpairs)
+    for (std::pair<Core::Geo::ObjectType, int>& master : indexofparticlewallpairs)
     {
       // get reference to particle-wall pair (master)
       DEMParticleWallPair& masterpair = particlewallpairdata_[master.second];
@@ -297,7 +297,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs()
           std::sqrt(UTILS::Pow<2>(rad_i[0]) - UTILS::Pow<2>(rad_i[0] + masterpair.gap_));
 
       // check with other particle-wall pairs (slave)
-      for (std::pair<CORE::GEO::ObjectType, int>& slave : indexofparticlewallpairs)
+      for (std::pair<Core::Geo::ObjectType, int>& slave : indexofparticlewallpairs)
       {
         // no-self checking
         if (master.second == slave.second) continue;
@@ -325,12 +325,12 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs()
           }
         }
         // check for line/node contact points within penetration volume of a surface contact point
-        else if (master.first == CORE::GEO::SURFACE_OBJECT)
+        else if (master.first == Core::Geo::SURFACE_OBJECT)
         {
           if (absdist <= intersectionradius) removeslavepair = true;
         }
         // check for node contact points within penetration volume of a line contact point
-        else if (master.first == CORE::GEO::LINE_OBJECT and slave.first == CORE::GEO::NODE_OBJECT)
+        else if (master.first == Core::Geo::LINE_OBJECT and slave.first == Core::Geo::NODE_OBJECT)
         {
           if (absdist <= intersectionradius) removeslavepair = true;
         }
@@ -358,11 +358,11 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs()
   }
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_pairs_adhesion(
+void ParticleInteraction::DEMNeighborPairs::evaluate_particle_pairs_adhesion(
     const double& adhesion_distance)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_pairs_adhesion");
+      "ParticleInteraction::DEMNeighborPairs::evaluate_particle_pairs_adhesion");
 
   // clear adhesion particle pair data
   particlepairadhesiondata_.clear();
@@ -440,17 +440,17 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_pairs_adhesion(
   }
 }
 
-void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesion(
+void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesion(
     const double& adhesion_distance)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesion");
+      "ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesion");
 
   // clear particle-wall pair data
   particlewallpairadhesiondata_.clear();
 
   // relate particles to index of particle-wall pairs (considering object type of contact point)
-  std::unordered_map<int, std::vector<std::pair<CORE::GEO::ObjectType, int>>>
+  std::unordered_map<int, std::vector<std::pair<Core::Geo::ObjectType, int>>>
       particletoindexofparticlewallpairs;
 
   // index of particle-wall pairs
@@ -476,11 +476,11 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
     const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
 
     // get position of particle i
-    const CORE::LINALG::Matrix<3, 1> pos_i(
+    const Core::LinAlg::Matrix<3, 1> pos_i(
         container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i));
 
     // get pointer to column wall element
-    CORE::Elements::Element* ele = potentialneighbors.second;
+    Core::Elements::Element* ele = potentialneighbors.second;
 
     // adhesion surface energy
     double surface_energy = 0.0;
@@ -488,10 +488,10 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
     // get material parameters of wall element
     {
       // cast material to particle wall material
-      const Teuchos::RCP<const MAT::ParticleWallMaterialDEM>& particlewallmaterial =
-          Teuchos::rcp_dynamic_cast<const MAT::ParticleWallMaterialDEM>(ele->Material());
+      const Teuchos::RCP<const Mat::ParticleWallMaterialDEM>& particlewallmaterial =
+          Teuchos::rcp_dynamic_cast<const Mat::ParticleWallMaterialDEM>(ele->Material());
       if (particlewallmaterial == Teuchos::null)
-        FOUR_C_THROW("cast to MAT::ParticleWallMaterialDEM failed!");
+        FOUR_C_THROW("cast to Mat::ParticleWallMaterialDEM failed!");
 
       // get adhesion surface energy
       surface_energy = particlewallmaterial->adhesion_surface_energy();
@@ -501,13 +501,13 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
     if (not(surface_energy > 0.0)) continue;
 
     // determine nodal positions of column wall element
-    std::map<int, CORE::LINALG::Matrix<3, 1>> colelenodalpos;
+    std::map<int, Core::LinAlg::Matrix<3, 1>> colelenodalpos;
     particlewallinterface_->determine_col_wall_ele_nodal_pos(ele, colelenodalpos);
 
     // get coordinates of closest point on current column wall element to particle
-    CORE::LINALG::Matrix<3, 1> closestpos;
-    CORE::GEO::ObjectType objecttype =
-        CORE::GEO::nearest3DObjectOnElement(ele, colelenodalpos, pos_i, closestpos);
+    Core::LinAlg::Matrix<3, 1> closestpos;
+    Core::Geo::ObjectType objecttype =
+        Core::Geo::nearest3DObjectOnElement(ele, colelenodalpos, pos_i, closestpos);
 
     // vector from particle i to wall contact point j
     double r_ji[3];
@@ -553,10 +553,10 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
       UTILS::VecSetScale(particlewallpair.e_ji_, (1.0 / absdist), r_ji);
 
       // get coordinates of wall contact point in element parameter space
-      CORE::LINALG::Matrix<2, 1> elecoords(true);
-      const CORE::LINALG::SerialDenseMatrix xyze(
-          CORE::GEO::getCurrentNodalPositions(ele, colelenodalpos));
-      CORE::GEO::CurrentToSurfaceElementCoordinates(ele->Shape(), xyze, closestpos, elecoords);
+      Core::LinAlg::Matrix<2, 1> elecoords(true);
+      const Core::LinAlg::SerialDenseMatrix xyze(
+          Core::Geo::getCurrentNodalPositions(ele, colelenodalpos));
+      Core::Geo::CurrentToSurfaceElementCoordinates(ele->Shape(), xyze, closestpos, elecoords);
 
       // set parameter space coordinates of wall contact point
       particlewallpair.elecoords_[0] = elecoords(0, 0);
@@ -571,7 +571,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
   for (auto& particleIt : particletoindexofparticlewallpairs)
   {
     // get reference to index of particle-wall pairs for current particle
-    std::vector<std::pair<CORE::GEO::ObjectType, int>>& indexofparticlewallpairs =
+    std::vector<std::pair<Core::Geo::ObjectType, int>>& indexofparticlewallpairs =
         particleIt.second;
 
     // only one particle-wall pair for current particle
@@ -598,7 +598,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
     const double adaptedtol = 1.0e-7 * rad_i[0];
 
     // iterate over particle-wall pairs (master)
-    for (std::pair<CORE::GEO::ObjectType, int>& master : indexofparticlewallpairs)
+    for (std::pair<Core::Geo::ObjectType, int>& master : indexofparticlewallpairs)
     {
       // get reference to particle-wall pair (master)
       DEMParticleWallPair& masterpair = particlewallpairadhesiondata_[master.second];
@@ -608,7 +608,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
           UTILS::Pow<2>(rad_i[0] + adhesion_distance) - UTILS::Pow<2>(rad_i[0] + masterpair.gap_));
 
       // check with other particle-wall pairs (slave)
-      for (std::pair<CORE::GEO::ObjectType, int>& slave : indexofparticlewallpairs)
+      for (std::pair<Core::Geo::ObjectType, int>& slave : indexofparticlewallpairs)
       {
         // no-self checking
         if (master.second == slave.second) continue;
@@ -636,12 +636,12 @@ void PARTICLEINTERACTION::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
           }
         }
         // check for line/node contact points within penetration volume of a surface contact point
-        else if (master.first == CORE::GEO::SURFACE_OBJECT)
+        else if (master.first == Core::Geo::SURFACE_OBJECT)
         {
           if (absdist <= intersectionradius) removeslavepair = true;
         }
         // check for node contact points within penetration volume of a line contact point
-        else if (master.first == CORE::GEO::LINE_OBJECT and slave.first == CORE::GEO::NODE_OBJECT)
+        else if (master.first == Core::Geo::LINE_OBJECT and slave.first == Core::Geo::NODE_OBJECT)
         {
           if (absdist <= intersectionradius) removeslavepair = true;
         }

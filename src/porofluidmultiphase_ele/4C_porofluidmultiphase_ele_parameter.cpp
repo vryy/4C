@@ -17,26 +17,26 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter*
-DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(
+Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter*
+Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const std::string& disname)
       {
         return std::unique_ptr<PoroFluidMultiPhaseEleParameter>(
             new PoroFluidMultiPhaseEleParameter(disname));
       });
 
-  return singleton_map[disname].Instance(CORE::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  | private constructor for singletons                       vuong 08/16 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::PoroFluidMultiPhaseEleParameter(
+Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::PoroFluidMultiPhaseEleParameter(
     const std::string& disname  //!< name of discretization
     )
     : time_(-1.0),
@@ -62,7 +62,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::PoroFluidMultiPhaseEleParameter(
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every lubrication     vuong 08/16 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::set_time_step_parameters(
+void Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::set_time_step_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {
@@ -128,7 +128,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::set_time_step_parameters(
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every lubrication     vuong 08/16 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::set_general_parameters(
+void Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::set_general_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {

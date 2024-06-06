@@ -29,7 +29,7 @@ Pack, Unpack, NumDofPerNode etc.
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
@@ -39,28 +39,28 @@ namespace DRT
     // forward declarations
     class ThermoBoundary;
 
-    class ThermoType : public CORE::Elements::ElementType
+    class ThermoType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ThermoType"; }
 
       static ThermoType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -71,7 +71,7 @@ namespace DRT
     //!
     //! \brief A C++ wrapper for the thermo element
     //!
-    class Thermo : public CORE::Elements::Element
+    class Thermo : public Core::Elements::Element
     {
      public:
       //! @name Friends
@@ -94,52 +94,52 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       //! \brief Get shape type of element
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       //! \brief set discretization type of element
-      virtual void SetDisType(CORE::FE::CellType shape)
+      virtual void SetDisType(Core::FE::CellType shape)
       {
         distype_ = shape;
         return;
       };
 
       //! \brief Return number of lines of this element
-      int NumLine() const override { return CORE::FE::getNumberOfElementLines(distype_); }
+      int NumLine() const override { return Core::FE::getNumberOfElementLines(distype_); }
 
       //! \brief Return number of surfaces of this element
       int NumSurface() const override
       {
         switch (distype_)
         {
-          case CORE::FE::CellType::hex8:
-          case CORE::FE::CellType::hex20:
-          case CORE::FE::CellType::hex27:
-          case CORE::FE::CellType::nurbs27:
+          case Core::FE::CellType::hex8:
+          case Core::FE::CellType::hex20:
+          case Core::FE::CellType::hex27:
+          case Core::FE::CellType::nurbs27:
             return 6;
             break;
-          case CORE::FE::CellType::tet4:
-          case CORE::FE::CellType::tet10:
+          case Core::FE::CellType::tet4:
+          case Core::FE::CellType::tet10:
             return 4;
             break;
-          case CORE::FE::CellType::wedge6:
-          case CORE::FE::CellType::wedge15:
-          case CORE::FE::CellType::pyramid5:
+          case Core::FE::CellType::wedge6:
+          case Core::FE::CellType::wedge15:
+          case Core::FE::CellType::pyramid5:
             return 5;
             break;
-          case CORE::FE::CellType::quad4:
-          case CORE::FE::CellType::quad8:
-          case CORE::FE::CellType::quad9:
-          case CORE::FE::CellType::nurbs4:
-          case CORE::FE::CellType::nurbs9:
-          case CORE::FE::CellType::tri3:
-          case CORE::FE::CellType::tri6:
+          case Core::FE::CellType::quad4:
+          case Core::FE::CellType::quad8:
+          case Core::FE::CellType::quad9:
+          case Core::FE::CellType::nurbs4:
+          case Core::FE::CellType::nurbs9:
+          case Core::FE::CellType::tri3:
+          case Core::FE::CellType::tri6:
             return 1;
             break;
-          case CORE::FE::CellType::line2:
-          case CORE::FE::CellType::line3:
+          case Core::FE::CellType::line2:
+          case Core::FE::CellType::line3:
             return 0;
             break;
           default:
@@ -154,25 +154,25 @@ namespace DRT
       {
         switch (distype_)
         {
-          case CORE::FE::CellType::hex8:
-          case CORE::FE::CellType::hex20:
-          case CORE::FE::CellType::hex27:
-          case CORE::FE::CellType::tet4:
-          case CORE::FE::CellType::tet10:
-          case CORE::FE::CellType::wedge6:
-          case CORE::FE::CellType::wedge15:
-          case CORE::FE::CellType::pyramid5:
+          case Core::FE::CellType::hex8:
+          case Core::FE::CellType::hex20:
+          case Core::FE::CellType::hex27:
+          case Core::FE::CellType::tet4:
+          case Core::FE::CellType::tet10:
+          case Core::FE::CellType::wedge6:
+          case Core::FE::CellType::wedge15:
+          case Core::FE::CellType::pyramid5:
             return 1;
             break;
-          case CORE::FE::CellType::quad4:
-          case CORE::FE::CellType::quad8:
-          case CORE::FE::CellType::quad9:
-          case CORE::FE::CellType::nurbs4:
-          case CORE::FE::CellType::nurbs9:
-          case CORE::FE::CellType::tri3:
-          case CORE::FE::CellType::tri6:
-          case CORE::FE::CellType::line2:
-          case CORE::FE::CellType::line3:
+          case Core::FE::CellType::quad4:
+          case Core::FE::CellType::quad8:
+          case Core::FE::CellType::quad9:
+          case Core::FE::CellType::nurbs4:
+          case Core::FE::CellType::nurbs9:
+          case Core::FE::CellType::tri3:
+          case Core::FE::CellType::tri6:
+          case Core::FE::CellType::line2:
+          case Core::FE::CellType::line3:
             return 0;
             break;
           default:
@@ -183,10 +183,10 @@ namespace DRT
       }
 
       //! \brief Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       //! \brief Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
       //! \brief Return unique ParObject id
       //!
@@ -196,7 +196,7 @@ namespace DRT
 
       //! \brief Pack this class so it can be communicated
       //! \ref Pack and \ref Unpack are used to communicate this element
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       //! \brief Unpack data from a char vector into this class
       //!
@@ -209,17 +209,17 @@ namespace DRT
       //! @name Acess methods
 
       //! \brief Get number of degrees of freedom of a certain node
-      //!        (implements pure virtual CORE::Elements::Element)
+      //!        (implements pure virtual Core::Elements::Element)
       //!
       //! The element decides how many degrees of freedom its nodes must have.
       //! As this may vary along a simulation, the element can redecide the
       //! number of degrees of freedom per node along the way for each of it's nodes
       //! separately.
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return numdofpernode_; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return numdofpernode_; }
 
       //!
       //! \brief Get number of degrees of freedom per element
-      //!        (implements pure virtual CORE::Elements::Element)
+      //!        (implements pure virtual Core::Elements::Element)
       //!
       //! The element decides how many element degrees of freedom it has.
       //! It can redecide along the way of a simulation.
@@ -232,7 +232,7 @@ namespace DRT
       //! \brief Print this element
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override { return ThermoType::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return ThermoType::Instance(); }
 
       //! \brief Query names of element data to be visualized using BINIO
       //!
@@ -275,7 +275,7 @@ namespace DRT
 
       //! \brief Read input for this element
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -310,11 +310,11 @@ namespace DRT
       //!                         the controlling method does not expect the element
       //!                         to fill this vector
       //! \return 0 if successful, negative otherwise
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       //! \brief Evaluate a Neumann boundary condition
       //!
@@ -328,30 +328,30 @@ namespace DRT
       //! \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       //!
       //! \return 0 if successful, negative otherwise
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1) override;
 
       //@}
 
       //! kinematic type passed from structural element
-      virtual void SetKinematicType(INPAR::STR::KinemType kintype)
+      virtual void SetKinematicType(Inpar::STR::KinemType kintype)
       {
         kintype_ = kintype;
         return;
       };
       //! kinematic type
-      INPAR::STR::KinemType kintype_;
+      Inpar::STR::KinemType kintype_;
 
-      INPAR::STR::KinemType KinType() const { return kintype_; }
+      Inpar::STR::KinemType KinType() const { return kintype_; }
 
      private:
       //! number of dofs per node (for systems of thermo equations)
       //! (storage neccessary because we don't know the material in the post filters anymore)
       static constexpr int numdofpernode_ = 1;
       //! the element discretization type
-      CORE::FE::CellType distype_;
+      Core::FE::CellType distype_;
 
       //! don't want = operator
       Thermo& operator=(const Thermo& old);
@@ -363,24 +363,24 @@ namespace DRT
     ////=======================================================================
     ////=======================================================================
     ////=======================================================================
-    class ThermoBoundaryType : public CORE::Elements::ElementType
+    class ThermoBoundaryType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "ThermoBoundaryType"; }
 
       static ThermoBoundaryType& Instance();
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -394,7 +394,7 @@ namespace DRT
     //! \note This is a pure boundary condition element. It's only
     //!       purpose is to evaluate certain boundary conditions that might be
     //!       adjacent to a parent Thermo element.
-    class ThermoBoundary : public CORE::Elements::FaceElement
+    class ThermoBoundary : public Core::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -408,8 +408,8 @@ namespace DRT
       //! \param nodes: the discretization map of nodes to build ptrs to nodes from
       //! \param parent: The parent fluid element of this surface
       //! \param lsurface: the local surface number of this surface w.r.t. the parent element
-      ThermoBoundary(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
-          DRT::ELEMENTS::Thermo* parent, const int lsurface);
+      ThermoBoundary(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
+          Discret::ELEMENTS::Thermo* parent, const int lsurface);
 
       //! \brief Copy Constructor
       //!
@@ -420,16 +420,16 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-constructor is needed
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       //! \brief Get shape type of element
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       //! \brief Return number of lines of boundary element
       int NumLine() const override
       {
         // get spatial dimension of boundary
-        const int nsd = CORE::FE::getDimension(parent_element()->Shape()) - 1;
+        const int nsd = Core::FE::getDimension(parent_element()->Shape()) - 1;
 
         if ((num_node() == 4) or (num_node() == 8) or (num_node() == 9))
           return 4;
@@ -452,7 +452,7 @@ namespace DRT
       int NumSurface() const override
       {
         // get spatial dimension of parent element
-        const int nsd = CORE::FE::getDimension(parent_element()->Shape());
+        const int nsd = Core::FE::getDimension(parent_element()->Shape());
 
         if (nsd == 3)
           return 1;
@@ -461,10 +461,10 @@ namespace DRT
       }
 
       //! \brief Get vector of Teuchos::RCPs to the lines of this element
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       //! \brief Get vector of Teuchos::RCPs to the surfaces of this element
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
       //! \brief Return unique ParObject id
       //!
@@ -491,27 +491,27 @@ namespace DRT
       //! @name Acess methods
 
       //! \brief Get number of degrees of freedom of a certain node
-      //!       (implements pure virtual CORE::Elements::Element)
+      //!       (implements pure virtual Core::Elements::Element)
       //!
       //! The element decides how many degrees of freedom its nodes must have.
       //! As this may vary along a simulation, the element can redecide the
       //! number of degrees of freedom per node along the way for each of it's nodes
       //! separately.
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override
+      int NumDofPerNode(const Core::Nodes::Node& node) const override
       {
         return parent_element()->NumDofPerNode(node);
       }
 
       /*
       //! Return a pointer to the parent element of this boundary element
-      virtual DRT::ELEMENTS::Thermo* parent_element()
+      virtual Discret::ELEMENTS::Thermo* parent_element()
       {
         return parent_;
       }
       */
 
       //! \brief Get number of degrees of freedom per element
-      //!       (implements pure virtual CORE::Elements::Element)
+      //!       (implements pure virtual Core::Elements::Element)
       //!
       //! The element decides how many element degrees of freedom it has.
       //! It can redecide along the way of a simulation.
@@ -524,7 +524,7 @@ namespace DRT
       //! \brief Print this element
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return ThermoBoundaryType::Instance();
       }
@@ -558,11 +558,11 @@ namespace DRT
       //!                         the controlling method does not expect the element
       //!                         to fill this vector
       //! \return 0 if successful, negative otherwise
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -580,10 +580,10 @@ namespace DRT
       //! \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       //!
       //! \return 0 if successful, negative otherwise
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1) override;
 
       //@}
 
@@ -595,7 +595,7 @@ namespace DRT
 
   }  // namespace ELEMENTS
 
-}  // namespace DRT
+}  // namespace Discret
 
 
 /*----------------------------------------------------------------------*/

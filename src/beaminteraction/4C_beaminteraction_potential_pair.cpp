@@ -38,7 +38,7 @@ BEAMINTERACTION::BeamPotentialPair::BeamPotentialPair()
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialPair::Init(
     const Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params_ptr,
-    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2)
+    const Core::Elements::Element* element1, const Core::Elements::Element* element2)
 {
   issetup_ = false;
 
@@ -63,15 +63,15 @@ void BEAMINTERACTION::BeamPotentialPair::Setup()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialPair::Create(
-    std::vector<CORE::Elements::Element const*> const& ele_ptrs,
+    std::vector<Core::Elements::Element const*> const& ele_ptrs,
     BEAMINTERACTION::BeamPotentialParams const& beam_potential_params)
 {
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
   // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
   // numnodalvalues = 2: positions AND tangents ==> Hermite interpolation
 
-  const DRT::ELEMENTS::Beam3Base* beamele1 =
-      dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
+  const Discret::ELEMENTS::Beam3Base* beamele1 =
+      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
 
   // at the moment, both elements of a beam contact pair must be of same type Todo
   const unsigned int numnodes_centerline = beamele1->NumCenterlineNodes();
@@ -85,7 +85,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
       {
         case 2:
         {
-          if (ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance())
+          if (ele_ptrs[1]->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
             return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<2, 1>());
           else
           {
@@ -98,7 +98,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         }
         case 3:
         {
-          if (ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance())
+          if (ele_ptrs[1]->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
             return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<3, 1>());
           else
           {
@@ -111,7 +111,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         }
         case 4:
         {
-          if (ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance())
+          if (ele_ptrs[1]->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
             return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>());
           else
           {
@@ -124,7 +124,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         }
         case 5:
         {
-          if (ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance())
+          if (ele_ptrs[1]->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
             return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>());
           else
           {
@@ -153,7 +153,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
       {
         case 2:
         {
-          if (ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance())
+          if (ele_ptrs[1]->ElementType() == Discret::ELEMENTS::RigidsphereType::Instance())
             return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>());
           else
           {
@@ -204,37 +204,37 @@ void BEAMINTERACTION::BeamPotentialPair::check_init_setup() const
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-CORE::FE::GaussRule1D BEAMINTERACTION::BeamPotentialPair::get_gauss_rule() const
+Core::FE::GaussRule1D BEAMINTERACTION::BeamPotentialPair::get_gauss_rule() const
 {
   switch (Params()->NumberGaussPoints())
   {
     case 5:
     {
-      return CORE::FE::GaussRule1D::line_5point;
+      return Core::FE::GaussRule1D::line_5point;
       break;
     }
 
     case 10:
     {
-      return CORE::FE::GaussRule1D::line_10point;
+      return Core::FE::GaussRule1D::line_10point;
       break;
     }
 
     case 20:
     {
-      return CORE::FE::GaussRule1D::line_20point;
+      return Core::FE::GaussRule1D::line_20point;
       break;
     }
 
     case 32:
     {
-      return CORE::FE::GaussRule1D::line_32point;
+      return Core::FE::GaussRule1D::line_32point;
       break;
     }
 
     case 50:
     {
-      return CORE::FE::GaussRule1D::line_50point;
+      return Core::FE::GaussRule1D::line_50point;
       break;
     }
 
@@ -242,7 +242,7 @@ CORE::FE::GaussRule1D BEAMINTERACTION::BeamPotentialPair::get_gauss_rule() const
       FOUR_C_THROW("%d Gauss points are not supported yet!", Params()->NumberGaussPoints());
   }
 
-  return CORE::FE::GaussRule1D::undefined;
+  return Core::FE::GaussRule1D::undefined;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -27,13 +27,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace DRT
+namespace Discret
 {
   enum class HDGAction
   {
@@ -104,8 +104,8 @@ namespace DRT
      *  schoeder 06/14
      */
     void assign_global_i_ds(const Epetra_Comm& comm,
-        const std::map<std::vector<int>, Teuchos::RCP<CORE::Elements::Element>>& elementmap,
-        std::map<int, Teuchos::RCP<CORE::Elements::Element>>& finalelements) override;
+        const std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>>& elementmap,
+        std::map<int, Teuchos::RCP<Core::Elements::Element>>& finalelements) override;
 
   };  // class DiscretizationHDG
 
@@ -129,12 +129,12 @@ namespace DRT
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 06/16 */
-      void read_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret, const CORE::Conditions::Condition& cond, double time,
-          DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+      void read_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           int hierarchical_order) const override;
-      void read_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::DiscretizationFaces& discret, const CORE::Conditions::Condition& cond,
+      void read_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
           double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
           int hierarchical_order) const;
 
@@ -151,20 +151,21 @@ namespace DRT
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 02/08 */
-      void do_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret, const CORE::Conditions::Condition& cond, double time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
+      void do_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+          const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
-      void do_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::DiscretizationFaces& discret, const CORE::Conditions::Condition& cond,
+      void do_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle) const;
     };  // class DbcHDG
   }     // namespace UTILS
-}  // namespace DRT
+}  // namespace Discret
 
 /// << operator
-std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis);
+std::ostream& operator<<(std::ostream& os, const Discret::DiscretizationHDG& dis);
 
 
 FOUR_C_NAMESPACE_CLOSE

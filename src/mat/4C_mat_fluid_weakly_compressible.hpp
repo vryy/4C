@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -28,11 +28,11 @@ namespace MAT
     /// material parameters for weakly compressible fluid
     ///
     /// This object exists only once for each read fluid.
-    class WeaklyCompressibleFluid : public CORE::MAT::PAR::Parameter
+    class WeaklyCompressibleFluid : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      WeaklyCompressibleFluid(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      WeaklyCompressibleFluid(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -49,20 +49,20 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class WeaklyCompressibleFluid
 
   }  // namespace PAR
 
-  class WeaklyCompressibleFluidType : public CORE::COMM::ParObjectType
+  class WeaklyCompressibleFluidType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "WeaklyCompressibleFluidType"; }
 
     static WeaklyCompressibleFluidType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static WeaklyCompressibleFluidType instance_;
@@ -72,14 +72,14 @@ namespace MAT
   /// Wrapper for weakly compressible fluid
   ///
   /// This object exists (several times) at every element
-  class WeaklyCompressibleFluid : public CORE::MAT::Material
+  class WeaklyCompressibleFluid : public Core::Mat::Material
   {
    public:
     /// construct empty material object
     WeaklyCompressibleFluid();
 
     /// construct the material object given material parameters
-    explicit WeaklyCompressibleFluid(MAT::PAR::WeaklyCompressibleFluid* params);
+    explicit WeaklyCompressibleFluid(Mat::PAR::WeaklyCompressibleFluid* params);
 
     //! @name Packing and Unpacking
 
@@ -104,7 +104,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -123,13 +123,13 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_fluid_weakly_compressible;
+      return Core::Materials::m_fluid_weakly_compressible;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new WeaklyCompressibleFluid(*this));
     }
@@ -156,14 +156,14 @@ namespace MAT
     double ComprCoeff() const { return params_->comprcoeff_; }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
-    MAT::PAR::WeaklyCompressibleFluid* params_;
+    Mat::PAR::WeaklyCompressibleFluid* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

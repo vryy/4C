@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | standard constructor                                      thon 06/15 |
  *----------------------------------------------------------------------*/
-MAT::PAR::MatListChemotaxis::MatListChemotaxis(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::MatListChemotaxis::MatListChemotaxis(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : MatList(matdata),
       numpair_((matdata->Get<int>("NUMPAIR"))),
       pairids_((matdata->Get<std::vector<int>>("PAIRIDS")))
@@ -46,24 +46,24 @@ MAT::PAR::MatListChemotaxis::MatListChemotaxis(Teuchos::RCP<CORE::MAT::PAR::Mate
     for (m = pairids_.begin(); m != pairids_.end(); ++m)
     {
       const int pairid = *m;
-      Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(pairid);
-      material_map_write()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(pairid, mat));
+      Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(pairid);
+      material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(pairid, mat));
     }
   }
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MatListChemotaxis::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatListChemotaxis::create_material()
 {
-  return Teuchos::rcp(new MAT::MatListChemotaxis(this));
+  return Teuchos::rcp(new Mat::MatListChemotaxis(this));
 }
 
 
-MAT::MatListChemotaxisType MAT::MatListChemotaxisType::instance_;
+Mat::MatListChemotaxisType Mat::MatListChemotaxisType::instance_;
 
 
-CORE::COMM::ParObject* MAT::MatListChemotaxisType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MatListChemotaxisType::Create(const std::vector<char>& data)
 {
-  MAT::MatListChemotaxis* MatListChemotaxis = new MAT::MatListChemotaxis();
+  Mat::MatListChemotaxis* MatListChemotaxis = new Mat::MatListChemotaxis();
   MatListChemotaxis->Unpack(data);
   return MatListChemotaxis;
 }
@@ -72,13 +72,13 @@ CORE::COMM::ParObject* MAT::MatListChemotaxisType::Create(const std::vector<char
 /*----------------------------------------------------------------------*
  | construct empty material object                           thon 06/15 |
  *----------------------------------------------------------------------*/
-MAT::MatListChemotaxis::MatListChemotaxis() : MatList(), paramschemo_(nullptr) {}
+Mat::MatListChemotaxis::MatListChemotaxis() : MatList(), paramschemo_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
  | construct the material object given material paramete     thon 06/15 |
  *----------------------------------------------------------------------*/
-MAT::MatListChemotaxis::MatListChemotaxis(MAT::PAR::MatListChemotaxis* params)
+Mat::MatListChemotaxis::MatListChemotaxis(Mat::PAR::MatListChemotaxis* params)
     : MatList(params), paramschemo_(params)
 {
   // setup of material map
@@ -92,19 +92,19 @@ MAT::MatListChemotaxis::MatListChemotaxis(MAT::PAR::MatListChemotaxis* params)
 /*----------------------------------------------------------------------*
  | setup of material map                                     thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemotaxis::setup_mat_map()
+void Mat::MatListChemotaxis::setup_mat_map()
 {
   // We just have to add the chemotactic materials, since the rest is already done in
-  // MAT::MatList::setup_mat_map() called from the MatList constructor
+  // Mat::MatList::setup_mat_map() called from the MatList constructor
 
   // here's the recursive creation of materials
   std::vector<int>::const_iterator m;
   for (m = paramschemo_->PairIds()->begin(); m != paramschemo_->PairIds()->end(); ++m)
   {
     const int pairid = *m;
-    Teuchos::RCP<CORE::MAT::Material> mat = MAT::Factory(pairid);
+    Teuchos::RCP<Core::Mat::Material> mat = Mat::Factory(pairid);
     if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    material_map_write()->insert(std::pair<int, Teuchos::RCP<CORE::MAT::Material>>(pairid, mat));
+    material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(pairid, mat));
   }
   return;
 }
@@ -113,7 +113,7 @@ void MAT::MatListChemotaxis::setup_mat_map()
 /*----------------------------------------------------------------------*
  | reset everything                                          thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemotaxis::clear()
+void Mat::MatListChemotaxis::clear()
 {
   paramschemo_ = nullptr;
   return;
@@ -123,9 +123,9 @@ void MAT::MatListChemotaxis::clear()
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemotaxis::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::MatListChemotaxis::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -139,37 +139,37 @@ void MAT::MatListChemotaxis::Pack(CORE::COMM::PackBuffer& data) const
   AddtoPack(data, matid);
 
   // Pack base class material
-  MAT::MatList::Pack(data);
+  Mat::MatList::Pack(data);
 }
 
 
 /*----------------------------------------------------------------------*
  | Unpack data from a char vector into this class            thon 06/15 |
  *----------------------------------------------------------------------*/
-void MAT::MatListChemotaxis::Unpack(const std::vector<char>& data)
+void Mat::MatListChemotaxis::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   clear();
 
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover paramsreac_
   int matid(-1);
   ExtractfromPack(position, data, matid);
   paramschemo_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
       {
         // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction
         // are in a diamond inheritance structure
-        paramschemo_ = dynamic_cast<MAT::PAR::MatListChemotaxis*>(mat);
+        paramschemo_ = dynamic_cast<Mat::PAR::MatListChemotaxis*>(mat);
       }
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
@@ -178,8 +178,8 @@ void MAT::MatListChemotaxis::Unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  MAT::MatList::ExtractfromPack(position, data, basedata);
-  MAT::MatList::Unpack(basedata);
+  Mat::MatList::ExtractfromPack(position, data, basedata);
+  Mat::MatList::Unpack(basedata);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
@@ -191,7 +191,7 @@ void MAT::MatListChemotaxis::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | reaction ID by Index                                      thon 06/15 |
  *----------------------------------------------------------------------*/
-int MAT::MatListChemotaxis::PairID(const unsigned index) const
+int Mat::MatListChemotaxis::PairID(const unsigned index) const
 {
   if ((int)index < paramschemo_->numpair_)
     return paramschemo_->pairids_.at(index);

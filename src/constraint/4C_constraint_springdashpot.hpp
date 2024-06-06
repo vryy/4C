@@ -24,27 +24,27 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class CouplingNonLinMortar;
 }
@@ -66,7 +66,7 @@ namespace CONSTRAINTS
     \brief constructor
      */
     SpringDashpot(
-        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::Conditions::Condition> cond);
+        Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::Conditions::Condition> cond);
 
     //! add contribution of spring dashpot BC to residual vector
     // old version, NOT consistently integrated over element surface!!
@@ -77,12 +77,12 @@ namespace CONSTRAINTS
     // old version, NOT consistently integrated over element surface!!
     // ToDo: remove redundant code in evaluate_force and evaluate_force_stiff
     // -> however should migrate to new EvaluateRobin... mhv 08/2016
-    void evaluate_force_stiff(CORE::LINALG::SparseMatrix& stiff, Epetra_Vector& fint,
+    void evaluate_force_stiff(Core::LinAlg::SparseMatrix& stiff, Epetra_Vector& fint,
         const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> vel,
         Teuchos::ParameterList p);
 
     // NEW version, consistently integrated over element surface!!
-    void EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
+    void EvaluateRobin(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
         Teuchos::RCP<Epetra_Vector> fint, const Teuchos::RCP<const Epetra_Vector> disp,
         const Teuchos::RCP<const Epetra_Vector> velo, Teuchos::ParameterList p);
 
@@ -140,7 +140,7 @@ namespace CONSTRAINTS
     void initialize_cur_surf_normal();
 
     //! calculate nodal area - old!
-    void get_area(const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom);
+    void get_area(const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom);
 
     //! get current normal
     void get_cur_normals(const Teuchos::RCP<const Epetra_Vector>& disp, Teuchos::ParameterList p);
@@ -148,11 +148,11 @@ namespace CONSTRAINTS
     //! initialize prestr offset
     void initialize_prestr_offset();
 
-    Teuchos::RCP<DRT::Discretization> actdisc_;         ///< standard discretization
-    Teuchos::RCP<CORE::Conditions::Condition> spring_;  ///< spring dashpot condition
+    Teuchos::RCP<Discret::Discretization> actdisc_;     ///< standard discretization
+    Teuchos::RCP<Core::Conditions::Condition> spring_;  ///< spring dashpot condition
 
     /// Mortar interface in case of curnormal springs
-    Teuchos::RCP<ADAPTER::CouplingNonLinMortar> mortar_;
+    Teuchos::RCP<Adapter::CouplingNonLinMortar> mortar_;
 
     //! @name Spring properties
     //@{
@@ -207,7 +207,7 @@ namespace CONSTRAINTS
     std::map<int, std::vector<double>> normals_;
 
     //! Linearization of nodal normal
-    std::map<int, std::vector<CORE::GEN::Pairedvector<int, double>>> dnormals_;
+    std::map<int, std::vector<Core::Gen::Pairedvector<int, double>>> dnormals_;
 
     //! Nodal force applied by spring dashpot BC for output
     std::map<int, std::vector<double>> springstress_;

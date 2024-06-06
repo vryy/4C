@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   /*----------------------------------------------------------------------------*/
   /*!
@@ -31,7 +31,7 @@ namespace CORE::GEO
   {
    public:
     //! Standard Constructor
-    explicit IntCell(const CORE::FE::CellType& distype  ///< distype of the integration cell
+    explicit IntCell(const Core::FE::CellType& distype  ///< distype of the integration cell
     );
 
     //! Copy Constructor
@@ -43,7 +43,7 @@ namespace CORE::GEO
     virtual IntCell& operator=(const IntCell& intcell);
 
     //! brief returns the shape of the integration cell
-    CORE::FE::CellType Shape() const { return distype_; };
+    Core::FE::CellType Shape() const { return distype_; };
 
     //! return boolean indicating plus domain
     bool getDomainPlus() const { return indomainplus_; }
@@ -54,14 +54,14 @@ namespace CORE::GEO
 
    protected:
     //! shape
-    CORE::FE::CellType distype_;
+    Core::FE::CellType distype_;
 
     // boolean indicating that cell belongs to "+"-part of the domain
     bool indomainplus_;
 
     //! get geometric center of the cell in physical coordinates
-    CORE::LINALG::Matrix<3, 1> compute_physical_center_position(
-        const CORE::FE::CellType& distype, const CORE::LINALG::SerialDenseMatrix& xyze) const;
+    Core::LinAlg::Matrix<3, 1> compute_physical_center_position(
+        const Core::FE::CellType& distype, const Core::LinAlg::SerialDenseMatrix& xyze) const;
   };
 
   /*----------------------------------------------------------------------------*/
@@ -82,31 +82,31 @@ namespace CORE::GEO
      *  \param indomainplus             (in) : domain part of the integration cell
      *
      *  \author hiermeier \date 11/16 */
-    static BoundaryIntCell* Create(const CORE::FE::CellType& distype, const int& surface_ele_gid,
-        const CORE::LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
-        const CORE::LINALG::SerialDenseMatrix* eleBoundaryCoordinates,
-        const CORE::LINALG::SerialDenseMatrix& physDomainCoordinates, const bool& indomainplus);
+    static BoundaryIntCell* Create(const Core::FE::CellType& distype, const int& surface_ele_gid,
+        const Core::LinAlg::SerialDenseMatrix& xfemEleDomainCoordinates,
+        const Core::LinAlg::SerialDenseMatrix* eleBoundaryCoordinates,
+        const Core::LinAlg::SerialDenseMatrix& physDomainCoordinates, const bool& indomainplus);
 
    public:
     //! Standard Constructor
-    explicit BoundaryIntCell(const CORE::FE::CellType& distype,  ///< shape of the integration cell
+    explicit BoundaryIntCell(const Core::FE::CellType& distype,  ///< shape of the integration cell
         const int surface_ele_gid,  ///< global id of the boundary element (cutter)
-        const CORE::LINALG::SerialDenseMatrix&
+        const Core::LinAlg::SerialDenseMatrix&
             xfemEleDomainCoordinates,  ///< coordinates in element parameter space xsi
-        const CORE::LINALG::SerialDenseMatrix&
+        const Core::LinAlg::SerialDenseMatrix&
             eleBoundaryCoordinates,  ///< coordinates in boundary parameter space eta
-        const CORE::LINALG::SerialDenseMatrix&
+        const Core::LinAlg::SerialDenseMatrix&
             physDomainCoordinates  ///< coordinates of the integrationcell in physical domain
     );
 
     //! constructor used for combustion problems
-    explicit BoundaryIntCell(const CORE::FE::CellType& distype,  ///< shape of the integration cell
+    explicit BoundaryIntCell(const Core::FE::CellType& distype,  ///< shape of the integration cell
         const int surface_ele_gid,  ///< global id of the boundary element (cutter)
-        const CORE::LINALG::SerialDenseMatrix&
+        const Core::LinAlg::SerialDenseMatrix&
             xfemEleDomainCoordinates,  ///< coordinates in element parameter space xsi
-        const CORE::LINALG::SerialDenseMatrix&
+        const Core::LinAlg::SerialDenseMatrix&
             eleBoundaryCoordinates,  ///< coordinates in boundary parameter space eta
-        const CORE::LINALG::SerialDenseMatrix&
+        const Core::LinAlg::SerialDenseMatrix&
             physDomainCoordinates,  ///< coordinates of the integrationcell in physical domain
         const bool indomainplus     ///< domain part of the integration cell
     );
@@ -119,29 +119,29 @@ namespace CORE::GEO
     virtual BoundaryIntCell& operator=(const BoundaryIntCell& boundaryintcell);
 
     //! returns the coordinates of the integration cell in parent element coordinates xsi
-    const CORE::LINALG::SerialDenseMatrix& cell_nodal_pos_xi_domain() const
+    const Core::LinAlg::SerialDenseMatrix& cell_nodal_pos_xi_domain() const
     {
       return nodalpos_xi_domain_;
     };
 
     //! returns the coordinates of the integration cell in boundary parent space eta
-    const CORE::LINALG::SerialDenseMatrix& cell_nodal_pos_xi_boundary() const
+    const Core::LinAlg::SerialDenseMatrix& cell_nodal_pos_xi_boundary() const
     {
       return nodalpos_xi_boundary_;
     };
 
     //! returns an array with the coordinates of the integration cell in physical coordinates
-    const CORE::LINALG::SerialDenseMatrix& CellNodalPosXYZ() const { return nodalpos_xyz_domain_; }
+    const Core::LinAlg::SerialDenseMatrix& CellNodalPosXYZ() const { return nodalpos_xyz_domain_; }
 
     //! returns an array with the coordinates of the integration cell in physical coordinates
-    const CORE::LINALG::Matrix<3, 1>& get_physical_center_position() const { return phys_center_; }
+    const Core::LinAlg::Matrix<3, 1>& get_physical_center_position() const { return phys_center_; }
 
     //! return "parent" cutter element id (global id)
     int GetSurfaceEleGid() const { return surface_ele_gid_; }
 
    protected:
     //! constructor for derived class only.
-    BoundaryIntCell(CORE::FE::CellType distype,  ///< shape of the integration cell
+    BoundaryIntCell(Core::FE::CellType distype,  ///< shape of the integration cell
         const int& surface_ele_gid               ///< global id of the boundary element (cutter)
     );
 
@@ -149,24 +149,24 @@ namespace CORE::GEO
     int surface_ele_gid_;
 
     //! coordinates of the nodes of the integration cell in parent element coordinates xsi
-    CORE::LINALG::SerialDenseMatrix nodalpos_xi_domain_;
+    Core::LinAlg::SerialDenseMatrix nodalpos_xi_domain_;
 
     //! boundary coordinates of the nodes of the integration cell in boundary element coordinates
     //! eta
-    CORE::LINALG::SerialDenseMatrix nodalpos_xi_boundary_;
+    Core::LinAlg::SerialDenseMatrix nodalpos_xi_boundary_;
 
     //! coordinates of the nodes of the integration cell in physical coordinates
-    CORE::LINALG::SerialDenseMatrix nodalpos_xyz_domain_;
+    Core::LinAlg::SerialDenseMatrix nodalpos_xyz_domain_;
 
     //! get geometric center of the cell in physical coordinates
-    CORE::LINALG::Matrix<3, 1> phys_center_;
+    Core::LinAlg::Matrix<3, 1> phys_center_;
 
    private:
     //! hide default constructor
     explicit BoundaryIntCell();
   };
 
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

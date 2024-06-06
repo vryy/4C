@@ -28,15 +28,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elements::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const SCATRA::Action& action, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   //(for now) only first dof set considered
   const std::vector<int>& lm = la[0].lm_;
@@ -44,11 +44,11 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
   switch (action)
   {
     // calculate global mass matrix
-    case SCATRA::Action::calc_mass_matrix:
+    case ScaTra::Action::calc_mass_matrix:
     {
       // integration points and weights
-      const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-          SCATRA::DisTypeToOptGaussRule<distype>::rule);
+      const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+          ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
       // loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -65,23 +65,23 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
     }
 
     // calculate time derivative for time value t_0
-    case SCATRA::Action::calc_initial_time_deriv:
+    case ScaTra::Action::calc_initial_time_deriv:
     {
       // calculate matrix and rhs
       calc_initial_time_derivative(ele, elemat1_epetra, elevec1_epetra, params, discretization, la);
       break;
     }
 
-    case SCATRA::Action::integrate_shape_functions:
+    case ScaTra::Action::integrate_shape_functions:
     {
       // calculate integral of shape functions
-      const auto dofids = params.get<Teuchos::RCP<CORE::LINALG::IntSerialDenseVector>>("dofids");
+      const auto dofids = params.get<Teuchos::RCP<Core::LinAlg::IntSerialDenseVector>>("dofids");
       integrate_shape_functions(ele, elevec1_epetra, *dofids);
 
       break;
     }
 
-    case SCATRA::Action::calc_flux_domain:
+    case ScaTra::Action::calc_flux_domain:
     {
       // get number of dofset associated with velocity related dofs
       const int ndsvel = scatrapara_->NdsVel();
@@ -105,8 +105,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
           lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
       // extract local values of (convective) velocity field from global state vector
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*vel, evelnp_, lmvel);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*vel, evelnp_, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
       rotsymmpbc_->rotate_my_values_if_necessary(econvelnp_);
@@ -116,14 +116,14 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       // -> extract local values from global vectors
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       // access control parameter for flux calculation
-      INPAR::SCATRA::FluxType fluxtype = scatrapara_->CalcFluxDomain();
+      Inpar::ScaTra::FluxType fluxtype = scatrapara_->CalcFluxDomain();
       Teuchos::RCP<std::vector<int>> writefluxids = scatrapara_->WriteFluxIds();
 
       // we always get an 3D flux vector for each node
-      CORE::LINALG::Matrix<3, nen_> eflux(true);
+      Core::LinAlg::Matrix<3, nen_> eflux(true);
 
       // do a loop for systems of transported scalars
       for (int& writefluxid : *writefluxids)
@@ -145,7 +145,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       break;
     }
 
-    case SCATRA::Action::calc_total_and_mean_scalars:
+    case ScaTra::Action::calc_total_and_mean_scalars:
     {
       // get flag for inverting
       const bool inverting = params.get<bool>("inverting");
@@ -155,7 +155,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       // -> extract local values from the global vectors
       auto phinp = discretization.GetState("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       // calculate scalars and domain integral
       calculate_scalars(ele, elevec1_epetra, inverting, calc_grad_phi);
@@ -163,7 +163,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       break;
     }
 
-    case SCATRA::Action::calc_mean_scalar_time_derivatives:
+    case ScaTra::Action::calc_mean_scalar_time_derivatives:
     {
       calculate_scalar_time_derivatives(discretization, lm, elevec1_epetra);
       break;
@@ -171,7 +171,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
 
     // calculate filtered fields for calculation of turbulent Prandtl number
     // required for dynamic Smagorinsky model in scatra
-    case SCATRA::Action::calc_scatra_box_filter:
+    case ScaTra::Action::calc_scatra_box_filter:
     {
       if (nsd_ == 3)
         calc_box_filter(ele, params, discretization, la);
@@ -182,7 +182,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
     }
 
     // calculate turbulent prandtl number of dynamic Smagorinsky model
-    case SCATRA::Action::calc_turbulent_prandtl_number:
+    case ScaTra::Action::calc_turbulent_prandtl_number:
     {
       if (nsd_ == 3)
       {
@@ -212,7 +212,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
         // calculate LkMk and MkMk
         switch (distype)
         {
-          case CORE::FE::CellType::hex8:
+          case Core::FE::CellType::hex8:
           {
             scatra_calc_smag_const_lk_mk_and_mk_mk(col_filtered_vel, col_filtered_dens_vel,
                 col_filtered_dens_vel_temp, col_filtered_dens_rateofstrain_temp, col_filtered_temp,
@@ -253,7 +253,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       break;
     }
 
-    case SCATRA::Action::calc_vreman_scatra:
+    case ScaTra::Action::calc_vreman_scatra:
     {
       if (nsd_ == 3)
       {
@@ -273,7 +273,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
         // calculate LkMk and MkMk
         switch (distype)
         {
-          case CORE::FE::CellType::hex8:
+          case Core::FE::CellType::hex8:
           {
             scatra_calc_vreman_dt(col_filtered_phi, col_filtered_phi2, col_filtered_phiexpression,
                 col_filtered_alphaijsc, dt_numerator, dt_denominator, ele);
@@ -297,7 +297,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
     }
 
     // calculate domain integral, i.e., surface area or volume of domain element
-    case SCATRA::Action::calc_domain_integral:
+    case ScaTra::Action::calc_domain_integral:
     {
       calc_domain_integral(ele, elevec1_epetra);
 
@@ -305,7 +305,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
     }
 
     // calculate normalized subgrid-diffusivity matrix
-    case SCATRA::Action::calc_subgrid_diffusivity_matrix:
+    case ScaTra::Action::calc_subgrid_diffusivity_matrix:
     {
       // calculate mass matrix and rhs
       calc_subgr_diff_matrix(ele, elemat1_epetra);
@@ -314,7 +314,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
     }
 
     // calculate mean Cai of multifractal subgrid-scale modeling approach
-    case SCATRA::Action::calc_mean_Cai:
+    case ScaTra::Action::calc_mean_Cai:
     {
       // get number of dofset associated with velocity related dofs
       const int ndsvel = scatrapara_->NdsVel();
@@ -334,7 +334,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
           lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
       // extract local values of convective velocity field from global state vector
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
       rotsymmpbc_->rotate_my_values_if_necessary(econvelnp_);
@@ -342,26 +342,26 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       // get phi for material parameters
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
-      if (turbparams_->TurbModel() != INPAR::FLUID::multifractal_subgrid_scales)
+      if (turbparams_->TurbModel() != Inpar::FLUID::multifractal_subgrid_scales)
         FOUR_C_THROW("Multifractal_Subgrid_Scales expected");
 
       double Cai = 0.0;
       double vol = 0.0;
       // calculate Cai and volume, do not include elements of potential inflow section
-      if (turbparams_->AdaptCsgsPhi() and turbparams_->Nwl() and (not SCATRA::inflow_element(ele)))
+      if (turbparams_->AdaptCsgsPhi() and turbparams_->Nwl() and (not ScaTra::inflow_element(ele)))
       {
         // use one-point Gauss rule to do calculations at the element center
-        CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-            SCATRA::DisTypeToStabGaussRule<distype>::rule);
+        Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+            ScaTra::DisTypeToStabGaussRule<distype>::rule);
         vol = eval_shape_func_and_derivs_at_int_point(intpoints, 0);
 
         // adopt integration points and weights for gauss point evaluation of B
         if (turbparams_->BD_Gp())
         {
-          const CORE::FE::IntPointsAndWeights<nsd_ele_> gauss_intpoints(
-              SCATRA::DisTypeToOptGaussRule<distype>::rule);
+          const Core::FE::IntPointsAndWeights<nsd_ele_> gauss_intpoints(
+              ScaTra::DisTypeToOptGaussRule<distype>::rule);
           intpoints = gauss_intpoints;
         }
 
@@ -391,7 +391,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
           get_material_params(ele, densn, densnp, densam, visc);
 
           // get velocity at integration point
-          CORE::LINALG::Matrix<nsd_, 1> convelint(true);
+          Core::LinAlg::Matrix<nsd_, 1> convelint(true);
           convelint.Multiply(econvelnp_, funct_);
 
           // calculate characteristic element length
@@ -423,13 +423,13 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
     }
 
     // calculate dissipation introduced by stabilization and turbulence models
-    case SCATRA::Action::calc_dissipation:
+    case ScaTra::Action::calc_dissipation:
     {
       calc_dissipation(params, ele, discretization, la);
       break;
     }
 
-    case SCATRA::Action::calc_mass_center_smoothingfunct:
+    case ScaTra::Action::calc_mass_center_smoothingfunct:
     {
       double interface_thickness = params.get<double>("INTERFACE_THICKNESS_TPF");
 
@@ -458,7 +458,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
         // -> extract local values from the global vectors
         Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
         if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-        CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
+        Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
         // calculate momentum vector and volume for element.
         calculate_momentum_and_volume(ele, elevec1_epetra, interface_thickness);
@@ -466,7 +466,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       break;
     }
 
-    case SCATRA::Action::calc_error:
+    case ScaTra::Action::calc_error:
     {
       // check if length suffices
       if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
@@ -474,14 +474,14 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       // need current solution
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       cal_error_compared_to_analyt_solution(ele, params, elevec1_epetra);
 
       break;
     }
 
-    case SCATRA::Action::calc_immersed_element_source:
+    case ScaTra::Action::calc_immersed_element_source:
     {
       int scalartoprovidwithsource = 0;
       double segregationconst = params.get<double>("segregation_constant");
@@ -496,18 +496,18 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       break;
     }
 
-    case SCATRA::Action::micro_scale_initialize:
+    case ScaTra::Action::micro_scale_initialize:
     {
-      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == Core::Materials::m_scatra_multiscale)
       {
-        const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-            SCATRA::DisTypeToOptGaussRule<distype>::rule);
+        const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+            ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         {
           // initialize micro scale in multi-scale simulations
-          Teuchos::rcp_static_cast<MAT::ScatraMultiScale>(ele->Material())
+          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())
               ->Initialize(ele->Id(), iquad, scatrapara_->IsAle());
         }
       }
@@ -515,17 +515,17 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       break;
     }
 
-    case SCATRA::Action::micro_scale_prepare_time_step:
-    case SCATRA::Action::micro_scale_solve:
+    case ScaTra::Action::micro_scale_prepare_time_step:
+    case ScaTra::Action::micro_scale_solve:
     {
-      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == Core::Materials::m_scatra_multiscale)
       {
         // extract state variables at element nodes
-        CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(
+        Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(
             *discretization.GetState("phinp"), ephinp_, lm);
 
-        const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-            SCATRA::DisTypeToOptGaussRule<distype>::rule);
+        const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+            ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -536,22 +536,22 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
           // evaluate state variables at Gauss point
           set_internal_variables_for_mat_and_rhs();
 
-          if (action == SCATRA::Action::micro_scale_prepare_time_step)
+          if (action == ScaTra::Action::micro_scale_prepare_time_step)
           {
             // prepare time step on micro scale
-            Teuchos::rcp_static_cast<MAT::ScatraMultiScale>(ele->Material())
+            Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())
                 ->prepare_time_step(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)));
           }
           else
           {
-            const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-                SCATRA::DisTypeToOptGaussRule<distype>::rule);
+            const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+                ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
             const double detF = eval_det_f_at_int_point(ele, intpoints, iquad);
 
             // solve micro scale
             std::vector<double> dummy(1, 0.);
-            Teuchos::rcp_static_cast<MAT::ScatraMultiScale>(ele->Material())
+            Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())
                 ->Evaluate(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)), dummy[0],
                     dummy, detF);
           }
@@ -561,65 +561,65 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       break;
     }
 
-    case SCATRA::Action::micro_scale_update:
+    case ScaTra::Action::micro_scale_update:
     {
-      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == Core::Materials::m_scatra_multiscale)
       {
-        const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-            SCATRA::DisTypeToOptGaussRule<distype>::rule);
+        const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+            ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
           // update multi-scale scalar transport material
-          Teuchos::rcp_static_cast<MAT::ScatraMultiScale>(ele->Material())->Update(iquad);
+          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())->Update(iquad);
       }
 
       break;
     }
 
-    case SCATRA::Action::micro_scale_output:
+    case ScaTra::Action::micro_scale_output:
     {
-      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == Core::Materials::m_scatra_multiscale)
       {
-        const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-            SCATRA::DisTypeToOptGaussRule<distype>::rule);
+        const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+            ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
           // create output on micro scale
-          Teuchos::rcp_static_cast<MAT::ScatraMultiScale>(ele->Material())->Output(iquad);
+          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())->Output(iquad);
       }
 
       break;
     }
 
-    case SCATRA::Action::micro_scale_read_restart:
+    case ScaTra::Action::micro_scale_read_restart:
     {
-      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == Core::Materials::m_scatra_multiscale)
       {
-        const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-            SCATRA::DisTypeToOptGaussRule<distype>::rule);
+        const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+            ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
           // read restart on micro scale
-          Teuchos::rcp_dynamic_cast<MAT::ScatraMultiScale>(ele->Material())->read_restart(iquad);
+          Teuchos::rcp_dynamic_cast<Mat::ScatraMultiScale>(ele->Material())->read_restart(iquad);
       }
 
       break;
     }
 
-    case SCATRA::Action::micro_scale_set_time:
+    case ScaTra::Action::micro_scale_set_time:
     {
-      if (ele->Material()->MaterialType() == CORE::Materials::m_scatra_multiscale)
+      if (ele->Material()->MaterialType() == Core::Materials::m_scatra_multiscale)
       {
-        const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-            SCATRA::DisTypeToOptGaussRule<distype>::rule);
+        const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+            ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         {
-          Teuchos::rcp_dynamic_cast<MAT::ScatraMultiScale>(ele->Material())
+          Teuchos::rcp_dynamic_cast<Mat::ScatraMultiScale>(ele->Material())
               ->SetTimeStepping(iquad, params.get<double>("dt"), params.get<double>("time"),
                   params.get<int>("step"));
         }
@@ -628,7 +628,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       break;
     }
 
-    case SCATRA::Action::calc_heteroreac_mat_and_rhs:
+    case ScaTra::Action::calc_heteroreac_mat_and_rhs:
     {
       //--------------------------------------------------------------------------------
       // extract element based or nodal values
@@ -646,15 +646,15 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       break;
     }
 
-    case SCATRA::Action::transform_real_to_reference_point:
+    case ScaTra::Action::transform_real_to_reference_point:
     {
       // init quantities
-      CORE::LINALG::Matrix<nsd_, 1> x_real;
+      Core::LinAlg::Matrix<nsd_, 1> x_real;
       for (unsigned int d = 0; d < nsd_; ++d) x_real(d, 0) = params.get<double*>("point")[d];
       xsi_(0, 0) = 0.0;
       for (unsigned int d = 1; d < nsd_; ++d) xsi_(d, 0) = 0.0;
       int count = 0;
-      CORE::LINALG::Matrix<nsd_, 1> diff;
+      Core::LinAlg::Matrix<nsd_, 1> diff;
 
       // do the Newton loop
       bool inside = true;
@@ -662,7 +662,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       {
         count++;
         eval_shape_func_and_derivs_in_parameter_space();
-        CORE::LINALG::Matrix<nsd_, 1> x_eval;
+        Core::LinAlg::Matrix<nsd_, 1> x_eval;
         for (unsigned int d = 0; d < nsd_; ++d)
         {
           for (unsigned int n = 0; n < nen_; ++n) x_eval(d, 0) += funct_(n, 0) * xyze_(d, n);
@@ -696,7 +696,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
       break;
     }
 
-    case SCATRA::Action::evaluate_field_in_point:
+    case ScaTra::Action::evaluate_field_in_point:
     {
       for (unsigned int d = 0; d < nsd_; ++d) xsi_(d, 0) = params.get<double*>("point")[d];
 
@@ -704,7 +704,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
 
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
-      CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
+      Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
       if (params.get<int>("numscal") > numscal_)
         FOUR_C_THROW(
@@ -732,22 +732,23 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(CORE::Elemen
 /*----------------------------------------------------------------------*
  | evaluate service routine                                  fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(CORE::Elements::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // setup
   if (SetupCalc(ele, discretization) == -1) return 0;
 
   // check for the action parameter
-  const auto action = Teuchos::getIntegralValue<SCATRA::Action>(params, "action");
+  const auto action = Teuchos::getIntegralValue<ScaTra::Action>(params, "action");
 
-  if (scatrapara_->IsAle() and action != SCATRA::Action::micro_scale_read_restart)
+  if (scatrapara_->IsAle() and action != ScaTra::Action::micro_scale_read_restart)
   {
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = scatrapara_->NdsDisp();
@@ -765,7 +766,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(CORE::Elemen
         lmdisp[inode * nsd_ + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
+    Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     update_node_coordinates();
@@ -783,15 +784,15 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(CORE::Elemen
 /*---------------------------------------------------------------------*
  | calculate filtered fields for turbulent Prandtl number   fang 02/15 |
  *---------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(CORE::Elements::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::Elements::Element::LocationArray& la)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   // extract scalar values from global vector
   Teuchos::RCP<const Epetra_Vector> scalar = discretization.GetState("scalar");
   if (scalar == Teuchos::null) FOUR_C_THROW("Cannot get scalar!");
-  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*scalar, ephinp_, la[0].lm_);
+  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nen_, 1>>(*scalar, ephinp_, la[0].lm_);
 
   // get number of dofset associated with velocity related dofs
   const int ndsvel = scatrapara_->NdsVel();
@@ -811,7 +812,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(CORE::Eleme
       lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
   // extract local values of convective velocity field from global state vector
-  CORE::FE::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, evelnp_, lmvel);
+  Core::FE::ExtractMyValues<Core::LinAlg::Matrix<nsd_, nen_>>(*convel, evelnp_, lmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   rotsymmpbc_->rotate_my_values_if_necessary(evelnp_);
@@ -841,7 +842,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(CORE::Eleme
   // the results are assembled onto the *_hat arrays
   switch (distype)
   {
-    case CORE::FE::CellType::hex8:
+    case Core::FE::CellType::hex8:
     {
       scatra_apply_box_filter(dens_hat, temp_hat, dens_temp_hat, phi2_hat, phiexpression_hat,
           vel_hat, densvel_hat, densveltemp_hat, densstraintemp_hat, phi_hat, alphaijsc_hat,
@@ -864,20 +865,20 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(CORE::Eleme
   params.set<double>("dens_temp_hat", dens_temp_hat);
   params.set<double>("phi2_hat", phi2_hat);
   params.set<double>("phiexpression_hat", phiexpression_hat);
-}  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::calc_box_filter
+}  // Discret::ELEMENTS::ScaTraEleCalc<distype,probdim>::calc_box_filter
 
 
 /*-----------------------------------------------------------------------------*
  | calculate mass matrix + rhs for initial time derivative calc.     gjb 03/12 |
  *-----------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_derivative(
-    CORE::Elements::Element* ele,               //!< current element
-    CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix
-    CORE::LINALG::SerialDenseVector& erhs,      //!< element residual
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_derivative(
+    Core::Elements::Element* ele,               //!< current element
+    Core::LinAlg::SerialDenseMatrix& emat,      //!< element matrix
+    Core::LinAlg::SerialDenseVector& erhs,      //!< element residual
     Teuchos::ParameterList& params,             //!< parameter list
-    DRT::Discretization& discretization,        //!< discretization
-    CORE::Elements::Element::LocationArray& la  //!< location array
+    Discret::Discretization& discretization,    //!< discretization
+    Core::Elements::Element::LocationArray& la  //!< location array
 )
 {
   // extract relevant quantities from discretization and parameter list
@@ -887,8 +888,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_derivativ
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
-      SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
+      ScaTra::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -929,8 +930,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_derivativ
   }
 
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   /*----------------------------------------------------------------------*/
   // element integration loop
@@ -953,14 +954,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_derivativ
       const double& phiint = scatravarmanager_->Phinp(k);
 
       // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-      CORE::LINALG::Matrix<nen_, 1> conv = scatravarmanager_->Conv(k);
+      Core::LinAlg::Matrix<nen_, 1> conv = scatravarmanager_->Conv(k);
 
       // velocity divergence required for conservative form
       double vdiv(0.0);
       if (scatrapara_->IsConservative()) get_divergence(vdiv, evelnp_);
 
       // diffusive part used in stabilization terms
-      CORE::LINALG::Matrix<nen_, 1> diff(true);
+      Core::LinAlg::Matrix<nen_, 1> diff(true);
       // diffusive term using current scalar value for higher-order elements
       if (use2ndderiv_)
       {
@@ -990,10 +991,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_derivativ
       //----------------------------------------------------------------
       // the stabilization term is deactivated in calc_initial_time_derivative() on time integrator
       // level
-      if (scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization)
+      if (scatrapara_->StabType() != Inpar::ScaTra::stabtype_no_stabilization)
       {
         // subgrid-scale velocity (dummy)
-        CORE::LINALG::Matrix<nen_, 1> sgconv(true);
+        Core::LinAlg::Matrix<nen_, 1> sgconv(true);
         calc_mat_mass_stab(emat, k, fac_tau, densam[k], densnp[k], sgconv, diff);
 
         // remove convective stabilization of inertia term
@@ -1022,9 +1023,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_derivativ
 /*----------------------------------------------------------------------*
  |  correct_rhs_from_calc_rhs_lin_mass                             ehrl 06/14 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::correct_rhs_from_calc_rhs_lin_mass(
-    CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac, const double densnp,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::correct_rhs_from_calc_rhs_lin_mass(
+    Core::LinAlg::SerialDenseVector& erhs, const int k, const double fac, const double densnp,
     const double phinp)
 {
   // fac->-fac to change sign of rhs
@@ -1038,14 +1039,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::correct_rhs_from_calc_rhs_l
 /*----------------------------------------------------------------------*
  |  Integrate shape functions over domain (private)           gjb 07/09 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::integrate_shape_functions(
-    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& elevec1,
-    const CORE::LINALG::IntSerialDenseVector& dofids)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::integrate_shape_functions(
+    const Core::Elements::Element* ele, Core::LinAlg::SerialDenseVector& elevec1,
+    const Core::LinAlg::IntSerialDenseVector& dofids)
 {
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // safety check
   if (dofids.numRows() < numdofpernode_)
@@ -1076,10 +1077,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::integrate_shape_functions(
 /*----------------------------------------------------------------------*
   |  calculate weighted mass flux (no reactive flux so far)     gjb 06/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
-    CORE::LINALG::Matrix<3, nen_>& flux, const CORE::Elements::Element* ele,
-    const INPAR::SCATRA::FluxType fluxtype, const int k)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
+    Core::LinAlg::Matrix<3, nen_>& flux, const Core::Elements::Element* ele,
+    const Inpar::ScaTra::FluxType fluxtype, const int k)
 {
   /*
   * Actually, we compute here a weighted (and integrated) form of the fluxes!
@@ -1112,8 +1113,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
   }
 
   // integration rule
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1127,27 +1128,27 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
     if (scatrapara_->MatGP()) get_material_params(ele, densn, densnp, densam, visc);
 
     // get velocity at integration point
-    CORE::LINALG::Matrix<nsd_, 1> velint(true);
-    CORE::LINALG::Matrix<nsd_, 1> convelint(true);
+    Core::LinAlg::Matrix<nsd_, 1> velint(true);
+    Core::LinAlg::Matrix<nsd_, 1> convelint(true);
     velint.Multiply(evelnp_, funct_);
     convelint.Multiply(econvelnp_, funct_);
 
     // get gradient of scalar at integration point
-    CORE::LINALG::Matrix<nsd_, 1> gradphi(true);
+    Core::LinAlg::Matrix<nsd_, 1> gradphi(true);
     gradphi.Multiply(derxy_, ephinp_[k]);
 
     // allocate and initialize!
-    CORE::LINALG::Matrix<nsd_, 1> q(true);
+    Core::LinAlg::Matrix<nsd_, 1> q(true);
 
     // add different flux contributions as specified by user input
     switch (fluxtype)
     {
-      case INPAR::SCATRA::flux_total:
+      case Inpar::ScaTra::flux_total:
         // convective flux contribution
         q.Update(densnp[k] * scatravarmanager_->Phinp(k), convelint);
 
         [[fallthrough]];
-      case INPAR::SCATRA::flux_diffusive:
+      case Inpar::ScaTra::flux_diffusive:
         // diffusive flux contribution
         q.Update(-(diffmanager_->GetIsotropicDiff(k)), gradphi, 1.0);
 
@@ -1183,18 +1184,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
 /*----------------------------------------------------------------------------------------*
  | calculate domain integral, i.e., surface area or volume of domain element   fang 07/15 |
  *----------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_domain_integral(
-    const CORE::Elements::Element* ele,      //!< the element we are dealing with
-    CORE::LINALG::SerialDenseVector& scalar  //!< result vector for scalar integral to be computed
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_domain_integral(
+    const Core::Elements::Element* ele,      //!< the element we are dealing with
+    Core::LinAlg::SerialDenseVector& scalar  //!< result vector for scalar integral to be computed
 )
 {
   // initialize variable for domain integral
   double domainintegral(0.);
 
   // get integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1208,20 +1209,20 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_domain_integral(
 
   // write result into result vector
   scalar(0) = domainintegral;
-}  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::calc_domain_integral
+}  // Discret::ELEMENTS::ScaTraEleCalc<distype,probdim>::calc_domain_integral
 
 
 /*----------------------------------------------------------------------*
 |  calculate scalar(s) and domain integral                     vg 09/08|
 *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
-    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
+    const Core::Elements::Element* ele, Core::LinAlg::SerialDenseVector& scalars,
     const bool inverting, const bool calc_grad_phi)
 {
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1232,7 +1233,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
     for (int k = 0; k < numdofpernode_; k++)
     {
       // evaluate 1.0/phi if needed
-      CORE::LINALG::Matrix<nen_, 1> inv_ephinp(true);
+      Core::LinAlg::Matrix<nen_, 1> inv_ephinp(true);
       if (inverting)
       {
         for (unsigned i = 0; i < nen_; i++)
@@ -1251,7 +1252,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
 
     if (calc_grad_phi)
     {
-      DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::set_internal_variables_for_mat_and_rhs();
+      Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::set_internal_variables_for_mat_and_rhs();
 
       for (int k = 0; k < numscal_; k++)
       {
@@ -1266,22 +1267,22 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
 /*----------------------------------------------------------------------*
  | calculate scalar time derivative(s) and domain integral   fang 03/18 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalar_time_derivatives(
-    const DRT::Discretization& discretization,  //!< discretization
-    const std::vector<int>& lm,                 //!< location vector
-    CORE::LINALG::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalar_time_derivatives(
+    const Discret::Discretization& discretization,  //!< discretization
+    const std::vector<int>& lm,                     //!< location vector
+    Core::LinAlg::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
 )
 {
   // extract scalar time derivatives from global state vector
   const Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
   if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
-  static std::vector<CORE::LINALG::Matrix<nen_, 1>> ephidtnp(numscal_);
-  CORE::FE::ExtractMyValues(*phidtnp, ephidtnp, lm);
+  static std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(numscal_);
+  Core::FE::ExtractMyValues(*phidtnp, ephidtnp, lm);
 
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1300,20 +1301,20 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalar_time_deriv
     // calculate integral of domain
     scalars(numscal_) += fac;
   }  // loop over integration points
-}  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::calculate_scalar_time_derivatives
+}  // Discret::ELEMENTS::ScaTraEleCalc<distype,probdim>::calculate_scalar_time_derivatives
 
 
 /*----------------------------------------------------------------------*
 |  calculate momentum vector and minus domain integral          mw 06/14|
 *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_momentum_and_volume(
-    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseVector& momandvol,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_momentum_and_volume(
+    const Core::Elements::Element* ele, Core::LinAlg::SerialDenseVector& momandvol,
     const double interface_thickness)
 {
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1371,16 +1372,16 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_momentum_and_volu
 /*----------------------------------------------------------------------*
  | calculate normalized subgrid-diffusivity matrix              vg 10/08|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_diff_matrix(
-    const CORE::Elements::Element* ele, CORE::LINALG::SerialDenseMatrix& emat)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_diff_matrix(
+    const Core::Elements::Element* ele, Core::LinAlg::SerialDenseMatrix& emat)
 {
   /*----------------------------------------------------------------------*/
   // integration loop for one element
   /*----------------------------------------------------------------------*/
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1406,21 +1407,21 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_diff_matrix(
 /*----------------------------------------------------------------------------------------*
  | finite difference check on element level (for debugging only) (protected)   fang 10/14 |
  *----------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(CORE::Elements::Element* ele,
-    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
-    CORE::LINALG::SerialDenseVector& subgrdiff)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements::Element* ele,
+    Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs,
+    Core::LinAlg::SerialDenseVector& subgrdiff)
 {
   // screen output
   std::cout << "FINITE DIFFERENCE CHECK FOR ELEMENT " << ele->Id();
 
   // make a copy of state variables to undo perturbations later
-  std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp_original(numscal_);
+  std::vector<Core::LinAlg::Matrix<nen_, 1>> ephinp_original(numscal_);
   for (int k = 0; k < numscal_; ++k)
     for (unsigned i = 0; i < nen_; ++i) ephinp_original[k](i, 0) = ephinp_[k](i, 0);
 
   // generalized-alpha time integration requires a copy of history variables as well
-  std::vector<CORE::LINALG::Matrix<nen_, 1>> ehist_original(numscal_);
+  std::vector<Core::LinAlg::Matrix<nen_, 1>> ehist_original(numscal_);
   if (scatraparatimint_->IsGenAlpha())
   {
     for (int k = 0; k < numscal_; ++k)
@@ -1428,9 +1429,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(CORE::Elements::El
   }
 
   // initialize element matrix and vectors for perturbed state
-  CORE::LINALG::SerialDenseMatrix emat_dummy(emat);
-  CORE::LINALG::SerialDenseVector erhs_perturbed(erhs);
-  CORE::LINALG::SerialDenseVector subgrdiff_dummy(subgrdiff);
+  Core::LinAlg::SerialDenseMatrix emat_dummy(emat);
+  Core::LinAlg::SerialDenseVector erhs_perturbed(erhs);
+  Core::LinAlg::SerialDenseVector subgrdiff_dummy(subgrdiff);
 
   // initialize counter for failed finite difference checks
   unsigned counter(0);
@@ -1579,12 +1580,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(CORE::Elements::El
 /*---------------------------------------------------------------------*
   |  calculate error compared to analytical solution           gjb 10/08|
   *---------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analyt_solution(
-    const CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    CORE::LINALG::SerialDenseVector& errors)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analyt_solution(
+    const Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Core::LinAlg::SerialDenseVector& errors)
 {
-  if (Teuchos::getIntegralValue<SCATRA::Action>(params, "action") != SCATRA::Action::calc_error)
+  if (Teuchos::getIntegralValue<ScaTra::Action>(params, "action") != ScaTra::Action::calc_error)
     FOUR_C_THROW("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------
@@ -1593,13 +1594,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analy
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const auto errortype = CORE::UTILS::GetAsEnum<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
+  const auto errortype = Core::UTILS::GetAsEnum<Inpar::ScaTra::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
-    case INPAR::SCATRA::calcerror_byfunction:
+    case Inpar::ScaTra::calcerror_byfunction:
     {
       const int errorfunctno = params.get<int>("error function number");
 
@@ -1607,9 +1608,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analy
       double phi_exact(0.0);
       double deltaphi(0.0);
       //! spatial gradient of current scalar value
-      CORE::LINALG::Matrix<nsd_, 1> gradphi(true);
-      CORE::LINALG::Matrix<nsd_, 1> gradphi_exact(true);
-      CORE::LINALG::Matrix<nsd_, 1> deltagradphi(true);
+      Core::LinAlg::Matrix<nsd_, 1> gradphi(true);
+      Core::LinAlg::Matrix<nsd_, 1> gradphi_exact(true);
+      Core::LinAlg::Matrix<nsd_, 1> deltagradphi(true);
 
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
@@ -1618,7 +1619,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analy
 
         // get coordinates at integration point
         // gp reference coordinates
-        CORE::LINALG::Matrix<nsd_, 1> xyzint(true);
+        Core::LinAlg::Matrix<nsd_, 1> xyzint(true);
         xyzint.Multiply(xyze_, funct_);
 
         // function evaluation requires a 3D position vector!!
@@ -1633,13 +1634,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analy
           // spatial gradient of current scalar value
           gradphi.Multiply(derxy_, ephinp_[k]);
 
-          phi_exact = GLOBAL::Problem::Instance()
-                          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+          phi_exact = Global::Problem::Instance()
+                          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                           .Evaluate(position, t, k);
 
           std::vector<double> gradphi_exact_vec =
-              GLOBAL::Problem::Instance()
-                  ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+              Global::Problem::Instance()
+                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
                   .evaluate_spatial_derivative(position, t, k);
 
           if (gradphi_exact_vec.size())
@@ -1688,15 +1689,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analy
     }
     break;
 
-    case INPAR::SCATRA::calcerror_spherediffusion:
+    case Inpar::ScaTra::calcerror_spherediffusion:
     {
       // analytical solution
       double phi_exact(0.0);
       double deltaphi(0.0);
       //! spatial gradient of current scalar value
-      CORE::LINALG::Matrix<nsd_, 1> gradphi(true);
-      CORE::LINALG::Matrix<nsd_, 1> gradphi_exact(true);
-      CORE::LINALG::Matrix<nsd_, 1> deltagradphi(true);
+      Core::LinAlg::Matrix<nsd_, 1> gradphi(true);
+      Core::LinAlg::Matrix<nsd_, 1> gradphi_exact(true);
+      Core::LinAlg::Matrix<nsd_, 1> deltagradphi(true);
 
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
@@ -1705,7 +1706,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analy
 
         // get coordinates at integration point
         // gp reference coordinates
-        CORE::LINALG::Matrix<nsd_, 1> xyzint(true);
+        Core::LinAlg::Matrix<nsd_, 1> xyzint(true);
         xyzint.Multiply(xyze_, funct_);
 
         for (int k = 0; k < numscal_; k++)
@@ -1757,17 +1758,17 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analy
       FOUR_C_THROW("Unknown analytical solution!");
       break;
   }  // switch(errortype)
-}  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::cal_error_compared_to_analyt_solution
+}  // Discret::ELEMENTS::ScaTraEleCalc<distype,probdim>::cal_error_compared_to_analyt_solution
 
 
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                  vuong 07/16|
 *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_and_rhs(
-    CORE::Elements::Element* ele,           ///< the element whose matrix is calculated
-    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
-    CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_and_rhs(
+    Core::Elements::Element* ele,           ///< the element whose matrix is calculated
+    Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
+    Core::LinAlg::SerialDenseVector& erhs   ///< element rhs to calculate
 )
 {
   //----------------------------------------------------------------------
@@ -1796,7 +1797,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_and_rh
     for (int k = 0; k < numscal_; ++k)  // loop of each transported scalar
     {
       // get velocity at element center
-      CORE::LINALG::Matrix<nsd_, 1> convelint = scatravarmanager_->ConVel(k);
+      Core::LinAlg::Matrix<nsd_, 1> convelint = scatravarmanager_->ConVel(k);
       // calculation of stabilization parameter at element center
       calc_tau(tau[k], diffmanager_->GetIsotropicDiff(k),
           reamanager_->get_stabilization_coeff(k, scatravarmanager_->Phinp(k)), densnp[k],
@@ -1818,8 +1819,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_and_rh
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
@@ -1873,8 +1874,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_and_rh
       // 3) element matrix: reactive term
       //----------------------------------------------------------------
 
-      CORE::LINALG::Matrix<nen_, 1> sgconv(true);
-      CORE::LINALG::Matrix<nen_, 1> diff(true);
+      Core::LinAlg::Matrix<nen_, 1> sgconv(true);
+      Core::LinAlg::Matrix<nen_, 1> diff(true);
       // diffusive term using current scalar value for higher-order elements
       if (use2ndderiv_)
       {
@@ -1923,29 +1924,29 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_and_rh
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_det_f_at_int_point(
-    const CORE::Elements::Element* const& ele,
-    const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
+template <Core::FE::CellType distype, int probdim>
+double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_det_f_at_int_point(
+    const Core::Elements::Element* const& ele,
+    const Core::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
 {
   // get determinant of derivative of spatial coordinate w.r.t. parameter coordinates
   const double det_dxds = eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
   // get derivatives of element shape function w.r.t. parameter coordinates
-  CORE::LINALG::Matrix<nsd_ele_, nen_> deriv_ele;
-  CORE::FE::shape_function_deriv1<distype>(xsi_, deriv_ele);
+  Core::LinAlg::Matrix<nsd_ele_, nen_> deriv_ele;
+  Core::FE::shape_function_deriv1<distype>(xsi_, deriv_ele);
 
   // reference coordinates of element nodes
-  CORE::LINALG::Matrix<nsd_, nen_> XYZ;
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, XYZ);
+  Core::LinAlg::Matrix<nsd_, nen_> XYZ;
+  Core::Geo::fillInitialPositionArray<distype, nsd_, Core::LinAlg::Matrix<nsd_, nen_>>(ele, XYZ);
 
   // reference coordinates of elemental nodes in space dimension of element
-  CORE::LINALG::Matrix<nsd_ele_, nen_> XYZe;
+  Core::LinAlg::Matrix<nsd_ele_, nen_> XYZe;
   for (int i = 0; i < static_cast<int>(nsd_ele_); ++i)
     for (int j = 0; j < static_cast<int>(nen_); ++j) XYZe(i, j) = XYZ(i, j);
 
   // compute derivative of parameter coordinates w.r.t. reference coordinates
-  CORE::LINALG::Matrix<nsd_ele_, nsd_ele_> dXds;
+  Core::LinAlg::Matrix<nsd_ele_, nsd_ele_> dXds;
   dXds.MultiplyNT(deriv_ele, XYZe);
 
   return det_dxds / dXds.Determinant();

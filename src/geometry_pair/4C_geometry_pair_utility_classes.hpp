@@ -56,7 +56,7 @@ namespace GEOMETRYPAIR
      * @param gauss_weight Gauss weight for this point.
      */
     ProjectionPoint1DTo3D(
-        scalar_type eta, CORE::LINALG::Matrix<3, 1, scalar_type> xi, double gauss_weight)
+        scalar_type eta, Core::LinAlg::Matrix<3, 1, scalar_type> xi, double gauss_weight)
         : eta_(eta),
           xi_(xi),
           projection_result_(ProjectionResult::none),
@@ -70,7 +70,7 @@ namespace GEOMETRYPAIR
      * @param eta Parameter coordinate on line.
      * @param xi Parameter coordinates in volume.
      */
-    ProjectionPoint1DTo3D(scalar_type eta, CORE::LINALG::Matrix<3, 1, scalar_type> xi)
+    ProjectionPoint1DTo3D(scalar_type eta, Core::LinAlg::Matrix<3, 1, scalar_type> xi)
         : ProjectionPoint1DTo3D(eta, xi, -1.){};
 
     /**
@@ -78,7 +78,7 @@ namespace GEOMETRYPAIR
      * @param eta Parameter coordinate on the line.
      */
     ProjectionPoint1DTo3D(scalar_type eta)
-        : ProjectionPoint1DTo3D(eta, CORE::LINALG::Matrix<3, 1, scalar_type>(true), -1.){};
+        : ProjectionPoint1DTo3D(eta, Core::LinAlg::Matrix<3, 1, scalar_type>(true), -1.){};
 
     /**
      * \brief Empty constructor.
@@ -98,9 +98,9 @@ namespace GEOMETRYPAIR
     inline void set_from_other_point_double(
         const ProjectionPoint1DTo3D<scalar_type_other>& point_other)
     {
-      eta_ = CORE::FADUTILS::CastToDouble(point_other.GetEta());
+      eta_ = Core::FADUtils::CastToDouble(point_other.GetEta());
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        xi_(i_dim) = CORE::FADUTILS::CastToDouble(point_other.GetXi()(i_dim));
+        xi_(i_dim) = Core::FADUtils::CastToDouble(point_other.GetXi()(i_dim));
       projection_result_ = point_other.GetProjectionResult();
       gauss_weight_ = point_other.get_gauss_weight_no_check();
       intersection_face_ = point_other.GetIntersectionFace();
@@ -124,22 +124,22 @@ namespace GEOMETRYPAIR
     /**
      * \brief Set the parameter coordinates in the volume.
      */
-    inline void SetXi(const CORE::LINALG::Matrix<3, 1, scalar_type>& xi) { xi_ = xi; };
+    inline void SetXi(const Core::LinAlg::Matrix<3, 1, scalar_type>& xi) { xi_ = xi; };
 
     /**
      * \brief Get the parameter coordinates in the volume.
      */
-    inline const CORE::LINALG::Matrix<3, 1, scalar_type>& GetXi() const { return xi_; };
+    inline const Core::LinAlg::Matrix<3, 1, scalar_type>& GetXi() const { return xi_; };
 
     /**
      * \brief Get the parameter coordinates in the volume as a reference.
      */
-    inline CORE::LINALG::Matrix<3, 1, scalar_type>& GetXi() { return xi_; };
+    inline Core::LinAlg::Matrix<3, 1, scalar_type>& GetXi() { return xi_; };
 
     /**
      * \brief Set the parameter coordinates in the cross section.
      */
-    inline void SetEtaCrossSection(CORE::LINALG::Matrix<2, 1, scalar_type> eta_cross_section)
+    inline void SetEtaCrossSection(Core::LinAlg::Matrix<2, 1, scalar_type> eta_cross_section)
     {
       eta_cross_section_ = eta_cross_section;
       is_cross_section_point_ = true;
@@ -148,7 +148,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the parameter coordinates in the cross section.
      */
-    inline CORE::LINALG::Matrix<2, 1, scalar_type> GetEtaCrossSection() const
+    inline Core::LinAlg::Matrix<2, 1, scalar_type> GetEtaCrossSection() const
     {
       if (!is_cross_section_point_) FOUR_C_THROW("The cross section coordinate has not been set!");
       return eta_cross_section_;
@@ -217,7 +217,7 @@ namespace GEOMETRYPAIR
     friend bool operator<(const ProjectionPoint1DTo3D<scalar_type>& lhs,
         const ProjectionPoint1DTo3D<scalar_type>& rhs)
     {
-      if (lhs.GetEta() < rhs.GetEta() - CONSTANTS::projection_xi_eta_tol)
+      if (lhs.GetEta() < rhs.GetEta() - Constants::projection_xi_eta_tol)
         return true;
       else
         return false;
@@ -232,7 +232,7 @@ namespace GEOMETRYPAIR
     friend bool operator>(const ProjectionPoint1DTo3D<scalar_type>& lhs,
         const ProjectionPoint1DTo3D<scalar_type>& rhs)
     {
-      if (lhs.GetEta() > rhs.GetEta() + CONSTANTS::projection_xi_eta_tol)
+      if (lhs.GetEta() > rhs.GetEta() + Constants::projection_xi_eta_tol)
         return true;
       else
         return false;
@@ -243,7 +243,7 @@ namespace GEOMETRYPAIR
     scalar_type eta_;
 
     //! Parameter coordinates in volume.
-    CORE::LINALG::Matrix<3, 1, scalar_type> xi_;
+    Core::LinAlg::Matrix<3, 1, scalar_type> xi_;
 
     //! Projection result.
     ProjectionResult projection_result_;
@@ -256,7 +256,7 @@ namespace GEOMETRYPAIR
     int intersection_face_;
 
     //! Parameter coordinates in the cross section.
-    CORE::LINALG::Matrix<2, 1, scalar_type> eta_cross_section_;
+    Core::LinAlg::Matrix<2, 1, scalar_type> eta_cross_section_;
 
     //! Flag if this is a point on a cross section.
     bool is_cross_section_point_;
@@ -290,7 +290,7 @@ namespace GEOMETRYPAIR
             "The segment is created with eta_a=%f and eta_b=%f, this is not possible, as eta_a "
             "has "
             "to be smaller than eta_b!",
-            CORE::FADUTILS::CastToDouble(GetEtaA()), CORE::FADUTILS::CastToDouble(GetEtaB()));
+            Core::FADUtils::CastToDouble(GetEtaA()), Core::FADUtils::CastToDouble(GetEtaB()));
     }
 
     /**
@@ -373,14 +373,14 @@ namespace GEOMETRYPAIR
      */
     friend bool operator<(const LineSegment<scalar_type>& lhs, const LineSegment<scalar_type>& rhs)
     {
-      if (lhs.GetEtaB() < rhs.GetEtaA() + CONSTANTS::projection_xi_eta_tol)
+      if (lhs.GetEtaB() < rhs.GetEtaA() + Constants::projection_xi_eta_tol)
         return true;
-      else if (lhs.GetEtaA() > rhs.GetEtaB() - CONSTANTS::projection_xi_eta_tol)
+      else if (lhs.GetEtaA() > rhs.GetEtaB() - Constants::projection_xi_eta_tol)
       {
         // The segments do not overlap.
       }
-      else if (abs(lhs.GetEtaA() - rhs.GetEtaA()) < CONSTANTS::projection_xi_eta_tol &&
-               abs(lhs.GetEtaB() - rhs.GetEtaB()) < CONSTANTS::projection_xi_eta_tol)
+      else if (abs(lhs.GetEtaA() - rhs.GetEtaA()) < Constants::projection_xi_eta_tol &&
+               abs(lhs.GetEtaB() - rhs.GetEtaB()) < Constants::projection_xi_eta_tol)
       {
         // The segments are equal.
       }
@@ -398,14 +398,14 @@ namespace GEOMETRYPAIR
      */
     friend bool operator>(const LineSegment<scalar_type>& lhs, const LineSegment<scalar_type>& rhs)
     {
-      if (lhs.GetEtaA() > rhs.GetEtaB() - CONSTANTS::projection_xi_eta_tol)
+      if (lhs.GetEtaA() > rhs.GetEtaB() - Constants::projection_xi_eta_tol)
         return true;
-      else if (lhs.GetEtaB() < rhs.GetEtaA() + CONSTANTS::projection_xi_eta_tol)
+      else if (lhs.GetEtaB() < rhs.GetEtaA() + Constants::projection_xi_eta_tol)
       {
         // The segments do not overlap.
       }
-      else if (abs(lhs.GetEtaA() - rhs.GetEtaA()) < CONSTANTS::projection_xi_eta_tol &&
-               abs(lhs.GetEtaB() - rhs.GetEtaB()) < CONSTANTS::projection_xi_eta_tol)
+      else if (abs(lhs.GetEtaA() - rhs.GetEtaA()) < Constants::projection_xi_eta_tol &&
+               abs(lhs.GetEtaB() - rhs.GetEtaB()) < Constants::projection_xi_eta_tol)
       {
         // The segments are equal.
       }

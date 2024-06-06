@@ -18,12 +18,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::IO::GRIDGENERATOR
+namespace Core::IO::GridGenerator
 {
   /// forward declaration
   struct RectangularCuboidInputs;
@@ -36,7 +36,7 @@ namespace CORE::IO::GRIDGENERATOR
     \param outputFlag             (i) triggers output writing
   */
   void CreateRectangularCuboidDiscretization(
-      DRT::Discretization& dis, const RectangularCuboidInputs& inputData, bool outputFlag);
+      Discret::Discretization& dis, const RectangularCuboidInputs& inputData, bool outputFlag);
 
   /// storage for input parameters for CreateRectangularCuboidDiscretization
   struct RectangularCuboidInputs
@@ -71,8 +71,8 @@ namespace CORE::IO::GRIDGENERATOR
     bool autopartition_{false};
   };
 
-}  // namespace CORE::IO::GRIDGENERATOR
-   // namespace DRT
+}  // namespace Core::IO::GridGenerator
+   // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

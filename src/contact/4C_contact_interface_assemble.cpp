@@ -29,13 +29,13 @@ void CONTACT::Interface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod)
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     int dim = cnode->NumDof();
 
-    CORE::LINALG::SerialDenseVector xspatial(dim);
+    Core::LinAlg::SerialDenseVector xspatial(dim);
     std::vector<int> dof(dim);
     std::vector<int> owner(dim);
 
@@ -47,7 +47,7 @@ void CONTACT::Interface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod)
     }
 
     // do assembly
-    CORE::LINALG::Assemble(*xsmod, xspatial, dof, owner);
+    Core::LinAlg::Assemble(*xsmod, xspatial, dof, owner);
   }
   return;
 }
@@ -65,7 +65,7 @@ void CONTACT::Interface::assemble_reg_normal_forces(
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -158,8 +158,8 @@ void CONTACT::Interface::assemble_reg_normal_forces(
       std::map<int, double>::iterator gcurr;
 
       // contribution of derivative of normal
-      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
-      CORE::GEN::Pairedvector<int, double>::iterator ncurr;
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      Core::Gen::Pairedvector<int, double>::iterator ncurr;
 
       for (int j = 0; j < dim; ++j)
       {
@@ -197,14 +197,14 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
   double pptan = interface_params().get<double>("PENALTYPARAMTAN");
   double frcoeff = interface_params().get<double>("FRCOEFF");
 
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -215,7 +215,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
     double* n = cnode->MoData().n();
 
     // Lagrange multiplier from Uzawa algorithm
-    CORE::LINALG::SerialDenseMatrix lmuzawa(numdof, 1);
+    Core::LinAlg::SerialDenseMatrix lmuzawa(numdof, 1);
     for (int k = 0; k < numdof; ++k) lmuzawa(k, 0) = cnode->MoData().lmuzawa()[k];
 
     // Lagrange multiplier in normal direction
@@ -224,7 +224,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
       lmuzawan += cnode->MoData().lmuzawa()[k] * cnode->MoData().n()[k];
 
     // tangential plane
-    CORE::LINALG::SerialDenseMatrix tanplane(numdof, numdof);
+    Core::LinAlg::SerialDenseMatrix tanplane(numdof, numdof);
     if (numdof == 3)
     {
       tanplane(0, 0) = 1 - (n[0] * n[0]);
@@ -250,13 +250,13 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
       FOUR_C_THROW("Error in AssembleTangentForces: Unknown dimension.");
 
     // evaluate traction
-    CORE::LINALG::SerialDenseMatrix jumpvec(numdof, 1);
+    Core::LinAlg::SerialDenseMatrix jumpvec(numdof, 1);
 
     for (int i = 0; i < numdof; i++) jumpvec(i, 0) = cnode->FriData().jump()[i];
 
     // evaluate kappa.pptan.jumptan
-    CORE::LINALG::SerialDenseMatrix temptrac(numdof, 1);
-    CORE::LINALG::multiply(0.0, temptrac, kappa * pptan, tanplane, jumpvec);
+    Core::LinAlg::SerialDenseMatrix temptrac(numdof, 1);
+    Core::LinAlg::multiply(0.0, temptrac, kappa * pptan, tanplane, jumpvec);
 
     // fill vector tractionold
     std::vector<double> tractionold(numdof);
@@ -283,7 +283,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
       cnode->FriData().Slip() = false;
     }
     else if (cnode->Active() == true &&
-             ((abs(maxtantrac) - magnitude >= 0) or ftype == INPAR::CONTACT::friction_stick))
+             ((abs(maxtantrac) - magnitude >= 0) or ftype == Inpar::CONTACT::friction_stick))
     {
       // std::cout << "Node " << gid << " is stick" << std::endl;
       cnode->FriData().Slip() = false;
@@ -320,7 +320,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
       /***************************************** tanplane.deriv(jump) ***/
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
-      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
+      Core::Gen::Pairedvector<int, double>::iterator _colcurr;
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -338,7 +338,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
       }
 
       /**************************************** deriv(tanplane).jump  ***/
-      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -379,7 +379,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
 
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
-      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
+      Core::Gen::Pairedvector<int, double>::iterator _colcurr;
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -398,7 +398,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_penalty()
       }
 
       /******************** deriv(tanplane).jump.maxtantrac/magnitude ***/
-      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -553,14 +553,14 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
   double pptan = interface_params().get<double>("PENALTYPARAMTAN");
   double frcoeff = interface_params().get<double>("FRCOEFF");
 
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
 
   // loop over all slave row nodes on the current interface
   for (int i = 0; i < SlaveRowNodes()->NumMyElements(); ++i)
   {
     int gid = SlaveRowNodes()->GID(i);
-    CORE::Nodes::Node* node = Discret().gNode(gid);
+    Core::Nodes::Node* node = Discret().gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -571,7 +571,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
     double* n = cnode->MoData().n();
 
     // Lagrange multiplier from Uzawa algorithm
-    CORE::LINALG::SerialDenseMatrix lmuzawa(dim, 1);
+    Core::LinAlg::SerialDenseMatrix lmuzawa(dim, 1);
     for (int k = 0; k < dim; ++k) lmuzawa(k, 0) = cnode->MoData().lmuzawa()[k];
 
     // Lagrange multiplier in normal direction
@@ -579,7 +579,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
     for (int k = 0; k < dim; ++k) lmuzawan += cnode->MoData().lmuzawa()[k] * cnode->MoData().n()[k];
 
     // tangential plane
-    CORE::LINALG::SerialDenseMatrix tanplane(dim, dim);
+    Core::LinAlg::SerialDenseMatrix tanplane(dim, dim);
     if (dim == 3)
     {
       tanplane(0, 0) = 1 - (n[0] * n[0]);
@@ -605,17 +605,17 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
       FOUR_C_THROW("Error in AssembleTangentForces: Unknown dimension.");
 
     // Lagrange multiplier in tangential direction
-    CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
-    CORE::LINALG::multiply(lmuzawatan, tanplane, lmuzawa);
+    Core::LinAlg::SerialDenseMatrix lmuzawatan(dim, 1);
+    Core::LinAlg::multiply(lmuzawatan, tanplane, lmuzawa);
 
     // evaluate traction
-    CORE::LINALG::SerialDenseMatrix jumpvec(dim, 1);
+    Core::LinAlg::SerialDenseMatrix jumpvec(dim, 1);
 
     for (int i = 0; i < dim; i++) jumpvec(i, 0) = cnode->FriData().jump()[i];
 
     // evaluate kappa.pptan.jumptan
-    CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
-    CORE::LINALG::multiply(0.0, temptrac, kappa * pptan, tanplane, jumpvec);
+    Core::LinAlg::SerialDenseMatrix temptrac(dim, 1);
+    Core::LinAlg::multiply(0.0, temptrac, kappa * pptan, tanplane, jumpvec);
 
     // Evaluate trailtraction
     std::vector<double> trailtraction(dim);
@@ -636,7 +636,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
     {
     }
     else if (cnode->Active() == true &&
-             ((abs(maxtantrac) - magnitude >= 0) or ftype == INPAR::CONTACT::friction_stick))
+             ((abs(maxtantrac) - magnitude >= 0) or ftype == Inpar::CONTACT::friction_stick))
     {
       // std::cout << "Node " << gid << " is stick" << std::endl;
       cnode->FriData().Slip() = false;
@@ -666,7 +666,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
       /***************************************** tanplane.deriv(jump) ***/
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
-      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
+      Core::Gen::Pairedvector<int, double>::iterator _colcurr;
       const int numdof = cnode->NumDof();
 
       // loop over dimensions
@@ -685,7 +685,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -728,7 +728,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
       /***************************************** tanplane.deriv(jump) ***/
       std::vector<std::map<int, double>>& derivjump = cnode->FriData().GetDerivJump();
       std::map<int, double>::iterator colcurr;
-      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
+      Core::Gen::Pairedvector<int, double>::iterator _colcurr;
       const int numdof = cnode->NumDof();
 
       // loop over dimensions
@@ -748,7 +748,7 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
       }
 
       /******************************* deriv(tanplane).(lmuzawa+jump) ***/
-      std::vector<CORE::GEN::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>>& derivn = cnode->Data().GetDerivN();
 
       // loop over dimensions
       for (int dimrow = 0; dimrow < numdof; ++dimrow)
@@ -911,13 +911,13 @@ void CONTACT::Interface::assemble_reg_tangent_forces_uzawa()
 /*----------------------------------------------------------------------*
  |  Assemble derivatives of lagrange multipliers              popp 05/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal)
+void CONTACT::Interface::AssembleLinZ(Core::LinAlg::SparseMatrix& linzglobal)
 {
   // loop over all slave nodes (row map)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -966,8 +966,8 @@ void CONTACT::Interface::AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal)
 /*----------------------------------------------------------------------*
  |  Assemble matrix with nodal tangents or/and normals         popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tglobal,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> nglobal)
+void CONTACT::Interface::AssembleTN(Teuchos::RCP<Core::LinAlg::SparseMatrix> tglobal,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> nglobal)
 {
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
@@ -978,7 +978,7 @@ void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tgl
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* cnode = dynamic_cast<Node*>(node);
     const int numdof = cnode->NumDof();
@@ -987,7 +987,7 @@ void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tgl
 
     if (tglobal != Teuchos::null)
     {
-      if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      if (constr_direction_ == Inpar::CONTACT::constr_xyz)
       {
         if (Dim() == 2)
         {
@@ -996,7 +996,7 @@ void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tgl
           std::vector<int> lmrowownerT(cnode->NumDof());
           std::vector<int> lmcol(cnode->NumDof());
 
-          CORE::LINALG::SerialDenseMatrix Tnode(numdof, numdof);
+          Core::LinAlg::SerialDenseMatrix Tnode(numdof, numdof);
           for (int i = 0; i < numdof; ++i)
           {
             lmrowT[i] = cnode->Dofs()[i];
@@ -1015,7 +1015,7 @@ void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tgl
           std::vector<int> lmrowownerT(cnode->NumDof());
           std::vector<int> lmcol(cnode->NumDof());
 
-          CORE::LINALG::SerialDenseMatrix Tnode(numdof, numdof);
+          Core::LinAlg::SerialDenseMatrix Tnode(numdof, numdof);
 
           for (int i = 0; i < numdof; ++i)
           {
@@ -1047,7 +1047,7 @@ void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tgl
           lmrowownerT[0] = cnode->Owner();
 
           /**************************************************** T-matrix ******/
-          CORE::LINALG::SerialDenseMatrix Tnode(1, colsize);
+          Core::LinAlg::SerialDenseMatrix Tnode(1, colsize);
 
           for (int j = 0; j < colsize; ++j)
           {
@@ -1073,7 +1073,7 @@ void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tgl
           lmrowownerT[1] = cnode->Owner();
 
           /**************************************************** T-matrix ******/
-          CORE::LINALG::SerialDenseMatrix Tnode(2, colsize);
+          Core::LinAlg::SerialDenseMatrix Tnode(2, colsize);
 
           for (int j = 0; j < colsize; ++j)
           {
@@ -1110,7 +1110,7 @@ void CONTACT::Interface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tgl
  |  PS: "AssembleS" is an outdated name which could make                |
  |  you confused.                                                       |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
+void CONTACT::Interface::AssembleS(Core::LinAlg::SparseMatrix& sglobal)
 {
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
@@ -1119,7 +1119,7 @@ void CONTACT::Interface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     auto* cnode = dynamic_cast<Node*>(node);
 
@@ -1136,7 +1136,7 @@ void CONTACT::Interface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
       double val = colcurr->second;
 
       // do not assemble zeros into s matrix
-      if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      if (constr_direction_ == Inpar::CONTACT::constr_xyz)
       {
         for (int j = 0; j < cnode->NumDof(); j++)
           if (abs(val * cnode->MoData().n()[j]) > 1.0e-12)
@@ -1151,8 +1151,8 @@ void CONTACT::Interface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
 /*----------------------------------------------------------------------*
  |  Assemble tangent deriv or/and normal deriv matrix         popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix> tderivglobal,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> nderivglobal, bool usePoroLM)
+void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<Core::LinAlg::SparseMatrix> tderivglobal,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> nderivglobal, bool usePoroLM)
 {
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
@@ -1163,7 +1163,7 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1172,8 +1172,8 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
 
     if (tderivglobal != Teuchos::null)  // assemble tangential derivs?
     {
-      std::vector<CORE::GEN::Pairedvector<int, double>>& dtmap = cnode->Data().GetDerivTxi();
-      CORE::GEN::Pairedvector<int, double>::iterator colcurr;
+      std::vector<Core::Gen::Pairedvector<int, double>>& dtmap = cnode->Data().GetDerivTxi();
+      Core::Gen::Pairedvector<int, double>::iterator colcurr;
 
       for (int dim = 0; dim < Dim() - 1; ++dim)  // for both tangents
       {
@@ -1216,7 +1216,7 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
             // << val << std::endl;
             // do not assemble zeros into P matrix
 
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int i = 0; i < cnode->NumDof(); ++i)
               {
@@ -1243,8 +1243,8 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
 
     if (nderivglobal != Teuchos::null)  // assemble normal derivs?
     {
-      std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap = cnode->Data().GetDerivN();
-      CORE::GEN::Pairedvector<int, double>::iterator colcurr;
+      std::vector<Core::Gen::Pairedvector<int, double>>& dnmap = cnode->Data().GetDerivN();
+      Core::Gen::Pairedvector<int, double>::iterator colcurr;
 
       int colsize = (int)dnmap[0].size();
       int mapsize = (int)dnmap.size();
@@ -1274,7 +1274,7 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
 
           // do not assemble zeros into P matrix
 
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int i = 0; i < cnode->NumDof(); ++i)
               if (abs(val) > 1.0e-12)
@@ -1297,7 +1297,7 @@ void CONTACT::Interface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix
 /*----------------------------------------------------------------------*
  |  Assemble matrices LinD containing fc derivatives          popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bool usePoroLM)
+void CONTACT::Interface::AssembleLinD(Core::LinAlg::SparseMatrix& lindglobal, bool usePoroLM)
 {
   /**********************************************************************/
   // NEW VERSION (09/2010): No more communication, thanks to FE_MATRIX!
@@ -1312,7 +1312,7 @@ void CONTACT::Interface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bo
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     int dim = cnode->NumDof();
@@ -1338,7 +1338,7 @@ void CONTACT::Interface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bo
       int sgid = scurr->first;
       ++scurr;
 
-      CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
+      Core::Nodes::Node* snode = idiscret_->gNode(sgid);
       if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       Node* csnode = dynamic_cast<Node*>(snode);
 
@@ -1385,7 +1385,7 @@ void CONTACT::Interface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bo
 /*----------------------------------------------------------------------*
  |  Assemble matrices LinM containing fc derivatives          popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bool usePoroLM)
+void CONTACT::Interface::AssembleLinM(Core::LinAlg::SparseMatrix& linmglobal, bool usePoroLM)
 {
   /**********************************************************************/
   // NEW VERSION (09/2010): No more communication, thanks to FE_MATRIX!
@@ -1400,7 +1400,7 @@ void CONTACT::Interface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bo
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
     int dim = cnode->NumDof();
@@ -1426,7 +1426,7 @@ void CONTACT::Interface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bo
       int mgid = mcurr->first;
       ++mcurr;
 
-      CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
+      Core::Nodes::Node* mnode = idiscret_->gNode(mgid);
       if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
       Node* cmnode = dynamic_cast<Node*>(mnode);
 
@@ -1474,7 +1474,7 @@ void CONTACT::Interface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bo
  |  Assemble matrices LinDM containing fc derivatives        farah 02/16|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleLinDM(
-    CORE::LINALG::SparseMatrix& lindglobal, CORE::LINALG::SparseMatrix& linmglobal, bool usePoroLM)
+    Core::LinAlg::SparseMatrix& lindglobal, Core::LinAlg::SparseMatrix& linmglobal, bool usePoroLM)
 {
   // call both sub functions
   AssembleLinD(lindglobal, usePoroLM);
@@ -1494,7 +1494,7 @@ void CONTACT::Interface::AssembleG(Epetra_Vector& gglobal)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1530,7 +1530,7 @@ void CONTACT::Interface::AssembleG(Epetra_Vector& gglobal)
         bool node_has_quad_element = false;
         for (int i = 0; i < cnode->NumElement(); i++)
         {
-          if (dynamic_cast<MORTAR::Element*>(cnode->Elements()[i])->IsQuad() == true)
+          if (dynamic_cast<Mortar::Element*>(cnode->Elements()[i])->IsQuad() == true)
           {
             node_has_quad_element = true;
             break;
@@ -1543,9 +1543,9 @@ void CONTACT::Interface::AssembleG(Epetra_Vector& gglobal)
         }
       }
 
-      if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      if (constr_direction_ == Inpar::CONTACT::constr_xyz)
       {
-        CORE::LINALG::SerialDenseVector gnode(Dim());
+        Core::LinAlg::SerialDenseVector gnode(Dim());
         std::vector<int> lm(Dim());
         std::vector<int> lmowner(Dim());
         for (int i = 0; i < Dim(); i++)
@@ -1554,18 +1554,18 @@ void CONTACT::Interface::AssembleG(Epetra_Vector& gglobal)
           lm[i] = cnode->Dofs()[i];
           lmowner[i] = cnode->Owner();
         }
-        CORE::LINALG::Assemble(gglobal, gnode, lm, lmowner);
+        Core::LinAlg::Assemble(gglobal, gnode, lm, lmowner);
       }
       else
       {
-        static CORE::LINALG::SerialDenseVector gnode(1);
+        static Core::LinAlg::SerialDenseVector gnode(1);
         static std::vector<int> lm(1);
         static std::vector<int> lmowner(1);
 
         gnode(0) = gap;
         lm[0] = cnode->Id();
         lmowner[0] = cnode->Owner();
-        CORE::LINALG::Assemble(gglobal, gnode, lm, lmowner);
+        Core::LinAlg::Assemble(gglobal, gnode, lm, lmowner);
       }
     }
   }
@@ -1582,17 +1582,17 @@ void CONTACT::Interface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
   // node set, i.e. nodes, which were active in the last iteration, are considered. Since you know,
   // that the lagrange multipliers of former inactive nodes are still equal zero.
 
-  Teuchos::RCP<Epetra_Map> inactivenodes = CORE::LINALG::SplitMap(*snoderowmap_, *activenodes_);
-  Teuchos::RCP<Epetra_Map> inactivedofs = CORE::LINALG::SplitMap(*sdofrowmap_, *activedofs_);
+  Teuchos::RCP<Epetra_Map> inactivenodes = Core::LinAlg::SplitMap(*snoderowmap_, *activenodes_);
+  Teuchos::RCP<Epetra_Map> inactivedofs = Core::LinAlg::SplitMap(*sdofrowmap_, *activedofs_);
 
   static std::vector<int> lm_gid(Dim());
   static std::vector<int> lm_owner(Dim());
-  static CORE::LINALG::SerialDenseVector lm_i(Dim());
+  static Core::LinAlg::SerialDenseVector lm_i(Dim());
 
   for (int i = 0; i < inactivenodes->NumMyElements(); ++i)
   {
     int gid = inactivenodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -1609,7 +1609,7 @@ void CONTACT::Interface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
       lm_gid[0] = inactivedofs->GID(2 * i);
       lm_gid[1] = inactivedofs->GID(2 * i + 1);
 
-      CORE::LINALG::Assemble(inactiverhs, lm_i, lm_gid, lm_owner);
+      Core::LinAlg::Assemble(inactiverhs, lm_i, lm_gid, lm_owner);
     }
     else if (Dim() == 3)
     {
@@ -1623,7 +1623,7 @@ void CONTACT::Interface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
       lm_gid[1] = inactivedofs->GID(3 * i + 1);
       lm_gid[2] = inactivedofs->GID(3 * i + 2);
 
-      CORE::LINALG::Assemble(inactiverhs, lm_i, lm_gid, lm_owner);
+      Core::LinAlg::Assemble(inactiverhs, lm_i, lm_gid, lm_owner);
     }
   }
 }
@@ -1635,24 +1635,24 @@ void CONTACT::Interface::AssembleTangrhs(Epetra_Vector& tangrhs)
 {
   static std::vector<int> lm_gid(Dim() - 1);
   static std::vector<int> lm_owner(Dim() - 1);
-  static CORE::LINALG::SerialDenseVector lm_t(Dim() - 1);
+  static Core::LinAlg::SerialDenseVector lm_t(Dim() - 1);
 
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       FOUR_C_THROW("AssembleTangrhs: Node ownership inconsistency!");
-    if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+    if (constr_direction_ == Inpar::CONTACT::constr_xyz)
     {
       if (Dim() == 2)
       {
         std::vector<int> lm_gid(2);
         std::vector<int> lm_owner(2);
-        CORE::LINALG::SerialDenseVector lm_t(2);
+        Core::LinAlg::SerialDenseVector lm_t(2);
         for (int i = 0; i < Dim(); ++i)
         {
           lm_gid[i] = cnode->Dofs()[i];
@@ -1663,13 +1663,13 @@ void CONTACT::Interface::AssembleTangrhs(Epetra_Vector& tangrhs)
             lm_t[i] -= cnode->Data().txi()[i] * cnode->Data().txi()[j] * cnode->MoData().lm()[j];
           }
         }
-        CORE::LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
+        Core::LinAlg::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
       else if (Dim() == 3)
       {
         std::vector<int> lm_gid(3);
         std::vector<int> lm_owner(3);
-        CORE::LINALG::SerialDenseVector lm_t(3);
+        Core::LinAlg::SerialDenseVector lm_t(3);
 
         for (int i = 0; i < Dim(); ++i)
         {
@@ -1682,7 +1682,7 @@ void CONTACT::Interface::AssembleTangrhs(Epetra_Vector& tangrhs)
             lm_t[i] -= cnode->Data().teta()[i] * cnode->Data().teta()[j] * cnode->MoData().lm()[j];
           }
         }
-        CORE::LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
+        Core::LinAlg::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
     }
     else
@@ -1696,7 +1696,7 @@ void CONTACT::Interface::AssembleTangrhs(Epetra_Vector& tangrhs)
         for (int j = 0; j < Dim(); ++j)
           lm_t[0] -= cnode->Data().txi()[j] * cnode->MoData().lm()[j];  // already negative rhs!!!
 
-        CORE::LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
+        Core::LinAlg::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
       else if (Dim() == 3)
       {
@@ -1713,7 +1713,7 @@ void CONTACT::Interface::AssembleTangrhs(Epetra_Vector& tangrhs)
           lm_t[0] -= cnode->Data().txi()[j] * cnode->MoData().lm()[j];   // already negative rhs!!!
           lm_t[1] -= cnode->Data().teta()[j] * cnode->MoData().lm()[j];  // already negative rhs!!!
         }
-        CORE::LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
+        Core::LinAlg::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
     }
   }
@@ -1722,8 +1722,8 @@ void CONTACT::Interface::AssembleTangrhs(Epetra_Vector& tangrhs)
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinStick with tangential+D+M derivatives  mgit 02/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
-    CORE::LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal)
+void CONTACT::Interface::AssembleLinStick(Core::LinAlg::SparseMatrix& linstickLMglobal,
+    Core::LinAlg::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal)
 {
   // FIXGIT: Assemble LinStick is containing a matrix for the de-
   // rivatives of the Lagrange multipliers. This is according to Hueeber.
@@ -1731,19 +1731,19 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
   // code is commented after the algorithm.
 
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = CORE::LINALG::SplitMap(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = CORE::LINALG::SplitMap(*activet_, *slipt_);
+  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::SplitMap(*activenodes_, *slipnodes_);
+  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::SplitMap(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
 
   // information from interface contact parameter list
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frcoeff_in =
       interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
-  bool frilessfirst = CORE::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
+  bool gp_slip = Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
+  bool frilessfirst = Core::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
 
   double frcoeff = 0.;  // the friction coefficient actually used
   bool consistent = false;
@@ -1758,14 +1758,14 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
 #endif
 
   if (consistent &&
-      CORE::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT"))
+      Core::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT"))
     FOUR_C_THROW("no consistent stick for regularized contact");
 
   // loop over all stick nodes of the interface
   for (int i = 0; i < sticknodes->NumMyElements(); ++i)
   {
     int gid = sticknodes->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -1798,14 +1798,14 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
     }
 
     // prepare assembly, get information from node
-    std::vector<CORE::GEN::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
-    std::vector<CORE::GEN::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
-    std::vector<CORE::GEN::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
+    std::vector<Core::Gen::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+    std::vector<Core::Gen::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+    std::vector<Core::Gen::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
     std::map<int, double> dscmap;
 
     // iterator for maps
     std::map<int, double>::iterator colcurr;
-    CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
+    Core::Gen::Pairedvector<int, double>::iterator _colcurr;
 
     // row number of entries
     std::vector<int> row(Dim() - 1);
@@ -1860,7 +1860,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
         double valteta = 0.0;
         if (Dim() == 3) valteta = teta[dim];
 
-        if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+        if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         {
           for (int j = 0; j < Dim(); j++)
           {
@@ -1881,9 +1881,9 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
 
       // 2) Entries on right hand side
       /******************************************************************/
-      if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      if (constr_direction_ == Inpar::CONTACT::constr_xyz)
       {
-        CORE::LINALG::SerialDenseVector rhsnode(Dim());
+        Core::LinAlg::SerialDenseVector rhsnode(Dim());
         std::vector<int> lm(Dim());
         std::vector<int> lmowner(Dim());
         for (int j = 0; j < Dim(); j++)
@@ -1893,11 +1893,11 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
           rhsnode[j] -= ztxi * txi[j];
           if (Dim() == 3) rhsnode[j] -= zteta * teta[j];
         }
-        CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
       else
       {
-        CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
+        Core::LinAlg::SerialDenseVector rhsnode(Dim() - 1);
         std::vector<int> lm(Dim() - 1);
         std::vector<int> lmowner(Dim() - 1);
 
@@ -1913,7 +1913,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
           lm[1] = cnode->Dofs()[2];
           lmowner[1] = cnode->Owner();
         }
-        CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
 
       // 3) Entries from differentiation with respect to displacements
@@ -1929,7 +1929,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
           double val = (_colcurr->second) * z[j];
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(val * txi[j]) > 1.e-12)
@@ -1948,7 +1948,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
             double val = (_colcurr->second) * z[j];
 
             // do not assemble zeros into s matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * teta[j]) > 1.e-12)
@@ -1960,7 +1960,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
         }
       }
     }
-    else if (consistent && ftype == INPAR::CONTACT::friction_coulomb)
+    else if (consistent && ftype == Inpar::CONTACT::friction_coulomb)
     {
       std::map<int, double>& dgmap = cnode->Data().GetDerivG();
 
@@ -2033,7 +2033,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
         }
 
         // do not assemble zeros into matrix
-        if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+        if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         {
           for (int j = 0; j < Dim(); j++)
           {
@@ -2053,9 +2053,9 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
       }
 
       // Entries on right hand side ****************************
-      if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      if (constr_direction_ == Inpar::CONTACT::constr_xyz)
       {
-        CORE::LINALG::SerialDenseVector rhsnode(Dim());
+        Core::LinAlg::SerialDenseVector rhsnode(Dim());
         std::vector<int> lm(Dim());
         std::vector<int> lmowner(Dim());
 
@@ -2066,11 +2066,11 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
           rhsnode(j) += frcoeff * (znor - cn * wgap) * ct * jumptxi * txi[j];
           if (Dim() == 3) rhsnode(j) += frcoeff * (znor - cn * wgap) * ct * jumpteta * teta[j];
         }
-        CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
       else
       {
-        CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
+        Core::LinAlg::SerialDenseVector rhsnode(Dim() - 1);
         std::vector<int> lm(Dim() - 1);
         std::vector<int> lmowner(Dim() - 1);
         rhsnode(0) = frcoeff * (znor - cn * wgap) * ct * jumptxi;
@@ -2083,7 +2083,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
           lm[1] = cnode->Dofs()[2];
           lmowner[1] = cnode->Owner();
         }
-        CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
 
 
@@ -2100,7 +2100,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
           int col = colcurr->first;
           double valtxi = -frcoeff * (znor - cn * wgap) * ct * (colcurr->second);
 
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(valtxi * txi[j]) > 1.e-12)
@@ -2115,7 +2115,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
           int col = colcurr->first;
           double valteta = -frcoeff * (znor - cn * wgap) * ct * (colcurr->second);
 
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(valteta * teta[j]) > 1.e-12)
@@ -2141,7 +2141,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
             valtxi = -frcoeff * z[dim] * _colcurr->second * ct * jumptxi;
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valtxi * txi[j]) > 1.e-12)
@@ -2156,7 +2156,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
               valteta = -frcoeff * z[dim] * _colcurr->second * ct * jumpteta;
 
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valteta * teta[j]) > 1.e-12)
@@ -2186,7 +2186,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
             valtxi = -frcoeff * (znor - cn * wgap) * ct * txi[dim] * (colcurr->second);
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valtxi * txi[j]) > 1.e-12)
@@ -2201,7 +2201,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
               valteta = -frcoeff * (znor - cn * wgap) * ct * teta[dim] * (colcurr->second);
 
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valteta * teta[j]) > 1.e-12)
@@ -2221,7 +2221,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
             valtxi = -frcoeff * (znor - cn * wgap) * ct * jump[dim] * _colcurr->second;
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valtxi * txi[j]) > 1.e-12)
@@ -2241,7 +2241,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
               valteta = -frcoeff * (znor - cn * wgap) * ct * jump[dim] * _colcurr->second;
 
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valteta * teta[j]) > 1.e-12)
@@ -2261,7 +2261,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
             valtxi = -frcoeff * z[dim] * _colcurr->second * ct * jumptxi;
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valtxi * txi[j]) > 1.e-12)
@@ -2276,7 +2276,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
               valteta = -frcoeff * z[dim] * _colcurr->second * ct * jumpteta;
 
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valteta * teta[j]) > 1.e-12)
@@ -2298,7 +2298,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
         valtxi = frcoeff * colcurr->second * ct * cn * jumptxi;
 
         // do not assemble zeros into matrix
-        if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+        if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         {
           for (int j = 0; j < Dim(); j++)
             if (abs(valtxi * txi[j]) > 1.e-12)
@@ -2313,7 +2313,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
           valteta = frcoeff * colcurr->second * ct * cn * jumpteta;
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(valteta * teta[j]) > 1.e-12)
@@ -2365,9 +2365,9 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
 
       // Entries on right hand side
       /************************************************ (-utxi, -uteta) ***/
-      if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+      if (constr_direction_ == Inpar::CONTACT::constr_xyz)
       {
-        CORE::LINALG::SerialDenseVector rhsnode(Dim());
+        Core::LinAlg::SerialDenseVector rhsnode(Dim());
         std::vector<int> lm(Dim());
         std::vector<int> lmowner(Dim());
         for (int j = 0; j < Dim(); j++)
@@ -2377,11 +2377,11 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
           rhsnode(j) -= jumptxi * txi[j];
           if (Dim() == 3) rhsnode(j) -= jumpteta * teta[j];
         }
-        CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
       else
       {
-        CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
+        Core::LinAlg::SerialDenseVector rhsnode(Dim() - 1);
         std::vector<int> lm(Dim() - 1);
         std::vector<int> lmowner(Dim() - 1);
 
@@ -2407,7 +2407,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
           lm[1] = cnode->Dofs()[2];
           lmowner[1] = cnode->Owner();
         }
-        CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
 
 
@@ -2433,7 +2433,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
           int col = colcurr->first;
           double valtxi = colcurr->second;
 
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(valtxi * txi[j]) > 1.e-12)
@@ -2450,7 +2450,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
             int col = colcurr->first;
             double valteta = colcurr->second;
 
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valteta * teta[j]) > 1.e-12)
@@ -2479,7 +2479,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
             double valtxi = txi[dim] * colcurr->second;
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valtxi * txi[j]) > 1.e-12)
@@ -2492,7 +2492,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
             {
               double valteta = teta[dim] * colcurr->second;
 
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valteta * teta[j]) > 1.e-12)
@@ -2515,7 +2515,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
             double val = jump[j] * _colcurr->second;
 
             // do not assemble zeros into s matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -2534,7 +2534,7 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
               double val = jump[j] * _colcurr->second;
 
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(val * teta[j]) > 1.e-12)
@@ -2554,20 +2554,20 @@ void CONTACT::Interface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLM
 /*---------------------------------------------------------------------*
  | Assemble matrix LinSlip with tangential+D+M derivatives  mgit 02/09 |
  *---------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
-    CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal)
+void CONTACT::Interface::AssembleLinSlip(Core::LinAlg::SparseMatrix& linslipLMglobal,
+    Core::LinAlg::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal)
 {
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
 
   // information from interface contact parameter list
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frbound = interface_params().get<double>("FRBOUND");
   double frcoeff_in =
       interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
-  bool frilessfirst = CORE::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
+  bool gp_slip = Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
+  bool frilessfirst = Core::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
 
   // the friction coefficient adapted by every node (eg depending on the local temperature)
   double frcoeff = 0.;
@@ -2579,13 +2579,13 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
   //**********************************************************************
   //**********************************************************************
   //**********************************************************************
-  if (ftype == INPAR::CONTACT::friction_coulomb)
+  if (ftype == Inpar::CONTACT::friction_coulomb)
   {
     // loop over all slip nodes of the interface
     for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
     {
       int gid = slipnodes_->GID(i);
-      CORE::Nodes::Node* node = idiscret_->gNode(gid);
+      Core::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -2600,9 +2600,9 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
       double ct_input = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
-      std::vector<CORE::GEN::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
-      std::vector<CORE::GEN::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
+      std::vector<Core::Gen::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<Core::Gen::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
 
       double cn = cn_input;
       double ct = ct_input;
@@ -2631,7 +2631,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
       double wgap = cnode->Data().Getg();
 
       // iterator for maps
-      CORE::GEN::Pairedvector<int, double>::iterator colcurr;
+      Core::Gen::Pairedvector<int, double>::iterator colcurr;
       std::map<int, double>::iterator _colcurr;
 
       // row number of entries
@@ -2731,7 +2731,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
           if (Dim() == 3) valteta = teta[dim];
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
             {
@@ -2752,9 +2752,9 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 
         // 2) Entries on right hand side
         /******************************************************************/
-        if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+        if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         {
-          CORE::LINALG::SerialDenseVector rhsnode(Dim());
+          Core::LinAlg::SerialDenseVector rhsnode(Dim());
           std::vector<int> lm(Dim());
           std::vector<int> lmowner(Dim());
           for (int j = 0; j < Dim(); j++)
@@ -2764,11 +2764,11 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             rhsnode[j] -= ztxi * txi[j];
             if (Dim() == 3) rhsnode[j] -= zteta * teta[j];
           }
-          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
-          CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
+          Core::LinAlg::SerialDenseVector rhsnode(Dim() - 1);
           std::vector<int> lm(Dim() - 1);
           std::vector<int> lmowner(Dim() - 1);
 
@@ -2784,7 +2784,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             lm[1] = cnode->Dofs()[2];
             lmowner[1] = cnode->Owner();
           }
-          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -2800,7 +2800,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             double val = (colcurr->second) * z[j];
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -2819,7 +2819,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
               double val = (colcurr->second) * z[j];
 
               // do not assemble zeros into s matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(val * teta[j]) > 1.e-12)
@@ -2892,7 +2892,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
           }
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
             {
@@ -2913,9 +2913,9 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 
         // 2) Entries on right hand side
         /******************************************************************/
-        if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+        if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         {
-          CORE::LINALG::SerialDenseVector rhsnode(Dim());
+          Core::LinAlg::SerialDenseVector rhsnode(Dim());
           std::vector<int> lm(Dim());
           std::vector<int> lmowner(Dim());
 
@@ -2946,11 +2946,11 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 
             for (int j = 0; j < Dim(); j++) rhsnode(j) += valueteta1 * teta[j];
           }
-          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
-          CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
+          Core::LinAlg::SerialDenseVector rhsnode(Dim() - 1);
           std::vector<int> lm(Dim() - 1);
           std::vector<int> lmowner(Dim() - 1);
 #ifdef CONSISTENTSLIP
@@ -2978,7 +2978,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             lm[1] = cnode->Dofs()[2];
             lmowner[1] = cnode->Owner();
           }
-          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -2998,7 +2998,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             double valtxi1 = (ztxi + ct * jumptxi) / euclidean * ct * _colcurr->second * ztxi;
             double valteta1 = (ztxi + ct * jumptxi) / euclidean * ct * _colcurr->second * zteta;
 
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
               {
@@ -3023,7 +3023,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
               double valtxi2 = (zteta + ct * jumpteta) / euclidean * ct * _colcurr->second * ztxi;
               double valteta2 = (zteta + ct * jumpteta) / euclidean * ct * _colcurr->second * zteta;
 
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                 {
@@ -3071,7 +3071,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 #endif
 
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                 {
@@ -3104,7 +3104,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
                   -euclidean * zteta * z[dim] / pow(znor - cn * wgap, 2.0) * (colcurr->second);
 
               // do not assemble zeros into s matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                 {
@@ -3137,7 +3137,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
           double valteta = +euclidean * zteta / pow(znor - cn * wgap, 2.0) * cn * (colcurr->second);
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
             {
@@ -3164,7 +3164,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
           {
             int col = _colcurr->first;
             double valtxi = -frcoeff * (znor - cn * wgap) * ct * _colcurr->second;
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valtxi * txi[j]) > 1.e-12)
@@ -3181,7 +3181,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
               int col = _colcurr->first;
               double valteta = -frcoeff * (znor - cn * wgap) * ct * _colcurr->second;
 
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valteta * teta[j]) > 1.e-12)
@@ -3213,7 +3213,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
                   (-1) * (frcoeff * (znor - cn * wgap)) * ct * teta[dim] * _colcurr->second;
 #endif
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valtxi * txi[j]) > 1.e-12)
@@ -3224,7 +3224,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 
               if (Dim() == 3)
               {
-                if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+                if (constr_direction_ == Inpar::CONTACT::constr_xyz)
                 {
                   for (int j = 0; j < Dim(); j++)
                     if (abs(valteta * teta[j]) > 1.e-12)
@@ -3251,7 +3251,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 #endif
 
             // do not assemble zeros into s matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -3274,7 +3274,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 #endif
 
               // do not assemble zeros into s matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(val * teta[j]) > 1.e-12)
@@ -3303,7 +3303,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 #endif
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valtxi * txi[j]) > 1.e-12)
@@ -3314,7 +3314,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 
             if (Dim() == 3)
             {
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valteta * teta[j]) > 1.e-12)
@@ -3341,7 +3341,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 #endif
 
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valtxi * txi[j]) > 1.e-12)
@@ -3350,7 +3350,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
               else if (abs(valtxi) > 1.0e-12)
                 linslipDISglobal.Assemble(valtxi, row[0], col);
 
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valteta * teta[j]) > 1.e-12)
@@ -3387,7 +3387,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 #endif
 
               // do not assemble zeros into s matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valtxi * txi[j]) > 1.e-12)
@@ -3420,7 +3420,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 #endif
 
                 // do not assemble zeros into matrix
-                if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+                if (constr_direction_ == Inpar::CONTACT::constr_xyz)
                 {
                   for (int j = 0; j < Dim(); j++)
                     if (abs(valtxi * txi[j]) > 1.e-12)
@@ -3452,7 +3452,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             double val = (-1) * (frcoeff * (znor - cn * wgap)) * (colcurr->second) * z[j];
 #endif
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -3474,7 +3474,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
               double val = (-1.0) * (frcoeff * (znor - cn * wgap)) * (colcurr->second) * z[j];
 #endif
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(val * teta[j]) > 1.e-12)
@@ -3506,7 +3506,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
               double val = (-1) * (frcoeff * (znor - cn * wgap)) * ct * (colcurr->second) * jump[j];
 #endif
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(val * txi[j]) > 1.e-12)
@@ -3529,7 +3529,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
                     (-1) * (frcoeff * (znor - cn * wgap)) * ct * (colcurr->second) * jump[j];
 #endif
                 // do not assemble zeros into s matrix
-                if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+                if (constr_direction_ == Inpar::CONTACT::constr_xyz)
                 {
                   for (int j = 0; j < Dim(); j++)
                     if (abs(val * teta[j]) > 1.e-12)
@@ -3555,7 +3555,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             double valteta = (-1) * (zteta + ct * jumpteta) * frcoeff * (colcurr->second) * z[j];
 
             // do not assemble zeros into s matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valtxi * txi[j]) > 1.e-12)
@@ -3584,7 +3584,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
           double valteta = frcoeff * cn * (_colcurr->second) * (zteta + ct * jumpteta);
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(valtxi * txi[j]) > 1.e-12)
@@ -3611,13 +3611,13 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
   //**********************************************************************
   //**********************************************************************
   //**********************************************************************
-  if (ftype == INPAR::CONTACT::friction_tresca)
+  if (ftype == Inpar::CONTACT::friction_tresca)
   {
     // loop over all slip nodes of the interface
     for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
     {
       int gid = slipnodes_->GID(i);
-      CORE::Nodes::Node* node = idiscret_->gNode(gid);
+      Core::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -3634,10 +3634,10 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
       // dtx = -dny
       // FIXGIT: in the future DerivD will be called directly form node
 
-      std::vector<CORE::GEN::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
 
       // iterator
-      CORE::GEN::Pairedvector<int, double>::iterator _colcurr;
+      Core::Gen::Pairedvector<int, double>::iterator _colcurr;
       std::map<int, double>::iterator colcurr;
 
       std::vector<std::map<int, double>> dtmap(Dim());
@@ -3718,7 +3718,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         // 2) Entries on right hand side
         /******************************************************************/
 
-        CORE::LINALG::SerialDenseVector rhsnode(1);
+        Core::LinAlg::SerialDenseVector rhsnode(1);
         std::vector<int> lm(1);
         std::vector<int> lmowner(1);
 
@@ -3726,7 +3726,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         lm[0] = cnode->Dofs()[1];
         lmowner[0] = cnode->Owner();
 
-        CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+        Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
 
         // 3) Entries from differentiation with respect to displacements
         /******************************************************************/
@@ -3765,7 +3765,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
           double val = (prefactor * ztan + sum - frbound) * txi[dim];
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(val * txi[j]) > 1.e-12)
@@ -3781,9 +3781,9 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         // -C and remaining terms
         double value1 = -(abs(ztan + ct * jumptan)) * ztan + frbound * (ztan + ct * jumptan);
 
-        if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+        if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         {
-          CORE::LINALG::SerialDenseVector rhsnode(Dim());
+          Core::LinAlg::SerialDenseVector rhsnode(Dim());
           std::vector<int> lm(Dim());
           std::vector<int> lmowner(Dim());
 
@@ -3794,11 +3794,11 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             rhsnode(j) = value1 * txi[j];
           }
 
-          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
-          CORE::LINALG::SerialDenseVector rhsnode(1);
+          Core::LinAlg::SerialDenseVector rhsnode(1);
           rhsnode(0) = value1;
 
           std::vector<int> lm(1);
@@ -3807,7 +3807,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
           lm[0] = cnode->Dofs()[1];
           lmowner[0] = cnode->Owner();
 
-          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -3828,7 +3828,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
           // std::endl;
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(val * txi[j]) > 1.e-12)
@@ -3863,7 +3863,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
-          CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
@@ -3880,7 +3880,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             // << std::endl;
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -3902,7 +3902,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
           // std::endl;
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(val * txi[j]) > 1.e-12)
@@ -3918,7 +3918,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         for (mcurr = mnodes.begin(); mcurr != mnodes.end(); mcurr++)
         {
           int gid = *mcurr;
-          CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
@@ -3933,7 +3933,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             // std::cout << "04 GID " << gid << " row " << row << " col " << col << " val " << val
             // << std::endl;
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -3960,7 +3960,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             // std::endl;
 
             // do not assemble zeros into s matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -3991,7 +3991,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             // std::endl;
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -4022,7 +4022,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             // std::endl;
 
             // do not assemble zeros into s matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -4055,7 +4055,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
           // std::endl;
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(val * txi[j]) > 1.e-12)
@@ -4075,7 +4075,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         for (dmcurr = dmmap.begin(); dmcurr != dmmap.end(); ++dmcurr)
         {
           int gid = dmcurr->first;
-          CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           double* mxi = cmnode->xspatial();
@@ -4096,7 +4096,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             // std::endl;
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -4123,7 +4123,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             // std::endl;
 
             // do not assemble zeros into s matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -4154,7 +4154,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
             // std::endl;
 
             // do not assemble zeros into s matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -4184,7 +4184,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
           // std::endl;
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(val * txi[j]) > 1.e-12)
@@ -4200,7 +4200,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
         for (dmcurr = dmmap.begin(); dmcurr != dmmap.end(); ++dmcurr)
         {
           int gid = dmcurr->first;
-          CORE::Nodes::Node* mnode = idiscret_->gNode(gid);
+          Core::Nodes::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) FOUR_C_THROW("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           double* mxi = cmnode->xspatial();
@@ -4222,7 +4222,7 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -4240,27 +4240,27 @@ void CONTACT::Interface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMgl
 }
 
 void CONTACT::Interface::assemble_normal_contact_regularization(
-    CORE::LINALG::SparseMatrix& d_disp, CORE::LINALG::SparseMatrix& d_lm, Epetra_Vector& f)
+    Core::LinAlg::SparseMatrix& d_disp, Core::LinAlg::SparseMatrix& d_lm, Epetra_Vector& f)
 {
   const bool regularization =
-      CORE::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
+      Core::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
   if (!regularization) FOUR_C_THROW("you should not be here");
   const double k = 1. / interface_params().get<double>("REGULARIZATION_STIFFNESS");
   const double gmax = interface_params().get<double>("REGULARIZATION_THICKNESS");
   const int dim = Dim();
-  static const INPAR::CONTACT::ConstraintDirection constr_direction =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
+  static const Inpar::CONTACT::ConstraintDirection constr_direction =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::ConstraintDirection>(
           interface_params(), "CONSTRAINT_DIRECTIONS");
 
   for (int i = 0; i < ActiveNodes()->NumMyElements(); ++i)
   {
-    CORE::Nodes::Node* node = Discret().gNode(ActiveNodes()->GID(i));
+    Core::Nodes::Node* node = Discret().gNode(ActiveNodes()->GID(i));
     if (!node) FOUR_C_THROW("node not found");
     CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
     if (!cnode) FOUR_C_THROW("not a contact node");
 
-    CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
-    CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
+    Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
+    Core::LinAlg::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = lm.Dot(n);
 
     const double gLM = gmax * (1. - exp(-k / gmax * lm_n));
@@ -4272,14 +4272,14 @@ void CONTACT::Interface::assemble_normal_contact_regularization(
           "biorthogonality");
     double dval = cnode->MoData().GetD().at(cnode->Id());
 
-    if (constr_direction == INPAR::CONTACT::constr_xyz)
+    if (constr_direction == Inpar::CONTACT::constr_xyz)
       for (int d = 0; d < dim; ++d) f[f.Map().LID(cnode->Dofs()[d])] += n(d) * dval * gLM;
     else
       f[f.Map().LID(cnode->Dofs()[0])] += dval * gLM;
 
     for (int l = 0; l < dim; ++l)
     {
-      if (constr_direction == INPAR::CONTACT::constr_xyz)
+      if (constr_direction == Inpar::CONTACT::constr_xyz)
         for (int d = 0; d < dim; ++d)
           d_lm.Assemble(n(d) * dval * n(l) * d_gLM, cnode->Dofs()[d], cnode->Dofs()[l]);
       else
@@ -4291,7 +4291,7 @@ void CONTACT::Interface::assemble_normal_contact_regularization(
     {
       const int col = p->first;
       const double val = gLM * p->second;
-      if (constr_direction == INPAR::CONTACT::constr_xyz)
+      if (constr_direction == Inpar::CONTACT::constr_xyz)
         for (int d = 0; d < dim; ++d) d_disp.Assemble(val * n(d), cnode->Dofs()[d], col);
       else
         d_disp.Assemble(val, cnode->Dofs()[0], col);
@@ -4303,7 +4303,7 @@ void CONTACT::Interface::assemble_normal_contact_regularization(
       {
         const int col = p->first;
         const double val = dval * d_gLM * lm(l) * p->second;
-        if (constr_direction == INPAR::CONTACT::constr_xyz)
+        if (constr_direction == Inpar::CONTACT::constr_xyz)
           for (int d = 0; d < dim; ++d) d_disp.Assemble(val * n(d), cnode->Dofs()[d], col);
         else
           d_disp.Assemble(val, cnode->Dofs()[0], col);
@@ -4314,20 +4314,20 @@ void CONTACT::Interface::assemble_normal_contact_regularization(
 }
 
 void CONTACT::Interface::assemble_lin_slip_normal_regularization(
-    CORE::LINALG::SparseMatrix& linslipLMglobal, CORE::LINALG::SparseMatrix& linslipDISglobal,
+    Core::LinAlg::SparseMatrix& linslipLMglobal, Core::LinAlg::SparseMatrix& linslipDISglobal,
     Epetra_Vector& linslipRHSglobal)
 {
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
 
   // information from interface contact parameter list
-  INPAR::CONTACT::FrictionType ftype =
-      CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(interface_params(), "FRICTION");
+  Inpar::CONTACT::FrictionType ftype =
+      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(interface_params(), "FRICTION");
   double frcoeff_in =
       interface_params().get<double>("FRCOEFF");  // the friction coefficient from the input
-  bool gp_slip = CORE::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
+  bool gp_slip = Core::UTILS::IntegralValue<int>(interface_params(), "GP_SLIP_INCR");
   if (gp_slip) FOUR_C_THROW("not implemented");
-  bool frilessfirst = CORE::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
+  bool frilessfirst = Core::UTILS::IntegralValue<int>(interface_params(), "FRLESS_FIRST");
 
   // the friction coefficient adapted by every node (eg depending on the local temperature)
   double frcoeff = 0.;
@@ -4339,13 +4339,13 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
   //**********************************************************************
   //**********************************************************************
   //**********************************************************************
-  if (ftype == INPAR::CONTACT::friction_coulomb)
+  if (ftype == Inpar::CONTACT::friction_coulomb)
   {
     // loop over all slip nodes of the interface
     for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
     {
       int gid = slipnodes_->GID(i);
-      CORE::Nodes::Node* node = idiscret_->gNode(gid);
+      Core::Nodes::Node* node = idiscret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
@@ -4360,9 +4360,9 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
       double ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
-      std::vector<CORE::GEN::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
-      std::vector<CORE::GEN::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
-      std::vector<CORE::GEN::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
+      std::vector<Core::Gen::Pairedvector<int, double>> dnmap = cnode->Data().GetDerivN();
+      std::vector<Core::Gen::Pairedvector<int, double>> dtximap = cnode->Data().GetDerivTxi();
+      std::vector<Core::Gen::Pairedvector<int, double>> dtetamap = cnode->Data().GetDerivTeta();
 
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
@@ -4388,7 +4388,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
       double wgap = cnode->Data().Getg();
 
       // iterator for maps
-      CORE::GEN::Pairedvector<int, double>::iterator colcurr;
+      Core::Gen::Pairedvector<int, double>::iterator colcurr;
       std::map<int, double>::iterator _colcurr;
 
       // row number of entries
@@ -4425,7 +4425,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 
       // setup regularization
       static const bool regularization =
-          CORE::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
+          Core::UTILS::IntegralValue<int>(interface_params(), "REGULARIZED_NORMAL_CONTACT");
       if (!regularization) FOUR_C_THROW("you should not be here");
       static const double k = 1. / interface_params().get<double>("REGULARIZATION_STIFFNESS");
       static const double gmax = interface_params().get<double>("REGULARIZATION_THICKNESS");
@@ -4490,7 +4490,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
           if (Dim() == 3) valteta = teta[dim];
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
             {
@@ -4511,9 +4511,9 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 
         // 2) Entries on right hand side
         /******************************************************************/
-        if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+        if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         {
-          CORE::LINALG::SerialDenseVector rhsnode(Dim());
+          Core::LinAlg::SerialDenseVector rhsnode(Dim());
           std::vector<int> lm(Dim());
           std::vector<int> lmowner(Dim());
           for (int j = 0; j < Dim(); j++)
@@ -4523,11 +4523,11 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
             rhsnode[j] -= ztxi * txi[j];
             if (Dim() == 3) rhsnode[j] -= zteta * teta[j];
           }
-          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
-          CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
+          Core::LinAlg::SerialDenseVector rhsnode(Dim() - 1);
           std::vector<int> lm(Dim() - 1);
           std::vector<int> lmowner(Dim() - 1);
 
@@ -4543,7 +4543,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
             lm[1] = cnode->Dofs()[2];
             lmowner[1] = cnode->Owner();
           }
-          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -4559,7 +4559,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
             double val = (colcurr->second) * z[j];
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -4578,7 +4578,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
               double val = (colcurr->second) * z[j];
 
               // do not assemble zeros into s matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(val * teta[j]) > 1.e-12)
@@ -4630,7 +4630,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
           }
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
             {
@@ -4651,9 +4651,9 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 
         // 2) Entries on right hand side
         /******************************************************************/
-        if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+        if (constr_direction_ == Inpar::CONTACT::constr_xyz)
         {
-          CORE::LINALG::SerialDenseVector rhsnode(Dim());
+          Core::LinAlg::SerialDenseVector rhsnode(Dim());
           std::vector<int> lm(Dim());
           std::vector<int> lmowner(Dim());
 
@@ -4672,11 +4672,11 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 
             for (int j = 0; j < Dim(); j++) rhsnode(j) += valueteta1 * teta[j];
           }
-          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
-          CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
+          Core::LinAlg::SerialDenseVector rhsnode(Dim() - 1);
           std::vector<int> lm(Dim() - 1);
           std::vector<int> lmowner(Dim() - 1);
           double valuetxi1 = -(euclidean)*ztxi + (frbound) * (ztxi + ct * jumptxi);
@@ -4692,7 +4692,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
             lm[1] = cnode->Dofs()[2];
             lmowner[1] = cnode->Owner();
           }
-          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          Core::LinAlg::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -4721,7 +4721,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
                 (zteta + ct * jumpteta) / euclidean * ct * teta[dim] * _colcurr->second * zteta;
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
               {
@@ -4756,7 +4756,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
             double valteta = (-1) * (frbound)*ct * teta[dim] * _colcurr->second;
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valtxi * txi[j]) > 1.e-12)
@@ -4767,7 +4767,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 
             if (Dim() == 3)
             {
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valteta * teta[j]) > 1.e-12)
@@ -4789,7 +4789,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
             double val = euclidean * (colcurr->second) * z[j];
 
             // do not assemble zeros into s matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -4808,7 +4808,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
               double val = euclidean * (colcurr->second) * z[j];
 
               // do not assemble zeros into s matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(val * teta[j]) > 1.e-12)
@@ -4832,7 +4832,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
             double valteta = (ztxi + ct * jumptxi) / euclidean * (colcurr->second) * z[j] * zteta;
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valtxi * txi[j]) > 1.e-12)
@@ -4843,7 +4843,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
 
             if (Dim() == 3)
             {
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valteta * teta[j]) > 1.e-12)
@@ -4865,7 +4865,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
                   (zteta + ct * jumpteta) / euclidean * (colcurr->second) * z[j] * zteta;
 
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valtxi * txi[j]) > 1.e-12)
@@ -4874,7 +4874,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
               else if (abs(valtxi) > 1.0e-12)
                 linslipDISglobal.Assemble(valtxi, row[0], col);
 
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valteta * teta[j]) > 1.e-12)
@@ -4899,7 +4899,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
                 (ztxi + ct * jumptxi) / euclidean * ct * (colcurr->second) * jump[j] * zteta;
 
             // do not assemble zeros into s matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valtxi * txi[j]) > 1.e-12)
@@ -4927,7 +4927,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
                   (zteta + ct * jumpteta) / euclidean * ct * (colcurr->second) * jump[j] * zteta;
 
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(valtxi * txi[j]) > 1.e-12)
@@ -4955,7 +4955,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
             double val = (-1) * (frbound) * (colcurr->second) * z[j];
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -4974,7 +4974,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
               double val = (-1.0) * (frbound) * (colcurr->second) * z[j];
 
               // do not assemble zeros into matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(val * teta[j]) > 1.e-12)
@@ -4997,7 +4997,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
             double val = (-1) * (frbound)*ct * (colcurr->second) * jump[j];
 
             // do not assemble zeros into matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(val * txi[j]) > 1.e-12)
@@ -5016,7 +5016,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
               double val = (-1) * (frbound)*ct * (colcurr->second) * jump[j];
 
               // do not assemble zeros into s matrix
-              if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+              if (constr_direction_ == Inpar::CONTACT::constr_xyz)
               {
                 for (int j = 0; j < Dim(); j++)
                   if (abs(val * teta[j]) > 1.e-12)
@@ -5042,7 +5042,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
                              (colcurr->second) * z[j];
 
             // do not assemble zeros into s matrix
-            if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+            if (constr_direction_ == Inpar::CONTACT::constr_xyz)
             {
               for (int j = 0; j < Dim(); j++)
                 if (abs(valtxi * txi[j]) > 1.e-12)
@@ -5071,7 +5071,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
           double valteta = frcoeff * cn * (_colcurr->second) * (zteta + ct * jumpteta);
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(valtxi * txi[j]) > 1.e-12)
@@ -5095,7 +5095,7 @@ void CONTACT::Interface::assemble_lin_slip_normal_regularization(
           double valteta = frcoeff * cn * gLM * p->second * (zteta + ct * jumpteta);
 
           // do not assemble zeros into matrix
-          if (constr_direction_ == INPAR::CONTACT::constr_xyz)
+          if (constr_direction_ == Inpar::CONTACT::constr_xyz)
           {
             for (int j = 0; j < Dim(); j++)
               if (abs(valtxi * txi[j]) > 1.e-12)
@@ -5132,7 +5132,7 @@ void CONTACT::Interface::AssembleNCoup(Epetra_Vector& gglobal)
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* mrtnode = dynamic_cast<Node*>(node);
 
@@ -5144,7 +5144,7 @@ void CONTACT::Interface::AssembleNCoup(Epetra_Vector& gglobal)
     {
       double nCoup = mrtnode->PoroData().GetnCoup();
 
-      CORE::LINALG::SerialDenseVector gnode(1);
+      Core::LinAlg::SerialDenseVector gnode(1);
       std::vector<int> lm(1);
       std::vector<int> lmowner(1);
 
@@ -5153,7 +5153,7 @@ void CONTACT::Interface::AssembleNCoup(Epetra_Vector& gglobal)
 
       lmowner[0] = mrtnode->Owner();
 
-      CORE::LINALG::Assemble(gglobal, gnode, lm, lmowner);
+      Core::LinAlg::Assemble(gglobal, gnode, lm, lmowner);
     }
   }
 
@@ -5165,7 +5165,7 @@ void CONTACT::Interface::AssembleNCoup(Epetra_Vector& gglobal)
  |          weighted condition for poro contact              ager 07/14|
  *--------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleNCoupLin(
-    CORE::LINALG::SparseMatrix& sglobal, CORE::ADAPTER::Coupling& coupfs, bool AssembleVelocityLin)
+    Core::LinAlg::SparseMatrix& sglobal, Core::Adapter::Coupling& coupfs, bool AssembleVelocityLin)
 {
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
@@ -5176,14 +5176,14 @@ void CONTACT::Interface::AssembleNCoupLin(
   if (AssembleVelocityLin)
   {
     // store map on all processors, simple but expensive
-    MasterDofMap_full = CORE::LINALG::AllreduceEMap(*coupfs.MasterDofMap());
-    PermSlaveDofMap_full = CORE::LINALG::AllreduceEMap(*coupfs.PermSlaveDofMap());
+    MasterDofMap_full = Core::LinAlg::AllreduceEMap(*coupfs.MasterDofMap());
+    PermSlaveDofMap_full = Core::LinAlg::AllreduceEMap(*coupfs.PermSlaveDofMap());
   }
 
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -5235,7 +5235,7 @@ void CONTACT::Interface::AssembleNCoupLin(
  | Derivative of D-matrix multiplied with a slave dof vector              |
  *------------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleCoupLinD(
-    CORE::LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
+    Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
 {
   // we have: D_jk,c with j = Slave dof
   //                 with k = Displacement slave dof
@@ -5245,7 +5245,7 @@ void CONTACT::Interface::AssembleCoupLinD(
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -5263,7 +5263,7 @@ void CONTACT::Interface::AssembleCoupLinD(
       int sgid = scurr->first;
       ++scurr;
 
-      CORE::Nodes::Node* snode = idiscret_->gNode(sgid);
+      Core::Nodes::Node* snode = idiscret_->gNode(sgid);
       if (!snode) FOUR_C_THROW("Cannot find node with gid %", sgid);
       Node* csnode = dynamic_cast<Node*>(snode);  // current slave node
 
@@ -5313,7 +5313,7 @@ void CONTACT::Interface::AssembleCoupLinD(
  | Derivative of transposed M-matrix multiplied with a slave dof vector  seitz 01/18 |
  *-----------------------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleCoupLinM(
-    CORE::LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
+    Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
 {
   // we have: M_jl,c with j = Slave dof
   //                 with l = Displacement master dof
@@ -5324,7 +5324,7 @@ void CONTACT::Interface::AssembleCoupLinM(
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
   {
     int gid = snoderowmap_->GID(j);
-    CORE::Nodes::Node* node = idiscret_->gNode(gid);
+    Core::Nodes::Node* node = idiscret_->gNode(gid);
     if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
     Node* cnode = dynamic_cast<Node*>(node);
 
@@ -5342,7 +5342,7 @@ void CONTACT::Interface::AssembleCoupLinM(
       int mgid = mcurr->first;
       ++mcurr;
 
-      CORE::Nodes::Node* mnode = idiscret_->gNode(mgid);
+      Core::Nodes::Node* mnode = idiscret_->gNode(mgid);
       if (!mnode) FOUR_C_THROW("Cannot find node with gid %", mgid);
       Node* cmnode = dynamic_cast<Node*>(mnode);
 

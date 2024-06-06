@@ -16,18 +16,21 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::Vele3SurfaceType DRT::ELEMENTS::Vele3SurfaceType::instance_;
+Discret::ELEMENTS::Vele3SurfaceType Discret::ELEMENTS::Vele3SurfaceType::instance_;
 
-DRT::ELEMENTS::Vele3SurfaceType& DRT::ELEMENTS::Vele3SurfaceType::Instance() { return instance_; }
+Discret::ELEMENTS::Vele3SurfaceType& Discret::ELEMENTS::Vele3SurfaceType::Instance()
+{
+  return instance_;
+}
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 05/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3Surface::Vele3Surface(int id, int owner, int nnode, const int* nodeids,
-    CORE::Nodes::Node** nodes, DRT::ELEMENTS::Vele3* parent, const int lsurface)
-    : CORE::Elements::FaceElement(id, owner)
+Discret::ELEMENTS::Vele3Surface::Vele3Surface(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Discret::ELEMENTS::Vele3* parent, const int lsurface)
+    : Core::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -40,8 +43,8 @@ DRT::ELEMENTS::Vele3Surface::Vele3Surface(int id, int owner, int nnode, const in
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3Surface::Vele3Surface(const DRT::ELEMENTS::Vele3Surface& old)
-    : CORE::Elements::FaceElement(old)
+Discret::ELEMENTS::Vele3Surface::Vele3Surface(const Discret::ELEMENTS::Vele3Surface& old)
+    : Core::Elements::FaceElement(old)
 {
   return;
 }
@@ -49,28 +52,28 @@ DRT::ELEMENTS::Vele3Surface::Vele3Surface(const DRT::ELEMENTS::Vele3Surface& old
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Vele3Surface::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Vele3Surface::Clone() const
 {
-  DRT::ELEMENTS::Vele3Surface* newelement = new DRT::ELEMENTS::Vele3Surface(*this);
+  Discret::ELEMENTS::Vele3Surface* newelement = new Discret::ELEMENTS::Vele3Surface(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::Vele3Surface::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Vele3Surface::Shape() const
 {
   switch (num_node())
   {
     case 3:
-      return CORE::FE::CellType::tri3;
+      return Core::FE::CellType::tri3;
     case 4:
-      return CORE::FE::CellType::quad4;
+      return Core::FE::CellType::quad4;
     case 6:
-      return CORE::FE::CellType::tri6;
+      return Core::FE::CellType::tri6;
     case 8:
-      return CORE::FE::CellType::quad8;
+      return Core::FE::CellType::quad8;
     case 9:
-      return CORE::FE::CellType::quad9;
+      return Core::FE::CellType::quad9;
     default:
       FOUR_C_THROW("unexpected number of nodes %d", num_node());
   }
@@ -78,7 +81,7 @@ CORE::FE::CellType DRT::ELEMENTS::Vele3Surface::Shape() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Surface::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Vele3Surface::Pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Vele3Surface element does not support communication");
   return;
@@ -87,7 +90,7 @@ void DRT::ELEMENTS::Vele3Surface::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Surface::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Vele3Surface::Unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this Vele3Surface element does not support communication");
   return;
@@ -96,9 +99,9 @@ void DRT::ELEMENTS::Vele3Surface::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Surface::Print(std::ostream& os) const
+void Discret::ELEMENTS::Vele3Surface::Print(std::ostream& os) const
 {
-  os << "Vele3Surface " << CORE::FE::CellTypeToString(Shape());
+  os << "Vele3Surface " << Core::FE::CellTypeToString(Shape());
   Element::Print(os);
   return;
 }
@@ -107,16 +110,17 @@ void DRT::ELEMENTS::Vele3Surface::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Vele3Surface::Lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3Surface::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<Vele3Line, Vele3Surface>(CORE::COMM::buildLines, *this);
+  return Core::Communication::ElementBoundaryFactory<Vele3Line, Vele3Surface>(
+      Core::Communication::buildLines, *this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)               gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Vele3Surface::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3Surface::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -126,24 +130,24 @@ std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Vele3Surface::
 /*----------------------------------------------------------------------*
  |  get optimal gauss rule                                   gammi 04/07|
  *----------------------------------------------------------------------*/
-CORE::FE::GaussRule2D DRT::ELEMENTS::Vele3Surface::get_optimal_gaussrule(
-    const CORE::FE::CellType& distype) const
+Core::FE::GaussRule2D Discret::ELEMENTS::Vele3Surface::get_optimal_gaussrule(
+    const Core::FE::CellType& distype) const
 {
-  CORE::FE::GaussRule2D rule = CORE::FE::GaussRule2D::undefined;
+  Core::FE::GaussRule2D rule = Core::FE::GaussRule2D::undefined;
   switch (distype)
   {
-    case CORE::FE::CellType::quad4:
-      rule = CORE::FE::GaussRule2D::quad_4point;
+    case Core::FE::CellType::quad4:
+      rule = Core::FE::GaussRule2D::quad_4point;
       break;
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
-      rule = CORE::FE::GaussRule2D::quad_9point;
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
+      rule = Core::FE::GaussRule2D::quad_9point;
       break;
-    case CORE::FE::CellType::tri3:
-      rule = CORE::FE::GaussRule2D::tri_3point;
+    case Core::FE::CellType::tri3:
+      rule = Core::FE::GaussRule2D::tri_3point;
       break;
-    case CORE::FE::CellType::tri6:
-      rule = CORE::FE::GaussRule2D::tri_6point;
+    case Core::FE::CellType::tri6:
+      rule = Core::FE::GaussRule2D::tri_6point;
       break;
     default:
       FOUR_C_THROW("unknown number of nodes for gaussrule initialization");

@@ -18,12 +18,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   /*! \brief Just a wrapper that does nothing, meant to be derived from
    *
-   *  This wrapper just encapsulated the ADAPTER::Ale and implements all
-   *  routines that are pure virtual in ADAPTER::Ale. For a specific ALE adapter
+   *  This wrapper just encapsulated the Adapter::Ale and implements all
+   *  routines that are pure virtual in Adapter::Ale. For a specific ALE adapter
    *  just derive from this one and overload those routines you need with your
    *  problem specific routine.
    *
@@ -62,43 +62,43 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Map> dof_row_map() const override { return ale_->dof_row_map(); }
 
     //! direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
     {
       return ale_->SystemMatrix();
     }
 
     //! direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       return ale_->BlockSystemMatrix();
     }
 
     //! access to locsys manager
-    Teuchos::RCP<CORE::Conditions::LocsysManager> LocsysManager() override
+    Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override
     {
       return ale_->LocsysManager();
     }
 
     //! direct access to discretization
-    Teuchos::RCP<const DRT::Discretization> discretization() const override
+    Teuchos::RCP<const Discret::Discretization> discretization() const override
     {
       return ale_->discretization();
     }
 
     /// writing access to discretization
-    Teuchos::RCP<DRT::Discretization> write_access_discretization() override
+    Teuchos::RCP<Discret::Discretization> write_access_discretization() override
     {
       return ale_->write_access_discretization();
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor()
     {
       return ale_->GetDBCMapExtractor(ALE::UTILS::MapExtractor::dbc_set_std);
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions in case of non-standard Dirichlet sets
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
         ) override
     {
@@ -215,7 +215,7 @@ namespace ADAPTER
     int Solve() override { return ale_->Solve(); }
 
     //! Access to linear solver of ALE field
-    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return ale_->LinearSolver(); }
+    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override { return ale_->LinearSolver(); }
 
     //@}
 
@@ -231,14 +231,14 @@ namespace ADAPTER
     //@}
 
     //! create result test for encapsulated structure algorithm
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override
     {
       return ale_->CreateFieldTest();
     }
 
     /*! \brief Create Systemmatrix
      *
-     * We allocate the CORE::LINALG object just once, the result is an empty CORE::LINALG object.
+     * We allocate the Core::LINALG object just once, the result is an empty Core::LINALG object.
      * Evaluate has to be called separately.
      *
      */
@@ -297,7 +297,7 @@ namespace ADAPTER
     //! x^n+1_i+1 = x^n     + disstepinc
     Teuchos::RCP<Epetra_Vector> stepinc_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

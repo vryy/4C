@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------*/
 /*! \file
 \brief This file contains the implementation of the switching strategy
-       for the AUG::ComboStrategy.
+       for the Aug::ComboStrategy.
 
 \level 3
 
@@ -24,18 +24,18 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::AUG::ComboStrategy::Switching> CONTACT::AUG::ComboStrategy::Switching::Create(
+Teuchos::RCP<CONTACT::Aug::ComboStrategy::Switching> CONTACT::Aug::ComboStrategy::Switching::Create(
     ComboStrategy& combo)
 {
   const Teuchos::ParameterList& p_combo = combo.Params().sublist("AUGMENTED").sublist("COMBO");
 
-  const enum INPAR::CONTACT::SwitchingStrategy switch_type =
-      CORE::UTILS::IntegralValue<enum INPAR::CONTACT::SwitchingStrategy>(
+  const enum Inpar::CONTACT::SwitchingStrategy switch_type =
+      Core::UTILS::IntegralValue<enum Inpar::CONTACT::SwitchingStrategy>(
           p_combo, "SWITCHING_STRATEGY");
 
   switch (switch_type)
   {
-    case INPAR::CONTACT::switch_preasymptotic:
+    case Inpar::CONTACT::switch_preasymptotic:
       return Teuchos::rcp(new PreAsymptoticSwitching(combo, p_combo));
     default:
       FOUR_C_THROW("Unknown switching strategy! (switch_type = %d)", switch_type);
@@ -48,7 +48,7 @@ Teuchos::RCP<CONTACT::AUG::ComboStrategy::Switching> CONTACT::AUG::ComboStrategy
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ComboStrategy::Switching::Switching(
+CONTACT::Aug::ComboStrategy::Switching::Switching(
     ComboStrategy& combo, const Teuchos::ParameterList& p_combo)
     : combo_(combo), strat_types_(0)
 {
@@ -57,7 +57,7 @@ CONTACT::AUG::ComboStrategy::Switching::Switching(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::Switching::get_strategy_types(
+void CONTACT::Aug::ComboStrategy::Switching::get_strategy_types(
     const plain_strategy_set& strategies, plain_strattype_set& strat_types) const
 {
   for (plain_strategy_set::const_iterator cit = strategies.begin(); cit != strategies.end(); ++cit)
@@ -66,17 +66,17 @@ void CONTACT::AUG::ComboStrategy::Switching::get_strategy_types(
 
     switch (s.Type())
     {
-      case INPAR::CONTACT::solution_augmented:
-      case INPAR::CONTACT::solution_steepest_ascent:
-      case INPAR::CONTACT::solution_steepest_ascent_sp:
-      case INPAR::CONTACT::solution_std_lagrange:
+      case Inpar::CONTACT::solution_augmented:
+      case Inpar::CONTACT::solution_steepest_ascent:
+      case Inpar::CONTACT::solution_steepest_ascent_sp:
+      case Inpar::CONTACT::solution_std_lagrange:
         strat_types.push_back(s.Type());
         break;
       default:
         FOUR_C_THROW(
             "The strategy is of a non-supported type! ( type = "
             "%s | %d )",
-            INPAR::CONTACT::SolvingStrategy2String(s.Type()).c_str(), s.Type());
+            Inpar::CONTACT::SolvingStrategy2String(s.Type()).c_str(), s.Type());
         exit(EXIT_FAILURE);
     }
   }
@@ -86,16 +86,16 @@ void CONTACT::AUG::ComboStrategy::Switching::get_strategy_types(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned CONTACT::AUG::ComboStrategy::Switching::Id(
-    enum INPAR::CONTACT::SolvingStrategy sol_type) const
+unsigned CONTACT::Aug::ComboStrategy::Switching::Id(
+    enum Inpar::CONTACT::SolvingStrategy sol_type) const
 {
   return find_id(sol_type);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned CONTACT::AUG::ComboStrategy::Switching::find_id(
-    INPAR::CONTACT::SolvingStrategy sol_type) const
+unsigned CONTACT::Aug::ComboStrategy::Switching::find_id(
+    Inpar::CONTACT::SolvingStrategy sol_type) const
 {
   unsigned id = 0;
   for (plain_strattype_set::const_iterator cit = strat_types_.begin(); cit != strat_types_.end();
@@ -106,13 +106,13 @@ unsigned CONTACT::AUG::ComboStrategy::Switching::find_id(
   }
 
   FOUR_C_THROW("Couldn't find the given SolvingStrategy! (sol_type = %s | %d)",
-      INPAR::CONTACT::SolvingStrategy2String(sol_type).c_str(), sol_type);
+      Inpar::CONTACT::SolvingStrategy2String(sol_type).c_str(), sol_type);
   exit(EXIT_FAILURE);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::PreAsymptoticSwitching(
+CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::PreAsymptoticSwitching(
     ComboStrategy& combo, const Teuchos::ParameterList& p_combo)
     : Switching(combo, p_combo),
       preasymptotic_id_(0),
@@ -126,18 +126,18 @@ CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::PreAsymptoticSwitching(
         "two strategies. Feel free to add a new switching strategy, if you "
         "need more.");
 
-  const enum INPAR::CONTACT::SolvingStrategy preasymptotic =
-      CORE::UTILS::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(p_combo, "STRATEGY_0");
+  const enum Inpar::CONTACT::SolvingStrategy preasymptotic =
+      Core::UTILS::IntegralValue<enum Inpar::CONTACT::SolvingStrategy>(p_combo, "STRATEGY_0");
   preasymptotic_id_ = find_id(preasymptotic);
 
-  const enum INPAR::CONTACT::SolvingStrategy asymptotic =
-      CORE::UTILS::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(p_combo, "STRATEGY_1");
+  const enum Inpar::CONTACT::SolvingStrategy asymptotic =
+      Core::UTILS::IntegralValue<enum Inpar::CONTACT::SolvingStrategy>(p_combo, "STRATEGY_1");
   asymptotic_id_ = find_id(asymptotic);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::Id() const
+unsigned CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::Id() const
 {
   if (is_asymptotic_) return asymptotic_id_;
 
@@ -146,7 +146,7 @@ unsigned CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::Id() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::Update(
+void CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::Update(
     CONTACT::ParamsInterface& cparams, std::ostream& os)
 {
   print_update_head(os);
@@ -202,7 +202,7 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::Update(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_residual(
+bool CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::check_residual(
     CONTACT::ParamsInterface& cparams, std::ostream& os)
 {
   Teuchos::RCP<Epetra_Vector> force_no_dbc_ptr = get_structural_force_without_dbc_dofs(cparams);
@@ -220,7 +220,7 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_residual(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_contact_residual_norm(
+bool CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::check_contact_residual_norm(
     const Epetra_Vector& str_slmaforce, const Epetra_Vector& constr_slmaforce,
     std::ostream& os) const
 {
@@ -252,7 +252,7 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_contact_residual
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::
+bool CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::
     check_angle_between_str_force_and_contact_force(const Epetra_Vector& str_slmaforce,
         const Epetra_Vector& constr_slmaforce, std::ostream& os) const
 {
@@ -296,7 +296,7 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_cn_bound(std::ostream& os) const
+bool CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::check_cn_bound(std::ostream& os) const
 {
   static const double cn_bound = 1.0e+15;
   double max_cn = 0.0;
@@ -316,7 +316,7 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_cn_bound(std::os
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_active_sl_ma_forces(
+void CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::get_active_sl_ma_forces(
     const Epetra_Vector& str_force, Teuchos::RCP<Epetra_Vector>& str_slmaforce,
     Teuchos::RCP<Epetra_Vector>& constr_slmaforce) const
 {
@@ -326,33 +326,33 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_active_sl_ma_force
   slforce.PutScalar(0.0);
   maforce.PutScalar(0.0);
 
-  CORE::LINALG::ExtractMyVector(*combo_.data_.SlForceLmPtr(), slforce);
-  CORE::LINALG::ExtractMyVector(*combo_.data_.MaForceLmPtr(), maforce);
+  Core::LinAlg::ExtractMyVector(*combo_.data_.SlForceLmPtr(), slforce);
+  Core::LinAlg::ExtractMyVector(*combo_.data_.MaForceLmPtr(), maforce);
 
   Teuchos::RCP<Epetra_Map> gSlActiveForceMap = Teuchos::null;
   Teuchos::RCP<Epetra_Map> gMaActiveForceMap = Teuchos::null;
   get_global_sl_ma_active_force_maps(slforce, maforce, gSlActiveForceMap, gMaActiveForceMap);
   Teuchos::RCP<Epetra_Map> gSlMaActiveForceMap =
-      CORE::LINALG::MergeMap(*gSlActiveForceMap, *gMaActiveForceMap);
+      Core::LinAlg::MergeMap(*gSlActiveForceMap, *gMaActiveForceMap);
 
   Epetra_Vector& slmaforce = *combo_.no_dbc_.slMaForce_;
   slmaforce.PutScalar(0.0);
 
-  CORE::LINALG::AssembleMyVector(1.0, slmaforce, 1.0, slforce);
-  CORE::LINALG::AssembleMyVector(1.0, slmaforce, 1.0, maforce);
+  Core::LinAlg::AssembleMyVector(1.0, slmaforce, 1.0, slforce);
+  Core::LinAlg::AssembleMyVector(1.0, slmaforce, 1.0, maforce);
 
-  constr_slmaforce = CORE::LINALG::CreateVector(*gSlMaActiveForceMap, true);
-  CORE::LINALG::ExtractMyVector(slmaforce, *constr_slmaforce);
+  constr_slmaforce = Core::LinAlg::CreateVector(*gSlMaActiveForceMap, true);
+  Core::LinAlg::ExtractMyVector(slmaforce, *constr_slmaforce);
   // consider time integration factor
   constr_slmaforce->Scale(1.0 - combo_.data_.GetDynParameterN());
 
-  str_slmaforce = CORE::LINALG::CreateVector(*gSlMaActiveForceMap, true);
-  CORE::LINALG::ExtractMyVector(str_force, *str_slmaforce);
+  str_slmaforce = Core::LinAlg::CreateVector(*gSlMaActiveForceMap, true);
+  Core::LinAlg::ExtractMyVector(str_force, *str_slmaforce);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_global_sl_ma_active_force_maps(
+void CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::get_global_sl_ma_active_force_maps(
     const Epetra_Vector& slforce, const Epetra_Vector& maforce,
     Teuchos::RCP<Epetra_Map>& gSlActiveForceMap, Teuchos::RCP<Epetra_Map>& gMaActiveForceMap) const
 {
@@ -364,22 +364,22 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_global_sl_ma_activ
 
   for (const Teuchos::RCP<CONTACT::Interface>& cit : combo_.get().interfaces())
   {
-    const CONTACT::AUG::Interface& interface = dynamic_cast<AUG::Interface&>(*cit);
+    const CONTACT::Aug::Interface& interface = dynamic_cast<Aug::Interface&>(*cit);
 
     imap = Teuchos::null;
     imap = interface.BuildActiveForceMap(slforce);
-    if (not imap.is_null()) gSlActiveForceMap = CORE::LINALG::MergeMap(*gSlActiveForceMap, *imap);
+    if (not imap.is_null()) gSlActiveForceMap = Core::LinAlg::MergeMap(*gSlActiveForceMap, *imap);
 
     imap = Teuchos::null;
     imap = interface.BuildActiveForceMap(maforce);
-    if (not imap.is_null()) gMaActiveForceMap = CORE::LINALG::MergeMap(*gMaActiveForceMap, *imap);
+    if (not imap.is_null()) gMaActiveForceMap = Core::LinAlg::MergeMap(*gMaActiveForceMap, *imap);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
-CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_structural_force_without_dbc_dofs(
+CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::get_structural_force_without_dbc_dofs(
     const CONTACT::ParamsInterface& cparams)
 {
   Teuchos::RCP<Epetra_Vector> force_no_dbc_ptr =
@@ -388,17 +388,17 @@ CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_structural_force_withou
   const STR::MODELEVALUATOR::Contact& cmodel =
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(cparams.GetModelEvaluator());
 
-  const std::vector<INPAR::STR::ModelType> without_contact_model(1, cmodel.Type());
+  const std::vector<Inpar::STR::ModelType> without_contact_model(1, cmodel.Type());
   Teuchos::RCP<Epetra_Vector> force_ptr = cmodel.assemble_force_of_models(&without_contact_model);
 
-  CORE::LINALG::Export(*force_ptr, *force_no_dbc_ptr);
+  Core::LinAlg::Export(*force_ptr, *force_no_dbc_ptr);
 
   return force_no_dbc_ptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_penetration(std::ostream& os)
+bool CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::check_penetration(std::ostream& os)
 {
   // get the overall largest penetration value
   double min_awgap = 0.0;
@@ -410,8 +410,8 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_penetration(std:
   const double penbound = get_penetration_bound();
 
 #ifdef DEBUG_COMBO_STRATEGY
-  CORE::IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << CORE::IO::endl;
-  CORE::IO::cout << "max_awgap = " << min_awgap << " | penbound = " << penbound << CORE::IO::endl;
+  Core::IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << Core::IO::endl;
+  Core::IO::cout << "max_awgap = " << min_awgap << " | penbound = " << penbound << Core::IO::endl;
 #endif
 
   const bool pen_check = (max_abs_awgap < penbound);
@@ -434,12 +434,12 @@ bool CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::check_penetration(std:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_penetration_bound() const
+double CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::get_penetration_bound() const
 {
   double penbound = 1.0e12;
   for (const Teuchos::RCP<CONTACT::Interface>& cit : combo_.interfaces())
   {
-    const CONTACT::AUG::Interface& interface = dynamic_cast<CONTACT::AUG::Interface&>(*cit);
+    const CONTACT::Aug::Interface& interface = dynamic_cast<CONTACT::Aug::Interface&>(*cit);
     penbound = std::min(penbound, interface.PenetrationBound());
   }
 
@@ -453,7 +453,7 @@ double CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::get_penetration_boun
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::print_update_head(std::ostream& os) const
+void CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::print_update_head(std::ostream& os) const
 {
   os << "--- ComboStrategy::PreAsymptoticSwitching::Update\n";
 }

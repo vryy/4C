@@ -28,32 +28,32 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/13 |
  *---------------------------------------------------------------------*/
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
-namespace CORE::VOLMORTAR
+namespace Core::VolMortar
 {
   namespace UTILS
   {
     class DefaultMaterialStrategy;
   }
-}  // namespace CORE::VOLMORTAR
+}  // namespace Core::VolMortar
 
-namespace CORE::ADAPTER
+namespace Core::Adapter
 {  /// Class for calling volmortar coupling and proper parallel redistr.
-  class MortarVolCoupl : public CORE::ADAPTER::CouplingBase
+  class MortarVolCoupl : public Core::Adapter::CouplingBase
   {
    public:
     /*!
@@ -66,11 +66,11 @@ namespace CORE::ADAPTER
     \brief Call parallel redistr. and evaluate volmortar coupl.
 
     */
-    void Init(int spatial_dimension, Teuchos::RCP<DRT::Discretization> dis1,
-        Teuchos::RCP<DRT::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
+    void Init(int spatial_dimension, Teuchos::RCP<Discret::Discretization> dis1,
+        Teuchos::RCP<Discret::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
         std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofsets12 = nullptr,
         std::pair<int, int>* dofsets21 = nullptr,
-        Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null,
+        Teuchos::RCP<VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null,
         bool createauxdofs = true);
 
     /*!
@@ -97,8 +97,8 @@ namespace CORE::ADAPTER
     \brief Get coupling matrices for field 1 and 2
 
     */
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetPMatrix12() const { return p12_; };
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetPMatrix21() const { return p21_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetPMatrix12() const { return p12_; };
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetPMatrix21() const { return p21_; };
 
     /*!
     \brief Mortar mapping for 1 to 2 and 2 to 1 - for vectors
@@ -113,17 +113,17 @@ namespace CORE::ADAPTER
     \brief Mortar mapping for 1 to 2 and 2 to 1 - for matrices
 
     */
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> apply_matrix_mapping12(
-        Teuchos::RCP<const CORE::LINALG::SparseMatrix> mat) const;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> apply_matrix_mapping21(
-        Teuchos::RCP<const CORE::LINALG::SparseMatrix> mat) const;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> apply_matrix_mapping12(
+        Teuchos::RCP<const Core::LinAlg::SparseMatrix> mat) const;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> apply_matrix_mapping21(
+        Teuchos::RCP<const Core::LinAlg::SparseMatrix> mat) const;
 
     //@}
 
     //! assign materials
-    void AssignMaterials(Teuchos::RCP<DRT::Discretization> dis1,
-        Teuchos::RCP<DRT::Discretization> dis2, const Teuchos::ParameterList& volmortar_params,
-        Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
+    void AssignMaterials(Teuchos::RCP<Discret::Discretization> dis1,
+        Teuchos::RCP<Discret::Discretization> dis2, const Teuchos::ParameterList& volmortar_params,
+        Teuchos::RCP<VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
 
 
     /** \name Conversion between master and slave */
@@ -197,8 +197,8 @@ namespace CORE::ADAPTER
     \brief Create auxiliary dofsets for multiphysics if necessary
 
     */
-    void create_aux_dofsets(Teuchos::RCP<DRT::Discretization> dis1,
-        Teuchos::RCP<DRT::Discretization> dis2, std::vector<int>* coupleddof12,
+    void create_aux_dofsets(Teuchos::RCP<Discret::Discretization> dis1,
+        Teuchos::RCP<Discret::Discretization> dis2, std::vector<int>* coupleddof12,
         std::vector<int>* coupleddof21);
 
     /// check setup call
@@ -226,23 +226,23 @@ namespace CORE::ADAPTER
     // mortar matrices and projector
     // s1 = P12 * s2
     // s2 = P21 * s1
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         p12_;  ///< global Mortar projection matrix P Omega_2 -> Omega_1
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         p21_;  ///< global Mortar projection matrix P Omega_1 -> Omega_2
 
-    Teuchos::RCP<DRT::Discretization> masterdis_;
-    Teuchos::RCP<DRT::Discretization> slavedis_;
+    Teuchos::RCP<Discret::Discretization> masterdis_;
+    Teuchos::RCP<Discret::Discretization> slavedis_;
 
     std::vector<int>* coupleddof12_;
     std::vector<int>* coupleddof21_;
     std::pair<int, int>* dofsets12_;
     std::pair<int, int>* dofsets21_;
-    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy_;
+    Teuchos::RCP<VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy_;
 
     int spatial_dimension_{};
   };
-}  // namespace CORE::ADAPTER
+}  // namespace Core::Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

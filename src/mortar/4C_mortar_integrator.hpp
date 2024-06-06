@@ -19,18 +19,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace MORTAR
+namespace Mortar
 {
   // forward declarations
   class Element;
@@ -39,7 +39,7 @@ namespace MORTAR
 
 
   /*!
-  \brief A class to implement MORTAR::IntegratorCalc
+  \brief A class to implement Mortar::IntegratorCalc
 
   */
   class Integrator
@@ -51,27 +51,27 @@ namespace MORTAR
     //! @name Access methods
     /// Internal implementation class
     static Integrator* Impl(
-        MORTAR::Element& sele, MORTAR::Element& mele, Teuchos::ParameterList& params);
+        Mortar::Element& sele, Mortar::Element& mele, Teuchos::ParameterList& params);
 
-    //! @ pure virtual functions --> access per MORTAR::IntegratorCalc
-    virtual void IntegrateEleBased2D(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles,
+    //! @ pure virtual functions --> access per Mortar::IntegratorCalc
+    virtual void IntegrateEleBased2D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, const Epetra_Comm& comm) = 0;
 
-    virtual void IntegrateSegment2D(MORTAR::Element& sele, double& sxia, double& sxib,
-        MORTAR::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm) = 0;
+    virtual void IntegrateSegment2D(Mortar::Element& sele, double& sxia, double& sxib,
+        Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm) = 0;
 
-    virtual Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> IntegrateMmod2D(MORTAR::Element& sele,
-        double& sxia, double& sxib, MORTAR::Element& mele, double& mxia, double& mxib) = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> IntegrateMmod2D(Mortar::Element& sele,
+        double& sxia, double& sxib, Mortar::Element& mele, double& mxia, double& mxib) = 0;
 
-    virtual void IntegrateEleBased3D(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles,
+    virtual void IntegrateEleBased3D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, const Epetra_Comm& comm) = 0;
 
-    virtual void integrate_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
-        Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm) = 0;
+    virtual void integrate_cell3_d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
+        Teuchos::RCP<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm) = 0;
 
-    virtual void integrate_cell3_d_aux_plane_quad(MORTAR::Element& sele, MORTAR::Element& mele,
-        MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-        Teuchos::RCP<MORTAR::IntCell> cell, double* auxn) = 0;
+    virtual void integrate_cell3_d_aux_plane_quad(Mortar::Element& sele, Mortar::Element& mele,
+        Mortar::IntElement& sintele, Mortar::IntElement& mintele,
+        Teuchos::RCP<Mortar::IntCell> cell, double* auxn) = 0;
 
     virtual int nGP() = 0;
 
@@ -83,12 +83,12 @@ namespace MORTAR
 
   /*!
   \brief A class to perform Gaussian integration and assembly of Mortar
-         matrices on the overlap of two MORTAR::Elements (1 Slave, 1 Master)
+         matrices on the overlap of two Mortar::Elements (1 Slave, 1 Master)
          in 1D (which is equivalent to a 2D coupling problem) and in 2D
          (which is equivalent to a 3D coupling problem)
 
   */
-  template <CORE::FE::CellType distypeS, CORE::FE::CellType distypeM>
+  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
   class IntegratorCalc : public Integrator
   {
    public:
@@ -99,7 +99,7 @@ namespace MORTAR
     Note that this is \b not a collective call as overlaps are
     integrated in parallel by individual processes.<br>
     Note also that this constructor relies heavily on the
-    CORE::FE::IntegrationPoints structs to get Gauss points
+    Core::FE::IntegrationPoints structs to get Gauss points
     and corresponding weights.
 
     */
@@ -108,16 +108,16 @@ namespace MORTAR
 
     /// Singleton access method
     static IntegratorCalc<distypeS, distypeM>* Instance(
-        CORE::UTILS::SingletonAction action, const Teuchos::ParameterList& params);
+        Core::UTILS::SingletonAction action, const Teuchos::ParameterList& params);
 
     //! ns_: number of slave element nodes
-    static constexpr int ns_ = CORE::FE::num_nodes<distypeS>;
+    static constexpr int ns_ = Core::FE::num_nodes<distypeS>;
 
     //! nm_: number of master element nodes
-    static constexpr int nm_ = CORE::FE::num_nodes<distypeM>;
+    static constexpr int nm_ = Core::FE::num_nodes<distypeM>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static constexpr int ndim_ = CORE::FE::dim<distypeS> + 1;
+    static constexpr int ndim_ = Core::FE::dim<distypeS> + 1;
 
     //@}
     //! @name 2D and 3D integration methods
@@ -125,7 +125,7 @@ namespace MORTAR
     \brief Perform mortar-integration without previous segmentation -- 2D
 
     */
-    void IntegrateEleBased2D(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles,
+    void IntegrateEleBased2D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, const Epetra_Comm& comm) override;
 
     /*!
@@ -133,8 +133,8 @@ namespace MORTAR
            master overlap (i.e. D, M, g, LindD, LinM, Ling)
 
     */
-    void IntegrateSegment2D(MORTAR::Element& sele, double& sxia, double& sxib,
-        MORTAR::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm) override;
+    void IntegrateSegment2D(Mortar::Element& sele, double& sxia, double& sxib,
+        Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm) override;
 
     /*!
     \brief Integrate modification Mmod on a 1D slave / master overlap
@@ -145,15 +145,15 @@ namespace MORTAR
     the interface is curved (but only for mesh tying)!
 
     */
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> IntegrateMmod2D(MORTAR::Element& sele,
-        double& sxia, double& sxib, MORTAR::Element& mele, double& mxia, double& mxib) override;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> IntegrateMmod2D(Mortar::Element& sele,
+        double& sxia, double& sxib, Mortar::Element& mele, double& mxia, double& mxib) override;
 
     /*!
     \brief Build all integrals and linearizations without segmentation
            (i.e. M, g, LinM, Ling and possibly D, LinD)
 
     */
-    void IntegrateEleBased3D(MORTAR::Element& sele, std::vector<MORTAR::Element*> meles,
+    void IntegrateEleBased3D(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, const Epetra_Comm& comm) override;
 
     /*!
@@ -162,8 +162,8 @@ namespace MORTAR
            using a so-called auxiliary plane
 
     */
-    void integrate_cell3_d_aux_plane(MORTAR::Element& sele, MORTAR::Element& mele,
-        Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm) override;
+    void integrate_cell3_d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
+        Teuchos::RCP<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm) override;
 
     /*!
     \brief Build all integrals and linearizations on a 2D slave /
@@ -171,13 +171,13 @@ namespace MORTAR
            using a so-called auxiliary plane with quadratic interpolation
 
     */
-    void integrate_cell3_d_aux_plane_quad(MORTAR::Element& sele, MORTAR::Element& mele,
-        MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-        Teuchos::RCP<MORTAR::IntCell> cell, double* auxn) override;
+    void integrate_cell3_d_aux_plane_quad(Mortar::Element& sele, Mortar::Element& mele,
+        Mortar::IntElement& sintele, Mortar::IntElement& mintele,
+        Teuchos::RCP<Mortar::IntCell> cell, double* auxn) override;
 
     // protected:
     /*!
-    \brief Initialize Gauss rule (points, weights) for this MORTAR::Integrator
+    \brief Initialize Gauss rule (points, weights) for this Mortar::Integrator
 
     */
     void initialize_gp();
@@ -207,30 +207,30 @@ namespace MORTAR
     \brief evaluate D/M-matrix entries at GP
 
     */
-    void inline gp_dm(MORTAR::Element& sele, MORTAR::Element& mele,
-        CORE::LINALG::Matrix<ns_, 1>& lmval, CORE::LINALG::Matrix<ns_, 1>& sval,
-        CORE::LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& ncol,
+    void inline gp_dm(Mortar::Element& sele, Mortar::Element& mele,
+        Core::LinAlg::Matrix<ns_, 1>& lmval, Core::LinAlg::Matrix<ns_, 1>& sval,
+        Core::LinAlg::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& ncol,
         int& ndof, bool& bound, const Epetra_Comm& comm);
 
     /*!
     \brief evaluate D/M-matrix entries at GP (3D and quadratic)
 
     */
-    void inline gp_3_d_dm_quad(MORTAR::Element& sele, MORTAR::Element& mele,
-        MORTAR::IntElement& sintele, CORE::LINALG::SerialDenseVector& lmval,
-        CORE::LINALG::SerialDenseVector& lmintval, CORE::LINALG::Matrix<ns_, 1>& sval,
-        CORE::LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& nintrow,
+    void inline gp_3_d_dm_quad(Mortar::Element& sele, Mortar::Element& mele,
+        Mortar::IntElement& sintele, Core::LinAlg::SerialDenseVector& lmval,
+        Core::LinAlg::SerialDenseVector& lmintval, Core::LinAlg::Matrix<ns_, 1>& sval,
+        Core::LinAlg::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& nintrow,
         int& ncol, int& ndof, bool& bound);
     //@}
 
     Teuchos::ParameterList imortar_;          // merged parameter list
-    INPAR::MORTAR::ShapeFcn shapefcn_;        // lm shape function type
-    INPAR::MORTAR::LagMultQuad lmquadtype_;   // type of quadratic lm interpolation
+    Inpar::Mortar::ShapeFcn shapefcn_;        // lm shape function type
+    Inpar::Mortar::LagMultQuad lmquadtype_;   // type of quadratic lm interpolation
     int ngp_;                                 // number of Gauss points
-    CORE::LINALG::SerialDenseMatrix coords_;  // Gauss point coordinates
+    Core::LinAlg::SerialDenseMatrix coords_;  // Gauss point coordinates
     std::vector<double> weights_;             // Gauss point weights
-  };                                          // class MORTAR::Integrator
-}  // namespace MORTAR
+  };                                          // class Mortar::Integrator
+}  // namespace Mortar
 
 
 FOUR_C_NAMESPACE_CLOSE

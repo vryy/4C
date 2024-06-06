@@ -17,72 +17,72 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | read element input                                        fang 02/15 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Transport::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::Transport::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read implementation type
   std::string impltype;
   linedef->ExtractString("TYPE", impltype);
   if (impltype == "Std")
-    impltype_ = INPAR::SCATRA::impltype_std;
+    impltype_ = Inpar::ScaTra::impltype_std;
   else if (impltype == "AdvReac")
-    impltype_ = INPAR::SCATRA::impltype_advreac;
+    impltype_ = Inpar::ScaTra::impltype_advreac;
   else if (impltype == "RefConcReac")
-    impltype_ = INPAR::SCATRA::impltype_refconcreac;
+    impltype_ = Inpar::ScaTra::impltype_refconcreac;
   else if (impltype == "Chemo")
-    impltype_ = INPAR::SCATRA::impltype_chemo;
+    impltype_ = Inpar::ScaTra::impltype_chemo;
   else if (impltype == "ChemoReac")
-    impltype_ = INPAR::SCATRA::impltype_chemoreac;
+    impltype_ = Inpar::ScaTra::impltype_chemoreac;
   else if (impltype == "Aniso")
-    impltype_ = INPAR::SCATRA::impltype_aniso;
+    impltype_ = Inpar::ScaTra::impltype_aniso;
   else if (impltype == "CardMono")
-    impltype_ = INPAR::SCATRA::impltype_cardiac_monodomain;
+    impltype_ = Inpar::ScaTra::impltype_cardiac_monodomain;
   else if (impltype == "ElchDiffCond")
-    impltype_ = INPAR::SCATRA::impltype_elch_diffcond;
+    impltype_ = Inpar::ScaTra::impltype_elch_diffcond;
   else if (impltype == "ElchDiffCondMultiScale")
-    impltype_ = INPAR::SCATRA::impltype_elch_diffcond_multiscale;
+    impltype_ = Inpar::ScaTra::impltype_elch_diffcond_multiscale;
   else if (impltype == "ElchDiffCondThermo")
-    impltype_ = INPAR::SCATRA::impltype_elch_diffcond_thermo;
+    impltype_ = Inpar::ScaTra::impltype_elch_diffcond_thermo;
   else if (impltype == "ElchScl")
-    impltype_ = INPAR::SCATRA::impltype_elch_scl;
+    impltype_ = Inpar::ScaTra::impltype_elch_scl;
   else if (impltype == "ElchElectrode")
-    impltype_ = INPAR::SCATRA::impltype_elch_electrode;
+    impltype_ = Inpar::ScaTra::impltype_elch_electrode;
   else if (impltype == "ElchElectrodeGrowth")
-    impltype_ = INPAR::SCATRA::impltype_elch_electrode_growth;
+    impltype_ = Inpar::ScaTra::impltype_elch_electrode_growth;
   else if (impltype == "ElchElectrodeThermo")
-    impltype_ = INPAR::SCATRA::impltype_elch_electrode_thermo;
+    impltype_ = Inpar::ScaTra::impltype_elch_electrode_thermo;
   else if (impltype == "ElchNP")
-    impltype_ = INPAR::SCATRA::impltype_elch_NP;
+    impltype_ = Inpar::ScaTra::impltype_elch_NP;
   else if (impltype == "Loma")
-    impltype_ = INPAR::SCATRA::impltype_loma;
+    impltype_ = Inpar::ScaTra::impltype_loma;
   else if (impltype == "Ls")
-    impltype_ = INPAR::SCATRA::impltype_levelset;
+    impltype_ = Inpar::ScaTra::impltype_levelset;
   else if (impltype == "LsReinit")
-    impltype_ = INPAR::SCATRA::impltype_lsreinit;
+    impltype_ = Inpar::ScaTra::impltype_lsreinit;
   else if (impltype == "Poro")
-    impltype_ = INPAR::SCATRA::impltype_poro;
+    impltype_ = Inpar::ScaTra::impltype_poro;
   else if (impltype == "PoroReac")
-    impltype_ = INPAR::SCATRA::impltype_pororeac;
+    impltype_ = Inpar::ScaTra::impltype_pororeac;
   else if (impltype == "PoroReacECM")
-    impltype_ = INPAR::SCATRA::impltype_pororeacECM;
+    impltype_ = Inpar::ScaTra::impltype_pororeacECM;
   else if (impltype == "Hdg")
-    impltype_ = INPAR::SCATRA::impltype_std_hdg;
+    impltype_ = Inpar::ScaTra::impltype_std_hdg;
   else if (impltype == "HdgCardMono")
-    impltype_ = INPAR::SCATRA::impltype_cardiac_monodomain_hdg;
+    impltype_ = Inpar::ScaTra::impltype_cardiac_monodomain_hdg;
   else
     FOUR_C_THROW("Transport element received invalid implementation type!");
 
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   // set discretization type
-  SetDisType(CORE::FE::StringToCellType(distype));
+  SetDisType(Core::FE::StringToCellType(distype));
 
-  if (Material()->MaterialType() == CORE::Materials::m_myocard)
+  if (Material()->MaterialType() == Core::Materials::m_myocard)
   {
-    Teuchos::RCP<MAT::Myocard> myocard = Teuchos::rcp_dynamic_cast<MAT::Myocard>(Material());
+    Teuchos::RCP<Mat::Myocard> myocard = Teuchos::rcp_dynamic_cast<Mat::Myocard>(Material());
     myocard->Setup(linedef);
   }
 

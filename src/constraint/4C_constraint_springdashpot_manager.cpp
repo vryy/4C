@@ -21,11 +21,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discretization> dis)
+CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<Discret::Discretization> dis)
     : actdisc_(dis), havespringdashpot_(false)
 {
   // get all spring dashpot conditions
-  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> springdashpots;
+  std::vector<Teuchos::RCP<Core::Conditions::Condition>> springdashpots;
   actdisc_->GetCondition("RobinSpringDashpot", springdashpots);
 
   // number of spring dashpot conditions
@@ -46,7 +46,7 @@ CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discre
 }
 
 void CONSTRAINTS::SpringDashpotManager::stiffness_and_internal_forces(
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_Vector> fint,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_Vector> fint,
     Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
     Teuchos::ParameterList parlist)
 {
@@ -83,8 +83,8 @@ void CONSTRAINTS::SpringDashpotManager::ResetPrestress(Teuchos::RCP<Epetra_Vecto
   return;
 }
 
-void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<CORE::IO::DiscretizationWriter> output,
-    Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
+void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
+    Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
 {
   // row maps for export
   Teuchos::RCP<Epetra_Vector> gap =
@@ -113,7 +113,7 @@ void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<CORE::IO::Discretiza
   }
 
   // write spring stress if defined in io-flag
-  if (CORE::UTILS::IntegralValue<bool>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_SPRING") ==
+  if (Core::UTILS::IntegralValue<bool>(Global::Problem::Instance()->IOParams(), "OUTPUT_SPRING") ==
       true)
     output->WriteVector("springstress", springstress);
 
@@ -121,8 +121,8 @@ void CONSTRAINTS::SpringDashpotManager::Output(Teuchos::RCP<CORE::IO::Discretiza
 }
 
 void CONSTRAINTS::SpringDashpotManager::output_restart(
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, Teuchos::RCP<DRT::Discretization> discret,
-    Teuchos::RCP<Epetra_Vector> disp)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output,
+    Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
 {
   // row maps for export
   Teuchos::RCP<Epetra_Vector> springoffsetprestr =
@@ -160,7 +160,7 @@ void CONSTRAINTS::SpringDashpotManager::output_restart(
 |Read restart information                                               |
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpotManager::read_restart(
-    CORE::IO::DiscretizationReader& reader, const double& time)
+    Core::IO::DiscretizationReader& reader, const double& time)
 {
   Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*actdisc_->dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> tempvecold =

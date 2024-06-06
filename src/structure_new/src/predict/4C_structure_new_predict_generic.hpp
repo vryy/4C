@@ -38,12 +38,12 @@ namespace STR
   {
     class Generic;
   }  // namespace IMPLICIT
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataGlobalState;
     class BaseDataIO;
-  }  // namespace TIMINT
-  namespace PREDICT
+  }  // namespace TimeInt
+  namespace Predict
   {
     class Generic
     {
@@ -55,18 +55,18 @@ namespace STR
       virtual ~Generic() = default;
 
       //! initialize the base class variables
-      virtual void Init(const enum INPAR::STR::PredEnum& type,
+      virtual void Init(const enum Inpar::STR::PredEnum& type,
           const Teuchos::RCP<STR::IMPLICIT::Generic>& implint_ptr,
           const Teuchos::RCP<STR::Dbc>& dbc_ptr,
-          const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<STR::TIMINT::BaseDataIO>& iodata_ptr,
+          const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const Teuchos::RCP<STR::TimeInt::BaseDataIO>& iodata_ptr,
           const Teuchos::RCP<Teuchos::ParameterList>& noxparams_ptr);
 
       //! setup of the specific predictor
       virtual void Setup() = 0;
 
       //! Get the predictor type enum
-      const INPAR::STR::PredEnum& GetType() const { return type_; };
+      const Inpar::STR::PredEnum& GetType() const { return type_; };
 
       //! returns the name of the used predictor
       virtual std::string Name() const;
@@ -84,7 +84,7 @@ namespace STR
       virtual void PostPredict(::NOX::Abstract::Group& grp);
 
       //! return a constant reference to the global state object (read only)
-      const STR::TIMINT::BaseDataGlobalState& GlobalState() const;
+      const STR::TimeInt::BaseDataGlobalState& GlobalState() const;
 
       //! print the result of the predictor step
       void Print() const;
@@ -109,11 +109,11 @@ namespace STR
       Teuchos::RCP<STR::Dbc>& dbc_ptr();
       STR::Dbc& dbc();
 
-      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& global_state_ptr();
-      STR::TIMINT::BaseDataGlobalState& global_state();
+      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& global_state_ptr();
+      STR::TimeInt::BaseDataGlobalState& global_state();
 
-      Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_data_ptr();
-      STR::TIMINT::BaseDataIO& io_data();
+      Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_data_ptr();
+      STR::TimeInt::BaseDataIO& io_data();
 
       Teuchos::RCP<Teuchos::ParameterList>& nox_params_ptr();
       Teuchos::ParameterList& nox_params();
@@ -127,7 +127,7 @@ namespace STR
 
      private:
       //! predictor type
-      enum INPAR::STR::PredEnum type_;
+      enum Inpar::STR::PredEnum type_;
 
       //! pointer to the implicit integrator
       Teuchos::RCP<STR::IMPLICIT::Generic> implint_ptr_;
@@ -136,14 +136,14 @@ namespace STR
       Teuchos::RCP<STR::Dbc> dbc_ptr_;
 
       //! global state pointer
-      Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! input/output data pointer
-      Teuchos::RCP<STR::TIMINT::BaseDataIO> iodata_ptr_;
+      Teuchos::RCP<STR::TimeInt::BaseDataIO> iodata_ptr_;
 
       Teuchos::RCP<Teuchos::ParameterList> noxparams_ptr_;
     };  // class  Generic
-  }     // namespace PREDICT
+  }     // namespace Predict
 }  // namespace STR
 
 

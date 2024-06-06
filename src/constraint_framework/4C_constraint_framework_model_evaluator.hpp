@@ -54,7 +54,7 @@ namespace STR
 
       //! @name Derived public STR::MODELEVALUATOR::Generic methods
       //! @{
-      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_constraints; }
+      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_constraints; }
 
       void Reset(const Epetra_Vector& x) override;
 
@@ -71,15 +71,15 @@ namespace STR
       bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
 
       bool assemble_jacobian(
-          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
+          Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override;
 
       void write_restart(
-          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
-      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
+      void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) override
+          const NOX::Nln::Group& curr_grp) override
       {
       }
 
@@ -90,7 +90,7 @@ namespace STR
 
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override {}
 
-      void Predict(const INPAR::STR::PredEnum& pred_type) override;
+      void Predict(const Inpar::STR::PredEnum& pred_type) override;
 
       void UpdateStepState(const double& timefac_n) override;
 
@@ -104,7 +104,7 @@ namespace STR
 
       void ResetStepState() override;
 
-      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
 
       void runtime_pre_output_step_state() override;
 
@@ -121,7 +121,7 @@ namespace STR
       void evaluate_jacobian_contributions_from_element_level_for_ptc() override;
 
       void assemble_jacobian_contributions_from_element_level_for_ptc(
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n) override;
+          Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n) override;
 
       void CreateBackupState(const Epetra_Vector& dir) override;
 
@@ -144,13 +144,13 @@ namespace STR
       //!@name data for submodel management
       //! @{
       /// active model types for the model evaluator
-      std::set<enum INPAR::CONSTRAINTS::SubModelType> submodeltypes_;
+      std::set<enum Inpar::CONSTRAINTS::SubModelType> submodeltypes_;
 
       //! vector of submodelevaluators
       SubmodelevaluatorVector sub_model_vec_ptr_;
 
       //! constraint stiffness matrix
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> constraint_stiff_ptr_;
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> constraint_stiff_ptr_;
 
       //! constraint force vector
       Teuchos::RCP<Epetra_Vector> constraint_force_ptr_;

@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 void particle_drt()
 {
   // get instance of global problem
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // get local communicator
   const Epetra_Comm& comm = *problem->GetCommunicators()->LocalComm().get();
@@ -54,7 +54,7 @@ void particle_drt()
   // perform result tests
   {
     // create particle field specific result test objects
-    std::vector<std::shared_ptr<CORE::UTILS::ResultTest>> allresulttests =
+    std::vector<std::shared_ptr<Core::UTILS::ResultTest>> allresulttests =
         particlealgorithm->CreateResultTests();
 
     // add particle field specific result test objects
@@ -66,7 +66,8 @@ void particle_drt()
   }
 
   // print summary statistics for all timers
-  Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm = CORE::COMM::toTeuchosComm<int>(comm);
+  Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
+      Core::Communication::toTeuchosComm<int>(comm);
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
 }
 

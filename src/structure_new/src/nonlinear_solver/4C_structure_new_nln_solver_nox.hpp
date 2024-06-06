@@ -34,28 +34,28 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     class GlobalData;
     class Problem;
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace INNER
-  }      // namespace NLN
+    }    // namespace Inner
+  }      // namespace Nln
 }  // namespace NOX
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace STR
 {
-  namespace NLN
+  namespace Nln
   {
     namespace SOLVER
     {
@@ -76,7 +76,7 @@ namespace STR
         void Reset() override;
 
         //! derived from the base class
-        INPAR::STR::ConvergenceStatus Solve() override;
+        Inpar::STR::ConvergenceStatus Solve() override;
 
         //! returns the outer status test object pointer
         const ::NOX::StatusTest::Generic& GetOStatusTest() const
@@ -87,7 +87,7 @@ namespace STR
         }
 
         //! returns the outer status test object pointer
-        Teuchos::RCP<const NOX::NLN::INNER::StatusTest::Generic> GetIStatusPtr() const
+        Teuchos::RCP<const NOX::Nln::Inner::StatusTest::Generic> GetIStatusPtr() const
         {
           check_init_setup();
           return istatus_;
@@ -101,12 +101,12 @@ namespace STR
         virtual void reset_params();
 
         //! Convert the final nox status into a structural status
-        enum INPAR::STR::ConvergenceStatus convert_final_status(
+        enum Inpar::STR::ConvergenceStatus convert_final_status(
             const ::NOX::StatusTest::StatusType& finalstatus) const;
 
        protected:
         //! pointer to the nox nln global data container
-        Teuchos::RCP<NOX::NLN::GlobalData> nlnglobaldata_;
+        Teuchos::RCP<NOX::Nln::GlobalData> nlnglobaldata_;
 
         //! NOX non-linear solver
         Teuchos::RCP<::NOX::Solver::Generic> nlnsolver_;
@@ -124,7 +124,7 @@ namespace STR
          *
          *  The main task is to manage the non-linear solver creation
          */
-        Teuchos::RCP<NOX::NLN::Problem> problem_;
+        Teuchos::RCP<NOX::Nln::Problem> problem_;
 
         //! linear system class
         Teuchos::RCP<::NOX::Epetra::LinearSystem> linsys_;
@@ -133,12 +133,12 @@ namespace STR
         Teuchos::RCP<::NOX::StatusTest::Generic> ostatus_;
 
         //! inner status test
-        Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> istatus_;
+        Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> istatus_;
 
         //!@}
       };  // class Nox
     }     // namespace SOLVER
-  }       // namespace NLN
+  }       // namespace Nln
 }  // namespace STR
 
 

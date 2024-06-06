@@ -26,9 +26,9 @@ equations
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Element;
     class Facet;
@@ -45,7 +45,7 @@ namespace CORE::GEO
     {
      public:
       VolumeIntegration(VolumeCell* volcell, Element* elem,
-          const CORE::GEO::CUT::Point::PointPosition posi, int num_func)
+          const Core::Geo::Cut::Point::PointPosition posi, int num_func)
           : volcell_(volcell), elem1_(elem), position_(posi), num_func_(num_func)
       {
       }
@@ -54,13 +54,13 @@ namespace CORE::GEO
       \brief Compute Gauss point weights by solving the moment fitting equations and returns the
       coordinates of Gauss points and their corresponding weights
       */
-      CORE::LINALG::SerialDenseVector compute_weights();
+      Core::LinAlg::SerialDenseVector compute_weights();
 
       /*!
       \brief Computes the RHS of the moment fitting matrix (performs integration of base functions
       over the volumecell)
       */
-      CORE::LINALG::SerialDenseVector compute_rhs_moment();
+      Core::LinAlg::SerialDenseVector compute_rhs_moment();
 
       /*!
       \brief Returns the location of Gauss points distributed over the volumecell
@@ -72,7 +72,7 @@ namespace CORE::GEO
       boundary of this volumecell. The output std::string will be either "outside", "inside" or
       "onBoundary"
       */
-      std::string IsPointInside(CORE::LINALG::Matrix<3, 1>& rst);
+      std::string IsPointInside(Core::LinAlg::Matrix<3, 1>& rst);
 
      private:
       /*!
@@ -132,57 +132,57 @@ namespace CORE::GEO
       \brief Check whether the intersection point, which is in the plane containing the facet,
       actually lies with in the facet area
       */
-      int pnpoly(const std::vector<std::vector<double>>& xp, const CORE::LINALG::Matrix<3, 1>& pt,
-          CORE::GEO::CUT::ProjectionDirection projType);
+      int pnpoly(const std::vector<std::vector<double>>& xp, const Core::LinAlg::Matrix<3, 1>& pt,
+          Core::Geo::Cut::ProjectionDirection projType);
 
       /*!
       \brief Adds linear combination of first order base function to the moment fitting system of
       equations
       */
       void first_order_additional_terms(
-          std::vector<std::vector<double>>& mat, CORE::LINALG::SerialDenseVector& rhs);
+          std::vector<std::vector<double>>& mat, Core::LinAlg::SerialDenseVector& rhs);
 
       /*!
       \brief Adds linear combination of second order base function to the moment fitting system of
       equations
       */
       void second_order_additional_terms(
-          std::vector<std::vector<double>>& mat, CORE::LINALG::SerialDenseVector& rhs);
+          std::vector<std::vector<double>>& mat, Core::LinAlg::SerialDenseVector& rhs);
 
       /*!
       \brief Adds linear combination of third order base function to the moment fitting system of
       equations
       */
       void third_order_additional_terms(
-          std::vector<std::vector<double>>& mat, CORE::LINALG::SerialDenseVector& rhs);
+          std::vector<std::vector<double>>& mat, Core::LinAlg::SerialDenseVector& rhs);
 
       /*!
       \brief Adds linear combination of fourth order base function to the moment fitting system of
       equations
       */
       void fourth_order_additional_terms(
-          std::vector<std::vector<double>>& mat, CORE::LINALG::SerialDenseVector& rhs);
+          std::vector<std::vector<double>>& mat, Core::LinAlg::SerialDenseVector& rhs);
 
       /*!
       \brief Adds linear combination of fifth order base function to the moment fitting system of
       equations
       */
       void fifth_order_additional_terms(
-          std::vector<std::vector<double>>& mat, CORE::LINALG::SerialDenseVector& rhs);
+          std::vector<std::vector<double>>& mat, Core::LinAlg::SerialDenseVector& rhs);
 
       /*!
       \brief Adds linear combination of sixth order base function to the moment fitting system of
       equations
       */
       void sixth_order_additional_terms(
-          std::vector<std::vector<double>>& mat, CORE::LINALG::SerialDenseVector& rhs);
+          std::vector<std::vector<double>>& mat, Core::LinAlg::SerialDenseVector& rhs);
 
       /*!
       \brief Computes the error introduced by the generated integration rule for integrating some
       specific functions
       */
-      void error_for_specific_function(CORE::LINALG::SerialDenseVector rhs_moment,
-          CORE::LINALG::SerialDenseVector weights, int numeach);
+      void error_for_specific_function(Core::LinAlg::SerialDenseVector rhs_moment,
+          Core::LinAlg::SerialDenseVector weights, int numeach);
 
       //! considered volumecell
       VolumeCell* volcell_;
@@ -191,7 +191,7 @@ namespace CORE::GEO
       Element* elem1_;
 
       //! position (inside or outside) of volumecell
-      const CORE::GEO::CUT::Point::PointPosition position_;
+      const Core::Geo::Cut::Point::PointPosition position_;
 
       //! defines the base function to be integrated
       int num_func_;
@@ -202,8 +202,8 @@ namespace CORE::GEO
       //! equations of plane in which facets of volumecell are contained
       std::vector<std::vector<double>> eqn_facets_;
     };
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

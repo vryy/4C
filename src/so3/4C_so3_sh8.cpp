@@ -21,58 +21,59 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::SoSh8Type DRT::ELEMENTS::SoSh8Type::instance_;
+Discret::ELEMENTS::SoSh8Type Discret::ELEMENTS::SoSh8Type::instance_;
 
-DRT::ELEMENTS::SoSh8Type& DRT::ELEMENTS::SoSh8Type::Instance() { return instance_; }
+Discret::ELEMENTS::SoSh8Type& Discret::ELEMENTS::SoSh8Type::Instance() { return instance_; }
 
-CORE::COMM::ParObject* DRT::ELEMENTS::SoSh8Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SoSh8Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::SoSh8(-1, -1);
+  auto* object = new Discret::ELEMENTS::SoSh8(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh8Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh8(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::SoSh8(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoSh8Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoSh8(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(new Discret::ELEMENTS::SoSh8(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::SoSh8Type::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::SoSh8Type::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoSh8Type::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoSh8Type::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::SoSh8Type::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::SoSh8Type::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
+  std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
-  defs["HEX8"] = INPUT::LineDefinition::Builder()
+  defs["HEX8"] = Input::LineDefinition::Builder()
                      .AddIntVector("HEX8", 8)
                      .AddNamedInt("MAT")
                      .AddNamedString("KINEM")
@@ -95,19 +96,19 @@ void DRT::ELEMENTS::SoSh8Type::setup_element_definition(
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoSh8::SoSh8(int id, int owner)
-    : DRT::ELEMENTS::SoHex8(id, owner),
+Discret::ELEMENTS::SoSh8::SoSh8(int id, int owner)
+    : Discret::ELEMENTS::SoHex8(id, owner),
       thickdir_(undefined),
       anstype_(ansnone),
       nodes_rearranged_(false),
       thickvec_(3, 0.0)
 {
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      GLOBAL::Problem::Instance()->getParameterList();
+      Global::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+    Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;
@@ -117,8 +118,8 @@ DRT::ELEMENTS::SoSh8::SoSh8(int id, int owner)
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoSh8::SoSh8(const DRT::ELEMENTS::SoSh8& old)
-    : DRT::ELEMENTS::SoHex8(old),
+Discret::ELEMENTS::SoSh8::SoSh8(const Discret::ELEMENTS::SoSh8& old)
+    : Discret::ELEMENTS::SoHex8(old),
       thickdir_(old.thickdir_),
       anstype_(old.anstype_),
       nodes_rearranged_(old.nodes_rearranged_),
@@ -131,9 +132,9 @@ DRT::ELEMENTS::SoSh8::SoSh8(const DRT::ELEMENTS::SoSh8& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::SoSh8::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoSh8::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::SoSh8(*this);
+  auto* newelement = new Discret::ELEMENTS::SoSh8(*this);
   return newelement;
 }
 
@@ -141,16 +142,16 @@ CORE::Elements::Element* DRT::ELEMENTS::SoSh8::Clone() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::SoSh8::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class So_hex8 Element
-  DRT::ELEMENTS::SoHex8::Pack(data);
+  Discret::ELEMENTS::SoHex8::Pack(data);
   // thickdir
   AddtoPack(data, thickdir_);
   AddtoPack(data, thickvec_);
@@ -164,16 +165,16 @@ void DRT::ELEMENTS::SoSh8::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoSh8::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::SoHex8::Unpack(basedata);
+  Discret::ELEMENTS::SoHex8::Unpack(basedata);
   // thickdir
   thickdir_ = static_cast<ThicknessDirection>(ExtractInt(position, data));
   ExtractfromPack(position, data, thickvec_);
@@ -190,7 +191,7 @@ void DRT::ELEMENTS::SoSh8::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoSh8::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoSh8::Print(std::ostream& os) const
 {
   os << "So_sh8 ";
   Element::Print(os);

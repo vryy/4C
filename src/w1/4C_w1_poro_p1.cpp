@@ -15,29 +15,30 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Wall1PoroP1<distype>::Wall1PoroP1(int id, int owner)
-    : DRT::ELEMENTS::Wall1Poro<distype>(id, owner)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::Wall1PoroP1<distype>::Wall1PoroP1(int id, int owner)
+    : Discret::ELEMENTS::Wall1Poro<distype>(id, owner)
 {
 }
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::Wall1PoroP1<distype>::Wall1PoroP1(const DRT::ELEMENTS::Wall1PoroP1<distype>& old)
-    : DRT::ELEMENTS::Wall1Poro<distype>(old)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::Wall1PoroP1<distype>::Wall1PoroP1(
+    const Discret::ELEMENTS::Wall1PoroP1<distype>& old)
+    : Discret::ELEMENTS::Wall1Poro<distype>(old)
 {
 }
 
-template <CORE::FE::CellType distype>
-CORE::Elements::Element* DRT::ELEMENTS::Wall1PoroP1<distype>::Clone() const
+template <Core::FE::CellType distype>
+Core::Elements::Element* Discret::ELEMENTS::Wall1PoroP1<distype>::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::Wall1PoroP1<distype>(*this);
+  auto* newelement = new Discret::ELEMENTS::Wall1PoroP1<distype>(*this);
   return newelement;
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1PoroP1<distype>::Pack(CORE::COMM::PackBuffer& data) const
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Wall1PoroP1<distype>::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -48,12 +49,12 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::Pack(CORE::COMM::PackBuffer& data) con
   Base::Pack(data);
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1PoroP1<distype>::Unpack(const std::vector<char>& data)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Wall1PoroP1<distype>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -64,64 +65,66 @@ void DRT::ELEMENTS::Wall1PoroP1<distype>::Unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", static_cast<int>(data.size()), position);
 }
 
-template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Wall1PoroP1<distype>::Lines()
+template <Core::FE::CellType distype>
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1PoroP1<distype>::Lines()
 {
-  return CORE::COMM::ElementBoundaryFactory<Wall1Line, Wall1PoroP1>(CORE::COMM::buildLines, *this);
+  return Core::Communication::ElementBoundaryFactory<Wall1Line, Wall1PoroP1>(
+      Core::Communication::buildLines, *this);
 }
 
-template <CORE::FE::CellType distype>
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Wall1PoroP1<distype>::Surfaces()
+template <Core::FE::CellType distype>
+std::vector<Teuchos::RCP<Core::Elements::Element>>
+Discret::ELEMENTS::Wall1PoroP1<distype>::Surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::Wall1PoroP1<distype>::Print(std::ostream& os) const
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Wall1PoroP1<distype>::Print(std::ostream& os) const
 {
   os << "Wall1_PoroP1 ";
-  CORE::Elements::Element::Print(os);
+  Core::Elements::Element::Print(os);
   std::cout << std::endl;
 }
 
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::Wall1PoroP1<distype>::UniqueParObjectId() const
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::Wall1PoroP1<distype>::UniqueParObjectId() const
 {
   switch (distype)
   {
-    case CORE::FE::CellType::tri3:
-      return DRT::ELEMENTS::WallTri3PoroP1Type::Instance().UniqueParObjectId();
-    case CORE::FE::CellType::quad4:
-      return DRT::ELEMENTS::WallQuad4PoroP1Type::Instance().UniqueParObjectId();
-    case CORE::FE::CellType::quad9:
-      return DRT::ELEMENTS::WallQuad9PoroP1Type::Instance().UniqueParObjectId();
+    case Core::FE::CellType::tri3:
+      return Discret::ELEMENTS::WallTri3PoroP1Type::Instance().UniqueParObjectId();
+    case Core::FE::CellType::quad4:
+      return Discret::ELEMENTS::WallQuad4PoroP1Type::Instance().UniqueParObjectId();
+    case Core::FE::CellType::quad9:
+      return Discret::ELEMENTS::WallQuad9PoroP1Type::Instance().UniqueParObjectId();
     default:
       FOUR_C_THROW("unknown element type");
   }
   return -1;
 }
 
-template <CORE::FE::CellType distype>
-CORE::Elements::ElementType& DRT::ELEMENTS::Wall1PoroP1<distype>::ElementType() const
+template <Core::FE::CellType distype>
+Core::Elements::ElementType& Discret::ELEMENTS::Wall1PoroP1<distype>::ElementType() const
 {
   {
     switch (distype)
     {
-      case CORE::FE::CellType::tri3:
-        return DRT::ELEMENTS::WallTri3PoroP1Type::Instance();
-      case CORE::FE::CellType::quad4:
-        return DRT::ELEMENTS::WallQuad4PoroP1Type::Instance();
-      case CORE::FE::CellType::quad9:
-        return DRT::ELEMENTS::WallQuad9PoroP1Type::Instance();
+      case Core::FE::CellType::tri3:
+        return Discret::ELEMENTS::WallTri3PoroP1Type::Instance();
+      case Core::FE::CellType::quad4:
+        return Discret::ELEMENTS::WallQuad4PoroP1Type::Instance();
+      case Core::FE::CellType::quad9:
+        return Discret::ELEMENTS::WallQuad9PoroP1Type::Instance();
       default:
         FOUR_C_THROW("unknown element type");
     }
-    return DRT::ELEMENTS::WallQuad4PoroP1Type::Instance();
+    return Discret::ELEMENTS::WallQuad4PoroP1Type::Instance();
   }
 }
 
-template class DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::Wall1PoroP1<CORE::FE::CellType::quad9>;
+template class Discret::ELEMENTS::Wall1PoroP1<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::Wall1PoroP1<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::Wall1PoroP1<Core::FE::CellType::quad9>;
 
 FOUR_C_NAMESPACE_CLOSE

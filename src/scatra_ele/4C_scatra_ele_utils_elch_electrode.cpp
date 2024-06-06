@@ -18,12 +18,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*
-DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*
+Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleUtilsElchElectrode<distype>>(
@@ -31,13 +31,13 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::ScaTraEleUtilsElchElectrode(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::ScaTraEleUtilsElchElectrode(
     const int numdofpernode, const int numscal, const std::string& disname)
     : myelch::ScaTraEleUtilsElch(numdofpernode, numscal, disname)
 {
@@ -46,12 +46,12 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::ScaTraEleUtilsElchElectrode
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::mat_electrode(
-    Teuchos::RCP<const CORE::MAT::Material> material, const double concentration,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::mat_electrode(
+    Teuchos::RCP<const Core::Mat::Material> material, const double concentration,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> diffmanager)
 {
-  const auto* matelectrode = static_cast<const MAT::Electrode*>(material.get());
+  const auto* matelectrode = static_cast<const Mat::Electrode*>(material.get());
 
   // diffusion coefficient
   diffmanager->SetIsotropicDiff(
@@ -85,29 +85,29 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::mat_electrode(
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::line3>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::nurbs3>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::nurbs3>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::hex8>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::hex8>;
 // template class
-// DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::tet10>;
+// Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::tet10>;
 // template class
-// DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::pyramid5>;
+// Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::pyramid5>;
 // template class
-// DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<CORE::FE::CellType::nurbs27>;
+// Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -27,13 +27,13 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
   class MapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
@@ -52,7 +52,7 @@ namespace XFEM
   class MeshCouplingFSI;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class XFluidFSI : public FluidWrapper
   {
@@ -60,8 +60,8 @@ namespace ADAPTER
     /// Constructor
     XFluidFSI(Teuchos::RCP<Fluid> fluid,
         const std::string coupling_name,  // name of the FSI coupling condition
-        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output);
+        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
 
     /// initialize algorithm
     void Init() override;
@@ -118,16 +118,16 @@ namespace ADAPTER
     void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override;
 
     /// return coupling matrix between fluid and structure as sparse matrices
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> c_struct_fluid_matrix();
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> c_fluid_struct_matrix();
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> c_struct_struct_matrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> c_struct_fluid_matrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> c_fluid_struct_matrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> c_struct_struct_matrix();
 
     Teuchos::RCP<const Epetra_Vector> RHS_Struct_Vec();
 
     Teuchos::RCP<FLD::XFluid> MyFluid() { return xfluid_; }
 
     /// return boundary discretization
-    Teuchos::RCP<DRT::Discretization> boundary_discretization();
+    Teuchos::RCP<Discret::Discretization> boundary_discretization();
 
     bool newton_restart_monolithic() { return xfluid_->newton_restart_monolithic(); }
 
@@ -155,18 +155,18 @@ namespace ADAPTER
     Teuchos::RCP<FLD::UTILS::MapExtractor> fpsiinterface_;
 
     /// ALE dof map
-    Teuchos::RCP<CORE::LINALG::MapExtractor> meshmap_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> meshmap_;
     Teuchos::RCP<Epetra_Map> permfluidmap_;
     Teuchos::RCP<Epetra_Map> fullfluidmap_;
 
     //! @name local copies of input parameters
     std::string coupling_name_;  /// the name of the XFEM::MeshCoupling object
     Teuchos::RCP<XFEM::MeshCouplingFSI> mesh_coupling_fsi_;
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
     Teuchos::RCP<Teuchos::ParameterList> params_;
     //@}
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

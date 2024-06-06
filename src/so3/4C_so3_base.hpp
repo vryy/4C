@@ -28,16 +28,16 @@ namespace STR
     enum EvalErrorFlag : int;
   }  // namespace ELEMENTS
 }  // namespace STR
-namespace MAT
+namespace Mat
 {
   class So3Material;
-}  // namespace MAT
-namespace DRT
+}  // namespace Mat
+namespace Discret
 {
   namespace ELEMENTS
   {
     //! A wrapper for structural elements
-    class SoBase : public CORE::Elements::Element
+    class SoBase : public Core::Elements::Element
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -71,7 +71,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -82,10 +82,10 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
       // get the kinematic type from the element
-      INPAR::STR::KinemType KinematicType() const { return kintype_; }
+      Inpar::STR::KinemType KinematicType() const { return kintype_; }
 
       // get the kinematic type from the element
-      void SetKinematicType(INPAR::STR::KinemType kintype) { kintype_ = kintype; }
+      void SetKinematicType(Inpar::STR::KinemType kintype) { kintype_ = kintype; }
 
       /*!
       \brief Does this element use EAS?
@@ -105,7 +105,7 @@ namespace DRT
 
       \param nummat (in): number of requested material
       */
-      virtual Teuchos::RCP<MAT::So3Material> SolidMaterial(int nummat = 0) const;
+      virtual Teuchos::RCP<Mat::So3Material> SolidMaterial(int nummat = 0) const;
 
       /*!
        * @brief Evaluate Cauchy stress contracted with the normal vector and another direction
@@ -164,19 +164,19 @@ namespace DRT
        *
        * @note At the moment this method is only used for the nitsche contact formulation
        */
-      virtual void get_cauchy_n_dir_and_derivatives_at_xi(const CORE::LINALG::Matrix<3, 1>& xi,
-          const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
-          const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
-          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
-          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
-          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
-          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
-          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
-          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
-          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
-          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
+      virtual void get_cauchy_n_dir_and_derivatives_at_xi(const Core::LinAlg::Matrix<3, 1>& xi,
+          const std::vector<double>& disp, const Core::LinAlg::Matrix<3, 1>& n,
+          const Core::LinAlg::Matrix<3, 1>& dir, double& cauchy_n_dir,
+          Core::LinAlg::SerialDenseMatrix* d_cauchyndir_dd,
+          Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd2,
+          Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+          Core::LinAlg::Matrix<3, 1>* d_cauchyndir_dn,
+          Core::LinAlg::Matrix<3, 1>* d_cauchyndir_ddir,
+          Core::LinAlg::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
+          Core::LinAlg::SerialDenseMatrix* d_cauchyndir_dT,
+          Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
           double* d_cauchyndir_dc)
       {
         FOUR_C_THROW("not implemented for chosen solid element");
@@ -239,19 +239,19 @@ namespace DRT
        *
        * @note At the moment this method is only used for the nitsche contact formulation
        */
-      virtual void get_cauchy_n_dir_and_derivatives_at_xi(const CORE::LINALG::Matrix<2, 1>& xi,
-          const std::vector<double>& disp, const CORE::LINALG::Matrix<2, 1>& n,
-          const CORE::LINALG::Matrix<2, 1>& dir, double& cauchy_n_dir,
-          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
-          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
-          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
-          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
-          CORE::LINALG::Matrix<2, 1>* d_cauchyndir_dn,
-          CORE::LINALG::Matrix<2, 1>* d_cauchyndir_ddir,
-          CORE::LINALG::Matrix<2, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
-          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
-          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
+      virtual void get_cauchy_n_dir_and_derivatives_at_xi(const Core::LinAlg::Matrix<2, 1>& xi,
+          const std::vector<double>& disp, const Core::LinAlg::Matrix<2, 1>& n,
+          const Core::LinAlg::Matrix<2, 1>& dir, double& cauchy_n_dir,
+          Core::LinAlg::SerialDenseMatrix* d_cauchyndir_dd,
+          Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd2,
+          Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+          Core::LinAlg::Matrix<2, 1>* d_cauchyndir_dn,
+          Core::LinAlg::Matrix<2, 1>* d_cauchyndir_ddir,
+          Core::LinAlg::Matrix<2, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
+          Core::LinAlg::SerialDenseMatrix* d_cauchyndir_dT,
+          Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
           double* d_cauchyndir_dc)
       {
         FOUR_C_THROW("not implemented for chosen solid element");
@@ -275,14 +275,14 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override;
 
      protected:
       /** \brief get access to the interface
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline CORE::Elements::ParamsInterface& params_interface()
+      inline Core::Elements::ParamsInterface& params_interface()
       {
         if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -320,13 +320,13 @@ namespace DRT
       virtual void material_post_setup(Teuchos::ParameterList& params);
 
       //! kinematic type
-      INPAR::STR::KinemType kintype_;
+      Inpar::STR::KinemType kintype_;
 
      private:
       /** \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */
-      Teuchos::RCP<CORE::Elements::ParamsInterface> interface_ptr_;
+      Teuchos::RCP<Core::Elements::ParamsInterface> interface_ptr_;
 
       //! Flag of the status of the material post setup routine
       bool material_post_setup_;
@@ -334,7 +334,7 @@ namespace DRT
     };  // class So_base
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

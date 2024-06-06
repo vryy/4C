@@ -27,10 +27,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
-    : ADAPTER::FluidFPSI::FluidFPSI(fluid, dis, solver, params, output, isale, dirichletcond)
+Adapter::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
+    : Adapter::FluidFPSI::FluidFPSI(fluid, dis, solver, params, output, isale, dirichletcond)
 {
   // make sure
 
@@ -41,11 +41,11 @@ ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discr
 
 /*======================================================================*/
 /* evaluate poroelasticity specific constraint*/
-void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix,
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> struct_vel_constraint_matrix,
+void Adapter::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstraintMatrix,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_vel_constraint_matrix,
     Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
-    POROELAST::Coupltype coupltype)
+    PoroElast::Coupltype coupltype)
 {
   if (!(discretization()->Filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!discretization()->HaveDofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -57,17 +57,17 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
 
   params.set("timescale", TimeScaling());
 
-  if (coupltype == POROELAST::fluidfluid)
+  if (coupltype == PoroElast::fluidfluid)
   {
     // first, find out which dofs will be constraint
     params.set<int>("action", FLD::no_penetrationIDs);
-    params.set<int>("Physical Type", INPAR::FLUID::poro);
+    params.set<int>("Physical Type", Inpar::FLUID::poro);
     discretization()->evaluate_condition(params, condVector, "no_penetration");
 
     // write global IDs of dofs on which the no penetration condition is applied (can vary in time
     // and iteration)
     {
-      const int ndim = GLOBAL::Problem::Instance()->NDim();
+      const int ndim = Global::Problem::Instance()->NDim();
       const int ndof = ndim + 1;
       const int length = condVector->MyLength();
       const int nnod = length / ndof;
@@ -93,10 +93,10 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
     // set action for elements
     params.set<int>("action", FLD::no_penetration);
     // params.set<Teuchos::RCP< std::set<int> > >("condIDs",condIDs);
-    params.set<POROELAST::Coupltype>("coupling", POROELAST::fluidfluid);
-    params.set<int>("Physical Type", INPAR::FLUID::poro);
+    params.set<PoroElast::Coupltype>("coupling", PoroElast::fluidfluid);
+    params.set<int>("Physical Type", Inpar::FLUID::poro);
 
-    CORE::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
+    Core::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
         0,                                       // fluiddofset for column
         ConstraintMatrix,                        // fluid matrix
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -105,7 +105,7 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
 
     discretization()->evaluate_condition(params, fluidstrategy, "no_penetration");
   }
-  else if (coupltype == POROELAST::fluidstructure)
+  else if (coupltype == PoroElast::fluidstructure)
   {
     discretization()->set_state(0, "velnp", Velnp());
     discretization()->set_state(0, "gridv", GridVel());
@@ -114,13 +114,13 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
 
     // set action for elements
     params.set<int>("action", FLD::no_penetration);
-    params.set<POROELAST::Coupltype>("coupling", POROELAST::fluidstructure);
-    params.set<int>("Physical Type", INPAR::FLUID::poro);
+    params.set<PoroElast::Coupltype>("coupling", PoroElast::fluidstructure);
+    params.set<int>("Physical Type", Inpar::FLUID::poro);
 
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of fluid_field:
     // fluiddofset = 0, structdofset = 1
-    CORE::FE::AssembleStrategy couplstrategy(0,  // fluiddofset for row
+    Core::FE::AssembleStrategy couplstrategy(0,  // fluiddofset for row
         1,                                       // structdofset for column
         ConstraintMatrix,
         struct_vel_constraint_matrix,  // fluid-mechanical matrix
@@ -139,14 +139,14 @@ void ADAPTER::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::MapExtractor> ADAPTER::FluidPoro::VelPresSplitter()
+Teuchos::RCP<Core::LinAlg::MapExtractor> Adapter::FluidPoro::VelPresSplitter()
 {
   return fluidimpl_->VelPresSplitter();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidPoro::Output(const int step, const double time)
+void Adapter::FluidPoro::Output(const int step, const double time)
 {
   // set variables that allow the forced
   // output at this point.

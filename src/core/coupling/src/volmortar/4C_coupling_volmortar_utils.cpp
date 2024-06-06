@@ -18,10 +18,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
-    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, CORE::Elements::Element* ele1,
-    const std::vector<int>& ids_2, Teuchos::RCP<DRT::Discretization> dis1,
-    Teuchos::RCP<DRT::Discretization> dis2)
+void Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
+    const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
+    const std::vector<int>& ids_2, Teuchos::RCP<Discret::Discretization> dis1,
+    Teuchos::RCP<Discret::Discretization> dis2)
 {
   if (ele1 == nullptr) FOUR_C_THROW("ERROR: Got nullptr pointer for AssignMaterial for element!");
 
@@ -29,17 +29,17 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
   if (ids_2.empty()) return;
 
   // default strategy: take material of element with closest center in reference coordinates
-  CORE::Elements::Element* ele2 = nullptr;
+  Core::Elements::Element* ele2 = nullptr;
   double mindistance = 1e10;
   {
-    std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*ele1);
+    std::vector<double> centercoords1 = Core::FE::element_center_refe_coords(*ele1);
 
     for (unsigned i = 0; i < ids_2.size(); ++i)
     {
-      CORE::Elements::Element* actele2 = dis2->gElement(ids_2[i]);
-      std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*actele2);
+      Core::Elements::Element* actele2 = dis2->gElement(ids_2[i]);
+      std::vector<double> centercoords2 = Core::FE::element_center_refe_coords(*actele2);
 
-      CORE::LINALG::Matrix<3, 1> diffcoords(true);
+      Core::LinAlg::Matrix<3, 1> diffcoords(true);
 
       for (int j = 0; j < 3; ++j) diffcoords(j, 0) = centercoords1[j] - centercoords2[j];
 
@@ -61,10 +61,10 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
 /*----------------------------------------------------------------------*
  |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
-    const CORE::VOLMORTAR::VolMortarCoupl* volmortar, CORE::Elements::Element* ele2,
-    const std::vector<int>& ids_1, Teuchos::RCP<DRT::Discretization> dis1,
-    Teuchos::RCP<DRT::Discretization> dis2)
+void Core::VolMortar::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
+    const Core::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
+    const std::vector<int>& ids_1, Teuchos::RCP<Discret::Discretization> dis1,
+    Teuchos::RCP<Discret::Discretization> dis2)
 {
   if (ele2 == nullptr) FOUR_C_THROW("ERROR: Got nullptr pointer for AssignMaterial for element!");
 
@@ -72,17 +72,17 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
   if (ids_1.empty()) return;
 
   // default strategy: take material of element with closest center in reference coordinates
-  CORE::Elements::Element* ele1 = nullptr;
+  Core::Elements::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
-    std::vector<double> centercoords2 = CORE::FE::element_center_refe_coords(*ele2);
+    std::vector<double> centercoords2 = Core::FE::element_center_refe_coords(*ele2);
 
     for (unsigned i = 0; i < ids_1.size(); ++i)
     {
-      CORE::Elements::Element* actele1 = dis1->gElement(ids_1[i]);
-      std::vector<double> centercoords1 = CORE::FE::element_center_refe_coords(*actele1);
+      Core::Elements::Element* actele1 = dis1->gElement(ids_1[i]);
+      std::vector<double> centercoords1 = Core::FE::element_center_refe_coords(*actele1);
 
-      CORE::LINALG::Matrix<3, 1> diffcoords(true);
+      Core::LinAlg::Matrix<3, 1> diffcoords(true);
 
       for (int j = 0; j < 3; ++j) diffcoords(j, 0) = centercoords1[j] - centercoords2[j];
 

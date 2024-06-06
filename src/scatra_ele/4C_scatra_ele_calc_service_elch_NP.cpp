@@ -20,23 +20,23 @@ FOUR_C_NAMESPACE_OPEN
  | validity check with respect to input parameters, degrees of freedom, number of scalars etc. fang
  02/15 |
  *----------------------------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::check_elch_element_parameter(
-    CORE::Elements::Element* ele  //!< current element
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::check_elch_element_parameter(
+    Core::Elements::Element* ele  //!< current element
 )
 {
   // check material
-  if (ele->Material()->MaterialType() != CORE::Materials::m_matlist)
+  if (ele->Material()->MaterialType() != Core::Materials::m_matlist)
     FOUR_C_THROW("Invalid material type!");
 
   // check type of closing equation
   switch (myelch::elchparams_->EquPot())
   {
-    case INPAR::ELCH::equpot_enc:
-    case INPAR::ELCH::equpot_enc_pde:
-    case INPAR::ELCH::equpot_enc_pde_elim:
-    case INPAR::ELCH::equpot_poisson:
-    case INPAR::ELCH::equpot_laplace:
+    case Inpar::ElCh::equpot_enc:
+    case Inpar::ElCh::equpot_enc_pde:
+    case Inpar::ElCh::equpot_enc_pde_elim:
+    case Inpar::ElCh::equpot_poisson:
+    case Inpar::ElCh::equpot_laplace:
     {
       // valid closing equations for electric potential
       break;
@@ -49,8 +49,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::check_elch_element_parameter(
   }
 
   // check stabilization
-  if (my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization and
-      my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_SUPG)
+  if (my::scatrapara_->StabType() != Inpar::ScaTra::stabtype_no_stabilization and
+      my::scatrapara_->StabType() != Inpar::ScaTra::stabtype_SUPG)
     FOUR_C_THROW(
         "Only SUPG-type stabilization available for electrochemistry problems governed by "
         "Nernst-Planck formulation!");
@@ -62,16 +62,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::check_elch_element_parameter(
 /*----------------------------------------------------------------------*
  | evaluate an electrode boundary kinetics point condition   fang 09/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kinetics_point(
-    const CORE::Elements::Element* ele,                        ///< current element
-    CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
-    CORE::LINALG::SerialDenseVector& erhs,                     ///< element right-hand side vector
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kinetics_point(
+    const Core::Elements::Element* ele,                        ///< current element
+    Core::LinAlg::SerialDenseMatrix& emat,                     ///< element matrix
+    Core::LinAlg::SerialDenseVector& erhs,                     ///< element right-hand side vector
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
         ehist,                                       ///< history variables at element nodes
     double timefac,                                  ///< time factor
-    Teuchos::RCP<CORE::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
+    Teuchos::RCP<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
     const int nume,                                  ///< number of transferred electrons
     const std::vector<int> stoich,                   ///< stoichiometry of the reaction
     const int kinetics,                              ///< desired electrode kinetics model
@@ -87,14 +87,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kinetic
   // compute matrix and residual contributions arising from closing equation for electric potential
   switch (myelch::elchparams_->EquPot())
   {
-    case INPAR::ELCH::equpot_enc:
+    case Inpar::ElCh::equpot_enc:
     {
       // do nothing, since no boundary integral present
       break;
     }
 
-    case INPAR::ELCH::equpot_enc_pde:
-    case INPAR::ELCH::equpot_enc_pde_elim:
+    case Inpar::ElCh::equpot_enc_pde:
+    case Inpar::ElCh::equpot_enc_pde_elim:
     {
       for (int k = 0; k < my::numscal_; ++k)
       {
@@ -117,7 +117,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kinetic
 
     // need special treatment for Laplace equation due to missing scaling with inverse of Faraday
     // constant
-    case INPAR::ELCH::equpot_laplace:
+    case Inpar::ElCh::equpot_laplace:
     {
       const double faraday = myelch::elchparams_->Faraday();
       for (int k = 0; k < my::numscal_; ++k)
@@ -141,7 +141,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kinetic
       break;
     }
 
-    case INPAR::ELCH::equpot_poisson:
+    case Inpar::ElCh::equpot_poisson:
     {
       FOUR_C_THROW("Poisson equation combined with electrode boundary conditions not implemented!");
       break;
@@ -155,15 +155,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kinetic
   }  // switch(myelch::elchparams_->EquPot())
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kinetics_point
+}  // Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::evaluate_elch_boundary_kinetics_point
 
 
 /*----------------------------------------------------------------------*
  * Get Conductivity
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::get_conductivity(
-    const enum INPAR::ELCH::EquPot equpot, double& sigma_all, std::vector<double>& sigma,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::get_conductivity(
+    const enum Inpar::ElCh::EquPot equpot, double& sigma_all, std::vector<double>& sigma,
     bool effCond  // the bool effCond is not used for the NP formulation since the volume averaging
                   // is not implemented
 )
@@ -184,7 +184,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::get_conductivity(
     sigma_all += sigma_k;
 
     // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
-    if (equpot == INPAR::ELCH::equpot_enc_pde_elim)
+    if (equpot == Inpar::ElCh::equpot_enc_pde_elim)
     {
       sigma_all += factor * myelch::diff_manager()->GetIsotropicDiff(my::numscal_) *
                    myelch::diff_manager()->GetValence(my::numscal_) *
@@ -193,16 +193,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::get_conductivity(
   }
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::get_conductivity
+}  // Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::get_conductivity
 
 
 /*----------------------------------------------------------------------*
   |  calculate weighted mass flux (no reactive flux so far)     gjb 06/08|
   *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calculate_flux(
-    CORE::LINALG::Matrix<nsd_, 1>& q,        //!< flux of species k
-    const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calculate_flux(
+    Core::LinAlg::Matrix<nsd_, 1>& q,        //!< flux of species k
+    const Inpar::ScaTra::FluxType fluxtype,  //!< type fo flux
     const int k                              //!< index of current scalar
 )
 {
@@ -221,12 +221,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calculate_flux(
   // add different flux contributions as specified by user input
   switch (fluxtype)
   {
-    case INPAR::SCATRA::flux_total:
+    case Inpar::ScaTra::flux_total:
       // convective flux contribution
       q.Update(var_manager()->Phinp(k), var_manager()->ConVel(k));
 
       [[fallthrough]];
-    case INPAR::SCATRA::flux_diffusive:
+    case Inpar::ScaTra::flux_diffusive:
       // diffusive flux contribution
       q.Update(-myelch::diff_manager()->GetIsotropicDiff(k), var_manager()->GradPhi(k), 1.0);
 
@@ -249,15 +249,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::calculate_flux(
 /*---------------------------------------------------------------------*
   |  calculate error compared to analytical solution           gjb 10/08|
   *---------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_solution(
-    const CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    CORE::LINALG::SerialDenseVector& errors)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_solution(
+    const Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Core::LinAlg::SerialDenseVector& errors)
 {
   // at the moment, there is only one analytical test problem available!
 
 
-  if (Teuchos::getIntegralValue<SCATRA::Action>(params, "action") != SCATRA::Action::calc_error)
+  if (Teuchos::getIntegralValue<ScaTra::Action>(params, "action") != ScaTra::Action::calc_error)
     FOUR_C_THROW("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------
@@ -286,14 +286,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_s
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  const CORE::FE::IntPointsAndWeights<nsd_> intpoints(
-      SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_> intpoints(
+      ScaTra::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const INPAR::SCATRA::CalcError errortype =
-      CORE::UTILS::GetAsEnum<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
+  const Inpar::ScaTra::CalcError errortype =
+      Core::UTILS::GetAsEnum<Inpar::ScaTra::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
-    case INPAR::SCATRA::calcerror_Kwok_Wu:
+    case Inpar::ScaTra::calcerror_Kwok_Wu:
     {
       //   References:
       //   Kwok, Yue-Kuen and Wu, Charles C. K.
@@ -309,11 +309,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_s
 
       // working arrays
       double potint(0.0);
-      CORE::LINALG::Matrix<2, 1> conint(true);
-      CORE::LINALG::Matrix<nsd_, 1> xint(true);
-      CORE::LINALG::Matrix<2, 1> c(true);
+      Core::LinAlg::Matrix<2, 1> conint(true);
+      Core::LinAlg::Matrix<nsd_, 1> xint(true);
+      Core::LinAlg::Matrix<2, 1> c(true);
       double deltapot(0.0);
-      CORE::LINALG::Matrix<2, 1> deltacon(true);
+      Core::LinAlg::Matrix<2, 1> deltacon(true);
 
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
@@ -399,7 +399,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_s
       }  // end of loop over integration points
     }    // Kwok and Wu
     break;
-    case INPAR::SCATRA::calcerror_cylinder:
+    case Inpar::ScaTra::calcerror_cylinder:
     {
       // two-ion system with Butler-Volmer kinetics between two concentric cylinders
       //   G. Bauer, V. Gravemeier, W.A. Wall,
@@ -409,10 +409,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_s
       if (my::numscal_ != 2) FOUR_C_THROW("Numscal_ != 2 for desired error calculation.");
 
       // working arrays
-      CORE::LINALG::Matrix<2, 1> conint(true);
-      CORE::LINALG::Matrix<nsd_, 1> xint(true);
-      CORE::LINALG::Matrix<2, 1> c(true);
-      CORE::LINALG::Matrix<2, 1> deltacon(true);
+      Core::LinAlg::Matrix<2, 1> conint(true);
+      Core::LinAlg::Matrix<nsd_, 1> xint(true);
+      Core::LinAlg::Matrix<2, 1> c(true);
+      Core::LinAlg::Matrix<2, 1> deltacon(true);
 
       // some constants that are needed
       const double c0_inner = 0.6147737641011396;
@@ -472,7 +472,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_s
       }  // end of loop over integration points
     }    // concentric cylinders
     break;
-    case INPAR::SCATRA::calcerror_electroneutrality:
+    case Inpar::ScaTra::calcerror_electroneutrality:
     {
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
@@ -505,8 +505,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_analyt_s
 /*------------------------------------------------------------------------------*
  | set internal variables for Nernst-Planck formulation              fang 02/15 |
  *------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::set_internal_variables_for_mat_and_rhs()
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables
   var_manager()->set_internal_variables_elch_np(
@@ -519,25 +519,25 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::set_internal_variables_for_mat
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::line3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::quad4>;
+// template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchNP<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::hex8>;
+// template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::tet10>;
+// template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::pyramid5>;
+// template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

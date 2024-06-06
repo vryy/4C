@@ -14,10 +14,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-CORE::Nodes::FiberNodeType CORE::Nodes::FiberNodeType::instance_;
+Core::Nodes::FiberNodeType Core::Nodes::FiberNodeType::instance_;
 
 
-CORE::COMM::ParObject* CORE::Nodes::FiberNodeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Core::Nodes::FiberNodeType::Create(const std::vector<char>& data)
 {
   std::vector<double> dummy_coords(3, 999.0);
   std::map<CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections;
@@ -28,10 +28,10 @@ CORE::COMM::ParObject* CORE::Nodes::FiberNodeType::Create(const std::vector<char
   return object;
 }
 
-CORE::Nodes::FiberNode::FiberNode(int id, const std::vector<double>& coords,
+Core::Nodes::FiberNode::FiberNode(int id, const std::vector<double>& coords,
     std::map<CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections,
     std::vector<std::array<double, 3>> fibers, std::map<AngleType, double> angles, const int owner)
-    : CORE::Nodes::Node(id, coords, owner),
+    : Core::Nodes::Node(id, coords, owner),
       coordinateSystemDirections_(std::move(coordinateSystemDirections)),
       fibers_(std::move(fibers)),
       angles_(std::move(angles))
@@ -41,9 +41,9 @@ CORE::Nodes::FiberNode::FiberNode(int id, const std::vector<double>& coords,
 /*
   Deep copy the derived class and return pointer to it
 */
-CORE::Nodes::FiberNode* CORE::Nodes::FiberNode::Clone() const
+Core::Nodes::FiberNode* Core::Nodes::FiberNode::Clone() const
 {
-  auto* newfn = new CORE::Nodes::FiberNode(*this);
+  auto* newfn = new Core::Nodes::FiberNode(*this);
 
   return newfn;
 }
@@ -54,21 +54,21 @@ CORE::Nodes::FiberNode* CORE::Nodes::FiberNode::Clone() const
   Pack and Unpack are used to communicate this fiber node
 
 */
-void CORE::Nodes::FiberNode::Pack(CORE::COMM::PackBuffer& data) const
+void Core::Nodes::FiberNode::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  CORE::Nodes::Node::AddtoPack(data, type);
+  Core::Nodes::Node::AddtoPack(data, type);
   // add base class of fiber node
-  CORE::Nodes::Node::Pack(data);
+  Core::Nodes::Node::Pack(data);
 
   // Add fiber data
-  CORE::COMM::ParObject::AddtoPack(data, fibers_);
-  CORE::COMM::ParObject::AddtoPack(data, coordinateSystemDirections_);
-  CORE::COMM::ParObject::AddtoPack(data, angles_);
+  Core::Communication::ParObject::AddtoPack(data, fibers_);
+  Core::Communication::ParObject::AddtoPack(data, coordinateSystemDirections_);
+  Core::Communication::ParObject::AddtoPack(data, angles_);
 }
 
 /*
@@ -76,30 +76,30 @@ void CORE::Nodes::FiberNode::Pack(CORE::COMM::PackBuffer& data) const
 
   Pack and Unpack are used to communicate this fiber node
 */
-void CORE::Nodes::FiberNode::Unpack(const std::vector<char>& data)
+void Core::Nodes::FiberNode::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Node
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  CORE::Nodes::Node::Unpack(basedata);
+  Core::Nodes::Node::Unpack(basedata);
 
   // extract fiber data
-  CORE::COMM::ParObject::ExtractfromPack(position, data, fibers_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, coordinateSystemDirections_);
-  CORE::COMM::ParObject::ExtractfromPack(position, data, angles_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, fibers_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, coordinateSystemDirections_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, angles_);
 }
 
 /*
   Print this fiber node
 */
-void CORE::Nodes::FiberNode::Print(std::ostream& os) const
+void Core::Nodes::FiberNode::Print(std::ostream& os) const
 {
   os << "Fiber Node :";
-  CORE::Nodes::Node::Print(os);
+  Core::Nodes::Node::Print(os);
   os << "(" << fibers_.size() << " fibers, " << angles_.size() << " angles)";
 }
 

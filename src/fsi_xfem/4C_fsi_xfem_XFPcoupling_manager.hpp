@@ -22,7 +22,7 @@ namespace FLD
   class XFluid;
 }
 
-namespace POROELAST
+namespace PoroElast
 {
   class PoroBase;
 }
@@ -37,7 +37,7 @@ namespace XFEM
    public:
     /// constructor
     explicit XfpCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
-        Teuchos::RCP<POROELAST::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid,
+        Teuchos::RCP<PoroElast::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid,
         std::vector<int> idx);
 
     //! @name Destruction
@@ -53,19 +53,19 @@ namespace XFEM
     void SetCouplingStates() override;
 
     void AddCouplingMatrix(
-        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling) override;
+        Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling) override;
 
-    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me,
+    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me,
         double scaling) override;
 
     //! Update (Perform after Each Timestep)
     void Update(double scaling) override;
 
     //! Write Output (For restart or write results on the interface)
-    void Output(CORE::IO::DiscretizationWriter& writer) override;
+    void Output(Core::IO::DiscretizationWriter& writer) override;
 
     //! Read Restart (For lambda_)
-    void read_restart(CORE::IO::DiscretizationReader& reader) override;
+    void read_restart(Core::IO::DiscretizationReader& reader) override;
 
    private:
     //! Get Timeface on the interface (for OST this is 1/(theta dt))
@@ -78,7 +78,7 @@ namespace XFEM
     Teuchos::RCP<MeshCouplingFPI> mcfpi_pf_ps_;
     Teuchos::RCP<MeshCouplingFPI> mcfpi_pf_pf_;
 
-    Teuchos::RCP<POROELAST::PoroBase> poro_;
+    Teuchos::RCP<PoroElast::PoroBase> poro_;
     Teuchos::RCP<FLD::XFluid> xfluid_;
 
     std::string cond_name_ps_ps_;

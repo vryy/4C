@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace POROMULTIPHASESCATRA
+namespace PoroMultiPhaseScaTra
 {
   class PoroMultiPhaseScaTraArtCouplBase;
 }
@@ -44,12 +44,12 @@ namespace POROFLUIDMULTIPHASE
     void Output() override;
 
     //! Initialize the linear solver
-    void initialize_linear_solver(Teuchos::RCP<CORE::LINALG::Solver> solver) override;
+    void initialize_linear_solver(Teuchos::RCP<Core::LinAlg::Solver> solver) override;
 
     //! solve linear system of equations
-    void linear_solve(Teuchos::RCP<CORE::LINALG::Solver> solver,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
-        Teuchos::RCP<Epetra_Vector> residual, CORE::LINALG::SolverParams& solver_params) override;
+    void linear_solve(Teuchos::RCP<Core::LinAlg::Solver> solver,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
+        Teuchos::RCP<Epetra_Vector> residual, Core::LinAlg::SolverParams& solver_params) override;
 
     //! calculate norms for convergence checks
     void CalculateNorms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
@@ -69,7 +69,7 @@ namespace POROFLUIDMULTIPHASE
         const Teuchos::RCP<const Epetra_Vector> inc) override;
 
     // return arterial network time integrator
-    Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt() override { return artnettimint_; }
+    Teuchos::RCP<Adapter::ArtNet> ArtNetTimInt() override { return artnettimint_; }
 
     //! access dof row map
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
@@ -78,7 +78,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const override;
 
     //! access to block system matrix of artery poro problem
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     //! get global (combined) increment of coupled problem
     Teuchos::RCP<const Epetra_Vector> CombinedIncrement(
@@ -101,16 +101,16 @@ namespace POROFLUIDMULTIPHASE
 
    protected:
     //! artery time integration
-    Teuchos::RCP<ADAPTER::ArtNet> artnettimint_;
+    Teuchos::RCP<Adapter::ArtNet> artnettimint_;
 
     //! artery discretization
-    Teuchos::RCP<DRT::Discretization> arterydis_;
+    Teuchos::RCP<Discret::Discretization> arterydis_;
 
     //! the mesh tying object
-    Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase> arttoporofluidcoupling_;
+    Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase> arttoporofluidcoupling_;
 
     //! block systemmatrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> comb_systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> comb_systemmatrix_;
 
     //! global rhs
     Teuchos::RCP<Epetra_Vector> rhs_;

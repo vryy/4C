@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 template <typename T>
 MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExponentialActive(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : RemodelFiberMaterial<T>(matdata),
       passive_params_{matdata->Get<double>("K1"), matdata->Get<double>("K2"),
           matdata->Get<bool>("COMPRESSION")},

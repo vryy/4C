@@ -31,18 +31,18 @@ the function value as well)
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
 }
 
-namespace DRT
+namespace Discret
 {
-  namespace NURBS
+  namespace Nurbs
   {
     /*----------------------------------------------------------------------*/
     /*!
@@ -57,14 +57,14 @@ namespace DRT
 
     \date 08/11
     */
-    void apply_nurbs_initial_condition(DRT::Discretization& dis,
+    void apply_nurbs_initial_condition(Discret::Discretization& dis,
         const Teuchos::ParameterList& solverparams,
-        const CORE::UTILS::FunctionOfSpaceTime& start_function,
+        const Core::UTILS::FunctionOfSpaceTime& start_function,
         Teuchos::RCP<Epetra_Vector> initialvals);
 
-  }  // namespace NURBS
+  }  // namespace Nurbs
 
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

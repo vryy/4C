@@ -20,13 +20,13 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------------------------------*
  * Create nodal dofset sets within the parallel cut framework
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
-    bool include_inner, const DRT::Discretization& dis)
+void Core::Geo::Cut::ParentIntersection::CreateNodalDofSet(
+    bool include_inner, const Discret::Discretization& dis)
 {
   dis.Comm().Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- CreateNodalDofSet");
+      "Core::Geo::CUT --- 5/6 --- cut_positions_dofsets --- CreateNodalDofSet");
 
 
   std::set<int> eids;  // eids of elements that are involved in CUT and include
@@ -34,7 +34,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
 
   Mesh& m = NormalMesh();
 
-  const INPAR::CUT::NodalDofSetStrategy strategy = options_.get_nodal_dof_set_strategy();
+  const Inpar::Cut::NodalDofSetStrategy strategy = options_.get_nodal_dof_set_strategy();
 
   // nodes used for CUT std::map<node->ID, Node>, shadow nodes have ID<0
   std::map<int, Node*> nodes;
@@ -65,17 +65,17 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
     // get all adjacent elements to this node if this is a real (- not a shadow -) node
     if (n_gid >= 0)
     {
-      CORE::Nodes::Node* node = dis.gNode(n_gid);
+      Core::Nodes::Node* node = dis.gNode(n_gid);
 
       // get adjacent elements for this node
-      const CORE::Elements::Element* const* adjelements = node->Elements();
+      const Core::Elements::Element* const* adjelements = node->Elements();
 
       for (int iele = 0; iele < node->NumElement(); iele++)
       {
         int adj_eid = adjelements[iele]->Id();
 
         // get its elementhandle
-        CORE::GEO::CUT::ElementHandle* e = GetElement(adj_eid);
+        Core::Geo::Cut::ElementHandle* e = GetElement(adj_eid);
 
         if (e != nullptr)
         {
@@ -136,13 +136,13 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
       n->SortNodalDofSets();
 
 
-      if (strategy == INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition)
+      if (strategy == Inpar::Cut::NDS_Strategy_OneDofset_PerNodeAndPosition)
       {
         /* combine the (ghost and standard) dofsets for this node w.r.t each phase to avoid
          * multiple ghost nodal dofsets for a certain phase */
         n->CollectNodalDofSets(true);
       }  // otherwise do nothing
-      else if (strategy == INPAR::CUT::NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition)
+      else if (strategy == Inpar::Cut::NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition)
       {
         /* combine the only the ghost dofsets for this node w.r.t each phase to avoid
          * multiple ghost nodal dofsets for a certain phase */
@@ -159,14 +159,14 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
   //===============
   for (std::set<int>::iterator i = eids.begin(); i != eids.end(); i++)
   {
-    TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- STEP 2");
+    TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 5/6 --- cut_positions_dofsets --- STEP 2");
 
 
     int eid = *i;
 
     // get the nodes of this element
     // get the element via discret
-    CORE::Elements::Element* e = dis.gElement(eid);
+    Core::Elements::Element* e = dis.gElement(eid);
 
     if (e == nullptr) FOUR_C_THROW(" element not found, this should not be! ");
 
@@ -216,21 +216,21 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
 /*--------------------------------------------------------------------------------------*
  | fill parallel DofSetData with information that has to be communicated   schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::fill_parallel_dof_set_data(
-    std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData, const DRT::Discretization& dis,
+void Core::Geo::Cut::ParentIntersection::fill_parallel_dof_set_data(
+    std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData, const Discret::Discretization& dis,
     bool include_inner)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- fill_parallel_dof_set_data");
+      "Core::Geo::CUT --- 5/6 --- cut_positions_dofsets --- fill_parallel_dof_set_data");
 
   // find volumecell sets and non-row nodes for that dofset numbers has to be communicated parallel
   // the communication is done element wise for all its sets of volumecells when there is a non-row
   // node in this element
   for (int k = 0; k < dis.NumMyColElements(); ++k)
   {
-    CORE::Elements::Element* ele = dis.lColElement(k);
+    Core::Elements::Element* ele = dis.lColElement(k);
     int eid = ele->Id();
-    CORE::GEO::CUT::ElementHandle* e = GetElement(eid);
+    Core::Geo::Cut::ElementHandle* e = GetElement(eid);
 
     if (e != nullptr)
     {
@@ -308,7 +308,7 @@ void CORE::GEO::CUT::ParentIntersection::fill_parallel_dof_set_data(
 /*--------------------------------------------------------------------------------------*
  | create parallel DofSetData for a volumecell that has to be communicated schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::create_parallel_dof_set_data_vc(
+void Core::Geo::Cut::ParentIntersection::create_parallel_dof_set_data_vc(
     std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData, int eid, int set_index, bool inside,
     VolumeCell* cell, std::map<int, int>& node_dofset_map)
 {
@@ -336,14 +336,14 @@ void CORE::GEO::CUT::ParentIntersection::create_parallel_dof_set_data_vc(
       }
     }
 
-    CORE::LINALG::Matrix<3, 1> coords(true);
+    Core::LinAlg::Matrix<3, 1> coords(true);
 
-    std::vector<CORE::LINALG::Matrix<3, 1>> cut_points_coords(cut_points.size(), coords);
+    std::vector<Core::LinAlg::Matrix<3, 1>> cut_points_coords(cut_points.size(), coords);
 
     for (plain_point_set::iterator p = cut_points.begin(); p != cut_points.end(); ++p)
     {
       const int idx = std::distance(cut_points.begin(), p);
-      CORE::LINALG::Matrix<3, 1>& xyz = cut_points_coords[idx];
+      Core::LinAlg::Matrix<3, 1>& xyz = cut_points_coords[idx];
 
       std::copy((*p)->X(), (*p)->X() + 3, &xyz(0, 0));
     }
@@ -364,7 +364,7 @@ void CORE::GEO::CUT::ParentIntersection::create_parallel_dof_set_data_vc(
 /*--------------------------------------------------------------------------------------*
  | find cell sets around each node (especially for quadratic elements)     schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::FindNodalCellSets(bool include_inner, std::set<int>& eids,
+void Core::Geo::Cut::ParentIntersection::FindNodalCellSets(bool include_inner, std::set<int>& eids,
     std::vector<int>& sourrounding_elements,
     std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets_inside,
     std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets_outside,
@@ -373,7 +373,7 @@ void CORE::GEO::CUT::ParentIntersection::FindNodalCellSets(bool include_inner, s
     std::vector<plain_volumecell_set>& cell_sets)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- FindNodalCellSets");
+      "Core::Geo::CUT --- 5/6 --- cut_positions_dofsets --- FindNodalCellSets");
 
   for (std::vector<int>::iterator i = sourrounding_elements.begin();
        i != sourrounding_elements.end(); ++i)
@@ -429,8 +429,8 @@ void CORE::GEO::CUT::ParentIntersection::FindNodalCellSets(bool include_inner, s
 /*--------------------------------------------------------------------------------------*
  | connect sets of volumecells for neighboring elements around a node      schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>& nodes,
-    bool include_inner, const DRT::Discretization& dis,
+void Core::Geo::Cut::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>& nodes,
+    bool include_inner, const Discret::Discretization& dis,
     const std::vector<plain_volumecell_set>&
         connected_vc_sets,  // connections of volumecells within one element connected via
                             // subelements
@@ -438,7 +438,7 @@ void CORE::GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>&
     std::vector<std::map<int, int>>& vcsets_nid_dofsetnumber_map_toComm)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- ConnectNodalDOFSets");
+      "Core::Geo::CUT --- 5/6 --- cut_positions_dofsets --- ConnectNodalDOFSets");
 
 
   for (std::vector<plain_volumecell_set>::const_iterator s =
@@ -469,7 +469,7 @@ void CORE::GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>&
 
         if (nid >= 0)
         {
-          CORE::Nodes::Node* drt_node = dis.gNode(nid);
+          Core::Nodes::Node* drt_node = dis.gNode(nid);
 
           // decide if the information for this cell has to be ordered from row-node or not
           // REMARK:
@@ -509,13 +509,13 @@ void CORE::GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>&
  * standard Cut routine for parallel XFSI, XFLUIDFLUID and Level set cut where dofsets and        *
  * node positions have to be parallelized                                            schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
-    INPAR::CUT::VCellGaussPts VCellgausstype, INPAR::CUT::BCellGaussPts BCellgausstype,
+void Core::Geo::Cut::ParentIntersection::Cut_Finalize(bool include_inner,
+    Inpar::Cut::VCellGaussPts VCellgausstype, Inpar::Cut::BCellGaussPts BCellgausstype,
     bool tetcellsonly, bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 6/6 --- Cut_Finalize");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 6/6 --- Cut_Finalize");
 
-  if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\t * 6/6 Cut_Finalize ...\t";
+  if (myrank_ == 0 and screenoutput) Core::IO::cout << "\t * 6/6 Cut_Finalize ...\t";
 
   //  const double t_start = Teuchos::Time::wallTime();
 
@@ -523,7 +523,7 @@ void CORE::GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
 
   Mesh& m = NormalMesh();
 
-  if (VCellgausstype == INPAR::CUT::VCellGaussPts_Tessellation)
+  if (VCellgausstype == Inpar::Cut::VCellGaussPts_Tessellation)
   {
     TEUCHOS_FUNC_TIME_MONITOR("XFEM::FluidWizard::Cut::Tessellation");
     m.create_integration_cells(
@@ -532,17 +532,17 @@ void CORE::GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
 
     // Test:
     m.TestElementVolume(true, VCellgausstype);
-    if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\n\t *     TestElementVolume ...";
+    if (myrank_ == 0 and screenoutput) Core::IO::cout << "\n\t *     TestElementVolume ...";
     m.TestFacetArea();
-    if (myrank_ == 0 and screenoutput) CORE::IO::cout << "\n\t *     TestFacetArea ...";
+    if (myrank_ == 0 and screenoutput) Core::IO::cout << "\n\t *     TestFacetArea ...";
   }
-  else if (VCellgausstype == INPAR::CUT::VCellGaussPts_MomentFitting)
+  else if (VCellgausstype == Inpar::Cut::VCellGaussPts_MomentFitting)
   {
     TEUCHOS_FUNC_TIME_MONITOR("XFEM::FluidWizard::Cut::MomentFitting");
     m.moment_fit_gauss_weights(include_inner, BCellgausstype);
     m.TestFacetArea();
   }
-  else if (VCellgausstype == INPAR::CUT::VCellGaussPts_DirectDivergence)
+  else if (VCellgausstype == Inpar::Cut::VCellGaussPts_DirectDivergence)
   {
     TEUCHOS_FUNC_TIME_MONITOR("XFEM::FluidWizard::Cut::DirectDivergence");
 
@@ -555,7 +555,7 @@ void CORE::GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
 /*--------------------------------------------------------------------------------------*
  * get the node based on node id
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Node* CORE::GEO::CUT::ParentIntersection::GetNode(int nid) const
+Core::Geo::Cut::Node* Core::Geo::Cut::ParentIntersection::GetNode(int nid) const
 {
   return mesh_.GetNode(nid);
 }
@@ -563,7 +563,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::ParentIntersection::GetNode(int nid) const
 /*--------------------------------------------------------------------------------------*
  * get the mesh's side based on node ids and return the side
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::ParentIntersection::get_side(
+Core::Geo::Cut::SideHandle* Core::Geo::Cut::ParentIntersection::get_side(
     std::vector<int>& nodeids) const
 {
   return mesh_.get_side(nodeids);
@@ -572,7 +572,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::ParentIntersection::get_side(
 /*--------------------------------------------------------------------------------------*
  * get the mesh's side based on side id and return the sidehandle
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::ParentIntersection::get_side(int sid) const
+Core::Geo::Cut::SideHandle* Core::Geo::Cut::ParentIntersection::get_side(int sid) const
 {
   return mesh_.get_side(sid);
 }
@@ -580,7 +580,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::ParentIntersection::get_side(int sid
 /*--------------------------------------------------------------------------------------*
  * get the mesh's element based on element id
  *-------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::ParentIntersection::GetElement(int eid) const
+Core::Geo::Cut::ElementHandle* Core::Geo::Cut::ParentIntersection::GetElement(int eid) const
 {
   return mesh_.GetElement(eid);
 }
@@ -588,17 +588,17 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::ParentIntersection::GetElement(in
 /*--------------------------------------------------------------------------------------*
  * print cell statistics
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::print_cell_stats() { NormalMesh().print_cell_stats(); }
+void Core::Geo::Cut::ParentIntersection::print_cell_stats() { NormalMesh().print_cell_stats(); }
 
 /*--------------------------------------------------------------------------------------*
  * write gmsh debug output for nodal cell sets
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::dump_gmsh_nodal_cell_set(
+void Core::Geo::Cut::ParentIntersection::dump_gmsh_nodal_cell_set(
     std::map<Node*, std::vector<plain_volumecell_set>>& nodal_cell_sets,
-    const DRT::Discretization& dis)
+    const Discret::Discretization& dis)
 {
   std::string filename =
-      "cut_test";  // ::GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+      "cut_test";  // ::Global::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << filename << "CUT_NodalCellSet." << dis.Comm().MyPID() << ".pos";
 
@@ -671,11 +671,11 @@ void CORE::GEO::CUT::ParentIntersection::dump_gmsh_nodal_cell_set(
 /*--------------------------------------------------------------------------------------*
  * write gmsh debug output for CellSets
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::DumpGmshCellSets(
-    std::vector<plain_volumecell_set>& cell_sets, const DRT::Discretization& dis)
+void Core::Geo::Cut::ParentIntersection::DumpGmshCellSets(
+    std::vector<plain_volumecell_set>& cell_sets, const Discret::Discretization& dis)
 {
   std::string filename =
-      "cut_test";  // ::GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+      "cut_test";  // ::Global::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
   str << filename << "CUT_CellSets." << dis.Comm().MyPID() << ".pos";
 
@@ -721,8 +721,8 @@ void CORE::GEO::CUT::ParentIntersection::DumpGmshCellSets(
 /*--------------------------------------------------------------------------------------*
  * write gmsh cut output for number of dofsets and the connected vc sets
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::dump_gmsh_num_dof_sets(
-    std::string filename, bool include_inner, const DRT::Discretization& dis)
+void Core::Geo::Cut::ParentIntersection::dump_gmsh_num_dof_sets(
+    std::string filename, bool include_inner, const Discret::Discretization& dis)
 {
   std::stringstream str;
   str << filename << ".CUT_NumDOFSets." << dis.Comm().MyPID() << ".pos";
@@ -749,7 +749,7 @@ void CORE::GEO::CUT::ParentIntersection::dump_gmsh_num_dof_sets(
   for (int lid = 0; lid < num_row_ele;
        lid++)  // std::set<int>::iterator i= eids.begin(); i!= eids.end(); i++)
   {
-    CORE::Elements::Element* e = dis.lRowElement(lid);
+    Core::Elements::Element* e = dis.lRowElement(lid);
     int eid = e->Id();
 
     ElementHandle* eh = GetElement(eid);
@@ -883,7 +883,7 @@ void CORE::GEO::CUT::ParentIntersection::dump_gmsh_num_dof_sets(
 /*--------------------------------------------------------------------------------------*
  * write gmsh output for volumecells
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::dump_gmsh_volume_cells(
+void Core::Geo::Cut::ParentIntersection::dump_gmsh_volume_cells(
     std::string name, bool include_inner)
 {
   NormalMesh().dump_gmsh_volume_cells(name, include_inner);
@@ -892,7 +892,7 @@ void CORE::GEO::CUT::ParentIntersection::dump_gmsh_volume_cells(
 /*--------------------------------------------------------------------------------------*
  * write gmsh output for volumecells
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::dump_gmsh_integration_cells(std::string name)
+void Core::Geo::Cut::ParentIntersection::dump_gmsh_integration_cells(std::string name)
 {
   NormalMesh().dump_gmsh_integration_cells(name);
 }
@@ -900,7 +900,7 @@ void CORE::GEO::CUT::ParentIntersection::dump_gmsh_integration_cells(std::string
 /*--------------------------------------------------------------------------------------*
  * write gmsh output for volumecells
  *-------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ParentIntersection::dump_gmsh_volume_cells(std::string name)
+void Core::Geo::Cut::ParentIntersection::dump_gmsh_volume_cells(std::string name)
 {
   NormalMesh().dump_gmsh_volume_cells(name);
 }

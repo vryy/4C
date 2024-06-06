@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> actdis,
-    const CORE::Conditions::Condition* condition, Teuchos::ParameterList& params)
+void Arteries::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<Discret::Discretization> actdis,
+    const Core::Conditions::Condition* condition, Teuchos::ParameterList& params)
 {
   // define BC name std::string (e.g: BC   = "flow")
   std::string BC;
@@ -83,8 +83,8 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
       // If forced curve exists => Rf = curve
       if (curve[1] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[1])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[1])
                        .Evaluate(time);
         Rf = vals[1] * curvefac;
       }
@@ -111,7 +111,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     if (curve[0] >= 0)
     {
       curvefac =
-          GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curve[0]).Evaluate(
+          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve[0]).Evaluate(
               time);
       BCin = vals[0] * curvefac;
     }
@@ -523,7 +523,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
   params.set<double>("forward characteristic wave speed", Wfnp);
   params.set<double>("backward characteristic wave speed", Wbnp);
 
-}  // void ART::UTILS::SolvePrescribedTerminalBC
+}  // void Arteries::UTILS::SolvePrescribedTerminalBC
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -537,8 +537,8 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdis,
-    const CORE::Conditions::Condition* condition, Teuchos::ParameterList& params)
+void Arteries::UTILS::SolveReflectiveTerminal(Teuchos::RCP<Discret::Discretization> actdis,
+    const Core::Conditions::Condition* condition, Teuchos::ParameterList& params)
 {
   // Define the reflection cooficient
   double Rf;
@@ -555,7 +555,7 @@ void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdi
   {
     double time = params.get<double>("total time");
     curvefac =
-        GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfTime>(curve[0]).Evaluate(
+        Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfTime>(curve[0]).Evaluate(
             time);
     Rf = vals[0] * curvefac;
   }
@@ -591,7 +591,7 @@ void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdi
   params.set<double>("forward characteristic wave speed", Wfnp);
   params.set<double>("backward characteristic wave speed", Wbnp);
 
-}  // void ART::UTILS::SolveReflectiveTerminal
+}  // void Arteries::UTILS::SolveReflectiveTerminal
 
 
 
@@ -614,8 +614,8 @@ void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdi
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
-    const CORE::Conditions::Condition* condition, Teuchos::ParameterList& params)
+void Arteries::UTILS::SolveExplWindkesselBC(Teuchos::RCP<Discret::Discretization> actdis,
+    const Core::Conditions::Condition* condition, Teuchos::ParameterList& params)
 {
   // define BC windkessel inigration type std::string (e.g: BC   = "flow")
   std::string int_type = (condition->parameters().Get<std::string>("intigrationType"));
@@ -664,8 +664,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the reflection value
       if (curve[1] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[0])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
                        .Evaluate(time);
         R = vals[1] * curvefac;
       }
@@ -682,8 +682,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
 
       if (curve[0] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[0])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
                        .Evaluate(time);
         Pout = vals[0] * curvefac;
       }
@@ -739,8 +739,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the periferal pressure of the wind kessel model
       if (curve[0] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[0])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
                        .Evaluate(time);
         //        Pout = vals[0]*curvefac;
       }
@@ -751,8 +751,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the resistance value
       if (curve[1] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[1])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[1])
                        .Evaluate(time);
         R = vals[1] * curvefac;
       }
@@ -763,8 +763,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the capacitance value
       if (curve[2] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[2])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[2])
                        .Evaluate(time);
         C = vals[2] * curvefac;
       }
@@ -799,12 +799,12 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the periferal pressure of the windkessel model
       if (curve[0] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[0])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
                        .Evaluate(time);
         //        Pout = vals[0]*curvefac;
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[0])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
                        .Evaluate(time - dt);
       }
       else
@@ -819,8 +819,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
           t = time;
         else
           t = time - dt;
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[0])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
                        .Evaluate(t);
         Poutnm = vals[0] * curvefac;
       }
@@ -831,8 +831,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the source resistance value
       if (curve[1] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[1])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[1])
                        .Evaluate(time);
         R1 = vals[1] * curvefac;
       }
@@ -843,8 +843,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the capacitance value
       if (curve[2] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[2])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[2])
                        .Evaluate(time);
         C = vals[2] * curvefac;
       }
@@ -855,8 +855,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the periferal resistance value
       if (curve[3] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[3])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[3])
                        .Evaluate(time);
         R2 = vals[3] * curvefac;
       }
@@ -935,8 +935,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the periferal pressure of the wind kessel model
       if (curve[0] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[0])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[0])
                        .Evaluate(time);
         //        Pout = vals[0]*curvefac;
       }
@@ -947,8 +947,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the source resistance value
       if (curve[1] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[1])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[1])
                        .Evaluate(time);
         R1 = vals[1] * curvefac;
       }
@@ -959,8 +959,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the capacitance value
       if (curve[2] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[2])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[2])
                        .Evaluate(time);
         C = vals[2] * curvefac;
       }
@@ -971,8 +971,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the periferal resistance value
       if (curve[3] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[3])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[3])
                        .Evaluate(time);
         R2 = vals[3] * curvefac;
       }
@@ -983,8 +983,8 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the inductance value
       if (curve[4] >= 0)
       {
-        curvefac = GLOBAL::Problem::Instance()
-                       ->FunctionById<CORE::UTILS::FunctionOfTime>(curve[4])
+        curvefac = Global::Problem::Instance()
+                       ->FunctionById<Core::UTILS::FunctionOfTime>(curve[4])
                        .Evaluate(time);
         L = vals[4] * curvefac;
       }
@@ -1023,6 +1023,6 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
     exit(1);
   }
 
-}  // void ART::UTILS::SolveExplWindkesselBC
+}  // void Arteries::UTILS::SolveExplWindkesselBC
 
 FOUR_C_NAMESPACE_CLOSE

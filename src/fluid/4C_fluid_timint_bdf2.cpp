@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntBDF2::TimIntBDF2(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+FLD::TimIntBDF2::TimIntBDF2(const Teuchos::RCP<Discret::Discretization>& actdis,
+    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid), theta_(1.0)
 {
   return;
@@ -175,7 +175,7 @@ void FLD::TimIntBDF2::OutputofFilteredVel(
   row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
 
   // get fine scale velocity
-  if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
+  if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
     Sep_->Multiply(false, *velnp_, *row_finescaleveltmp);
   else
     FOUR_C_THROW("Unknown separation type!");

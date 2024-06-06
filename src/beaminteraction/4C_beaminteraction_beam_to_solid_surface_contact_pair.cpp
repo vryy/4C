@@ -45,9 +45,9 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, beam,
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, beam,
-    surface>::EvaluateAndAssemble(const Teuchos::RCP<const DRT::Discretization>& discret,
+    surface>::EvaluateAndAssemble(const Teuchos::RCP<const Discret::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair.
@@ -59,20 +59,20 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
   if (n_segments == 0) return;
 
   // Get beam cross-section diameter.
-  auto beam_ptr = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(this->Element1());
+  auto beam_ptr = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->Element1());
   const double beam_cross_section_radius =
       beam_ptr->get_circular_cross_section_radius_for_interactions();
 
   // Initialize variables for contact kinematics.
-  CORE::LINALG::Matrix<3, 1, scalar_type> dr_beam_ref;
-  CORE::LINALG::Matrix<3, 1, scalar_type> surface_normal;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_beam;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_rel;
-  CORE::LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, scalar_type> N_beam;
-  CORE::LINALG::Matrix<1, surface::n_nodes_ * surface::n_val_, scalar_type> N_surface;
-  CORE::LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> gap_variation_times_normal;
-  CORE::LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> pair_force_vector;
+  Core::LinAlg::Matrix<3, 1, scalar_type> dr_beam_ref;
+  Core::LinAlg::Matrix<3, 1, scalar_type> surface_normal;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_beam;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_surface;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_rel;
+  Core::LinAlg::Matrix<1, beam::n_nodes_ * beam::n_val_, scalar_type> N_beam;
+  Core::LinAlg::Matrix<1, surface::n_nodes_ * surface::n_val_, scalar_type> N_surface;
+  Core::LinAlg::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> gap_variation_times_normal;
+  Core::LinAlg::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> pair_force_vector;
   scalar_type gap = 0.0;
   scalar_type segment_jacobian = 0.0;
   scalar_type beam_segmentation_factor = 0.0;
@@ -102,7 +102,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(eta, this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = CORE::FADUTILS::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
+      segment_jacobian = Core::FADUtils::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
 
       // Get the surface normal vector.
       GEOMETRYPAIR::EvaluateSurfaceNormal<surface>(
@@ -156,7 +156,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
   {
     std::vector<double> force_pair_double(pair_gid.size(), 0.0);
     for (unsigned int j_dof = 0; j_dof < pair_force_vector.numRows(); j_dof++)
-      force_pair_double[j_dof] = CORE::FADUTILS::CastToDouble(pair_force_vector(j_dof));
+      force_pair_double[j_dof] = Core::FADUtils::CastToDouble(pair_force_vector(j_dof));
     force_vector->SumIntoGlobalValues(pair_gid.size(), pair_gid.data(), force_pair_double.data());
   }
 
@@ -165,7 +165,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
     for (unsigned int i_dof = 0; i_dof < pair_force_vector.numRows(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
         stiffness_matrix->FEAssemble(
-            CORE::FADUTILS::CastToDouble(pair_force_vector(i_dof).dx(j_dof)), pair_gid[i_dof],
+            Core::FADUtils::CastToDouble(pair_force_vector(i_dof).dx(j_dof)), pair_gid[i_dof],
             pair_gid[j_dof]);
 }
 
@@ -186,9 +186,9 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
-    surface>::EvaluateAndAssemble(const Teuchos::RCP<const DRT::Discretization>& discret,
+    surface>::EvaluateAndAssemble(const Teuchos::RCP<const Discret::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair.
@@ -200,16 +200,16 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
   if (n_segments == 0) return;
 
   // Get beam cross-section diameter.
-  auto beam_ptr = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(this->Element1());
+  auto beam_ptr = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->Element1());
   const double beam_cross_section_radius =
       beam_ptr->get_circular_cross_section_radius_for_interactions();
 
   // Initialize variables for contact kinematics.
-  CORE::LINALG::Matrix<3, 1, scalar_type> dr_beam_ref;
-  CORE::LINALG::Matrix<3, 1, scalar_type> surface_normal;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_beam;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_rel;
+  Core::LinAlg::Matrix<3, 1, scalar_type> dr_beam_ref;
+  Core::LinAlg::Matrix<3, 1, scalar_type> surface_normal;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_beam;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_surface;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_rel;
   scalar_type potential = 0.0;
   scalar_type gap = 0.0;
   scalar_type segment_jacobian = 0.0;
@@ -240,7 +240,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(eta, this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = CORE::FADUTILS::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
+      segment_jacobian = Core::FADUtils::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
 
       // Get the surface normal vector.
       GEOMETRYPAIR::EvaluateSurfaceNormal<surface>(
@@ -267,7 +267,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
   {
     std::vector<double> force_pair_double(pair_gid.size(), 0.0);
     for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
-      force_pair_double[j_dof] = CORE::FADUTILS::CastToDouble(potential.dx(j_dof));
+      force_pair_double[j_dof] = Core::FADUtils::CastToDouble(potential.dx(j_dof));
     force_vector->SumIntoGlobalValues(pair_gid.size(), pair_gid.data(), force_pair_double.data());
   }
 
@@ -275,7 +275,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < pair_gid.size(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
-        stiffness_matrix->FEAssemble(CORE::FADUTILS::CastToDouble(potential.dx(i_dof).dx(j_dof)),
+        stiffness_matrix->FEAssemble(Core::FADUtils::CastToDouble(potential.dx(i_dof).dx(j_dof)),
             pair_gid[i_dof], pair_gid[j_dof]);
 }
 

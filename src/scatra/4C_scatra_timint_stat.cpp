@@ -23,10 +23,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
  *----------------------------------------------------------------------*/
-SCATRA::TimIntStationary::TimIntStationary(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::TimIntStationary::TimIntStationary(Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output), fsphinp_(Teuchos::null)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
@@ -38,7 +38,7 @@ SCATRA::TimIntStationary::TimIntStationary(Teuchos::RCP<DRT::Discretization> act
 /*----------------------------------------------------------------------*
  |  initialize time integration                         rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::Init()
+void ScaTra::TimIntStationary::Init()
 {
   // initialize base class
   ScaTraTimIntImpl::Init();
@@ -51,9 +51,9 @@ void SCATRA::TimIntStationary::Init()
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // fine-scale vector
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
-    fsphinp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
-  if (turbmodel_ != INPAR::FLUID::no_model) FOUR_C_THROW("Turbulence is not stationary problem!");
+  if (fssgd_ != Inpar::ScaTra::fssugrdiff_no)
+    fsphinp_ = Core::LinAlg::CreateVector(*dofrowmap, true);
+  if (turbmodel_ != Inpar::FLUID::no_model) FOUR_C_THROW("Turbulence is not stationary problem!");
 
   // -------------------------------------------------------------------
   // set element parameters
@@ -69,7 +69,7 @@ void SCATRA::TimIntStationary::Init()
   prepare_krylov_projection();
 
   // safety check
-  if (static_cast<bool>(CORE::UTILS::IntegralValue<int>(*params_, "NATURAL_CONVECTION")))
+  if (static_cast<bool>(Core::UTILS::IntegralValue<int>(*params_, "NATURAL_CONVECTION")))
     FOUR_C_THROW("Natural convection for stationary time integration scheme is not implemented!");
 }
 
@@ -78,12 +78,12 @@ void SCATRA::TimIntStationary::Init()
 /*----------------------------------------------------------------------*
  | set time parameter for element evaluation (usual call)    ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::set_element_time_parameter(bool forcedincrementalsolver) const
+void ScaTra::TimIntStationary::set_element_time_parameter(bool forcedincrementalsolver) const
 {
   Teuchos::ParameterList eleparams;
 
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::set_time_parameter, eleparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", true);
   if (!forcedincrementalsolver)
@@ -103,7 +103,7 @@ void SCATRA::TimIntStationary::set_element_time_parameter(bool forcedincremental
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::Setup()
+void ScaTra::TimIntStationary::Setup()
 {
   // setup base class
   ScaTraTimIntImpl::Setup();
@@ -114,7 +114,7 @@ void SCATRA::TimIntStationary::Setup()
 /*----------------------------------------------------------------------*
  | set time for evaluation of Neumann boundary conditions      vg 12/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
+void ScaTra::TimIntStationary::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
 }
@@ -124,7 +124,7 @@ void SCATRA::TimIntStationary::set_time_for_neumann_evaluation(Teuchos::Paramete
  | set part of the residual vector belonging to the old timestep        |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::set_old_part_of_righthandside()
+void ScaTra::TimIntStationary::set_old_part_of_righthandside()
 {
   // call base class routine
   ScaTraTimIntImpl::set_old_part_of_righthandside();
@@ -136,7 +136,7 @@ void SCATRA::TimIntStationary::set_old_part_of_righthandside()
 /*----------------------------------------------------------------------*
  | add actual Neumann loads                                    vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::add_neumann_to_residual()
+void ScaTra::TimIntStationary::add_neumann_to_residual()
 {
   residual_->Update(1.0, *neumann_loads_, 1.0);
 }
@@ -145,7 +145,7 @@ void SCATRA::TimIntStationary::add_neumann_to_residual()
 /*----------------------------------------------------------------------*
  | AVM3-based scale separation                                 vg 03/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::av_m3_separation()
+void ScaTra::TimIntStationary::av_m3_separation()
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -161,7 +161,7 @@ void SCATRA::TimIntStationary::av_m3_separation()
 /*--------------------------------------------------------------------------*
  | add global state vectors specific for time-integration scheme   vg 11/08 |
  *--------------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::add_time_integration_specific_vectors(bool forcedincrementalsolver)
+void ScaTra::TimIntStationary::add_time_integration_specific_vectors(bool forcedincrementalsolver)
 {
   // call base class routine
   ScaTraTimIntImpl::add_time_integration_specific_vectors(forcedincrementalsolver);
@@ -174,20 +174,20 @@ void SCATRA::TimIntStationary::add_time_integration_specific_vectors(bool forced
 /*----------------------------------------------------------------------*
  |                                                            gjb 09/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::read_restart(
-    const int step, Teuchos::RCP<CORE::IO::InputControl> input)
+void ScaTra::TimIntStationary::read_restart(
+    const int step, Teuchos::RCP<Core::IO::InputControl> input)
 {
   // call base class routine
   ScaTraTimIntImpl::read_restart(step, input);
 
-  Teuchos::RCP<CORE::IO::DiscretizationReader> reader(Teuchos::null);
+  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
   {
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(
-        discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+        discret_, Global::Problem::Instance()->InputControlFile(), step));
   }
   else
-    reader = Teuchos::rcp(new CORE::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
 
   time_ = reader->ReadDouble("time");
   step_ = reader->ReadInt("step");
@@ -205,15 +205,15 @@ void SCATRA::TimIntStationary::read_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::Update()
+void ScaTra::TimIntStationary::Update()
 {
   // call base class routine
   ScaTraTimIntImpl::Update();
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
-  if (calcflux_domain_ != INPAR::SCATRA::flux_none or
-      calcflux_boundary_ != INPAR::SCATRA::flux_none)
+  if (calcflux_domain_ != Inpar::ScaTra::flux_none or
+      calcflux_boundary_ != Inpar::ScaTra::flux_none)
   {
     if (IsResultStep() or do_boundary_flux_statistics()) CalcFlux(true);
   }
@@ -221,7 +221,7 @@ void SCATRA::TimIntStationary::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::write_restart() const
+void ScaTra::TimIntStationary::write_restart() const
 {
   // call base class routine
   ScaTraTimIntImpl::write_restart();

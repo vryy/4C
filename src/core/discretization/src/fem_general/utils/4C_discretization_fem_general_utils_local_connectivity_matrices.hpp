@@ -27,7 +27,7 @@ mapping
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::FE
+namespace Core::FE
 {
   //! 2 surfaces on a Hex16 element with 8 nodes per surface
   const int eleNodeNumbering_hex16_surfaces_q8[2][8] = {
@@ -349,7 +349,7 @@ namespace CORE::FE
    *
    * @return number of nodes
    */
-  int getNumberOfElementNodes(const CORE::FE::CellType& distype);
+  int getNumberOfElementNodes(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of corner nodes for an element of the given discretization type
@@ -357,7 +357,7 @@ namespace CORE::FE
    * @param[in] distype discretization type
    * @return number of corner nodes
    */
-  int getNumberOfElementCornerNodes(const CORE::FE::CellType& distype);
+  int getNumberOfElementCornerNodes(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of corner nodes for each face element for an element of the given
@@ -366,7 +366,7 @@ namespace CORE::FE
    * @param[in] distype discretization type
    * @return number of corner nodes for each face element
    */
-  std::vector<int> getNumberOfFaceElementCornerNodes(const CORE::FE::CellType& distype);
+  std::vector<int> getNumberOfFaceElementCornerNodes(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of internal nodes for each face element for an element of the given
@@ -375,7 +375,7 @@ namespace CORE::FE
    * @param[in] distype discretization type
    * @return number of internal nodes for each face element
    */
-  std::vector<int> getNumberOfFaceElementInternalNodes(const CORE::FE::CellType& distype);
+  std::vector<int> getNumberOfFaceElementInternalNodes(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of lines for the given discretization type
@@ -383,7 +383,7 @@ namespace CORE::FE
    * @param[in] distype discretization type
    * @return number of lines
    */
-  int getNumberOfElementLines(const CORE::FE::CellType& distype);
+  int getNumberOfElementLines(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of surface for the given discretization type
@@ -391,7 +391,7 @@ namespace CORE::FE
    * @param[in] distype discretization type
    * @return number of surfaces
    */
-  int getNumberOfElementSurfaces(const CORE::FE::CellType& distype);
+  int getNumberOfElementSurfaces(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of volumes for the given discretization type
@@ -399,7 +399,7 @@ namespace CORE::FE
    * @param[in] distype discretization type
    * @return number of volumes
    */
-  int getNumberOfElementVolumes(const CORE::FE::CellType& distype);
+  int getNumberOfElementVolumes(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the number of faces for the given discretization type (as opposed to
@@ -408,7 +408,7 @@ namespace CORE::FE
    * @param[in] distype discretization type
    * @return number of faces
    */
-  int getNumberOfElementFaces(const CORE::FE::CellType& distype);
+  int getNumberOfElementFaces(const Core::FE::CellType& distype);
 
   /*!
    * @brief Returns the shape type of a face of a given element
@@ -417,8 +417,8 @@ namespace CORE::FE
    * @param[in] face face index
    * @return discretization type of the element face
    */
-  CORE::FE::CellType getEleFaceShapeType(
-      const CORE::FE::CellType& distype, const unsigned int face = 0);
+  Core::FE::CellType getEleFaceShapeType(
+      const Core::FE::CellType& distype, const unsigned int face = 0);
 
   /*!
    * @brief Fills a vector<std::vector<int>> with all nodes for every face (surface in 3D, line in
@@ -427,7 +427,7 @@ namespace CORE::FE
    * @param[in] distype discretization type
    * @return map with all nodes for each face
    */
-  std::vector<std::vector<int>> getEleNodeNumberingFaces(const CORE::FE::CellType& distype);
+  std::vector<std::vector<int>> getEleNodeNumberingFaces(const Core::FE::CellType& distype);
 
   /*!
    * @brief Fills a vector<std::vector<int>> with all nodes for every surface
@@ -435,7 +435,7 @@ namespace CORE::FE
    * @param[in] distype discretization type
    * @return map with all nodes for each surface
    */
-  std::vector<std::vector<int>> getEleNodeNumberingSurfaces(const CORE::FE::CellType& distype);
+  std::vector<std::vector<int>> getEleNodeNumberingSurfaces(const Core::FE::CellType& distype);
 
   /*!
    * @brief Fills a vector<std::vector<int>> with all nodes for every line
@@ -443,7 +443,7 @@ namespace CORE::FE
    * @param[in] distype discretization type
    * @return map with all nodes for each line
    */
-  std::vector<std::vector<int>> getEleNodeNumberingLines(const CORE::FE::CellType& distype);
+  std::vector<std::vector<int>> getEleNodeNumberingLines(const Core::FE::CellType& distype);
 
   /*!
    * @brief Fills a vector<std::vector<int>> with all surfaces for every line
@@ -452,17 +452,17 @@ namespace CORE::FE
    * @return map with surfaces adjacent to each line
    */
   std::vector<std::vector<int>> getEleNodeNumbering_lines_surfaces(
-      const CORE::FE::CellType& distype);
+      const Core::FE::CellType& distype);
 
   /*!
-   * @brief Fills a CORE::LINALG::SerialDenseMatrix with parameter space coordinates for each node
+   * @brief Fills a Core::LinAlg::SerialDenseMatrix with parameter space coordinates for each node
    * of the given discretization type
    *
    * @param[in] distype discretization type
    * @return map of parameter space coordinates for all nodes
    */
-  CORE::LINALG::SerialDenseMatrix getEleNodeNumbering_nodes_paramspace(
-      const CORE::FE::CellType distype);
+  Core::LinAlg::SerialDenseMatrix getEleNodeNumbering_nodes_paramspace(
+      const Core::FE::CellType distype);
 
   /*!
    * @brief Returns the coordinates in parameter space for a given node id and discretization type
@@ -473,8 +473,8 @@ namespace CORE::FE
    * @return coordinates in parameter space for a given node id and discretization type
    */
   template <int probdim = 3>
-  CORE::LINALG::Matrix<probdim, 1> GetNodeCoordinates(
-      const int nodeId, const CORE::FE::CellType distype);
+  Core::LinAlg::Matrix<probdim, 1> GetNodeCoordinates(
+      const int nodeId, const Core::FE::CellType distype);
 
   /*!
    * @brief Computes the indices of the element corner nodes lying adjacent to a specified higher
@@ -486,146 +486,146 @@ namespace CORE::FE
    * @param[in] distype  discretization type
    */
   void getCornerNodeIndices(
-      int& index1, int& index2, const int& hoindex, const CORE::FE::CellType distype);
+      int& index1, int& index2, const int& hoindex, const Core::FE::CellType distype);
 
   /*!
    * @brief Returns the dimension of an element based on its discretization type
    *
    * @param[in] distype  discretization type
    */
-  int getDimension(const CORE::FE::CellType distype);
+  int getDimension(const Core::FE::CellType distype);
 
   /*!
    * @brief Returns the degree of an element based on its discretization type
    *
    * @tparam DISTYPE discretization type
    */
-  template <CORE::FE::CellType DISTYPE>
+  template <Core::FE::CellType DISTYPE>
   struct DisTypeToDegree
   {
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::point1>
+  struct DisTypeToDegree<Core::FE::CellType::point1>
   {
     static constexpr int degree = 0;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::line2>
+  struct DisTypeToDegree<Core::FE::CellType::line2>
   {
     static constexpr int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::line3>
+  struct DisTypeToDegree<Core::FE::CellType::line3>
   {
     static constexpr int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::line4>
+  struct DisTypeToDegree<Core::FE::CellType::line4>
   {
     static constexpr int degree = 3;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::line5>
+  struct DisTypeToDegree<Core::FE::CellType::line5>
   {
     static constexpr int degree = 4;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::line6>
+  struct DisTypeToDegree<Core::FE::CellType::line6>
   {
     static constexpr int degree = 5;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::nurbs2>
+  struct DisTypeToDegree<Core::FE::CellType::nurbs2>
   {
     static constexpr int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::nurbs3>
+  struct DisTypeToDegree<Core::FE::CellType::nurbs3>
   {
     static constexpr int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::quad4>
+  struct DisTypeToDegree<Core::FE::CellType::quad4>
   {
     static constexpr int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::quad8>
+  struct DisTypeToDegree<Core::FE::CellType::quad8>
   {
     static constexpr int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::quad9>
+  struct DisTypeToDegree<Core::FE::CellType::quad9>
   {
     static constexpr int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::nurbs4>
+  struct DisTypeToDegree<Core::FE::CellType::nurbs4>
   {
     static constexpr int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::nurbs9>
+  struct DisTypeToDegree<Core::FE::CellType::nurbs9>
   {
     static constexpr int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::tri3>
+  struct DisTypeToDegree<Core::FE::CellType::tri3>
   {
     static constexpr int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::tri6>
+  struct DisTypeToDegree<Core::FE::CellType::tri6>
   {
     static constexpr int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::hex8>
+  struct DisTypeToDegree<Core::FE::CellType::hex8>
   {
     static constexpr int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::hex20>
+  struct DisTypeToDegree<Core::FE::CellType::hex20>
   {
     static constexpr int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::hex27>
+  struct DisTypeToDegree<Core::FE::CellType::hex27>
   {
     static constexpr int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::tet4>
+  struct DisTypeToDegree<Core::FE::CellType::tet4>
   {
     static constexpr int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::tet10>
+  struct DisTypeToDegree<Core::FE::CellType::tet10>
   {
     static constexpr int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::wedge6>
+  struct DisTypeToDegree<Core::FE::CellType::wedge6>
   {
     static constexpr int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::wedge15>
+  struct DisTypeToDegree<Core::FE::CellType::wedge15>
   {
     static constexpr int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::pyramid5>
+  struct DisTypeToDegree<Core::FE::CellType::pyramid5>
   {
     static constexpr int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::nurbs8>
+  struct DisTypeToDegree<Core::FE::CellType::nurbs8>
   {
     static constexpr int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<CORE::FE::CellType::nurbs27>
+  struct DisTypeToDegree<Core::FE::CellType::nurbs27>
   {
     static constexpr int degree = 2;
   };
@@ -641,132 +641,132 @@ namespace CORE::FE
    *   3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
    *   6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
    */
-  template <CORE::FE::CellType DISTYPE>
+  template <Core::FE::CellType DISTYPE>
   struct DisTypeToNumDeriv2
   {
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::point1>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::point1>
   {
     static constexpr int numderiv2 = 0;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::line2>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::line2>
   {
     static constexpr int numderiv2 = 1;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::line3>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::line3>
   {
     static constexpr int numderiv2 = 1;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs2>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::nurbs2>
   {
     static constexpr int numderiv2 = 1;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs3>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::nurbs3>
   {
     static constexpr int numderiv2 = 1;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::quad4>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::quad4>
   {
     static constexpr int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::quad6>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::quad6>
   {
     static constexpr int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::quad8>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::quad8>
   {
     static constexpr int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::quad9>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::quad9>
   {
     static constexpr int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs4>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::nurbs4>
   {
     static constexpr int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs9>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::nurbs9>
   {
     static constexpr int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::tri3>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::tri3>
   {
     static constexpr int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::tri6>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::tri6>
   {
     static constexpr int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::hex8>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::hex8>
   {
     static constexpr int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::hex16>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::hex16>
   {
     static constexpr int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::hex18>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::hex18>
   {
     static constexpr int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::hex20>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::hex20>
   {
     static constexpr int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::hex27>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::hex27>
   {
     static constexpr int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::tet4>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::tet4>
   {
     static constexpr int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::tet10>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::tet10>
   {
     static constexpr int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::wedge6>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::wedge6>
   {
     static constexpr int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::wedge15>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::wedge15>
   {
     static constexpr int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::pyramid5>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::pyramid5>
   {
     static constexpr int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs8>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::nurbs8>
   {
     static constexpr int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<CORE::FE::CellType::nurbs27>
+  struct DisTypeToNumDeriv2<Core::FE::CellType::nurbs27>
   {
     static constexpr int numderiv2 = 6;
   };
@@ -778,132 +778,132 @@ namespace CORE::FE
    *
    * @tparam DISTYPE discretization type
    */
-  template <CORE::FE::CellType DISTYPE>
+  template <Core::FE::CellType DISTYPE>
   struct DisTypeToFaceShapeType
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::max_distype;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::max_distype;
   };
-  // template<> struct DisTypeToFaceShapeType<CORE::FE::CellType::point1>   {}; //
+  // template<> struct DisTypeToFaceShapeType<Core::FE::CellType::point1>   {}; //
   // invalid
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::line2>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::line2>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::point1;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::point1;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::line3>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::line3>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::point1;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::point1;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs2>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::nurbs2>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::point1;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::point1;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs3>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::nurbs3>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::point1;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::point1;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::quad4>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::quad4>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::line2;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::line2;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::quad6>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::quad6>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::line3;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::line3;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::quad8>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::quad8>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::line3;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::line3;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::quad9>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::quad9>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::line3;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::line3;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs4>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::nurbs4>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::nurbs2;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::nurbs2;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs9>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::nurbs9>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::nurbs3;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::nurbs3;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::tri3>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::tri3>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::line2;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::line2;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::tri6>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::tri6>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::line3;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::line3;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::hex8>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::hex8>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::quad4;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::quad4;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::hex16>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::hex16>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::quad8;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::quad8;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::hex18>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::hex18>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::quad9;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::quad9;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::hex20>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::hex20>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::quad8;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::quad8;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::hex27>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::hex27>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::quad9;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::quad9;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs8>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::nurbs8>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::nurbs4;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::nurbs4;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::nurbs27>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::nurbs27>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::nurbs9;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::nurbs9;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::tet4>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::tet4>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::tri3;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::tri3;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::tet10>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::tet10>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::tri6;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::tri6;
   };
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::wedge6>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::wedge6>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::tri3;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::tri3;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::wedge15>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::wedge15>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::tri6;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::tri6;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<CORE::FE::CellType::pyramid5>
+  struct DisTypeToFaceShapeType<Core::FE::CellType::pyramid5>
   {
-    static constexpr CORE::FE::CellType shape = CORE::FE::CellType::tri3;
+    static constexpr Core::FE::CellType shape = Core::FE::CellType::tri3;
   };  // invalid
 
 
@@ -913,11 +913,11 @@ namespace CORE::FE
    *
    * @tparam DISTYPE discretization type
    */
-  template <CORE::FE::CellType DISTYPE>
+  template <Core::FE::CellType DISTYPE>
   struct DisTypeToNumNodePerFace
   {
     static constexpr int numNodePerFace =
-        CORE::FE::num_nodes<DisTypeToFaceShapeType<DISTYPE>::shape>;
+        Core::FE::num_nodes<DisTypeToFaceShapeType<DISTYPE>::shape>;
   };
 
 
@@ -926,132 +926,132 @@ namespace CORE::FE
    *
    * @tparam DISTYPE discretization type
    */
-  template <CORE::FE::CellType DISTYPE>
+  template <Core::FE::CellType DISTYPE>
   struct DisTypeToEdgeOrder
   {
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::point1>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::point1>
   {
     static constexpr int order = 0;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::line2>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::line2>
   {
     static constexpr int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::line3>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::line3>
   {
     static constexpr int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::line4>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::line4>
   {
     static constexpr int order = 3;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::line5>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::line5>
   {
     static constexpr int order = 4;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::line6>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::line6>
   {
     static constexpr int order = 5;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs2>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::nurbs2>
   {
     static constexpr int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs3>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::nurbs3>
   {
     static constexpr int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::quad4>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::quad4>
   {
     static constexpr int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::quad8>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::quad8>
   {
     static constexpr int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::quad9>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::quad9>
   {
     static constexpr int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs4>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::nurbs4>
   {
     static constexpr int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs9>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::nurbs9>
   {
     static constexpr int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::tri3>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::tri3>
   {
     static constexpr int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::tri6>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::tri6>
   {
     static constexpr int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::hex8>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::hex8>
   {
     static constexpr int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::hex20>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::hex20>
   {
     static constexpr int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::hex27>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::hex27>
   {
     static constexpr int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs8>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::nurbs8>
   {
     static constexpr int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::nurbs27>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::nurbs27>
   {
     static constexpr int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::tet4>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::tet4>
   {
     static constexpr int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::tet10>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::tet10>
   {
     static constexpr int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::pyramid5>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::pyramid5>
   {
     static constexpr int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::wedge6>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::wedge6>
   {
     static constexpr int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<CORE::FE::CellType::wedge15>
+  struct DisTypeToEdgeOrder<Core::FE::CellType::wedge15>
   {
     static constexpr int order = 2;
   };
@@ -1064,7 +1064,7 @@ namespace CORE::FE
    * @param[in, opt] default_order if the distype is not known, throw an error
    *                               or return the value for default_order
    */
-  int getOrder(const CORE::FE::CellType distype, std::optional<int> default_order = std::nullopt);
+  int getOrder(const Core::FE::CellType distype, std::optional<int> default_order = std::nullopt);
 
   /*!
    * @brief returns the order of the element
@@ -1073,14 +1073,14 @@ namespace CORE::FE
    * @param[in, opt] default_degree if the distype is not known, throw an error
    *                                or return the value for default_degree
    */
-  int getDegree(const CORE::FE::CellType distype, std::optional<int> default_degree = std::nullopt);
+  int getDegree(const Core::FE::CellType distype, std::optional<int> default_degree = std::nullopt);
 
   /*!
    * @brief Returns local node number in the parent element from a given face number and local node
    * number in the face element
    */
   int getParentNodeNumberFromFaceNodeNumber(
-      const CORE::FE::CellType parent_distype, const int faceId, const int faceNodeId);
+      const Core::FE::CellType parent_distype, const int faceId, const int faceNodeId);
 
   /*!
    * @brief Get the geometric center of the element in local coordinates
@@ -1090,58 +1090,58 @@ namespace CORE::FE
    * @param[out] pos  local center position
    */
   template <unsigned dim>
-  CORE::LINALG::Matrix<dim, 1> getLocalCenterPosition(
-      const CORE::FE::CellType distype, CORE::LINALG::Matrix<dim, 1>& pos)
+  Core::LinAlg::Matrix<dim, 1> getLocalCenterPosition(
+      const Core::FE::CellType distype, Core::LinAlg::Matrix<dim, 1>& pos)
   {
     switch (distype)
     {
-      case CORE::FE::CellType::line2:
-      case CORE::FE::CellType::line3:
-      case CORE::FE::CellType::nurbs2:
-      case CORE::FE::CellType::nurbs3:
+      case Core::FE::CellType::line2:
+      case Core::FE::CellType::line3:
+      case Core::FE::CellType::nurbs2:
+      case Core::FE::CellType::nurbs3:
       {
         pos = 0.0;
         break;
       }
-      case CORE::FE::CellType::quad4:
-      case CORE::FE::CellType::quad6:
-      case CORE::FE::CellType::quad8:
-      case CORE::FE::CellType::quad9:
-      case CORE::FE::CellType::nurbs4:
-      case CORE::FE::CellType::nurbs9:
+      case Core::FE::CellType::quad4:
+      case Core::FE::CellType::quad6:
+      case Core::FE::CellType::quad8:
+      case Core::FE::CellType::quad9:
+      case Core::FE::CellType::nurbs4:
+      case Core::FE::CellType::nurbs9:
       {
         pos = 0.0;
         break;
       }
-      case CORE::FE::CellType::tri3:
-      case CORE::FE::CellType::tri6:
+      case Core::FE::CellType::tri3:
+      case Core::FE::CellType::tri6:
       {
         pos = 1.0 / 3.0;
         break;
       }
-      case CORE::FE::CellType::hex8:
-      case CORE::FE::CellType::hex16:
-      case CORE::FE::CellType::hex18:
-      case CORE::FE::CellType::hex20:
-      case CORE::FE::CellType::hex27:
+      case Core::FE::CellType::hex8:
+      case Core::FE::CellType::hex16:
+      case Core::FE::CellType::hex18:
+      case Core::FE::CellType::hex20:
+      case Core::FE::CellType::hex27:
       {
         pos = 0.0;
         break;
       }
-      case CORE::FE::CellType::tet4:
-      case CORE::FE::CellType::tet10:
+      case Core::FE::CellType::tet4:
+      case Core::FE::CellType::tet10:
       {
         pos = 1.0 / 4.0;
         break;
       }
-      case CORE::FE::CellType::wedge6:
-      case CORE::FE::CellType::wedge15:
+      case Core::FE::CellType::wedge6:
+      case Core::FE::CellType::wedge15:
       {
         pos = 1.0 / 3.0;
         pos(2, 0) = 0;
         break;
       }
-      case CORE::FE::CellType::pyramid5:
+      case Core::FE::CellType::pyramid5:
       {
         pos = 0.0;
         pos(2, 0) = 0.25;
@@ -1150,7 +1150,7 @@ namespace CORE::FE
       default:
       {
         FOUR_C_THROW("discretization type %s not yet implemented",
-            CORE::FE::CellTypeToString(distype).c_str());
+            Core::FE::CellTypeToString(distype).c_str());
         exit(EXIT_FAILURE);
       }
     }
@@ -1165,9 +1165,9 @@ namespace CORE::FE
    * @return local center position.
    */
   template <unsigned dim>
-  inline CORE::LINALG::Matrix<dim, 1> getLocalCenterPosition(const CORE::FE::CellType distype)
+  inline Core::LinAlg::Matrix<dim, 1> getLocalCenterPosition(const Core::FE::CellType distype)
   {
-    CORE::LINALG::Matrix<dim, 1> pos(false);
+    Core::LinAlg::Matrix<dim, 1> pos(false);
     getLocalCenterPosition(distype, pos);
     return pos;
   }
@@ -1179,12 +1179,12 @@ namespace CORE::FE
    * @param[in] nen number of nodes of the boundary element
    * @param[in] parentshape shape of parent element
    */
-  CORE::FE::CellType getShapeOfBoundaryElement(const int nen, const CORE::FE::CellType parentshape);
+  Core::FE::CellType getShapeOfBoundaryElement(const int nen, const Core::FE::CellType parentshape);
 
   /// return TRUE if the given dis_type is a NURBS type
-  bool IsNurbsDisType(const CORE::FE::CellType dis_type);
+  bool IsNurbsDisType(const Core::FE::CellType dis_type);
 
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE
 

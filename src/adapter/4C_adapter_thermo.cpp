@@ -31,8 +31,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
-ADAPTER::ThermoBaseAlgorithm::ThermoBaseAlgorithm(
-    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis)
+Adapter::ThermoBaseAlgorithm::ThermoBaseAlgorithm(
+    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Discret::Discretization> actdis)
 {
   setup_thermo(prbdyn, actdis);
 }
@@ -42,20 +42,20 @@ ADAPTER::ThermoBaseAlgorithm::ThermoBaseAlgorithm(
 /*----------------------------------------------------------------------*
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
-void ADAPTER::ThermoBaseAlgorithm::setup_thermo(
-    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<DRT::Discretization> actdis)
+void Adapter::ThermoBaseAlgorithm::setup_thermo(
+    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Discret::Discretization> actdis)
 {
-  const Teuchos::ParameterList& tdyn = GLOBAL::Problem::Instance()->thermal_dynamic_params();
+  const Teuchos::ParameterList& tdyn = Global::Problem::Instance()->thermal_dynamic_params();
 
   // major switch to different time integrators
-  INPAR::THR::DynamicType timinttype =
-      CORE::UTILS::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP");
+  Inpar::THR::DynamicType timinttype =
+      Core::UTILS::IntegralValue<Inpar::THR::DynamicType>(tdyn, "DYNAMICTYP");
   switch (timinttype)
   {
-    case INPAR::THR::dyna_statics:
-    case INPAR::THR::dyna_onesteptheta:
-    case INPAR::THR::dyna_genalpha:
-    case INPAR::THR::dyna_expleuler:
+    case Inpar::THR::dyna_statics:
+    case Inpar::THR::dyna_onesteptheta:
+    case Inpar::THR::dyna_genalpha:
+    case Inpar::THR::dyna_expleuler:
       setup_tim_int(prbdyn, timinttype, actdis);  // <-- here is the show
       break;
     default:
@@ -70,12 +70,12 @@ void ADAPTER::ThermoBaseAlgorithm::setup_thermo(
 /*----------------------------------------------------------------------*
  | setup of thermal time integration                        bborn 08/09 |
  *----------------------------------------------------------------------*/
-void ADAPTER::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
-    INPAR::THR::DynamicType timinttype, Teuchos::RCP<DRT::Discretization> actdis)
+void Adapter::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
+    Inpar::THR::DynamicType timinttype, Teuchos::RCP<Discret::Discretization> actdis)
 {
   // this is not exactly a one hundred meter race, but we need timing
   Teuchos::RCP<Teuchos::Time> t =
-      Teuchos::TimeMonitor::getNewTimer("ADAPTER::ThermoBaseAlgorithm::setup_thermo");
+      Teuchos::TimeMonitor::getNewTimer("Adapter::ThermoBaseAlgorithm::setup_thermo");
   Teuchos::TimeMonitor monitor(*t);
 
   // set degrees of freedom in the discretization
@@ -84,19 +84,19 @@ void ADAPTER::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& p
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> output = actdis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0, 0.0);
 
   //  // get input parameter lists and copy them, because a few parameters are overwritten
   const Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::rcp(new Teuchos::ParameterList(GLOBAL::Problem::Instance()->IOParams()));
+      Teuchos::rcp(new Teuchos::ParameterList(Global::Problem::Instance()->IOParams()));
   const Teuchos::RCP<Teuchos::ParameterList> tdyn = Teuchos::rcp(
-      new Teuchos::ParameterList(GLOBAL::Problem::Instance()->thermal_dynamic_params()));
+      new Teuchos::ParameterList(Global::Problem::Instance()->thermal_dynamic_params()));
   //  //const Teuchos::ParameterList& size
-  //  //  = GLOBAL::Problem::Instance()->ProblemSizeParams();
+  //  //  = Global::Problem::Instance()->ProblemSizeParams();
 
   // show default parameters of thermo parameter list
-  if ((actdis->Comm()).MyPID() == 0) INPUT::PrintDefaultParameters(CORE::IO::cout, *tdyn);
+  if ((actdis->Comm()).MyPID() == 0) Input::PrintDefaultParameters(Core::IO::cout, *tdyn);
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -126,33 +126,33 @@ void ADAPTER::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& p
 
   // create a linear solver
   Teuchos::RCP<Teuchos::ParameterList> solveparams = Teuchos::rcp(new Teuchos::ParameterList());
-  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(
+      Global::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm()));
   actdis->compute_null_space_if_necessary(solver->Params());
 
   // create marching time integrator
   Teuchos::RCP<Thermo> tmpthr;
   switch (timinttype)
   {
-    case INPAR::THR::dyna_statics:
+    case Inpar::THR::dyna_statics:
     {
       tmpthr =
           Teuchos::rcp(new THR::TimIntStatics(*ioflags, *tdyn, *xparams, actdis, solver, output));
       break;
     }
-    case INPAR::THR::dyna_onesteptheta:
+    case Inpar::THR::dyna_onesteptheta:
     {
       tmpthr = Teuchos::rcp(
           new THR::TimIntOneStepTheta(*ioflags, *tdyn, *xparams, actdis, solver, output));
       break;
     }
-    case INPAR::THR::dyna_genalpha:
+    case Inpar::THR::dyna_genalpha:
     {
       tmpthr =
           Teuchos::rcp(new THR::TimIntGenAlpha(*ioflags, *tdyn, *xparams, actdis, solver, output));
       break;
     }
-    case INPAR::THR::dyna_expleuler:
+    case Inpar::THR::dyna_expleuler:
     {
       tmpthr =
           Teuchos::rcp(new THR::TimIntExplEuler(*ioflags, *tdyn, *xparams, actdis, solver, output));
@@ -174,7 +174,7 @@ void ADAPTER::ThermoBaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& p
 /*----------------------------------------------------------------------*
  | integrate                                                bborn 08/09 |
  *----------------------------------------------------------------------*/
-void ADAPTER::Thermo::Integrate()
+void Adapter::Thermo::Integrate()
 {
   while (NotFinished())
   {
@@ -182,16 +182,16 @@ void ADAPTER::Thermo::Integrate()
     prepare_time_step();
 
     // integrate time step
-    INPAR::THR::ConvergenceStatus convStatus = Solve();
+    Inpar::THR::ConvergenceStatus convStatus = Solve();
 
     switch (convStatus)
     {
-      case INPAR::THR::conv_success:
+      case Inpar::THR::conv_success:
         Update();
         PrintStep();
         Output();
         break;
-      case INPAR::THR::conv_fail_repeat:
+      case Inpar::THR::conv_fail_repeat:
         // do not update and output but try again
         continue;
       default:

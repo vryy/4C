@@ -21,22 +21,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 namespace STR
 {
   class Dbc;
-  namespace TIMINT
+  namespace TimeInt
   {
     class BaseDataGlobalState;
     class BaseDataIO;
-  }  // namespace TIMINT
+  }  // namespace TimeInt
 
   /** \brief Monitor Dirichlet boundary conditions
    *
@@ -69,64 +69,64 @@ namespace STR
     MonitorDbc() = default;
 
     /// initialize class members
-    void Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_ptr, DRT::Discretization& discret,
-        STR::TIMINT::BaseDataGlobalState& gstate, STR::Dbc& dbc);
+    void Init(const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr,
+        Discret::Discretization& discret, STR::TimeInt::BaseDataGlobalState& gstate, STR::Dbc& dbc);
 
     /// setup new class members
     void Setup();
 
     /// monitor the tensile test results and write them to a text file
-    void Execute(CORE::IO::DiscretizationWriter& writer);
+    void Execute(Core::IO::DiscretizationWriter& writer);
 
    private:
-    int get_unique_id(int tagged_id, CORE::Conditions::GeometryType gtype) const;
+    int get_unique_id(int tagged_id, Core::Conditions::GeometryType gtype) const;
 
     void create_reaction_force_condition(
-        const CORE::Conditions::Condition& tagged_cond, DRT::Discretization& discret) const;
+        const Core::Conditions::Condition& tagged_cond, Discret::Discretization& discret) const;
 
-    void get_tagged_condition(std::vector<const CORE::Conditions::Condition*>& tagged_conds,
+    void get_tagged_condition(std::vector<const Core::Conditions::Condition*>& tagged_conds,
         const std::string& cond_name, const std::string& tag_name,
-        const DRT::Discretization& discret) const;
+        const Discret::Discretization& discret) const;
 
-    void create_reaction_maps(const DRT::Discretization& discret,
-        const CORE::Conditions::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const;
+    void create_reaction_maps(const Discret::Discretization& discret,
+        const Core::Conditions::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const;
 
     void read_results_prior_restart_step_and_write_to_file(
         const std::vector<std::string>& full_restart_filepaths, int restart_step) const;
 
-    void get_area(double area_ref[], const CORE::Conditions::Condition* rcond) const;
+    void get_area(double area_ref[], const Core::Conditions::Condition* rcond) const;
 
     double get_reaction_force(
-        CORE::LINALG::Matrix<3, 1>& rforce_xyz, const Teuchos::RCP<Epetra_Map>* react_maps) const;
+        Core::LinAlg::Matrix<3, 1>& rforce_xyz, const Teuchos::RCP<Epetra_Map>* react_maps) const;
 
-    double get_reaction_moment(CORE::LINALG::Matrix<3, 1>& rmoment_xyz,
-        const Teuchos::RCP<Epetra_Map>* react_maps, const CORE::Conditions::Condition* rcond) const;
+    double get_reaction_moment(Core::LinAlg::Matrix<3, 1>& rmoment_xyz,
+        const Teuchos::RCP<Epetra_Map>* react_maps, const Core::Conditions::Condition* rcond) const;
 
     std::vector<std::string> create_file_paths(
-        const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& rconds,
+        const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& rconds,
         const std::string& full_dirpath, const std::string& filename_only_prefix,
         const std::string& file_type) const;
 
     void clear_files_and_write_header(
-        const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& rconds,
+        const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& rconds,
         std::vector<std::string>& full_filepaths, bool do_write_condition_header);
 
     void write_condition_header(std::ostream& os, const int col_width,
-        const CORE::Conditions::Condition* cond = nullptr) const;
+        const Core::Conditions::Condition* cond = nullptr) const;
 
     void write_column_header(std::ostream& os, const int col_width) const;
 
     void write_results_to_file(const std::string& full_filepath,
-        const CORE::LINALG::Matrix<DIM, 1>& rforce, const CORE::LINALG::Matrix<DIM, 1>& rmoment,
+        const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
         const double& area_ref, const double& area_curr) const;
 
-    void write_results_to_screen(const Teuchos::RCP<CORE::Conditions::Condition>& rcond_ptr,
-        const CORE::LINALG::Matrix<DIM, 1>& rforce, const CORE::LINALG::Matrix<DIM, 1>& rmoment,
+    void write_results_to_screen(const Teuchos::RCP<Core::Conditions::Condition>& rcond_ptr,
+        const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
         const double& area_ref, const double& area_curr) const;
 
     void write_results(std::ostream& os, const int col_width, const int precision,
-        const unsigned step, const double time, const CORE::LINALG::Matrix<DIM, 1>& rforce,
-        const CORE::LINALG::Matrix<DIM, 1>& rmoment, const double& area_ref,
+        const unsigned step, const double time, const Core::LinAlg::Matrix<DIM, 1>& rforce,
+        const Core::LinAlg::Matrix<DIM, 1>& rmoment, const double& area_ref,
         const double& area_cur) const;
 
     inline const Epetra_Comm& comm() const;
@@ -136,8 +136,8 @@ namespace STR
     inline void throw_if_not_setup() const { FOUR_C_ASSERT(issetup_, "Call Setup() first!"); }
 
    private:
-    DRT::Discretization* discret_ptr_ = nullptr;
-    STR::TIMINT::BaseDataGlobalState* gstate_ptr_ = nullptr;
+    Discret::Discretization* discret_ptr_ = nullptr;
+    STR::TimeInt::BaseDataGlobalState* gstate_ptr_ = nullptr;
     STR::Dbc* dbc_ptr_ = nullptr;
 
     std::vector<std::string> full_filepaths_ = std::vector<std::string>();

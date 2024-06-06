@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEOMETRICSEARCH::GeometricSearchParams::GeometricSearchParams(
+Core::GeometricSearch::GeometricSearchParams::GeometricSearchParams(
     const Teuchos::ParameterList& geometric_search_params, const Teuchos::ParameterList& io_params)
     : beam_radius_extension_factor_(-1), sphere_radius_extension_factor_(-1)
 {
@@ -32,9 +32,9 @@ CORE::GEOMETRICSEARCH::GeometricSearchParams::GeometricSearchParams(
   FOUR_C_ASSERT(!std::signbit(sphere_radius_extension_factor_),
       "Sphere radius extension factor needs to be positive!");
 
-  verbosity_ = CORE::UTILS::IntegralValue<CORE::IO::Verbositylevel>(io_params, "VERBOSITY");
+  verbosity_ = Core::UTILS::IntegralValue<Core::IO::Verbositylevel>(io_params, "VERBOSITY");
 
-  write_visualization_ = CORE::UTILS::IntegralValue<int>(
+  write_visualization_ = Core::UTILS::IntegralValue<int>(
       geometric_search_params, "WRITE_GEOMETRIC_SEARCH_VISUALIZATION");
 }
 FOUR_C_NAMESPACE_CLOSE

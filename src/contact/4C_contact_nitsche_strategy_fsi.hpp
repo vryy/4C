@@ -41,11 +41,11 @@ namespace CONTACT
         : NitscheStrategy(
               dof_row_map, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
-          weighting_(CORE::UTILS::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
+          weighting_(Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(
               params, "NITSCHE_WEIGHTING"))
     {
-      if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
-          INPAR::CONTACT::friction_none)
+      if (Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(params, "FRICTION") !=
+          Inpar::CONTACT::friction_none)
         FOUR_C_THROW("NitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
     }
 
@@ -57,25 +57,25 @@ namespace CONTACT
         : NitscheStrategy(data_ptr, dof_row_map, NodeRowMap, params, std::move(interface), dim,
               comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
-          weighting_(CORE::UTILS::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
+          weighting_(Core::UTILS::IntegralValue<Inpar::CONTACT::NitscheWeighting>(
               params, "NITSCHE_WEIGHTING"))
     {
-      if (CORE::UTILS::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION") !=
-          INPAR::CONTACT::friction_none)
+      if (Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(params, "FRICTION") !=
+          Inpar::CONTACT::friction_none)
         FOUR_C_THROW("NitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
     }
     //! Evaluate and apply RHS and Stiffness Matrix for Contact
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override;
 
     //! Set Contact State and update search tree and normals
-    void set_state(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
+    void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
     //! The the contact state at local coord of Element cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
     bool check_nitsche_contact_state(CONTACT::Element* cele,
-        const CORE::LINALG::Matrix<2, 1>& xsi,  ///< local coord on the ele element
+        const Core::LinAlg::Matrix<2, 1>& xsi,  ///< local coord on the ele element
         const double& full_fsi_traction,        ///< stressfluid + penalty
         double& gap                             ///< gap
     );
@@ -88,7 +88,7 @@ namespace CONTACT
     //! Nitsche normal penalty parameter
     double pen_n_;
     //! Nitsche weighting strategy
-    INPAR::CONTACT::NitscheWeighting weighting_;
+    Inpar::CONTACT::NitscheWeighting weighting_;
   };
 
   namespace UTILS
@@ -97,9 +97,9 @@ namespace CONTACT
     //! return true if contact is evaluated, reture false if FSI is evaluated
     bool check_nitsche_contact_state(CONTACT::Interface& contactinterface,  ///< Contact interface
         const double& pen_n,                         ///< Nitsche normal penalty parameter
-        INPAR::CONTACT::NitscheWeighting weighting,  ///< Nitsche interface stress weighting
+        Inpar::CONTACT::NitscheWeighting weighting,  ///< Nitsche interface stress weighting
         CONTACT::Element* cele,                      ///< the contact element
-        const CORE::LINALG::Matrix<2, 1>& xsi,       ///< local coord on the ele element
+        const Core::LinAlg::Matrix<2, 1>& xsi,       ///< local coord on the ele element
         const double& full_fsi_traction,             ///< stressfluid + penalty
         double& gap                                  ///< gap
     );

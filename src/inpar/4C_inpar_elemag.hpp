@@ -19,9 +19,9 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace ELEMAG
+  namespace EleMag
   {
     /// Type of time integrator
     enum DynamicType
@@ -62,10 +62,10 @@ namespace INPAR
 
     /// Set specific electromagnetic conditions.
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
-  }  // namespace ELEMAG
-}  // namespace INPAR
+  }  // namespace EleMag
+}  // namespace Inpar
 
 
 FOUR_C_NAMESPACE_CLOSE

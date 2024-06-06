@@ -53,26 +53,26 @@ namespace XFEM
     //! Add the coupling matrixes to the global systemmatrix
     // in ... scaling between xfluid evaluated coupling matrixes and coupled systemmatrix
     void AddCouplingMatrix(
-        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling) override;
+        Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling) override;
 
     //! Add the coupling rhs
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me,
+    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me,
         double scaling) override;
 
     //! we need to think if inserting the ale matrixes are modifications (might conflict with other
     //! modifications)
-    virtual bool ModifySysmatandRHS(CORE::LINALG::BlockSparseMatrixBase& systemmatrix,
-        Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me)
+    virtual bool ModifySysmatandRHS(Core::LinAlg::BlockSparseMatrixBase& systemmatrix,
+        Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me)
     {
       return false;
     }
 
     //! nothing to do
     virtual void PostLinearSolve(
-        Teuchos::RCP<Epetra_Vector> inc, const CORE::LINALG::MultiMapExtractor& me)
+        Teuchos::RCP<Epetra_Vector> inc, const Core::LinAlg::MultiMapExtractor& me)
     {
       return;
     }
@@ -81,10 +81,10 @@ namespace XFEM
     void Update(double scaling) override { return; }
 
     //! Write Output -- nothing to do here
-    void Output(CORE::IO::DiscretizationWriter& writer) override { return; }
+    void Output(Core::IO::DiscretizationWriter& writer) override { return; }
 
     //! Read Restart -- nothing to do here
-    void read_restart(CORE::IO::DiscretizationReader& reader) override { return; }
+    void read_restart(Core::IO::DiscretizationReader& reader) override { return; }
 
    private:
     //! FFI Mesh Coupling Object

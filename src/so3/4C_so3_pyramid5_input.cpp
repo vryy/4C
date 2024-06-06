@@ -15,15 +15,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoPyramid5::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::SoPyramid5::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
 
   SolidMaterial()->Setup(NUMGPT_SOP5, linedef);
 
@@ -32,11 +32,11 @@ bool DRT::ELEMENTS::SoPyramid5::ReadElement(
 
   if (buffer == "linear")
   {
-    kintype_ = INPAR::STR::KinemType::linear;
+    kintype_ = Inpar::STR::KinemType::linear;
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = INPAR::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
   }
   else
     FOUR_C_THROW("Reading SO_PYRAMID5 element failed KINEM unknown");
@@ -50,15 +50,15 @@ bool DRT::ELEMENTS::SoPyramid5::ReadElement(
 
   // only for linear SVK materials and small strain plastic materials
   bool admissibl_mat = false;
-  if ((mat->MaterialType() == CORE::Materials::m_stvenant) or
-      (mat->MaterialType() == CORE::Materials::m_thermostvenant) or
-      (mat->MaterialType() == CORE::Materials::m_pllinelast) or
-      (mat->MaterialType() == CORE::Materials::m_thermopllinelast) or
-      (mat->MaterialType() == CORE::Materials::m_elpldamage))
+  if ((mat->MaterialType() == Core::Materials::m_stvenant) or
+      (mat->MaterialType() == Core::Materials::m_thermostvenant) or
+      (mat->MaterialType() == Core::Materials::m_pllinelast) or
+      (mat->MaterialType() == Core::Materials::m_thermopllinelast) or
+      (mat->MaterialType() == Core::Materials::m_elpldamage))
     admissibl_mat = true;
 
   // check for SVK material if geometrically linear
-  if ((kintype_ == INPAR::STR::KinemType::linear) and (admissibl_mat == false))
+  if ((kintype_ == Inpar::STR::KinemType::linear) and (admissibl_mat == false))
     FOUR_C_THROW("ERROR: Only linear elasticity (SVK) for geometrically linear pyramid5 element");
 
   return true;

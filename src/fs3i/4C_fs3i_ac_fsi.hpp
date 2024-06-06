@@ -23,16 +23,16 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 namespace FS3I
 {
@@ -212,7 +212,7 @@ namespace FS3I
     //@}
 
     /// Build map extractor which extracts the j-th dof
-    std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> BuildMapExtractor();
+    std::vector<Teuchos::RCP<Core::LinAlg::MapExtractor>> BuildMapExtractor();
 
     /// optional safety check for times and dt's of all fields
     void check_if_times_and_steps_and_dts_match();
@@ -262,7 +262,7 @@ namespace FS3I
     bool fsineedsupdate_;
 
     /// Extract the j-th out of numscal_ dof
-    std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> extractjthstructscalar_;
+    std::vector<Teuchos::RCP<Core::LinAlg::MapExtractor>> extractjthstructscalar_;
 
     /// pointer to mean manager object
     Teuchos::RCP<FS3I::MeanManager> meanmanager_;
@@ -288,10 +288,10 @@ namespace FS3I
     Teuchos::RCP<const Epetra_Vector> GetMeanValue(const std::string type) const;
 
     /// Write restart of mean manager
-    void write_restart(Teuchos::RCP<CORE::IO::DiscretizationWriter> fluidwriter) const;
+    void write_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> fluidwriter) const;
 
     /// Read restart of mean manager
-    void read_restart(CORE::IO::DiscretizationReader& fluidreader);
+    void read_restart(Core::IO::DiscretizationReader& fluidreader);
 
    private:
     /// weighted sum of all prior wall shear stresses

@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace SCATRA
+namespace ScaTra
 {
   /*!
   \brief Standard solution strategy for electrochemistry problems (without meshtying)
@@ -37,12 +37,12 @@ namespace SCATRA
   {
    public:
     //! constructor
-    explicit MeshtyingStrategyStdElch(SCATRA::ScaTraTimIntElch* elchtimint);
+    explicit MeshtyingStrategyStdElch(ScaTra::ScaTraTimIntElch* elchtimint);
 
 
     bool system_matrix_initialization_needed() const override { return true; }
 
-    Teuchos::RCP<CORE::LINALG::SparseOperator> init_system_matrix() const override;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const override;
     //@}
 
    private:
@@ -50,15 +50,15 @@ namespace SCATRA
     MeshtyingStrategyStdElch(const MeshtyingStrategyStdElch& old);
 
     //! return pointer to elch time integrator after cast
-    SCATRA::ScaTraTimIntElch* elch_tim_int() const
+    ScaTra::ScaTraTimIntElch* elch_tim_int() const
     {
-      return dynamic_cast<SCATRA::ScaTraTimIntElch*>(scatratimint_);
+      return dynamic_cast<ScaTra::ScaTraTimIntElch*>(scatratimint_);
     };
 
     //! instantiate strategy for Newton-Raphson convergence check
     void init_conv_check_strategy() override;
   };  // class MeshtyingStrategyStdElch
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

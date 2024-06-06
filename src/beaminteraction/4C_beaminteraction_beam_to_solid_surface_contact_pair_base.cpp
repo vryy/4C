@@ -52,7 +52,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, solid
   // Set the current position of the beam element.
   const int n_patch_dof = face_element_->GetPatchGID().size();
   for (unsigned int i = 0; i < beam::n_dof_; i++)
-    this->ele1pos_.element_position_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    this->ele1pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + n_patch_dof, i, beam_centerline_dofvec[i]);
 }
 
@@ -72,8 +72,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surfa
  */
 template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam,
-    surface>::CreateGeometryPair(const CORE::Elements::Element* element1,
-    const CORE::Elements::Element* element2,
+    surface>::CreateGeometryPair(const Core::Elements::Element* element1,
+    const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   this->geometry_pair_ =
@@ -119,10 +119,10 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::
 template <typename scalar_type, typename beam, typename surface>
 std::vector<int>
 BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::get_pair_gid(
-    const DRT::Discretization& discret) const
+    const Discret::Discretization& discret) const
 {
   // Get the beam centerline GIDs.
-  CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+  Core::LinAlg::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
   UTILS::GetElementCenterlineGIDIndices(discret, this->Element1(), beam_centerline_gid);
 
   // Get the patch (in this case just the one face element) GIDs.

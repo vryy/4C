@@ -19,11 +19,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   /*!
-   * @brief A type trait to check whether the type T supports the Pack(CORE::COMM::PackBuffer&)
-   * method.
+   * @brief A type trait to check whether the type T supports the
+   * Pack(Core::Communication::PackBuffer&) method.
    *
    * @note T does not necessarily need to derive from some interface class
    * @{
@@ -33,7 +33,7 @@ namespace DRT::ELEMENTS
 
   template <typename T>
   constexpr bool IsPackable<T, std::void_t<decltype(std::declval<const T>()->Pack(
-                                   std::declval<CORE::COMM::PackBuffer&>()))>> = true;
+                                   std::declval<Core::Communication::PackBuffer&>()))>> = true;
   ///@}
 
   /*!
@@ -53,14 +53,14 @@ namespace DRT::ELEMENTS
   ///@}
 
 
-  namespace DETAILS
+  namespace Details
   {
     /*!
      * @brief This struct should be used to serialize an item within a sum type (e.g.
      *std::variant).
      *
-     * The Pack(CORE::COMM::PackBuffer&) is called for those types that provide the method. Nothing
-     *is done for types that don't provide a Pack-method.
+     * The Pack(Core::Communication::PackBuffer&) is called for those types that provide the method.
+     *Nothing is done for types that don't provide a Pack-method.
      *
      * @note If you have a type that needs to be serialized during execution, you could verify that
      * the Pack-member function is correct by asserting it with static_assert(IsPackable<T>); in
@@ -68,7 +68,7 @@ namespace DRT::ELEMENTS
      */
     struct PackAction
     {
-      PackAction(CORE::COMM::PackBuffer& buffer) : data(buffer) {}
+      PackAction(Core::Communication::PackBuffer& buffer) : data(buffer) {}
 
       template <typename T, std::enable_if_t<IsPackable<T>, bool> = true>
       void operator()(const T& packable)
@@ -82,7 +82,7 @@ namespace DRT::ELEMENTS
         // do nothing if it is not packable
       }
 
-      CORE::COMM::PackBuffer& data;
+      Core::Communication::PackBuffer& data;
     };
 
     /*!
@@ -115,7 +115,7 @@ namespace DRT::ELEMENTS
       std::size_t& position;
       const std::vector<char>& data;
     };
-  }  // namespace DETAILS
+  }  // namespace Details
 
   /*!
    * @brief Pack the item within the variant if it is packable
@@ -125,9 +125,9 @@ namespace DRT::ELEMENTS
    * @param data (in/out) : the data to pack the variant to
    */
   template <typename VariantType>
-  void Pack(const VariantType& variant, CORE::COMM::PackBuffer& data)
+  void Pack(const VariantType& variant, Core::Communication::PackBuffer& data)
   {
-    std::visit(DETAILS::PackAction(data), variant);
+    std::visit(Details::PackAction(data), variant);
   }
 
   /*!
@@ -143,9 +143,9 @@ namespace DRT::ELEMENTS
   void Unpack(
       VariantType& variant, std::vector<char>::size_type& position, const std::vector<char>& data)
   {
-    std::visit(DETAILS::UnpackAction(position, data), variant);
+    std::visit(Details::UnpackAction(position, data), variant);
   }
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 

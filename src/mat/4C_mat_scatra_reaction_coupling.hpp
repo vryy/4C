@@ -19,15 +19,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace UTILS
   {
     class FunctionOfAnything;
   }  // namespace UTILS
-}  // namespace DRT
+}  // namespace Discret
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -39,7 +39,7 @@ namespace MAT
        public:
         /// factory method
         static Teuchos::RCP<ReactionInterface> CreateReaction(
-            MAT::PAR::ReactionCoupling couplingtype,  //!< coupling type definig reaction
+            Mat::PAR::ReactionCoupling couplingtype,  //!< coupling type definig reaction
             bool isreacstart,                         //!< flag for reaction start feature
             const std::vector<double>& reacstart      //!< reaction start vector
         );
@@ -677,7 +677,7 @@ namespace MAT
     }  // namespace REACTIONCOUPLING
 
   }  // namespace PAR
-}  // namespace MAT
+}  // namespace Mat
 
 
 FOUR_C_NAMESPACE_CLOSE

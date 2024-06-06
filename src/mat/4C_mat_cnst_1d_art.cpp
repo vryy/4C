@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Cnst1dArt::Cnst1dArt(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::Cnst1dArt::Cnst1dArt(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       viscosity_(matdata->Get<double>("VISCOSITY")),
       density_(matdata->Get<double>("DENS")),
@@ -59,18 +59,18 @@ MAT::PAR::Cnst1dArt::Cnst1dArt(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
         "wrong type of diameter law for artery material, only CONSTANT and BY_FUNCTION are valid");
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Cnst1dArt::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::Cnst1dArt::create_material()
 {
-  return Teuchos::rcp(new MAT::Cnst1dArt(this));
+  return Teuchos::rcp(new Mat::Cnst1dArt(this));
 }
 
 
-MAT::Cnst1dArtType MAT::Cnst1dArtType::instance_;
+Mat::Cnst1dArtType Mat::Cnst1dArtType::instance_;
 
 
-CORE::COMM::ParObject* MAT::Cnst1dArtType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::Cnst1dArtType::Create(const std::vector<char>& data)
 {
-  MAT::Cnst1dArt* cnst_art = new MAT::Cnst1dArt();
+  Mat::Cnst1dArt* cnst_art = new Mat::Cnst1dArt();
   cnst_art->Unpack(data);
   return cnst_art;
 }
@@ -78,7 +78,7 @@ CORE::COMM::ParObject* MAT::Cnst1dArtType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Cnst1dArt::Cnst1dArt()
+Mat::Cnst1dArt::Cnst1dArt()
     : params_(nullptr), diam_init_(0.0), diam_(0.0), diam_previous_time_step_(0.0)
 {
 }
@@ -86,7 +86,7 @@ MAT::Cnst1dArt::Cnst1dArt()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Cnst1dArt::Cnst1dArt(MAT::PAR::Cnst1dArt* params)
+Mat::Cnst1dArt::Cnst1dArt(Mat::PAR::Cnst1dArt* params)
     : params_(params), diam_init_(0.0), diam_(0.0), diam_previous_time_step_(0.0)
 {
 }
@@ -94,9 +94,9 @@ MAT::Cnst1dArt::Cnst1dArt(MAT::PAR::Cnst1dArt* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Cnst1dArt::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::Cnst1dArt::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -115,24 +115,24 @@ void MAT::Cnst1dArt::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Cnst1dArt::Unpack(const std::vector<char>& data)
+void Mat::Cnst1dArt::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Cnst1dArt*>(mat);
+        params_ = static_cast<Mat::PAR::Cnst1dArt*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -149,13 +149,13 @@ void MAT::Cnst1dArt::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Cnst1dArt::Viscosity() const
+double Mat::Cnst1dArt::Viscosity() const
 {
   switch (params_->viscositylaw_)
   {
-    case MAT::PAR::ArteryViscosityLaw::viscositylaw_constant:
+    case Mat::PAR::ArteryViscosityLaw::viscositylaw_constant:
       return params_->viscosity_;
-    case MAT::PAR::ArteryViscosityLaw::viscositylaw_blood:
+    case Mat::PAR::ArteryViscosityLaw::viscositylaw_blood:
       return calculate_blood_viscosity(
           diam_ * params_->blood_visc_scale_diam_to_microns_, params_->viscosity_);
     default:
@@ -166,7 +166,7 @@ double MAT::Cnst1dArt::Viscosity() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Cnst1dArt::calculate_blood_viscosity(const double diam, const double plasmavisc) const
+double Mat::Cnst1dArt::calculate_blood_viscosity(const double diam, const double plasmavisc) const
 {
   // parameters
   const double hd = 0.45;

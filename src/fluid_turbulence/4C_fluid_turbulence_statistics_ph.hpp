@@ -62,8 +62,8 @@ namespace FLD
     o Allocate distributed vector for squares
 
     */
-    TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::ParameterList& params,
-        const std::string& statistics_outfilename);
+    TurbulenceStatisticsPh(Teuchos::RCP<Discret::Discretization> actdis,
+        Teuchos::ParameterList& params, const std::string& statistics_outfilename);
 
     /*!
     \brief Destructor
@@ -119,7 +119,7 @@ namespace FLD
     int numx1statlocations_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;
@@ -141,10 +141,10 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> x2coordinates_;
 
     //! coordinates of locations in x1- and x2-direction for statistical evaluation
-    CORE::LINALG::SerialDenseMatrix x1statlocations_;
+    Core::LinAlg::SerialDenseMatrix x1statlocations_;
 
     //! matrix for r-coordinates (columns are evaluation planes
-    CORE::LINALG::SerialDenseMatrix x2statlocations_;
+    Core::LinAlg::SerialDenseMatrix x2statlocations_;
 
     //! set coordinates of locations in x1-direction for statistical evaluation
     Teuchos::RCP<std::vector<double>> x1setstatlocations_;
@@ -152,24 +152,24 @@ namespace FLD
     //! coordinates in x1-direction for sampling velocity gradient at the middle bottom
 
     //! matrices containing values
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sumu_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sump_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sumf_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x1sumu_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x1sump_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x1sumf_;
 
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumu_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumv_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumw_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sump_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumu_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumv_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumw_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sump_;
 
 
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqu_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqv_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqw_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqp_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqu_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqv_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqw_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqp_;
 
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumuv_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumuw_;
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumvw_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumuv_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumuw_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumvw_;
   };
 
 }  // namespace FLD

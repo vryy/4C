@@ -22,7 +22,7 @@ growth laws.
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
-MAT::PAR::Growth::Growth(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::Growth::Growth(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       idmatelastic_(matdata->Get<int>("IDMATELASTIC")),
       idgrowthlaw_(matdata->Get<int>("GROWTHLAW")),
@@ -30,70 +30,70 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
       endtime_(matdata->Get<double>("ENDTIME"))
 {
   // retrieve problem instance to read from
-  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // for the sake of safety
-  if (GLOBAL::Problem::Instance(probinst)->Materials() == Teuchos::null)
+  if (Global::Problem::Instance(probinst)->Materials() == Teuchos::null)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
-  if (GLOBAL::Problem::Instance(probinst)->Materials()->Num() == 0)
+  if (Global::Problem::Instance(probinst)->Materials()->Num() == 0)
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
 
-  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(idgrowthlaw_);
+  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(idgrowthlaw_);
 
   switch (curmat->Type())
   {
-    case CORE::Materials::m_growth_aniso_strain:
+    case Core::Materials::m_growth_aniso_strain:
     {
-      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStrain*>(curmat);
+      auto* params = static_cast<Mat::PAR::GrowthLawAnisoStrain*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case CORE::Materials::m_growth_aniso_stress:
+    case Core::Materials::m_growth_aniso_stress:
     {
-      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStress*>(curmat);
+      auto* params = static_cast<Mat::PAR::GrowthLawAnisoStress*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case CORE::Materials::m_growth_aniso_strain_const_trig:
+    case Core::Materials::m_growth_aniso_strain_const_trig:
     {
-      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStrainConstTrig*>(curmat);
+      auto* params = static_cast<Mat::PAR::GrowthLawAnisoStrainConstTrig*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case CORE::Materials::m_growth_aniso_stress_const_trig:
+    case Core::Materials::m_growth_aniso_stress_const_trig:
     {
-      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStressConstTrig*>(curmat);
+      auto* params = static_cast<Mat::PAR::GrowthLawAnisoStressConstTrig*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case CORE::Materials::m_growth_iso_stress:
+    case Core::Materials::m_growth_iso_stress:
     {
-      auto* params = static_cast<MAT::PAR::GrowthLawIsoStress*>(curmat);
+      auto* params = static_cast<Mat::PAR::GrowthLawIsoStress*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case CORE::Materials::m_growth_ac:
+    case Core::Materials::m_growth_ac:
     {
-      auto* params = static_cast<MAT::PAR::GrowthLawAC*>(curmat);
+      auto* params = static_cast<Mat::PAR::GrowthLawAC*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case CORE::Materials::m_growth_ac_radial:
+    case Core::Materials::m_growth_ac_radial:
     {
-      auto* params = static_cast<MAT::PAR::GrowthLawACRadial*>(curmat);
+      auto* params = static_cast<Mat::PAR::GrowthLawACRadial*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case CORE::Materials::m_growth_ac_radial_refconc:
+    case Core::Materials::m_growth_ac_radial_refconc:
     {
-      auto* params = static_cast<MAT::PAR::GrowthLawACRadialRefConc*>(curmat);
+      auto* params = static_cast<Mat::PAR::GrowthLawACRadialRefConc*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
-    case CORE::Materials::m_growth_const:
+    case Core::Materials::m_growth_const:
     {
-      auto* params = static_cast<MAT::PAR::GrowthLawConst*>(curmat);
+      auto* params = static_cast<Mat::PAR::GrowthLawConst*>(curmat);
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
@@ -107,22 +107,22 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Growth::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::Growth::create_material()
 {
-  Teuchos::RCP<CORE::MAT::Material> mat;
+  Teuchos::RCP<Core::Mat::Material> mat;
 
   switch (growthlaw_->MaterialType())
   {
-    case CORE::Materials::m_growth_aniso_strain:
-    case CORE::Materials::m_growth_aniso_stress:
-    case CORE::Materials::m_growth_aniso_strain_const_trig:
-    case CORE::Materials::m_growth_aniso_stress_const_trig:
-    case CORE::Materials::m_growth_iso_stress:
-    case CORE::Materials::m_growth_ac:
-    case CORE::Materials::m_growth_ac_radial:
-    case CORE::Materials::m_growth_ac_radial_refconc:
-    case CORE::Materials::m_growth_const:
-      mat = Teuchos::rcp(new MAT::GrowthVolumetric(this));
+    case Core::Materials::m_growth_aniso_strain:
+    case Core::Materials::m_growth_aniso_stress:
+    case Core::Materials::m_growth_aniso_strain_const_trig:
+    case Core::Materials::m_growth_aniso_stress_const_trig:
+    case Core::Materials::m_growth_iso_stress:
+    case Core::Materials::m_growth_ac:
+    case Core::Materials::m_growth_ac_radial:
+    case Core::Materials::m_growth_ac_radial_refconc:
+    case Core::Materials::m_growth_const:
+      mat = Teuchos::rcp(new Mat::GrowthVolumetric(this));
       break;
     default:
       FOUR_C_THROW(
@@ -136,7 +136,7 @@ Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Growth::create_material()
 }
 
 /*----------------------------------------------------------------------------*/
-MAT::Growth::Growth()
+Mat::Growth::Growth()
     : theta_(Teuchos::null),
       isinit_(false),
       params_(nullptr),
@@ -147,7 +147,7 @@ MAT::Growth::Growth()
 }
 
 /*----------------------------------------------------------------------------*/
-MAT::Growth::Growth(MAT::PAR::Growth* params)
+Mat::Growth::Growth(Mat::PAR::Growth* params)
     : theta_(Teuchos::null),
       isinit_(false),
       params_(params),
@@ -158,9 +158,9 @@ MAT::Growth::Growth(MAT::PAR::Growth* params)
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::Growth::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::Growth::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -198,27 +198,27 @@ void MAT::Growth::Pack(CORE::COMM::PackBuffer& data) const
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::Growth::Unpack(const std::vector<char>& data)
+void Mat::Growth::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
 
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = dynamic_cast<MAT::PAR::Growth*>(mat);
+        params_ = dynamic_cast<Mat::PAR::Growth*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -254,8 +254,9 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, dataelastic);
   if (dataelastic.size() > 0)
   {
-    CORE::COMM::ParObject* o = CORE::COMM::Factory(dataelastic);  // Unpack is done here
-    auto* matel = dynamic_cast<MAT::So3Material*>(o);
+    Core::Communication::ParObject* o =
+        Core::Communication::Factory(dataelastic);  // Unpack is done here
+    auto* matel = dynamic_cast<Mat::So3Material*>(o);
     if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
     matelastic_ = Teuchos::rcp(matel);
   }
@@ -267,7 +268,7 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::Growth::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::Growth::Setup(int numgp, Input::LineDefinition* linedef)
 {
   if (isinit_)
     FOUR_C_THROW("This function should just be called if the material is not yet initialized.");
@@ -281,14 +282,14 @@ void MAT::Growth::Setup(int numgp, INPUT::LineDefinition* linedef)
   }
 
   // Setup of elastic material
-  matelastic_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Factory(params_->idmatelastic_));
+  matelastic_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::Factory(params_->idmatelastic_));
   matelastic_->Setup(numgp, linedef);
 
   isinit_ = true;
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::Growth::Update()
+void Mat::Growth::Update()
 {
   const int numgp = theta_->size();
 
@@ -301,7 +302,7 @@ void MAT::Growth::Update()
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::Growth::reset_step()
+void Mat::Growth::reset_step()
 {
   const int numgp = theta_->size();
 
@@ -313,21 +314,21 @@ void MAT::Growth::reset_step()
   matelastic_->reset_step();
 }
 
-void MAT::Growth::StoreHistory(int timestep) { histdata_[timestep] = *thetaold_; }
+void Mat::Growth::StoreHistory(int timestep) { histdata_[timestep] = *thetaold_; }
 
-void MAT::Growth::SetHistory(int timestep) { *thetaold_ = histdata_.at(timestep); }
+void Mat::Growth::SetHistory(int timestep) { *thetaold_ = histdata_.at(timestep); }
 
 /*----------------------------------------------------------------------------*/
-void MAT::Growth::EvaluateElastic(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, CORE::LINALG::Matrix<6, 1>* stress,
-    CORE::LINALG::Matrix<6, 6>* cmat, Teuchos::ParameterList& params, const int gp,
+void Mat::Growth::EvaluateElastic(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Core::LinAlg::Matrix<6, 1>* stress,
+    Core::LinAlg::Matrix<6, 6>* cmat, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
   Matelastic()->Evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
 }
 
 
-double MAT::Growth::Density(int gp) const
+double Mat::Growth::Density(int gp) const
 {
   const double density_elast = matelastic_->Density();
   const double theta_gp = (*theta_)[gp];
@@ -340,27 +341,27 @@ double MAT::Growth::Density(int gp) const
 /*----------------------------------------------------------------------*
  | returns whether material density is constant (public)  schmidt 11/17 |
  *----------------------------------------------------------------------*/
-bool MAT::Growth::VaryingDensity() const { return Parameter()->growthlaw_->VaryingDensity(); }
+bool Mat::Growth::VaryingDensity() const { return Parameter()->growthlaw_->VaryingDensity(); }
 
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::VisNames(std::map<std::string, int>& names)
+void Mat::GrowthVolumetric::VisNames(std::map<std::string, int>& names)
 {
   std::string name = "theta";
   names[name] = 1;
 
   switch (Parameter()->growthlaw_->MaterialType())
   {
-    case CORE::Materials::m_growth_aniso_stress:
-    case CORE::Materials::m_growth_aniso_stress_const_trig:
-    case CORE::Materials::m_growth_iso_stress:
+    case Core::Materials::m_growth_aniso_stress:
+    case Core::Materials::m_growth_aniso_stress_const_trig:
+    case Core::Materials::m_growth_iso_stress:
     {
       name = "tr_mandel_e";
       names[name] = 1;
     }
     break;
-    case CORE::Materials::m_growth_aniso_strain:
-    case CORE::Materials::m_growth_aniso_strain_const_trig:
+    case Core::Materials::m_growth_aniso_strain:
+    case Core::Materials::m_growth_aniso_strain_const_trig:
     {
       name = "lambda_fib_e";
       names[name] = 1;
@@ -374,7 +375,7 @@ void MAT::GrowthVolumetric::VisNames(std::map<std::string, int>& names)
 }
 
 /*----------------------------------------------------------------------------*/
-bool MAT::GrowthVolumetric::VisData(
+bool Mat::GrowthVolumetric::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "theta")
@@ -406,18 +407,18 @@ bool MAT::GrowthVolumetric::VisData(
 }
 
 
-MAT::GrowthVolumetricType MAT::GrowthVolumetricType::instance_;
+Mat::GrowthVolumetricType Mat::GrowthVolumetricType::instance_;
 
 /*----------------------------------------------------------------------------*/
-CORE::COMM::ParObject* MAT::GrowthVolumetricType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::GrowthVolumetricType::Create(const std::vector<char>& data)
 {
-  auto* grow = new MAT::GrowthVolumetric();
+  auto* grow = new Mat::GrowthVolumetric();
   grow->Unpack(data);
   return grow;
 }
 
 /*----------------------------------------------------------------------------*/
-MAT::GrowthVolumetric::GrowthVolumetric()
+Mat::GrowthVolumetric::GrowthVolumetric()
     : Growth(),
       tr_mandel_e_(Teuchos::null),
       lambda_fib_e_(Teuchos::null),
@@ -431,7 +432,7 @@ MAT::GrowthVolumetric::GrowthVolumetric()
 }
 
 /*----------------------------------------------------------------------------*/
-MAT::GrowthVolumetric::GrowthVolumetric(MAT::PAR::Growth* params)
+Mat::GrowthVolumetric::GrowthVolumetric(Mat::PAR::Growth* params)
     : Growth(params),
       tr_mandel_e_(Teuchos::null),
       lambda_fib_e_(Teuchos::null),
@@ -445,9 +446,9 @@ MAT::GrowthVolumetric::GrowthVolumetric(MAT::PAR::Growth* params)
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::GrowthVolumetric::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   double time = params.get<double>("total time", -1.0);
@@ -458,7 +459,7 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   if (action == "calc_struct_stress") output = true;
 
   const double eps = 1.0e-14;
-  MAT::PAR::Growth* growth_params = Parameter();
+  Mat::PAR::Growth* growth_params = Parameter();
   const double endtime = growth_params->endtime_;
   const double starttime = growth_params->starttime_;
 
@@ -470,14 +471,14 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     // not nice but currently the only way we may do that....
     switch (Parameter()->growthlaw_->MaterialType())
     {
-      case CORE::Materials::m_growth_ac_radial:
-      case CORE::Materials::m_growth_ac_radial_refconc:
+      case Core::Materials::m_growth_ac_radial:
+      case Core::Materials::m_growth_ac_radial_refconc:
       {
         // directional stuff......
         // push-forward of refdir
-        CORE::LINALG::Matrix<3, 3> defgrdinv(true);
+        Core::LinAlg::Matrix<3, 3> defgrdinv(true);
         defgrdinv.Invert(*defgrd);
-        CORE::LINALG::Matrix<3, 1> curdir_for_update(true);
+        Core::LinAlg::Matrix<3, 1> curdir_for_update(true);
         curdir_for_update.MultiplyTN(defgrd->Determinant(), defgrdinv, refdir_);
         // scale n to length of one
         curdir_for_update.Scale(1.0 / curdir_for_update.Norm2());
@@ -494,43 +495,43 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     //--------------------------------------------------------------------------------------
     // evaluation of the volumetric growth factor and its derivative wrt cauchy-green
     //--------------------------------------------------------------------------------------
-    CORE::LINALG::Matrix<6, 1> dthetadCvec(true);
+    Core::LinAlg::Matrix<6, 1> dthetadCvec(true);
     EvaluateGrowth(&theta, &dthetadCvec, defgrd, glstrain, params, gp, eleGID);
 
     // modify the parameter list to be passed to the elastic material
     Teuchos::ParameterList paramselast(params);
     paramselast.remove("matparderiv", false);
 
-    CORE::LINALG::Matrix<6, 1> S(true);
-    CORE::LINALG::Matrix<6, 6> cmatdach(true);
+    Core::LinAlg::Matrix<6, 1> S(true);
+    Core::LinAlg::Matrix<6, 6> cmatdach(true);
 
     GetSAndCmatdach(theta, defgrd, &S, &cmatdach, paramselast, gp, eleGID);
 
     *stress = S;
 
     // calculate growth part F_g of the deformation gradient F
-    CORE::LINALG::Matrix<3, 3> F_g(true);
+    Core::LinAlg::Matrix<3, 3> F_g(true);
 
     Parameter()->growthlaw_->CalcFg(
         theta, ThetaOld()->at(gp), gp, defgrd, refdir_, curdir_, f_g_hist_, F_g);
 
     // calculate F_g^(-1)
-    CORE::LINALG::Matrix<3, 3> F_ginv(true);
+    Core::LinAlg::Matrix<3, 3> F_ginv(true);
     F_ginv.Invert(F_g);
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
-    CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
-    cmatelast = MAT::PullBackFourTensor<3>(F_ginv, cmatdach);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
+    cmatelast = Mat::PullBackFourTensor<3>(F_ginv, cmatdach);
 
     //--------------------------------------------------------------------------------------
     // call material law with elastic part of defgr and elastic part of glstrain
     //--------------------------------------------------------------------------------------
     // build identity tensor I
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Id(true);
     for (int i = 0; i < 3; i++) Id(i) = 1.0;
 
     // right Cauchy-Green Tensor  C = 2 * E + I
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
     C.Scale(2.0);
     C += Id;
 
@@ -539,8 +540,8 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
     const double espilon = 1.0e-8;
 
-    CORE::LINALG::Matrix<6, 1> SEps(true);
-    CORE::LINALG::Matrix<6, 6> cmatdachEps(true);
+    Core::LinAlg::Matrix<6, 1> SEps(true);
+    Core::LinAlg::Matrix<6, 6> cmatdachEps(true);
 
     GetSAndCmatdach(theta + espilon, defgrd, &SEps, &cmatdachEps, params, gp, eleGID);
 
@@ -562,7 +563,7 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     int deriv = params.get<int>("matparderiv", -1);
     if (deriv != -1)
     {
-      CORE::LINALG::Matrix<NUM_STRESS_3D, 1> cmatelasC(true);
+      Core::LinAlg::Matrix<NUM_STRESS_3D, 1> cmatelasC(true);
       for (int i = 0; i < NUM_STRESS_3D; i++)
       {
         cmatelasC(i, 0) = cmatelast(i, 0) * C(0) + cmatelast(i, 1) * C(1) + cmatelast(i, 2) * C(2) +
@@ -587,26 +588,26 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   {  // turn off growth or calculate stresses for output
     double theta = theta_->at(gp);
 
-    CORE::LINALG::Matrix<6, 1> Svec(true);
-    CORE::LINALG::Matrix<6, 6> cmatdach(true);
+    Core::LinAlg::Matrix<6, 1> Svec(true);
+    Core::LinAlg::Matrix<6, 6> cmatdach(true);
 
     GetSAndCmatdach(theta, defgrd, &Svec, &cmatdach, params, gp, eleGID);
 
     *stress = Svec;
 
     // calculate growth part F_g of the deformation gradient F
-    CORE::LINALG::Matrix<3, 3> F_g(true);
+    Core::LinAlg::Matrix<3, 3> F_g(true);
 
     Parameter()->growthlaw_->CalcFg(
         theta, ThetaOldAtGp(gp), gp, defgrd, refdir_, curdir_, f_g_hist_, F_g);
 
     // calculate F_g^(-1)
-    CORE::LINALG::Matrix<3, 3> F_ginv(true);
+    Core::LinAlg::Matrix<3, 3> F_ginv(true);
     F_ginv.Invert(F_g);
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
-    CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
-    cmatelast = MAT::PullBackFourTensor<3>(F_ginv, cmatdach);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
+    cmatelast = Mat::PullBackFourTensor<3>(F_ginv, cmatdach);
 
     *cmat = cmatelast;
   }
@@ -614,23 +615,23 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   {
     EvaluateElastic(defgrd, glstrain, stress, cmat, params, gp, eleGID);
     // build identity tensor I
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Id(true);
     for (int i = 0; i < 3; i++) Id(i) = 1.0;
     // right Cauchy-Green Tensor  C = 2 * E + I
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Cvec(*glstrain);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Cvec(*glstrain);
     Cvec.Scale(2.0);
     Cvec += Id;
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Svec(true);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Svec(true);
     Svec = *stress;
 
     tr_mandel_e_->at(gp) = Cvec(0) * Svec(0) + Cvec(1) * Svec(1) + Cvec(2) * Svec(2) +
                            Cvec(3) * Svec(3) + Cvec(4) * Svec(4) + Cvec(5) * Svec(5);
 
     // elastic fiber stretch
-    CORE::LINALG::Matrix<3, 3> C(true);
-    CORE::LINALG::VOIGT::Strains::VectorToMatrix(Cvec, C);
+    Core::LinAlg::Matrix<3, 3> C(true);
+    Core::LinAlg::Voigt::Strains::VectorToMatrix(Cvec, C);
 
-    CORE::LINALG::Matrix<3, 1> CDir(true);
+    Core::LinAlg::Matrix<3, 1> CDir(true);
     CDir.MultiplyNN(1.0, C, refdir_);
     lambda_fib_e_->at(gp) =
         sqrt(CDir(0) * refdir_(0) + CDir(1) * refdir_(1) + CDir(2) * refdir_(2));
@@ -638,8 +639,8 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::EvaluateGrowth(double* theta, CORE::LINALG::Matrix<6, 1>* dthetadC,
-    const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<6, 1>* glstrain,
+void Mat::GrowthVolumetric::EvaluateGrowth(double* theta, Core::LinAlg::Matrix<6, 1>* dthetadC,
+    const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // get gauss point number
@@ -647,16 +648,16 @@ void MAT::GrowthVolumetric::EvaluateGrowth(double* theta, CORE::LINALG::Matrix<6
 
   double thetaold = ThetaOldAtGp(gp);
 
-  MAT::Growth* matgrowth = this;
+  Mat::Growth* matgrowth = this;
   Parameter()->growthlaw_->Evaluate(theta, thetaold, dthetadC, *matgrowth, defgrd, glstrain,
       refdir_, curdir_, f_g_hist_, growthtrig_const_, params, gp, eleGID);
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::EvaluateNonLinMass(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linmass_disp,
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linmass_vel, const int gp, const int eleGID)
+void Mat::GrowthVolumetric::EvaluateNonLinMass(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* linmass_disp,
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* linmass_vel, const int gp, const int eleGID)
 {
   const double eps = 1.0e-14;
   const double starttime = Parameter()->starttime_;
@@ -669,7 +670,7 @@ void MAT::GrowthVolumetric::EvaluateNonLinMass(const CORE::LINALG::Matrix<3, 3>*
     double theta = theta_->at(gp);
     double thetaold = ThetaOld()->at(gp);
 
-    MAT::Growth* matgrowth = this;
+    Mat::Growth* matgrowth = this;
     Parameter()->growthlaw_->Evaluate(&theta, thetaold, linmass_disp, *matgrowth, defgrd, glstrain,
         refdir_, curdir_, f_g_hist_, growthtrig_const_, params, gp, eleGID);
 
@@ -692,58 +693,58 @@ void MAT::GrowthVolumetric::EvaluateNonLinMass(const CORE::LINALG::Matrix<3, 3>*
 // | calculate stresses and elastic material tangent                      |
 // | (both in Voigt notation)                                   Thon 01/16|
 // *----------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta,
-    const CORE::LINALG::Matrix<3, 3>* defgrd, CORE::LINALG::Matrix<6, 1>* stress,
-    CORE::LINALG::Matrix<6, 6>* cmatdach, Teuchos::ParameterList& params, const int gp,
+void Mat::GrowthVolumetric::GetSAndCmatdach(const double theta,
+    const Core::LinAlg::Matrix<3, 3>* defgrd, Core::LinAlg::Matrix<6, 1>* stress,
+    Core::LinAlg::Matrix<6, 6>* cmatdach, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
   // calculate growth part F_g of the deformation gradient F
-  CORE::LINALG::Matrix<3, 3> F_g(true);
+  Core::LinAlg::Matrix<3, 3> F_g(true);
   Parameter()->growthlaw_->CalcFg(
       theta, ThetaOldAtGp(gp), gp, defgrd, refdir_, curdir_, f_g_hist_, F_g);
 
   // calculate F_g^(-1)
-  CORE::LINALG::Matrix<3, 3> F_ginv(true);
+  Core::LinAlg::Matrix<3, 3> F_ginv(true);
   F_ginv.Invert(F_g);
 
   // elastic deformation gradient F_e = F * F_g^(-1)
-  CORE::LINALG::Matrix<3, 3> defgrddach(true);  //*defgrd);
+  Core::LinAlg::Matrix<3, 3> defgrddach(true);  //*defgrd);
   defgrddach.MultiplyNN(*defgrd, F_ginv);       // Scale(1.0 / theta);
 
   // elastic right Cauchy-Green Tensor Cdach = F_e^T * F_e (= F_g^-T C F_g^-1)
-  CORE::LINALG::Matrix<3, 3> Cdach(true);
+  Core::LinAlg::Matrix<3, 3> Cdach(true);
   Cdach.MultiplyTN(defgrddach, defgrddach);
 
   // transform Cdach into a vector
-  CORE::LINALG::Matrix<6, 1> Cdachvec(true);
-  CORE::LINALG::VOIGT::Strains::MatrixToVector(Cdach, Cdachvec);
+  Core::LinAlg::Matrix<6, 1> Cdachvec(true);
+  Core::LinAlg::Voigt::Strains::MatrixToVector(Cdach, Cdachvec);
 
   //--------------------------------------------------------------------------------------
   // call material law with elastic part of defgr and elastic part of glstrain
   //--------------------------------------------------------------------------------------
   // build identity tensor I
-  CORE::LINALG::Matrix<6, 1> Id(true);
+  Core::LinAlg::Matrix<6, 1> Id(true);
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
 
-  CORE::LINALG::Matrix<6, 1> glstraindachvec(Cdachvec);
+  Core::LinAlg::Matrix<6, 1> glstraindachvec(Cdachvec);
   glstraindachvec -= Id;
   glstraindachvec.Scale(0.5);
 
-  CORE::LINALG::Matrix<6, 1> Sdachvec(true);
+  Core::LinAlg::Matrix<6, 1> Sdachvec(true);
   // elastic 2 PK stress and constitutive matrix
   Matelastic()->Evaluate(&defgrddach, &glstraindachvec, params, &Sdachvec, cmatdach, gp, eleGID);
 
   // calculate stress
   // 2PK stress S = F_g^-1 Sdach F_g^-T
-  CORE::LINALG::Matrix<3, 3> Sdach(true);
-  CORE::LINALG::VOIGT::Stresses::VectorToMatrix(Sdachvec, Sdach);
+  Core::LinAlg::Matrix<3, 3> Sdach(true);
+  Core::LinAlg::Voigt::Stresses::VectorToMatrix(Sdachvec, Sdach);
 
-  CORE::LINALG::Matrix<3, 3> tmp(true);
+  Core::LinAlg::Matrix<3, 3> tmp(true);
   tmp.MultiplyNT(Sdach, F_ginv);
-  CORE::LINALG::Matrix<3, 3> S(true);
+  Core::LinAlg::Matrix<3, 3> S(true);
   S.MultiplyNN(F_ginv, tmp);
 
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(S, *stress);
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(S, *stress);
 
   // trace of elastic Mandel stress Mdach = Cdach Sdach
   tr_mandel_e_->at(gp) = Cdachvec(0) * Sdachvec(0) + Cdachvec(1) * Sdachvec(1) +
@@ -751,16 +752,16 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta,
                          Cdachvec(4) * Sdachvec(4) + Cdachvec(5) * Sdachvec(5);
 
   // elastic fiber stretch lambda = \sqrt(f_0 \cdot Cdach f_0)
-  CORE::LINALG::Matrix<3, 1> CdachDir(true);
+  Core::LinAlg::Matrix<3, 1> CdachDir(true);
   CdachDir.MultiplyNN(1.0, Cdach, refdir_);
   lambda_fib_e_->at(gp) =
       sqrt(CdachDir(0) * refdir_(0) + CdachDir(1) * refdir_(1) + CdachDir(2) * refdir_(2));
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::GrowthVolumetric::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -769,7 +770,7 @@ void MAT::GrowthVolumetric::Pack(CORE::COMM::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  MAT::PAR::Growth* params = Parameter();
+  Mat::PAR::Growth* params = Parameter();
   if (params != nullptr) matid = params->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
@@ -808,9 +809,9 @@ void MAT::GrowthVolumetric::Pack(CORE::COMM::PackBuffer& data) const
 
   for (int gp = 0; gp < numgp; gp++)
   {
-    CORE::LINALG::Matrix<3, 3> F_g_hist = f_g_hist_.at(gp);
-    CORE::LINALG::Matrix<3, 1> curdir = curdir_.at(gp);
-    CORE::LINALG::Matrix<3, 1> curdir_for_update = curdir_for_update_.at(gp);
+    Core::LinAlg::Matrix<3, 3> F_g_hist = f_g_hist_.at(gp);
+    Core::LinAlg::Matrix<3, 1> curdir = curdir_.at(gp);
+    Core::LinAlg::Matrix<3, 1> curdir_for_update = curdir_for_update_.at(gp);
 
     for (int i = 0; i < 3; ++i)
     {
@@ -828,27 +829,27 @@ void MAT::GrowthVolumetric::Pack(CORE::COMM::PackBuffer& data) const
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
+void Mat::GrowthVolumetric::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
 
   params_volumetric_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_volumetric_ = dynamic_cast<MAT::PAR::Growth*>(mat);
+        params_volumetric_ = dynamic_cast<Mat::PAR::Growth*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -899,16 +900,16 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, numgp);
   if (numgp != 0)
   {
-    f_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, CORE::LINALG::Matrix<3, 3>(true));
-    curdir_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, CORE::LINALG::Matrix<3, 1>(true));
+    f_g_hist_ = std::vector<Core::LinAlg::Matrix<3, 3>>(numgp, Core::LinAlg::Matrix<3, 3>(true));
+    curdir_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, Core::LinAlg::Matrix<3, 1>(true));
     curdir_for_update_ =
-        std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, CORE::LINALG::Matrix<3, 1>(true));
+        std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, Core::LinAlg::Matrix<3, 1>(true));
 
     for (int gp = 0; gp < numgp; gp++)
     {
-      CORE::LINALG::Matrix<3, 3> F_g_hist(true);
-      CORE::LINALG::Matrix<3, 1> curdir(true);
-      CORE::LINALG::Matrix<3, 1> curdir_for_update(true);
+      Core::LinAlg::Matrix<3, 3> F_g_hist(true);
+      Core::LinAlg::Matrix<3, 1> curdir(true);
+      Core::LinAlg::Matrix<3, 1> curdir_for_update(true);
 
       for (int i = 0; i < 3; ++i)
       {
@@ -942,7 +943,7 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::GrowthVolumetric::Setup(int numgp, Input::LineDefinition* linedef)
 {
   tr_mandel_e_ = Teuchos::rcp(new std::vector<double>(numgp));
   lambda_fib_e_ = Teuchos::rcp(new std::vector<double>(numgp));
@@ -955,8 +956,8 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
   // setup specific anisotropic growth laws
   switch (Parameter()->growthlaw_->MaterialType())
   {
-    case CORE::Materials::m_growth_ac_radial:
-    case CORE::Materials::m_growth_ac_radial_refconc:
+    case Core::Materials::m_growth_ac_radial:
+    case Core::Materials::m_growth_ac_radial_refconc:
     {
       // CIR-AXI-RAD nomenclature
       if (not(linedef->HaveNamed("RAD")))
@@ -967,16 +968,16 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
       }
 
       ReadFiber(linedef, "RAD", refdir_);
-      curdir_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, refdir_);
-      curdir_for_update_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, refdir_);
+      curdir_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, refdir_);
+      curdir_for_update_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, refdir_);
 
-      CORE::LINALG::Matrix<3, 3> Id(true);
+      Core::LinAlg::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-      f_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
+      f_g_hist_ = std::vector<Core::LinAlg::Matrix<3, 3>>(numgp, Id);
     }
     break;
-    case CORE::Materials::m_growth_aniso_strain:
-    case CORE::Materials::m_growth_aniso_stress:
+    case Core::Materials::m_growth_aniso_strain:
+    case Core::Materials::m_growth_aniso_stress:
     {
       // FIBER1 nomenclature
       if (not(linedef->HaveNamed("FIBER1")))
@@ -986,15 +987,15 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
       ReadFiber(linedef, "FIBER1", refdir_);
 
       // only refdir is used - rest remains unused...
-      curdir_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, refdir_);
-      curdir_for_update_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, refdir_);
-      CORE::LINALG::Matrix<3, 3> Id(true);
+      curdir_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, refdir_);
+      curdir_for_update_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, refdir_);
+      Core::LinAlg::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-      f_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
+      f_g_hist_ = std::vector<Core::LinAlg::Matrix<3, 3>>(numgp, Id);
     }
     break;
-    case CORE::Materials::m_growth_aniso_strain_const_trig:
-    case CORE::Materials::m_growth_aniso_stress_const_trig:
+    case Core::Materials::m_growth_aniso_strain_const_trig:
+    case Core::Materials::m_growth_aniso_stress_const_trig:
     {
       // FIBER1 nomenclature
       if (not(linedef->HaveNamed("FIBER1")))
@@ -1008,22 +1009,22 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
         FOUR_C_THROW("You need to specify GROWTHTRIG in your input file!");
 
       // only refdir is used - rest remains unused...
-      curdir_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, refdir_);
-      curdir_for_update_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, refdir_);
-      CORE::LINALG::Matrix<3, 3> Id(true);
+      curdir_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, refdir_);
+      curdir_for_update_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, refdir_);
+      Core::LinAlg::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-      f_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
+      f_g_hist_ = std::vector<Core::LinAlg::Matrix<3, 3>>(numgp, Id);
     }
     break;
     default:
     {
       // directions are unused
       refdir_(true);
-      curdir_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, refdir_);
-      curdir_for_update_ = std::vector<CORE::LINALG::Matrix<3, 1>>(numgp, refdir_);
-      CORE::LINALG::Matrix<3, 3> Id(true);
+      curdir_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, refdir_);
+      curdir_for_update_ = std::vector<Core::LinAlg::Matrix<3, 1>>(numgp, refdir_);
+      Core::LinAlg::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
-      f_g_hist_ = std::vector<CORE::LINALG::Matrix<3, 3>>(numgp, Id);
+      f_g_hist_ = std::vector<Core::LinAlg::Matrix<3, 3>>(numgp, Id);
     }
     break;
   }
@@ -1035,21 +1036,21 @@ void MAT::GrowthVolumetric::Setup(int numgp, INPUT::LineDefinition* linedef)
 
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::Update()
+void Mat::GrowthVolumetric::Update()
 {
   const int numgp = theta_->size();
 
   // setup anisotropic growth laws
   switch (Parameter()->growthlaw_->MaterialType())
   {
-    case CORE::Materials::m_growth_ac_radial:
-    case CORE::Materials::m_growth_ac_radial_refconc:
+    case Core::Materials::m_growth_ac_radial:
+    case Core::Materials::m_growth_ac_radial_refconc:
     {
-      const CORE::LINALG::Matrix<3, 3> dummydefgrad(true);
+      const Core::LinAlg::Matrix<3, 3> dummydefgrad(true);
 
       for (int gp = 0; gp < numgp; gp++)
       {
-        CORE::LINALG::Matrix<3, 3> F_g_hist_new(true);
+        Core::LinAlg::Matrix<3, 3> F_g_hist_new(true);
 
         Parameter()->growthlaw_->CalcFg(theta_->at(gp), ThetaOld()->at(gp), gp, &dummydefgrad,
             refdir_, curdir_, f_g_hist_, F_g_hist_new);
@@ -1073,8 +1074,8 @@ void MAT::GrowthVolumetric::Update()
 /*----------------------------------------------------------------------*
  | Function which reads in the given fiber value             Thon 01/15 |
  *----------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::ReadFiber(
-    INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& fiber_vector)
+void Mat::GrowthVolumetric::ReadFiber(
+    Input::LineDefinition* linedef, std::string specifier, Core::LinAlg::Matrix<3, 1>& fiber_vector)
 {
   std::vector<double> fiber1;
   linedef->ExtractDoubleVector(std::move(specifier), fiber1);

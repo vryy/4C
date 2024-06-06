@@ -27,9 +27,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned CORE::GEO::CUT::KERNEL::FindNextCornerPoint(const std::vector<Point*>& points,
-    CORE::LINALG::Matrix<3, 1>& x1, CORE::LINALG::Matrix<3, 1>& x2, CORE::LINALG::Matrix<3, 1>& x3,
-    CORE::LINALG::Matrix<3, 1>& b1, CORE::LINALG::Matrix<3, 1>& b2, CORE::LINALG::Matrix<3, 1>& b3,
+unsigned Core::Geo::Cut::Kernel::FindNextCornerPoint(const std::vector<Point*>& points,
+    Core::LinAlg::Matrix<3, 1>& x1, Core::LinAlg::Matrix<3, 1>& x2, Core::LinAlg::Matrix<3, 1>& x3,
+    Core::LinAlg::Matrix<3, 1>& b1, Core::LinAlg::Matrix<3, 1>& b2, Core::LinAlg::Matrix<3, 1>& b3,
     unsigned i)
 {
   unsigned pointsize = points.size();
@@ -92,26 +92,26 @@ unsigned CORE::GEO::CUT::KERNEL::FindNextCornerPoint(const std::vector<Point*>& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::KERNEL::IsValidPoint1(const std::vector<Point*>& corner_points)
+bool Core::Geo::Cut::Kernel::IsValidPoint1(const std::vector<Point*>& corner_points)
 {
   return (corner_points.size() == 1);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::KERNEL::IsValidLine2(const std::vector<Point*>& corner_points)
+bool Core::Geo::Cut::Kernel::IsValidLine2(const std::vector<Point*>& corner_points)
 {
   return (corner_points.size() == 2);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::KERNEL::IsValidQuad4(const std::vector<Point*>& points)
+bool Core::Geo::Cut::Kernel::IsValidQuad4(const std::vector<Point*>& points)
 {
   if (points.size() == 4)
   {
-    CORE::LINALG::Matrix<3, 3> xyze;
-    CORE::LINALG::Matrix<3, 1> xyz;
+    Core::LinAlg::Matrix<3, 3> xyze;
+    Core::LinAlg::Matrix<3, 1> xyz;
     for (int i = 0; i < 4; ++i)
     {
       points[(i + 0) % 4]->Coordinates(&xyze(0, 0));
@@ -119,7 +119,7 @@ bool CORE::GEO::CUT::KERNEL::IsValidQuad4(const std::vector<Point*>& points)
       points[(i + 2) % 4]->Coordinates(&xyze(0, 2));
       points[(i + 3) % 4]->Coordinates(&xyz(0, 0));
 
-      Teuchos::RCP<Position> pos = Position::Create(xyze, xyz, CORE::FE::CellType::tri3);
+      Teuchos::RCP<Position> pos = Position::Create(xyze, xyz, Core::FE::CellType::tri3);
       if (pos->Compute())
       {
         return false;
@@ -132,10 +132,10 @@ bool CORE::GEO::CUT::KERNEL::IsValidQuad4(const std::vector<Point*>& points)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::KERNEL::IsOnLine(Point*& pt1, Point*& pt2, Point*& pt3, bool DeleteInlinePts)
+bool Core::Geo::Cut::Kernel::IsOnLine(Point*& pt1, Point*& pt2, Point*& pt3, bool DeleteInlinePts)
 {
-  CORE::LINALG::Matrix<3, 1> x1, x2, x3;
-  CORE::LINALG::Matrix<3, 1> pt1pt2, pt1pt3, cross;
+  Core::LinAlg::Matrix<3, 1> x1, x2, x3;
+  Core::LinAlg::Matrix<3, 1> pt1pt2, pt1pt3, cross;
   pt1->Coordinates(x1.A());
   pt2->Coordinates(x2.A());
   pt3->Coordinates(x3.A());
@@ -166,8 +166,8 @@ bool CORE::GEO::CUT::KERNEL::IsOnLine(Point*& pt1, Point*& pt2, Point*& pt3, boo
   return new ptr. Intially the polygon is projected into the given plane
                                                                 Sudhakar 04/12
  *----------------------------------------------------------------------------*/
-std::vector<int> CORE::GEO::CUT::KERNEL::CheckConvexity(const std::vector<Point*>& ptlist,
-    CORE::GEO::CUT::FacetShape& geomType, bool InSplit, bool DeleteInlinePts)
+std::vector<int> Core::Geo::Cut::Kernel::CheckConvexity(const std::vector<Point*>& ptlist,
+    Core::Geo::Cut::FacetShape& geomType, bool InSplit, bool DeleteInlinePts)
 {
   if (InSplit)  // if this function is called while performing facet splitting
   {
@@ -193,13 +193,13 @@ std::vector<int> CORE::GEO::CUT::KERNEL::CheckConvexity(const std::vector<Point*
       bool isline = IsOnLine(pt1, pt2, pt3);
       if (isline)
       {
-        CORE::IO::cout << "the points are\n";
+        Core::IO::cout << "the points are\n";
         for (unsigned i = 0; i < ptlist.size(); i++)
         {
           Point* ptx = ptlist[i];
           double coox[3];
           ptx->Coordinates(coox);
-          CORE::IO::cout << coox[0] << "\t" << coox[1] << "\t" << coox[2] << "\n";
+          Core::IO::cout << coox[0] << "\t" << coox[1] << "\t" << coox[2] << "\n";
         }
         FOUR_C_THROW("Inline checking for facets not done before calling this");
       }
@@ -227,7 +227,7 @@ std::vector<int> CORE::GEO::CUT::KERNEL::CheckConvexity(const std::vector<Point*
   else
     FOUR_C_THROW("unspecified projection type");
 
-  CORE::LINALG::Matrix<3, 1> x1, x2, x3, xtemp;
+  Core::LinAlg::Matrix<3, 1> x1, x2, x3, xtemp;
   std::vector<int> leftind, rightind;
   std::vector<int> concPts;
   for (unsigned i = 0; i < ptlist.size(); i++)
@@ -274,11 +274,11 @@ std::vector<int> CORE::GEO::CUT::KERNEL::CheckConvexity(const std::vector<Point*
   }
 
   if (leftind.size() == 0 or rightind.size() == 0)
-    geomType = CORE::GEO::CUT::Convex;
+    geomType = Core::Geo::Cut::Convex;
   else if (leftind.size() == 1 or rightind.size() == 1)
-    geomType = CORE::GEO::CUT::SinglePtConcave;
+    geomType = Core::Geo::Cut::SinglePtConcave;
   else
-    geomType = CORE::GEO::CUT::Concave;
+    geomType = Core::Geo::Cut::Concave;
 
   // if the points are ordered acw, right-turning points are concave points, and vice versa
   if (isClockwise) return leftind;
@@ -287,12 +287,12 @@ std::vector<int> CORE::GEO::CUT::KERNEL::CheckConvexity(const std::vector<Point*
 
 /*-----------------------------------------------------------------------------------------------------*
             Find the equation of plane of the polygon defined by these facets
-            KERNEL::DeleteInlinePts() must be called before using this function
+            Kernel::DeleteInlinePts() must be called before using this function
             This works only for simple polygons (not doubly connected, not self-intersecting)
                                                                                           Sudhakar
 01/13
 *------------------------------------------------------------------------------------------------------*/
-/*std::vector<double> CORE::GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>& ptlist,
+/*std::vector<double> Core::Geo::Cut::Kernel::EqnPlanePolygon( const std::vector<Point*>& ptlist,
 bool DeleteInlinePts )
 {
   std::vector<double> eqn_plane(4);
@@ -309,7 +309,7 @@ bool DeleteInlinePts )
 
   std::vector<int> concavePts;
   std::string geoType;
-  concavePts = KERNEL::CheckConvexity(  ptlist, geoType, false, DeleteInlinePts ); // find concave
+  concavePts = Kernel::CheckConvexity(  ptlist, geoType, false, DeleteInlinePts ); // find concave
 points of the polygon
 
   // for finding equation of convex facet, any 3 points can be used
@@ -390,7 +390,7 @@ points of the polygon
                                                                                           Sudhakar
 04/12
 *------------------------------------------------------------------------------------------------------*/
-std::vector<double> CORE::GEO::CUT::KERNEL::EqnPlane(Point*& pt1, Point*& pt2, Point*& pt3)
+std::vector<double> Core::Geo::Cut::Kernel::EqnPlane(Point*& pt1, Point*& pt2, Point*& pt3)
 {
   bool collinear = IsOnLine(pt1, pt2, pt3);
   if (collinear) FOUR_C_THROW(" 3 points lie on a line. Eqn of plane cannot be computed");
@@ -416,7 +416,7 @@ std::vector<double> CORE::GEO::CUT::KERNEL::EqnPlane(Point*& pt1, Point*& pt2, P
 applicable for convex, concave, and polygons with in-line vertices Does not require deleting of any
 vertices ---> so very general and robust
 *-------------------------------------------------------------------------------------------------------------*/
-std::vector<double> CORE::GEO::CUT::KERNEL::EqnPlaneOfPolygon(const std::vector<Point*>& ptlist)
+std::vector<double> Core::Geo::Cut::Kernel::EqnPlaneOfPolygon(const std::vector<Point*>& ptlist)
 {
   std::vector<std::vector<double>> vertices(ptlist.size());
 
@@ -436,10 +436,10 @@ std::vector<double> CORE::GEO::CUT::KERNEL::EqnPlaneOfPolygon(const std::vector<
 applicable for convex, concave, and polygons with in-line vertices Does not require deleting of any
 vertices ---> so very general and robust
 *-------------------------------------------------------------------------------------------------------------*/
-std::vector<double> CORE::GEO::CUT::KERNEL::EqnPlaneOfPolygon(
+std::vector<double> Core::Geo::Cut::Kernel::EqnPlaneOfPolygon(
     const std::vector<std::vector<double>>& vertices)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::KERNEL::EqnPlaneOfPolygon");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::Cut::Kernel::EqnPlaneOfPolygon");
 
   // TODO: improvement by a factor of 4
 
@@ -472,12 +472,12 @@ std::vector<double> CORE::GEO::CUT::KERNEL::EqnPlaneOfPolygon(
            check whether the point "check" is inside the triangle formed by tri sudhakar 05/12 uses
 barycentric coordinates as it is faster
 *-------------------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::KERNEL::PtInsideTriangle(
+bool Core::Geo::Cut::Kernel::PtInsideTriangle(
     std::vector<Point*> tri, Point* check, bool DeleteInlinePts)
 {
   if (tri.size() != 3) FOUR_C_THROW("expecting a triangle");
 
-  CORE::LINALG::Matrix<3, 1> t1, t2, t3, pt, v0(0.0), v1(0.0), v2(0.0);
+  Core::LinAlg::Matrix<3, 1> t1, t2, t3, pt, v0(0.0), v1(0.0), v2(0.0);
   tri[0]->Coordinates(t1.A());
   tri[1]->Coordinates(t2.A());
   tri[2]->Coordinates(t3.A());
@@ -532,25 +532,25 @@ bool CORE::GEO::CUT::KERNEL::PtInsideTriangle(
            Check whether the point "check" is inside the Quad formed by quad               sudhakar
 07/12 Splits Quad into 2 Tri and perform the check on each
 *-------------------------------------------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::KERNEL::PtInsideQuad(std::vector<Point*> quad, Point* check)
+bool Core::Geo::Cut::Kernel::PtInsideQuad(std::vector<Point*> quad, Point* check)
 {
   if (quad.size() != 4) FOUR_C_THROW("expecting a Quad");
 
   std::vector<int> concavePts;
-  CORE::GEO::CUT::FacetShape str1;
+  Core::Geo::Cut::FacetShape str1;
 
   concavePts = CheckConvexity(quad, str1);
 
   int concsize = concavePts.size();
   if (concsize > 1)
   {
-    CORE::IO::cout << "The points of the failing Quad are\n";
+    Core::IO::cout << "The points of the failing Quad are\n";
     for (unsigned i = 0; i < 4; i++)
     {
       Point* pt = quad[i];
       double x[3];
       pt->Coordinates(x);
-      CORE::IO::cout << x[0] << "\t" << x[1] << "\t" << x[2] << "\n";
+      Core::IO::cout << x[0] << "\t" << x[1] << "\t" << x[2] << "\n";
     }
     FOUR_C_THROW("Quad has more than 1 concave pt --> Selfcut");
   }
@@ -580,7 +580,7 @@ bool CORE::GEO::CUT::KERNEL::PtInsideQuad(std::vector<Point*> quad, Point* check
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::KERNEL::IsClockwiseOrderedPolygon(
+bool Core::Geo::Cut::Kernel::IsClockwiseOrderedPolygon(
     std::vector<Point*> polyPoints, std::string& projPlane)
 {
   if (polyPoints.size() < 3) FOUR_C_THROW("polygon with less than 3 corner points");
@@ -627,7 +627,7 @@ bool CORE::GEO::CUT::KERNEL::IsClockwiseOrderedPolygon(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::KERNEL::FindProjectionPlane(
+void Core::Geo::Cut::Kernel::FindProjectionPlane(
     std::string& projPlane, const std::vector<double>& eqn)
 {
   if (fabs(eqn[0]) > fabs(eqn[1]) && fabs(eqn[0]) > fabs(eqn[2]))
@@ -666,9 +666,9 @@ void CORE::GEO::CUT::KERNEL::FindProjectionPlane(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::KERNEL::DeleteInlinePts(std::vector<Point*>& poly)
+void Core::Geo::Cut::Kernel::DeleteInlinePts(std::vector<Point*>& poly)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::KERNEL::DeleteInlinePts" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::Kernel::DeleteInlinePts" );
 
 
   bool anyInLine = false;
@@ -699,7 +699,7 @@ void CORE::GEO::CUT::KERNEL::DeleteInlinePts(std::vector<Point*>& poly)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::KERNEL::HaveInlinePts(std::vector<Point*>& poly)
+bool Core::Geo::Cut::Kernel::HaveInlinePts(std::vector<Point*>& poly)
 {
   unsigned num = poly.size();
   for (unsigned i = 0; i < num; i++)
@@ -719,7 +719,7 @@ bool CORE::GEO::CUT::KERNEL::HaveInlinePts(std::vector<Point*>& poly)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::vector<CORE::GEO::CUT::Point*> CORE::GEO::CUT::KERNEL::Get3NoncollinearPts(
+std::vector<Core::Geo::Cut::Point*> Core::Geo::Cut::Kernel::Get3NoncollinearPts(
     std::vector<Point*>& polyPoints)
 {
   std::vector<Point*> preparedPoints;
@@ -746,10 +746,10 @@ std::vector<CORE::GEO::CUT::Point*> CORE::GEO::CUT::KERNEL::Get3NoncollinearPts(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CORE::GEO::CUT::KERNEL::getAreaTri(
-    const std::vector<Point*>& poly, CORE::LINALG::Matrix<3, 1>* normalvec)
+double Core::Geo::Cut::Kernel::getAreaTri(
+    const std::vector<Point*>& poly, Core::LinAlg::Matrix<3, 1>* normalvec)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::KERNEL::getAreaTri" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::Kernel::getAreaTri" );
 
   if (poly.size() != 3) FOUR_C_THROW("expecting a triangle");
 
@@ -763,18 +763,18 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1_ptr,
-    const double* p2_ptr, CORE::LINALG::Matrix<3, 1>* normalvec)
+double Core::Geo::Cut::Kernel::getAreaTri(const double* p0_ptr, const double* p1_ptr,
+    const double* p2_ptr, Core::LinAlg::Matrix<3, 1>* normalvec)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::KERNEL::getAreaTri" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::Kernel::getAreaTri" );
 
   // create planes consisting of 3 nodes each
-  const CORE::LINALG::Matrix<3, 1> p0(p0_ptr, true);
-  const CORE::LINALG::Matrix<3, 1> p1(p1_ptr, true);
-  const CORE::LINALG::Matrix<3, 1> p2(p2_ptr, true);
+  const Core::LinAlg::Matrix<3, 1> p0(p0_ptr, true);
+  const Core::LinAlg::Matrix<3, 1> p1(p1_ptr, true);
+  const Core::LinAlg::Matrix<3, 1> p2(p2_ptr, true);
 
-  CORE::LINALG::Matrix<3, 1> v01;
-  CORE::LINALG::Matrix<3, 1> v02;
+  Core::LinAlg::Matrix<3, 1> v01;
+  Core::LinAlg::Matrix<3, 1> v02;
 
   v01.Update(1, p1, -1, p0, 0);
   v02.Update(1, p2, -1, p0, 0);
@@ -783,7 +783,7 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1
   // Cross product way:
   if (normalvec == nullptr)
   {
-    CORE::LINALG::Matrix<3, 1> crossprod;
+    Core::LinAlg::Matrix<3, 1> crossprod;
     crossprod.CrossProduct(v01, v02);  // Cross prod between two vectors of the triangle
     doubleareacrossprod = crossprod.Norm2();
   }
@@ -795,16 +795,16 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1
   }
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  CORE::LINALG::Matrix<3, 1> v12;
+  Core::LinAlg::Matrix<3, 1> v12;
   v12.Update(1, p1, -1, p2, 0);
 
   double areacrossprod = 0.5 * doubleareacrossprod;
   // Cross referencing!
-  CORE::LINALG::Matrix<3, 1> crossprod2;
+  Core::LinAlg::Matrix<3, 1> crossprod2;
   crossprod2.CrossProduct(v01, v12);
   double areacrossprod2 = 0.5 * crossprod2.Norm2();
 
-  CORE::LINALG::Matrix<3, 1> crossprod3;
+  Core::LinAlg::Matrix<3, 1> crossprod3;
   crossprod3.CrossProduct(v02, v12);
   double areacrossprod3 = 0.5 * crossprod3.Norm2();
 
@@ -848,9 +848,9 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CORE::GEO::CUT::KERNEL::getAreaConvexQuad(std::vector<Point*>& poly)
+double Core::Geo::Cut::Kernel::getAreaConvexQuad(std::vector<Point*>& poly)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::KERNEL::getAreaConvexQuad" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::Kernel::getAreaConvexQuad" );
 
   if (poly.size() != 4) FOUR_C_THROW("expecting a quad");
 
@@ -870,10 +870,10 @@ double CORE::GEO::CUT::KERNEL::getAreaConvexQuad(std::vector<Point*>& poly)
 
 
 
-bool CORE::GEO::CUT::KERNEL::closeToZero(const double a) { return ((a < 1e-30) and (a > -1e-30)); };
+bool Core::Geo::Cut::Kernel::closeToZero(const double a) { return ((a < 1e-30) and (a > -1e-30)); };
 
 
-bool CORE::GEO::CUT::KERNEL::closeToZero(const CORE::CLN::ClnWrapper& a)
+bool Core::Geo::Cut::Kernel::closeToZero(const Core::CLN::ClnWrapper& a)
 {
   cln::cl_F lpf = cln::least_positive_float(cln::float_format(a.Value()));
   cln::cl_F lnf = cln::least_negative_float(cln::float_format(a.Value()));
@@ -884,27 +884,27 @@ bool CORE::GEO::CUT::KERNEL::closeToZero(const CORE::CLN::ClnWrapper& a)
 
 #ifdef DEBUG_MEMORY_ALLOCATION
 
-bool CORE::GEO::CUT::KERNEL::AdaptiveKernelSharedData::custom_allocator_run_ = false;
+bool Core::Geo::Cut::Kernel::AdaptiveKernelSharedData::custom_allocator_run_ = false;
 
-bool CORE::GEO::CUT::KERNEL::AdaptiveKernelSharedData::all_intersections_done_once_ = false;
+bool Core::Geo::Cut::Kernel::AdaptiveKernelSharedData::all_intersections_done_once_ = false;
 
-bool CORE::GEO::CUT::KERNEL::AdaptiveKernelSharedData::all_distance_done_once_ = false;
+bool Core::Geo::Cut::Kernel::AdaptiveKernelSharedData::all_distance_done_once_ = false;
 
-bool CORE::GEO::CUT::KERNEL::AdaptiveKernelSharedData::all_position_done_once_ = true;
+bool Core::Geo::Cut::Kernel::AdaptiveKernelSharedData::all_position_done_once_ = true;
 
-size_t CORE::GEO::CUT::KERNEL::AdaptiveKernelSharedData::cln_byte_size_[] = {48, 56, 56, 64};
+size_t Core::Geo::Cut::Kernel::AdaptiveKernelSharedData::cln_byte_size_[] = {48, 56, 56, 64};
 
 std::unordered_map<size_t, int>
-    CORE::GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_;
+    Core::Geo::Cut::Kernel::AdaptiveKernelSharedData::memory_allocations_;
 
 std::map<size_t, int>
-    CORE::GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_intersection_;
+    Core::Geo::Cut::Kernel::AdaptiveKernelSharedData::memory_allocations_intersection_;
 
 std::map<size_t, int>
-    CORE::GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_position_;
+    Core::Geo::Cut::Kernel::AdaptiveKernelSharedData::memory_allocations_position_;
 
 std::map<size_t, int>
-    CORE::GEO::CUT::KERNEL::AdaptiveKernelSharedData::memory_allocations_distance_;
+    Core::Geo::Cut::Kernel::AdaptiveKernelSharedData::memory_allocations_distance_;
 
 #endif
 

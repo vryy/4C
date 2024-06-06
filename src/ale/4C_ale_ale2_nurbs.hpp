@@ -20,11 +20,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    namespace NURBS
+    namespace Nurbs
     {
       class Ale2NurbsType : public Ale2Type
       {
@@ -33,15 +33,15 @@ namespace DRT
 
         static Ale2NurbsType& Instance();
 
-        CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+        Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-        Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+        Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
             const std::string eledistype, const int id, const int owner) override;
 
-        Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+        Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
         void setup_element_definition(
-            std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+            std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
             override
         {
           // do nothing. Definition inserted by normal wall element.
@@ -52,7 +52,7 @@ namespace DRT
       };
 
 
-      class Ale2Nurbs : public DRT::ELEMENTS::Ale2
+      class Ale2Nurbs : public Discret::ELEMENTS::Ale2
       {
        public:
         /*!
@@ -90,7 +90,7 @@ namespace DRT
         /// Print this element
         void Print(std::ostream& os) const override;
 
-        CORE::Elements::ElementType& ElementType() const override
+        Core::Elements::ElementType& ElementType() const override
         {
           return Ale2NurbsType::Instance();
         }
@@ -101,7 +101,7 @@ namespace DRT
         \return nurbs4 or nurbs9
 
         */
-        CORE::FE::CellType Shape() const override;
+        Core::FE::CellType Shape() const override;
 
 
         /*!
@@ -124,9 +124,9 @@ namespace DRT
        private:
       };
 
-    }  // namespace NURBS
+    }  // namespace Nurbs
   }    // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

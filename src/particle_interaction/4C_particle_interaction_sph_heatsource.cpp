@@ -26,21 +26,21 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHHeatSourceBase::SPHHeatSourceBase(const Teuchos::ParameterList& params)
+ParticleInteraction::SPHHeatSourceBase::SPHHeatSourceBase(const Teuchos::ParameterList& params)
     : params_sph_(params), heatsourcefctnumber_(params.get<int>("HEATSOURCE_FUNCT"))
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHHeatSourceBase::Init()
+void ParticleInteraction::SPHHeatSourceBase::Init()
 {
   // nothing to do
 }
 
-void PARTICLEINTERACTION::SPHHeatSourceBase::Setup(
+void ParticleInteraction::SPHHeatSourceBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
+    const std::shared_ptr<ParticleInteraction::MaterialHandler> particlematerial,
+    const std::shared_ptr<ParticleInteraction::SPHNeighborPairs> neighborpairs)
 {
   // set interface to particle engine
   particleengineinterface_ = particleengineinterface;
@@ -62,7 +62,7 @@ void PARTICLEINTERACTION::SPHHeatSourceBase::Setup(
 
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
-    thermomaterial_[type_i] = dynamic_cast<const MAT::PAR::ParticleMaterialThermo*>(
+    thermomaterial_[type_i] = dynamic_cast<const Mat::PAR::ParticleMaterialThermo*>(
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i));
 
   // set of potential absorbing particle types
@@ -90,22 +90,22 @@ void PARTICLEINTERACTION::SPHHeatSourceBase::Setup(
   }
 }
 
-PARTICLEINTERACTION::SPHHeatSourceVolume::SPHHeatSourceVolume(const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::SPHHeatSourceBase(params)
+ParticleInteraction::SPHHeatSourceVolume::SPHHeatSourceVolume(const Teuchos::ParameterList& params)
+    : ParticleInteraction::SPHHeatSourceBase(params)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& evaltime) const
+void ParticleInteraction::SPHHeatSourceVolume::EvaluateHeatSource(const double& evaltime) const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHHeatSourceVolume::EvaluateHeatSource");
 
   // init vector containing evaluated function
   std::vector<double> funct(1);
 
   // get reference to function
   const auto& function =
-      GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+      Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
           heatsourcefctnumber_ - 1);
 
   // safety check
@@ -120,10 +120,10 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialBase* basematerial_i =
+    const Mat::PAR::ParticleMaterialBase* basematerial_i =
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
-    const MAT::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
+    const Mat::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
@@ -146,14 +146,14 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
   }
 }
 
-PARTICLEINTERACTION::SPHHeatSourceSurface::SPHHeatSourceSurface(
+ParticleInteraction::SPHHeatSourceSurface::SPHHeatSourceSurface(
     const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::SPHHeatSourceBase(params), eval_direction_(false)
+    : ParticleInteraction::SPHHeatSourceBase(params), eval_direction_(false)
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHHeatSourceSurface::Init()
+void ParticleInteraction::SPHHeatSourceSurface::Init()
 {
   // call base class init
   SPHHeatSourceBase::Init();
@@ -179,9 +179,9 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::Init()
   }
 }
 
-void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double& evaltime) const
+void ParticleInteraction::SPHHeatSourceSurface::EvaluateHeatSource(const double& evaltime) const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource");
+  TEUCHOS_FUNC_TIME_MONITOR("ParticleInteraction::SPHHeatSourceSurface::EvaluateHeatSource");
 
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--absorbingtypes_.end()) + 1;
@@ -233,10 +233,10 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
         particlecontainerbundle_->get_specific_container(type_j, status_j);
 
     // get material for particle types
-    const MAT::PAR::ParticleMaterialBase* material_i =
+    const Mat::PAR::ParticleMaterialBase* material_i =
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
-    const MAT::PAR::ParticleMaterialBase* material_j =
+    const Mat::PAR::ParticleMaterialBase* material_j =
         particlematerial_->get_ptr_to_particle_mat_parameter(type_j);
 
     // get pointer to particle states
@@ -280,7 +280,7 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
 
   // get reference to function
   const auto& function =
-      GLOBAL::Problem::Instance()->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+      Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
           heatsourcefctnumber_ - 1);
 
   // safety check
@@ -295,10 +295,10 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
         particlecontainerbundle_->get_specific_container(type_i, PARTICLEENGINE::Owned);
 
     // get material for current particle type
-    const MAT::PAR::ParticleMaterialBase* basematerial_i =
+    const Mat::PAR::ParticleMaterialBase* basematerial_i =
         particlematerial_->get_ptr_to_particle_mat_parameter(type_i);
 
-    const MAT::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
+    const Mat::PAR::ParticleMaterialThermo* thermomaterial_i = thermomaterial_[type_i];
 
     // iterate over particles in container
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)

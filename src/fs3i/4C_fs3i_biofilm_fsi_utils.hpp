@@ -18,22 +18,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
 namespace FS3I
 {
-  namespace BIOFILM
+  namespace BioFilm
   {
     namespace UTILS
     {
-      void ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> scatradis,
-          Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
+      void ScatraChangeConfig(Teuchos::RCP<Discret::Discretization> scatradis,
+          Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
 
     } /* namespace UTILS */
-  }   // namespace BIOFILM
+  }   // namespace BioFilm
 } /* namespace FS3I */
 
 FOUR_C_NAMESPACE_CLOSE

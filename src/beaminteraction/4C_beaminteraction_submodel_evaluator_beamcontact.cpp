@@ -85,18 +85,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   beam_interaction_params_ptr_->Setup();
 
   // build a new data container to manage geometric search parameters
-  geometric_search_params_ptr_ = Teuchos::rcp(new CORE::GEOMETRICSEARCH::GeometricSearchParams(
-      GLOBAL::Problem::Instance()->geometric_search_params(),
-      GLOBAL::Problem::Instance()->IOParams()));
+  geometric_search_params_ptr_ = Teuchos::rcp(new Core::GeometricSearch::GeometricSearchParams(
+      Global::Problem::Instance()->geometric_search_params(),
+      Global::Problem::Instance()->IOParams()));
   if (beam_interaction_params_ptr_->GetSearchStrategy() ==
-          INPAR::BEAMINTERACTION::SearchStrategy::bounding_volume_hierarchy &&
+          Inpar::BEAMINTERACTION::SearchStrategy::bounding_volume_hierarchy &&
       geometric_search_params_ptr_->get_write_visualization_flag())
   {
     geometric_search_visualization_ptr_ =
-        Teuchos::rcp(new CORE::GEOMETRICSEARCH::GeometricSearchVisualization(
-            CORE::IO::VisualizationParametersFactory(
-                GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN()),
+        Teuchos::rcp(new Core::GeometricSearch::GeometricSearchVisualization(
+            Core::IO::VisualizationParametersFactory(
+                Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                *Global::Problem::Instance()->OutputControlFile(), GState().GetTimeN()),
             DiscretPtr()->Comm(), "beam-interaction-geometric-search"));
   }
 
@@ -104,8 +104,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
 
   // build runtime visualization writer if desired
-  if ((bool)CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->beam_contact_params().sublist("RUNTIME VTK OUTPUT"),
+  if ((bool)Core::UTILS::IntegralValue<int>(
+          Global::Problem::Instance()->beam_contact_params().sublist("RUNTIME VTK OUTPUT"),
           "VTK_OUTPUT_BEAM_CONTACT"))
   {
     beam_contact_params_ptr_->build_beam_contact_runtime_output_params(GState().GetTimeN());
@@ -116,9 +116,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
   contactelementtypes_.clear();
 
-  if (CORE::UTILS::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
-          "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none)
+  if (Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+          Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO BEAM CONTACT"),
+          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Beam);
 
@@ -126,16 +126,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   }
 
   // conditions for beam penalty point coupling
-  std::vector<CORE::Conditions::Condition*> beampenaltycouplingconditions(0);
+  std::vector<Core::Conditions::Condition*> beampenaltycouplingconditions(0);
   Discret().GetCondition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
   if (beampenaltycouplingconditions.size() > 0)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Beam);
   }
 
-  if (CORE::UTILS::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
-          GLOBAL::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
-          "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none)
+  if (Core::UTILS::IntegralValue<Inpar::BEAMINTERACTION::Strategy>(
+          Global::Problem::Instance()->beam_interaction_params().sublist("BEAM TO SPHERE CONTACT"),
+          "STRATEGY") != Inpar::BEAMINTERACTION::bstr_none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::RigidSphere);
 
@@ -144,11 +144,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
   // Check if beam-to-solid volume mesh tying is present.
   const Teuchos::ParameterList& beam_to_solid_volume_parameters =
-      GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
+      Global::Problem::Instance()->beam_interaction_params().sublist(
           "BEAM TO SOLID VOLUME MESHTYING");
-  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+  if (Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
           beam_to_solid_volume_parameters, "CONTACT_DISCRETIZATION") !=
-      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
+      Inpar::BeamToSolid::BeamToSolidContactDiscretization::none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
 
@@ -162,9 +162,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ =
           Teuchos::rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>(
               new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
-                  CORE::IO::VisualizationParametersFactory(
-                      GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                      *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
+                  Core::IO::VisualizationParametersFactory(
+                      Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                      *Global::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Init();
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_->Setup(
           GInOutput().get_runtime_output_params(),
@@ -175,11 +175,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
   // Check if beam-to-solid surface mesh tying is present.
   const Teuchos::ParameterList& beam_to_solid_surface_parameters =
-      GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
+      Global::Problem::Instance()->beam_interaction_params().sublist(
           "BEAM TO SOLID SURFACE MESHTYING");
-  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+  if (Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
           beam_to_solid_surface_parameters, "CONTACT_DISCRETIZATION") !=
-      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
+      Inpar::BeamToSolid::BeamToSolidContactDiscretization::none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
 
@@ -193,9 +193,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
       beam_to_solid_surface_visualization_output_writer_ptr_ =
           Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>(
               new BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter(
-                  CORE::IO::VisualizationParametersFactory(
-                      GLOBAL::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
-                      *GLOBAL::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
+                  Core::IO::VisualizationParametersFactory(
+                      Global::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"),
+                      *Global::Problem::Instance()->OutputControlFile(), GState().GetTimeN())));
       beam_to_solid_surface_visualization_output_writer_ptr_->Init();
       beam_to_solid_surface_visualization_output_writer_ptr_->Setup(
           GInOutput().get_runtime_output_params(),
@@ -206,11 +206,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
   // Check if beam-to-solid surface contact is present.
   const Teuchos::ParameterList& beam_to_solid_surface_contact_parameters =
-      GLOBAL::Problem::Instance()->beam_interaction_params().sublist(
+      Global::Problem::Instance()->beam_interaction_params().sublist(
           "BEAM TO SOLID SURFACE CONTACT");
-  if (Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization>(
+  if (Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidContactDiscretization>(
           beam_to_solid_surface_contact_parameters, "CONTACT_DISCRETIZATION") !=
-      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none)
+      Inpar::BeamToSolid::BeamToSolidContactDiscretization::none)
   {
     contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
 
@@ -260,7 +260,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
   {
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
 
-    std::vector<const CORE::Elements::Element*> element_ptr(2);
+    std::vector<const Core::Elements::Element*> element_ptr(2);
 
     element_ptr[0] = elepairptr->Element1();
     element_ptr[1] = elepairptr->Element2();
@@ -342,7 +342,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::evaluate_force_stiff()
         beam_interaction_data_state_ptr()->GetForceNp(),
         beam_interaction_data_state_ptr()->GetStiff());
 
-  print_active_beam_contact_set(CORE::IO::cout.os(CORE::IO::verbose));
+  print_active_beam_contact_set(Core::IO::cout.os(Core::IO::verbose));
 
   return true;
 }
@@ -445,7 +445,7 @@ std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamContac
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::OutputStepState(
-    CORE::IO::DiscretizationWriter& iowriter) const
+    Core::IO::DiscretizationWriter& iowriter) const
 {
 }
 
@@ -460,7 +460,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_output_runtime_beam_c
   check_init();
 
   visualization_manager_ptr_ = Teuchos::rcp(
-      new CORE::IO::VisualizationManager(beam_contact_params()
+      new Core::IO::VisualizationManager(beam_contact_params()
                                              .beam_contact_runtime_visualization_output_params()
                                              ->get_visualization_parameters(),
           Discret().Comm(), "beam-contact"));
@@ -473,7 +473,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_time_step_output_run
 {
   check_init_setup();
 
-  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
       beam_contact_params()
           .beam_contact_runtime_visualization_output_params()
           ->get_visualization_parameters(),
@@ -488,7 +488,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_iteration_output_run
 {
   check_init_setup();
 
-  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
       beam_contact_params()
           .beam_contact_runtime_visualization_output_params()
           ->get_visualization_parameters(),
@@ -530,8 +530,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_output_runtime_beam_
   gaps.reserve(num_row_points);
 
   // loop over my points and collect the geometry/grid data, i.e. contact points
-  std::vector<CORE::LINALG::Matrix<3, 1, double>> coordinates_ele1_this_pair;
-  std::vector<CORE::LINALG::Matrix<3, 1, double>> coordinates_ele2_this_pair;
+  std::vector<Core::LinAlg::Matrix<3, 1, double>> coordinates_ele1_this_pair;
+  std::vector<Core::LinAlg::Matrix<3, 1, double>> coordinates_ele2_this_pair;
 
   std::vector<double> contact_forces_this_pair;
   std::vector<double> gaps_this_pair;
@@ -562,7 +562,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_output_runtime_beam_
 
       for (unsigned int ipointpair = 0; ipointpair < num_active_point_pairs; ++ipointpair)
       {
-        CORE::LINALG::Matrix<3, 1, double> normal_vector;
+        Core::LinAlg::Matrix<3, 1, double> normal_vector;
         normal_vector.Update(1.0, coordinates_ele1_this_pair[ipointpair], -1.0,
             coordinates_ele2_this_pair[ipointpair]);
 
@@ -614,7 +614,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ResetStepState() { check_i
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_restart(
-    CORE::IO::DiscretizationWriter& ia_writer, CORE::IO::DiscretizationWriter& bin_writer) const
+    Core::IO::DiscretizationWriter& ia_writer, Core::IO::DiscretizationWriter& bin_writer) const
 {
   // empty
 }
@@ -629,7 +629,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PreReadRestart()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::read_restart(
-    CORE::IO::DiscretizationReader& ia_reader, CORE::IO::DiscretizationReader& bin_reader)
+    Core::IO::DiscretizationReader& ia_reader, Core::IO::DiscretizationReader& bin_reader)
 {
   // empty
 }
@@ -704,8 +704,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
   for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
   {
     int const elegid = ele_type_map_extractor_ptr()->BeamMap()->GID(rowele_i);
-    DRT::ELEMENTS::Beam3Base* currele =
-        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(DiscretPtr()->gElement(elegid));
+    Discret::ELEMENTS::Beam3Base* currele =
+        dynamic_cast<Discret::ELEMENTS::Beam3Base*>(DiscretPtr()->gElement(elegid));
 
     curr_ia_distance = currele->get_circular_cross_section_radius_for_interactions();
 
@@ -744,8 +744,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
     for (unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i)
     {
       int const elegid = EleTypeMapExtractor().SphereMap()->GID(rowele_i);
-      DRT::ELEMENTS::Rigidsphere* sphere =
-          dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(Discret().gElement(elegid));
+      Discret::ELEMENTS::Rigidsphere* sphere =
+          dynamic_cast<Discret::ELEMENTS::Rigidsphere*>(Discret().gElement(elegid));
 
       curr_ia_dist = sphere->Radius() + globalmax_beam_ia_distance;
 
@@ -766,9 +766,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
 
     // some screen output
     if (GState().GetMyRank() == 0)
-      CORE::IO::cout(CORE::IO::verbose)
+      Core::IO::cout(Core::IO::verbose)
           << " sphere to beam contact half interaction distance "
-          << spherebeamlinking_half_interaction_distance_global << CORE::IO::endl;
+          << spherebeamlinking_half_interaction_distance_global << Core::IO::endl;
   }
 
   // iii) beam to solid contact
@@ -802,7 +802,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
   beam_interaction_conditions_ptr_->BuildIdSets(DiscretPtr());
 
   if (beam_interaction_params_ptr_->GetSearchStrategy() ==
-      INPAR::BEAMINTERACTION::SearchStrategy::bruteforce_with_binning)
+      Inpar::BEAMINTERACTION::SearchStrategy::bruteforce_with_binning)
   {
     // loop over all row beam elements
     // note: like this we ensure that first element of pair is always a beam element, also only
@@ -811,7 +811,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
     for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
     {
       int const elegid = ele_type_map_extractor_ptr()->BeamMap()->GID(rowele_i);
-      CORE::Elements::Element* currele = DiscretPtr()->gElement(elegid);
+      Core::Elements::Element* currele = DiscretPtr()->gElement(elegid);
 
       // (unique) set of neighboring bins for all col bins assigned to current element
       std::set<int> neighboring_binIds;
@@ -834,7 +834,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
       // get set of elements that reside in neighboring bins
       std::vector<int> glob_neighboring_binIds(
           neighboring_binIds.begin(), neighboring_binIds.end());
-      std::set<CORE::Elements::Element*> neighboring_elements;
+      std::set<Core::Elements::Element*> neighboring_elements;
       BinStrategyPtr()->GetBinContent(
           neighboring_elements, contactelementtypes_, glob_neighboring_binIds);
 
@@ -845,15 +845,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
     }
   }
   else if (beam_interaction_params_ptr_->GetSearchStrategy() ==
-           INPAR::BEAMINTERACTION::SearchStrategy::bounding_volume_hierarchy)
+           Inpar::BEAMINTERACTION::SearchStrategy::bounding_volume_hierarchy)
   {
     // Get vector of all beam element bounding boxes.
     int const numroweles = ele_type_map_extractor_ptr()->BeamMap()->NumMyElements();
-    std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>> beam_bounding_boxes;
+    std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> beam_bounding_boxes;
     for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
     {
       int const elegid = ele_type_map_extractor_ptr()->BeamMap()->GID(rowele_i);
-      CORE::Elements::Element* currele = Discret().gElement(elegid);
+      Core::Elements::Element* currele = Discret().gElement(elegid);
 
       beam_bounding_boxes.emplace_back(std::make_pair(elegid,
           currele->GetBoundingVolume(Discret(), *beam_interaction_data_state_ptr()->GetDisColNp(),
@@ -863,11 +863,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
     // Get vector of the bounding boxes of all possible interacting elements (also including beams
     // if beam-to-beam contact is activated).
     int const numcoleles = Discret().NumMyColElements();
-    std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>> other_bounding_boxes;
+    std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> other_bounding_boxes;
     for (int colele_i = 0; colele_i < numcoleles; ++colele_i)
     {
       // Check if the current element is relevant for beam-to-xxx contact.
-      CORE::Elements::Element* currele = Discret().lColElement(colele_i);
+      Core::Elements::Element* currele = Discret().lColElement(colele_i);
       const BINSTRATEGY::UTILS::BinContentType contact_type =
           BINSTRATEGY::UTILS::ConvertElementToBinContentType(currele);
       if (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contact_type) !=
@@ -887,8 +887,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
     for (size_t i_beam = 0; i_beam < beam_bounding_boxes.size(); i_beam++)
     {
       const int beam_gid = beam_bounding_boxes[i_beam].first;
-      CORE::Elements::Element* currele = Discret().gElement(beam_gid);
-      std::set<CORE::Elements::Element*> neighboring_elements;
+      Core::Elements::Element* currele = Discret().gElement(beam_gid);
+      std::set<Core::Elements::Element*> neighboring_elements;
       for (int j = offsets[i_beam]; j < offsets[i_beam + 1]; j++)
       {
         neighboring_elements.insert(Discret().gElement(other_bounding_boxes[indices[j]].first));
@@ -917,12 +917,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     select_eles_to_be_considered_for_contact_evaluation(
-        CORE::Elements::Element* currele, std::set<CORE::Elements::Element*>& neighbors) const
+        Core::Elements::Element* currele, std::set<Core::Elements::Element*>& neighbors) const
 {
   check_init();
 
   // sort out elements that should not be considered in contact evaluation
-  std::set<CORE::Elements::Element*>::iterator eiter;
+  std::set<Core::Elements::Element*>::iterator eiter;
   for (eiter = neighbors.begin(); eiter != neighbors.end();)
   {
     bool toerase = false;
@@ -935,7 +935,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
     // note: as we are only looping over beam elements, only beam to beam contact needs id check
     // here
-    else if (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(*eiter) != nullptr and
+    else if (dynamic_cast<Discret::ELEMENTS::Beam3Base*>(*eiter) != nullptr and
              not(currele->Id() < (*eiter)->Id()))
     {
       toerase = true;
@@ -966,21 +966,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   // clear the geometry evaluation data
   beam_interaction_conditions_ptr_->Clear();
 
-  std::map<int, std::set<CORE::Elements::Element*>>::const_iterator nearbyeleiter;
+  std::map<int, std::set<Core::Elements::Element*>>::const_iterator nearbyeleiter;
 
   for (nearbyeleiter = nearby_elements_map_.begin(); nearbyeleiter != nearby_elements_map_.end();
        ++nearbyeleiter)
   {
     const int elegid = nearbyeleiter->first;
-    std::vector<CORE::Elements::Element const*> ele_ptrs(2);
+    std::vector<Core::Elements::Element const*> ele_ptrs(2);
     ele_ptrs[0] = DiscretPtr()->gElement(elegid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-    if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(ele_ptrs[0]) == nullptr)
+    if (dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(ele_ptrs[0]) == nullptr)
       FOUR_C_THROW("first element of element pair must be a beam element");
 #endif
 
-    std::set<CORE::Elements::Element*>::const_iterator secondeleiter;
+    std::set<Core::Elements::Element*>::const_iterator secondeleiter;
     for (secondeleiter = nearbyeleiter->second.begin();
          secondeleiter != nearbyeleiter->second.end(); ++secondeleiter)
     {
@@ -1027,10 +1027,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   beam_interaction_conditions_ptr_->create_indirect_assembly_managers(
       DiscretPtr(), assembly_managers_);
 
-  CORE::IO::cout(CORE::IO::standard)
+  Core::IO::cout(Core::IO::standard)
       << "PID " << std::setw(2) << std::right << GState().GetMyRank() << " currently monitors "
       << std::setw(5) << std::right << contact_elepairs_.size() << " beam contact pairs"
-      << CORE::IO::endl;
+      << Core::IO::endl;
 }
 
 /*----------------------------------------------------------------------------*

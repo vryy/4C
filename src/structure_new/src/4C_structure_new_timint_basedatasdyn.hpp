@@ -32,28 +32,28 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
-}  // namespace CORE::LINALG
-namespace DRT
+}  // namespace Core::LinAlg
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
-namespace CORE::GEO
+}  // namespace Discret
+namespace Core::Geo
 {
-  namespace MESHFREE
+  namespace MeshFree
   {
     class BoundingBox;
-  }  // namespace MESHFREE
-}  // namespace CORE::GEO
+  }  // namespace MeshFree
+}  // namespace Core::Geo
 namespace STR
 {
   namespace MODELEVALUATOR
   {
     class Generic;
   }  // namespace MODELEVALUATOR
-  namespace TIMINT
+  namespace TimeInt
   {
     /** \brief Structural dynamics data container for the structural (time) integration
      *
@@ -73,12 +73,12 @@ namespace STR
       virtual ~BaseDataSDyn() = default;
 
       /// initialize class variables (already existing)
-      virtual void Init(const Teuchos::RCP<DRT::Discretization> discret,
+      virtual void Init(const Teuchos::RCP<Discret::Discretization> discret,
           const Teuchos::ParameterList& sDynParams, const Teuchos::ParameterList& xparams,
-          const Teuchos::RCP<std::set<enum INPAR::STR::ModelType>> modeltypes,
-          const Teuchos::RCP<std::set<enum INPAR::STR::EleTech>> eletechs,
+          const Teuchos::RCP<std::set<enum Inpar::STR::ModelType>> modeltypes,
+          const Teuchos::RCP<std::set<enum Inpar::STR::EleTech>> eletechs,
           const Teuchos::RCP<
-              std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
+              std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
               linsolvers);
 
       /// setup new class variables
@@ -135,14 +135,14 @@ namespace STR
       };
 
       /// Returns dynamic type
-      const enum INPAR::STR::DynamicType& GetDynamicType() const
+      const enum Inpar::STR::DynamicType& GetDynamicType() const
       {
         check_init_setup();
         return dyntype_;
       };
 
       /// Get type of shell thickness scaling
-      const enum INPAR::STR::StcScale& GetSTCAlgoType() const
+      const enum Inpar::STR::StcScale& GetSTCAlgoType() const
       {
         check_init_setup();
         return stcscale_;
@@ -198,21 +198,21 @@ namespace STR
       }
 
       /// Returns prestress type
-      const enum INPAR::STR::PreStress& GetPreStressType() const
+      const enum Inpar::STR::PreStress& GetPreStressType() const
       {
         check_init_setup();
         return prestresstype_;
       };
 
       /// Returns predictor type
-      const enum INPAR::STR::PredEnum& GetPredictorType() const
+      const enum Inpar::STR::PredEnum& GetPredictorType() const
       {
         check_init_setup();
         return predtype_;
       };
 
       /// Returns nonlinear solver type
-      const enum INPAR::STR::NonlinSolTech& GetNlnSolverType() const
+      const enum Inpar::STR::NonlinSolTech& GetNlnSolverType() const
       {
         check_init_setup();
         return nlnsolvertype_;
@@ -220,14 +220,14 @@ namespace STR
 
       /// Returns the divergence action
       /// Short: What to do if the non-linear solver fails.
-      const enum INPAR::STR::DivContAct& GetDivergenceAction() const
+      const enum Inpar::STR::DivContAct& GetDivergenceAction() const
       {
         check_init_setup();
         return divergenceaction_;
       };
 
       /// Returns mid-time energy type
-      enum INPAR::STR::MidAverageEnum get_mid_time_energy_type() const
+      enum Inpar::STR::MidAverageEnum get_mid_time_energy_type() const
       {
         check_init_setup();
         return mid_time_energy_type_;
@@ -262,7 +262,7 @@ namespace STR
       ///@{
 
       /// Returns linear solvers pointer
-      const std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>&
+      const std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>&
       GetLinSolvers() const
       {
         check_init_setup();
@@ -274,7 +274,7 @@ namespace STR
       /// @name Get damping control parameters (read only access)
       ///@{
       /// Returns damping type
-      const enum INPAR::STR::DampKind& GetDampingType() const
+      const enum Inpar::STR::DampKind& GetDampingType() const
       {
         check_init_setup();
         return damptype_;
@@ -298,7 +298,7 @@ namespace STR
       /// @name Get mass and inertia control parameters (read only access)
       ///@{
       /// Returns mass linearization type
-      const enum INPAR::STR::MassLin& GetMassLinType() const
+      const enum Inpar::STR::MassLin& GetMassLinType() const
       {
         check_init_setup();
         return masslintype_;
@@ -320,30 +320,30 @@ namespace STR
       /// @name Get model evaluator control parameters (read only access)
       ///@{
       /// Returns types of the current models
-      const std::set<enum INPAR::STR::ModelType>& GetModelTypes() const
+      const std::set<enum Inpar::STR::ModelType>& GetModelTypes() const
       {
         check_init_setup();
         return *modeltypes_;
       };
 
       /// Returns current active element technologies
-      const std::set<enum INPAR::STR::EleTech>& get_element_technologies() const
+      const std::set<enum Inpar::STR::EleTech>& get_element_technologies() const
       {
         check_init_setup();
         return *eletechs_;
       };
 
       /// check if the given model type is active.
-      bool HaveModelType(const INPAR::STR::ModelType& modeltype) const;
+      bool HaveModelType(const Inpar::STR::ModelType& modeltype) const;
 
       /// check if the given element technology is active.
-      bool HaveEleTech(const INPAR::STR::EleTech& eletech) const;
+      bool HaveEleTech(const Inpar::STR::EleTech& eletech) const;
       ///@}
 
       /// @name Get model specific data container
       ///@{
       /// Returns periodic bounding box object (read access)
-      Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& get_periodic_bounding_box() const
+      Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& get_periodic_bounding_box() const
       {
         check_init_setup();
         return periodic_boundingbox_;
@@ -353,7 +353,7 @@ namespace STR
       /// @name Get the different status test control parameters (read only)
       ///@{
       /// Returns the STR vector norm type
-      const enum INPAR::STR::VectorNorm& GetNormType() const
+      const enum Inpar::STR::VectorNorm& GetNormType() const
       {
         check_init_setup();
         return normtype_;
@@ -392,49 +392,49 @@ namespace STR
       /// @name Get residual and increment related parameters
       ///@{
       /// Returns the combination type of the two quantities
-      enum INPAR::STR::BinaryOp GetResIncrComboType(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype_res,
-          const enum NOX::NLN::StatusTest::QuantityType& qtype_incr) const;
+      enum Inpar::STR::BinaryOp GetResIncrComboType(
+          const enum NOX::Nln::StatusTest::QuantityType& qtype_res,
+          const enum NOX::Nln::StatusTest::QuantityType& qtype_incr) const;
       ///@}
 
       /// @name Get residual related parameters
       ///@{
       /// Returns the tolerance values for the different quantities
-      double GetResTolerance(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+      double GetResTolerance(const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
       /// Returns the tolerance type of the different quantities
-      enum INPAR::STR::ConvNorm GetResToleranceType(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+      enum Inpar::STR::ConvNorm GetResToleranceType(
+          const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
       /// Returns the combination type of the different quantities
-      enum INPAR::STR::BinaryOp GetResComboType(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+      enum Inpar::STR::BinaryOp GetResComboType(
+          const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
-      enum INPAR::STR::BinaryOp GetResComboType(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
-          const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const;
+      enum Inpar::STR::BinaryOp GetResComboType(
+          const enum NOX::Nln::StatusTest::QuantityType& qtype_1,
+          const enum NOX::Nln::StatusTest::QuantityType& qtype_2) const;
       ///@}
 
       /// @name Get increment related parameters
       ///@{
       /// Returns the tolerance values for the different quantities
-      double GetIncrTolerance(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+      double GetIncrTolerance(const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
       /// Returns the tolerance type of the different quantities
-      enum INPAR::STR::ConvNorm get_incr_tolerance_type(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+      enum Inpar::STR::ConvNorm get_incr_tolerance_type(
+          const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
-      enum INPAR::STR::ConvNorm get_incr_tolerance_type(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
-          const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const;
+      enum Inpar::STR::ConvNorm get_incr_tolerance_type(
+          const enum NOX::Nln::StatusTest::QuantityType& qtype_1,
+          const enum NOX::Nln::StatusTest::QuantityType& qtype_2) const;
 
       /// Returns the combination type of the different quantities
-      enum INPAR::STR::BinaryOp GetIncrComboType(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+      enum Inpar::STR::BinaryOp GetIncrComboType(
+          const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
-      enum INPAR::STR::BinaryOp GetIncrComboType(
-          const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
-          const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const;
+      enum Inpar::STR::BinaryOp GetIncrComboType(
+          const enum NOX::Nln::StatusTest::QuantityType& qtype_1,
+          const enum NOX::Nln::StatusTest::QuantityType& qtype_2) const;
       ///@}
       ///@}
 
@@ -495,35 +495,35 @@ namespace STR
       }
 
       /// Returns prestress type
-      enum INPAR::STR::PreStress& GetPreStressType()
+      enum Inpar::STR::PreStress& GetPreStressType()
       {
         check_init_setup();
         return prestresstype_;
       };
 
       /// Returns predictor type
-      enum INPAR::STR::PredEnum& GetPredictorType()
+      enum Inpar::STR::PredEnum& GetPredictorType()
       {
         check_init_setup();
         return predtype_;
       };
 
       /// Returns dynamic type
-      enum INPAR::STR::DynamicType& GetDynamicType()
+      enum Inpar::STR::DynamicType& GetDynamicType()
       {
         check_init_setup();
         return dyntype_;
       };
 
       /// Returns nonlinear solver type
-      enum INPAR::STR::NonlinSolTech& GetNlnSolverType()
+      enum Inpar::STR::NonlinSolTech& GetNlnSolverType()
       {
         check_init_setup();
         return nlnsolvertype_;
       };
 
       /// Returns mid-time energy type
-      enum INPAR::STR::MidAverageEnum& get_mid_time_energy_type()
+      enum Inpar::STR::MidAverageEnum& get_mid_time_energy_type()
       {
         check_init_setup();
         return mid_time_energy_type_;
@@ -531,7 +531,7 @@ namespace STR
 
       /// Returns the divergence action
       /// Short: What to do if the non-linear solver fails.
-      enum INPAR::STR::DivContAct& GetDivergenceAction()
+      enum Inpar::STR::DivContAct& GetDivergenceAction()
       {
         check_init_setup();
         return divergenceaction_;
@@ -584,7 +584,7 @@ namespace STR
       /// @name Get mutable linear solver variables (read and write access)
       ///@{
       /// Returns linear solvers pointer
-      Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
+      Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
       GetLinSolversPtr()
       {
         check_init_setup();
@@ -592,7 +592,7 @@ namespace STR
       }
 
       /// Returns linear solvers pointer
-      std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>& GetLinSolvers()
+      std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>& GetLinSolvers()
       {
         check_init_setup();
         return *linsolvers_;
@@ -603,7 +603,7 @@ namespace STR
       /// @name Get mutable damping control parameters (read and write access)
       ///@{
       /// Returns damping type
-      enum INPAR::STR::DampKind& GetDampingType()
+      enum Inpar::STR::DampKind& GetDampingType()
       {
         check_init_setup();
         return damptype_;
@@ -627,7 +627,7 @@ namespace STR
       /// @name Get mutable mass and inertia control parameters (read and write access)
       ///@{
       /// Returns mass linearization type
-      enum INPAR::STR::MassLin& GetMassLinType()
+      enum Inpar::STR::MassLin& GetMassLinType()
       {
         check_init_setup();
         return masslintype_;
@@ -637,14 +637,14 @@ namespace STR
       /// @name Get model evaluator control parameters (read and write access)
       ///@{
       /// Returns types of the current active models
-      std::set<enum INPAR::STR::ModelType>& GetModelTypes()
+      std::set<enum Inpar::STR::ModelType>& GetModelTypes()
       {
         check_init_setup();
         return *modeltypes_;
       };
 
       /// Returns the current active element technologies
-      std::set<enum INPAR::STR::EleTech>& get_element_technologies()
+      std::set<enum Inpar::STR::EleTech>& get_element_technologies()
       {
         check_init_setup();
         return *eletechs_;
@@ -660,7 +660,7 @@ namespace STR
       /// @name Get the initial displacement method
       ///@{
       /// Returns type of initial displacement
-      enum INPAR::STR::InitialDisp GetInitialDisp() const
+      enum Inpar::STR::InitialDisp GetInitialDisp() const
       {
         check_init_setup();
         return initial_disp_;
@@ -721,7 +721,7 @@ namespace STR
       /// Rayleigh damping means \f${C} = c_\text{K} {K} + c_\text{M} {M}\f$
       ///@{
       /// damping type
-      enum INPAR::STR::DampKind damptype_;
+      enum Inpar::STR::DampKind damptype_;
 
       /// damping factor for stiffness \f$c_\text{K}\f$
       double dampk_;
@@ -733,7 +733,7 @@ namespace STR
       /// @name Mass and inertia control parameters
       ///@{
       /// have inertia forces to be linearized?
-      enum INPAR::STR::MassLin masslintype_;
+      enum Inpar::STR::MassLin masslintype_;
 
       /// lump the mass matrix?
       bool lumpmass_;
@@ -746,10 +746,10 @@ namespace STR
       ///@{
 
       /// current active model types for the model evaluator
-      Teuchos::RCP<std::set<enum INPAR::STR::ModelType>> modeltypes_;
+      Teuchos::RCP<std::set<enum Inpar::STR::ModelType>> modeltypes_;
 
       /// current active element technologies
-      Teuchos::RCP<std::set<enum INPAR::STR::EleTech>> eletechs_;
+      Teuchos::RCP<std::set<enum Inpar::STR::EleTech>> eletechs_;
 
       /// pointer to the coupling model evaluator object
       Teuchos::RCP<STR::MODELEVALUATOR::Generic> coupling_model_ptr_;
@@ -759,10 +759,10 @@ namespace STR
       /// @name implicit and explicit time integrator parameters
       ///@{
       /// dynamic type
-      enum INPAR::STR::DynamicType dyntype_;
+      enum Inpar::STR::DynamicType dyntype_;
 
       /// scaled thickness conditioning type (necessary for shells)
-      enum INPAR::STR::StcScale stcscale_;
+      enum Inpar::STR::StcScale stcscale_;
 
       /// number of layers for multilayered case
       int stclayer_;
@@ -790,19 +790,19 @@ namespace STR
       int prestress_min_number_of_load_steps_;
 
       /// type of pre-stressing
-      enum INPAR::STR::PreStress prestresstype_;
+      enum Inpar::STR::PreStress prestresstype_;
 
       /// type of the predictor
-      enum INPAR::STR::PredEnum predtype_;
+      enum Inpar::STR::PredEnum predtype_;
 
       /// type of nonlinear solver
-      enum INPAR::STR::NonlinSolTech nlnsolvertype_;
+      enum Inpar::STR::NonlinSolTech nlnsolvertype_;
 
       /// action to be performed when the non-linear solver diverges
-      enum INPAR::STR::DivContAct divergenceaction_;
+      enum Inpar::STR::DivContAct divergenceaction_;
 
       /// mid-time energy type
-      enum INPAR::STR::MidAverageEnum mid_time_energy_type_;
+      enum Inpar::STR::MidAverageEnum mid_time_energy_type_;
 
       /// how often you want to half your timestep until you give up
       int maxdivconrefinementlevel_;
@@ -821,7 +821,7 @@ namespace STR
       ///@{
 
       /// pointer to the linear solvers map
-      Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
+      Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
           linsolvers_;
       ///@}
 
@@ -829,7 +829,7 @@ namespace STR
       ///@{
 
       /// vector norm type for the status/convergence test
-      enum INPAR::STR::VectorNorm normtype_;
+      enum Inpar::STR::VectorNorm normtype_;
 
       /// vector norm type for the status/convergence test
       enum ::NOX::Abstract::Vector::NormType nox_normtype_;
@@ -840,129 +840,129 @@ namespace STR
       double tol_disp_incr_;
 
       /// tolerance type for the convergence check of the displacement vector
-      enum INPAR::STR::ConvNorm toltype_disp_incr_;
+      enum Inpar::STR::ConvNorm toltype_disp_incr_;
 
       /// tolerance force residual
       double tol_fres_;
 
       /// tolerance type for the convergence check of the force residual
-      enum INPAR::STR::ConvNorm toltype_fres_;
+      enum Inpar::STR::ConvNorm toltype_fres_;
 
       /// tolerance pressure residual
       double tol_pres_;
 
       /// tolerance type for the convergence check of the pressure residual
-      enum INPAR::STR::ConvNorm toltype_pres_;
+      enum Inpar::STR::ConvNorm toltype_pres_;
 
       /// tolerance incompressible residual/ residual pressure forces
       double tol_inco_;
 
       /// tolerance type for the convergence check if the incompressible residual/ residual pressure
       /// forces
-      enum INPAR::STR::ConvNorm toltype_inco_;
+      enum Inpar::STR::ConvNorm toltype_inco_;
 
       /// tolerance plasticity residual
       double tol_plast_res_;
 
       /// tolerance type for the convergence check of the plasticity residual
-      enum INPAR::STR::ConvNorm toltype_plast_res_;
+      enum Inpar::STR::ConvNorm toltype_plast_res_;
 
       /// tolerance plasticity increment
       double tol_plast_incr_;
 
       /// tolerance type for the convergence check of the plasticity increment
-      enum INPAR::STR::ConvNorm toltype_plast_incr_;
+      enum Inpar::STR::ConvNorm toltype_plast_incr_;
 
       /// tolerance EAS residual
       double tol_eas_res_;
 
       /// tolerance type for the convergence check of the EAS residual
-      enum INPAR::STR::ConvNorm toltype_eas_res_;
+      enum Inpar::STR::ConvNorm toltype_eas_res_;
 
       /// tolerance EAS increment
       double tol_eas_incr_;
 
       /// tolerance type for the convergence check of the EAS increment
-      enum INPAR::STR::ConvNorm toltype_eas_incr_;
+      enum Inpar::STR::ConvNorm toltype_eas_incr_;
 
       /// type of combination of the displacement and the pressure test
-      enum INPAR::STR::BinaryOp normcombo_disp_pres_;
+      enum Inpar::STR::BinaryOp normcombo_disp_pres_;
 
       /// type of combination of the force and the pressure residual test
-      enum INPAR::STR::BinaryOp normcombo_fres_inco_;
+      enum Inpar::STR::BinaryOp normcombo_fres_inco_;
 
       /// type of combination of the force and the EAS residual
-      enum INPAR::STR::BinaryOp normcombo_fres_eas_res_;
+      enum Inpar::STR::BinaryOp normcombo_fres_eas_res_;
 
       /// type of combination of the displacement and the EAS increment
-      enum INPAR::STR::BinaryOp normcombo_disp_eas_incr_;
+      enum Inpar::STR::BinaryOp normcombo_disp_eas_incr_;
 
       /// type of combination of the force and the plasticity residual
-      enum INPAR::STR::BinaryOp normcombo_fres_plast_res_;
+      enum Inpar::STR::BinaryOp normcombo_fres_plast_res_;
 
       /// type of combination of the displacement and the plasticity increment
-      enum INPAR::STR::BinaryOp normcombo_disp_plast_incr_;
+      enum Inpar::STR::BinaryOp normcombo_disp_plast_incr_;
 
       /// type of combination of the force and the displacement test
-      enum INPAR::STR::BinaryOp normcombo_fres_disp_;
+      enum Inpar::STR::BinaryOp normcombo_fres_disp_;
       ///@}
 
       /// @name constraint variables
       ///@{
 
       /// tolerance type for the convergence check of the 0D cardiovascular residual
-      enum INPAR::STR::ConvNorm toltype_cardvasc0d_res_;
+      enum Inpar::STR::ConvNorm toltype_cardvasc0d_res_;
 
       /// tolerance 0D cardiovascular residual
       double tol_cardvasc0d_res_;
 
       /// tolerance type for the convergence check of the 0D cardiovascular dof increment
-      enum INPAR::STR::ConvNorm toltype_cardvasc0d_incr_;
+      enum Inpar::STR::ConvNorm toltype_cardvasc0d_incr_;
 
       /// tolerance 0D cardiovascular dof increment
       double tol_cardvasc0d_incr_;
 
       /// tolerance type for the convergence check of the constraint residual
-      enum INPAR::STR::ConvNorm toltype_constr_res_;
+      enum Inpar::STR::ConvNorm toltype_constr_res_;
 
       /// tolerance constraint residual
       double tol_constr_res_;
 
       /// tolerance type for the convergence check of the constraint LM increment
-      enum INPAR::STR::ConvNorm toltype_constr_incr_;
+      enum Inpar::STR::ConvNorm toltype_constr_incr_;
 
       /// tolerance constraint LM increment
       double tol_constr_incr_;
 
       /// tolerance type for the convergence check of the contact residual
-      enum INPAR::STR::ConvNorm toltype_contact_res_;
+      enum Inpar::STR::ConvNorm toltype_contact_res_;
 
       /// tolerance contact constraint residual
       double tol_contact_res_;
 
       /// tolerance type  for the convergence check of the contact lagrange increment
-      enum INPAR::STR::ConvNorm toltype_contact_lm_incr_;
+      enum Inpar::STR::ConvNorm toltype_contact_lm_incr_;
 
       /// tolerance contact lagrange increment
       double tol_contact_lm_incr_;
 
       /// type of combination of the force and the contact residual
-      enum INPAR::STR::BinaryOp normcombo_fres_contact_res_;
+      enum Inpar::STR::BinaryOp normcombo_fres_contact_res_;
 
       /// type of combination of the displacement and the contact lagrange multiplier increment test
-      enum INPAR::STR::BinaryOp normcombo_disp_contact_lm_incr_;
+      enum Inpar::STR::BinaryOp normcombo_disp_contact_lm_incr_;
 
       /// type of combination of the force and the 0D cardiovascular model residual
-      enum INPAR::STR::BinaryOp normcombo_fres_cardvasc0d_res_;
+      enum Inpar::STR::BinaryOp normcombo_fres_cardvasc0d_res_;
 
       /// type of combination of the displacement and the 0D cardiovascular model dof increment test
-      enum INPAR::STR::BinaryOp normcombo_disp_cardvasc0d_incr_;
+      enum Inpar::STR::BinaryOp normcombo_disp_cardvasc0d_incr_;
 
       /// type of combination of the force and the constraint residual
-      enum INPAR::STR::BinaryOp normcombo_fres_constr_res_;
+      enum Inpar::STR::BinaryOp normcombo_fres_constr_res_;
 
       /// type of combination of the displacement and the 0D cardiovascular model dof increment test
-      enum INPAR::STR::BinaryOp normcombo_disp_constr_incr_;
+      enum Inpar::STR::BinaryOp normcombo_disp_constr_incr_;
 
       /// random factor for modifying time-step size in case this way of continuing non-linear
       /// iteration was chosen
@@ -981,7 +981,7 @@ namespace STR
       ///@{
 
       /// type of initial displacement initialization
-      enum INPAR::STR::InitialDisp initial_disp_;
+      enum Inpar::STR::InitialDisp initial_disp_;
       int start_func_no_;
 
       ///@}
@@ -990,7 +990,7 @@ namespace STR
       ///@{
 
       /// pointer to the linear solvers map
-      Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
+      Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox_;
       ///@}
 
       ///@}
@@ -1021,7 +1021,7 @@ namespace STR
       //!@{
 
       //! returns the mid-average type (for more information see MidAverageEnum)
-      const enum INPAR::STR::MidAverageEnum& GetMidAverageType() const
+      const enum Inpar::STR::MidAverageEnum& GetMidAverageType() const
       {
         check_init_setup();
         return midavg_;
@@ -1066,7 +1066,7 @@ namespace STR
 
      private:
       //! mid-average type more at MidAverageEnum
-      enum INPAR::STR::MidAverageEnum midavg_;
+      enum Inpar::STR::MidAverageEnum midavg_;
 
       //! Time integration parameter \f$\beta \in (0,1/2]\f$
       double beta_;
@@ -1150,7 +1150,7 @@ namespace STR
       bool modexpleuler_;
     };
 
-  }  // namespace TIMINT
+  }  // namespace TimeInt
 }  // namespace STR
 
 

@@ -16,15 +16,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 // solve the rectangular system with linear least squares
-CORE::LINALG::SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_square()
+Core::LinAlg::SerialDenseVector Core::Geo::Cut::LeastSquares::linear_least_square()
 {
-  CORE::LINALG::SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
-  CORE::LINALG::SerialDenseVector rhs(matri_[0].size());
+  Core::LinAlg::SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
+  Core::LinAlg::SerialDenseVector rhs(matri_[0].size());
   sqr = get_square_matrix(rhs);
   unknown_.size(matri_[0].size());
 
-  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
-  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+  using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
+  using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_GPweights;
   solve_for_GPweights.setMatrix(Teuchos::rcpFromRef(sqr));
   solve_for_GPweights.setVectors(Teuchos::rcpFromRef(unknown_), Teuchos::rcpFromRef(rhs));
@@ -41,10 +41,10 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_squar
 
 // premultiplying the matrix with its transpose to get the square matrix
 // the source terms also get multiplied
-CORE::LINALG::SerialDenseMatrix CORE::GEO::CUT::LeastSquares::get_square_matrix(
-    CORE::LINALG::SerialDenseVector &rhs)
+Core::LinAlg::SerialDenseMatrix Core::Geo::Cut::LeastSquares::get_square_matrix(
+    Core::LinAlg::SerialDenseVector &rhs)
 {
-  CORE::LINALG::SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
+  Core::LinAlg::SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
 
   for (unsigned i = 0; i < matri_[0].size(); i++)
   {

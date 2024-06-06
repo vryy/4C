@@ -21,38 +21,38 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface* DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface::Impl(
-    const CORE::Elements::Element* ele)
+Discret::ELEMENTS::ScaTraHDGIntFaceImplInterface*
+Discret::ELEMENTS::ScaTraHDGIntFaceImplInterface::Impl(const Core::Elements::Element* ele)
 {
   switch (ele->Shape())
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::quad4>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::quad4>::Instance();
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
-      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::quad8>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::quad8>::Instance();
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::quad9>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::quad9>::Instance();
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::tri3>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::tri3>::Instance();
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::tri6>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::tri6>::Instance();
     }
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::line2>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::line2>::Instance();
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
-      return ScaTraHDGIntFaceImpl<CORE::FE::CellType::line3>::Instance();
+      return ScaTraHDGIntFaceImpl<Core::FE::CellType::line3>::Instance();
     }
     default:
       FOUR_C_THROW(
@@ -62,15 +62,15 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface* DRT::ELEMENTS::ScaTraHDGIntFaceImp
   return nullptr;
 }
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>*
-DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Instance(CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>*
+Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>>(
-            new DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>());
+        return std::unique_ptr<Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>>(
+            new Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -78,8 +78,8 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::Instance(CORE::UTILS::SingletonAct
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::ScaTraHDGIntFaceImpl()
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::ScaTraHDGIntFaceImpl()
 {
   return;
 }
@@ -87,14 +87,14 @@ DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::ScaTraHDGIntFaceImpl()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
-    DRT::ELEMENTS::ScaTraHDGIntFace* intface,               ///< internal face element
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
+    Discret::ELEMENTS::ScaTraHDGIntFace* intface,           ///< internal face element
     std::vector<int>& nds_master,                           ///< nodal dofset w.r.t. master element
     std::vector<int>& nds_slave,                            ///< nodal dofset w.r.t. slave element
     Teuchos::ParameterList& params,                         ///< parameter list
-    DRT::DiscretizationFaces& discretization,               ///< faces discretization
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+    Discret::DiscretizationFaces& discretization,           ///< faces discretization
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
     Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
 {
@@ -105,19 +105,19 @@ void DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::assemble_internal_faces_using
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::evaluate_internal_faces(
-    DRT::ELEMENTS::ScaTraHDGIntFace* intface,  ///< internal face element
-    Teuchos::ParameterList& params,            ///< parameter list
-    DRT::Discretization& discretization,       ///< discretization
-    std::vector<int>& patchlm,                 ///< patch local map
-    std::vector<int>& lm_masterToPatch,        ///< local map between master dofs and patchlm
-    std::vector<int>& lm_slaveToPatch,         ///< local map between slave dofs and patchlm
-    std::vector<int>& lm_faceToPatch,          ///< local map between face dofs and patchlm
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::evaluate_internal_faces(
+    Discret::ELEMENTS::ScaTraHDGIntFace* intface,  ///< internal face element
+    Teuchos::ParameterList& params,                ///< parameter list
+    Discret::Discretization& discretization,       ///< discretization
+    std::vector<int>& patchlm,                     ///< patch local map
+    std::vector<int>& lm_masterToPatch,            ///< local map between master dofs and patchlm
+    std::vector<int>& lm_slaveToPatch,             ///< local map between slave dofs and patchlm
+    std::vector<int>& lm_faceToPatch,              ///< local map between face dofs and patchlm
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch,   ///< local map between slave nodes and nodes in patch
-    std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
-    std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
+    std::vector<Core::LinAlg::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
+    std::vector<Core::LinAlg::SerialDenseVector>& elevec_blocks   ///< element vector blocks
 )
 {
   return 0;

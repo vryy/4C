@@ -22,9 +22,9 @@
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     /*!
     \brief This class solves the system of equations using linear least squares method
@@ -32,7 +32,7 @@ namespace CORE::GEO
     class LeastSquares
     {
      public:
-      LeastSquares(std::vector<std::vector<double>> matri, CORE::LINALG::SerialDenseVector sourc)
+      LeastSquares(std::vector<std::vector<double>> matri, Core::LinAlg::SerialDenseVector sourc)
           : matri_(matri), sourc_(sourc)
       {
       }
@@ -41,20 +41,20 @@ namespace CORE::GEO
       \brief Performs the linear least squares. The resulting equations are solved using
       non-iterative method because the least squares produces full matrix
       */
-      CORE::LINALG::SerialDenseVector linear_least_square();
+      Core::LinAlg::SerialDenseVector linear_least_square();
 
      private:
       /*!
       \brief Construct the square matrix by multiplying the transpose of the original system matrix
       */
-      CORE::LINALG::SerialDenseMatrix get_square_matrix(CORE::LINALG::SerialDenseVector &rhs);
+      Core::LinAlg::SerialDenseMatrix get_square_matrix(Core::LinAlg::SerialDenseVector &rhs);
 
       std::vector<std::vector<double>> matri_;
-      CORE::LINALG::SerialDenseVector sourc_;
-      CORE::LINALG::SerialDenseVector unknown_;
+      Core::LinAlg::SerialDenseVector sourc_;
+      Core::LinAlg::SerialDenseVector unknown_;
     };
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

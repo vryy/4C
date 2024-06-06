@@ -20,30 +20,30 @@ FOUR_C_NAMESPACE_OPEN
     int matid)
 {
   // for the sake of safety
-  if (GLOBAL::Problem::Instance()->Materials() == Teuchos::null)
+  if (Global::Problem::Instance()->Materials() == Teuchos::null)
   {
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   }
 
   // yet another safety check
-  if (GLOBAL::Problem::Instance()->Materials()->Num() == 0)
+  if (Global::Problem::Instance()->Materials()->Num() == 0)
   {
     FOUR_C_THROW("List of materials in the global problem instance is empty.");
   }
 
   // retrieve problem instance to read from
-  const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
+  const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
 
   // retrieve validated input line of material ID in question
-  auto* curmat = GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+  auto* curmat = Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
 
   switch (curmat->Type())
   {
-    case CORE::Materials::mix_remodelfiber_material_exponential:
-      return MAT::CreateMaterialParameterInstance<
+    case Core::Materials::mix_remodelfiber_material_exponential:
+      return Mat::CreateMaterialParameterInstance<
           MIXTURE::PAR::RemodelFiberMaterialExponential<double>>(curmat);
-    case CORE::Materials::mix_remodelfiber_material_exponential_active:
-      return MAT::CreateMaterialParameterInstance<
+    case Core::Materials::mix_remodelfiber_material_exponential_active:
+      return Mat::CreateMaterialParameterInstance<
           MIXTURE::PAR::RemodelFiberMaterialExponentialActive<double>>(curmat);
     default:
       FOUR_C_THROW(

@@ -16,9 +16,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR
+namespace Inpar
 {
-  namespace IO_RUNTIME_OUTPUT
+  namespace IORuntimeOutput
   {
     namespace FLUID
     {
@@ -37,43 +37,43 @@ namespace INPAR
             sublist_IO_output.sublist("FLUID", false, "");
 
         // whether to write output for fluid
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "OUTPUT_FLUID", "No", "write fluid output", &sublist_IO_output_fluid);
 
         // whether to write velocity state
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "VELOCITY", "No", "write velocity output", &sublist_IO_output_fluid);
 
         // whether to write pressure state
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "PRESSURE", "No", "write pressure output", &sublist_IO_output_fluid);
 
         // whether to write acceleration state
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "ACCELERATION", "No", "write acceleration output", &sublist_IO_output_fluid);
 
         // whether to write displacement state
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "DISPLACEMENT", "No", "write displacement output", &sublist_IO_output_fluid);
 
         // whether to write displacement state
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "GRIDVELOCITY", "No", "write grid velocity output", &sublist_IO_output_fluid);
 
         // whether to write element owner
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "ELEMENT_OWNER", "No", "write element owner", &sublist_IO_output_fluid);
 
         // whether to write element GIDs
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "ELEMENT_GID", "No", "write 4C internal element GIDs", &sublist_IO_output_fluid);
 
         // whether to write node GIDs
-        CORE::UTILS::BoolParameter(
+        Core::UTILS::BoolParameter(
             "NODE_GID", "No", "write 4C internal node GIDs", &sublist_IO_output_fluid);
       }
     }  // namespace FLUID
-  }    // namespace IO_RUNTIME_OUTPUT
-}  // namespace INPAR
+  }    // namespace IORuntimeOutput
+}  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE

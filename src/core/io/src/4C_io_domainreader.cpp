@@ -26,16 +26,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   /// forward declarations
   void BroadcastInputDataToAllProcs(
-      Teuchos::RCP<Epetra_Comm> comm, CORE::IO::GRIDGENERATOR::RectangularCuboidInputs& inputData);
+      Teuchos::RCP<Epetra_Comm> comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData);
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  DomainReader::DomainReader(Teuchos::RCP<DRT::Discretization> dis,
-      const CORE::IO::DatFileReader& reader, std::string sectionname)
+  DomainReader::DomainReader(Teuchos::RCP<Discret::Discretization> dis,
+      const Core::IO::DatFileReader& reader, std::string sectionname)
       : name_(dis->Name()),
         reader_(reader),
         comm_(reader.Comm()),
@@ -53,30 +53,30 @@ namespace CORE::IO
     Teuchos::Time time("", true);
 
     if (!reader_.MyOutputFlag() && myrank == 0)
-      CORE::IO::cout << "Entering domain generation mode for " << name_
+      Core::IO::cout << "Entering domain generation mode for " << name_
                      << " discretization ...\nCreate and partition elements      in...."
-                     << CORE::IO::endl;
+                     << Core::IO::endl;
 
-    GRIDGENERATOR::RectangularCuboidInputs inputData =
+    GridGenerator::RectangularCuboidInputs inputData =
         DomainReader::read_rectangular_cuboid_input_data();
     inputData.node_gid_of_first_new_node_ = nodeGIdOfFirstNewNode;
 
-    CORE::IO::GRIDGENERATOR::CreateRectangularCuboidDiscretization(
+    Core::IO::GridGenerator::CreateRectangularCuboidDiscretization(
         *dis_, inputData, static_cast<bool>(reader_.MyOutputFlag()));
 
     if (!myrank && reader_.MyOutputFlag() == 0)
-      CORE::IO::cout << "............................................... " << std::setw(10)
+      Core::IO::cout << "............................................... " << std::setw(10)
                      << std::setprecision(5) << std::scientific << time.totalElapsedTime(true)
-                     << " secs" << CORE::IO::endl;
+                     << " secs" << Core::IO::endl;
 
     return;
   }
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  GRIDGENERATOR::RectangularCuboidInputs DomainReader::read_rectangular_cuboid_input_data() const
+  GridGenerator::RectangularCuboidInputs DomainReader::read_rectangular_cuboid_input_data() const
   {
-    CORE::IO::GRIDGENERATOR::RectangularCuboidInputs inputData;
+    Core::IO::GridGenerator::RectangularCuboidInputs inputData;
     // all reading is done on proc 0
     if (comm_->MyPID() == 0)
     {
@@ -94,7 +94,7 @@ namespace CORE::IO
         {
           // remove comments, trailing and leading whitespaces
           // compact internal whitespaces
-          line = CORE::UTILS::StripComment(line);
+          line = Core::UTILS::StripComment(line);
 
           // line is now empty
           if (line.size() == 0) continue;
@@ -163,31 +163,31 @@ namespace CORE::IO
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void BroadcastInputDataToAllProcs(
-      Teuchos::RCP<Epetra_Comm> comm, CORE::IO::GRIDGENERATOR::RectangularCuboidInputs& inputData)
+      Teuchos::RCP<Epetra_Comm> comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData)
   {
     const int myrank = comm->MyPID();
 
     std::vector<char> data;
     if (myrank == 0)
     {
-      CORE::COMM::PackBuffer buffer;
-      CORE::COMM::ParObject::AddtoPack<double, 3>(buffer, inputData.bottom_corner_point_);
-      CORE::COMM::ParObject::AddtoPack<double, 3>(buffer, inputData.top_corner_point_);
-      CORE::COMM::ParObject::AddtoPack<int, 3>(buffer, inputData.interval_);
-      CORE::COMM::ParObject::AddtoPack<double, 3>(buffer, inputData.rotation_angle_);
-      CORE::COMM::ParObject::AddtoPack(buffer, static_cast<int>(inputData.autopartition_));
-      CORE::COMM::ParObject::AddtoPack(buffer, inputData.elementtype_);
-      CORE::COMM::ParObject::AddtoPack(buffer, inputData.distype_);
-      CORE::COMM::ParObject::AddtoPack(buffer, inputData.elearguments_);
+      Core::Communication::PackBuffer buffer;
+      Core::Communication::ParObject::AddtoPack<double, 3>(buffer, inputData.bottom_corner_point_);
+      Core::Communication::ParObject::AddtoPack<double, 3>(buffer, inputData.top_corner_point_);
+      Core::Communication::ParObject::AddtoPack<int, 3>(buffer, inputData.interval_);
+      Core::Communication::ParObject::AddtoPack<double, 3>(buffer, inputData.rotation_angle_);
+      Core::Communication::ParObject::AddtoPack(buffer, static_cast<int>(inputData.autopartition_));
+      Core::Communication::ParObject::AddtoPack(buffer, inputData.elementtype_);
+      Core::Communication::ParObject::AddtoPack(buffer, inputData.distype_);
+      Core::Communication::ParObject::AddtoPack(buffer, inputData.elearguments_);
       buffer.StartPacking();
-      CORE::COMM::ParObject::AddtoPack<double, 3>(buffer, inputData.bottom_corner_point_);
-      CORE::COMM::ParObject::AddtoPack<double, 3>(buffer, inputData.top_corner_point_);
-      CORE::COMM::ParObject::AddtoPack<int, 3>(buffer, inputData.interval_);
-      CORE::COMM::ParObject::AddtoPack<double, 3>(buffer, inputData.rotation_angle_);
-      CORE::COMM::ParObject::AddtoPack(buffer, static_cast<int>(inputData.autopartition_));
-      CORE::COMM::ParObject::AddtoPack(buffer, inputData.elementtype_);
-      CORE::COMM::ParObject::AddtoPack(buffer, inputData.distype_);
-      CORE::COMM::ParObject::AddtoPack(buffer, inputData.elearguments_);
+      Core::Communication::ParObject::AddtoPack<double, 3>(buffer, inputData.bottom_corner_point_);
+      Core::Communication::ParObject::AddtoPack<double, 3>(buffer, inputData.top_corner_point_);
+      Core::Communication::ParObject::AddtoPack<int, 3>(buffer, inputData.interval_);
+      Core::Communication::ParObject::AddtoPack<double, 3>(buffer, inputData.rotation_angle_);
+      Core::Communication::ParObject::AddtoPack(buffer, static_cast<int>(inputData.autopartition_));
+      Core::Communication::ParObject::AddtoPack(buffer, inputData.elementtype_);
+      Core::Communication::ParObject::AddtoPack(buffer, inputData.distype_);
+      Core::Communication::ParObject::AddtoPack(buffer, inputData.elearguments_);
       std::swap(data, buffer());
     }
 
@@ -199,16 +199,19 @@ namespace CORE::IO
     if (myrank != 0)
     {
       size_t pos = 0;
-      CORE::COMM::ParObject::ExtractfromPack<double, 3>(pos, data, inputData.bottom_corner_point_);
-      CORE::COMM::ParObject::ExtractfromPack<double, 3>(pos, data, inputData.top_corner_point_);
-      CORE::COMM::ParObject::ExtractfromPack<int, 3>(pos, data, inputData.interval_);
-      CORE::COMM::ParObject::ExtractfromPack<double, 3>(pos, data, inputData.rotation_angle_);
+      Core::Communication::ParObject::ExtractfromPack<double, 3>(
+          pos, data, inputData.bottom_corner_point_);
+      Core::Communication::ParObject::ExtractfromPack<double, 3>(
+          pos, data, inputData.top_corner_point_);
+      Core::Communication::ParObject::ExtractfromPack<int, 3>(pos, data, inputData.interval_);
+      Core::Communication::ParObject::ExtractfromPack<double, 3>(
+          pos, data, inputData.rotation_angle_);
       int autopartitionInteger;
-      CORE::COMM::ParObject::ExtractfromPack(pos, data, autopartitionInteger);
+      Core::Communication::ParObject::ExtractfromPack(pos, data, autopartitionInteger);
       inputData.autopartition_ = autopartitionInteger;
-      CORE::COMM::ParObject::ExtractfromPack(pos, data, inputData.elementtype_);
-      CORE::COMM::ParObject::ExtractfromPack(pos, data, inputData.distype_);
-      CORE::COMM::ParObject::ExtractfromPack(pos, data, inputData.elearguments_);
+      Core::Communication::ParObject::ExtractfromPack(pos, data, inputData.elementtype_);
+      Core::Communication::ParObject::ExtractfromPack(pos, data, inputData.distype_);
+      Core::Communication::ParObject::ExtractfromPack(pos, data, inputData.elearguments_);
     }
   }
 
@@ -221,18 +224,18 @@ namespace CORE::IO
     Teuchos::Time time("", true);
 
     if (!myrank && !reader_.MyOutputFlag())
-      CORE::IO::cout << "Complete discretization " << std::left << std::setw(16) << name_
-                     << " in...." << CORE::IO::flush;
+      Core::IO::cout << "Complete discretization " << std::left << std::setw(16) << name_
+                     << " in...." << Core::IO::flush;
 
     int err = dis_->fill_complete(false, false, false);
     if (err) FOUR_C_THROW("dis_->fill_complete() returned %d", err);
 
     if (!myrank && !reader_.MyOutputFlag())
-      CORE::IO::cout << time.totalElapsedTime(true) << " secs" << CORE::IO::endl;
+      Core::IO::cout << time.totalElapsedTime(true) << " secs" << Core::IO::endl;
 
-    CORE::REBALANCE::UTILS::print_parallel_distribution(*dis_);
+    Core::Rebalance::UTILS::print_parallel_distribution(*dis_);
   }
 
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE

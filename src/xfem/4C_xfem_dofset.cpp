@@ -23,11 +23,11 @@ FOUR_C_NAMESPACE_OPEN
  |  Get the gid of all dofs of a node                      schott 12/14 |
  *----------------------------------------------------------------------*/
 void XFEM::XFEMDofSet::Dof(
-    std::vector<int>& dofs, const CORE::Nodes::Node* node, unsigned nodal_dofset_id) const
+    std::vector<int>& dofs, const Core::Nodes::Node* node, unsigned nodal_dofset_id) const
 {
   const int lid = node->LID();
   if (lid == -1) return;
-  int numdf = CORE::Dofsets::DofSet::NumDofPerNode(*node);
+  int numdf = Core::DOFSets::DofSet::NumDofPerNode(*node);
   const int idx = (*idxcolnodes_)[lid] + nodal_dofset_id * numdf;
   dofs.reserve(numdf);
   for (int i = 0; i < numdf; ++i)
@@ -39,15 +39,15 @@ void XFEM::XFEMDofSet::Dof(
 /*----------------------------------------------------------------------*
  |  Get the gid of all dofs of a node                      schott 12/14 |
  *----------------------------------------------------------------------*/
-int XFEM::XFEMDofSet::NumDofPerNode(const CORE::Nodes::Node& node) const
+int XFEM::XFEMDofSet::NumDofPerNode(const Core::Nodes::Node& node) const
 {
-  CORE::GEO::CUT::Node* n = wizard_.GetNode(node.Id());
+  Core::Geo::Cut::Node* n = wizard_.GetNode(node.Id());
   if (n != nullptr)
   {
-    int numdofpernode = CORE::Dofsets::DofSet::NumDofPerNode(node);
+    int numdofpernode = Core::DOFSets::DofSet::NumDofPerNode(node);
     return numdofpernode * n->NumDofSets();
   }
-  return CORE::Dofsets::DofSet::NumDofPerNode(node);
+  return Core::DOFSets::DofSet::NumDofPerNode(node);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -14,16 +14,16 @@ the collagen and elastin matrix surrounding the myocardial fiber (chappelle12)
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupMyocard::CoupMyocard(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupMyocard::CoupMyocard(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), n_(matdata->Get<double>("N"))
 {
 }
 
-MAT::ELASTIC::CoupMyocard::CoupMyocard(MAT::ELASTIC::PAR::CoupMyocard* params) : params_(params) {}
+Mat::Elastic::CoupMyocard::CoupMyocard(Mat::Elastic::PAR::CoupMyocard* params) : params_(params) {}
 
-void MAT::ELASTIC::CoupMyocard::add_coefficients_visco_principal(
-    const CORE::LINALG::Matrix<3, 1>& prinv, CORE::LINALG::Matrix<8, 1>& mu,
-    CORE::LINALG::Matrix<33, 1>& xi, CORE::LINALG::Matrix<7, 1>& rateinv,
+void Mat::Elastic::CoupMyocard::add_coefficients_visco_principal(
+    const Core::LinAlg::Matrix<3, 1>& prinv, Core::LinAlg::Matrix<8, 1>& mu,
+    Core::LinAlg::Matrix<33, 1>& xi, Core::LinAlg::Matrix<7, 1>& rateinv,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // material parameter

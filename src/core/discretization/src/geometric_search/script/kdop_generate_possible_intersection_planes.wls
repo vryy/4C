@@ -4,7 +4,7 @@
 (* ::Text:: *)
 (*This script was created with Mathematica 13.1. It can be run with the command in the first line of this file or just opened with Mathematica.*)
 (**)
-(*Each k-DOP face is defined by cutting it with all other faces of the k-DOP. However, there are a lot of possible cutting planes that can be ruled out in advance which results in a considerable speed up of the creation of the polygon. The possible intersections between planes that can result in a polygon edge are evaluated in this script and are exported as C++ code to be used within 4C in the function CORE::GEOMETRICSEARCH::GetKDopPolyhedronRepresentation*)
+(*Each k-DOP face is defined by cutting it with all other faces of the k-DOP. However, there are a lot of possible cutting planes that can be ruled out in advance which results in a considerable speed up of the creation of the polygon. The possible intersections between planes that can result in a polygon edge are evaluated in this script and are exported as C++ code to be used within 4C in the function Core::GeometricSearch::GetKDopPolyhedronRepresentation*)
 
 
 (* ::Text:: *)

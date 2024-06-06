@@ -17,14 +17,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-CORE::LINALG::Equilibration::Equilibration(Teuchos::RCP<const Epetra_Map> dofrowmap)
-    : invcolsums_(CORE::LINALG::CreateVector(*dofrowmap, false)),
-      invrowsums_(CORE::LINALG::CreateVector(*dofrowmap, false))
+Core::LinAlg::Equilibration::Equilibration(Teuchos::RCP<const Epetra_Map> dofrowmap)
+    : invcolsums_(Core::LinAlg::CreateVector(*dofrowmap, false)),
+      invrowsums_(Core::LinAlg::CreateVector(*dofrowmap, false))
 
 {
 }
 
-CORE::LINALG::EquilibrationUniversal::EquilibrationUniversal(
+Core::LinAlg::EquilibrationUniversal::EquilibrationUniversal(
     EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap)
     : Equilibration(dofrowmap), method_(method)
 {
@@ -32,7 +32,7 @@ CORE::LINALG::EquilibrationUniversal::EquilibrationUniversal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::LINALG::EquilibrationSparse::EquilibrationSparse(
+Core::LinAlg::EquilibrationSparse::EquilibrationSparse(
     EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap)
     : EquilibrationUniversal(method, dofrowmap)
 {
@@ -42,7 +42,7 @@ CORE::LINALG::EquilibrationSparse::EquilibrationSparse(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::LINALG::EquilibrationBlock::EquilibrationBlock(
+Core::LinAlg::EquilibrationBlock::EquilibrationBlock(
     EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap)
     : EquilibrationUniversal(method, dofrowmap)
 {
@@ -52,7 +52,7 @@ CORE::LINALG::EquilibrationBlock::EquilibrationBlock(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::LINALG::EquilibrationBlockSpecific::EquilibrationBlockSpecific(
+Core::LinAlg::EquilibrationBlockSpecific::EquilibrationBlockSpecific(
     const std::vector<EquilibrationMethod>& method, Teuchos::RCP<const Epetra_Map> dofrowmap)
     : Equilibration(dofrowmap), method_blocks_(method)
 {
@@ -67,7 +67,7 @@ CORE::LINALG::EquilibrationBlockSpecific::EquilibrationBlockSpecific(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::LINALG::Equilibration::compute_inv_row_sums(const CORE::LINALG::SparseMatrix& matrix,
+void Core::LinAlg::Equilibration::compute_inv_row_sums(const Core::LinAlg::SparseMatrix& matrix,
     Teuchos::RCP<Epetra_Vector> invrowsums, const EquilibrationMethod method) const
 {
   // compute inverse row sums of matrix
@@ -83,7 +83,7 @@ void CORE::LINALG::Equilibration::compute_inv_row_sums(const CORE::LINALG::Spars
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void CORE::LINALG::Equilibration::compute_inv_col_sums(const CORE::LINALG::SparseMatrix& matrix,
+void Core::LinAlg::Equilibration::compute_inv_col_sums(const Core::LinAlg::SparseMatrix& matrix,
     Teuchos::RCP<Epetra_Vector> invcolsums, const EquilibrationMethod method) const
 {
   // compute inverse column sums of matrix
@@ -98,10 +98,10 @@ void CORE::LINALG::Equilibration::compute_inv_col_sums(const CORE::LINALG::Spars
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-void CORE::LINALG::Equilibration::compute_inv_symmetry(
-    const CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<Epetra_Vector> invsymmetry) const
+void Core::LinAlg::Equilibration::compute_inv_symmetry(
+    const Core::LinAlg::SparseMatrix& matrix, Teuchos::RCP<Epetra_Vector> invsymmetry) const
 {
-  Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(matrix.RangeMap(), true);
+  Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::CreateVector(matrix.RangeMap(), true);
   matrix.ExtractDiagonalCopy(*diag);
 
   for (int my_row = 0; my_row < diag->Map().NumMyElements(); ++my_row)
@@ -113,25 +113,25 @@ void CORE::LINALG::Equilibration::compute_inv_symmetry(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Equilibration::equilibrate_matrix_rows(
-    CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invrowsums) const
+void Core::LinAlg::Equilibration::equilibrate_matrix_rows(
+    Core::LinAlg::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invrowsums) const
 {
   if (matrix.LeftScale(*invrowsums)) FOUR_C_THROW("Row equilibration of matrix failed!");
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Equilibration::equilibrate_matrix_columns(
-    CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invcolsums) const
+void Core::LinAlg::Equilibration::equilibrate_matrix_columns(
+    Core::LinAlg::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invcolsums) const
 {
   if (matrix.RightScale(*invcolsums)) FOUR_C_THROW("Column equilibration of matrix failed!");
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Equilibration::EquilibrateSystem(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> residual,
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const
+void Core::LinAlg::Equilibration::EquilibrateSystem(
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> residual,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const
 {
   // Equilibrate the matrix given the chosen method and matrix type
   equilibrate_matrix(systemmatrix, blockmaps);
@@ -142,7 +142,7 @@ void CORE::LINALG::Equilibration::EquilibrateSystem(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::EquilibrationUniversal::unequilibrate_increment(
+void Core::LinAlg::EquilibrationUniversal::unequilibrate_increment(
     Teuchos::RCP<Epetra_Vector> increment) const
 {
   // unequilibrate global increment vector if necessary
@@ -158,7 +158,7 @@ void CORE::LINALG::EquilibrationUniversal::unequilibrate_increment(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::EquilibrationUniversal::equilibrate_rhs(
+void Core::LinAlg::EquilibrationUniversal::equilibrate_rhs(
     Teuchos::RCP<Epetra_Vector> residual) const
 {
   // perform equilibration of global residual vector
@@ -172,7 +172,7 @@ void CORE::LINALG::EquilibrationUniversal::equilibrate_rhs(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::EquilibrationBlockSpecific::unequilibrate_increment(
+void Core::LinAlg::EquilibrationBlockSpecific::unequilibrate_increment(
     Teuchos::RCP<Epetra_Vector> increment) const
 {
   if (increment->Multiply(1.0, *invcolsums_, *increment, 0.0))
@@ -181,7 +181,7 @@ void CORE::LINALG::EquilibrationBlockSpecific::unequilibrate_increment(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::EquilibrationBlockSpecific::equilibrate_rhs(
+void Core::LinAlg::EquilibrationBlockSpecific::equilibrate_rhs(
     Teuchos::RCP<Epetra_Vector> residual) const
 {
   if (residual->Multiply(1.0, *invrowsums_, *residual, 0.0))
@@ -190,20 +190,20 @@ void CORE::LINALG::EquilibrationBlockSpecific::equilibrate_rhs(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void CORE::LINALG::EquilibrationSparse::equilibrate_matrix(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const
+void Core::LinAlg::EquilibrationSparse::equilibrate_matrix(
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const
 {
   equilibrate_matrix(systemmatrix);
 }
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void CORE::LINALG::EquilibrationSparse::equilibrate_matrix(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix) const
+void Core::LinAlg::EquilibrationSparse::equilibrate_matrix(
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsematrix =
-      CORE::LINALG::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsematrix =
+      Core::LinAlg::CastToSparseMatrixAndCheckSuccess(systemmatrix);
 
   // perform row equilibration
   if (Method() == EquilibrationMethod::rows_full or
@@ -234,12 +234,12 @@ void CORE::LINALG::EquilibrationSparse::equilibrate_matrix(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void CORE::LINALG::EquilibrationBlock::equilibrate_matrix(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const
+void Core::LinAlg::EquilibrationBlock::equilibrate_matrix(
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const
 {
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocksparsematrix =
-      CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blocksparsematrix =
+      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
 
   // perform row equilibration
   if (Method() == EquilibrationMethod::rows_full or
@@ -265,7 +265,7 @@ void CORE::LINALG::EquilibrationBlock::equilibrate_matrix(
         for (int j = 0; j < blocksparsematrix->Cols(); ++j)
         {
           // extract current block of global system matrix
-          const CORE::LINALG::SparseMatrix& matrix = blocksparsematrix->Matrix(i, j);
+          const Core::LinAlg::SparseMatrix& matrix = blocksparsematrix->Matrix(i, j);
 
           // loop over all rows of current matrix block
           for (int irow = 0; irow < matrix.RowMap().NumMyElements(); ++irow)
@@ -335,7 +335,7 @@ void CORE::LINALG::EquilibrationBlock::equilibrate_matrix(
         for (int i = 0; i < blocksparsematrix->Rows(); ++i)
         {
           // extract current block of global system matrix
-          const CORE::LINALG::SparseMatrix& matrix = blocksparsematrix->Matrix(i, j);
+          const Core::LinAlg::SparseMatrix& matrix = blocksparsematrix->Matrix(i, j);
 
           // loop over all rows of current matrix block
           for (int irow = 0; irow < matrix.RowMap().NumMyElements(); ++irow)
@@ -384,12 +384,12 @@ void CORE::LINALG::EquilibrationBlock::equilibrate_matrix(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void CORE::LINALG::EquilibrationBlockSpecific::equilibrate_matrix(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const
+void Core::LinAlg::EquilibrationBlockSpecific::equilibrate_matrix(
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmaps) const
 {
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocksparsematrix =
-      CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blocksparsematrix =
+      Core::LinAlg::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
 
   if (blocksparsematrix->Rows() != static_cast<int>(method_blocks_.size()))
     FOUR_C_THROW("No match between number of equilibration methods and Matrix blocks");
@@ -434,7 +434,7 @@ void CORE::LINALG::EquilibrationBlockSpecific::equilibrate_matrix(
     if (method == EquilibrationMethod::symmetry)
     {
       auto invsymmetry =
-          CORE::LINALG::CreateVector(blocksparsematrix->Matrix(i, i).RangeMap(), true);
+          Core::LinAlg::CreateVector(blocksparsematrix->Matrix(i, i).RangeMap(), true);
 
       compute_inv_symmetry(blocksparsematrix->Matrix(i, i), invsymmetry);
 
@@ -453,33 +453,33 @@ void CORE::LINALG::EquilibrationBlockSpecific::equilibrate_matrix(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::Equilibration> CORE::LINALG::BuildEquilibration(MatrixType type,
+Teuchos::RCP<Core::LinAlg::Equilibration> Core::LinAlg::BuildEquilibration(MatrixType type,
     const std::vector<EquilibrationMethod>& method, Teuchos::RCP<const Epetra_Map> dofrowmap)
 {
-  Teuchos::RCP<CORE::LINALG::Equilibration> equilibration = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Equilibration> equilibration = Teuchos::null;
 
   if (method.size() == 1)
   {
     EquilibrationMethod method_global = method.at(0);
 
-    if (method_global == CORE::LINALG::EquilibrationMethod::none)
-      equilibration = Teuchos::rcp(new CORE::LINALG::EquilibrationNone(dofrowmap));
+    if (method_global == Core::LinAlg::EquilibrationMethod::none)
+      equilibration = Teuchos::rcp(new Core::LinAlg::EquilibrationNone(dofrowmap));
     else
     {
       switch (type)
       {
-        case CORE::LINALG::MatrixType::sparse:
+        case Core::LinAlg::MatrixType::sparse:
         {
           equilibration =
-              Teuchos::rcp(new CORE::LINALG::EquilibrationSparse(method_global, dofrowmap));
+              Teuchos::rcp(new Core::LinAlg::EquilibrationSparse(method_global, dofrowmap));
           break;
         }
-        case CORE::LINALG::MatrixType::block_field:
-        case CORE::LINALG::MatrixType::block_condition:
-        case CORE::LINALG::MatrixType::block_condition_dof:
+        case Core::LinAlg::MatrixType::block_field:
+        case Core::LinAlg::MatrixType::block_condition:
+        case Core::LinAlg::MatrixType::block_condition_dof:
         {
           equilibration =
-              Teuchos::rcp(new CORE::LINALG::EquilibrationBlock(method_global, dofrowmap));
+              Teuchos::rcp(new Core::LinAlg::EquilibrationBlock(method_global, dofrowmap));
           break;
         }
         default:
@@ -491,7 +491,7 @@ Teuchos::RCP<CORE::LINALG::Equilibration> CORE::LINALG::BuildEquilibration(Matri
     }
   }
   else
-    equilibration = Teuchos::rcp(new CORE::LINALG::EquilibrationBlockSpecific(method, dofrowmap));
+    equilibration = Teuchos::rcp(new Core::LinAlg::EquilibrationBlockSpecific(method, dofrowmap));
 
   return equilibration;
 }

@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 STR::MODELEVALUATOR::GaussPointDataOutputManager::GaussPointDataOutputManager(
-    INPAR::STR::GaussPointDataOutputType output_type)
+    Inpar::STR::GaussPointDataOutputType output_type)
     : output_type_(output_type),
       max_num_gp_(0),
       data_nodes_({}),
@@ -85,16 +85,16 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::PrepareData(
 {
   switch (output_type_)
   {
-    case INPAR::STR::GaussPointDataOutputType::nodes:
+    case Inpar::STR::GaussPointDataOutputType::nodes:
       prepare_nodal_data_vectors(node_col_map);
       break;
-    case INPAR::STR::GaussPointDataOutputType::element_center:
+    case Inpar::STR::GaussPointDataOutputType::element_center:
       prepare_element_center_data_vectors(element_row_map);
       break;
-    case INPAR::STR::GaussPointDataOutputType::gauss_points:
+    case Inpar::STR::GaussPointDataOutputType::gauss_points:
       prepare_gauss_point_data_vectors(element_row_map);
       break;
-    case INPAR::STR::GaussPointDataOutputType::none:
+    case Inpar::STR::GaussPointDataOutputType::none:
       FOUR_C_THROW("Your Gauss point data output type is none, so you don't need to prepare data!");
     default:
       FOUR_C_THROW("Unknown Gauss point data output type");
@@ -147,7 +147,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::prepare_gauss_point_data_
 
 void STR::MODELEVALUATOR::GaussPointDataOutputManager::post_evaluate()
 {
-  if (output_type_ == INPAR::STR::GaussPointDataOutputType::nodes)
+  if (output_type_ == Inpar::STR::GaussPointDataOutputType::nodes)
   {
     // divide nodal quantities by the nodal count
     for (const auto& name_and_size : quantities_)
@@ -176,7 +176,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::post_evaluate()
 void STR::MODELEVALUATOR::GaussPointDataOutputManager::distribute_quantities(
     const Epetra_Comm& comm)
 {
-  const CORE::COMM::Exporter exporter(comm);
+  const Core::Communication::Exporter exporter(comm);
 
   int max_quantities = quantities_.size();
   comm.MaxAll(&max_quantities, &max_quantities, 1);
@@ -212,7 +212,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::distribute_quantities(
 }
 
 void STR::MODELEVALUATOR::GaussPointDataOutputManager::send_my_quantities_to_proc(
-    const CORE::COMM::Exporter& exporter, int to_proc) const
+    const Core::Communication::Exporter& exporter, int to_proc) const
 {
   // Pack quantities
   std::vector<char> sdata(0);
@@ -225,7 +225,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::send_my_quantities_to_pro
 
 std::unique_ptr<std::unordered_map<std::string, int>>
 STR::MODELEVALUATOR::GaussPointDataOutputManager::receive_quantities_from_proc(
-    const CORE::COMM::Exporter& exporter, int from_proc) const
+    const Core::Communication::Exporter& exporter, int from_proc) const
 {
   std::vector<char> rdata(0);
   int size;
@@ -241,7 +241,7 @@ STR::MODELEVALUATOR::GaussPointDataOutputManager::receive_quantities_from_proc(
 }
 
 void STR::MODELEVALUATOR::GaussPointDataOutputManager::broadcast_my_quantitites(
-    const CORE::COMM::Exporter& exporter)
+    const Core::Communication::Exporter& exporter)
 {
   std::vector<char> data(0);
   if (exporter.Comm().MyPID() == 0)
@@ -264,16 +264,16 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::broadcast_my_quantitites(
 void STR::MODELEVALUATOR::GaussPointDataOutputManager::pack_my_quantities(
     std::vector<char>& data) const
 {
-  CORE::COMM::PackBuffer packBuffer;
+  Core::Communication::PackBuffer packBuffer;
   packBuffer.StartPacking();
-  CORE::COMM::ParObject::AddtoPack(packBuffer, quantities_);
+  Core::Communication::ParObject::AddtoPack(packBuffer, quantities_);
   std::swap(data, packBuffer());
 }
 
 void STR::MODELEVALUATOR::GaussPointDataOutputManager::unpack_quantities(std::size_t pos,
     const std::vector<char>& data, std::unordered_map<std::string, int>& quantities) const
 {
-  CORE::COMM::ParObject::ExtractfromPack(pos, data, quantities);
+  Core::Communication::ParObject::ExtractfromPack(pos, data, quantities);
 }
 
 FOUR_C_NAMESPACE_CLOSE

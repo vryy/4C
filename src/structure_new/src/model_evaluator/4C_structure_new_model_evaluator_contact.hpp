@@ -26,10 +26,10 @@ namespace CONTACT
   class AbstractStrategy;
 }  // namespace CONTACT
 
-namespace MORTAR
+namespace Mortar
 {
   class StrategyBase;
-}  // namespace MORTAR
+}  // namespace Mortar
 
 namespace STR
 {
@@ -47,7 +47,7 @@ namespace STR
       //!@{
 
       //! [derived]
-      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_contact; }
+      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_contact; }
 
       //! reset class variables (without jacobian) [derived]
       void Reset(const Epetra_Vector& x) override;
@@ -75,20 +75,20 @@ namespace STR
 
       //! Assemble the jacobian at \f$t_{n+1}\f$
       bool assemble_jacobian(
-          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
+          Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override;
 
       //! Perform a correction of adaptive parameters
-      bool correct_parameters(NOX::NLN::CorrectionType type) override;
+      bool correct_parameters(NOX::Nln::CorrectionType type) override;
 
       //! [derived]
       void write_restart(
-          CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+          Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! [derived]
-      void read_restart(CORE::IO::DiscretizationReader& ioreader) override;
+      void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const INPAR::STR::PredEnum& pred_type) override{};
+      void Predict(const Inpar::STR::PredEnum& pred_type) override{};
 
       //! recover condensed Lagrange multipliers
       void run_post_compute_x(
@@ -96,7 +96,7 @@ namespace STR
 
       //! [derived]
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::NLN::Group& curr_grp) override;
+          const NOX::Nln::Group& curr_grp) override;
 
       //! [derived]
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override;
@@ -106,11 +106,11 @@ namespace STR
 
       //! [derived]
       void run_post_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
-          const Epetra_Vector& xold, const NOX::NLN::Group& grp) override;
+          const Epetra_Vector& xold, const NOX::Nln::Group& grp) override;
 
       //! [derived]
       void run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs, Epetra_Vector& result,
-          const Epetra_Vector& xold, const NOX::NLN::Group& grp) override;
+          const Epetra_Vector& xold, const NOX::Nln::Group& grp) override;
 
       //! [derived]
       void UpdateStepState(const double& timefac_n) override;
@@ -128,7 +128,7 @@ namespace STR
       void determine_optional_quantity() override;
 
       //! [derived]
-      void OutputStepState(CORE::IO::DiscretizationWriter& iowriter) const override;
+      void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
 
       //! [derived]
       void ResetStepState() override;
@@ -156,7 +156,7 @@ namespace STR
       //! @name Call-back routines
       //!@{
 
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetJacobianBlock(const MatBlockType bt) const;
+      Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetJacobianBlock(const MatBlockType bt) const;
 
       /** \brief Assemble the structural right-hand side vector
        *
@@ -166,10 +166,10 @@ namespace STR
        *
        *  \author hiermeier \date 08/17 */
       Teuchos::RCP<Epetra_Vector> assemble_force_of_models(
-          const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr,
+          const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr,
           const bool apply_dbc = false) const;
 
-      virtual Teuchos::RCP<CORE::LINALG::SparseOperator> GetAuxDisplJacobian() const;
+      virtual Teuchos::RCP<Core::LinAlg::SparseOperator> GetAuxDisplJacobian() const;
 
       void evaluate_weighted_gap_gradient_error();
 

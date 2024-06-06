@@ -22,12 +22,12 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor BinaryTreeNode for self contact (public)             popp 11/09|
  *----------------------------------------------------------------------*/
 CONTACT::SelfBinaryTreeNode::SelfBinaryTreeNode(SelfBinaryTreeNodeType type,
-    DRT::Discretization& discret, Teuchos::RCP<SelfBinaryTreeNode> parent, std::vector<int> elelist,
-    const CORE::LINALG::SerialDenseMatrix& dopnormals,
-    const CORE::LINALG::SerialDenseMatrix& samplevectors, const int& kdop, const int& dim,
+    Discret::Discretization& discret, Teuchos::RCP<SelfBinaryTreeNode> parent,
+    std::vector<int> elelist, const Core::LinAlg::SerialDenseMatrix& dopnormals,
+    const Core::LinAlg::SerialDenseMatrix& samplevectors, const int& kdop, const int& dim,
     const int& nvectors, const int layer, const bool nonsmoothsurf,
     std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes)
-    : MORTAR::BaseBinaryTreeNode::BaseBinaryTreeNode(
+    : Mortar::BaseBinaryTreeNode::BaseBinaryTreeNode(
           discret, elelist, dopnormals, kdop, dim, true, layer),
       // useauxpos_ is always true for contact problems, at least this was the case so far
       type_(type),
@@ -103,15 +103,15 @@ void CONTACT::SelfBinaryTreeNode::calculate_qualified_vectors()
   Element* celement = dynamic_cast<Element*>(discret().gElement(elelist()[0]));
   double loccenter[2];
 
-  CORE::FE::CellType dt = celement->Shape();
-  if (dt == CORE::FE::CellType::tri3 || dt == CORE::FE::CellType::tri6)
+  Core::FE::CellType dt = celement->Shape();
+  if (dt == Core::FE::CellType::tri3 || dt == Core::FE::CellType::tri6)
   {
     loccenter[0] = 1.0 / 3.0;
     loccenter[1] = 1.0 / 3.0;
   }
-  else if (dt == CORE::FE::CellType::line2 || dt == CORE::FE::CellType::line3 ||
-           dt == CORE::FE::CellType::quad4 || dt == CORE::FE::CellType::quad8 ||
-           dt == CORE::FE::CellType::quad9)
+  else if (dt == Core::FE::CellType::line2 || dt == Core::FE::CellType::line3 ||
+           dt == Core::FE::CellType::quad4 || dt == Core::FE::CellType::quad8 ||
+           dt == Core::FE::CellType::quad9)
   {
     loccenter[0] = 0.0;
     loccenter[1] = 0.0;
@@ -319,7 +319,7 @@ void CONTACT::SelfDualEdge::calculate_costs()
   node2_->UpdateSlabsBottomUp(enlarge);
 
   // build parent slab for dual edge
-  CORE::LINALG::SerialDenseMatrix parentslabs;
+  Core::LinAlg::SerialDenseMatrix parentslabs;
   const int n = node1_->kdop();
   parentslabs.reshape(n / 2, 2);
 
@@ -398,7 +398,7 @@ void CONTACT::SelfDualEdge::calculate_costs()
 
     // compute maximal k-DOP area for dual edge
     double lmaxdop2 = 0.0;
-    CORE::LINALG::SerialDenseMatrix dopnormals = node1_->dopnormals();
+    Core::LinAlg::SerialDenseMatrix dopnormals = node1_->dopnormals();
     for (int j = 0; j < n / 2; ++j)
     {
       double scalar = dopnormals(j, 0) * dopnormals(slab, 0) +
@@ -424,9 +424,9 @@ void CONTACT::SelfDualEdge::calculate_costs()
 /*----------------------------------------------------------------------*
  |  ctor SelfBinaryTree (public)                              popp 11/09|
  *----------------------------------------------------------------------*/
-CONTACT::SelfBinaryTree::SelfBinaryTree(DRT::Discretization& discret,
+CONTACT::SelfBinaryTree::SelfBinaryTree(Discret::Discretization& discret,
     const Teuchos::ParameterList& iparams, Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
-    : MORTAR::BaseBinaryTree(discret, dim, eps),
+    : Mortar::BaseBinaryTree(discret, dim, eps),
       elements_(elements),
       iparams_(iparams),
       nvectors_(-1)
@@ -441,7 +441,7 @@ CONTACT::SelfBinaryTree::SelfBinaryTree(DRT::Discretization& discret,
 void CONTACT::SelfBinaryTree::Init()
 {
   // call initialization method of the base class
-  MORTAR::BaseBinaryTree::Init();
+  Mortar::BaseBinaryTree::Init();
 
   // initialize internal variables
   init_internal_variables();
@@ -585,7 +585,7 @@ void CONTACT::SelfBinaryTree::init_leaf_nodes_and_map(std::vector<int>& elelist)
 
   // check for non-smooth contact surface
   bool nonsmoothsurface(false);
-  if (CORE::UTILS::IntegralValue<int>(iparams_, "NONSMOOTH_CONTACT_SURFACE"))
+  if (Core::UTILS::IntegralValue<int>(iparams_, "NONSMOOTH_CONTACT_SURFACE"))
     nonsmoothsurface = true;
 
   // build local element list and create leaf nodes
@@ -610,31 +610,31 @@ void CONTACT::SelfBinaryTree::init_leaf_nodes_and_map(std::vector<int>& elelist)
 /*----------------------------------------------------------------------*
  |  Get number of first order nodes of element (protected) schmidt 01/19|
  *----------------------------------------------------------------------*/
-int CONTACT::SelfBinaryTree::get_ele_specific_num_nodes(CORE::Elements::Element* element)
+int CONTACT::SelfBinaryTree::get_ele_specific_num_nodes(Core::Elements::Element* element)
 {
   // find all first-order nodes of current element we exclude higher-order nodes (i.e. edge and
   // center nodes) in both 2D and 3D as they do not bring in any additional information about
   // connectivity / adjacency
   int numnode = 0;
-  MORTAR::Element* mele = dynamic_cast<MORTAR::Element*>(element);
+  Mortar::Element* mele = dynamic_cast<Mortar::Element*>(element);
 
   switch (mele->Shape())
   {
-    case CORE::FE::CellType::line2:
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line2:
+    case Core::FE::CellType::line3:
     {
       numnode = 2;
       break;
     }
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::tri6:
     {
       numnode = 3;
       break;
     }
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
     {
       numnode = 4;
       break;
@@ -680,7 +680,7 @@ void CONTACT::SelfBinaryTree::get_contracted_node(
  |  Calculate adjacent tree nodes & dual edges (protected) schmidt 01/19|
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
-    std::vector<int>& possadjids, const int gid, CORE::Elements::Element* adjElementk,
+    std::vector<int>& possadjids, const int gid, Core::Elements::Element* adjElementk,
     Teuchos::RCP<SelfBinaryTreeNode>& node1,
     std::vector<Teuchos::RCP<SelfBinaryTreeNode>>& adjtreenodes,
     std::vector<Teuchos::RCP<SelfDualEdge>>& adjdualedges)
@@ -807,9 +807,9 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
     std::vector<int> possadjids;
 
     // get current elements and its nodes
-    CORE::Elements::Element* element = discret().gElement(gid);
+    Core::Elements::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
-    CORE::Nodes::Node** nodes = element->Nodes();
+    Core::Nodes::Node** nodes = element->Nodes();
     if (!nodes) FOUR_C_THROW("Null pointer!");
 
     // first tree node of one dual edge which includes current element is the element itself saved
@@ -833,18 +833,18 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
     // first-order nodes are always stored before higher-order nodes)
     for (int j = 0; j < numnode; ++j)
     {
-      CORE::Nodes::Node* node = nodes[j];
+      Core::Nodes::Node* node = nodes[j];
       if (!node) FOUR_C_THROW("Null pointer!");
 
       // adjacent elements of current node
       int numE = node->NumElement();
-      CORE::Elements::Element** adjElements = node->Elements();
+      Core::Elements::Element** adjElements = node->Elements();
       if (!adjElements) FOUR_C_THROW("Null pointer!");
 
       // loop over all adjacent elements of current node
       for (int k = 0; k < numE; ++k)
       {
-        CORE::Elements::Element* adjElementk = adjElements[k];
+        Core::Elements::Element* adjElementk = adjElements[k];
 
         calculate_adjacent_tree_nodes_and_dual_edges(
             possadjids, gid, adjElementk, node1, adjtreenodes, adjdualedges);
@@ -929,7 +929,7 @@ void CONTACT::SelfBinaryTree::set_enlarge()
   for (int i = 0; i < elements_->NumMyElements(); ++i)
   {
     int gid = elements_->GID(i);
-    CORE::Elements::Element* element = discret().gElement(gid);
+    Core::Elements::Element* element = discret().gElement(gid);
     if (!element) FOUR_C_THROW("Cannot find element with gid %\n", gid);
     CONTACT::Element* celement = dynamic_cast<Element*>(element);
     double mincurrent = celement->MinEdgeSize();
@@ -1462,7 +1462,7 @@ void CONTACT::SelfBinaryTree::master_slave_sorting(int eleID, bool isslave)
   if (contactpairs_.find(eleID) != contactpairs_.end() && !contactpairs_.empty())
   {
     // set the current element to content of "isslave"
-    CORE::Elements::Element* element = discret().gElement(eleID);
+    Core::Elements::Element* element = discret().gElement(eleID);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
     celement->SetSlave() = isslave;
 
@@ -1472,7 +1472,7 @@ void CONTACT::SelfBinaryTree::master_slave_sorting(int eleID, bool isslave)
     if (celement->IsSlave())
       for (int i = 0; i < (int)element->num_node(); i++)
       {
-        CORE::Nodes::Node* node = element->Nodes()[i];
+        Core::Nodes::Node* node = element->Nodes()[i];
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
         cnode->SetSlave() = isslave;
       }
@@ -1563,7 +1563,7 @@ void CONTACT::SelfBinaryTree::search_contact()
   while (leafiter != leafiter_end)
   {
     int gid = leafiter->first;
-    CORE::Elements::Element* element = discret().gElement(gid);
+    Core::Elements::Element* element = discret().gElement(gid);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
 
     if (celement->IsSlave() == true)
@@ -1574,7 +1574,7 @@ void CONTACT::SelfBinaryTree::search_contact()
       // reset nodes to master
       for (int i = 0; i < (int)element->num_node(); ++i)
       {
-        CORE::Nodes::Node* node = element->Nodes()[i];
+        Core::Nodes::Node* node = element->Nodes()[i];
         CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
         cnode->SetSlave() = false;
       }
@@ -1588,13 +1588,13 @@ void CONTACT::SelfBinaryTree::search_contact()
   while (leafiterNew != leafiter_end)
   {
     int gid = leafiterNew->first;
-    CORE::Elements::Element* element = discret().gElement(gid);
+    Core::Elements::Element* element = discret().gElement(gid);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
 
     // reset nodes to master
     for (int i = 0; i < (int)element->num_node(); ++i)
     {
-      CORE::Nodes::Node* node = element->Nodes()[i];
+      Core::Nodes::Node* node = element->Nodes()[i];
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
       if (cnode->IsOnCornerEdge())
       {
@@ -1616,14 +1616,14 @@ void CONTACT::SelfBinaryTree::search_contact()
   }
   Teuchos::RCP<Epetra_Map> mymap =
       Teuchos::rcp(new Epetra_Map(-1, (int)locdata.size(), locdata.data(), 0, comm()));
-  Teuchos::RCP<Epetra_Map> redmap = CORE::LINALG::AllreduceEMap(*mymap);
-  CORE::COMM::Exporter ex(*mymap, *redmap, comm());
+  Teuchos::RCP<Epetra_Map> redmap = Core::LinAlg::AllreduceEMap(*mymap);
+  Core::Communication::Exporter ex(*mymap, *redmap, comm());
   ex.Export(contactpairs_);
 
   // now do new slave and master sorting
   while (!contactpairs_.empty())
   {
-    CORE::Elements::Element* element = discret().gElement(contactpairs_.begin()->first);
+    Core::Elements::Element* element = discret().gElement(contactpairs_.begin()->first);
     CONTACT::Element* celement = dynamic_cast<CONTACT::Element*>(element);
     master_slave_sorting(contactpairs_.begin()->first, celement->IsSlave());
   }
@@ -1634,9 +1634,9 @@ void CONTACT::SelfBinaryTree::search_contact()
   for (int i = 0; i < elements_->NumMyElements(); ++i)
   {
     int gid1 = elements_->GID(i);
-    CORE::Elements::Element* ele1 = discret().gElement(gid1);
+    Core::Elements::Element* ele1 = discret().gElement(gid1);
     if (!ele1) FOUR_C_THROW("Cannot find element with gid %", gid1);
-    MORTAR::Element* element1 = dynamic_cast<MORTAR::Element*>(ele1);
+    Mortar::Element* element1 = dynamic_cast<Mortar::Element*>(ele1);
 
     // only slave elements store search candidates
     if (!element1->IsSlave()) continue;
@@ -1645,9 +1645,9 @@ void CONTACT::SelfBinaryTree::search_contact()
     for (int j = 0; j < element1->MoData().NumSearchElements(); ++j)
     {
       int gid2 = element1->MoData().SearchElements()[j];
-      CORE::Elements::Element* ele2 = discret().gElement(gid2);
+      Core::Elements::Element* ele2 = discret().gElement(gid2);
       if (!ele2) FOUR_C_THROW("Cannot find element with gid %", gid2);
-      MORTAR::Element* element2 = dynamic_cast<MORTAR::Element*>(ele2);
+      Mortar::Element* element2 = dynamic_cast<Mortar::Element*>(ele2);
 
       // error if this is a slave element (this happens if individual self contact patches are
       // connected, because our sorting algorithm still fails in that case)

@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -26,11 +26,11 @@ namespace DRT
     class ScaTraEleDiffManagerElch;
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerElch;
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleUtilsElch;
 
     // class implementation
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
     class ScaTraEleCalcElch : public ScaTraEleCalc<distype, probdim>
     {
      protected:
@@ -49,23 +49,23 @@ namespace DRT
       /// since only derived child classes are free to be allocated!!
 
       //! evaluate the element
-      int Evaluate(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int Evaluate(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate action
-      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, const SCATRA::Action& action,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
      protected:
       /*========================================================================*/
@@ -73,16 +73,16 @@ namespace DRT
       /*========================================================================*/
 
       //! Prepare everything what is needed in CallMatAndRhs() to calculate the sysmat and the rhs
-      void sysmat(CORE::Elements::Element* ele,       //!< the element we are dealing with
-          CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,      //!< element rhs to calculate
-          CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
+      void sysmat(Core::Elements::Element* ele,       //!< the element we are dealing with
+          Core::LinAlg::SerialDenseMatrix& emat,      //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs,      //!< element rhs to calculate
+          Core::LinAlg::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
           ) override;
 
       //! calculate contributions to matrix and rhs (inside of loop over all scalars)
       virtual void calc_mat_and_rhs(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate+
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs,  //!< element rhs to calculate+
           const int k,                            //!< index of current scalar
           const double fac,                       //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -92,15 +92,15 @@ namespace DRT
               timetaufac,  //!< domain-integration factor times tau times time-integration factor
           const double rhstaufac,  //!< time-integration factor for rhs times tau times
                                    //!< domain-integration factor
-          CORE::LINALG::Matrix<nen_, 1>&
+          Core::LinAlg::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
           ) = 0;
 
       //! calculate contributions to matrix and rhs (outside of loop over all scalars)
       virtual void calc_mat_and_rhs_outside_scalar_loop(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs,  //!< element rhs to calculate
           const double fac,                       //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
@@ -108,22 +108,22 @@ namespace DRT
 
       //! Correction for additional flux terms / currents across Dirichlet boundaries
       virtual void correction_for_flux_across_dc(
-          DRT::Discretization& discretization,    //!< discretization
-          const std::vector<int>& lm,             //!< location vector
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
+          Discret::Discretization& discretization,  //!< discretization
+          const std::vector<int>& lm,               //!< location vector
+          Core::LinAlg::SerialDenseMatrix& emat,    //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs     //!< element rhs to calculate
           ) = 0;
 
       //! finite difference check for debugging purposes
-      void fd_check(CORE::Elements::Element* ele,     //!< the element we are dealing with
-          CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix to calculate
-          CORE::LINALG::SerialDenseVector& erhs,      //!< element rhs to calculate
-          CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
+      void fd_check(Core::Elements::Element* ele,     //!< the element we are dealing with
+          Core::LinAlg::SerialDenseMatrix& emat,      //!< element matrix to calculate
+          Core::LinAlg::SerialDenseVector& erhs,      //!< element rhs to calculate
+          Core::LinAlg::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
           ) override;
 
       //! get material parameters
       void get_material_params(
-          const CORE::Elements::Element* ele,  //!< the element we are dealing with
+          const Core::Elements::Element* ele,  //!< the element we are dealing with
           std::vector<double>& densn,          //!< density at t_(n)
           std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
           std::vector<double>& densam,         //!< density at t_(n+alpha_M)
@@ -138,7 +138,7 @@ namespace DRT
       //! Calculate quantities used for stabilization
       virtual void prepare_stabilization(
           std::vector<double>& tau,  //!< stabilization parameters (one per transported scalar)
-          std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+          std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               tauderpot,  //!< derivatives of stabilization parameters w.r.t. electric potential
           const std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_f)
           const double vol                    //!< element volume
@@ -150,7 +150,7 @@ namespace DRT
 
       //! Potential equation ENC
       void calc_mat_pot_equ_enc(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double fac,                       //!< domain-integration factor
           const double alphaf                     //!< time factor for ENC
@@ -158,34 +158,34 @@ namespace DRT
 
       //! CalcRhs: Potential equation ENC
       void calc_rhs_pot_equ_enc(
-          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                            //!< index of current scalar
           const double fac,                       //!< domain-integration factor
           const double conint                     //!< concentration at GP
       );
 
       //! process an electrode boundary kinetics point condition
-      void calc_elch_boundary_kinetics_point(CORE::Elements::Element* ele,  ///< current element
+      void calc_elch_boundary_kinetics_point(Core::Elements::Element* ele,  ///< current element
           Teuchos::ParameterList& params,                                   ///< parameter list
-          DRT::Discretization& discretization,                              ///< discretization
+          Discret::Discretization& discretization,                          ///< discretization
           std::vector<int>& lm,                                             ///< location vector
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,                  ///< element matrix
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,                  ///< element matrix
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
       );
 
       //! evaluate an electrode boundary kinetics point condition
       virtual void evaluate_elch_boundary_kinetics_point(
-          const CORE::Elements::Element* ele,     ///< current element
-          CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix
-          CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+          const Core::Elements::Element* ele,     ///< current element
+          Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix
+          Core::LinAlg::SerialDenseVector& erhs,  ///< element right-hand side vector
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ehist,       ///< history variables at element nodes
           double timefac,  ///< time factor
-          Teuchos::RCP<CORE::Conditions::Condition>
+          Teuchos::RCP<Core::Conditions::Condition>
               cond,                       ///< electrode kinetics boundary condition
           const int nume,                 ///< number of transferred electrons
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
@@ -197,13 +197,13 @@ namespace DRT
       );
 
       //! evaluate status information on point electrode
-      void evaluate_electrode_status_point(const CORE::Elements::Element* ele,  ///< current element
-          CORE::LINALG::SerialDenseVector& scalars,        ///< scalars to be integrated
+      void evaluate_electrode_status_point(const Core::Elements::Element* ele,  ///< current element
+          Core::LinAlg::SerialDenseVector& scalars,        ///< scalars to be integrated
           Teuchos::ParameterList& params,                  ///< parameter list
-          Teuchos::RCP<CORE::Conditions::Condition> cond,  ///< condition
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+          Teuchos::RCP<Core::Conditions::Condition> cond,  ///< condition
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ephidtnp,                   ///< nodal time derivative vector
           const int kinetics,             ///< desired electrode kinetics model
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
@@ -220,33 +220,33 @@ namespace DRT
 
       //! validity check with respect to input parameters, degrees of freedom, number of scalars
       //! etc.
-      virtual void check_elch_element_parameter(CORE::Elements::Element* ele  //!< current element
+      virtual void check_elch_element_parameter(Core::Elements::Element* ele  //!< current element
           ) = 0;
 
       //! calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
-      virtual void calculate_flux(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,                    //!< type fo flux
+      virtual void calculate_flux(Core::LinAlg::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const Inpar::ScaTra::FluxType fluxtype,                    //!< type fo flux
           const int k                                                //!< index of current scalar
           ) = 0;
 
       //! calculate weighted current flux (no reactive flux so far) -> elch-specific implementation
-      virtual void calculate_current(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,                       //!< type fo flux
+      virtual void calculate_current(Core::LinAlg::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const Inpar::ScaTra::FluxType fluxtype,                       //!< type fo flux
           const double fac                                              //!< integration factor
       ){};
 
       //! calculate error of numerical solution with respect to analytical solution
-      void cal_error_compared_to_analyt_solution(const CORE::Elements::Element* ele,  //!< element
+      void cal_error_compared_to_analyt_solution(const Core::Elements::Element* ele,  //!< element
           Teuchos::ParameterList& params,          //!< parameter list
-          CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
+          Core::LinAlg::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
           ) override;
 
       //! calculate conductivity of electrolyte solution
       void calculate_conductivity(
-          const CORE::Elements::Element* ele,  //!< the element we are dealing with
-          const enum INPAR::ELCH::EquPot
+          const Core::Elements::Element* ele,  //!< the element we are dealing with
+          const enum Inpar::ElCh::EquPot
               equpot,  //!< type of closing equation for electric potential
-          CORE::LINALG::SerialDenseVector&
+          Core::LinAlg::SerialDenseVector&
               sigma,       //!< conductivity of all single ions + overall electrolyte solution
           bool effCond,    //!< flag if effective conductivity should be calculated
           bool specresist  //!< flag if inverse of conductivity should be calculated -> specific
@@ -255,7 +255,7 @@ namespace DRT
 
       // Get conductivity from material
       virtual void get_conductivity(
-          const enum INPAR::ELCH::EquPot
+          const enum Inpar::ElCh::EquPot
               equpot,         //!< type of closing equation for electric potential
           double& sigma_all,  //!< conductivity of electrolyte solution
           std::vector<double>&
@@ -275,7 +275,7 @@ namespace DRT
       const ScaTraEleParameterElch* elchparams_;
 
       //! utility class supporting element evaluation
-      DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* utils_;
+      Discret::ELEMENTS::ScaTraEleUtilsElch<distype>* utils_;
     };
 
 
@@ -330,7 +330,7 @@ namespace DRT
 
      public:
       ScaTraEleInternalVariableManagerElch(
-          int numscal, const DRT::ELEMENTS::ScaTraEleParameterElch* elchpara)
+          int numscal, const Discret::ELEMENTS::ScaTraEleParameterElch* elchpara)
           : ScaTraEleInternalVariableManager<NSD, NEN>(numscal),
             parameters_(elchpara),
             frt_(0.),
@@ -355,15 +355,15 @@ namespace DRT
        * @param ehist          history vector of transported scalars
        * @param do_setfrt      should FRT be set?
        */
-      void set_internal_variables_elch(const CORE::LINALG::Matrix<NEN, 1>& funct,
-          const CORE::LINALG::Matrix<NSD, NEN>& derxy,
-          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephinp,
-          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephin,
-          const CORE::LINALG::Matrix<NSD, NEN>& econvelnp,
-          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ehist, bool do_setfrt = true)
+      void set_internal_variables_elch(const Core::LinAlg::Matrix<NEN, 1>& funct,
+          const Core::LinAlg::Matrix<NSD, NEN>& derxy,
+          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephinp,
+          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephin,
+          const Core::LinAlg::Matrix<NSD, NEN>& econvelnp,
+          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ehist, bool do_setfrt = true)
       {
         // call base class (scatra)
-        const CORE::LINALG::Matrix<NSD, NEN> eforcevelocity(true);
+        const Core::LinAlg::Matrix<NSD, NEN> eforcevelocity(true);
         my::set_internal_variables(funct, derxy, ephinp, ephin, econvelnp, ehist, eforcevelocity);
 
         // loop over all transported scalars
@@ -402,20 +402,20 @@ namespace DRT
       const std::vector<double>& ConIntInv() const { return conintinv_; };
 
       //! return gradient of electric potential
-      const CORE::LINALG::Matrix<NSD, 1>& GradPot() const { return gradpot_; };
+      const Core::LinAlg::Matrix<NSD, 1>& GradPot() const { return gradpot_; };
 
       //! return subgrid velocity
-      const CORE::LINALG::Matrix<NEN, 1>& SGConv() const { return sgconv_; };
+      const Core::LinAlg::Matrix<NEN, 1>& SGConv() const { return sgconv_; };
 
       //! set factor F/RT
       virtual void SetFRT() { frt_ = parameters_->FRT(); }
 
       //! return parameter class
-      const DRT::ELEMENTS::ScaTraEleParameterElch* ElchParams() const { return parameters_; };
+      const Discret::ELEMENTS::ScaTraEleParameterElch* ElchParams() const { return parameters_; };
 
      protected:
       //! parameter class for electrochemistry problems
-      const DRT::ELEMENTS::ScaTraEleParameterElch* parameters_;
+      const Discret::ELEMENTS::ScaTraEleParameterElch* parameters_;
 
       /*========================================================================*/
       //! @name constant internal variables
@@ -432,12 +432,12 @@ namespace DRT
       //! 1/concentration at GP
       std::vector<double> conintinv_;
       //! gradient of electric potential
-      CORE::LINALG::Matrix<NSD, 1> gradpot_;
+      Core::LinAlg::Matrix<NSD, 1> gradpot_;
       // subgrid velocity
-      CORE::LINALG::Matrix<NEN, 1> sgconv_;
+      Core::LinAlg::Matrix<NEN, 1> sgconv_;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -57,7 +57,7 @@ namespace
   }
 }  // namespace
 
-void MAT::UTILS::MUSCLE::EvaluateLambert(
+void Mat::UTILS::Muscle::EvaluateLambert(
     const double xi, double &W0, const double tol, const int maxiter)
 {
   double W0_old =
@@ -83,7 +83,7 @@ void MAT::UTILS::MUSCLE::EvaluateLambert(
   }
 }
 
-double MAT::UTILS::MUSCLE::EvaluateForceStretchDependencyEhret(
+double Mat::UTILS::Muscle::EvaluateForceStretchDependencyEhret(
     const double lambdaM, const double lambdaMin, const double lambdaOpt)
 {
   double fxi = 0.0;
@@ -97,7 +97,7 @@ double MAT::UTILS::MUSCLE::EvaluateForceStretchDependencyEhret(
   return fxi;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateDerivativeForceStretchDependencyEhret(
+double Mat::UTILS::Muscle::EvaluateDerivativeForceStretchDependencyEhret(
     const double lambdaM, const double lambdaMin, const double lambdaOpt)
 {
   double dFxidLamdaM = 0.0;
@@ -114,7 +114,7 @@ double MAT::UTILS::MUSCLE::EvaluateDerivativeForceStretchDependencyEhret(
   return dFxidLamdaM;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(
+double Mat::UTILS::Muscle::EvaluateIntegralForceStretchDependencyEhret(
     const double lambdaM, const double lambdaMin, const double lambdaOpt)
 {
   double intFxi = 0.0;
@@ -129,7 +129,7 @@ double MAT::UTILS::MUSCLE::EvaluateIntegralForceStretchDependencyEhret(
   return intFxi;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(const double dotLambdaM,
+double Mat::UTILS::Muscle::EvaluateForceVelocityDependencyBoel(const double dotLambdaM,
     const double dotLambdaMMin, const double de, const double dc, const double ke, const double kc)
 {
   // helper variable
@@ -149,7 +149,7 @@ double MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(const double dotL
   return fv;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(const double dotLambdaM,
+double Mat::UTILS::Muscle::EvaluateDerivativeForceVelocityDependencyBoel(const double dotLambdaM,
     const double dDotLambdaMdLambdaM, const double dotLambdaMMin, const double de, const double dc,
     const double ke, const double kc)
 {
@@ -174,7 +174,7 @@ double MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(const d
   return dFvdLambdaM;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressEhret(const double Na,
+double Mat::UTILS::Muscle::EvaluateTimeDependentActiveStressEhret(const double Na,
     const int muTypesNum, const std::vector<double> &rho, const std::vector<double> &I,
     const std::vector<double> &F, const std::vector<double> &T, const int actIntervalsNum,
     const std::vector<double> &actTimes, const std::vector<double> &actValues,
@@ -242,7 +242,7 @@ double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressEhret(const double N
   return Poptft;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateActiveForceStretchDependencyBlemker(
+double Mat::UTILS::Muscle::EvaluateActiveForceStretchDependencyBlemker(
     const double lambdaM, const double lambdaOpt)
 {
   // helper variable
@@ -266,7 +266,7 @@ double MAT::UTILS::MUSCLE::EvaluateActiveForceStretchDependencyBlemker(
   return fxi;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateDerivativeActiveForceStretchDependencyBlemker(
+double Mat::UTILS::Muscle::EvaluateDerivativeActiveForceStretchDependencyBlemker(
     const double lambdaM, const double lambdaOpt)
 {
   // helper variable
@@ -290,7 +290,7 @@ double MAT::UTILS::MUSCLE::EvaluateDerivativeActiveForceStretchDependencyBlemker
   return dFxidLamdaM;
 }
 
-double MAT::UTILS::MUSCLE::EvaluatePassiveForceStretchDependencyBlemker(const double lambdaM,
+double Mat::UTILS::Muscle::EvaluatePassiveForceStretchDependencyBlemker(const double lambdaM,
     const double lambdaOpt, const double lambdaStar, const double P1, const double P2)
 {
   // helper variable
@@ -319,7 +319,7 @@ double MAT::UTILS::MUSCLE::EvaluatePassiveForceStretchDependencyBlemker(const do
   return fxi;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateDerivativePassiveForceStretchDependencyBlemker(
+double Mat::UTILS::Muscle::EvaluateDerivativePassiveForceStretchDependencyBlemker(
     const double lambdaM, const double lambdaOpt, const double lambdaStar, const double P1,
     const double P2)
 {
@@ -347,7 +347,7 @@ double MAT::UTILS::MUSCLE::EvaluateDerivativePassiveForceStretchDependencyBlemke
   return dFxidLamdaM;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressTanh(const double sigma_max,
+double Mat::UTILS::Muscle::EvaluateTimeDependentActiveStressTanh(const double sigma_max,
     const double alpha, const double beta, const double t_act_start, const double t_current)
 {
   // compute time-depencency ft
@@ -363,9 +363,9 @@ double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressTanh(const double si
   return sigma_max_ft;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
-    const CORE::UTILS::FunctionOfSpaceTime &activation_function, const double t_current,
-    const CORE::LINALG::Matrix<3, 1> &x)
+double Mat::UTILS::Muscle::EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
+    const Core::UTILS::FunctionOfSpaceTime &activation_function, const double t_current,
+    const Core::LinAlg::Matrix<3, 1> &x)
 {
   const std::vector<double> x_vec{x(0), x(1), x(2)};
 
@@ -382,7 +382,7 @@ double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(const d
   return sigma_max_ft;
 }
 
-double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByMap(const double sigma_max,
+double Mat::UTILS::Muscle::EvaluateTimeSpaceDependentActiveStressByMap(const double sigma_max,
     const std::unordered_map<int, std::vector<std::pair<double, double>>> &activation_map,
     const double t_current, const int activation_map_key)
 {
@@ -405,11 +405,11 @@ double MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByMap(const dou
   return sigma_max_ft;
 }
 
-double MAT::UTILS::MUSCLE::FiberStretch(
-    const CORE::LINALG::Matrix<3, 3> &C, const CORE::LINALG::Matrix<3, 3> &M)
+double Mat::UTILS::Muscle::FiberStretch(
+    const Core::LinAlg::Matrix<3, 3> &C, const Core::LinAlg::Matrix<3, 3> &M)
 {
   // product C^T*M
-  CORE::LINALG::Matrix<3, 3> transpCM(false);
+  Core::LinAlg::Matrix<3, 3> transpCM(false);
   transpCM.MultiplyTN(C, M);  // C^TM = C^T*M
 
   // stretch in fibre direction lambdaM
@@ -419,17 +419,17 @@ double MAT::UTILS::MUSCLE::FiberStretch(
   return lambdaM;
 }
 
-CORE::LINALG::Matrix<3, 3> MAT::UTILS::MUSCLE::DFiberStretch_DC(
-    const double lambdaM, const CORE::LINALG::Matrix<3, 3> &C, const CORE::LINALG::Matrix<3, 3> &M)
+Core::LinAlg::Matrix<3, 3> Mat::UTILS::Muscle::DFiberStretch_DC(
+    const double lambdaM, const Core::LinAlg::Matrix<3, 3> &C, const Core::LinAlg::Matrix<3, 3> &M)
 {
   // derivative of lambdaM w.r.t. C
-  CORE::LINALG::Matrix<3, 3> dlambdaMdC(M);
+  Core::LinAlg::Matrix<3, 3> dlambdaMdC(M);
   dlambdaMdC.Scale(0.5 / lambdaM);
 
   return dlambdaMdC;
 }
 
-double MAT::UTILS::MUSCLE::ContractionVelocityBWEuler(
+double Mat::UTILS::Muscle::ContractionVelocityBWEuler(
     const double lambdaM, const double lambdaMOld, const double timeStepSize)
 {
   double dotLambdaM = (lambdaM - lambdaMOld) / timeStepSize;

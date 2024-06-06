@@ -19,7 +19,7 @@ use StepIncrements, therefore set NOXCorrection == true!!!
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   /// Just wrap, do nothing new, meant to be derived from
   class FieldWrapper : public Field
@@ -60,13 +60,13 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Map> dof_row_map() override { return field_->dof_row_map(); }
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
     {
       return field_->SystemMatrix();
     }
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       return field_->BlockSystemMatrix();
     }
@@ -114,7 +114,7 @@ namespace ADAPTER
 
    protected:
     Teuchos::RCP<Field> field_;              ///< underlying field time integration
-    ADAPTER::FieldWrapper::Fieldtype type_;  ///< type of underlying field
+    Adapter::FieldWrapper::Fieldtype type_;  ///< type of underlying field
 
    private:
     /// Reset Step Increment
@@ -134,7 +134,7 @@ namespace ADAPTER
     /// x^n+1_i+1 = x^n     + stepinc
     Teuchos::RCP<Epetra_Vector> stepinc_;
   };
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

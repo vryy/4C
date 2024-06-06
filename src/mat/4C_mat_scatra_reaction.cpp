@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       numscal_(matdata->Get<int>("NUMSCAL")),
       stoich_(matdata->Get<std::vector<int>>("STOICH")),
@@ -71,7 +71,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Mate
   {
     switch (coupling_)
     {
-      case MAT::PAR::reac_coup_simple_multiplicative:  // reaction of type A*B*C:
+      case Mat::PAR::reac_coup_simple_multiplicative:  // reaction of type A*B*C:
       {
         bool stoichallzero = true;
         bool roleallzero = true;
@@ -92,7 +92,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Mate
         break;
       }
 
-      case MAT::PAR::reac_coup_power_multiplicative:  // reaction of type A^2*B^-1.5*C:
+      case Mat::PAR::reac_coup_power_multiplicative:  // reaction of type A^2*B^-1.5*C:
       {
         bool stoichallzero = true;
         bool roleallzero = true;
@@ -113,7 +113,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Mate
         break;
       }
 
-      case MAT::PAR::reac_coup_constant:  // constant source term:
+      case Mat::PAR::reac_coup_constant:  // constant source term:
       {
         bool issomepositiv = false;
         for (int ii = 0; ii < numscal_; ii++)
@@ -132,7 +132,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Mate
         break;
       }
 
-      case MAT::PAR::reac_coup_michaelis_menten:  // reaction of type A*B/(B+4)
+      case Mat::PAR::reac_coup_michaelis_menten:  // reaction of type A*B/(B+4)
       {
         bool stoichallzero = true;
         bool roleallzero = true;
@@ -153,7 +153,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Mate
         break;
       }
 
-      case MAT::PAR::reac_coup_byfunction:  // reaction by function
+      case Mat::PAR::reac_coup_byfunction:  // reaction by function
       {
         int functID = -1;
         for (int ii = 0; ii < numscal_; ii++)
@@ -177,7 +177,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Mate
         break;
       }
 
-      case MAT::PAR::reac_coup_none:
+      case Mat::PAR::reac_coup_none:
         FOUR_C_THROW("reac_coup_none is not a valid coupling");
         break;
 
@@ -188,7 +188,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Mate
   }
 
   // if all checks are passed, we can build the reaction class
-  reaction_ = MAT::PAR::REACTIONCOUPLING::ReactionInterface::CreateReaction(
+  reaction_ = Mat::PAR::REACTIONCOUPLING::ReactionInterface::CreateReaction(
       coupling_, isreacstart_, reacstart_);
 
   return;
@@ -196,23 +196,23 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(Teuchos::RCP<CORE::MAT::PAR::Mate
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::PAR::ScatraReactionMat::Initialize() { reaction_->Initialize(numscal_, couprole_); }
+void Mat::PAR::ScatraReactionMat::Initialize() { reaction_->Initialize(numscal_, couprole_); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ScatraReactionMat::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraReactionMat::create_material()
 {
-  return Teuchos::rcp(new MAT::ScatraReactionMat(this));
+  return Teuchos::rcp(new Mat::ScatraReactionMat(this));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ScatraReactionMatType MAT::ScatraReactionMatType::instance_;
+Mat::ScatraReactionMatType Mat::ScatraReactionMatType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::PAR::ReactionCoupling MAT::PAR::ScatraReactionMat::set_coupling_type(
-    Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ReactionCoupling Mat::PAR::ScatraReactionMat::set_coupling_type(
+    Teuchos::RCP<Core::Mat::PAR::Material> matdata)
 {
   if ((matdata->Get<std::string>("COUPLING")) == "simple_multiplicative")
   {
@@ -246,9 +246,9 @@ MAT::PAR::ReactionCoupling MAT::PAR::ScatraReactionMat::set_coupling_type(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* MAT::ScatraReactionMatType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ScatraReactionMatType::Create(const std::vector<char>& data)
 {
-  MAT::ScatraReactionMat* scatra_reaction_mat = new MAT::ScatraReactionMat();
+  Mat::ScatraReactionMat* scatra_reaction_mat = new Mat::ScatraReactionMat();
   scatra_reaction_mat->Unpack(data);
   return scatra_reaction_mat;
 }
@@ -256,19 +256,19 @@ CORE::COMM::ParObject* MAT::ScatraReactionMatType::Create(const std::vector<char
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraReactionMat::ScatraReactionMat() : params_(nullptr) {}
+Mat::ScatraReactionMat::ScatraReactionMat() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraReactionMat::ScatraReactionMat(MAT::PAR::ScatraReactionMat* params) : params_(params) {}
+Mat::ScatraReactionMat::ScatraReactionMat(Mat::PAR::ScatraReactionMat* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ScatraReactionMat::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -284,24 +284,24 @@ void MAT::ScatraReactionMat::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::Unpack(const std::vector<char>& data)
+void Mat::ScatraReactionMat::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ScatraReactionMat*>(mat);
+        params_ = static_cast<Mat::PAR::ScatraReactionMat*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -314,7 +314,7 @@ void MAT::ScatraReactionMat::Unpack(const std::vector<char>& data)
 /*-------------------------------------------------------------------------------/
  | return reaction coefficient at Gauss-point                 Brandstaeter 11/16 |
 /-------------------------------------------------------------------------------*/
-double MAT::ScatraReactionMat::reac_coeff(const std::vector<std::pair<std::string, double>>&
+double Mat::ScatraReactionMat::reac_coeff(const std::vector<std::pair<std::string, double>>&
         constants  //!< vector containing values which are independent of the scalars
 ) const
 {
@@ -335,8 +335,8 @@ double MAT::ScatraReactionMat::reac_coeff(const std::vector<std::pair<std::strin
     gpcoord[2] = constants[size - 1].second;
 
     reaccoeff *=
-        (GLOBAL::Problem::Instance()
-                ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(dis_funct_reac_coeff_id() - 1)
+        (Global::Problem::Instance()
+                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(dis_funct_reac_coeff_id() - 1)
                 .Evaluate(gpcoord, time, 0));
   }
 
@@ -346,7 +346,7 @@ double MAT::ScatraReactionMat::reac_coeff(const std::vector<std::pair<std::strin
 /*----------------------------------------------------------------------/
  | calculate advanced reaction terms                        Thon 08/16 |
 /----------------------------------------------------------------------*/
-double MAT::ScatraReactionMat::calc_rea_body_force_term(const int k,  //!< current scalar id
+double Mat::ScatraReactionMat::calc_rea_body_force_term(const int k,  //!< current scalar id
     const std::vector<double>& phinp,                                 //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
         constants,    //!< vector containing values which are independent of the scalars
@@ -367,7 +367,7 @@ double MAT::ScatraReactionMat::calc_rea_body_force_term(const int k,  //!< curre
 /*----------------------------------------------------------------------/
  | calculate advanced reaction term derivatives             Thon 08/16 |
 /----------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::calc_rea_body_force_deriv_matrix(const int k,  //!< current scalar id
+void Mat::ScatraReactionMat::calc_rea_body_force_deriv_matrix(const int k,  //!< current scalar id
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
@@ -389,7 +389,7 @@ void MAT::ScatraReactionMat::calc_rea_body_force_deriv_matrix(const int k,  //!<
  |  calculate advanced reaction term derivatives after additional variables       |
  |  (e.g. for monolithic coupling with by-function reaction)     kremheller 07/17 |
  *--------------------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::calc_rea_body_force_deriv_matrix_add_variables(
+void Mat::ScatraReactionMat::calc_rea_body_force_deriv_matrix_add_variables(
     const int k,                  //!< current scalar id
     std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
     const std::vector<std::pair<std::string, double>>& variables,  //!< variables
@@ -412,7 +412,7 @@ void MAT::ScatraReactionMat::calc_rea_body_force_deriv_matrix_add_variables(
 /*----------------------------------------------------------------------/
  | add variables to the reaction (only by-function)    kremheller 07/17 |
 /----------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::add_additional_variables(const int k,  //!< current scalar id
+void Mat::ScatraReactionMat::add_additional_variables(const int k,  //!< current scalar id
     const std::vector<std::pair<std::string, double>>& variables    //!< variables
 ) const
 {
@@ -427,7 +427,7 @@ void MAT::ScatraReactionMat::add_additional_variables(const int k,  //!< current
 /*----------------------------------------------------------------------*
  |  helper for calculating advanced reaction terms           thon 08/16 |
  *----------------------------------------------------------------------*/
-double MAT::ScatraReactionMat::calc_rea_body_force_term(int k,  //!< current scalar id
+double Mat::ScatraReactionMat::calc_rea_body_force_term(int k,  //!< current scalar id
     const std::vector<double>& phinp,                           //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
         constants,  //!< vector containing values which are independent of the scalars
@@ -443,7 +443,7 @@ double MAT::ScatraReactionMat::calc_rea_body_force_term(int k,  //!< current sca
 /*--------------------------------------------------------------------------------*
  |  helper for calculating advanced reaction term derivatives          thon 08/16 |
  *--------------------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::calc_rea_body_force_deriv(int k,  //!< current scalar id
+void Mat::ScatraReactionMat::calc_rea_body_force_deriv(int k,  //!< current scalar id
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     const std::vector<std::pair<std::string, double>>&
@@ -463,7 +463,7 @@ void MAT::ScatraReactionMat::calc_rea_body_force_deriv(int k,  //!< current scal
  |  calculate advanced reaction term derivatives after additional variables       |
  |  (e.g. for monolithic coupling with by-function reaction)     kremheller 07/17 |
  *--------------------------------------------------------------------------------*/
-void MAT::ScatraReactionMat::calc_rea_body_force_deriv_add_variables(int k,  //!< current scalar id
+void Mat::ScatraReactionMat::calc_rea_body_force_deriv_add_variables(int k,  //!< current scalar id
     std::vector<double>& derivs,  //!< vector with derivatives (to be filled)
     const std::vector<std::pair<std::string, double>>& variables,  //!< variables
     const std::vector<std::pair<std::string, double>>&
@@ -482,7 +482,7 @@ void MAT::ScatraReactionMat::calc_rea_body_force_deriv_add_variables(int k,  //!
 /*---------------------------------------------------------------------------------/
  | Calculate influence factor for scalar dependent membrane transport   Thon 08/16 |
 /--------------------------------------------------------------------------------- */
-double MAT::ScatraReactionMat::CalcPermInfluence(const int k,  //!< current scalar id
+double Mat::ScatraReactionMat::CalcPermInfluence(const int k,  //!< current scalar id
     const std::vector<double>& phinp,                          //!< scalar values at t_(n+1)
     const double time,                                         //!< current time
     const double* gpcoord,                                     //!< Gauss-point coordinates
@@ -506,7 +506,7 @@ double MAT::ScatraReactionMat::CalcPermInfluence(const int k,  //!< current scal
 /*---------------------------------------------------------------------------------/
  | Calculate influence factor for scalar dependent membrane transport   Thon 08/16 |
 /--------------------------------------------------------------------------------- */
-void MAT::ScatraReactionMat::calc_perm_influence_deriv(const int k,  //!< current scalar id
+void Mat::ScatraReactionMat::calc_perm_influence_deriv(const int k,  //!< current scalar id
     std::vector<double>& derivs,       //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,  //!< scalar values at t_(n+1)
     const double time,                 //!< current time

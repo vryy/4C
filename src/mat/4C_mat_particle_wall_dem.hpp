@@ -29,18 +29,18 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | class definitions                                          sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
-    class ParticleWallMaterialDEM : public CORE::MAT::PAR::Parameter
+    class ParticleWallMaterialDEM : public Core::Mat::PAR::Parameter
     {
      public:
       //! constructor
-      ParticleWallMaterialDEM(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ParticleWallMaterialDEM(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! create material instance of matching type with parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! @name material parameters
       //@{
@@ -59,27 +59,27 @@ namespace MAT
 
   }  // namespace PAR
 
-  class ParticleWallMaterialDEMType : public CORE::COMM::ParObjectType
+  class ParticleWallMaterialDEMType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ParticleWallMaterialDEMType"; };
 
     static ParticleWallMaterialDEMType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ParticleWallMaterialDEMType instance_;
   };
 
-  class ParticleWallMaterialDEM : public CORE::MAT::Material
+  class ParticleWallMaterialDEM : public Core::Mat::Material
   {
    public:
     //! constructor (empty material object)
     ParticleWallMaterialDEM();
 
     //! constructor (with given material parameters)
-    explicit ParticleWallMaterialDEM(MAT::PAR::ParticleWallMaterialDEM* params);
+    explicit ParticleWallMaterialDEM(Mat::PAR::ParticleWallMaterialDEM* params);
 
     //! @name Packing and Unpacking
 
@@ -106,7 +106,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -129,19 +129,19 @@ namespace MAT
     //@{
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_particle_wall_dem;
+      return Core::Materials::m_particle_wall_dem;
     }
 
     //! return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ParticleWallMaterialDEM(*this));
     }
 
     //! return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     //! return tangential contact friction coefficient
     double MuTangential() const { return params_->frictionTang_; }
@@ -156,10 +156,10 @@ namespace MAT
 
    private:
     //! my material parameters
-    MAT::PAR::ParticleWallMaterialDEM* params_;
+    Mat::PAR::ParticleWallMaterialDEM* params_;
   };
 
-}  // namespace MAT
+}  // namespace Mat
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

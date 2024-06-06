@@ -22,12 +22,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>*
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::Instance(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>*
+Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleBoundaryCalcElchNP<distype, probdim>>(
@@ -35,14 +35,14 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::ScaTraEleBoundaryCalcElchNP(
+template <Core::FE::CellType distype, int probdim>
+Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::ScaTraEleBoundaryCalcElchNP(
     const int numdofpernode, const int numscal, const std::string& disname)
     :  // constructor of base class
       myelch::ScaTraEleBoundaryCalcElch(numdofpernode, numscal, disname)
@@ -54,24 +54,24 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::ScaTraEleBoundaryC
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 08/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_action(
-    CORE::Elements::FaceElement* ele,                 //!< boundary element
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_action(
+    Core::Elements::FaceElement* ele,                 //!< boundary element
     Teuchos::ParameterList& params,                   //!< parameter list
-    DRT::Discretization& discretization,              //!< discretization
-    SCATRA::BoundaryAction action,                    //!< action
-    CORE::Elements::Element::LocationArray& la,       //!< location array
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-    CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+    Discret::Discretization& discretization,          //!< discretization
+    ScaTra::BoundaryAction action,                    //!< action
+    Core::Elements::Element::LocationArray& la,       //!< location array
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
+    Core::LinAlg::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
 )
 {
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::BoundaryAction::calc_elch_boundary_kinetics:
+    case ScaTra::BoundaryAction::calc_elch_boundary_kinetics:
     {
       myelch::calc_elch_boundary_kinetics(
           ele, params, discretization, la, elemat1_epetra, elevec1_epetra, 1.);
@@ -89,17 +89,17 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_actio
   }  // switch action
 
   return 0;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_action
+}  // Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_action
 
 
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary condition                       fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_neumann(
-    CORE::Elements::FaceElement* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_neumann(
+    Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
     const double scalar)
 {
   // call base class routine
@@ -108,8 +108,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_neuma
   // add boundary flux contributions to potential equation
   switch (myelch::elchparams_->EquPot())
   {
-    case INPAR::ELCH::equpot_enc_pde:
-    case INPAR::ELCH::equpot_enc_pde_elim:
+    case Inpar::ElCh::equpot_enc_pde:
+    case Inpar::ElCh::equpot_enc_pde_elim:
     {
       for (int k = 0; k < my::numscal_; ++k)
       {
@@ -124,9 +124,9 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_neuma
       break;
     }
 
-    case INPAR::ELCH::equpot_enc:
-    case INPAR::ELCH::equpot_poisson:
-    case INPAR::ELCH::equpot_laplace:
+    case Inpar::ElCh::equpot_enc:
+    case Inpar::ElCh::equpot_poisson:
+    case Inpar::ElCh::equpot_laplace:
       // do nothing in these cases
       break;
 
@@ -144,17 +144,18 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_neuma
 /*----------------------------------------------------------------------*
  | evaluate an electrode kinetics boundary condition         fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_elch_boundary_kinetics(
-    const CORE::Elements::Element* ele,     ///< current element
-    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix
-    CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype,
+    probdim>::evaluate_elch_boundary_kinetics(const Core::Elements::Element*
+                                                  ele,  ///< current element
+    Core::LinAlg::SerialDenseMatrix& emat,              ///< element matrix
+    Core::LinAlg::SerialDenseVector& erhs,              ///< element right-hand side vector
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
+    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
     double timefac,                                           ///< time factor
-    Teuchos::RCP<const CORE::MAT::Material> material,         ///< material
-    Teuchos::RCP<CORE::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
+    Teuchos::RCP<const Core::Mat::Material> material,         ///< material
+    Teuchos::RCP<Core::Conditions::Condition> cond,  ///< electrode kinetics boundary condition
     const int nume,                                  ///< number of transferred electrons
     const std::vector<int> stoich,                   ///< stoichiometry of the reaction
     const int kinetics,                              ///< desired electrode kinetics model
@@ -170,14 +171,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_elch
   // compute matrix and residual contributions arising from closing equation for electric potential
   switch (myelch::elchparams_->EquPot())
   {
-    case INPAR::ELCH::equpot_enc:
+    case Inpar::ElCh::equpot_enc:
     {
       // do nothing, since no boundary integral present
       break;
     }
 
-    case INPAR::ELCH::equpot_enc_pde:
-    case INPAR::ELCH::equpot_enc_pde_elim:
+    case Inpar::ElCh::equpot_enc_pde:
+    case Inpar::ElCh::equpot_enc_pde_elim:
     {
       for (int k = 0; k < my::numscal_; ++k)
       {
@@ -200,7 +201,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_elch
 
     // need special treatment for Laplace equation due to missing scaling with inverse of Faraday
     // constant
-    case INPAR::ELCH::equpot_laplace:
+    case Inpar::ElCh::equpot_laplace:
     {
       const double faraday = myelch::elchparams_->Faraday();
       for (int k = 0; k < my::numscal_; ++k)
@@ -224,7 +225,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_elch
       break;
     }
 
-    case INPAR::ELCH::equpot_poisson:
+    case Inpar::ElCh::equpot_poisson:
     {
       FOUR_C_THROW("Poisson equation combined with electrode boundary conditions not implemented!");
       break;
@@ -238,31 +239,32 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_elch
   }  // switch(myelch::elchparams_->EquPot())
 
   return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::evaluate_elch_boundary_kinetics
+}  // Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype,
+   // probdim>::evaluate_elch_boundary_kinetics
 
 
 /*-------------------------------------------------------------------------------------*
  | extract valence of species k from element material                       fang 02/15 |
  *-------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::get_valence(
-    const Teuchos::RCP<const CORE::MAT::Material>& material,  // element material
+template <Core::FE::CellType distype, int probdim>
+double Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::get_valence(
+    const Teuchos::RCP<const Core::Mat::Material>& material,  // element material
     const int k                                               // species number
 ) const
 {
   double valence(0.);
 
-  if (material->MaterialType() == CORE::Materials::m_matlist)
+  if (material->MaterialType() == Core::Materials::m_matlist)
   {
-    const Teuchos::RCP<const MAT::MatList> matlist =
-        Teuchos::rcp_static_cast<const MAT::MatList>(material);
+    const Teuchos::RCP<const Mat::MatList> matlist =
+        Teuchos::rcp_static_cast<const Mat::MatList>(material);
 
-    const Teuchos::RCP<const CORE::MAT::Material> species =
+    const Teuchos::RCP<const Core::Mat::Material> species =
         matlist->MaterialById(matlist->MatID(k));
 
-    if (species->MaterialType() == CORE::Materials::m_ion)
+    if (species->MaterialType() == Core::Materials::m_ion)
     {
-      valence = Teuchos::rcp_static_cast<const MAT::Ion>(species)->Valence();
+      valence = Teuchos::rcp_static_cast<const Mat::Ion>(species)->Valence();
       if (abs(valence) < 1.e-14) FOUR_C_THROW("Received zero valence!");
     }
     else
@@ -279,15 +281,15 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype, probdim>::get_valence
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<CORE::FE::CellType::nurbs9, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<Core::FE::CellType::quad9, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<Core::FE::CellType::tri6, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<Core::FE::CellType::line3, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<Core::FE::CellType::nurbs3, 2>;
+template class Discret::ELEMENTS::ScaTraEleBoundaryCalcElchNP<Core::FE::CellType::nurbs9, 3>;
 
 FOUR_C_NAMESPACE_CLOSE

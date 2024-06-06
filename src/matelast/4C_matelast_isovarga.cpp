@@ -13,14 +13,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::ELASTIC::PAR::IsoVarga::IsoVarga(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::IsoVarga::IsoVarga(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), mue_(matdata->Get<double>("MUE")), beta_(matdata->Get<double>("BETA"))
 {
 }
 
-MAT::ELASTIC::IsoVarga::IsoVarga(MAT::ELASTIC::PAR::IsoVarga* params) : params_(params) {}
+Mat::Elastic::IsoVarga::IsoVarga(Mat::Elastic::PAR::IsoVarga* params) : params_(params) {}
 
-void MAT::ELASTIC::IsoVarga::AddShearMod(bool& haveshearmod, double& shearmod) const
+void Mat::Elastic::IsoVarga::AddShearMod(bool& haveshearmod, double& shearmod) const
 {
   // indeed, a shear modulus is provided
   haveshearmod = haveshearmod or true;
@@ -29,9 +29,9 @@ void MAT::ELASTIC::IsoVarga::AddShearMod(bool& haveshearmod, double& shearmod) c
   shearmod += params_->mue_;
 }
 
-void MAT::ELASTIC::IsoVarga::add_coefficients_stretches_modified(
-    CORE::LINALG::Matrix<3, 1>& modgamma, CORE::LINALG::Matrix<6, 1>& moddelta,
-    const CORE::LINALG::Matrix<3, 1>& modstr)
+void Mat::Elastic::IsoVarga::add_coefficients_stretches_modified(
+    Core::LinAlg::Matrix<3, 1>& modgamma, Core::LinAlg::Matrix<6, 1>& moddelta,
+    const Core::LinAlg::Matrix<3, 1>& modstr)
 {
   // parameters
   const double alpha = 2.0 * params_->mue_ - params_->beta_;

@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   /// control class to manage a control file for output
   class OutputControl
@@ -42,7 +42,7 @@ namespace CORE::IO
      * @param[in] write_binary_output  flag indicating if output is written in binary format
      */
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
-        CORE::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
+        Core::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
         const std::string& outputname, int ndim, int restart_step, int filesteps,
         bool write_binary_output);
 
@@ -62,7 +62,7 @@ namespace CORE::IO
      * @param[in] adaptname            flag indicating if output name is adapted
      */
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
-        CORE::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
+        Core::FE::ShapeFunctionType type_of_spatial_approx, std::string inputfile,
         const std::string& restartname, std::string outputname, int ndim, int restart_step,
         int filesteps, bool write_binary_output, bool adaptname = true);
 
@@ -120,22 +120,22 @@ namespace CORE::IO
     bool WriteBinaryOutput() const { return write_binary_output_; }
 
     /// overwrites result files
-    void OverwriteResultFile(const CORE::FE::ShapeFunctionType& spatial_approx);
+    void OverwriteResultFile(const Core::FE::ShapeFunctionType& spatial_approx);
     /// creates new result files
-    void new_result_file(int numb_run, const CORE::FE::ShapeFunctionType& spatial_approx);
+    void new_result_file(int numb_run, const Core::FE::ShapeFunctionType& spatial_approx);
     /// creates new result files for the mlmc
     void new_result_file(const std::string& name_appendix, int numb_run,
-        const CORE::FE::ShapeFunctionType& spatial_approx);
+        const Core::FE::ShapeFunctionType& spatial_approx);
 
     /// creates new result files
-    void new_result_file(std::string name, const CORE::FE::ShapeFunctionType& spatial_approx);
+    void new_result_file(std::string name, const Core::FE::ShapeFunctionType& spatial_approx);
 
     /// return my processor ID
     inline int MyRank() const { return myrank_; };
 
    private:
     void write_header(
-        const std::string& control_file_name, const CORE::FE::ShapeFunctionType& spatial_approx);
+        const std::string& control_file_name, const Core::FE::ShapeFunctionType& spatial_approx);
 
     void insert_restart_back_reference(int restart, const std::string& outputname);
 
@@ -181,8 +181,8 @@ namespace CORE::IO
   size_t RestartFinder(const std::string& filename);
 
   /// find the last possible restart step in the control file
-  int GetLastPossibleRestartStep(CORE::IO::InputControl& inputcontrol);
-}  // namespace CORE::IO
+  int GetLastPossibleRestartStep(Core::IO::InputControl& inputcontrol);
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

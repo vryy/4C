@@ -26,24 +26,24 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Sparsematrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
   class KrylovProjector;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationVisualizationWriterMesh;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 namespace FLD
 {
@@ -55,13 +55,13 @@ namespace FLD
     class KSPMapExtractor;
   }
 
-  class TimInt : public ADAPTER::Fluid
+  class TimInt : public Adapter::Fluid
   {
    public:
-    TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
-        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    TimInt(const Teuchos::RCP<Discret::Discretization>& discret,
+        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<CORE::IO::DiscretizationWriter>& output);
+        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output);
 
 
     void Init() override = 0;
@@ -176,28 +176,28 @@ namespace FLD
     }
     Teuchos::RCP<const Epetra_Map> dof_row_map() override { return dof_row_map(0); }
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override;
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemSparseMatrix() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ShapeDerivatives() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    const Teuchos::RCP<DRT::Discretization>& discretization() override { return discret_; }
-    Teuchos::RCP<const CORE::Dofsets::DofSet> DofSet() override
+    const Teuchos::RCP<Discret::Discretization>& discretization() override { return discret_; }
+    Teuchos::RCP<const Core::DOFSets::DofSet> DofSet() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -207,7 +207,7 @@ namespace FLD
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -247,8 +247,8 @@ namespace FLD
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
-    const Teuchos::RCP<CORE::IO::DiscretizationWriter>& DiscWriter() override { return output_; }
-    Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
+    const Teuchos::RCP<Core::IO::DiscretizationWriter>& DiscWriter() override { return output_; }
+    Teuchos::RCP<Core::LinAlg::MapExtractor> GetVelPressSplitter() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -262,7 +262,7 @@ namespace FLD
       FOUR_C_THROW("Not implemented in the base class");
     }
     /// get the linear solver object used for this field
-    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override
+    Teuchos::RCP<Core::LinAlg::Solver> LinearSolver() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -284,7 +284,7 @@ namespace FLD
     }
 
     /// preparations for Krylov space projection
-    virtual void setup_krylov_space_projection(CORE::Conditions::Condition* kspcond)
+    virtual void setup_krylov_space_projection(Core::Conditions::Condition* kspcond)
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -545,7 +545,7 @@ namespace FLD
     \brief return type of time integration scheme
 
     */
-    INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const override { return timealgo_; }
+    Inpar::FLUID::TimeIntegrationScheme TimIntScheme() const override { return timealgo_; }
 
     Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override
     {
@@ -572,7 +572,7 @@ namespace FLD
       return Teuchos::null;
     }
 
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -594,13 +594,13 @@ namespace FLD
 
     /// set initial flow field
     void SetInitialFlowField(
-        const INPAR::FLUID::InitialField initfield, const int startfuncno) override
+        const Inpar::FLUID::InitialField initfield, const int startfuncno) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
     /// set initial porosity field
     void set_initial_porosity_field(
-        const INPAR::POROELAST::InitialField initfield, const int startfuncno) override
+        const Inpar::PoroElast::InitialField initfield, const int startfuncno) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -638,7 +638,7 @@ namespace FLD
     ///  set scalar fields within outer iteration loop
     void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-        Teuchos::RCP<DRT::Discretization> scatradis, int dofset) override
+        Teuchos::RCP<Discret::Discretization> scatradis, int dofset) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -647,7 +647,7 @@ namespace FLD
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
         Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-        Teuchos::RCP<DRT::Discretization> scatradis) override
+        Teuchos::RCP<Discret::Discretization> scatradis) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -655,7 +655,7 @@ namespace FLD
     /// set scalar fields
     void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
         Teuchos::RCP<const Epetra_Vector> scatraresidual,
-        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1) override
+        Teuchos::RCP<Discret::Discretization> scatradis, const int whichscalar = -1) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -707,27 +707,27 @@ namespace FLD
       return;
     }
 
-    INPAR::FLUID::PhysicalType PhysicalType() const override { return physicaltype_; }
+    Inpar::FLUID::PhysicalType PhysicalType() const override { return physicaltype_; }
 
    protected:
     //! fluid discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! linear solver
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
 
     //! parameter list
     Teuchos::RCP<Teuchos::ParameterList> params_;
 
     //! output writer
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
 
 
     /// runtime output writer
-    Teuchos::RCP<CORE::IO::DiscretizationVisualizationWriterMesh> runtime_output_writer_;
+    Teuchos::RCP<Core::IO::DiscretizationVisualizationWriterMesh> runtime_output_writer_;
 
     /// runtime output parameter
-    DRT::ELEMENTS::FluidRuntimeOutputParams runtime_output_params_;
+    Discret::ELEMENTS::FluidRuntimeOutputParams runtime_output_params_;
 
     //! @name Time loop stuff
     //@{
@@ -745,8 +745,8 @@ namespace FLD
     int uprestart_;  ///< write restart data every uprestart_ steps
     int upres_;      ///< write result every upres_ steps
 
-    INPAR::FLUID::TimeIntegrationScheme timealgo_;  ///< time algorithm flag
-    INPAR::FLUID::PhysicalType
+    Inpar::FLUID::TimeIntegrationScheme timealgo_;  ///< time algorithm flag
+    Inpar::FLUID::PhysicalType
         physicaltype_;  ///< flag for physical type of fluid flow (standard: incompressible)
 
     int myrank_;  ///< the processor ID from the communicator
@@ -758,7 +758,7 @@ namespace FLD
     bool updateprojection_;
 
     //! Krylov projector himself
-    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;
+    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;
 
     /// Krylov space projection map extractor
     Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;

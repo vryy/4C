@@ -26,41 +26,41 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   /// returns Weakly Compressible Fluid quick access parameters from given material id
-  const MAT::PAR::WeaklyCompressibleFluid& GetWeaklyCompressibleFluidMatPars(int mat_id)
+  const Mat::PAR::WeaklyCompressibleFluid& GetWeaklyCompressibleFluidMatPars(int mat_id)
   {
-    auto* params = GLOBAL::Problem::Instance()->Materials()->ParameterById(mat_id);
-    if (params->Type() != CORE::Materials::m_fluid_weakly_compressible)
+    auto* params = Global::Problem::Instance()->Materials()->ParameterById(mat_id);
+    if (params->Type() != Core::Materials::m_fluid_weakly_compressible)
       FOUR_C_THROW("Material %d is not a weakly compressible fluid", mat_id);
-    auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
+    auto* fparams = dynamic_cast<Mat::PAR::WeaklyCompressibleFluid*>(params);
     if (!fparams) FOUR_C_THROW("Material does not cast to Weakly compressible fluid");
     return *fparams;
   }
 
   /// returns Newton Fluid quick access parameters from given material id
-  const MAT::PAR::NewtonianFluid& GetNewtonianFluidMatPars(int mat_id)
+  const Mat::PAR::NewtonianFluid& GetNewtonianFluidMatPars(int mat_id)
   {
-    auto* params = GLOBAL::Problem::Instance()->Materials()->ParameterById(mat_id);
-    if (params->Type() != CORE::Materials::m_fluid)
+    auto* params = Global::Problem::Instance()->Materials()->ParameterById(mat_id);
+    if (params->Type() != Core::Materials::m_fluid)
       FOUR_C_THROW("Material %d is not a fluid", mat_id);
-    auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+    auto* fparams = dynamic_cast<Mat::PAR::NewtonianFluid*>(params);
     if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
     return *fparams;
   }
 
   /// returns St. Venant Kirchhof quick access parameters from given material id
-  const MAT::PAR::StVenantKirchhoff& GetSVKMatPars(int mat_id)
+  const Mat::PAR::StVenantKirchhoff& GetSVKMatPars(int mat_id)
   {
-    auto* params = GLOBAL::Problem::Instance()->Materials()->ParameterById(mat_id);
-    if (params->Type() != CORE::Materials::m_stvenant)
+    auto* params = Global::Problem::Instance()->Materials()->ParameterById(mat_id);
+    if (params->Type() != Core::Materials::m_stvenant)
       FOUR_C_THROW("Material %d is not a St.Venant-Kirchhoff structure material", mat_id);
-    auto* fparams = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params);
+    auto* fparams = dynamic_cast<Mat::PAR::StVenantKirchhoff*>(params);
     if (!fparams) FOUR_C_THROW("Material does not cast to St.Venant-Kirchhoff structure material");
     return *fparams;
   }
 
 
-  Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateFluidFunction(
-      const std::vector<INPUT::LineDefinition>& function_line_defs)
+  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> CreateFluidFunction(
+      const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
@@ -374,22 +374,22 @@ namespace
     }
     else
     {
-      return Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>(nullptr);
+      return Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>(nullptr);
     }
   }
 }  // namespace
 
-void FLD::AddValidFluidFunctions(CORE::UTILS::FunctionManager& function_manager)
+void FLD::AddValidFluidFunctions(Core::UTILS::FunctionManager& function_manager)
 {
-  auto beltrami = INPUT::LineDefinition::Builder().AddTag("BELTRAMI").AddNamedDouble("c1").Build();
+  auto beltrami = Input::LineDefinition::Builder().AddTag("BELTRAMI").AddNamedDouble("c1").Build();
 
   auto channelweaklycompressible =
-      INPUT::LineDefinition::Builder().AddTag("CHANNELWEAKLYCOMPRESSIBLE").Build();
+      Input::LineDefinition::Builder().AddTag("CHANNELWEAKLYCOMPRESSIBLE").Build();
 
   auto correctiontermchannelweaklycompressible =
-      INPUT::LineDefinition::Builder().AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE").Build();
+      Input::LineDefinition::Builder().AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE").Build();
 
-  auto weaklycompressiblepoiseuille = INPUT::LineDefinition::Builder()
+  auto weaklycompressiblepoiseuille = Input::LineDefinition::Builder()
                                           .AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE")
                                           .AddNamedInt("MAT")
                                           .AddNamedDouble("L")
@@ -397,7 +397,7 @@ void FLD::AddValidFluidFunctions(CORE::UTILS::FunctionManager& function_manager)
                                           .AddNamedDouble("U")
                                           .Build();
 
-  auto weaklycompressiblepoiseuilleforce = INPUT::LineDefinition::Builder()
+  auto weaklycompressiblepoiseuilleforce = Input::LineDefinition::Builder()
                                                .AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE")
                                                .AddNamedInt("MAT")
                                                .AddNamedDouble("L")
@@ -405,99 +405,99 @@ void FLD::AddValidFluidFunctions(CORE::UTILS::FunctionManager& function_manager)
                                                .AddNamedDouble("U")
                                                .Build();
 
-  auto weaklycompressiblemanufacturedflow = INPUT::LineDefinition::Builder()
+  auto weaklycompressiblemanufacturedflow = Input::LineDefinition::Builder()
                                                 .AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW")
                                                 .AddNamedInt("MAT")
                                                 .Build();
 
   auto weaklycompressiblemanufacturedflowforce =
-      INPUT::LineDefinition::Builder()
+      Input::LineDefinition::Builder()
           .AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE")
           .AddNamedInt("MAT")
           .Build();
 
-  auto weaklycompressibleetiennecfd = INPUT::LineDefinition::Builder()
+  auto weaklycompressibleetiennecfd = Input::LineDefinition::Builder()
                                           .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD")
                                           .AddNamedInt("MAT")
                                           .Build();
 
-  auto weaklycompressibleetiennecfdforce = INPUT::LineDefinition::Builder()
+  auto weaklycompressibleetiennecfdforce = Input::LineDefinition::Builder()
                                                .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE")
                                                .AddNamedInt("MAT")
                                                .Build();
 
   auto weaklycompressibleetiennecfdviscosity =
-      INPUT::LineDefinition::Builder()
+      Input::LineDefinition::Builder()
           .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY")
           .AddNamedInt("MAT")
           .Build();
 
-  auto weaklycompressibleetiennefsifluid = INPUT::LineDefinition::Builder()
+  auto weaklycompressibleetiennefsifluid = Input::LineDefinition::Builder()
                                                .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID")
                                                .AddNamedInt("MAT_FLUID")
                                                .AddNamedInt("MAT_STRUC")
                                                .Build();
 
   auto weaklycompressibleetiennefsifluidforce =
-      INPUT::LineDefinition::Builder()
+      Input::LineDefinition::Builder()
           .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE")
           .AddNamedInt("MAT_FLUID")
           .AddNamedInt("MAT_STRUC")
           .Build();
 
   auto weaklycompressibleetiennefsifluidviscosity =
-      INPUT::LineDefinition::Builder()
+      Input::LineDefinition::Builder()
           .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY")
           .AddNamedInt("MAT_FLUID")
           .AddNamedInt("MAT_STRUC")
           .Build();
 
-  auto beltramiup = INPUT::LineDefinition::Builder()
+  auto beltramiup = Input::LineDefinition::Builder()
                         .AddTag("BELTRAMI-UP")
                         .AddNamedInt("MAT")
                         .AddNamedInt("ISSTAT")
                         .Build();
 
-  auto beltramigradu = INPUT::LineDefinition::Builder()
+  auto beltramigradu = Input::LineDefinition::Builder()
                            .AddTag("BELTRAMI-GRADU")
                            .AddNamedInt("MAT")
                            .AddNamedInt("ISSTAT")
                            .Build();
 
-  auto beltramirhs = INPUT::LineDefinition::Builder()
+  auto beltramirhs = Input::LineDefinition::Builder()
                          .AddTag("BELTRAMI-RHS")
                          .AddNamedInt("MAT")
                          .AddNamedInt("ISSTAT")
                          .AddNamedInt("ISSTOKES")
                          .Build();
 
-  auto kimmoinup = INPUT::LineDefinition::Builder()
+  auto kimmoinup = Input::LineDefinition::Builder()
                        .AddTag("KIMMOIN-UP")
                        .AddNamedInt("MAT")
                        .AddNamedInt("ISSTAT")
                        .Build();
 
-  auto kimmoingradu = INPUT::LineDefinition::Builder()
+  auto kimmoingradu = Input::LineDefinition::Builder()
                           .AddTag("KIMMOIN-GRADU")
                           .AddNamedInt("MAT")
                           .AddNamedInt("ISSTAT")
                           .Build();
 
-  auto kimmoinrhs = INPUT::LineDefinition::Builder()
+  auto kimmoinrhs = Input::LineDefinition::Builder()
                         .AddTag("KIMMOIN-RHS")
                         .AddNamedInt("MAT")
                         .AddNamedInt("ISSTAT")
                         .AddNamedInt("ISSTOKES")
                         .Build();
 
-  auto kimmoinstress = INPUT::LineDefinition::Builder()
+  auto kimmoinstress = Input::LineDefinition::Builder()
                            .AddTag("KIMMOIN-STRESS")
                            .AddNamedInt("MAT")
                            .AddNamedInt("ISSTAT")
                            .AddNamedDouble("AMPLITUDE")
                            .Build();
 
-  std::vector<INPUT::LineDefinition> lines;
+  std::vector<Input::LineDefinition> lines;
   lines.emplace_back(std::move(beltrami));
   lines.emplace_back(std::move(channelweaklycompressible));
   lines.emplace_back(std::move(correctiontermchannelweaklycompressible));
@@ -534,11 +534,11 @@ double FLD::BeltramiFunction::Evaluate(
   double a = M_PI / 4.0;
   double d = M_PI / 2.0;
 
-  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
+  int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_fluid);
   if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
-  const CORE::MAT::PAR::Parameter* mat =
-      GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-  const auto* actmat = dynamic_cast<const MAT::PAR::NewtonianFluid*>(mat);
+  const Core::Mat::PAR::Parameter* mat =
+      Global::Problem::Instance()->Materials()->ParameterById(id);
+  const auto* actmat = dynamic_cast<const Mat::PAR::NewtonianFluid*>(mat);
   double dens = actmat->density_;
   double dynvisc = actmat->viscosity_;
   double kinvisc = dynvisc / dens;
@@ -583,11 +583,11 @@ std::vector<double> FLD::BeltramiFunction::evaluate_time_derivative(
   double a = M_PI / 4.0;
   double d = M_PI / 2.0;
 
-  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(CORE::Materials::m_fluid);
+  int id = Global::Problem::Instance()->Materials()->FirstIdByType(Core::Materials::m_fluid);
   if (id == -1) FOUR_C_THROW("Newtonian fluid material could not be found");
-  const CORE::MAT::PAR::Parameter* mat =
-      GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-  const auto* actmat = dynamic_cast<const MAT::PAR::NewtonianFluid*>(mat);
+  const Core::Mat::PAR::Parameter* mat =
+      Global::Problem::Instance()->Materials()->ParameterById(id);
+  const auto* actmat = dynamic_cast<const Mat::PAR::NewtonianFluid*>(mat);
   double dens = actmat->density_;
   double dynvisc = actmat->viscosity_;
   double kinvisc = dynvisc / dens;
@@ -696,19 +696,19 @@ std::vector<double> FLD::BeltramiFunction::evaluate_time_derivative(
 double FLD::ChannelWeaklyCompressibleFunction::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
-  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-      CORE::Materials::m_fluid_murnaghantait);
+  int id = Global::Problem::Instance()->Materials()->FirstIdByType(
+      Core::Materials::m_fluid_murnaghantait);
   if (id == -1)
   {
-    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-        CORE::Materials::m_fluid_linear_density_viscosity);
+    int id = Global::Problem::Instance()->Materials()->FirstIdByType(
+        Core::Materials::m_fluid_linear_density_viscosity);
     if (id == -1)
       FOUR_C_THROW(
           "Fluid with Murnaghan-Tait equation of state or with "
           "linear law (pressure-dependent) for the density and the viscosity could not be found");
-    const CORE::MAT::PAR::Parameter* mat =
-        GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-    const auto* actmat = dynamic_cast<const MAT::PAR::LinearDensityViscosity*>(mat);
+    const Core::Mat::PAR::Parameter* mat =
+        Global::Problem::Instance()->Materials()->ParameterById(id);
+    const auto* actmat = dynamic_cast<const Mat::PAR::LinearDensityViscosity*>(mat);
 
     double x = xp[0];
     double y = xp[1];
@@ -793,7 +793,7 @@ double FLD::ChannelWeaklyCompressibleFunction::Evaluate(
                      ((225311.0 - 614515.0 + 1492755.0 - 1324785.0 + 394350.0) / (3118500.0)) *
                          std::pow(B, 8.0));
 
-    CORE::LINALG::Matrix<2, 1> u;
+    Core::LinAlg::Matrix<2, 1> u;
     double p;
 
     u(0) = -(3.0 * std::log(p_0_hat)) / (std::pow(B, 2.0) * lambda) +
@@ -828,9 +828,9 @@ double FLD::ChannelWeaklyCompressibleFunction::Evaluate(
   }
   else
   {
-    const CORE::MAT::PAR::Parameter* mat =
-        GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-    const auto* actmat = dynamic_cast<const MAT::PAR::MurnaghanTaitFluid*>(mat);
+    const Core::Mat::PAR::Parameter* mat =
+        Global::Problem::Instance()->Materials()->ParameterById(id);
+    const auto* actmat = dynamic_cast<const Mat::PAR::MurnaghanTaitFluid*>(mat);
 
     if (actmat->matparameter_ != 1.0)
     {
@@ -851,9 +851,9 @@ double FLD::ChannelWeaklyCompressibleFunction::Evaluate(
         (3.0 * (1.0 / reference_bulk_modulus) * viscosity * length * mean_velocity_channel_exit) /
         std::pow(radius, 2.0);
 
-    CORE::LINALG::Matrix<2, 1> u;
+    Core::LinAlg::Matrix<2, 1> u;
     double p;
-    CORE::LINALG::Matrix<2, 2> dervel;
+    Core::LinAlg::Matrix<2, 2> dervel;
 
     u(0) = 3.0 / 2.0 * (1.0 - std::pow(y / radius, 2.0)) *
            (1.0 + linear_coefficient_density * (x / length - 1.0));
@@ -939,19 +939,19 @@ std::vector<double> FLD::ChannelWeaklyCompressibleFunction::evaluate_time_deriva
 double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
-  int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-      CORE::Materials::m_fluid_murnaghantait);
+  int id = Global::Problem::Instance()->Materials()->FirstIdByType(
+      Core::Materials::m_fluid_murnaghantait);
   if (id == -1)
   {
-    int id = GLOBAL::Problem::Instance()->Materials()->FirstIdByType(
-        CORE::Materials::m_fluid_linear_density_viscosity);
+    int id = Global::Problem::Instance()->Materials()->FirstIdByType(
+        Core::Materials::m_fluid_linear_density_viscosity);
     if (id == -1)
       FOUR_C_THROW(
           "Fluid with Murnaghan-Tait equation of state or with "
           "linear law (pressure-dependent) for the density and the viscosity could not be found");
-    const CORE::MAT::PAR::Parameter* mat =
-        GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-    const auto* actmat = dynamic_cast<const MAT::PAR::LinearDensityViscosity*>(mat);
+    const Core::Mat::PAR::Parameter* mat =
+        Global::Problem::Instance()->Materials()->ParameterById(id);
+    const auto* actmat = dynamic_cast<const Mat::PAR::LinearDensityViscosity*>(mat);
 
     double x = xp[0];
     double y = xp[1];
@@ -1005,9 +1005,9 @@ double FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evaluate(
   }
   else
   {
-    const CORE::MAT::PAR::Parameter* mat =
-        GLOBAL::Problem::Instance()->Materials()->ParameterById(id);
-    const auto* actmat = dynamic_cast<const MAT::PAR::MurnaghanTaitFluid*>(mat);
+    const Core::Mat::PAR::Parameter* mat =
+        Global::Problem::Instance()->Materials()->ParameterById(id);
+    const auto* actmat = dynamic_cast<const Mat::PAR::MurnaghanTaitFluid*>(mat);
 
     if (actmat->matparameter_ != 1.0)
     {
@@ -1095,7 +1095,7 @@ std::vector<double> FLD::CorrectionTermChannelWeaklyCompressibleFunction::evalua
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressiblePoiseuilleFunction::WeaklyCompressiblePoiseuilleFunction(
-    const MAT::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U)
+    const Mat::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U)
     : length_(L),
       halfheight_(R),
       meanvelocityexit_(U),
@@ -1122,11 +1122,11 @@ double FLD::WeaklyCompressiblePoiseuilleFunction::Evaluate(
   double epsilon = comprcoeff_;
 
   // initialize variables
-  CORE::LINALG::Matrix<3, 1> L_ex;
+  Core::LinAlg::Matrix<3, 1> L_ex;
   double p_ex;
-  CORE::LINALG::Matrix<2, 1> v_ex;
+  Core::LinAlg::Matrix<2, 1> v_ex;
   double r_ex;
-  CORE::LINALG::Matrix<2, 1> w_ex;
+  Core::LinAlg::Matrix<2, 1> w_ex;
 
   // evaluate variables
   L_ex(0) = -sqrt(2. * mu) / 2. *
@@ -1202,7 +1202,7 @@ std::vector<double> FLD::WeaklyCompressiblePoiseuilleFunction::evaluate_time_der
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressiblePoiseuilleForceFunction::WeaklyCompressiblePoiseuilleForceFunction(
-    const MAT::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U)
+    const Mat::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U)
     : length_(L),
       halfheight_(R),
       meanvelocityexit_(U),
@@ -1228,7 +1228,7 @@ double FLD::WeaklyCompressiblePoiseuilleForceFunction::Evaluate(
 
   // initialize variables
   double f_r_ex;
-  CORE::LINALG::Matrix<2, 1> f_w_ex;
+  Core::LinAlg::Matrix<2, 1> f_w_ex;
 
   // evaluate variables
   f_r_ex =
@@ -1292,7 +1292,7 @@ std::vector<double> FLD::WeaklyCompressiblePoiseuilleForceFunction::evaluate_tim
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleManufacturedFlowFunction::WeaklyCompressibleManufacturedFlowFunction(
-    const MAT::PAR::WeaklyCompressibleFluid& fparams)
+    const Mat::PAR::WeaklyCompressibleFluid& fparams)
     : viscosity_(fparams.viscosity_),
       refdensity_(fparams.refdensity_),
       refpressure_(fparams.refpressure_),
@@ -1313,11 +1313,11 @@ double FLD::WeaklyCompressibleManufacturedFlowFunction::Evaluate(
   double epsilon = comprcoeff_;
 
   // initialize variables
-  CORE::LINALG::Matrix<3, 1> L_ex;
+  Core::LinAlg::Matrix<3, 1> L_ex;
   double p_ex;
-  CORE::LINALG::Matrix<2, 1> v_ex;
+  Core::LinAlg::Matrix<2, 1> v_ex;
   double r_ex;
-  CORE::LINALG::Matrix<2, 1> w_ex;
+  Core::LinAlg::Matrix<2, 1> w_ex;
 
   // evaluate variables
   L_ex(0) =
@@ -1442,7 +1442,7 @@ std::vector<double> FLD::WeaklyCompressibleManufacturedFlowFunction::evaluate_ti
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleManufacturedFlowForceFunction::
     WeaklyCompressibleManufacturedFlowForceFunction(
-        const MAT::PAR::WeaklyCompressibleFluid& fparams)
+        const Mat::PAR::WeaklyCompressibleFluid& fparams)
     : viscosity_(fparams.viscosity_),
       refdensity_(fparams.refdensity_),
       refpressure_(fparams.refpressure_),
@@ -1464,7 +1464,7 @@ double FLD::WeaklyCompressibleManufacturedFlowForceFunction::Evaluate(
 
   // initialize variables
   double f_r_ex;
-  CORE::LINALG::Matrix<2, 1> f_w_ex;
+  Core::LinAlg::Matrix<2, 1> f_w_ex;
 
   // evaluate variables
   f_r_ex = (std::pow(M_PI, 2.)) * epsilon * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y) -
@@ -1721,7 +1721,7 @@ std::vector<double> FLD::WeaklyCompressibleManufacturedFlowForceFunction::evalua
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDFunction::WeaklyCompressibleEtienneCFDFunction(
-    const MAT::PAR::WeaklyCompressibleFluid& fparams)
+    const Mat::PAR::WeaklyCompressibleFluid& fparams)
     : refdensity_(fparams.refdensity_),
       refpressure_(fparams.refpressure_),
       comprcoeff_(fparams.comprcoeff_)
@@ -1740,11 +1740,11 @@ double FLD::WeaklyCompressibleEtienneCFDFunction::Evaluate(
   double epsilon = comprcoeff_;
 
   // initialize variables
-  CORE::LINALG::Matrix<3, 1> L_ex;
+  Core::LinAlg::Matrix<3, 1> L_ex;
   double p_ex;
-  CORE::LINALG::Matrix<2, 1> v_ex;
+  Core::LinAlg::Matrix<2, 1> v_ex;
   double r_ex;
-  CORE::LINALG::Matrix<2, 1> w_ex;
+  Core::LinAlg::Matrix<2, 1> w_ex;
 
   // evaluate variables
   L_ex(0) = +10. * x * (std::pow(y, 3.)) *
@@ -1875,7 +1875,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDFunction::evaluate_time_der
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDForceFunction::WeaklyCompressibleEtienneCFDForceFunction(
-    const MAT::PAR::WeaklyCompressibleFluid& fparams)
+    const Mat::PAR::WeaklyCompressibleFluid& fparams)
     : refdensity_(fparams.refdensity_)
 {
 }
@@ -1891,7 +1891,7 @@ double FLD::WeaklyCompressibleEtienneCFDForceFunction::Evaluate(
 
   // initialize variables
   double f_r_ex;
-  CORE::LINALG::Matrix<2, 1> f_w_ex;
+  Core::LinAlg::Matrix<2, 1> f_w_ex;
 
   // evaluate variables
   f_r_ex = 0;
@@ -2291,7 +2291,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDForceFunction::evaluate_tim
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDViscosityFunction::WeaklyCompressibleEtienneCFDViscosityFunction(
-    const MAT::PAR::WeaklyCompressibleFluid& fparams)
+    const Mat::PAR::WeaklyCompressibleFluid& fparams)
 {
 }
 /*----------------------------------------------------------------------*/
@@ -2353,8 +2353,8 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDViscosityFunction::evaluate
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneFSIFluidFunction::WeaklyCompressibleEtienneFSIFluidFunction(
-    const MAT::PAR::WeaklyCompressibleFluid& fparams_fluid,
-    const MAT::PAR::StVenantKirchhoff& fparams_struc)
+    const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
+    const Mat::PAR::StVenantKirchhoff& fparams_struc)
     : refdensity_(0.0),
       refpressure_(0.0),
       comprcoeff_(0.0),
@@ -2386,11 +2386,11 @@ double FLD::WeaklyCompressibleEtienneFSIFluidFunction::Evaluate(
   double v = poissonratio_;
 
   // initialize variables
-  CORE::LINALG::Matrix<3, 1> L_ex;
+  Core::LinAlg::Matrix<3, 1> L_ex;
   double p_ex;
-  CORE::LINALG::Matrix<2, 1> v_ex;
+  Core::LinAlg::Matrix<2, 1> v_ex;
   double r_ex;
-  CORE::LINALG::Matrix<2, 1> w_ex;
+  Core::LinAlg::Matrix<2, 1> w_ex;
 
   // evaluate variables
   L_ex(0) = (M_PI * sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
@@ -2707,8 +2707,8 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidFunction::evaluate_tim
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::WeaklyCompressibleEtienneFSIFluidForceFunction(
-    const MAT::PAR::WeaklyCompressibleFluid& fparams_fluid,
-    const MAT::PAR::StVenantKirchhoff& fparams_struc)
+    const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
+    const Mat::PAR::StVenantKirchhoff& fparams_struc)
     : refdensity_(0.0),
       refpressure_(0.0),
       comprcoeff_(0.0),
@@ -2739,7 +2739,7 @@ double FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::Evaluate(
 
   // initialize variables
   double f_r_ex;
-  CORE::LINALG::Matrix<2, 1> f_w_ex;
+  Core::LinAlg::Matrix<2, 1> f_w_ex;
 
   // evaluate variables
   f_r_ex = 0.;
@@ -6545,8 +6545,8 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::evaluat
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::
     WeaklyCompressibleEtienneFSIFluidViscosityFunction(
-        const MAT::PAR::WeaklyCompressibleFluid& fparams_fluid,
-        const MAT::PAR::StVenantKirchhoff& fparams_struc)
+        const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
+        const Mat::PAR::StVenantKirchhoff& fparams_struc)
     : refdensity_(0.0),
       refpressure_(0.0),
       comprcoeff_(0.0),
@@ -6742,7 +6742,7 @@ FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::evaluate_time_derivativ
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::BeltramiUP::BeltramiUP(const MAT::PAR::NewtonianFluid& fparams) : density_(fparams.density_) {}
+FLD::BeltramiUP::BeltramiUP(const Mat::PAR::NewtonianFluid& fparams) : density_(fparams.density_) {}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::BeltramiUP::Evaluate(
@@ -6834,7 +6834,7 @@ std::vector<double> FLD::BeltramiUP::evaluate_time_derivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::BeltramiGradU::BeltramiGradU(const MAT::PAR::NewtonianFluid& fparams) {}
+FLD::BeltramiGradU::BeltramiGradU(const Mat::PAR::NewtonianFluid& fparams) {}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::BeltramiGradU::Evaluate(
@@ -6945,7 +6945,7 @@ std::vector<double> FLD::BeltramiGradU::evaluate_time_derivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::BeltramiRHS::BeltramiRHS(const MAT::PAR::NewtonianFluid& fparams, bool is_stokes)
+FLD::BeltramiRHS::BeltramiRHS(const Mat::PAR::NewtonianFluid& fparams, bool is_stokes)
     : kinviscosity_(fparams.viscosity_ / fparams.density_), is_stokes_(is_stokes)
 {
 }
@@ -7055,7 +7055,7 @@ std::vector<double> FLD::BeltramiRHS::evaluate_time_derivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::KimMoinUP::KimMoinUP(const MAT::PAR::NewtonianFluid& fparams, bool is_stationary)
+FLD::KimMoinUP::KimMoinUP(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary)
     : density_(fparams.density_),
       kinviscosity_(fparams.viscosity_ / fparams.density_),
       is_stationary_(is_stationary)
@@ -7204,7 +7204,7 @@ std::vector<double> FLD::KimMoinUP::evaluate_time_derivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::KimMoinGradU::KimMoinGradU(const MAT::PAR::NewtonianFluid& fparams, bool is_stationary)
+FLD::KimMoinGradU::KimMoinGradU(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary)
     : kinviscosity_(fparams.viscosity_ / fparams.density_), is_stationary_(is_stationary)
 {
 }
@@ -7391,7 +7391,7 @@ std::vector<double> FLD::KimMoinGradU::evaluate_time_derivative(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::KimMoinRHS::KimMoinRHS(
-    const MAT::PAR::NewtonianFluid& fparams, bool is_stationary, bool is_stokes)
+    const Mat::PAR::NewtonianFluid& fparams, bool is_stationary, bool is_stokes)
     : kinviscosity_(fparams.viscosity_ / fparams.density_),
       is_stationary_(is_stationary),
       is_stokes_(is_stokes)
@@ -7587,7 +7587,7 @@ std::vector<double> FLD::KimMoinRHS::evaluate_time_derivative(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::KimMoinStress::KimMoinStress(
-    const MAT::PAR::NewtonianFluid& fparams, bool is_stationary, double amplitude)
+    const Mat::PAR::NewtonianFluid& fparams, bool is_stationary, double amplitude)
     : kinviscosity_(fparams.viscosity_ / fparams.density_),
       density_(fparams.density_),
       is_stationary_(is_stationary),

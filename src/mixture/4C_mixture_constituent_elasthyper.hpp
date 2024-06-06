@@ -30,7 +30,7 @@ namespace MIXTURE
     class MixtureConstituentElastHyper : public MIXTURE::PAR::MixtureConstituentElastHyperBase
     {
      public:
-      explicit MixtureConstituentElastHyper(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+      explicit MixtureConstituentElastHyper(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
@@ -44,7 +44,7 @@ namespace MIXTURE
    * \brief Constituent for any hyperelastic material
    *
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
-   * be paired with the MAT::Mixture material and a MIXTURE::MixtureRule.
+   * be paired with the Mat::Mixture material and a MIXTURE::MixtureRule.
    */
   class MixtureConstituentElastHyper : public MIXTURE::MixtureConstituentElastHyperBase
   {
@@ -54,7 +54,7 @@ namespace MIXTURE
         MIXTURE::PAR::MixtureConstituentElastHyper* params, int id);
 
     /// Returns the material type enum
-    CORE::Materials::MaterialType MaterialType() const override;
+    Core::Materials::MaterialType MaterialType() const override;
 
     /*!
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
@@ -66,9 +66,9 @@ namespace MIXTURE
      * @param S_stress 2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
      * @param cmat Constitutive tensor in Voigt notation
      */
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
-        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
+        Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
     /*!
      * @brief Evaluates the stress and material linearization of the constituents with an inelastic
@@ -89,9 +89,9 @@ namespace MIXTURE
      * @param gp Gauss-point
      * @param eleGID Global element id
      */
-    void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
-        const CORE::LINALG::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+    void EvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
+        const Core::LinAlg::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp,
         int eleGID) override;
   };
 

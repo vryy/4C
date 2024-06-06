@@ -23,12 +23,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
@@ -44,7 +44,7 @@ namespace LUBRICATION
     \author wirtz
     \date 11/15
   */
-  class ResultTest : public CORE::UTILS::ResultTest
+  class ResultTest : public Core::UTILS::ResultTest
   {
    public:
     /*!
@@ -57,15 +57,15 @@ namespace LUBRICATION
     /*!
       Possible position flags is only "pre"
      */
-    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
     //! test special quantity not associated with a particular element or node
-    void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    protected:
     //! get nodal result to be tested
     double result_node(const std::string quantity,  //! name of quantity to be tested
-        CORE::Nodes::Node* node                     //! node carrying the result to be tested
+        Core::Nodes::Node* node                     //! node carrying the result to be tested
     ) const;
 
     //! get special result to be tested
@@ -74,7 +74,7 @@ namespace LUBRICATION
 
    private:
     /// Teuchos::RCP to lubrication discretization
-    Teuchos::RCP<DRT::Discretization> dis_;
+    Teuchos::RCP<Discret::Discretization> dis_;
     /// Teuchos::RCP to solution vector
     Teuchos::RCP<Epetra_Vector> mysol_;
     /// number of iterations in last newton iteration

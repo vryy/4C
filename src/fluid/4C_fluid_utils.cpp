@@ -34,15 +34,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                         Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-FLD::UTILS::StressManager::StressManager(Teuchos::RCP<DRT::Discretization> discret,
+FLD::UTILS::StressManager::StressManager(Teuchos::RCP<Discret::Discretization> discret,
     Teuchos::RCP<Epetra_Vector> dispnp, const bool alefluid, const int numdim)
     : discret_(discret),
       dispnp_(dispnp),
       alefluid_(alefluid),
       numdim_(numdim),
       sep_enr_(Teuchos::null),
-      wss_type_(CORE::UTILS::IntegralValue<INPAR::FLUID::WSSType>(
-          GLOBAL::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE")),
+      wss_type_(Core::UTILS::IntegralValue<Inpar::FLUID::WSSType>(
+          Global::Problem::Instance()->FluidDynamicParams(), "WSS_TYPE")),
       sum_stresses_(Teuchos::null),
       sum_wss_(Teuchos::null),
       sum_dt_stresses_(0.0),
@@ -51,13 +51,13 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<DRT::Discretization> discr
 {
   switch (wss_type_)
   {
-    case INPAR::FLUID::wss_standard:
+    case Inpar::FLUID::wss_standard:
       isinit_ = true;  // in this cases nothing has to be initialized
       break;
-    case INPAR::FLUID::wss_aggregation:
+    case Inpar::FLUID::wss_aggregation:
       isinit_ = false;  // we do this in InitAggr()
       break;
-    case INPAR::FLUID::wss_mean:
+    case Inpar::FLUID::wss_mean:
       sum_stresses_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true)),
       sum_wss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true)), isinit_ = true;
       break;
@@ -71,9 +71,9 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<DRT::Discretization> discr
 /*----------------------------------------------------------------------*
  | constructor                                         Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::StressManager::InitAggr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat)
+void FLD::UTILS::StressManager::InitAggr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat)
 {
-  if (wss_type_ != INPAR::FLUID::wss_aggregation)
+  if (wss_type_ != Inpar::FLUID::wss_aggregation)
     FOUR_C_THROW("One should end up here just in case of aggregated stresses!");
 
   calc_sep_enr(sysmat);
@@ -95,13 +95,13 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_wall_shear_stresses(
 
   switch (wss_type_)
   {
-    case INPAR::FLUID::wss_standard:
+    case Inpar::FLUID::wss_standard:
       // nothing to do
       break;
-    case INPAR::FLUID::wss_aggregation:
+    case Inpar::FLUID::wss_aggregation:
       wss = aggreagte_stresses(wss);
       break;
-    case INPAR::FLUID::wss_mean:
+    case Inpar::FLUID::wss_mean:
       wss = time_average_wss(wss, dt);
       break;
     default:
@@ -124,14 +124,14 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_pre_calc_wall_shear_s
 
   switch (wss_type_)
   {
-    case INPAR::FLUID::wss_standard:
+    case Inpar::FLUID::wss_standard:
       wss = get_wall_shear_stresses_wo_agg(trueresidual);
       break;
-    case INPAR::FLUID::wss_aggregation:
+    case Inpar::FLUID::wss_aggregation:
       wss = get_wall_shear_stresses_wo_agg(trueresidual);
       wss = aggreagte_stresses(wss);
       break;
-    case INPAR::FLUID::wss_mean:
+    case Inpar::FLUID::wss_mean:
       if (sum_dt_wss_ > 0.0)  // iff we have actually calculated some mean wss
         wss->Update(1.0 / sum_dt_wss_, *sum_wss_, 0.0);  // weighted sum of all prior stresses
       break;
@@ -180,13 +180,13 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetStresses(
 
   switch (wss_type_)
   {
-    case INPAR::FLUID::wss_standard:
+    case Inpar::FLUID::wss_standard:
       // nothing to do
       break;
-    case INPAR::FLUID::wss_aggregation:
+    case Inpar::FLUID::wss_aggregation:
       stresses = aggreagte_stresses(stresses);
       break;
-    case INPAR::FLUID::wss_mean:
+    case Inpar::FLUID::wss_mean:
       stresses = time_average_stresses(stresses, dt);
       break;
     default:
@@ -209,14 +209,14 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcStresses(
 
   switch (wss_type_)
   {
-    case INPAR::FLUID::wss_standard:
+    case Inpar::FLUID::wss_standard:
       stresses = GetStressesWOAgg(trueresidual);
       break;
-    case INPAR::FLUID::wss_aggregation:
+    case Inpar::FLUID::wss_aggregation:
       stresses = GetStressesWOAgg(trueresidual);
       stresses = aggreagte_stresses(stresses);
       break;
-    case INPAR::FLUID::wss_mean:
+    case Inpar::FLUID::wss_mean:
       if (sum_dt_stresses_ > 0.0)  // iff we have actually calculated some mean stresses
         stresses->Update(
             1.0 / sum_dt_stresses_, *sum_stresses_, 0.0);  // weighted sum of all prior stresses
@@ -269,7 +269,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::integrate_interface_shape
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> integratedshapefunc = CORE::LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> integratedshapefunc = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // call loop over elements
   discret_->ClearState();
@@ -304,7 +304,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::calc_wall_shear_stresses(
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // vector ndnorm0 with pressure-entries is needed for evaluate_condition
-  Teuchos::RCP<Epetra_Vector> ndnorm0 = CORE::LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> ndnorm0 = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // call loop over elements, note: normal vectors do not yet have length = 1.0
   discret_->ClearState();  // TODO: (Thon) Do we really have to to this in here?
@@ -424,18 +424,18 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::time_average_wss(
  | Calculate Aggregation Matrix and set is as member variable SepEnr_   |
  |                                                     Thon/Krank 11/14 |
  *------------------------------------------------- --------------------*/
-void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat)
+void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat)
 {
-  if (wss_type_ == INPAR::FLUID::wss_aggregation)  // iff we have not specified a ML-solver one does
+  if (wss_type_ == Inpar::FLUID::wss_aggregation)  // iff we have not specified a ML-solver one does
                                                    // not want to smooth the wss
   {
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat2;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat2;
 
     // Try this:
-    sysmat2 = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat);
+    sysmat2 = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat);
     if (sysmat2 == Teuchos::null)  // if it does not work the fluid matrix probably is a
                                    // BlockSparseMatrix, compare with function use_block_matrix()
-      sysmat2 = Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat)->Merge();
+      sysmat2 = Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat)->Merge();
     if (sysmat2 == Teuchos::null)
       FOUR_C_THROW("One of these two dynamic casts should have worked... Sorry!");
 
@@ -446,14 +446,14 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<CORE::LINALG::SparseOp
     MLAPI::Init();
 
     int ML_solver =
-        (GLOBAL::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER");
+        (Global::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER");
 
     if (ML_solver == -1)
       FOUR_C_THROW(
           "If you want to aggregate your stresses you need to specify a WSS_ML_AGR_SOLVER!");
 
-    Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
-        GLOBAL::Problem::Instance()->SolverParams(ML_solver), discret_->Comm()));
+    Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(
+        Global::Problem::Instance()->SolverParams(ML_solver), discret_->Comm()));
 
     if (solver == Teuchos::null)
       FOUR_C_THROW(
@@ -479,13 +479,13 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<CORE::LINALG::SparseOp
       if (not discret_->NodeRowMap()->MyGID(gid))  // just in case
         FOUR_C_THROW("not on proc");
       {
-        CORE::Nodes::Node* node = discret_->gNode(gid);
+        Core::Nodes::Node* node = discret_->gNode(gid);
         if (!node) FOUR_C_THROW("Cannot find node");
 
         int firstglobaldofid = discret_->Dof(node, 0);
         int firstlocaldofid = discret_->dof_row_map()->LID(firstglobaldofid);
 
-        std::vector<CORE::Conditions::Condition*> nodedircond;
+        std::vector<Core::Conditions::Condition*> nodedircond;
         node->GetCondition("FluidStressCalc", nodedircond);
 
         if (not nodedircond.empty())
@@ -518,10 +518,10 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<CORE::LINALG::SparseOp
     // get plain aggregation Ptent
     Teuchos::RCP<Epetra_CrsMatrix> crsPtent;
     MLAPI::GetPtent(*sysmat2->EpetraMatrix(), mlparams, nullspace, crsPtent);
-    CORE::LINALG::SparseMatrix Ptent(crsPtent, CORE::LINALG::View);
+    Core::LinAlg::SparseMatrix Ptent(crsPtent, Core::LinAlg::View);
 
     // compute scale-separation matrix: S = Ptent*Ptent^T
-    sep_enr_ = CORE::LINALG::Multiply(Ptent, false, Ptent, true);
+    sep_enr_ = Core::LinAlg::Multiply(Ptent, false, Ptent, true);
     sep_enr_->Complete();
   }
 
@@ -531,8 +531,8 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<CORE::LINALG::SparseOp
 
 //----------------------------------------------------------------------*/
 //----------------------------------------------------------------------*/
-void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis, int ndim,
-    const DRT::Discretization& alefluiddis, CORE::LINALG::MapExtractor& extractor,
+void FLD::UTILS::SetupFluidFluidVelPresSplit(const Discret::Discretization& fluiddis, int ndim,
+    const Discret::Discretization& alefluiddis, Core::LinAlg::MapExtractor& extractor,
     Teuchos::RCP<Epetra_Map> fullmap)
 {
   std::set<int> veldofset;
@@ -542,7 +542,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
   int numfluidrownodes = fluiddis.NumMyRowNodes();
   for (int i = 0; i < numfluidrownodes; ++i)
   {
-    CORE::Nodes::Node* fluidnode = fluiddis.lRowNode(i);
+    Core::Nodes::Node* fluidnode = fluiddis.lRowNode(i);
 
     std::vector<int> fluiddof = fluiddis.Dof(0, fluidnode);
     for (unsigned j = 0; j < fluiddof.size(); ++j)
@@ -563,7 +563,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
   int numalefluidrownodes = alefluiddis.NumMyRowNodes();
   for (int i = 0; i < numalefluidrownodes; ++i)
   {
-    CORE::Nodes::Node* alefluidnode = alefluiddis.lRowNode(i);
+    Core::Nodes::Node* alefluidnode = alefluiddis.lRowNode(i);
 
     std::vector<int> alefluiddof = alefluiddis.Dof(alefluidnode);
     for (unsigned j = 0; j < alefluiddof.size(); ++j)
@@ -602,20 +602,20 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
 // -------------------------------------------------------------------
 // compute forces and moments                          rasthofer 08/13
 // -------------------------------------------------------------------
-void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
+void FLD::UTILS::LiftDrag(const Teuchos::RCP<const Discret::Discretization> dis,
     const Teuchos::RCP<const Epetra_Vector> trueresidual,
     const Teuchos::RCP<const Epetra_Vector> dispnp, const int ndim,
     Teuchos::RCP<std::map<int, std::vector<double>>>& liftdragvals, bool alefluid)
 {
   int myrank = dis->Comm().MyPID();
 
-  std::map<const int, std::set<CORE::Nodes::Node*>> ldnodemap;
+  std::map<const int, std::set<Core::Nodes::Node*>> ldnodemap;
   std::map<const int, const std::vector<double>*> ldcoordmap;
   std::map<const int, const std::vector<double>*> ldaxismap;
   bool axis_for_moment = false;
 
   // allocate and initialise LiftDrag conditions
-  std::vector<CORE::Conditions::Condition*> ldconds;
+  std::vector<Core::Conditions::Condition*> ldconds;
   dis->GetCondition("LIFTDRAG", ldconds);
 
   // there is an L&D condition if it has a size
@@ -659,19 +659,19 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
 
       /* get new nodeset for new label OR:
          return pointer to nodeset for known label ... */
-      std::set<CORE::Nodes::Node*>& nodes = ldnodemap[label];
+      std::set<Core::Nodes::Node*>& nodes = ldnodemap[label];
 
       // center coordinates to present label
       ldcoordmap[label] = &ldconds[i]->parameters().Get<std::vector<double>>("centerCoord");
 
       // axis of rotation for present label (only needed for 3D)
-      if (ldconds[i]->Type() == CORE::Conditions::SurfLIFTDRAG)
+      if (ldconds[i]->Type() == Core::Conditions::SurfLIFTDRAG)
       {
         ldaxismap[label] = &ldconds[i]->parameters().Get<std::vector<double>>("axis");
         // get pointer to axis vector (if available)
         const std::vector<double>* axisvecptr = ldaxismap[label];
         if (axisvecptr->size() != 3) FOUR_C_THROW("axis vector has not length 3");
-        CORE::LINALG::Matrix<3, 1> axisvec(axisvecptr->data(), false);
+        Core::LinAlg::Matrix<3, 1> axisvec(axisvecptr->data(), false);
         if (axisvec.Norm2() > 1.0e-9) axis_for_moment = true;  // axis has been set
       }
 
@@ -692,11 +692,11 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
 
 
     // now step the label map
-    for (std::map<const int, std::set<CORE::Nodes::Node*>>::const_iterator labelit =
+    for (std::map<const int, std::set<Core::Nodes::Node*>>::const_iterator labelit =
              ldnodemap.begin();
          labelit != ldnodemap.end(); ++labelit)
     {
-      const std::set<CORE::Nodes::Node*>& nodes =
+      const std::set<Core::Nodes::Node*>& nodes =
           labelit->second;                    // pointer to nodeset of present label
       const int label = labelit->first;       // the present label
       std::vector<double> myforces(3, 0.0);   // vector with lift&drag forces
@@ -705,19 +705,19 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
       // get also pointer to center coordinates
       const std::vector<double>* centerCoordvec = ldcoordmap[label];
       if (centerCoordvec->size() != 3) FOUR_C_THROW("axis vector has not length 3");
-      CORE::LINALG::Matrix<3, 1> centerCoord(centerCoordvec->data(), false);
+      Core::LinAlg::Matrix<3, 1> centerCoord(centerCoordvec->data(), false);
 
       // loop all nodes within my set
-      for (std::set<CORE::Nodes::Node*>::const_iterator actnode = nodes.begin();
+      for (std::set<Core::Nodes::Node*>::const_iterator actnode = nodes.begin();
            actnode != nodes.end(); ++actnode)
       {
-        const CORE::LINALG::Matrix<3, 1> x(
+        const Core::LinAlg::Matrix<3, 1> x(
             (*actnode)->X().data(), false);  // pointer to nodal coordinates
         const Epetra_BlockMap& rowdofmap = trueresidual->Map();
         const std::vector<int> dof = dis->Dof(*actnode);
 
         // get nodal forces
-        CORE::LINALG::Matrix<3, 1> actforces(true);
+        Core::LinAlg::Matrix<3, 1> actforces(true);
         for (int idim = 0; idim < ndim; idim++)
         {
           actforces(idim, 0) = (*trueresidual)[rowdofmap.LID(dof[idim])];
@@ -726,9 +726,9 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
         // z-component remains zero for ndim=2
 
         // get moment
-        CORE::LINALG::Matrix<3, 1> actmoments(true);
+        Core::LinAlg::Matrix<3, 1> actmoments(true);
         // get vector of point to center point
-        CORE::LINALG::Matrix<3, 1> distances;
+        Core::LinAlg::Matrix<3, 1> distances;
         distances.Update(1.0, x, -1.0, centerCoord);
 
         // ALE case: take displacements into account
@@ -742,7 +742,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
         }
 
         // calculate nodal angular moment with respect to global coordinate system
-        CORE::LINALG::Matrix<3, 1> actmoment_gc(true);
+        Core::LinAlg::Matrix<3, 1> actmoment_gc(true);
         actmoment_gc(0, 0) =
             distances(1) * actforces(2, 0) - distances(2) * actforces(1, 0);  // zero for 2D
         actmoment_gc(1, 0) =
@@ -752,7 +752,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const DRT::Discretization> dis,
         if (axis_for_moment)
         {
           const std::vector<double>* axisvecptr = ldaxismap[label];
-          CORE::LINALG::Matrix<3, 1> axisvec(axisvecptr->data(), false);
+          Core::LinAlg::Matrix<3, 1> axisvec(axisvecptr->data(), false);
           double norm = 0.0;
           if (axisvec.Norm2() != 0.0)
           {
@@ -844,7 +844,7 @@ void FLD::UTILS::WriteLiftDragToFile(
     std::ostringstream slabel;
     slabel << std::setw(3) << std::setfill('0') << liftdragval->first;
     std::ofstream f;
-    const std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileName() +
+    const std::string fname = Global::Problem::Instance()->OutputControlFile()->FileName() +
                               ".liftdrag_label_" + slabel.str() + ".txt";
 
     if (step <= 1)
@@ -864,19 +864,19 @@ void FLD::UTILS::WriteLiftDragToFile(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, double> FLD::UTILS::ComputeFlowRates(DRT::Discretization& dis,
+std::map<int, double> FLD::UTILS::ComputeFlowRates(Discret::Discretization& dis,
     const Teuchos::RCP<Epetra_Vector>& velnp, const std::string& condstring,
-    const INPAR::FLUID::PhysicalType physicaltype)
+    const Inpar::FLUID::PhysicalType physicaltype)
 {
   return ComputeFlowRates(dis, velnp, Teuchos::null, Teuchos::null, condstring, physicaltype);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, double> FLD::UTILS::ComputeFlowRates(DRT::Discretization& dis,
+std::map<int, double> FLD::UTILS::ComputeFlowRates(Discret::Discretization& dis,
     const Teuchos::RCP<Epetra_Vector>& velnp, const Teuchos::RCP<Epetra_Vector>& gridv,
     const Teuchos::RCP<Epetra_Vector>& dispnp, const std::string& condstring,
-    const INPAR::FLUID::PhysicalType physicaltype)
+    const Inpar::FLUID::PhysicalType physicaltype)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
@@ -887,14 +887,14 @@ std::map<int, double> FLD::UTILS::ComputeFlowRates(DRT::Discretization& dis,
   std::map<int, double> volumeflowrateperline;
 
   // get condition
-  std::vector<CORE::Conditions::Condition*> conds;
+  std::vector<Core::Conditions::Condition*> conds;
   dis.GetCondition(condstring, conds);
 
   // each condition is on every proc , but might not have condition elements there
-  for (std::vector<CORE::Conditions::Condition*>::const_iterator conditer = conds.begin();
+  for (std::vector<Core::Conditions::Condition*>::const_iterator conditer = conds.begin();
        conditer != conds.end(); ++conditer)
   {
-    const CORE::Conditions::Condition* cond = *conditer;
+    const Core::Conditions::Condition* cond = *conditer;
     const int condID = cond->parameters().Get<int>("ConditionID");
 
     // get a vector layout from the discretization to construct matching
@@ -902,7 +902,7 @@ std::map<int, double> FLD::UTILS::ComputeFlowRates(DRT::Discretization& dis,
     const Epetra_Map* dofrowmap = dis.dof_row_map();
 
     // create vector (+ initialization with zeros)
-    Teuchos::RCP<Epetra_Vector> flowrates = CORE::LINALG::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::CreateVector(*dofrowmap, true);
 
     // call loop over elements
     dis.ClearState();
@@ -934,9 +934,9 @@ std::map<int, double> FLD::UTILS::ComputeFlowRates(DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, double> FLD::UTILS::compute_volume(DRT::Discretization& dis,
+std::map<int, double> FLD::UTILS::compute_volume(Discret::Discretization& dis,
     const Teuchos::RCP<Epetra_Vector>& velnp, const Teuchos::RCP<Epetra_Vector>& gridv,
-    const Teuchos::RCP<Epetra_Vector>& dispnp, const INPAR::FLUID::PhysicalType physicaltype)
+    const Teuchos::RCP<Epetra_Vector>& dispnp, const Inpar::FLUID::PhysicalType physicaltype)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
@@ -951,8 +951,8 @@ std::map<int, double> FLD::UTILS::compute_volume(DRT::Discretization& dis,
   if (dispnp != Teuchos::null) dis.set_state("dispnp", dispnp);
   if (gridv != Teuchos::null) dis.set_state("gridv", gridv);
 
-  Teuchos::RCP<CORE::LINALG::SerialDenseVector> volumes =
-      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
+  Teuchos::RCP<Core::LinAlg::SerialDenseVector> volumes =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(1));
 
   // call loop over elements (assemble nothing)
   dis.EvaluateScalars(eleparams, volumes);
@@ -966,24 +966,24 @@ std::map<int, double> FLD::UTILS::compute_volume(DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, CORE::LINALG::Matrix<3, 1>> FLD::UTILS::ComputeSurfaceImpulsRates(
-    DRT::Discretization& dis, const Teuchos::RCP<Epetra_Vector> velnp)
+std::map<int, Core::LinAlg::Matrix<3, 1>> FLD::UTILS::ComputeSurfaceImpulsRates(
+    Discret::Discretization& dis, const Teuchos::RCP<Epetra_Vector> velnp)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
   eleparams.set("action", "calc_impuls_rate");
 
-  std::map<int, CORE::LINALG::Matrix<3, 1>> volumeflowratepersurface;
+  std::map<int, Core::LinAlg::Matrix<3, 1>> volumeflowratepersurface;
 
   // get condition
-  std::vector<CORE::Conditions::Condition*> conds;
+  std::vector<Core::Conditions::Condition*> conds;
   dis.GetCondition("SurfImpulsRate", conds);
 
   // collect elements by xfem coupling label
-  for (std::vector<CORE::Conditions::Condition*>::const_iterator conditer = conds.begin();
+  for (std::vector<Core::Conditions::Condition*>::const_iterator conditer = conds.begin();
        conditer != conds.end(); ++conditer)
   {
-    const CORE::Conditions::Condition* cond = *conditer;
+    const Core::Conditions::Condition* cond = *conditer;
 
     const int condID = cond->parameters().Get<int>("ConditionID");
 
@@ -997,10 +997,10 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> FLD::UTILS::ComputeSurfaceImpulsRates(
     dis.set_state("velnp", velnp);
     dis.evaluate_condition(eleparams, impulsrates, "SurfImpulsRate", condID);
     dis.ClearState();
-    CORE::LINALG::Matrix<3, 1> locflowrate(true);
+    Core::LinAlg::Matrix<3, 1> locflowrate(true);
     for (int inode = 0; inode < dis.NumMyRowNodes(); inode++)
     {
-      const CORE::Nodes::Node* node = dis.lRowNode(inode);
+      const Core::Nodes::Node* node = dis.lRowNode(inode);
       static std::vector<int> gdofs(4);
       dis.Dof(node, 0, gdofs);
       for (size_t isd = 0; isd < 3; isd++)
@@ -1010,17 +1010,17 @@ std::map<int, CORE::LINALG::Matrix<3, 1>> FLD::UTILS::ComputeSurfaceImpulsRates(
       }
     }
 
-    //    CORE::LINALG::Matrix<3,1> flowrate(true);
+    //    Core::LinAlg::Matrix<3,1> flowrate(true);
     //    dofrowmap->Comm().SumAll(&locflowrate(0),&flowrate(0),1);
     //    dofrowmap->Comm().SumAll(&locflowrate(1),&flowrate(1),1);
     //    dofrowmap->Comm().SumAll(&locflowrate(2),&flowrate(2),1);
     //    std::cout << "locflowrate " << locflowrate << std::endl;
     if (volumeflowratepersurface.find(condID) == volumeflowratepersurface.end())
     {
-      CORE::LINALG::Matrix<3, 1> tmp(true);
+      Core::LinAlg::Matrix<3, 1> tmp(true);
       volumeflowratepersurface.insert(std::make_pair(condID, tmp));
     }
-    CORE::LINALG::Matrix<3, 1> tmp = volumeflowratepersurface[condID];
+    Core::LinAlg::Matrix<3, 1> tmp = volumeflowratepersurface[condID];
     tmp += locflowrate;
     volumeflowratepersurface[condID] = tmp;
   }
@@ -1051,7 +1051,7 @@ void FLD::UTILS::WriteDoublesToFile(
     std::ostringstream slabel;
     slabel << std::setw(3) << std::setfill('0') << iter->first;
     std::ofstream f;
-    const std::string fname = GLOBAL::Problem::Instance()->OutputControlFile()->FileName() + "." +
+    const std::string fname = Global::Problem::Instance()->OutputControlFile()->FileName() + "." +
                               name + "_ID_" + slabel.str() + ".txt";
 
     if (step <= 1)
@@ -1068,7 +1068,7 @@ void FLD::UTILS::WriteDoublesToFile(
 /*----------------------------------------------------------------------*|
  | project vel gradient and store it in given param list        bk 05/15 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::ProjectGradientAndSetParam(Teuchos::RCP<DRT::Discretization> discret,
+void FLD::UTILS::ProjectGradientAndSetParam(Teuchos::RCP<Discret::Discretization> discret,
     Teuchos::ParameterList& eleparams, Teuchos::RCP<const Epetra_Vector> vel,
     const std::string paraname, bool alefluid)
 {
@@ -1088,14 +1088,15 @@ void FLD::UTILS::ProjectGradientAndSetParam(Teuchos::RCP<DRT::Discretization> di
  | Project velocity gradient                                    bk 05/15 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
-    Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<const Epetra_Vector> vel, bool alefluid)
+    Teuchos::RCP<Discret::Discretization> discret, Teuchos::RCP<const Epetra_Vector> vel,
+    bool alefluid)
 {
   // reconstruction of second derivatives for fluid residual
-  INPAR::FLUID::GradientReconstructionMethod recomethod =
-      CORE::UTILS::IntegralValue<INPAR::FLUID::GradientReconstructionMethod>(
-          GLOBAL::Problem::Instance()->FluidDynamicParams(), "VELGRAD_PROJ_METHOD");
+  Inpar::FLUID::GradientReconstructionMethod recomethod =
+      Core::UTILS::IntegralValue<Inpar::FLUID::GradientReconstructionMethod>(
+          Global::Problem::Instance()->FluidDynamicParams(), "VELGRAD_PROJ_METHOD");
 
-  const int dim = GLOBAL::Problem::Instance()->NDim();
+  const int dim = Global::Problem::Instance()->NDim();
   const int numvec = dim * dim;
   Teuchos::ParameterList params;
   Teuchos::RCP<Epetra_MultiVector> projected_velgrad = Teuchos::null;
@@ -1106,12 +1107,12 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
 
   switch (recomethod)
   {
-    case INPAR::FLUID::gradreco_none:
+    case Inpar::FLUID::gradreco_none:
     {
       // no projection and no parameter in parameter list
     }
     break;
-    case INPAR::FLUID::gradreco_spr:
+    case Inpar::FLUID::gradreco_spr:
     {
       if (alefluid)
         FOUR_C_THROW(
@@ -1122,15 +1123,15 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
       switch (dim)
       {
         case 3:
-          projected_velgrad = CORE::FE::compute_superconvergent_patch_recovery<3>(
+          projected_velgrad = Core::FE::compute_superconvergent_patch_recovery<3>(
               *discret, *vel, "vel", numvec, params);
           break;
         case 2:
-          projected_velgrad = CORE::FE::compute_superconvergent_patch_recovery<2>(
+          projected_velgrad = Core::FE::compute_superconvergent_patch_recovery<2>(
               *discret, *vel, "vel", numvec, params);
           break;
         case 1:
-          projected_velgrad = CORE::FE::compute_superconvergent_patch_recovery<1>(
+          projected_velgrad = Core::FE::compute_superconvergent_patch_recovery<1>(
               *discret, *vel, "vel", numvec, params);
           break;
         default:
@@ -1139,12 +1140,12 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
       }
     }
     break;
-    case INPAR::FLUID::gradreco_l2:
+    case Inpar::FLUID::gradreco_l2:
     {
       const int solvernumber =
-          GLOBAL::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
+          Global::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
       if (solvernumber < 1) FOUR_C_THROW("you have to specify a VELGRAD_PROJ_SOLVER");
-      const auto& solverparams = GLOBAL::Problem::Instance()->SolverParams(solvernumber);
+      const auto& solverparams = Global::Problem::Instance()->SolverParams(solvernumber);
 
       params.set<int>("action", FLD::velgradient_projection);
 
@@ -1154,7 +1155,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
 
       // project velocity gradient of fluid to nodal level via L2 projection
       projected_velgrad =
-          CORE::FE::compute_nodal_l2_projection(discret, "vel", numvec, params, solverparams);
+          Core::FE::compute_nodal_l2_projection(discret, "vel", numvec, params, solverparams);
     }
     break;
     default:

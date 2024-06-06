@@ -91,27 +91,27 @@ namespace
     int voigt_index = -1;
     if (label == prefix + "_xx")
     {
-      voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(0, 0);
+      voigt_index = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(0, 0);
     }
     else if (label == prefix + "_yy")
     {
-      voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(1, 1);
+      voigt_index = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(1, 1);
     }
     else if (label == prefix + "_zz")
     {
-      voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(2, 2);
+      voigt_index = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(2, 2);
     }
     else if (label == prefix + "_xy")
     {
-      voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(0, 1);
+      voigt_index = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(0, 1);
     }
     else if (label == prefix + "_xz")
     {
-      voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(0, 2);
+      voigt_index = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(0, 2);
     }
     else if (label == prefix + "_yz")
     {
-      voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(1, 2);
+      voigt_index = Core::LinAlg::Voigt::IndexMappings::SymToVoigt6(1, 2);
     }
 
     if (voigt_index < 0)
@@ -137,7 +137,7 @@ namespace
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::ResultTest::ResultTest()
-    : CORE::UTILS::ResultTest("STRUCTURE"),
+    : Core::UTILS::ResultTest("STRUCTURE"),
       isinit_(false),
       issetup_(false),
       strudisc_(Teuchos::null),
@@ -154,7 +154,7 @@ STR::ResultTest::ResultTest()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::ResultTest::Init(
-    const STR::TIMINT::BaseDataGlobalState& gstate, const STR::MODELEVALUATOR::Data& data)
+    const STR::TimeInt::BaseDataGlobalState& gstate, const STR::MODELEVALUATOR::Data& data)
 {
   issetup_ = false;
 
@@ -166,8 +166,8 @@ void STR::ResultTest::Init(
   data_ = Teuchos::rcpFromRef(data);
   strudisc_ = gstate.GetDiscret();
 
-  if (GLOBAL::Problem::Instance()->GetProblemType() == CORE::ProblemType::struct_ale and
-      (GLOBAL::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0)
+  if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::struct_ale and
+      (Global::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0)
     FOUR_C_THROW("Material displ. are not yet considered!");
   else
     dismatn_ = Teuchos::null;
@@ -186,7 +186,7 @@ void STR::ResultTest::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::ResultTest::test_node(INPUT::LineDefinition& res, int& nerr, int& test_count)
+void STR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   check_init_setup();
 
@@ -234,7 +234,7 @@ int STR::ResultTest::get_nodal_result(
 {
   result = 0.0;
 
-  const CORE::Nodes::Node* actnode = strudisc_->gNode(node);
+  const Core::Nodes::Node* actnode = strudisc_->gNode(node);
 
   // Here we are just interested in the nodes that we own (i.e. a row node)!
   if (actnode->Owner() != strudisc_->Comm().MyPID()) return -1;
@@ -408,7 +408,7 @@ int STR::ResultTest::get_nodal_result(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::ResultTest::test_node_on_geometry(INPUT::LineDefinition& res, int& nerr, int& test_count,
+void STR::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& nerr, int& test_count,
     const std::vector<std::vector<std::vector<int>>>& nodeset)
 {
   check_init_setup();
@@ -509,7 +509,8 @@ void STR::ResultTest::test_node_on_geometry(INPUT::LineDefinition& res, int& ner
   }
 
   // gather the result across processes
-  auto gather_result = [op](const DRT::Discretization& disc, const double local_result) -> double
+  auto gather_result = [op](
+                           const Discret::Discretization& disc, const double local_result) -> double
   {
     double tmp_result = local_result, result = 0.0;
     switch (op)
@@ -559,7 +560,7 @@ void STR::ResultTest::test_node_on_geometry(INPUT::LineDefinition& res, int& ner
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::ResultTest::TestSpecial(
-    INPUT::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count)
+    Input::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count)
 {
   check_init_setup();
 
@@ -642,7 +643,7 @@ std::optional<int> STR::ResultTest::get_last_lin_iteration_number(
   {
     const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
 
-    const int restart = GLOBAL::Problem::Instance()->Restart();
+    const int restart = Global::Problem::Instance()->Restart();
     if (stepn <= restart) return -1;
 
     special_status = Status::evaluated;
@@ -663,7 +664,7 @@ std::optional<int> STR::ResultTest::get_nln_iteration_number(
   {
     const int stepn = GetIntegerNumberAtLastPositionOfName(quantity);
 
-    const int restart = GLOBAL::Problem::Instance()->Restart();
+    const int restart = Global::Problem::Instance()->Restart();
     if (stepn <= restart) return -1;
 
     special_status = Status::evaluated;

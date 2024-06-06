@@ -21,14 +21,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace LINALG
+namespace LinAlg
 {
   class SerialDenseMatrix;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Node;
     class Edge;
@@ -49,17 +49,17 @@ namespace CORE::GEO
       void FindNodePositions();
 
       void add_element(int eid, const std::vector<int>& nids,
-          const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype, const double* lsv,
+          const Core::LinAlg::SerialDenseMatrix& xyz, Core::FE::CellType distype, const double* lsv,
           const bool lsv_only_plus_domain);
 
       void AddLevelSetSide(int levelset_sid);
 
       void add_mesh_cutting_side(int sid, const std::vector<int>& nids,
-          const CORE::LINALG::SerialDenseMatrix& xyz, CORE::FE::CellType distype, int mi);
+          const Core::LinAlg::SerialDenseMatrix& xyz, Core::FE::CellType distype, int mi);
     };
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

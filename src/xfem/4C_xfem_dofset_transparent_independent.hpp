@@ -17,12 +17,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   class CutWizard;
 }
@@ -41,23 +41,23 @@ namespace XFEM
 
    */
   class XFEMTransparentIndependentDofSet
-      : public virtual CORE::Dofsets::TransparentIndependentDofSet
+      : public virtual Core::DOFSets::TransparentIndependentDofSet
   {
    public:
     /*!
       \brief Standard Constructor
      */
-    explicit XFEMTransparentIndependentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,
-        bool parallel, Teuchos::RCP<CORE::GEO::CutWizard> wizard);
+    explicit XFEMTransparentIndependentDofSet(Teuchos::RCP<Discret::Discretization> sourcedis,
+        bool parallel, Teuchos::RCP<Core::Geo::CutWizard> wizard);
 
 
 
    protected:
-    int NumDofPerNode(const CORE::Nodes::Node& node) const override;
+    int NumDofPerNode(const Core::Nodes::Node& node) const override;
 
 
    private:
-    Teuchos::RCP<CORE::GEO::CutWizard> wizard_;
+    Teuchos::RCP<Core::Geo::CutWizard> wizard_;
   };
 }  // namespace XFEM
 

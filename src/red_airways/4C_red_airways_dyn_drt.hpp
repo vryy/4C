@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 void dyn_red_airways_drt();
 void redairway_tissue_dyn();
 
-Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D);
+Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D);
 
 
 FOUR_C_NAMESPACE_CLOSE

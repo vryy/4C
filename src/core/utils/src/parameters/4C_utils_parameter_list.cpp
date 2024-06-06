@@ -10,7 +10,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   void BoolParameter(std::string const& paramName, std::string const& value,
       std::string const& docString, Teuchos::ParameterList* paramList)
@@ -49,6 +49,6 @@ namespace CORE::UTILS
     paramList->set(paramName, value, docString, validator);
   }
 
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
 FOUR_C_NAMESPACE_CLOSE

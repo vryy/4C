@@ -23,7 +23,7 @@ John Wiley & Sons, Ltd, 2008
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -37,11 +37,11 @@ namespace MAT
      * Following the approach provided by EA de Souza Neto, D Peric, DRJ Owen.
      * Computational Methods of Plasticity: Theory and Applications, Page 338-339
      */
-    class PlasticDruckerPrager : public CORE::MAT::PAR::Parameter
+    class PlasticDruckerPrager : public Core::Mat::PAR::Parameter
     {
      public:
       //! standard constructor
-      PlasticDruckerPrager(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      PlasticDruckerPrager(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
       //! @name material parameters
       //@{
       //! Young's modulus
@@ -64,15 +64,15 @@ namespace MAT
       const int itermax_;
       //@}
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
     };
   }  // namespace PAR
-  class PlasticDruckerPragerType : public CORE::COMM::ParObjectType
+  class PlasticDruckerPragerType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "PlasticDruckerPragerType"; }
     static PlasticDruckerPragerType& Instance() { return instance_; };
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static PlasticDruckerPragerType instance_;
@@ -83,28 +83,28 @@ namespace MAT
    public:
     PlasticDruckerPrager();
 
-    explicit PlasticDruckerPrager(MAT::PAR::PlasticDruckerPrager* params);
+    explicit PlasticDruckerPrager(Mat::PAR::PlasticDruckerPrager* params);
     int UniqueParObjectId() const override
     {
       return PlasticDruckerPragerType::Instance().UniqueParObjectId();
     }
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
     void Unpack(const std::vector<char>& data) override;
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_pldruckprag;
+      return Core::Materials::m_pldruckprag;
     }
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (kinem != INPAR::STR::KinemType::linear)
+      if (kinem != Inpar::STR::KinemType::linear)
         FOUR_C_THROW(
             "The plastic Drucker Prager material model is only compatible with linear kinematics.");
     }
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new PlasticDruckerPrager(*this));
     }
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
     void Update() override;
     /**
      * \brief Evaulate the stresses from the strains in the material
@@ -117,32 +117,32 @@ namespace MAT
      * \param gp :Gauss point
      * \param eleGID :element global identifier
      */
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, int gp, int eleGID) override
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* linstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, int gp, int eleGID) override
     {
       this->EvaluateFAD(defgrd, linstrain, params, stress, cmat, gp, eleGID);
     };
 
     template <typename ScalarT>
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1, ScalarT>* linstrain,
-        Teuchos::ParameterList& params, CORE::LINALG::Matrix<NUM_STRESS_3D, 1, ScalarT>* stress,
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, int gp, int eleGID)
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, ScalarT>* linstrain,
+        Teuchos::ParameterList& params, Core::LinAlg::Matrix<NUM_STRESS_3D, 1, ScalarT>* stress,
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, int gp, int eleGID)
     {
       this->EvaluateFAD(defgrd, linstrain, params, stress, cmat, gp, eleGID);
     };
     template <typename ScalarT>
-    void EvaluateFAD(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1, ScalarT>* linstrain,
-        Teuchos::ParameterList& params, CORE::LINALG::Matrix<NUM_STRESS_3D, 1, ScalarT>* stress,
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, int gp, int eleGID);
+    void EvaluateFAD(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, ScalarT>* linstrain,
+        Teuchos::ParameterList& params, Core::LinAlg::Matrix<NUM_STRESS_3D, 1, ScalarT>* stress,
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, int gp, int eleGID);
     template <typename T>
-    void Stress(const T p, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1, T>& devstress,
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1, T>& stress);
+    void Stress(const T p, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& devstress,
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1, T>& stress);
 
-    void setup_cmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
+    void setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
     /**
      * \brief setup the elastoplasticity tensor in matrix notation for 3d return to cone
      *
@@ -156,8 +156,8 @@ namespace MAT
      * \param eta :Mohr-columb parameter
      * \param etabar :Mohr-columb parameter
      */
-    void setup_cmat_elasto_plastic_cone(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        double Dgamma, double G, double Kappa, CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstrain,
+    void setup_cmat_elasto_plastic_cone(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        double Dgamma, double G, double Kappa, Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstrain,
         double xi, double Hiso, double eta, double etabar);
     /**
      * \brief setup the elastoplasticity tensor in matrix notation for 3d return to apex
@@ -170,16 +170,16 @@ namespace MAT
      * \param eta :Mohr-columb parameter
      * \param etabar :Mohr-columb parameter
      */
-    void setup_cmat_elasto_plastic_apex(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+    void setup_cmat_elasto_plastic_apex(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
                                             cmat,           // elasto-plastic tangent modulus (out)
         double Kappa,                                       // Bulk mmodulus
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstrain,  // deviatoric strain
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& devstrain,  // deviatoric strain
         double xi,                                          // Mohr-columb parameter
         double Hiso,                                        // isotropic hardening modulus
         double eta,                                         // Mohr-columb parameter
         double etabar                                       // Mohr-columb parameter
     );
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
     double Density() const override { return params_->density_; }
     template <typename T>
     std::pair<T, T> return_to_cone_funct_and_deriv(T Dgamma, T G, T kappa, T Phi_trial);
@@ -190,17 +190,17 @@ namespace MAT
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateOutputData(
-        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
+        const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const override;
 
    private:
-    MAT::PAR::PlasticDruckerPrager* params_;
-    std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>> strainpllast_;
-    std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>> strainplcurr_;
+    Mat::PAR::PlasticDruckerPrager* params_;
+    std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>> strainpllast_;
+    std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>> strainplcurr_;
     std::vector<double> strainbarpllast_;
     std::vector<double> strainbarplcurr_;
     bool isinit_;
   };
-}  // namespace MAT
+}  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

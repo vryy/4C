@@ -20,9 +20,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace INPAR
+namespace Inpar
 {
-  namespace IMMERSED
+  namespace Immersed
   {
     /*----------------------------------------------------------------------*
      | Coupling Methods                                                     |
@@ -77,10 +77,10 @@ namespace INPAR
 
     /// set specific immersed conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
-  }  // namespace IMMERSED
-}  // namespace INPAR
+  }  // namespace Immersed
+}  // namespace Inpar
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE
 

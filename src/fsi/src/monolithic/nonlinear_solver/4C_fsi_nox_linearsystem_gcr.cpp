@@ -240,10 +240,10 @@ int NOX::FSI::LinearSystemGCR::solve_gmres(
     const ::NOX::Epetra::Vector& b, ::NOX::Epetra::Vector& x, int& max_iter, double& tol, int m)
 {
   double resid = 0;
-  CORE::LINALG::SerialDenseVector s(m + 1, true);
-  CORE::LINALG::SerialDenseVector cs(m + 1, true);
-  CORE::LINALG::SerialDenseVector sn(m + 1, true);
-  CORE::LINALG::SerialDenseMatrix H(m + 1, m, true);
+  Core::LinAlg::SerialDenseVector s(m + 1, true);
+  Core::LinAlg::SerialDenseVector cs(m + 1, true);
+  Core::LinAlg::SerialDenseVector sn(m + 1, true);
+  Core::LinAlg::SerialDenseMatrix H(m + 1, m, true);
 
   ::NOX::Epetra::Vector r(x, ::NOX::ShapeCopy);
   ::NOX::Epetra::Vector w(x, ::NOX::ShapeCopy);
@@ -309,7 +309,7 @@ int NOX::FSI::LinearSystemGCR::solve_gmres(
       if ((resid = fabs(s(i + 1)) / normb) < tol)
       {
         // Update(x, i, H, s, v);
-        CORE::LINALG::SerialDenseVector y(s);
+        Core::LinAlg::SerialDenseVector y(s);
 
         // Backsolve:
         for (int l = i; l >= 0; l--)
@@ -327,7 +327,7 @@ int NOX::FSI::LinearSystemGCR::solve_gmres(
     }
 
     // Update(x, m - 1, H, s, v);
-    CORE::LINALG::SerialDenseVector y(s);
+    Core::LinAlg::SerialDenseVector y(s);
 
     // Backsolve:
     for (int i = m - 1; i >= 0; i--)

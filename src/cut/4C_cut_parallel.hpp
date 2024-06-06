@@ -18,20 +18,20 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Node;
     class Edge;
@@ -53,8 +53,8 @@ namespace CORE::GEO
       /*!
       \brief Basic CUT parallel constructor
        */
-      explicit Parallel(const Teuchos::RCP<DRT::Discretization>& discret,
-          CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::ParentIntersection& parentintersection);
+      explicit Parallel(const Teuchos::RCP<Discret::Discretization>& discret,
+          Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::ParentIntersection& parentintersection);
 
       /*!
       \brief Destructor
@@ -117,24 +117,24 @@ namespace CORE::GEO
       /*!
       \brief Pack the point coordinates
        */
-      void pack_points(CORE::COMM::PackBuffer& dataSend,
-          std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords) const;
+      void pack_points(Core::Communication::PackBuffer& dataSend,
+          std::vector<Core::LinAlg::Matrix<3, 1>>& points_coords) const;
 
       /*!
       \brief Unpack the point coordinates
        */
       void unpack_points(std::vector<char>::size_type& posinData,  //!< position in data
           std::vector<char>& dataRecv,                             //!< received data
-          std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords   //!< point coordinates
+          std::vector<Core::LinAlg::Matrix<3, 1>>& points_coords   //!< point coordinates
       ) const;
 
       /*!
       \brief Basic function sending data to destination and receiving data from source
        */
-      void send_data(CORE::COMM::PackBuffer& dataSend,  //!< pack buffer
-          int& dest,                                    //!< destination proc
-          int& source,                                  //!< source proc
-          std::vector<char>& dataRecv                   //!< received data
+      void send_data(Core::Communication::PackBuffer& dataSend,  //!< pack buffer
+          int& dest,                                             //!< destination proc
+          int& source,                                           //!< source proc
+          std::vector<char>& dataRecv                            //!< received data
       ) const;
 
       /*!
@@ -162,7 +162,7 @@ namespace CORE::GEO
       // data accessing
 
       //! discretization
-      Teuchos::RCP<DRT::Discretization> discret_;
+      Teuchos::RCP<Discret::Discretization> discret_;
 
       //! current processor id
       const int myrank_;
@@ -170,9 +170,9 @@ namespace CORE::GEO
       //! number of processors
       const int numproc_;
 
-      CORE::GEO::CUT::Mesh& mesh_;  // mesh that carries the cut information of the mesh
+      Core::Geo::Cut::Mesh& mesh_;  // mesh that carries the cut information of the mesh
 
-      CORE::GEO::CUT::ParentIntersection& parentintersection_;
+      Core::Geo::Cut::ParentIntersection& parentintersection_;
 
       //! map of node-Id and current node-Pos index
       std::map<int, int> curr_undecided_node_pos_;
@@ -183,12 +183,12 @@ namespace CORE::GEO
        */
       std::map<plain_int_set, int> curr_undecided_node_pos_shadow_;
 
-      std::vector<Teuchos::RCP<CORE::GEO::CUT::MeshIntersection::DofSetData>> dof_set_data_;
+      std::vector<Teuchos::RCP<Core::Geo::Cut::MeshIntersection::DofSetData>> dof_set_data_;
 
 
     };  // class PARALLEL
-  }     // namespace CUT
-}  // namespace CORE::GEO
+  }     // namespace Cut
+}  // namespace Core::Geo
 
 
 

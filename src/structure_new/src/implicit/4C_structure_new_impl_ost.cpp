@@ -86,7 +86,7 @@ void STR::IMPLICIT::OneStepTheta::post_setup()
 {
   check_init_setup();
 
-  if (s_dyn().GetMassLinType() != INPAR::STR::ml_rotations and !s_dyn().NeglectInertia())
+  if (s_dyn().GetMassLinType() != Inpar::STR::ml_rotations and !s_dyn().NeglectInertia())
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */
@@ -128,8 +128,8 @@ double STR::IMPLICIT::OneStepTheta::get_theta() const
 {
   if (is_init() and is_setup()) return theta_;
 
-  const STR::TIMINT::OneStepThetaDataSDyn& onesteptheta_sdyn =
-      dynamic_cast<const STR::TIMINT::OneStepThetaDataSDyn&>(tim_int().GetDataSDyn());
+  const STR::TimeInt::OneStepThetaDataSDyn& onesteptheta_sdyn =
+      dynamic_cast<const STR::TimeInt::OneStepThetaDataSDyn&>(tim_int().GetDataSDyn());
 
   return onesteptheta_sdyn.get_theta();
 }
@@ -203,7 +203,7 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForce(const Epetra_Vector& x, Epetra_Vect
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::OneStepTheta::ApplyStiff(
-    const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
+    const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
 
@@ -224,7 +224,7 @@ bool STR::IMPLICIT::OneStepTheta::ApplyStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
-    const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
+    const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
   // ---------------------------------------------------------------------------
@@ -244,7 +244,7 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::OneStepTheta::assemble_force(
-    Epetra_Vector& f, const std::vector<INPAR::STR::ModelType>* without_these_models) const
+    Epetra_Vector& f, const std::vector<Inpar::STR::ModelType>* without_these_models) const
 {
   return ModelEval().assemble_force(theta_, f, without_these_models);
 }
@@ -254,34 +254,34 @@ bool STR::IMPLICIT::OneStepTheta::assemble_force(
 void STR::IMPLICIT::OneStepTheta::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n}
-  CORE::LINALG::AssembleMyVector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
   // viscous damping forces at t_{n+1}
-  CORE::LINALG::AssembleMyVector(1.0, f, theta_, *fvisconp_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, theta_, *fvisconp_ptr_);
 
   // inertial forces at t_{n}
-  CORE::LINALG::AssembleMyVector(1.0, f, (1.0 - theta_), *finertian_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, (1.0 - theta_), *finertian_ptr_);
   // inertial forces at t_{n+1}
-  CORE::LINALG::AssembleMyVector(1.0, f, (theta_), *finertianp_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, (theta_), *finertianp_ptr_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
-    CORE::LINALG::SparseOperator& jac) const
+    Core::LinAlg::SparseOperator& jac) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().ExtractDisplBlock(jac);
   const double& dt = (*global_state().GetDeltaTime())[0];
   // add inertial contributions and scale the structural stiffness block
   stiff_ptr->Add(*global_state().GetMassMatrix(), false, 1.0 / (theta_ * dt * dt), 1.0);
   // add Rayleigh damping contributions
-  if (tim_int().GetDataSDyn().GetDampingType() == INPAR::STR::damp_rayleigh)
+  if (tim_int().GetDataSDyn().GetDampingType() == Inpar::STR::damp_rayleigh)
     stiff_ptr->Add(*global_state().GetDampMatrix(), false, 1.0 / dt, 1.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::OneStepTheta::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
   // write dynamic forces
@@ -293,7 +293,7 @@ void STR::IMPLICIT::OneStepTheta::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::read_restart(CORE::IO::DiscretizationReader& ioreader)
+void STR::IMPLICIT::OneStepTheta::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.ReadVector(finertian_ptr_, "finert");

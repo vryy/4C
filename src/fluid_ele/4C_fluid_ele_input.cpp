@@ -19,17 +19,17 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Fluid::ReadElement(
-    const std::string& eletype, const std::string& distype, INPUT::LineDefinition* linedef)
+bool Discret::ELEMENTS::Fluid::ReadElement(
+    const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT", material);
-  SetMaterial(0, MAT::Factory(material));
+  SetMaterial(0, Mat::Factory(material));
 
   // set discretization type (setOptimalgaussrule is pushed into element
   // routine)
-  SetDisType(CORE::FE::StringToCellType(distype));
+  SetDisType(Core::FE::StringToCellType(distype));
 
   std::string na;
   linedef->ExtractString("NA", na);

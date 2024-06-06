@@ -16,9 +16,9 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
+  using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -36,12 +36,12 @@ void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("COUPALGO", "fpsi_monolithic_plain",
       "Iteration Scheme over the fields", name, label, &fpsidyn);
 
-  CORE::UTILS::BoolParameter("SHAPEDERIVATIVES", "No",
+  Core::UTILS::BoolParameter("SHAPEDERIVATIVES", "No",
       "Include linearization with respect to mesh movement in Navier Stokes equation.\n"
       "Supported in monolithic FPSI for now.",
       &fpsidyn);
 
-  CORE::UTILS::BoolParameter("USESHAPEDERIVATIVES", "No",
+  Core::UTILS::BoolParameter("USESHAPEDERIVATIVES", "No",
       "Add linearization with respect to mesh movement in Navier Stokes equation to stiffness "
       "matrix.\n"
       "Supported in monolithic FPSI for now.",
@@ -52,18 +52,18 @@ void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<std::string>("RobinNeumann", "monolithic", "nocoupling"),
       tuple<int>(RobinNeumann, monolithic, nocoupling), &fpsidyn);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "SECONDORDER", "No", "Second order coupling at the interface.", &fpsidyn);
 
   // Iterationparameters
-  CORE::UTILS::StringParameter("RESTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
+  Core::UTILS::StringParameter("RESTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
       "Tolerances for single fields in the residual norm for the Newton iteration. \n"
       "For NORM_RESF != Abs_sys_split only the first value is used for all fields. \n"
       "Order of fields: porofluidvelocity, porofluidpressure, porostructure, fluidvelocity, "
       "fluidpressure, ale",
       &fpsidyn);
 
-  CORE::UTILS::StringParameter("INCTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
+  Core::UTILS::StringParameter("INCTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
       "Tolerance in the increment norm for the Newton iteration. \n"
       "For NORM_INC != \\*_split only the first value is used for all fields. \n"
       "Order of fields: porofluidvelocity, porofluidpressure, porostructure, fluidvelocity, "
@@ -101,49 +101,49 @@ void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(1, 0), &fpsidyn);
 
   // number of linear solver used for poroelasticity
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "LINEAR_SOLVER", -1, "number of linear solver used for FPSI problems", &fpsidyn);
 
-  CORE::UTILS::IntParameter("ITEMAX", 10, "maximum number of iterations over fields", &fpsidyn);
-  CORE::UTILS::IntParameter("ITEMIN", 1, "minimal number of iterations over fields", &fpsidyn);
-  CORE::UTILS::IntParameter("NUMSTEP", 200, "Total number of Timesteps", &fpsidyn);
-  CORE::UTILS::IntParameter("ITEMAX", 100, "Maximum number of iterations over fields", &fpsidyn);
-  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &fpsidyn);
-  CORE::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &fpsidyn);
+  Core::UTILS::IntParameter("ITEMAX", 10, "maximum number of iterations over fields", &fpsidyn);
+  Core::UTILS::IntParameter("ITEMIN", 1, "minimal number of iterations over fields", &fpsidyn);
+  Core::UTILS::IntParameter("NUMSTEP", 200, "Total number of Timesteps", &fpsidyn);
+  Core::UTILS::IntParameter("ITEMAX", 100, "Maximum number of iterations over fields", &fpsidyn);
+  Core::UTILS::IntParameter("RESULTSEVRY", 1, "Increment for writing solution", &fpsidyn);
+  Core::UTILS::IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &fpsidyn);
 
-  CORE::UTILS::IntParameter("FDCheck_row", 0, "print row value during fd_check", &fpsidyn);
-  CORE::UTILS::IntParameter("FDCheck_column", 0, "print column value during fd_check", &fpsidyn);
+  Core::UTILS::IntParameter("FDCheck_row", 0, "print row value during fd_check", &fpsidyn);
+  Core::UTILS::IntParameter("FDCheck_column", 0, "print column value during fd_check", &fpsidyn);
 
-  CORE::UTILS::DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &fpsidyn);
-  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &fpsidyn);
-  CORE::UTILS::DoubleParameter("CONVTOL", 1e-6, "Tolerance for iteration over fields", &fpsidyn);
-  CORE::UTILS::DoubleParameter("ALPHABJ", 1.0,
+  Core::UTILS::DoubleParameter("TIMESTEP", 0.1, "Time increment dt", &fpsidyn);
+  Core::UTILS::DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &fpsidyn);
+  Core::UTILS::DoubleParameter("CONVTOL", 1e-6, "Tolerance for iteration over fields", &fpsidyn);
+  Core::UTILS::DoubleParameter("ALPHABJ", 1.0,
       "Beavers-Joseph-Coefficient for Slip-Boundary-Condition at Fluid-Porous-Interface (0.1-4)",
       &fpsidyn);
 }
 
 
 
-void INPAR::FPSI::SetValidConditions(
-    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
+void Inpar::FPSI::SetValidConditions(
+    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
-  using namespace INPUT;
+  using namespace Input;
 
   /*--------------------------------------------------------------------*/
   // FPSI
 
-  std::vector<Teuchos::RCP<INPUT::LineComponent>> fpsicomponents;
+  std::vector<Teuchos::RCP<Input::LineComponent>> fpsicomponents;
 
-  fpsicomponents.push_back(Teuchos::rcp(new INPUT::IntComponent("coupling id")));
+  fpsicomponents.push_back(Teuchos::rcp(new Input::IntComponent("coupling id")));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linefpsi =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN FPSI COUPLING LINE CONDITIONS",
-          "fpsi_coupling", "FPSI Coupling", CORE::Conditions::fpsi_coupling, true,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surffpsi =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN FPSI COUPLING SURF CONDITIONS",
-          "fpsi_coupling", "FPSI Coupling", CORE::Conditions::fpsi_coupling, true,
-          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linefpsi =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FPSI COUPLING LINE CONDITIONS",
+          "fpsi_coupling", "FPSI Coupling", Core::Conditions::fpsi_coupling, true,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surffpsi =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FPSI COUPLING SURF CONDITIONS",
+          "fpsi_coupling", "FPSI Coupling", Core::Conditions::fpsi_coupling, true,
+          Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < fpsicomponents.size(); ++i)
   {
@@ -161,20 +161,20 @@ void INPAR::FPSI::SetValidConditions(
   // elements which share a node with the fpsi interface. Tangential
   // Beaver-Joseph-Condition must not be overwritten by prescribed value!
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> neumannintegration_surf =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURFACE NEUMANN INTEGRATION",
-          "NeumannIntegration", "Neumann Integration", CORE::Conditions::NeumannIntegration, true,
-          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> neumannintegration_surf =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURFACE NEUMANN INTEGRATION",
+          "NeumannIntegration", "Neumann Integration", Core::Conditions::NeumannIntegration, true,
+          Core::Conditions::geometry_type_surface));
 
   condlist.push_back(neumannintegration_surf);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in fpsi problems
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> neumannintegration_line =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE NEUMANN INTEGRATION",
-          "NeumannIntegration", "Neumann Integration", CORE::Conditions::NeumannIntegration, true,
-          CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> neumannintegration_line =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE NEUMANN INTEGRATION",
+          "NeumannIntegration", "Neumann Integration", Core::Conditions::NeumannIntegration, true,
+          Core::Conditions::geometry_type_line));
 
   condlist.push_back(neumannintegration_line);
 }

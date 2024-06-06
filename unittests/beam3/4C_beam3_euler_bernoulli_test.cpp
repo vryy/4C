@@ -29,16 +29,16 @@ namespace
    public:
     Beam3eb()
     {
-      testdis_ =
-          Teuchos::rcp(new DRT::Discretization("Beam3eb", Teuchos::rcp(new Epetra_SerialComm), 3));
+      testdis_ = Teuchos::rcp(
+          new Discret::Discretization("Beam3eb", Teuchos::rcp(new Epetra_SerialComm), 3));
 
       std::vector<std::vector<double>> xrefe{{-0.05, 0.05, 0.3}, {0.45, -0.05, 0.1}};
       std::vector<double> xrefe_full{-0.05, 0.05, 0.3, 0.45, -0.05, 0.1};
 
       for (int lid = 0; lid < 2; ++lid)
-        testdis_->AddNode(Teuchos::rcp(new CORE::Nodes::Node(lid, xrefe[lid], 0)));
+        testdis_->AddNode(Teuchos::rcp(new Core::Nodes::Node(lid, xrefe[lid], 0)));
 
-      testele_ = Teuchos::rcp(new DRT::ELEMENTS::Beam3eb(0, 0));
+      testele_ = Teuchos::rcp(new Discret::ELEMENTS::Beam3eb(0, 0));
       std::array<int, 2> node_ids{0, 1};
       testele_->SetNodeIds(2, node_ids.data());
 
@@ -51,9 +51,9 @@ namespace
 
    protected:
     //! dummy discretization for holding element and node pointers
-    Teuchos::RCP<DRT::Discretization> testdis_;
+    Teuchos::RCP<Discret::Discretization> testdis_;
     //! the beam3eb element to be tested
-    Teuchos::RCP<DRT::ELEMENTS::Beam3eb> testele_;
+    Teuchos::RCP<Discret::ELEMENTS::Beam3eb> testele_;
   };
 
   /**
@@ -74,7 +74,7 @@ namespace
     // nodal nullspace calculation for reference center of discretization at {0.0, 0.0, 0.0}
     // at node {-0.05, 0.05, 0.3}
     {
-      CORE::LINALG::SerialDenseMatrix nullspace_ref(6, 5);
+      Core::LinAlg::SerialDenseMatrix nullspace_ref(6, 5);
       nullspace_ref(0, 0) = 1.0;
       nullspace_ref(0, 3) = -0.273861278752583;
       nullspace_ref(0, 4) = 0.063333333333333;
@@ -94,7 +94,7 @@ namespace
       int numdof, dimnsp, nv, np;
 
       testele_->ElementType().nodal_block_information(node->Elements()[0], numdof, dimnsp, nv, np);
-      CORE::LINALG::SerialDenseMatrix nullspace = testele_->ElementType().ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix nullspace = testele_->ElementType().ComputeNullSpace(
           *node, std::vector{0.0, 0.0, 0.0}.data(), numdof, dimnsp);
 
       FOUR_C_EXPECT_NEAR(nullspace, nullspace_ref, testTolerance);
@@ -103,7 +103,7 @@ namespace
     // nodal nullspace calculation for reference center of discretization at {-0.05, 0.05, 0.3}
     // at node {-0.05, 0.05, 0.3} -> rotational components in displacement vanish
     {
-      CORE::LINALG::SerialDenseMatrix nullspace_ref(6, 5);
+      Core::LinAlg::SerialDenseMatrix nullspace_ref(6, 5);
       nullspace_ref(0, 0) = 1.0;
       nullspace_ref(1, 1) = 1.0;
       nullspace_ref(2, 2) = 1.0;
@@ -117,7 +117,7 @@ namespace
       int numdof, dimnsp, nv, np;
 
       testele_->ElementType().nodal_block_information(node->Elements()[0], numdof, dimnsp, nv, np);
-      CORE::LINALG::SerialDenseMatrix nullspace = testele_->ElementType().ComputeNullSpace(
+      Core::LinAlg::SerialDenseMatrix nullspace = testele_->ElementType().ComputeNullSpace(
           *node, std::vector{-0.05, 0.05, 0.3}.data(), numdof, dimnsp);
 
       FOUR_C_EXPECT_NEAR(nullspace, nullspace_ref, testTolerance);

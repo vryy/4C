@@ -27,16 +27,16 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 
-namespace ADAPTER
+namespace Adapter
 {
   class StructureRedAirway;
 }
 
-namespace AIRWAY
+namespace Airway
 {
   class RedAirwayImplicitTimeInt;
 
-  class RedAirwayTissue : public ADAPTER::AlgorithmBase
+  class RedAirwayTissue : public Adapter::AlgorithmBase
   {
    public:
     /// Standard Constructor
@@ -66,7 +66,7 @@ namespace AIRWAY
     void update_and_output();
 
     /// access to structural field
-    Teuchos::RCP<ADAPTER::StructureRedAirway>& structure_field() { return structure_; }
+    Teuchos::RCP<Adapter::StructureRedAirway>& structure_field() { return structure_; }
 
     /// access to airway field
     Teuchos::RCP<RedAirwayImplicitTimeInt>& RedAirwayField() { return redairways_; }
@@ -74,7 +74,7 @@ namespace AIRWAY
 
    private:
     /// underlying structure
-    Teuchos::RCP<ADAPTER::StructureRedAirway> structure_;
+    Teuchos::RCP<Adapter::StructureRedAirway> structure_;
 
     Teuchos::RCP<RedAirwayImplicitTimeInt> redairways_;
 
@@ -130,9 +130,9 @@ namespace AIRWAY
     double omega_;
 
     /// fixed relaxation paramater
-    INPAR::ARTNET::Relaxtype3D0D relaxtype_;
+    Inpar::ArteryNetwork::Relaxtype3D0D relaxtype_;
   };
-}  // namespace AIRWAY
+}  // namespace Airway
 
 FOUR_C_NAMESPACE_CLOSE
 

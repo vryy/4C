@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   // forward declarations
   class Coupling;
@@ -37,13 +37,13 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// fluid field
-    const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() override { return fluid_; }
+    const Teuchos::RCP<Adapter::Fluid>& fluid_field() override { return fluid_; }
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<DRT::Discretization> discretization() override;
+    Teuchos::RCP<Discret::Discretization> discretization() override;
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<DRT::Discretization> boundary_discretization();
+    Teuchos::RCP<Discret::Discretization> boundary_discretization();
 
     /// communication object at the interface
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override
@@ -127,7 +127,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
 
     /// create the testing of fields
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
 
 
@@ -136,7 +136,7 @@ namespace ADAPTER
     Teuchos::RCP<Fluid> fluid_;
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

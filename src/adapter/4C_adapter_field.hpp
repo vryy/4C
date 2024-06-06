@@ -32,18 +32,18 @@ functions there exist also for fields.
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations:
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class BlockSparseMatrixBase;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace ADAPTER
+namespace Adapter
 {
   /// general field interface
 
@@ -74,10 +74,10 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> dof_row_map() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
 
     //@}
 
@@ -152,7 +152,7 @@ namespace ADAPTER
     //@}
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

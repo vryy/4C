@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
 struct ModuleCallbacks
 {
   /**
-   * Register all types defined in a module that are derived from CORE::COMM::ParObject and can be
-   * communicated over MPI.
+   * Register all types defined in a module that are derived from Core::Communication::ParObject and
+   * can be communicated over MPI.
    *
    * This call ensures that every ParObjectType listed within the corresponding source file
    * registers itself with ParObjectRegistry. This call is necessary at the beginning of any
@@ -38,12 +38,12 @@ struct ModuleCallbacks
    * Allow the module to attach any custom Function to the @p function_manager object. Inside this
    * callback, a module should call `FunctionManager::add_function_definition`.
    */
-  std::function<void(CORE::UTILS::FunctionManager& function_manager)> AttachFunctionDefinitions;
+  std::function<void(Core::UTILS::FunctionManager& function_manager)> AttachFunctionDefinitions;
 
   /**
    * A callback to return valid result description lines.
    */
-  std::function<std::vector<INPUT::LineDefinition>()> valid_result_description_lines;
+  std::function<std::vector<Input::LineDefinition>()> valid_result_description_lines;
 };
 
 FOUR_C_NAMESPACE_CLOSE

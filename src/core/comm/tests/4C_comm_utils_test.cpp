@@ -23,13 +23,13 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  Teuchos::RCP<CORE::COMM::Communicators> MockUpCommunicators()
+  Teuchos::RCP<Core::Communication::Communicators> MockUpCommunicators()
   {
     // mock up for command line to create communicators
     std::vector<std::string> argv{
         "dummyEntryInputFile", "-nptype=separateDatFiles", "-ngroup=2", "-glayout=2,3"};
 
-    return CORE::COMM::CreateComm(argv);
+    return Core::Communication::CreateComm(argv);
   };
 
   /**
@@ -45,8 +45,8 @@ namespace
     SetupCompareParallelVectorsTest()
     {
       communicators_ = MockUpCommunicators();
-      CORE::IO::cout.setup(
-          false, false, false, CORE::IO::standard, communicators_->LocalComm(), 0, 0, "dummy");
+      Core::IO::cout.setup(
+          false, false, false, Core::IO::standard, communicators_->LocalComm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
       Teuchos::RCP<Epetra_Map> map = Teuchos::rcp(
@@ -65,10 +65,10 @@ namespace
       epetraVector_->ReplaceMyValues(numMyEles, values, indices);
     }
 
-    void TearDown() override { CORE::IO::cout.close(); }
+    void TearDown() override { Core::IO::cout.close(); }
 
    public:
-    Teuchos::RCP<CORE::COMM::Communicators> communicators_;
+    Teuchos::RCP<Core::Communication::Communicators> communicators_;
     const int numberOfElementsToDistribute_ = 791;
     Teuchos::RCP<Epetra_Vector> epetraVector_;
   };
@@ -86,8 +86,8 @@ namespace
     SetupCompareParallelMatricesTest()
     {
       communicators_ = MockUpCommunicators();
-      CORE::IO::cout.setup(
-          false, false, false, CORE::IO::standard, communicators_->LocalComm(), 0, 0, "dummy");
+      Core::IO::cout.setup(
+          false, false, false, Core::IO::standard, communicators_->LocalComm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
       Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(
@@ -133,18 +133,19 @@ namespace
       epetraCrsMatrix_->FillComplete(false);
     }
 
-    void TearDown() override { CORE::IO::cout.close(); }
+    void TearDown() override { Core::IO::cout.close(); }
 
    public:
-    Teuchos::RCP<CORE::COMM::Communicators> communicators_;
+    Teuchos::RCP<Core::Communication::Communicators> communicators_;
     const int numberOfElementsToDistribute_ = 673;
     Teuchos::RCP<Epetra_CrsMatrix> epetraCrsMatrix_;
   };
 
   TEST_F(SetupCompareParallelVectorsTest, PositiveTestCompareVectors)
   {
-    bool success = CORE::COMM::AreDistributedVectorsIdentical(*communicators_, epetraVector_,  //
-        "epetraVector");
+    bool success =
+        Core::Communication::AreDistributedVectorsIdentical(*communicators_, epetraVector_,  //
+            "epetraVector");
     EXPECT_EQ(success, true);
   }
 
@@ -155,14 +156,14 @@ namespace
     double disturbedValue = static_cast<double>(lastLocalIndex);
     epetraVector_->ReplaceMyValues(1, &disturbedValue, &lastLocalIndex);
 
-    EXPECT_THROW(
-        CORE::COMM::AreDistributedVectorsIdentical(*communicators_, epetraVector_, "epetraVector"),
-        CORE::Exception);
+    EXPECT_THROW(Core::Communication::AreDistributedVectorsIdentical(
+                     *communicators_, epetraVector_, "epetraVector"),
+        Core::Exception);
   }
 
   TEST_F(SetupCompareParallelMatricesTest, PositiveTestCompareMatrices)
   {
-    bool success = CORE::COMM::AreDistributedSparseMatricesIdentical(
+    bool success = Core::Communication::AreDistributedSparseMatricesIdentical(
         *communicators_, epetraCrsMatrix_, "epetraCrsMatrix");
     EXPECT_EQ(success, true);
   }
@@ -176,9 +177,9 @@ namespace
     epetraCrsMatrix_->InsertMyValues(myLastLid[0], 1, &value[0], &myLastLid[0]);
     epetraCrsMatrix_->FillComplete(false);
 
-    EXPECT_THROW(CORE::COMM::AreDistributedSparseMatricesIdentical(
+    EXPECT_THROW(Core::Communication::AreDistributedSparseMatricesIdentical(
                      *communicators_, epetraCrsMatrix_, "epetraCrsMatrix"),
-        CORE::Exception);
+        Core::Exception);
   }
 
 }  // namespace

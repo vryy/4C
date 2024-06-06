@@ -29,10 +29,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::AUX::set_printing_parameters(Teuchos::ParameterList& p_nox, const Epetra_Comm& comm)
+void NOX::Nln::Aux::set_printing_parameters(Teuchos::ParameterList& p_nox, const Epetra_Comm& comm)
 {
   // make all Yes/No integral values to Boolean
-  INPUT::BoolifyValidInputParameters(p_nox);
+  Input::BoolifyValidInputParameters(p_nox);
 
   // adjust printing parameter list
   Teuchos::ParameterList& printParams = p_nox.sublist("Printing");
@@ -63,35 +63,35 @@ void NOX::NLN::AUX::set_printing_parameters(Teuchos::ParameterList& p_nox, const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LinSystem::OperatorType NOX::NLN::AUX::GetOperatorType(
-    const CORE::LINALG::SparseOperator& op)
+NOX::Nln::LinSystem::OperatorType NOX::Nln::Aux::GetOperatorType(
+    const Core::LinAlg::SparseOperator& op)
 {
   const Epetra_Operator* testOperator = nullptr;
 
   // Is it a LINALG_BlockSparseMatrix
   testOperator = dynamic_cast<
-      const CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(&op);
-  if (testOperator != nullptr) return NOX::NLN::LinSystem::LinalgBlockSparseMatrix;
+      const Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>*>(&op);
+  if (testOperator != nullptr) return NOX::Nln::LinSystem::LinalgBlockSparseMatrix;
 
   // Is it a LINALG_SparseMatrix?
-  testOperator = dynamic_cast<const CORE::LINALG::SparseMatrix*>(&op);
-  if (testOperator != nullptr) return NOX::NLN::LinSystem::LinalgSparseMatrix;
+  testOperator = dynamic_cast<const Core::LinAlg::SparseMatrix*>(&op);
+  if (testOperator != nullptr) return NOX::Nln::LinSystem::LinalgSparseMatrix;
 
   // Is it a LINALG_SparseMatrixBase?
-  testOperator = dynamic_cast<const CORE::LINALG::SparseMatrixBase*>(&op);
-  if (testOperator != nullptr) return NOX::NLN::LinSystem::LinalgSparseMatrixBase;
+  testOperator = dynamic_cast<const Core::LinAlg::SparseMatrixBase*>(&op);
+  if (testOperator != nullptr) return NOX::Nln::LinSystem::LinalgSparseMatrixBase;
 
   // Otherwise it must be a LINALG_SparseOperator
-  return NOX::NLN::LinSystem::LinalgSparseOperator;
+  return NOX::Nln::LinSystem::LinalgSparseOperator;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
-    const NOX::NLN::LinearSystem::SolverMap& linsolvers)
+NOX::Nln::LinSystem::LinearSystemType NOX::Nln::Aux::GetLinearSystemType(
+    const NOX::Nln::LinearSystem::SolverMap& linsolvers)
 {
   const unsigned int num_ls = linsolvers.size();
-  const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>::const_iterator
+  const std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>::const_iterator
       ci_end = linsolvers.end();
 
   switch (num_ls)
@@ -99,13 +99,13 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
     case 1:
     {
       // --- Pure structural case (+ spring dashpot)
-      if (linsolvers.find(NOX::NLN::sol_structure) != ci_end)
+      if (linsolvers.find(NOX::Nln::sol_structure) != ci_end)
       {
-        return NOX::NLN::LinSystem::linear_system_structure;
+        return NOX::Nln::LinSystem::linear_system_structure;
       }
-      else if (linsolvers.find(NOX::NLN::sol_scatra) != ci_end)
+      else if (linsolvers.find(NOX::Nln::sol_scatra) != ci_end)
       {
-        return NOX::NLN::LinSystem::linear_system_scatra;
+        return NOX::Nln::LinSystem::linear_system_scatra;
       }
       // --- ToDo has to be extended
 
@@ -117,27 +117,27 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
     case 2:
     {
       // --- Structure/Contact case (+ spring dashpot)
-      if (linsolvers.find(NOX::NLN::sol_structure) != ci_end and
-          linsolvers.find(NOX::NLN::sol_contact) != ci_end)
+      if (linsolvers.find(NOX::Nln::sol_structure) != ci_end and
+          linsolvers.find(NOX::Nln::sol_contact) != ci_end)
       {
-        return NOX::NLN::LinSystem::linear_system_structure_contact;
+        return NOX::Nln::LinSystem::linear_system_structure_contact;
       }
       // --- Structure/CardioVascular0D case (+ spring dashpot)
-      else if (linsolvers.find(NOX::NLN::sol_structure) != ci_end and
-               linsolvers.find(NOX::NLN::sol_cardiovascular0d) != ci_end)
+      else if (linsolvers.find(NOX::Nln::sol_structure) != ci_end and
+               linsolvers.find(NOX::Nln::sol_cardiovascular0d) != ci_end)
       {
-        return NOX::NLN::LinSystem::linear_system_structure_cardiovascular0d;
+        return NOX::Nln::LinSystem::linear_system_structure_cardiovascular0d;
       }
       // --- Structure/Lagrange|Penalty Constaint case (+ spring dashpot)
-      else if (linsolvers.find(NOX::NLN::sol_structure) != ci_end and
-               linsolvers.find(NOX::NLN::sol_lag_pen_constraint) != ci_end)
+      else if (linsolvers.find(NOX::Nln::sol_structure) != ci_end and
+               linsolvers.find(NOX::Nln::sol_lag_pen_constraint) != ci_end)
       {
-        return NOX::NLN::LinSystem::linear_system_structure_lag_pen_constraint;
+        return NOX::Nln::LinSystem::linear_system_structure_lag_pen_constraint;
       }
-      else if (linsolvers.find(NOX::NLN::sol_structure) != ci_end and
-               linsolvers.find(NOX::NLN::sol_meshtying) != ci_end)
+      else if (linsolvers.find(NOX::Nln::sol_structure) != ci_end and
+               linsolvers.find(NOX::Nln::sol_meshtying) != ci_end)
       {
-        return NOX::NLN::LinSystem::linear_system_structure_meshtying;
+        return NOX::Nln::LinSystem::linear_system_structure_meshtying;
       }
       // --- ToDo has to be extended
 
@@ -148,11 +148,11 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
     case 3:
     {
       // --- Structure/Contact case (+ spring dashpot)
-      if (linsolvers.find(NOX::NLN::sol_structure) != ci_end and
-          linsolvers.find(NOX::NLN::sol_contact) != ci_end and
-          linsolvers.find(NOX::NLN::sol_meshtying) != ci_end)
+      if (linsolvers.find(NOX::Nln::sol_structure) != ci_end and
+          linsolvers.find(NOX::Nln::sol_contact) != ci_end and
+          linsolvers.find(NOX::Nln::sol_meshtying) != ci_end)
       {
-        return NOX::NLN::LinSystem::linear_system_structure_contact;
+        return NOX::Nln::LinSystem::linear_system_structure_contact;
       }
       FOUR_C_THROW(
           "There is no capable linear system type for the given linear "
@@ -167,12 +167,12 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
     }
   }
 
-  return NOX::NLN::LinSystem::linear_system_undefined;
+  return NOX::Nln::LinSystem::linear_system_undefined;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::AUX::RootMeanSquareNorm(const double& atol, const double& rtol,
+double NOX::Nln::Aux::RootMeanSquareNorm(const double& atol, const double& rtol,
     Teuchos::RCP<const Epetra_Vector> xnew, Teuchos::RCP<const Epetra_Vector> xincr,
     const bool& disable_implicit_weighting)
 {
@@ -215,18 +215,18 @@ double NOX::NLN::AUX::RootMeanSquareNorm(const double& atol, const double& rtol,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::AUX::GetNormWRMSClassVariable(const ::NOX::StatusTest::Generic& test,
-    const NOX::NLN::StatusTest::QuantityType& qType, const std::string& classVariableName)
+double NOX::Nln::Aux::GetNormWRMSClassVariable(const ::NOX::StatusTest::Generic& test,
+    const NOX::Nln::StatusTest::QuantityType& qType, const std::string& classVariableName)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
-  const NOX::NLN::StatusTest::Combo* comboTest =
-      dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&test);
+  const NOX::Nln::StatusTest::Combo* comboTest =
+      dynamic_cast<const NOX::Nln::StatusTest::Combo*>(&test);
 
   // if it is no combo test, we just have to check for the desired type
   if (comboTest == nullptr)
   {
-    const NOX::NLN::StatusTest::NormWRMS* normWRMSTest =
-        dynamic_cast<const NOX::NLN::StatusTest::NormWRMS*>(&test);
+    const NOX::Nln::StatusTest::NormWRMS* normWRMSTest =
+        dynamic_cast<const NOX::Nln::StatusTest::NormWRMS*>(&test);
 
     // no normF StatusTest...
     if (normWRMSTest == nullptr) return -1.0;
@@ -259,18 +259,18 @@ double NOX::NLN::AUX::GetNormWRMSClassVariable(const ::NOX::StatusTest::Generic&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::AUX::GetNormFClassVariable(const ::NOX::StatusTest::Generic& test,
-    const NOX::NLN::StatusTest::QuantityType& qType, const std::string& classVariableName)
+double NOX::Nln::Aux::GetNormFClassVariable(const ::NOX::StatusTest::Generic& test,
+    const NOX::Nln::StatusTest::QuantityType& qType, const std::string& classVariableName)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
-  const NOX::NLN::StatusTest::Combo* comboTest =
-      dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&test);
+  const NOX::Nln::StatusTest::Combo* comboTest =
+      dynamic_cast<const NOX::Nln::StatusTest::Combo*>(&test);
 
   // if it is no combo test, we just have to check for the desired type
   if (comboTest == nullptr)
   {
-    const NOX::NLN::StatusTest::NormF* normFTest =
-        dynamic_cast<const NOX::NLN::StatusTest::NormF*>(&test);
+    const NOX::Nln::StatusTest::NormF* normFTest =
+        dynamic_cast<const NOX::Nln::StatusTest::NormF*>(&test);
 
     // no normF StatusTest...
     if (normFTest == nullptr) return -1.0;
@@ -308,12 +308,12 @@ double NOX::NLN::AUX::GetNormFClassVariable(const ::NOX::StatusTest::Generic& te
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
-bool NOX::NLN::AUX::IsQuantity(
-    const ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype)
+bool NOX::Nln::Aux::IsQuantity(
+    const ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType& qtype)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
-  const NOX::NLN::StatusTest::Combo* comboTest =
-      dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&test);
+  const NOX::Nln::StatusTest::Combo* comboTest =
+      dynamic_cast<const NOX::Nln::StatusTest::Combo*>(&test);
 
   // if it is no combo test, we just have to check for the desired type
   if (comboTest == nullptr)
@@ -348,12 +348,12 @@ bool NOX::NLN::AUX::IsQuantity(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
-int NOX::NLN::AUX::GetNormType(
-    const ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype)
+int NOX::Nln::Aux::GetNormType(
+    const ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType& qtype)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
-  const NOX::NLN::StatusTest::Combo* comboTest =
-      dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&test);
+  const NOX::Nln::StatusTest::Combo* comboTest =
+      dynamic_cast<const NOX::Nln::StatusTest::Combo*>(&test);
 
   // if it is no combo test, we just have to check for the desired type
   if (comboTest == nullptr)
@@ -388,11 +388,11 @@ int NOX::NLN::AUX::GetNormType(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
-::NOX::StatusTest::Generic* NOX::NLN::AUX::get_outer_status_test_with_quantity(
-    ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype)
+::NOX::StatusTest::Generic* NOX::Nln::Aux::get_outer_status_test_with_quantity(
+    ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType qtype)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
-  NOX::NLN::StatusTest::Combo* comboTest = dynamic_cast<NOX::NLN::StatusTest::Combo*>(&test);
+  NOX::Nln::StatusTest::Combo* comboTest = dynamic_cast<NOX::Nln::StatusTest::Combo*>(&test);
 
   // if it is no combo test, we just have to check for the desired type
   if (comboTest == nullptr)
@@ -430,11 +430,11 @@ template <class T>
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
-::NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTest(::NOX::StatusTest::Generic& otest)
+::NOX::StatusTest::Generic* NOX::Nln::Aux::GetOuterStatusTest(::NOX::StatusTest::Generic& otest)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
-  const NOX::NLN::StatusTest::Combo* comboTest =
-      dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&otest);
+  const NOX::Nln::StatusTest::Combo* comboTest =
+      dynamic_cast<const NOX::Nln::StatusTest::Combo*>(&otest);
 
   // if it is no combo test, we just have to check for the desired type
   if (not comboTest)
@@ -477,11 +477,11 @@ template <class T>
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
-int NOX::NLN::AUX::GetOuterStatus(const ::NOX::StatusTest::Generic& test)
+int NOX::Nln::Aux::GetOuterStatus(const ::NOX::StatusTest::Generic& test)
 {
   // try to cast the given test to a NOX_StatusTest_Combo
-  const NOX::NLN::StatusTest::Combo* comboTest =
-      dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&test);
+  const NOX::Nln::StatusTest::Combo* comboTest =
+      dynamic_cast<const NOX::Nln::StatusTest::Combo*>(&test);
 
   // if it is no combo test, we just have to check for the desired type
   if (comboTest == nullptr)
@@ -532,35 +532,35 @@ int NOX::NLN::AUX::GetOuterStatus(const ::NOX::StatusTest::Generic& test)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::NLN::SolutionType NOX::NLN::AUX::ConvertQuantityType2SolutionType(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype)
+enum NOX::Nln::SolutionType NOX::Nln::Aux::ConvertQuantityType2SolutionType(
+    const enum NOX::Nln::StatusTest::QuantityType& qtype)
 {
-  enum NOX::NLN::SolutionType soltype = NOX::NLN::sol_unknown;
+  enum NOX::Nln::SolutionType soltype = NOX::Nln::sol_unknown;
   switch (qtype)
   {
-    case NOX::NLN::StatusTest::quantity_structure:
-    case NOX::NLN::StatusTest::quantity_eas:
-    case NOX::NLN::StatusTest::quantity_plasticity:
-    case NOX::NLN::StatusTest::quantity_pressure:
-      soltype = NOX::NLN::sol_structure;
+    case NOX::Nln::StatusTest::quantity_structure:
+    case NOX::Nln::StatusTest::quantity_eas:
+    case NOX::Nln::StatusTest::quantity_plasticity:
+    case NOX::Nln::StatusTest::quantity_pressure:
+      soltype = NOX::Nln::sol_structure;
       break;
-    case NOX::NLN::StatusTest::quantity_lag_pen_constraint:
-      soltype = NOX::NLN::sol_lag_pen_constraint;
+    case NOX::Nln::StatusTest::quantity_lag_pen_constraint:
+      soltype = NOX::Nln::sol_lag_pen_constraint;
       break;
-    case NOX::NLN::StatusTest::quantity_contact_normal:
-    case NOX::NLN::StatusTest::quantity_contact_friction:
-      soltype = NOX::NLN::sol_contact;
+    case NOX::Nln::StatusTest::quantity_contact_normal:
+    case NOX::Nln::StatusTest::quantity_contact_friction:
+      soltype = NOX::Nln::sol_contact;
       break;
-    case NOX::NLN::StatusTest::quantity_meshtying:
-      soltype = NOX::NLN::sol_meshtying;
+    case NOX::Nln::StatusTest::quantity_meshtying:
+      soltype = NOX::Nln::sol_meshtying;
       break;
-    case NOX::NLN::StatusTest::quantity_cardiovascular0d:
-      soltype = NOX::NLN::sol_cardiovascular0d;
+    case NOX::Nln::StatusTest::quantity_cardiovascular0d:
+      soltype = NOX::Nln::sol_cardiovascular0d;
       break;
-    case NOX::NLN::StatusTest::quantity_unknown:
+    case NOX::Nln::StatusTest::quantity_unknown:
     default:
       FOUR_C_THROW("Unknown conversion for the quantity type \"%s\".",
-          NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+          NOX::Nln::StatusTest::QuantityType2String(qtype).c_str());
   }
   // return the corresponding solution type
   return soltype;
@@ -568,7 +568,7 @@ enum NOX::NLN::SolutionType NOX::NLN::AUX::ConvertQuantityType2SolutionType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum ::NOX::Abstract::Vector::NormType NOX::NLN::AUX::String2NormType(const std::string& name)
+enum ::NOX::Abstract::Vector::NormType NOX::Nln::Aux::String2NormType(const std::string& name)
 {
   enum ::NOX::Abstract::Vector::NormType norm_type = ::NOX::Abstract::Vector::TwoNorm;
   if (name == "Two Norm")
@@ -585,7 +585,7 @@ enum ::NOX::Abstract::Vector::NormType NOX::NLN::AUX::String2NormType(const std:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::AUX::AddToPrePostOpVector(
+void NOX::Nln::Aux::AddToPrePostOpVector(
     Teuchos::ParameterList& p_nox_opt, const Teuchos::RCP<::NOX::Observer>& ppo_ptr)
 {
   // if there is already a pre/post operator, we will convert the pre/post op
@@ -615,7 +615,7 @@ void NOX::NLN::AUX::AddToPrePostOpVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string NOX::NLN::AUX::GetDirectionMethodListName(const Teuchos::ParameterList& p)
+std::string NOX::Nln::Aux::GetDirectionMethodListName(const Teuchos::ParameterList& p)
 {
   if (not p.isSublist("Direction"))
     FOUR_C_THROW("There is no \"Direction\" sub-list in the parameter list!");
@@ -641,34 +641,34 @@ std::string NOX::NLN::AUX::GetDirectionMethodListName(const Teuchos::ParameterLi
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template ::NOX::StatusTest::Generic*
-NOX::NLN::AUX::get_outer_status_test_with_quantity<NOX::NLN::StatusTest::NormF>(
-    ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
+NOX::Nln::Aux::get_outer_status_test_with_quantity<NOX::Nln::StatusTest::NormF>(
+    ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType qtype);
 template ::NOX::StatusTest::Generic*
-NOX::NLN::AUX::get_outer_status_test_with_quantity<NOX::NLN::StatusTest::NormUpdate>(
-    ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
+NOX::Nln::Aux::get_outer_status_test_with_quantity<NOX::Nln::StatusTest::NormUpdate>(
+    ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType qtype);
 template ::NOX::StatusTest::Generic*
-NOX::NLN::AUX::get_outer_status_test_with_quantity<NOX::NLN::StatusTest::NormWRMS>(
-    ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType qtype);
-template bool NOX::NLN::AUX::IsQuantity<NOX::NLN::StatusTest::NormF>(
-    const ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
-template bool NOX::NLN::AUX::IsQuantity<NOX::NLN::StatusTest::NormUpdate>(
-    const ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
-template bool NOX::NLN::AUX::IsQuantity<NOX::NLN::StatusTest::NormWRMS>(
-    const ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
-template int NOX::NLN::AUX::GetNormType<NOX::NLN::StatusTest::NormF>(
-    const ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
-template int NOX::NLN::AUX::GetNormType<NOX::NLN::StatusTest::NormUpdate>(
-    const ::NOX::StatusTest::Generic& test, const NOX::NLN::StatusTest::QuantityType& qtype);
+NOX::Nln::Aux::get_outer_status_test_with_quantity<NOX::Nln::StatusTest::NormWRMS>(
+    ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType qtype);
+template bool NOX::Nln::Aux::IsQuantity<NOX::Nln::StatusTest::NormF>(
+    const ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType& qtype);
+template bool NOX::Nln::Aux::IsQuantity<NOX::Nln::StatusTest::NormUpdate>(
+    const ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType& qtype);
+template bool NOX::Nln::Aux::IsQuantity<NOX::Nln::StatusTest::NormWRMS>(
+    const ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType& qtype);
+template int NOX::Nln::Aux::GetNormType<NOX::Nln::StatusTest::NormF>(
+    const ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType& qtype);
+template int NOX::Nln::Aux::GetNormType<NOX::Nln::StatusTest::NormUpdate>(
+    const ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType& qtype);
 template ::NOX::StatusTest::Generic*
-NOX::NLN::AUX::GetOuterStatusTest<NOX::NLN::StatusTest::ActiveSet>(
+NOX::Nln::Aux::GetOuterStatusTest<NOX::Nln::StatusTest::ActiveSet>(
     ::NOX::StatusTest::Generic& otest);
-template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::NormF>(
+template int NOX::Nln::Aux::GetOuterStatus<NOX::Nln::StatusTest::NormF>(
     const ::NOX::StatusTest::Generic& test);
-template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::NormUpdate>(
+template int NOX::Nln::Aux::GetOuterStatus<NOX::Nln::StatusTest::NormUpdate>(
     const ::NOX::StatusTest::Generic& test);
-template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::NormWRMS>(
+template int NOX::Nln::Aux::GetOuterStatus<NOX::Nln::StatusTest::NormWRMS>(
     const ::NOX::StatusTest::Generic& test);
-template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::ActiveSet>(
+template int NOX::Nln::Aux::GetOuterStatus<NOX::Nln::StatusTest::ActiveSet>(
     const ::NOX::StatusTest::Generic& test);
 
 FOUR_C_NAMESPACE_CLOSE

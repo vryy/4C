@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Declaration of anisotropy extension to be used by anisotropic materials with @MAT::Anisotropy
+\brief Declaration of anisotropy extension to be used by anisotropic materials with @Mat::Anisotropy
 
 \level 3
 
@@ -27,7 +27,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   /*!
    * @brief definition, which kind of fibers should be used (Element fibers or nodal (aka Gauss
@@ -44,12 +44,12 @@ namespace MAT
   };
 
   /*!
-   * \brief A fiber extension to be used with MAT::Anisotropy
+   * \brief A fiber extension to be used with Mat::Anisotropy
    *
    * The anisotropy extension is the actual provider of the fibers for the material law.
-   * MAT::Anisotropy initializes the anisotropy information (fibers and coordinate systems) and
-   * notifies the MAT::FiberAnisotropyExtension to build their needed fibers and structural tensors.
-   * Every anisotropic material should have an MAT::FiberAnisotropyExtension and should register it
+   * Mat::Anisotropy initializes the anisotropy information (fibers and coordinate systems) and
+   * notifies the Mat::FiberAnisotropyExtension to build their needed fibers and structural tensors.
+   * Every anisotropic material should have an Mat::FiberAnisotropyExtension and should register it
    * to the Anisotropy framework.
    *
    * After the setup, the fibers and structural tensors (or any other needed quantity) is computed
@@ -80,7 +80,7 @@ namespace MAT
      * \param stucturalTensorStrategy
      */
     explicit FiberAnisotropyExtension(
-        const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& stucturalTensorStrategy);
+        const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& stucturalTensorStrategy);
 
     /*!
      * \brief Create an anisotropy extension without a structural tensor strategy. Computing
@@ -96,7 +96,7 @@ namespace MAT
      *
      * \param data
      */
-    void PackAnisotropy(CORE::COMM::PackBuffer& data) const override;
+    void PackAnisotropy(Core::Communication::PackBuffer& data) const override;
 
     /*!
      * \brief Unpack all data from parallel distribution or restart
@@ -119,7 +119,7 @@ namespace MAT
      * @param i (in) : Id of the fiber
      * @return Reference to the vector of the fiber
      */
-    const CORE::LINALG::Matrix<3, 1>& GetFiber(int gp, int i) const override;
+    const Core::LinAlg::Matrix<3, 1>& GetFiber(int gp, int i) const override;
 
     /**
      * \brief Returns the i-th structural tensor at the Integration point in stress-like Voigt
@@ -131,7 +131,7 @@ namespace MAT
      * @param i (in) : Id of the fiber
      * @return Martix of the structural tensor in stress-like Voigt notation
      */
-    const CORE::LINALG::Matrix<6, 1>& get_structural_tensor_stress(int gp, int i) const override;
+    const Core::LinAlg::Matrix<6, 1>& get_structural_tensor_stress(int gp, int i) const override;
 
     /**
      * \brief Returns the i-th structural tensor at the Integration point in tensor notation
@@ -142,7 +142,7 @@ namespace MAT
      * @param i (in) : Id of the fiber
      * @return Reference to Matrix of the structural tensor in tensor notation
      */
-    const CORE::LINALG::Matrix<3, 3>& GetStructuralTensor(int gp, int i) const override;
+    const Core::LinAlg::Matrix<3, 3>& GetStructuralTensor(int gp, int i) const override;
     //@}
 
     /*!
@@ -185,7 +185,7 @@ namespace MAT
      * \param gp Gauss point. Use FiberAnisotropyExtension::GPDEFAULT in case of element fibers
      * \param fibers Vector of all fibers
      */
-    void set_fibers(int gp, const std::array<CORE::LINALG::Matrix<3, 1>, numfib>& fibers);
+    void set_fibers(int gp, const std::array<Core::LinAlg::Matrix<3, 1>, numfib>& fibers);
 
     /*!
      * \brief Set all fibers of the element
@@ -193,7 +193,7 @@ namespace MAT
      * \param fibers The first index are the Gauss points, the second index the fibers. In case of
      * element fiebers, the first vector should only contain one element.
      */
-    void set_fibers(const std::vector<std::array<CORE::LINALG::Matrix<3, 1>, numfib>>& fibers);
+    void set_fibers(const std::vector<std::array<Core::LinAlg::Matrix<3, 1>, numfib>>& fibers);
 
     /*!
      * \brief Method that compute all structural tensors. Should be executed after a change of the
@@ -244,14 +244,14 @@ namespace MAT
     virtual FiberLocation get_fiber_location() const { return fiber_location_; }
 
     /*!
-     * \brief This method will be called by MAT::Anisotropy if element and Gauss point fibers are
+     * \brief This method will be called by Mat::Anisotropy if element and Gauss point fibers are
      * available
      */
     void on_global_data_initialized() override {}
 
    private:
     /*!
-     * \brief This method will be called by MAT::Anisotropy to notify that element information is
+     * \brief This method will be called by Mat::Anisotropy to notify that element information is
      * available.
      */
     void on_global_element_data_initialized() override
@@ -261,7 +261,7 @@ namespace MAT
     }
 
     /*!
-     * \brief This method will be called by MAT::Anisotropy to notify that Gauss point information
+     * \brief This method will be called by Mat::Anisotropy to notify that Gauss point information
      * is available.
      */
     void on_global_gp_data_initialized() override
@@ -292,24 +292,24 @@ namespace MAT
      * Fibers of the element. The first index is for the Gauss points, the second index is for
      * the fiber id
      */
-    std::vector<std::array<CORE::LINALG::Matrix<3, 1>, numfib>> fibers_;
+    std::vector<std::array<Core::LinAlg::Matrix<3, 1>, numfib>> fibers_;
 
     /**
      * Structural tensors of the fibers in stress like Voigt notation. The ordering is the same as
      * in #fibers_
      */
-    std::vector<std::array<CORE::LINALG::Matrix<6, 1>, numfib>> fiber_structural_tensors_stress_;
+    std::vector<std::array<Core::LinAlg::Matrix<6, 1>, numfib>> fiber_structural_tensors_stress_;
 
     /**
      * Structural tensors of the fibers. The ordering is the same as in #fibers_
      */
-    std::vector<std::array<CORE::LINALG::Matrix<3, 3>, numfib>> fiber_structural_tensors_;
+    std::vector<std::array<Core::LinAlg::Matrix<3, 3>, numfib>> fiber_structural_tensors_;
 
     /// Structural tensor strategy
-    const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase> structural_tensor_strategy_ =
+    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase> structural_tensor_strategy_ =
         Teuchos::null;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

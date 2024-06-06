@@ -20,9 +20,9 @@ calls into one global sparse matrix and global load vector
 
 FOUR_C_NAMESPACE_OPEN
 
-CORE::FE::AssembleStrategy::AssembleStrategy(int firstdofset, int seconddofset,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
+Core::FE::AssembleStrategy::AssembleStrategy(int firstdofset, int seconddofset,
+    Teuchos::RCP<LinAlg::SparseOperator> systemmatrix1,
+    Teuchos::RCP<LinAlg::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
     Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
     : firstdofset_(firstdofset),
       seconddofset_(seconddofset),
@@ -36,7 +36,7 @@ CORE::FE::AssembleStrategy::AssembleStrategy(int firstdofset, int seconddofset,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::AssembleStrategy::Zero()
+void Core::FE::AssembleStrategy::Zero()
 {
   if (Assemblemat1())
   {
@@ -62,7 +62,7 @@ void CORE::FE::AssembleStrategy::Zero()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::AssembleStrategy::Complete()
+void Core::FE::AssembleStrategy::Complete()
 {
   if (Assemblemat1())
   {
@@ -76,7 +76,7 @@ void CORE::FE::AssembleStrategy::Complete()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::AssembleStrategy::ClearElementStorage(int rdim, int cdim)
+void Core::FE::AssembleStrategy::ClearElementStorage(int rdim, int cdim)
 {
   if (Assemblemat1())
   {
@@ -118,8 +118,8 @@ void CORE::FE::AssembleStrategy::ClearElementStorage(int rdim, int cdim)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat, int eid,
-    const std::vector<int>& lmstride, const LINALG::SerialDenseMatrix& Aele,
+void Core::FE::AssembleStrategy::Assemble(LinAlg::SparseOperator& sysmat, int eid,
+    const std::vector<int>& lmstride, const LinAlg::SerialDenseMatrix& Aele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   sysmat.Assemble(eid, lmstride, Aele, lm, lmowner);
@@ -128,8 +128,8 @@ void CORE::FE::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat, int ei
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat, int eid,
-    const std::vector<int>& lmstride, const LINALG::SerialDenseMatrix& Aele,
+void Core::FE::AssembleStrategy::Assemble(LinAlg::SparseOperator& sysmat, int eid,
+    const std::vector<int>& lmstride, const LinAlg::SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
@@ -139,27 +139,27 @@ void CORE::FE::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat, int ei
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::AssembleStrategy::Assemble(
-    LINALG::SparseOperator& sysmat, double val, int rgid, int cgid)
+void Core::FE::AssembleStrategy::Assemble(
+    LinAlg::SparseOperator& sysmat, double val, int rgid, int cgid)
 {
   sysmat.Assemble(val, rgid, cgid);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::AssembleStrategy::Assemble(Epetra_Vector& V, const LINALG::SerialDenseVector& Vele,
+void Core::FE::AssembleStrategy::Assemble(Epetra_Vector& V, const LinAlg::SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
-  LINALG::Assemble(V, Vele, lm, lmowner);
+  LinAlg::Assemble(V, Vele, lm, lmowner);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::FE::AssembleStrategy::Assemble(Epetra_MultiVector& V, const int n,
-    const LINALG::SerialDenseVector& Vele, const std::vector<int>& lm,
+void Core::FE::AssembleStrategy::Assemble(Epetra_MultiVector& V, const int n,
+    const LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
     const std::vector<int>& lmowner)
 {
-  LINALG::Assemble(V, n, Vele, lm, lmowner);
+  LinAlg::Assemble(V, n, Vele, lm, lmowner);
 }
 
 FOUR_C_NAMESPACE_CLOSE

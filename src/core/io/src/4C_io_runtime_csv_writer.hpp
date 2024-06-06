@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::IO
+namespace Core::IO
 {
   class OutputControl;
   class RuntimeCsvWriterImpl;
@@ -38,7 +38,7 @@ namespace CORE::IO
   {
    public:
     RuntimeCsvWriter(
-        int myrank, const CORE::IO::OutputControl& output_control, std::string outputname);
+        int myrank, const Core::IO::OutputControl& output_control, std::string outputname);
 
     ~RuntimeCsvWriter();
 
@@ -65,7 +65,7 @@ namespace CORE::IO
    private:
     std::unique_ptr<RuntimeCsvWriterImpl> implementation_;
   };
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

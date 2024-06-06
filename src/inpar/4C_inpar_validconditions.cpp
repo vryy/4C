@@ -42,8 +42,8 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void INPUT::PrintEmptyConditionDefinitions(std::ostream& stream,
-    std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
+void Input::PrintEmptyConditionDefinitions(std::ostream& stream,
+    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
 {
   for (unsigned i = 0; i < condlist.size(); ++i)
   {
@@ -56,52 +56,52 @@ void INPUT::PrintEmptyConditionDefinitions(std::ostream& stream,
 /*----------------------------------------------------------------------*/
 void PrintConditionDatHeader()
 {
-  Teuchos::RCP<std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>> condlist =
-      INPUT::ValidConditions();
-  INPUT::PrintEmptyConditionDefinitions(std::cout, *condlist);
+  Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> condlist =
+      Input::ValidConditions();
+  Input::PrintEmptyConditionDefinitions(std::cout, *condlist);
 }
 
 
-namespace INPUT
+namespace Input
 {
   // collect some problem-specific conditions that do not fit in the generic sections
   void SetMiscellaneousConditions(
-      std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist)
+      std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
   {
     /*--------------------------------------------------------------------*/
     // microscale boundary
 
-    Teuchos::RCP<CORE::Conditions::ConditionDefinition> microscale =
-        Teuchos::rcp(new CORE::Conditions::ConditionDefinition("MICROSCALE CONDITIONS",
-            "MicroBoundary", "Microscale Boundary", CORE::Conditions::MicroBoundary, true,
-            CORE::Conditions::geometry_type_surface));
+    Teuchos::RCP<Core::Conditions::ConditionDefinition> microscale =
+        Teuchos::rcp(new Core::Conditions::ConditionDefinition("MICROSCALE CONDITIONS",
+            "MicroBoundary", "Microscale Boundary", Core::Conditions::MicroBoundary, true,
+            Core::Conditions::geometry_type_surface));
 
     condlist.push_back(microscale);
 
     /*--------------------------------------------------------------------*/
     // stc layer condition
 
-    Teuchos::RCP<CORE::Conditions::ConditionDefinition> stclayer =
-        Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOL STC LAYER", "STC Layer",
-            "Layer for Multilayered STC", CORE::Conditions::VolSTCLayer, true,
-            CORE::Conditions::geometry_type_volume));
+    Teuchos::RCP<Core::Conditions::ConditionDefinition> stclayer =
+        Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOL STC LAYER", "STC Layer",
+            "Layer for Multilayered STC", Core::Conditions::VolSTCLayer, true,
+            Core::Conditions::geometry_type_volume));
 
     stclayer->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
 
     condlist.push_back(stclayer);
   }
-}  // namespace INPUT
+}  // namespace Input
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>>
-INPUT::ValidConditions()
+Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>>
+Input::ValidConditions()
 {
-  Teuchos::RCP<std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>> vc =
-      Teuchos::rcp(new std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>());
+  Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> vc =
+      Teuchos::rcp(new std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>());
 
-  std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist = *vc;
+  std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist = *vc;
 
   /*--------------------------------------------------------------------*/
   // Neumann
@@ -133,80 +133,80 @@ INPUT::ValidConditions()
       new SelectionComponent("surface", "Mid", Teuchos::tuple<std::string>("Mid", "Top", "Bot"),
           Teuchos::tuple<std::string>("mid", "top", "bot"), true)));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN POINT NEUMANN CONDITIONS",
-          "PointNeumann", "Point Neumann", CORE::Conditions::PointNeumann, false,
-          CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointneumanneb =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN POINT MOMENT EB CONDITIONS",
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT NEUMANN CONDITIONS",
+          "PointNeumann", "Point Neumann", Core::Conditions::PointNeumann, false,
+          Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointneumanneb =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT MOMENT EB CONDITIONS",
           "PointNeumannEB", "Point Neumann Moment for an Euler-Bernoulli beam",
-          CORE::Conditions::PointNeumannEB, false, CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> lineneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE NEUMANN CONDITIONS",
-          "LineNeumann", "Line Neumann", CORE::Conditions::LineNeumann, true,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURF NEUMANN CONDITIONS",
-          "SurfaceNeumann", "Surface Neumann", CORE::Conditions::SurfaceNeumann, true,
-          CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOL NEUMANN CONDITIONS",
-          "VolumeNeumann", "Volume Neumann", CORE::Conditions::VolumeNeumann, true,
-          CORE::Conditions::geometry_type_volume));
+          Core::Conditions::PointNeumannEB, false, Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE NEUMANN CONDITIONS",
+          "LineNeumann", "Line Neumann", Core::Conditions::LineNeumann, true,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURF NEUMANN CONDITIONS",
+          "SurfaceNeumann", "Surface Neumann", Core::Conditions::SurfaceNeumann, true,
+          Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOL NEUMANN CONDITIONS",
+          "VolumeNeumann", "Volume Neumann", Core::Conditions::VolumeNeumann, true,
+          Core::Conditions::geometry_type_volume));
 
   // Neumann conditions for transport problems
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointtransportneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointtransportneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN POINT TRANSPORT NEUMANN CONDITIONS", "TransportPointNeumann", "Point Neumann",
-          CORE::Conditions::PointNeumann, false, CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linetransportneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::PointNeumann, false, Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linetransportneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE TRANSPORT NEUMANN CONDITIONS", "TransportLineNeumann", "Line Neumann",
-          CORE::Conditions::LineNeumann, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surftransportneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::LineNeumann, true, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surftransportneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURF TRANSPORT NEUMANN CONDITIONS", "TransportSurfaceNeumann", "Surface Neumann",
-          CORE::Conditions::SurfaceNeumann, true, CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> voltransportneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::SurfaceNeumann, true, Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> voltransportneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN VOL TRANSPORT NEUMANN CONDITIONS", "TransportVolumeNeumann", "Volume Neumann",
-          CORE::Conditions::VolumeNeumann, true, CORE::Conditions::geometry_type_volume));
+          Core::Conditions::VolumeNeumann, true, Core::Conditions::geometry_type_volume));
 
   // Neumann conditions for thermo problems
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointthermoneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointthermoneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN POINT THERMO NEUMANN CONDITIONS", "ThermoPointNeumann", "Point Neumann",
-          CORE::Conditions::PointNeumann, false, CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linethermoneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::PointNeumann, false, Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linethermoneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE THERMO NEUMANN CONDITIONS", "ThermoLineNeumann", "Line Neumann",
-          CORE::Conditions::LineNeumann, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfthermoneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::LineNeumann, true, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfthermoneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURF THERMO NEUMANN CONDITIONS", "ThermoSurfaceNeumann", "Surface Neumann",
-          CORE::Conditions::SurfaceNeumann, true, CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volthermoneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOL THERMO NEUMANN CONDITIONS",
-          "ThermoVolumeNeumann", "Volume Neumann", CORE::Conditions::VolumeNeumann, true,
-          CORE::Conditions::geometry_type_volume));
+          Core::Conditions::SurfaceNeumann, true, Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volthermoneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOL THERMO NEUMANN CONDITIONS",
+          "ThermoVolumeNeumann", "Volume Neumann", Core::Conditions::VolumeNeumann, true,
+          Core::Conditions::geometry_type_volume));
 
   // Neumann conditions for poroelasticity problems
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointporoneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN POINT PORO NEUMANN CONDITIONS",
-          "PoroPointNeumann", "Point Neumann", CORE::Conditions::PointNeumann, false,
-          CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> lineporoneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE PORO NEUMANN CONDITIONS",
-          "PoroLineNeumann", "Line Neumann", CORE::Conditions::LineNeumann, true,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfporoneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURF PORO NEUMANN CONDITIONS",
-          "PoroSurfaceNeumann", "Surface Neumann", CORE::Conditions::SurfaceNeumann, true,
-          CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volporoneumann =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOL PORO NEUMANN CONDITIONS",
-          "PoroVolumeNeumann", "Volume Neumann", CORE::Conditions::VolumeNeumann, true,
-          CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointporoneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT PORO NEUMANN CONDITIONS",
+          "PoroPointNeumann", "Point Neumann", Core::Conditions::PointNeumann, false,
+          Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineporoneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE PORO NEUMANN CONDITIONS",
+          "PoroLineNeumann", "Line Neumann", Core::Conditions::LineNeumann, true,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfporoneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURF PORO NEUMANN CONDITIONS",
+          "PoroSurfaceNeumann", "Surface Neumann", Core::Conditions::SurfaceNeumann, true,
+          Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volporoneumann =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOL PORO NEUMANN CONDITIONS",
+          "PoroVolumeNeumann", "Volume Neumann", Core::Conditions::VolumeNeumann, true,
+          Core::Conditions::geometry_type_volume));
 
   for (const auto& neumanncomponent : neumanncomponents)
   {
@@ -277,110 +277,110 @@ INPUT::ValidConditions()
       new SelectionComponent("tag", "none", Teuchos::tuple<std::string>("none", "monitor_reaction"),
           Teuchos::tuple<std::string>("none", "monitor_reaction"), true)));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointdirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN POINT DIRICH CONDITIONS",
-          "Dirichlet", "Point Dirichlet", CORE::Conditions::PointDirichlet, false,
-          CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linedirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE DIRICH CONDITIONS",
-          "Dirichlet", "Line Dirichlet", CORE::Conditions::LineDirichlet, false,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfdirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURF DIRICH CONDITIONS",
-          "Dirichlet", "Surface Dirichlet", CORE::Conditions::SurfaceDirichlet, false,
-          CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> voldirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOL DIRICH CONDITIONS",
-          "Dirichlet", "Volume Dirichlet", CORE::Conditions::VolumeDirichlet, false,
-          CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointdirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT DIRICH CONDITIONS",
+          "Dirichlet", "Point Dirichlet", Core::Conditions::PointDirichlet, false,
+          Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linedirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE DIRICH CONDITIONS",
+          "Dirichlet", "Line Dirichlet", Core::Conditions::LineDirichlet, false,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfdirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURF DIRICH CONDITIONS",
+          "Dirichlet", "Surface Dirichlet", Core::Conditions::SurfaceDirichlet, false,
+          Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> voldirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOL DIRICH CONDITIONS",
+          "Dirichlet", "Volume Dirichlet", Core::Conditions::VolumeDirichlet, false,
+          Core::Conditions::geometry_type_volume));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointaledirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN POINT ALE DIRICH CONDITIONS",
-          "ALEDirichlet", "Point Dirichlet", CORE::Conditions::PointDirichlet, false,
-          CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linealedirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE ALE DIRICH CONDITIONS",
-          "ALEDirichlet", "Line Dirichlet", CORE::Conditions::LineDirichlet, false,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfaledirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURF ALE DIRICH CONDITIONS",
-          "ALEDirichlet", "Surface Dirichlet", CORE::Conditions::SurfaceDirichlet, false,
-          CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volaledirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOL ALE DIRICH CONDITIONS",
-          "ALEDirichlet", "Volume Dirichlet", CORE::Conditions::VolumeDirichlet, false,
-          CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointaledirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT ALE DIRICH CONDITIONS",
+          "ALEDirichlet", "Point Dirichlet", Core::Conditions::PointDirichlet, false,
+          Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linealedirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE ALE DIRICH CONDITIONS",
+          "ALEDirichlet", "Line Dirichlet", Core::Conditions::LineDirichlet, false,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfaledirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURF ALE DIRICH CONDITIONS",
+          "ALEDirichlet", "Surface Dirichlet", Core::Conditions::SurfaceDirichlet, false,
+          Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volaledirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOL ALE DIRICH CONDITIONS",
+          "ALEDirichlet", "Volume Dirichlet", Core::Conditions::VolumeDirichlet, false,
+          Core::Conditions::geometry_type_volume));
 
   // Dirichlet conditions for transport problems
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointtransportdirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointtransportdirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN POINT TRANSPORT DIRICH CONDITIONS", "TransportDirichlet", "Point Dirichlet",
-          CORE::Conditions::PointDirichlet, false, CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linetransportdirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::PointDirichlet, false, Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linetransportdirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE TRANSPORT DIRICH CONDITIONS", "TransportDirichlet", "Line Dirichlet",
-          CORE::Conditions::LineDirichlet, false, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surftransportdirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::LineDirichlet, false, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surftransportdirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURF TRANSPORT DIRICH CONDITIONS", "TransportDirichlet", "Surface Dirichlet",
-          CORE::Conditions::SurfaceDirichlet, false, CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> voltransportdirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::SurfaceDirichlet, false, Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> voltransportdirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN VOL TRANSPORT DIRICH CONDITIONS", "TransportDirichlet", "Volume Dirichlet",
-          CORE::Conditions::VolumeDirichlet, false, CORE::Conditions::geometry_type_volume));
+          Core::Conditions::VolumeDirichlet, false, Core::Conditions::geometry_type_volume));
 
   // Dirichlet conditions for thermo problems
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointthermodirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointthermodirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN POINT THERMO DIRICH CONDITIONS", "ThermoDirichlet", "Point Dirichlet",
-          CORE::Conditions::PointDirichlet, false, CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linethermodirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE THERMO DIRICH CONDITIONS",
-          "ThermoDirichlet", "Line Dirichlet", CORE::Conditions::LineDirichlet, false,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfthermodirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURF THERMO DIRICH CONDITIONS",
-          "ThermoDirichlet", "Surface Dirichlet", CORE::Conditions::SurfaceDirichlet, false,
-          CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volthermodirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOL THERMO DIRICH CONDITIONS",
-          "ThermoDirichlet", "Volume Dirichlet", CORE::Conditions::VolumeDirichlet, false,
-          CORE::Conditions::geometry_type_volume));
+          Core::Conditions::PointDirichlet, false, Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linethermodirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE THERMO DIRICH CONDITIONS",
+          "ThermoDirichlet", "Line Dirichlet", Core::Conditions::LineDirichlet, false,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfthermodirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURF THERMO DIRICH CONDITIONS",
+          "ThermoDirichlet", "Surface Dirichlet", Core::Conditions::SurfaceDirichlet, false,
+          Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volthermodirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOL THERMO DIRICH CONDITIONS",
+          "ThermoDirichlet", "Volume Dirichlet", Core::Conditions::VolumeDirichlet, false,
+          Core::Conditions::geometry_type_volume));
 
   // Dirichlet conditions for poroelasticity problems
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointporodirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN POINT PORO DIRICH CONDITIONS",
-          "PoroDirichlet", "Point Dirichlet", CORE::Conditions::PointDirichlet, false,
-          CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> lineporodirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE PORO DIRICH CONDITIONS",
-          "PoroDirichlet", "Line Dirichlet", CORE::Conditions::LineDirichlet, false,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfporodirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURF PORO DIRICH CONDITIONS",
-          "PoroDirichlet", "Surface Dirichlet", CORE::Conditions::SurfaceDirichlet, false,
-          CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volporodirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOL PORO DIRICH CONDITIONS",
-          "PoroDirichlet", "Volume Dirichlet", CORE::Conditions::VolumeDirichlet, false,
-          CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointporodirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT PORO DIRICH CONDITIONS",
+          "PoroDirichlet", "Point Dirichlet", Core::Conditions::PointDirichlet, false,
+          Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineporodirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE PORO DIRICH CONDITIONS",
+          "PoroDirichlet", "Line Dirichlet", Core::Conditions::LineDirichlet, false,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfporodirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURF PORO DIRICH CONDITIONS",
+          "PoroDirichlet", "Surface Dirichlet", Core::Conditions::SurfaceDirichlet, false,
+          Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volporodirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOL PORO DIRICH CONDITIONS",
+          "PoroDirichlet", "Volume Dirichlet", Core::Conditions::VolumeDirichlet, false,
+          Core::Conditions::geometry_type_volume));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointnurbslsdirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointnurbslsdirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN POINT NURBS LS DIRICH CONDITIONS", "NurbsLSDirichlet", "Point Dirichlet",
-          CORE::Conditions::PointDirichlet, true, CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linenurbslsdirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::PointDirichlet, true, Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linenurbslsdirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE NURBS LS DIRICH CONDITIONS", "NurbsLSDirichlet", "Line Dirichlet",
-          CORE::Conditions::LineDirichlet, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfnurbslsdirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::LineDirichlet, true, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfnurbslsdirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURF NURBS LS DIRICH CONDITIONS", "NurbsLSDirichlet", "Surface Dirichlet",
-          CORE::Conditions::SurfaceDirichlet, true, CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volnurbslsdirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::SurfaceDirichlet, true, Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volnurbslsdirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN VOL NURBS LS DIRICH CONDITIONS", "NurbsLSDirichlet", "Volume Dirichlet",
-          CORE::Conditions::VolumeDirichlet, true, CORE::Conditions::geometry_type_volume));
+          Core::Conditions::VolumeDirichlet, true, Core::Conditions::geometry_type_volume));
 
   for (unsigned i = 0; i < dirichletbundcomponents.size(); ++i)
   {
@@ -456,15 +456,15 @@ INPUT::ValidConditions()
   couplingcomponents.emplace_back(
       Teuchos::rcp(new IntVectorComponent("onoff", LengthFromInt("numdof"))));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointcoupling =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN POINT COUPLING CONDITIONS",
-          "PointCoupling", "Point Coupling", CORE::Conditions::PointCoupling, false,
-          CORE::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointcoupling =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT COUPLING CONDITIONS",
+          "PointCoupling", "Point Coupling", Core::Conditions::PointCoupling, false,
+          Core::Conditions::geometry_type_point));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointthermocoupling =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointthermocoupling =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN POINT THERMO COUPLING CONDITIONS", "PointThermoCoupling", "Point Coupling",
-          CORE::Conditions::PointCoupling, false, CORE::Conditions::geometry_type_point));
+          Core::Conditions::PointCoupling, false, Core::Conditions::geometry_type_point));
 
   for (const auto& couplingcomponent : couplingcomponents)
   {
@@ -491,22 +491,22 @@ INPUT::ValidConditions()
   initial_field_components.emplace_back(Teuchos::rcp(new IntComponent("funct")));
 
   // general initial field conditions
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointinitfields =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointinitfields =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN POINT INITIAL FIELD CONDITIONS", "Initfield", "Point Initfield",
-          CORE::Conditions::PointInitfield, false, CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> lineinitfields =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE INITIAL FIELD CONDITIONS",
-          "Initfield", "Line Initfield", CORE::Conditions::LineInitfield, false,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfinitfields =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURF INITIAL FIELD CONDITIONS",
-          "Initfield", "Surface Initfield", CORE::Conditions::SurfaceInitfield, false,
-          CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volinitfields =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOL INITIAL FIELD CONDITIONS",
-          "Initfield", "Volume Initfield", CORE::Conditions::VolumeInitfield, false,
-          CORE::Conditions::geometry_type_volume));
+          Core::Conditions::PointInitfield, false, Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineinitfields =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE INITIAL FIELD CONDITIONS",
+          "Initfield", "Line Initfield", Core::Conditions::LineInitfield, false,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfinitfields =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURF INITIAL FIELD CONDITIONS",
+          "Initfield", "Surface Initfield", Core::Conditions::SurfaceInitfield, false,
+          Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volinitfields =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOL INITIAL FIELD CONDITIONS",
+          "Initfield", "Volume Initfield", Core::Conditions::VolumeInitfield, false,
+          Core::Conditions::geometry_type_volume));
 
   for (const auto& initial_field_component : initial_field_components)
   {
@@ -534,30 +534,30 @@ INPUT::ValidConditions()
       Teuchos::rcp(new IntComponent("funct")));
 
   // initial field conditions for temperature on ScaTra discretizations
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointthermoinitfields =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointthermoinitfields =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN POINT THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
           "Set the initial temperature field if the thermo field is solved using a ScaTra "
           "discretization (e.g. STI, SSTI) on points",
-          CORE::Conditions::PointInitfield, false, CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linethermoinitfields =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::PointInitfield, false, Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linethermoinitfields =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
           "Set the initial temperature field if the thermo field is solved using a ScaTra "
           "discretization (e.g. STI, SSTI) on lines",
-          CORE::Conditions::LineInitfield, false, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfthermoinitfields =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::LineInitfield, false, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfthermoinitfields =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURF THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
           "Set the initial temperature field if the thermo field is solved using a ScaTra "
           "discretization (e.g. STI, SSTI) on surfaces",
-          CORE::Conditions::SurfaceInitfield, false, CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volthermoinitfields =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::SurfaceInitfield, false, Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volthermoinitfields =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN VOL THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
           "Set the initial temperature field if the thermo field is solved using a ScaTra "
           "discretization (e.g. STI, SSTI) on volumes",
-          CORE::Conditions::VolumeInitfield, false, CORE::Conditions::geometry_type_volume));
+          Core::Conditions::VolumeInitfield, false, Core::Conditions::geometry_type_volume));
 
   for (const auto& component : initial_field_components_thermo_on_scatra_dis)
   {
@@ -577,15 +577,15 @@ INPUT::ValidConditions()
   // surface areas of 2D domain elements
   {
     // definition of surface and volume conditions for domain integral computation
-    Teuchos::RCP<CORE::Conditions::ConditionDefinition> domainintegralsurf = Teuchos::rcp(
-        new CORE::Conditions::ConditionDefinition("DESIGN DOMAIN INTEGRAL SURF CONDITIONS",
+    Teuchos::RCP<Core::Conditions::ConditionDefinition> domainintegralsurf = Teuchos::rcp(
+        new Core::Conditions::ConditionDefinition("DESIGN DOMAIN INTEGRAL SURF CONDITIONS",
             "DomainIntegral", "compute cumulative surface areas of 2D domain elements",
-            CORE::Conditions::DomainIntegral, true, CORE::Conditions::geometry_type_surface));
+            Core::Conditions::DomainIntegral, true, Core::Conditions::geometry_type_surface));
 
-    Teuchos::RCP<CORE::Conditions::ConditionDefinition> domainintegralvol = Teuchos::rcp(
-        new CORE::Conditions::ConditionDefinition("DESIGN DOMAIN INTEGRAL VOL CONDITIONS",
+    Teuchos::RCP<Core::Conditions::ConditionDefinition> domainintegralvol = Teuchos::rcp(
+        new Core::Conditions::ConditionDefinition("DESIGN DOMAIN INTEGRAL VOL CONDITIONS",
             "DomainIntegral", "compute cumulative volumes of 3D domain elements",
-            CORE::Conditions::DomainIntegral, true, CORE::Conditions::geometry_type_volume));
+            Core::Conditions::DomainIntegral, true, Core::Conditions::geometry_type_volume));
 
     // equip condition definitions with input file line components
     std::vector<Teuchos::RCP<LineComponent>> domainintegralcomponents;
@@ -610,10 +610,10 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // compute boundary integrals, i.e., cumulative surface areas of 2D boundary elements
   {
-    Teuchos::RCP<CORE::Conditions::ConditionDefinition> boundaryintegralsurf = Teuchos::rcp(
-        new CORE::Conditions::ConditionDefinition("DESIGN BOUNDARY INTEGRAL SURF CONDITIONS",
+    Teuchos::RCP<Core::Conditions::ConditionDefinition> boundaryintegralsurf = Teuchos::rcp(
+        new Core::Conditions::ConditionDefinition("DESIGN BOUNDARY INTEGRAL SURF CONDITIONS",
             "BoundaryIntegral", "compute cumulative surface areas of 2D boundary elements",
-            CORE::Conditions::BoundaryIntegral, true, CORE::Conditions::geometry_type_surface));
+            Core::Conditions::BoundaryIntegral, true, Core::Conditions::geometry_type_surface));
 
     // equip condition definition with input file line components
     std::vector<Teuchos::RCP<LineComponent>> boundaryintegralcomponents;
@@ -634,13 +634,13 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // wear in ALE description
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linealewear = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN LINE ALE WEAR CONDITIONS 2D", "AleWear",
-          "Line Ale Wear", CORE::Conditions::AleWear, true, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfalewear =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURFACE WEAR CONDITIONS 3D",
-          "AleWear", "Surface Ale Wear", CORE::Conditions::AleWear, true,
-          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linealewear = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN LINE ALE WEAR CONDITIONS 2D", "AleWear",
+          "Line Ale Wear", Core::Conditions::AleWear, true, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfalewear =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURFACE WEAR CONDITIONS 3D",
+          "AleWear", "Surface Ale Wear", Core::Conditions::AleWear, true,
+          Core::Conditions::geometry_type_surface));
 
   condlist.push_back(linealewear);
   condlist.push_back(surfalewear);
@@ -659,40 +659,40 @@ INPUT::ValidConditions()
   locsyscomponents.push_back(Teuchos::rcp(new SeparatorComponent("USECONSISTENTNODENORMAL")));
   locsyscomponents.push_back(Teuchos::rcp(new IntComponent("useconsistentnodenormal")));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointlocsys =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN POINT LOCSYS CONDITIONS",
-          "Locsys", "Point local coordinate system", CORE::Conditions::PointLocsys, true,
-          CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linelocsys =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE LOCSYS CONDITIONS",
-          "Locsys", "Line local coordinate system", CORE::Conditions::LineLocsys, true,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surflocsys =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURF LOCSYS CONDITIONS",
-          "Locsys", "Surface local coordinate system", CORE::Conditions::SurfaceLocsys, true,
-          CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> vollocsys =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOL LOCSYS CONDITIONS",
-          "Locsys", "Volume local coordinate system", CORE::Conditions::VolumeLocsys, true,
-          CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointlocsys =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT LOCSYS CONDITIONS",
+          "Locsys", "Point local coordinate system", Core::Conditions::PointLocsys, true,
+          Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linelocsys =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE LOCSYS CONDITIONS",
+          "Locsys", "Line local coordinate system", Core::Conditions::LineLocsys, true,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surflocsys =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURF LOCSYS CONDITIONS",
+          "Locsys", "Surface local coordinate system", Core::Conditions::SurfaceLocsys, true,
+          Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> vollocsys =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOL LOCSYS CONDITIONS",
+          "Locsys", "Volume local coordinate system", Core::Conditions::VolumeLocsys, true,
+          Core::Conditions::geometry_type_volume));
 
   // Ale
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> pointalelocsys =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN POINT ALE LOCSYS CONDITIONS",
-          "AleLocsys", "Point local coordinate system", CORE::Conditions::PointLocsys, true,
-          CORE::Conditions::geometry_type_point));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linealelocsys =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE ALE LOCSYS CONDITIONS",
-          "AleLocsys", "Line local coordinate system", CORE::Conditions::LineLocsys, true,
-          CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfalelocsys =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURF ALE LOCSYS CONDITIONS",
-          "AleLocsys", "Surface local coordinate system", CORE::Conditions::SurfaceLocsys, true,
-          CORE::Conditions::geometry_type_surface));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volalelocsys =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN VOL ALE LOCSYS CONDITIONS",
-          "AleLocsys", "Volume local coordinate system", CORE::Conditions::VolumeLocsys, true,
-          CORE::Conditions::geometry_type_volume));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointalelocsys =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN POINT ALE LOCSYS CONDITIONS",
+          "AleLocsys", "Point local coordinate system", Core::Conditions::PointLocsys, true,
+          Core::Conditions::geometry_type_point));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linealelocsys =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE ALE LOCSYS CONDITIONS",
+          "AleLocsys", "Line local coordinate system", Core::Conditions::LineLocsys, true,
+          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfalelocsys =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURF ALE LOCSYS CONDITIONS",
+          "AleLocsys", "Surface local coordinate system", Core::Conditions::SurfaceLocsys, true,
+          Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volalelocsys =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOL ALE LOCSYS CONDITIONS",
+          "AleLocsys", "Volume local coordinate system", Core::Conditions::VolumeLocsys, true,
+          Core::Conditions::geometry_type_volume));
 
   for (unsigned i = 0; i < locsyscomponents.size() - 2; ++i)
   {
@@ -756,14 +756,14 @@ INPUT::ValidConditions()
   pbccomponents.push_back(Teuchos::rcp(new SeparatorComponent("ABSTREETOL")));
   pbccomponents.push_back(Teuchos::rcp(new RealComponent("Tolerance for nodematching in octree")));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> lineperiodic =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineperiodic =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE PERIODIC BOUNDARY CONDITIONS", "LinePeriodic", "Line Periodic",
-          CORE::Conditions::LinePeriodic, false, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfperiodic =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::LinePeriodic, false, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfperiodic =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURF PERIODIC BOUNDARY CONDITIONS", "SurfacePeriodic", "Surface Periodic",
-          CORE::Conditions::SurfacePeriodic, false, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::SurfacePeriodic, false, Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < pbccomponents.size(); ++i)
   {
@@ -820,15 +820,15 @@ INPUT::ValidConditions()
       Teuchos::rcp(new IntVectorComponent("funct", 3, {0, false, false, true})));
 
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> lineweakdirichlet =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineweakdirichlet =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE WEAK DIRICHLET CONDITIONS", "LineWeakDirichlet", "LineWeakDirichlet",
-          CORE::Conditions::LineWeakDirichlet, true, CORE::Conditions::geometry_type_line));
+          Core::Conditions::LineWeakDirichlet, true, Core::Conditions::geometry_type_line));
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfweakdirichlet = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN SURFACE WEAK DIRICHLET CONDITIONS",
-          "SurfaceWeakDirichlet", "SurfaceWeakDirichlet", CORE::Conditions::SurfaceWeakDirichlet,
-          true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfweakdirichlet = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN SURFACE WEAK DIRICHLET CONDITIONS",
+          "SurfaceWeakDirichlet", "SurfaceWeakDirichlet", Core::Conditions::SurfaceWeakDirichlet,
+          true, Core::Conditions::geometry_type_surface));
 
   // we attach all the components of this condition to this weak line DBC
   for (unsigned i = 0; i < weakDirichletcomponents.size(); ++i)
@@ -846,14 +846,14 @@ INPUT::ValidConditions()
 
   std::vector<Teuchos::RCP<LineComponent>> sprcomponents;
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> linespr =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linespr =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN PATCH RECOVERY BOUNDARY LINE CONDITIONS", "SPRboundary", "Boundary for SPR",
-          CORE::Conditions::SPRboundary, false, CORE::Conditions::geometry_type_line));
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfspr =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+          Core::Conditions::SPRboundary, false, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfspr =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN PATCH RECOVERY BOUNDARY SURF CONDITIONS", "SPRboundary", "Boundary for SPR",
-          CORE::Conditions::SPRboundary, false, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::SPRboundary, false, Core::Conditions::geometry_type_surface));
 
   for (unsigned i = 0; i < sprcomponents.size(); ++i)
   {
@@ -867,10 +867,10 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // volume constraint
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volumeconstraint =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURFACE VOLUME CONSTRAINT 3D",
-          "VolumeConstraint_3D", "Surface Volume Constraint", CORE::Conditions::VolumeConstraint_3D,
-          true, CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volumeconstraint =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURFACE VOLUME CONSTRAINT 3D",
+          "VolumeConstraint_3D", "Surface Volume Constraint", Core::Conditions::VolumeConstraint_3D,
+          true, Core::Conditions::geometry_type_surface));
 
   volumeconstraint->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
   volumeconstraint->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
@@ -884,11 +884,11 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // volume constraint penalty
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volumeconstraintpen =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volumeconstraintpen =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURFACE VOLUME CONSTRAINT 3D PEN", "VolumeConstraint_3D_Pen",
-          "Surface Volume Constraint Penalty", CORE::Conditions::VolumeConstraint_3D_pen, true,
-          CORE::Conditions::geometry_type_surface));
+          "Surface Volume Constraint Penalty", Core::Conditions::VolumeConstraint_3D_pen, true,
+          Core::Conditions::geometry_type_surface));
 
   volumeconstraintpen->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
   volumeconstraintpen->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
@@ -904,10 +904,10 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // area constraint
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> areaconstraint =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURFACE AREA CONSTRAINT 3D",
-          "AreaConstraint_3D", "Surface Area Constraint", CORE::Conditions::AreaConstraint_3D, true,
-          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> areaconstraint =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURFACE AREA CONSTRAINT 3D",
+          "AreaConstraint_3D", "Surface Area Constraint", Core::Conditions::AreaConstraint_3D, true,
+          Core::Conditions::geometry_type_surface));
 
   areaconstraint->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
   areaconstraint->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
@@ -918,10 +918,10 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // area constraint penalty
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> areaconstraintpen = Teuchos::rcp(
-      new CORE::Conditions::ConditionDefinition("DESIGN SURFACE AREA CONSTRAINT 3D PEN",
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> areaconstraintpen = Teuchos::rcp(
+      new Core::Conditions::ConditionDefinition("DESIGN SURFACE AREA CONSTRAINT 3D PEN",
           "AreaConstraint_3D_Pen", "Surface Area Constraint Penalty",
-          CORE::Conditions::AreaConstraint_3D_pen, true, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::AreaConstraint_3D_pen, true, Core::Conditions::geometry_type_surface));
 
   areaconstraintpen->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
   areaconstraintpen->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
@@ -938,10 +938,10 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // volume monitor
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> volumemonitor =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURFACE VOLUME MONITOR 3D",
-          "VolumeMonitor_3D", "Surface Volume Monitor", CORE::Conditions::VolumeMonitor_3D, true,
-          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volumemonitor =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURFACE VOLUME MONITOR 3D",
+          "VolumeMonitor_3D", "Surface Volume Monitor", Core::Conditions::VolumeMonitor_3D, true,
+          Core::Conditions::geometry_type_surface));
 
   volumemonitor->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
 
@@ -950,10 +950,10 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // area monitor 3D
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> areamonitor =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN SURFACE AREA MONITOR 3D",
-          "AreaMonitor_3D", "Surface Area Monitor", CORE::Conditions::AreaMonitor_3D, true,
-          CORE::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> areamonitor =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURFACE AREA MONITOR 3D",
+          "AreaMonitor_3D", "Surface Area Monitor", Core::Conditions::AreaMonitor_3D, true,
+          Core::Conditions::geometry_type_surface));
 
   areamonitor->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
   areamonitor->AddComponent(Teuchos::rcp(new SelectionComponent("projection", "none",
@@ -965,10 +965,10 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // area constraint
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> areaconstraint2D =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE AREA CONSTRAINT 2D",
-          "AreaConstraint_2D", "Line Area Constraint", CORE::Conditions::AreaConstraint_2D, true,
-          CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> areaconstraint2D =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE AREA CONSTRAINT 2D",
+          "AreaConstraint_2D", "Line Area Constraint", Core::Conditions::AreaConstraint_2D, true,
+          Core::Conditions::geometry_type_line));
 
   areaconstraint2D->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
   areaconstraint2D->AddComponent(Teuchos::rcp(new IntComponent("curve", {0, true, true})));
@@ -978,10 +978,10 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // area monitor 2D
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> areamonitor2D =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE AREA MONITOR 2D",
-          "AreaMonitor_2D", "Line Area Monitor", CORE::Conditions::AreaMonitor_2D, true,
-          CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> areamonitor2D =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE AREA MONITOR 2D",
+          "AreaMonitor_2D", "Line Area Monitor", Core::Conditions::AreaMonitor_2D, true,
+          Core::Conditions::geometry_type_line));
 
   areamonitor2D->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
   condlist.push_back(areamonitor2D);
@@ -989,10 +989,10 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 3D for a node over a plane
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> nodeonplaneconst3D =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> nodeonplaneconst3D =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURFACE MULTIPNT CONSTRAINT 3D", "MPC_NodeOnPlane_3D", "Node on Plane Constraint",
-          CORE::Conditions::MPC_NodeOnPlane_3D, false, CORE::Conditions::geometry_type_surface));
+          Core::Conditions::MPC_NodeOnPlane_3D, false, Core::Conditions::geometry_type_surface));
 
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new RealComponent("amplitude")));
@@ -1006,11 +1006,11 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 3D, moving all constraint nodes synchronously
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> nodemasterconst3D =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> nodemasterconst3D =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D", "MPC_NormalComponent_3D",
-          "Node on Plane Constraint", CORE::Conditions::MPC_NormalComponent_3D, false,
-          CORE::Conditions::geometry_type_surface));
+          "Node on Plane Constraint", Core::Conditions::MPC_NormalComponent_3D, false,
+          Core::Conditions::geometry_type_surface));
 
   nodemasterconst3D->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
   nodemasterconst3D->AddComponent(Teuchos::rcp(new RealComponent("amplitude")));
@@ -1027,11 +1027,11 @@ INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 3D, moving all constraint nodes synchronously, penalty based
 
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> nodemasterconst3Dpen =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> nodemasterconst3Dpen =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
           "DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D PEN", "MPC_NormalComponent_3D_Pen",
-          "Node on Plane Constraint Penalty", CORE::Conditions::MPC_NormalComponent_3D_pen, false,
-          CORE::Conditions::geometry_type_surface));
+          "Node on Plane Constraint Penalty", Core::Conditions::MPC_NormalComponent_3D_pen, false,
+          Core::Conditions::geometry_type_surface));
 
   nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
   nodemasterconst3Dpen->AddComponent(Teuchos::rcp(new RealComponent("amplitude")));
@@ -1047,10 +1047,10 @@ INPUT::ValidConditions()
   condlist.push_back(nodemasterconst3Dpen);
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 2D for a node on a line
-  Teuchos::RCP<CORE::Conditions::ConditionDefinition> nodeonlineconst2D =
-      Teuchos::rcp(new CORE::Conditions::ConditionDefinition("DESIGN LINE MULTIPNT CONSTRAINT 2D",
-          "MPC_NodeOnLine_2D", "Node on Line Constraint", CORE::Conditions::MPC_NodeOnLine_2D,
-          false, CORE::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> nodeonlineconst2D =
+      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE MULTIPNT CONSTRAINT 2D",
+          "MPC_NodeOnLine_2D", "Node on Line Constraint", Core::Conditions::MPC_NodeOnLine_2D,
+          false, Core::Conditions::geometry_type_line));
 
   nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntComponent("ConditionID")));
   nodeonlineconst2D->AddComponent(Teuchos::rcp(new RealComponent("amplitude")));
@@ -1105,17 +1105,17 @@ INPUT::ValidConditions()
             Teuchos::tuple<std::string>("integration", "pointvalues"),
             Teuchos::tuple<std::string>("integration", "pointvalues"))));
 
-    Teuchos::RCP<CORE::Conditions::ConditionDefinition> surfrigidbodymode = Teuchos::rcp(
-        new CORE::Conditions::ConditionDefinition("DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION",
+    Teuchos::RCP<Core::Conditions::ConditionDefinition> surfrigidbodymode = Teuchos::rcp(
+        new Core::Conditions::ConditionDefinition("DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION",
             "KrylovSpaceProjection", "Surface mode for Krylov space projection",
-            CORE::Conditions::SurfaceModeKrylovProjection, true,
-            CORE::Conditions::geometry_type_surface));
+            Core::Conditions::SurfaceModeKrylovProjection, true,
+            Core::Conditions::geometry_type_surface));
 
-    Teuchos::RCP<CORE::Conditions::ConditionDefinition> volrigidbodymode =
-        Teuchos::rcp(new CORE::Conditions::ConditionDefinition(
+    Teuchos::RCP<Core::Conditions::ConditionDefinition> volrigidbodymode =
+        Teuchos::rcp(new Core::Conditions::ConditionDefinition(
             "DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION", "KrylovSpaceProjection",
-            "Volume mode for Krylov space projection", CORE::Conditions::VolumeModeKrylovProjection,
-            true, CORE::Conditions::geometry_type_volume));
+            "Volume mode for Krylov space projection", Core::Conditions::VolumeModeKrylovProjection,
+            true, Core::Conditions::geometry_type_volume));
 
     for (unsigned i = 0; i < rigidbodymodecomponents.size(); ++i)
     {
@@ -1128,61 +1128,61 @@ INPUT::ValidConditions()
 
   // Finally, add the problem-specific conditions from the various modules
 
-  INPAR::MORTAR::SetValidConditions(condlist);
+  Inpar::Mortar::SetValidConditions(condlist);
 
-  INPAR::S2I::SetValidConditions(condlist);
+  Inpar::S2I::SetValidConditions(condlist);
 
-  INPAR::SCATRA::SetValidConditions(condlist);
+  Inpar::ScaTra::SetValidConditions(condlist);
 
-  INPAR::STI::SetValidConditions(condlist);
+  Inpar::STI::SetValidConditions(condlist);
 
-  INPAR::ELCH::SetValidConditions(condlist);
+  Inpar::ElCh::SetValidConditions(condlist);
 
-  INPAR::EP::SetValidConditions(condlist);
+  Inpar::ElectroPhysiology::SetValidConditions(condlist);
 
-  INPAR::FLUID::SetValidConditions(condlist);
+  Inpar::FLUID::SetValidConditions(condlist);
 
-  INPAR::ALE::SetValidConditions(condlist);
+  Inpar::ALE::SetValidConditions(condlist);
 
-  INPAR::FSI::SetValidConditions(condlist);
+  Inpar::FSI::SetValidConditions(condlist);
 
-  INPAR::FPSI::SetValidConditions(condlist);
+  Inpar::FPSI::SetValidConditions(condlist);
 
-  INPAR::IMMERSED::SetValidConditions(condlist);
+  Inpar::Immersed::SetValidConditions(condlist);
 
-  INPAR::XFEM::SetValidConditions(dirichletbundcomponents, neumanncomponents, condlist);
+  Inpar::XFEM::SetValidConditions(dirichletbundcomponents, neumanncomponents, condlist);
 
-  INPAR::BIOFILM::SetValidConditions(condlist);
+  Inpar::BioFilm::SetValidConditions(condlist);
 
-  INPAR::ARTNET::SetValidConditions(condlist);
+  Inpar::ArteryNetwork::SetValidConditions(condlist);
 
-  INPAR::REDAIRWAYS::SetValidConditions(condlist);
+  Inpar::ReducedLung::SetValidConditions(condlist);
 
-  INPAR::CARDIOVASCULAR0D::SetValidConditions(condlist);
+  Inpar::CARDIOVASCULAR0D::SetValidConditions(condlist);
 
-  INPAR::STR::SetValidConditions(condlist);
+  Inpar::STR::SetValidConditions(condlist);
 
-  INPAR::THR::SetValidConditions(condlist);
+  Inpar::THR::SetValidConditions(condlist);
 
-  INPAR::SSI::SetValidConditions(condlist);
+  Inpar::SSI::SetValidConditions(condlist);
 
-  INPAR::SSTI::SetValidConditions(condlist);
+  Inpar::SSTI::SetValidConditions(condlist);
 
-  INPAR::PARTICLE::SetValidConditions(condlist);
+  Inpar::PARTICLE::SetValidConditions(condlist);
 
-  INPAR::LEVELSET::SetValidConditions(condlist);
+  Inpar::LevelSet::SetValidConditions(condlist);
 
-  INPAR::ELEMAG::SetValidConditions(condlist);
+  Inpar::EleMag::SetValidConditions(condlist);
 
-  INPAR::BEAMPOTENTIAL::SetValidConditions(condlist);
+  Inpar::BEAMPOTENTIAL::SetValidConditions(condlist);
 
-  INPAR::RVE_MPC::SetValidConditions(condlist);
+  Inpar::RveMpc::SetValidConditions(condlist);
 
-  INPAR::BEAMINTERACTION::SetValidConditions(condlist);
+  Inpar::BEAMINTERACTION::SetValidConditions(condlist);
 
-  INPAR::EHL::SetValidConditions(condlist);
+  Inpar::EHL::SetValidConditions(condlist);
 
-  INPAR::POROMULTIPHASESCATRA::SetValidConditions(condlist);
+  Inpar::PoroMultiPhaseScaTra::SetValidConditions(condlist);
 
   // finally some conditions that do not have their own files yet are problem-specific
   SetMiscellaneousConditions(condlist);

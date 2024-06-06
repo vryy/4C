@@ -21,11 +21,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace FLD
 {
@@ -35,24 +35,24 @@ namespace FLD
     {
      public:
       //! constructor
-      FluidInfNormScaling(CORE::LINALG::MapExtractor& mapextractor);
+      FluidInfNormScaling(Core::LinAlg::MapExtractor& mapextractor);
 
       //! destructor
       virtual ~FluidInfNormScaling() = default;
 
       //! perform infnorm-scaling of linear system
-      void scale_system(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& b);
+      void scale_system(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Epetra_Vector& b);
 
       //! perform un-scaling of solution (and the system, just to be on the safe side)
       void unscale_solution(
-          Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& x, Epetra_Vector& b);
+          Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Epetra_Vector& x, Epetra_Vector& b);
 
      private:
       //! processor id
       const int myrank_;
 
       //! Extractor for splitting of velocity and pressure dofs
-      CORE::LINALG::MapExtractor& velpressplitter_;
+      Core::LinAlg::MapExtractor& velpressplitter_;
 
       Teuchos::RCP<Epetra_Vector> srowsum_;
       Teuchos::RCP<Epetra_Vector> scolsum_;

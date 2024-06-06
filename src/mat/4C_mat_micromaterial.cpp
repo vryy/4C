@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::MicroMaterial::MicroMaterial(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::MicroMaterial::MicroMaterial(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       microfile_((matdata->Get<std::string>("MICROFILE"))),
       microdisnum_(matdata->Get<int>("MICRODIS_NUM")),
@@ -34,18 +34,18 @@ MAT::PAR::MicroMaterial::MicroMaterial(Teuchos::RCP<CORE::MAT::PAR::Material> ma
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MicroMaterial::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::MicroMaterial::create_material()
 {
-  return Teuchos::rcp(new MAT::MicroMaterial(this));
+  return Teuchos::rcp(new Mat::MicroMaterial(this));
 }
 
 
-MAT::MicroMaterialType MAT::MicroMaterialType::instance_;
+Mat::MicroMaterialType Mat::MicroMaterialType::instance_;
 
 
-CORE::COMM::ParObject* MAT::MicroMaterialType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MicroMaterialType::Create(const std::vector<char>& data)
 {
-  MAT::MicroMaterial* micro = new MAT::MicroMaterial();
+  Mat::MicroMaterial* micro = new Mat::MicroMaterial();
   micro->Unpack(data);
   return micro;
 }
@@ -53,18 +53,18 @@ CORE::COMM::ParObject* MAT::MicroMaterialType::Create(const std::vector<char>& d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::MicroMaterial::MicroMaterial() : params_(nullptr) {}
+Mat::MicroMaterial::MicroMaterial() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::MicroMaterial::MicroMaterial(MAT::PAR::MicroMaterial* params) : params_(params) {}
+Mat::MicroMaterial::MicroMaterial(Mat::PAR::MicroMaterial* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MicroMaterial::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::MicroMaterial::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -79,24 +79,24 @@ void MAT::MicroMaterial::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MicroMaterial::Unpack(const std::vector<char>& data)
+void Mat::MicroMaterial::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::MicroMaterial*>(mat);
+        params_ = static_cast<Mat::PAR::MicroMaterial*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

@@ -18,12 +18,12 @@ electric potential as degrees of freedom
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     //! parameters for abstract battery material
-    class ElchSingleMat : public CORE::MAT::PAR::Parameter
+    class ElchSingleMat : public Core::Mat::PAR::Parameter
     {
      public:
       //! @name parameters for abstract battery material
@@ -73,17 +73,17 @@ namespace MAT
 
      protected:
       //! constructor
-      explicit ElchSingleMat(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit ElchSingleMat(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! check whether number of parameters is consistent with curve number
       void check_provided_params(int functnr, const std::vector<double>& functparams);
-    };  // class MAT::PAR::ElchSingleMat
+    };  // class Mat::PAR::ElchSingleMat
   }     // namespace PAR
 
 
   /*----------------------------------------------------------------------*/
   //! wrapper for abstract battery material
-  class ElchSingleMat : public CORE::MAT::Material
+  class ElchSingleMat : public Core::Mat::Material
   {
    public:
     //! @name packing and unpacking
@@ -105,7 +105,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override = 0;
+    void Pack(Core::Communication::PackBuffer& data) const override = 0;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -180,54 +180,54 @@ namespace MAT
     //! return function number describing concentration dependence of the diffusion coefficient
     int diffusion_coefficient_concentration_dependence_funct_num() const
     {
-      return dynamic_cast<MAT::PAR::ElchSingleMat*>(Parameter())
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())
           ->diffusion_coefficient_concentration_dependence_funct_num_;
     };
 
     //! return the function number describing the temperature scaling of the diffusion coefficient
     int diffusion_coefficient_temperature_scaling_funct_num() const
     {
-      return dynamic_cast<MAT::PAR::ElchSingleMat*>(Parameter())
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())
           ->diffusion_coefficient_temperature_scaling_funct_num_;
     };
 
     //! return function number describing concentration dependence of the conductivity
     int conductivity_concentration_dependence_funct_num() const
     {
-      return dynamic_cast<MAT::PAR::ElchSingleMat*>(Parameter())
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())
           ->conductivity_concentration_dependence_funct_num_;
     };
 
     //! return the function number describing the temperature scaling of the conductivity
     int conductivity_temperature_scaling_funct_num() const
     {
-      return dynamic_cast<MAT::PAR::ElchSingleMat*>(Parameter())
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())
           ->conductivity_temperature_scaling_funct_num_;
     };
 
     //! return parameters for diffusion coefficient
     const std::vector<double>& diffusion_coefficient_params() const
     {
-      return dynamic_cast<MAT::PAR::ElchSingleMat*>(Parameter())->diffusion_coefficent_params_;
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())->diffusion_coefficent_params_;
     };
 
     //! return parameters for temperature scaling function for diffusion coefficient
     const std::vector<double>& temp_scale_function_params_diff() const
     {
-      return dynamic_cast<MAT::PAR::ElchSingleMat*>(Parameter())
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())
           ->diffusion_temp_scale_funct_params_;
     };
 
     //! return parameters for conductivity
     const std::vector<double>& conductivity_params() const
     {
-      return dynamic_cast<MAT::PAR::ElchSingleMat*>(Parameter())->conductivity_params_;
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())->conductivity_params_;
     };
 
     //! return parameters for temperature scaling function for conductivity
     const std::vector<double>& temp_scale_function_params_cond() const
     {
-      return dynamic_cast<MAT::PAR::ElchSingleMat*>(Parameter())
+      return dynamic_cast<Mat::PAR::ElchSingleMat*>(Parameter())
           ->conductivity_temp_scale_funct_params_;
     };
 
@@ -245,7 +245,7 @@ namespace MAT
     double eval_first_deriv_pre_defined_funct(
         int functnr, double scalar, const std::vector<double>& functparams) const;
   };
-}  // namespace MAT
+}  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

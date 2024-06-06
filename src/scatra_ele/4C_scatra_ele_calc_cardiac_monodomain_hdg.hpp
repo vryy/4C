@@ -21,12 +21,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     /// Scatra HDG element implementation
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype>>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
     class ScaTraEleCalcHDGCardiacMonodomain : public ScaTraEleCalcHDG<distype, probdim>
     {
      protected:
@@ -41,7 +41,7 @@ namespace DRT
       //    typedef ScaTraEleCalcAniso<distype,probdim> aniso;
       //    typedef ScaTraEleCalcAdvReac<distype,probdim> advreac;
 
-      std::vector<CORE::LINALG::SerialDenseVector> values_mat_gp_all_;
+      std::vector<Core::LinAlg::SerialDenseVector> values_mat_gp_all_;
       std::vector<double> gp_mat_alpha_;
 
      public:
@@ -50,14 +50,14 @@ namespace DRT
           const int numscal, const std::string& disname, bool create = true);
 
       //! evaluate the element
-      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, const SCATRA::Action& action,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra)
+      int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra)
       {
         return 0;
       };
@@ -68,63 +68,63 @@ namespace DRT
       /*========================================================================*/
 
       //! evaluate material
-      void prepare_materials(CORE::Elements::Element* ele,  //!< the element we are dealing with
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+      void prepare_materials(Core::Elements::Element* ele,  //!< the element we are dealing with
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
-          Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor) override;
+          Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor) override;
 
       //! evaluate material
       virtual void prepare_materials_all(
-          CORE::Elements::Element* ele,  //!< the element we are dealing with
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          Core::Elements::Element* ele,  //!< the element we are dealing with
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
-          Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor);
+          Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor);
 
       //! evaluate material
       virtual void prepare_materials_tet(
-          CORE::Elements::Element* ele,  //!< the element we are dealing with
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          Core::Elements::Element* ele,  //!< the element we are dealing with
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
-          Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor);
+          Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor);
 
 
       //! evaluate material
       void materials(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
-          CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
-          CORE::LINALG::SerialDenseVector& ivecnp,
-          CORE::LINALG::SerialDenseMatrix& ivecnpderiv) override;
+          Core::LinAlg::SerialDenseMatrix& difftensor, Core::LinAlg::SerialDenseVector& ivecn,
+          Core::LinAlg::SerialDenseVector& ivecnp,
+          Core::LinAlg::SerialDenseMatrix& ivecnpderiv) override;
 
       //! material ScaTra
       void mat_myocard(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
-          CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
-          CORE::LINALG::SerialDenseVector& ivecnp, CORE::LINALG::SerialDenseMatrix& ivecnpderiv);
+          Core::LinAlg::SerialDenseMatrix& difftensor, Core::LinAlg::SerialDenseVector& ivecn,
+          Core::LinAlg::SerialDenseVector& ivecnp, Core::LinAlg::SerialDenseMatrix& ivecnpderiv);
 
       //! update time dependent material
       void time_update_material(
-          const CORE::Elements::Element* ele  //!< the element we are dealing with
+          const Core::Elements::Element* ele  //!< the element we are dealing with
           ) override;
 
       //! get material internal state for output
-      void get_material_internal_state(const CORE::Elements::Element* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization) override;
+      void get_material_internal_state(const Core::Elements::Element* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization) override;
 
       //! set material internal state after restart
-      void set_material_internal_state(const CORE::Elements::Element* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization) override;
+      void set_material_internal_state(const Core::Elements::Element* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization) override;
 
       //! project material field
-      int project_material_field(const CORE::Elements::Element* ele) override;
+      int project_material_field(const Core::Elements::Element* ele) override;
 
       //! project material field
-      int project_material_field_all(const CORE::Elements::Element* ele);
+      int project_material_field_all(const Core::Elements::Element* ele);
 
       //! project material field for Tet elements, because quadrature not working for higher order
       //! polynomials with Intrepid
-      int project_material_field_tet(const CORE::Elements::Element* ele);
+      int project_material_field_tet(const Core::Elements::Element* ele);
 
       /*!
        * @brief Setup cardiac fibers. If the fiber direction fiber1 is directly given, it is
@@ -136,16 +136,16 @@ namespace DRT
        * @param f Cardiac fiber direction setup from the fiber or coordinate system data
        */
       template <std::size_t dim>
-      void setup_cardiac_fibers(const CORE::Nodes::NodalFiberHolder& fibers,
-          std::vector<CORE::LINALG::Matrix<dim, 1>>& f);
+      void setup_cardiac_fibers(const Core::Nodes::NodalFiberHolder& fibers,
+          std::vector<Core::LinAlg::Matrix<dim, 1>>& f);
 
       /// polynomial space for element interior for various Gauss Points for the evaluation of the
       /// material
-      Teuchos::RCP<CORE::FE::PolynomialSpace<probdim>> polySpace_;
+      Teuchos::RCP<Core::FE::PolynomialSpace<probdim>> polySpace_;
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

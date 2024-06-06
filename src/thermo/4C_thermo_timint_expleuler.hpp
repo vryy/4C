@@ -43,9 +43,9 @@ namespace THR
     TimIntExplEuler(const Teuchos::ParameterList& ioparams,  //!< ioflags
         const Teuchos::ParameterList& tdynparams,            //!< input parameters
         const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
-        Teuchos::RCP<CORE::LINALG::Solver> solver,           //!< the solver
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
+        Teuchos::RCP<Discret::Discretization> actdis,        //!< current discretisation
+        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
@@ -83,7 +83,7 @@ namespace THR
     //@{
 
     //! Return time integrator name
-    enum INPAR::THR::DynamicType MethodName() const override { return INPAR::THR::dyna_expleuler; }
+    enum Inpar::THR::DynamicType MethodName() const override { return Inpar::THR::dyna_expleuler; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
@@ -118,7 +118,7 @@ namespace THR
     void ReadRestartForce() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) override;
+    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
 
     //@}
 

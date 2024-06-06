@@ -22,7 +22,7 @@ approach)
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::PAR::MuscleWeickenmeier::MuscleWeickenmeier(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::MuscleWeickenmeier::MuscleWeickenmeier(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       alpha_(matdata->Get<double>("ALPHA")),
       beta_(matdata->Get<double>("BETA")),
@@ -97,38 +97,38 @@ MAT::PAR::MuscleWeickenmeier::MuscleWeickenmeier(Teuchos::RCP<CORE::MAT::PAR::Ma
   if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::MuscleWeickenmeier::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleWeickenmeier::create_material()
 {
-  return Teuchos::rcp(new MAT::MuscleWeickenmeier(this));
+  return Teuchos::rcp(new Mat::MuscleWeickenmeier(this));
 }
 
-MAT::MuscleWeickenmeierType MAT::MuscleWeickenmeierType::instance_;
+Mat::MuscleWeickenmeierType Mat::MuscleWeickenmeierType::instance_;
 
-CORE::COMM::ParObject* MAT::MuscleWeickenmeierType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::MuscleWeickenmeierType::Create(const std::vector<char>& data)
 {
-  auto* muscle_weickenmeier = new MAT::MuscleWeickenmeier();
+  auto* muscle_weickenmeier = new Mat::MuscleWeickenmeier();
   muscle_weickenmeier->Unpack(data);
   return muscle_weickenmeier;
 }
 
-MAT::MuscleWeickenmeier::MuscleWeickenmeier()
+Mat::MuscleWeickenmeier::MuscleWeickenmeier()
     : params_(nullptr),
       lambda_m_old_(1.0),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
-              new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
+          Teuchos::rcp<Mat::Elastic::StructuralTensorStrategyBase>(
+              new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {
 }
 
-MAT::MuscleWeickenmeier::MuscleWeickenmeier(MAT::PAR::MuscleWeickenmeier* params)
+Mat::MuscleWeickenmeier::MuscleWeickenmeier(Mat::PAR::MuscleWeickenmeier* params)
     : params_(params),
       lambda_m_old_(1.0),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
-              new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
+          Teuchos::rcp<Mat::Elastic::StructuralTensorStrategyBase>(
+              new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {
   // initialize lambdaMOld_
@@ -139,13 +139,13 @@ MAT::MuscleWeickenmeier::MuscleWeickenmeier(MAT::PAR::MuscleWeickenmeier* params
 
   // initialize fiber directions and structural tensor
   anisotropy_extension_.register_needed_tensors(
-      MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
-      MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
+      Mat::FiberAnisotropyExtension<1>::FIBER_VECTORS |
+      Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void MAT::MuscleWeickenmeier::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::MuscleWeickenmeier::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -162,11 +162,11 @@ void MAT::MuscleWeickenmeier::Pack(CORE::COMM::PackBuffer& data) const
   anisotropy_extension_.PackAnisotropy(data);
 }
 
-void MAT::MuscleWeickenmeier::Unpack(const std::vector<char>& data)
+void Mat::MuscleWeickenmeier::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // make sure we have a pristine material
   params_ = nullptr;
@@ -175,15 +175,15 @@ void MAT::MuscleWeickenmeier::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
 
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::MuscleWeickenmeier*>(mat);
+        params_ = static_cast<Mat::PAR::MuscleWeickenmeier*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -198,35 +198,35 @@ void MAT::MuscleWeickenmeier::Unpack(const std::vector<char>& data)
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
-void MAT::MuscleWeickenmeier::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::MuscleWeickenmeier::Setup(int numgp, Input::LineDefinition* linedef)
 {
   // Read anisotropy
   anisotropy_.set_number_of_gauss_points(numgp);
   anisotropy_.read_anisotropy_from_element(linedef);
 }
 
-void MAT::MuscleWeickenmeier::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
+void Mat::MuscleWeickenmeier::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
     Teuchos::ParameterList& params, int const eleGID)
 {
   // compute the current fibre stretch using the deformation gradient and the structural tensor
   // right Cauchy Green tensor C= F^T F
-  CORE::LINALG::Matrix<3, 3> C(false);
+  Core::LinAlg::Matrix<3, 3> C(false);
   C.MultiplyTN(defgrd, defgrd);
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  const CORE::LINALG::Matrix<3, 3>& M = anisotropy_extension_.GetStructuralTensor(gp, 0);
+  const Core::LinAlg::Matrix<3, 3>& M = anisotropy_extension_.GetStructuralTensor(gp, 0);
 
   // save the current fibre stretch in lambdaMOld_
-  lambda_m_old_ = MAT::UTILS::MUSCLE::FiberStretch(C, M);
+  lambda_m_old_ = Mat::UTILS::Muscle::FiberStretch(C, M);
 }
 
-void MAT::MuscleWeickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::MuscleWeickenmeier::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
-  CORE::LINALG::Matrix<6, 1> Sc_stress(true);
-  CORE::LINALG::Matrix<6, 6> ccmat(true);
+  Core::LinAlg::Matrix<6, 1> Sc_stress(true);
+  Core::LinAlg::Matrix<6, 6> ccmat(true);
 
   // get passive material parameters
   const double alpha = params_->alpha_;
@@ -237,40 +237,40 @@ void MAT::MuscleWeickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // compute matrices
   // right Cauchy Green tensor C
-  CORE::LINALG::Matrix<3, 3> C(false);                   // matrix notation
+  Core::LinAlg::Matrix<3, 3> C(false);                   // matrix notation
   C.MultiplyTN(*defgrd, *defgrd);                        // C = F^T F
-  CORE::LINALG::Matrix<6, 1> Cv(false);                  // Voigt notation
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(C, Cv);  // Cv
+  Core::LinAlg::Matrix<6, 1> Cv(false);                  // Voigt notation
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(C, Cv);  // Cv
 
   // inverse right Cauchy Green tensor C^-1
-  CORE::LINALG::Matrix<3, 3> invC(false);                      // matrix notation
+  Core::LinAlg::Matrix<3, 3> invC(false);                      // matrix notation
   invC.Invert(C);                                              // invC = C^-1
-  CORE::LINALG::Matrix<6, 1> invCv(false);                     // Voigt notation
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(invC, invCv);  // invCv
+  Core::LinAlg::Matrix<6, 1> invCv(false);                     // Voigt notation
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(invC, invCv);  // invCv
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  CORE::LINALG::Matrix<3, 3> M = anisotropy_extension_.GetStructuralTensor(gp, 0);
-  CORE::LINALG::Matrix<6, 1> Mv(false);                  // Voigt notation
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(M, Mv);  // Mv
+  Core::LinAlg::Matrix<3, 3> M = anisotropy_extension_.GetStructuralTensor(gp, 0);
+  Core::LinAlg::Matrix<6, 1> Mv(false);                  // Voigt notation
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(M, Mv);  // Mv
 
   // structural tensor L = omega0/3*Identity + omegap*M
-  CORE::LINALG::Matrix<3, 3> L(M);
+  Core::LinAlg::Matrix<3, 3> L(M);
   L.Scale(1.0 - omega0);  // omegap*M
   for (unsigned i = 0; i < 3; ++i) L(i, i) += omega0 / 3.0;
 
   // product invC*L
-  CORE::LINALG::Matrix<3, 3> invCL(false);
+  Core::LinAlg::Matrix<3, 3> invCL(false);
   invCL.MultiplyNN(invC, L);
 
   // product invC*L*invC
-  CORE::LINALG::Matrix<3, 3> invCLinvC(false);  // matrix notation
+  Core::LinAlg::Matrix<3, 3> invCLinvC(false);  // matrix notation
   invCLinvC.MultiplyNN(invCL, invC);
-  CORE::LINALG::Matrix<6, 1> invCLinvCv(false);  // Voigt notation
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(invCLinvC, invCLinvCv);
+  Core::LinAlg::Matrix<6, 1> invCLinvCv(false);  // Voigt notation
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(invCLinvC, invCLinvCv);
 
   // stretch in fibre direction lambdaM
   // lambdaM = sqrt(C:M) = sqrt(tr(C^T M)), see Holzapfel2000, p.14
-  double lambdaM = MAT::UTILS::MUSCLE::FiberStretch(C, M);
+  double lambdaM = Mat::UTILS::Muscle::FiberStretch(C, M);
 
   // computation of active nominal stress Pa, and derivative derivPa
   double Pa = 0.0;
@@ -291,26 +291,26 @@ void MAT::MuscleWeickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     evaluate_activation_level(lambdaM, Pa, derivPa, omegaa, derivOmegaa);
   }
   // compute derivative \frac{\partial omegaa}{\partial C} in Voigt notation
-  CORE::LINALG::Matrix<6, 1> domegaadCv(Mv);
+  Core::LinAlg::Matrix<6, 1> domegaadCv(Mv);
   domegaadCv.Scale(derivOmegaa * 0.5 / lambdaM);
 
   // compute helper matrices for further calculation
-  CORE::LINALG::Matrix<3, 3> LomegaaM(L);
+  Core::LinAlg::Matrix<3, 3> LomegaaM(L);
   LomegaaM.Update(omegaa, M, 1.0);  // LomegaaM = L + omegaa*M
-  CORE::LINALG::Matrix<6, 1> LomegaaMv(false);
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(LomegaaM, LomegaaMv);
+  Core::LinAlg::Matrix<6, 1> LomegaaMv(false);
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(LomegaaM, LomegaaMv);
 
-  CORE::LINALG::Matrix<3, 3> LfacomegaaM(L);  // LfacomegaaM = L + fac*M
+  Core::LinAlg::Matrix<3, 3> LfacomegaaM(L);  // LfacomegaaM = L + fac*M
   LfacomegaaM.Update(
       (1.0 + omegaa * alpha * std::pow(lambdaM, 2.)) / (alpha * std::pow(lambdaM, 2.)), M,
       1.0);  // + fac*M
-  CORE::LINALG::Matrix<6, 1> LfacomegaaMv(false);
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(LfacomegaaM, LfacomegaaMv);
+  Core::LinAlg::Matrix<6, 1> LfacomegaaMv(false);
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(LfacomegaaM, LfacomegaaMv);
 
-  CORE::LINALG::Matrix<3, 3> transpCLomegaaM(false);
+  Core::LinAlg::Matrix<3, 3> transpCLomegaaM(false);
   transpCLomegaaM.MultiplyTN(1.0, C, LomegaaM);  // C^T*(L+omegaa*M)
-  CORE::LINALG::Matrix<6, 1> transpCLomegaaMv(false);
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(transpCLomegaaM, transpCLomegaaMv);
+  Core::LinAlg::Matrix<6, 1> transpCLomegaaMv(false);
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(transpCLomegaaM, transpCLomegaaMv);
 
   // generalized invariants including active material properties
   double detC = C.Determinant();  // detC = det(C)
@@ -323,12 +323,12 @@ void MAT::MuscleWeickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   double expbeta = std::exp(beta * (J - 1.0));
 
   // compute second Piola-Kirchhoff stress
-  CORE::LINALG::Matrix<3, 3> stressM(false);
+  Core::LinAlg::Matrix<3, 3> stressM(false);
   stressM.Update(expalpha, LomegaaM, 0.0);  // add contributions
   stressM.Update(-expbeta * detC, invCLinvC, 1.0);
   stressM.Update(J * expbeta - std::pow(detC, -kappa), invC, 1.0);
   stressM.Scale(0.5 * gamma);
-  CORE::LINALG::VOIGT::Stresses::MatrixToVector(
+  Core::LinAlg::Voigt::Stresses::MatrixToVector(
       stressM, Sc_stress);  // convert to Voigt notation and update stress
 
   // compute cmat
@@ -340,9 +340,9 @@ void MAT::MuscleWeickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   ccmat.MultiplyNT(
       (beta * J + 1.) * J * expbeta + kappa * std::pow(detC, -kappa), invCv, invCv, 1.0);
   // adds scalar * (invC boeppel invC) to cmat, see Holzapfel2000, p. 254
-  MAT::AddtoCmatHolzapfelProduct(ccmat, invCv, -(J * expbeta - std::pow(detC, -kappa)));
+  Mat::AddtoCmatHolzapfelProduct(ccmat, invCv, -(J * expbeta - std::pow(detC, -kappa)));
   // adds -expbeta*detC * dinvCLinvCdCv to cmats
-  MAT::AddDerivInvABInvBProduct(-expbeta * detC, invCv, invCLinvCv, ccmat);
+  Mat::AddDerivInvABInvBProduct(-expbeta * detC, invCv, invCLinvCv, ccmat);
   ccmat.Scale(gamma);
 
   // update stress and material tangent with the computed stress and cmat values
@@ -350,7 +350,7 @@ void MAT::MuscleWeickenmeier::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   cmat->Update(1.0, ccmat, 1.0);
 }
 
-void MAT::MuscleWeickenmeier::evaluate_active_nominal_stress(
+void Mat::MuscleWeickenmeier::evaluate_active_nominal_stress(
     Teuchos::ParameterList& params, const double lambdaM, double& Pa, double& derivPa)
 {
   // save current simulation time
@@ -392,15 +392,15 @@ void MAT::MuscleWeickenmeier::evaluate_active_nominal_stress(
   const auto& actValues = params_->actValues_;
 
   // compute force-time/stimulation frequency dependency Poptft
-  double Poptft = MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressEhret(
+  double Poptft = Mat::UTILS::Muscle::EvaluateTimeDependentActiveStressEhret(
       Na, muTypesNum, rho, I, F, T, actIntervalsNum, actTimes, actValues, t_tot);
 
   // compute force-stretch dependency fxi
   double fxi =
-      MAT::UTILS::MUSCLE::EvaluateForceStretchDependencyEhret(lambdaM, lambdaMin, lambdaOpt);
+      Mat::UTILS::Muscle::EvaluateForceStretchDependencyEhret(lambdaM, lambdaMin, lambdaOpt);
 
   // compute force-velocity dependency fv
-  double fv = MAT::UTILS::MUSCLE::EvaluateForceVelocityDependencyBoel(
+  double fv = Mat::UTILS::Muscle::EvaluateForceVelocityDependencyBoel(
       dotLambdaM, dotLambdaMMin, de, dc, ke, kc);
 
   // compute active nominal stress Pa
@@ -412,9 +412,9 @@ void MAT::MuscleWeickenmeier::evaluate_active_nominal_stress(
   double dFvdLambdaM = 0.0;
   if (Pa != 0)
   {
-    dFxidLamdaM = MAT::UTILS::MUSCLE::EvaluateDerivativeForceStretchDependencyEhret(
+    dFxidLamdaM = Mat::UTILS::Muscle::EvaluateDerivativeForceStretchDependencyEhret(
         lambdaM, lambdaMin, lambdaOpt);
-    dFvdLambdaM = MAT::UTILS::MUSCLE::EvaluateDerivativeForceVelocityDependencyBoel(
+    dFvdLambdaM = Mat::UTILS::Muscle::EvaluateDerivativeForceVelocityDependencyBoel(
         dotLambdaM, dDotLambdaMdLambdaM, dotLambdaMMin, de, dc, ke, kc);
   }
 
@@ -422,7 +422,7 @@ void MAT::MuscleWeickenmeier::evaluate_active_nominal_stress(
   derivPa = Poptft * (fv * dFxidLamdaM + fxi * dFvdLambdaM);
 }
 
-void MAT::MuscleWeickenmeier::evaluate_activation_level(const double lambdaM, const double Pa,
+void Mat::MuscleWeickenmeier::evaluate_activation_level(const double lambdaM, const double Pa,
     const double derivPa, double& omegaa, double& derivOmegaa)
 {
   // get passive material parameters
@@ -447,7 +447,7 @@ void MAT::MuscleWeickenmeier::evaluate_activation_level(const double lambdaM, co
   double W0 = 1.0;           // starting guess for solution
   const double tol = 1e-15;  // tolerance for numeric approximation 10^-15
   const int maxiter = 100;   // maximal number of iterations
-  MAT::UTILS::MUSCLE::EvaluateLambert(xi, W0, tol, maxiter);
+  Mat::UTILS::Muscle::EvaluateLambert(xi, W0, tol, maxiter);
 
   // derivatives of xi and W0 w.r.t. lambdaM used for activation level computation
   double derivXi =

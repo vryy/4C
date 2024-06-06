@@ -30,16 +30,16 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> CORE::REBALANCE::RebalanceNodeMaps(
+std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> Core::Rebalance::RebalanceNodeMaps(
     Teuchos::RCP<const Epetra_CrsGraph> initialGraph, const Teuchos::ParameterList& rebalanceParams,
     const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
     const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights,
     const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("REBALANCE::RebalanceNodeMaps");
+  TEUCHOS_FUNC_TIME_MONITOR("Rebalance::RebalanceNodeMaps");
 
   // Compute rebalanced graph
-  Teuchos::RCP<Epetra_CrsGraph> balanced_graph = REBALANCE::RebalanceGraph(*initialGraph,
+  Teuchos::RCP<Epetra_CrsGraph> balanced_graph = Rebalance::RebalanceGraph(*initialGraph,
       rebalanceParams, initialNodeWeights, initialEdgeWeights, initialNodeCoordinates);
 
   // extract repartitioned maps
@@ -55,13 +55,13 @@ std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> CORE::REBALANCE::R
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> CORE::REBALANCE::RebalanceGraph(const Epetra_CrsGraph& initialGraph,
+Teuchos::RCP<Epetra_CrsGraph> Core::Rebalance::RebalanceGraph(const Epetra_CrsGraph& initialGraph,
     const Teuchos::ParameterList& rebalanceParams,
     const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
     const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights,
     const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("REBALANCE::RebalanceGraph");
+  TEUCHOS_FUNC_TIME_MONITOR("Rebalance::RebalanceGraph");
 
   Isorropia::Epetra::CostDescriber costs = Isorropia::Epetra::CostDescriber();
   if (initialNodeWeights != Teuchos::null) costs.setVertexWeights(initialNodeWeights);
@@ -91,10 +91,10 @@ Teuchos::RCP<Epetra_CrsGraph> CORE::REBALANCE::RebalanceGraph(const Epetra_CrsGr
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_MultiVector>, Teuchos::RCP<Epetra_MultiVector>>
-CORE::REBALANCE::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
+Core::Rebalance::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
     const Teuchos::ParameterList& rebalanceParams, const Epetra_MultiVector& initialWeights)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("REBALANCE::RebalanceCoordinates");
+  TEUCHOS_FUNC_TIME_MONITOR("Rebalance::RebalanceCoordinates");
 
   Teuchos::RCP<Isorropia::Epetra::Partitioner> part = Teuchos::rcp(
       new Isorropia::Epetra::Partitioner(&initialCoordinates, &initialWeights, rebalanceParams));
@@ -107,19 +107,19 @@ CORE::REBALANCE::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinat
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>>
-CORE::REBALANCE::BuildWeights(const DRT::Discretization& dis)
+Core::Rebalance::BuildWeights(const Discret::Discretization& dis)
 {
   const Epetra_Map* noderowmap = dis.NodeRowMap();
 
   Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights =
       Teuchos::rcp(new Epetra_CrsMatrix(Copy, *noderowmap, 15));
-  Teuchos::RCP<Epetra_Vector> vweights = CORE::LINALG::CreateVector(*noderowmap, true);
+  Teuchos::RCP<Epetra_Vector> vweights = Core::LinAlg::CreateVector(*noderowmap, true);
 
   // loop all row elements and get their cost of evaluation
   for (int i = 0; i < dis.ElementRowMap()->NumMyElements(); ++i)
   {
-    CORE::Elements::Element* ele = dis.lRowElement(i);
-    CORE::Nodes::Node** nodes = ele->Nodes();
+    Core::Elements::Element* ele = dis.lRowElement(i);
+    Core::Nodes::Node** nodes = ele->Nodes();
     const int numnode = ele->num_node();
     std::vector<int> lm(numnode);
     std::vector<int> lmrowowner(numnode);
@@ -130,14 +130,14 @@ CORE::REBALANCE::BuildWeights(const DRT::Discretization& dis)
     }
 
     // element vector and matrix for weights of nodes and edges
-    CORE::LINALG::SerialDenseMatrix edgeweigths_ele;
-    CORE::LINALG::SerialDenseVector nodeweights_ele;
+    Core::LinAlg::SerialDenseMatrix edgeweigths_ele;
+    Core::LinAlg::SerialDenseVector nodeweights_ele;
 
     // evaluate elements to get their evaluation cost
     ele->NodalConnectivity(edgeweigths_ele, nodeweights_ele);
 
-    CORE::LINALG::Assemble(*crs_ge_weights, edgeweigths_ele, lm, lmrowowner, lm);
-    CORE::LINALG::Assemble(*vweights, nodeweights_ele, lm, lmrowowner);
+    Core::LinAlg::Assemble(*crs_ge_weights, edgeweigths_ele, lm, lmrowowner, lm);
+    Core::LinAlg::Assemble(*vweights, nodeweights_ele, lm, lmrowowner);
   }
 
   return {vweights, crs_ge_weights};
@@ -145,8 +145,8 @@ CORE::REBALANCE::BuildWeights(const DRT::Discretization& dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles)
+Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildGraph(
+    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles)
 {
   const int myrank = dis->Comm().MyPID();
   const int numproc = dis->Comm().NumProc();
@@ -155,7 +155,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
   std::set<int> mynodes;
   for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
   {
-    CORE::Elements::Element* ele = dis->gElement(roweles->GID(lid));
+    Core::Elements::Element* ele = dis->gElement(roweles->GID(lid));
     const int numnode = ele->num_node();
     const int* nodeids = ele->NodeIds();
     copy(nodeids, nodeids + numnode, inserter(mynodes, mynodes.begin()));
@@ -206,7 +206,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
   std::map<int, std::set<int>> remotes;
   for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
   {
-    CORE::Elements::Element* ele = dis->gElement(roweles->GID(lid));
+    Core::Elements::Element* ele = dis->gElement(roweles->GID(lid));
     const int numnode = ele->num_node();
     const int* nodeids = ele->NodeIds();
     for (int i = 0; i < numnode; ++i)
@@ -325,20 +325,20 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
-    const DRT::Discretization& dis, const CORE::GEOMETRICSEARCH::GeometricSearchParams& params)
+Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::BuildMonolithicNodeGraph(
+    const Discret::Discretization& dis, const Core::GeometricSearch::GeometricSearchParams& params)
 {
   // 1. Do a global geometric search
   Epetra_Vector zero_vector = Epetra_Vector(*(dis.DofColMap()), true);
 
-  std::vector<std::pair<int, CORE::GEOMETRICSEARCH::BoundingVolume>> bounding_boxes;
+  std::vector<std::pair<int, Core::GeometricSearch::BoundingVolume>> bounding_boxes;
   for (const auto* element : dis.MyRowElementRange())
   {
     bounding_boxes.emplace_back(
         std::make_pair(element->Id(), element->GetBoundingVolume(dis, zero_vector, params)));
   }
 
-  auto result = CORE::GEOMETRICSEARCH::GlobalCollisionSearch(
+  auto result = Core::GeometricSearch::GlobalCollisionSearch(
       bounding_boxes, bounding_boxes, dis.Comm(), params.verbosity_);
 
   // 2. Set up a multivector which will be populated with all ghosting information,
@@ -372,7 +372,7 @@ Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildMonolithicNodeGraph(
       -1, my_colliding_primitives_vec.size(), my_colliding_primitives_vec.data(), 0, dis.Comm());
   Epetra_MultiVector my_colliding_primitives_node_ids(
       my_colliding_primitives_map, n_nodes_per_element_max, false);
-  CORE::LINALG::Export(node_information, my_colliding_primitives_node_ids);
+  Core::LinAlg::Export(node_information, my_colliding_primitives_node_ids);
 
   // 4. Build and fill the graph with element internal connectivities
   auto my_graph = Teuchos::rcp(new Epetra_FECrsGraph(Copy, *(dis.NodeRowMap()), 40, false));

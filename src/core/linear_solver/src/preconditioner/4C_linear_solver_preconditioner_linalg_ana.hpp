@@ -24,9 +24,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
-  namespace ANA
+  namespace Ana
   {
     // forward declarations
     class LCSTimesVec;
@@ -60,7 +60,7 @@ namespace CORE::LINALG
       \param scale (in): a scaling factor for the linear combination
                          (usually -1.0 or 1.0, used for sign changes)
       */
-      virtual void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const = 0;
+      virtual void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const = 0;
 
       /*!
       \brief Perform " v = scale * " operation
@@ -69,7 +69,7 @@ namespace CORE::LINALG
       \param scale (in): a scaling factor for the linear combination (usually -1.0 or 1.0, used for
       sign changes)
       */
-      virtual void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const = 0;
+      virtual void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const = 0;
 
     };  // class LCBase
 
@@ -202,7 +202,7 @@ namespace CORE::LINALG
 
       double NormInf() const override { return op_.NormInf(); }
 
-      const char* Label() const override { return "CORE::LINALG::ANA::LightWeightOperator"; }
+      const char* Label() const override { return "Core::LinAlg::Ana::LightWeightOperator"; }
 
       bool UseTranspose() const override { return op_.UseTranspose(); }
 
@@ -276,7 +276,7 @@ namespace CORE::LINALG
         return out;
       }
 
-      const char* Label() const override { return "CORE::LINALG::ANA::OperatorTransposed"; }
+      const char* Label() const override { return "Core::LinAlg::Ana::OperatorTransposed"; }
 
       bool UseTranspose() const override { return (!op_->UseTranspose()); }
 
@@ -348,7 +348,7 @@ namespace CORE::LINALG
 
       double NormInf() const override { return scalar_ * op_->NormInf(); }
 
-      const char* Label() const override { return "CORE::LINALG::ANA::OperatorScaled"; }
+      const char* Label() const override { return "Core::LinAlg::Ana::OperatorScaled"; }
 
       bool UseTranspose() const override { return (op_->UseTranspose()); }
 
@@ -413,12 +413,12 @@ namespace CORE::LINALG
       double NormInf() const override
       {
         FOUR_C_THROW(
-            "CORE::LINALG::ANA::OperatorProduct does not implement "
+            "Core::LinAlg::Ana::OperatorProduct does not implement "
             "LightWeightOperatorBase::NormInf()");
         return -1.0;
       }
 
-      const char* Label() const override { return "CORE::LINALG::ANA::OperatorProduct"; }
+      const char* Label() const override { return "Core::LinAlg::Ana::OperatorProduct"; }
 
       bool UseTranspose() const override { return usetransposed_; }
 
@@ -497,7 +497,7 @@ namespace CORE::LINALG
       int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
       {
         FOUR_C_THROW(
-            "CORE::LINALG::ANA::OperatorSum does not implement "
+            "Core::LinAlg::Ana::OperatorSum does not implement "
             "LightWeightOperatorBase::ApplyInverse");
         return -1;
       }
@@ -505,11 +505,11 @@ namespace CORE::LINALG
       double NormInf() const override
       {
         FOUR_C_THROW(
-            "CORE::LINALG::ANA::OperatorSum does not implement LightWeightOperatorBase::NormInf()");
+            "Core::LinAlg::Ana::OperatorSum does not implement LightWeightOperatorBase::NormInf()");
         return -1.0;
       }
 
-      const char* Label() const override { return "CORE::LINALG::ANA::OperatorSum"; }
+      const char* Label() const override { return "Core::LinAlg::Ana::OperatorSum"; }
 
       bool UseTranspose() const override { return usetransposed_; }
 
@@ -549,27 +549,27 @@ namespace CORE::LINALG
     \brief A lightweight wrapper implementing an implicit inverse of a LightWeightOperatorBase
 
     A supplied solver can be used to implement the inverse. If no solver is supplied, this operator
-    uses a CORE::LINALG::Solver with no parameter list that defaults to Amesos_KLU.
+    uses a Core::LinAlg::Solver with no parameter list that defaults to Amesos_KLU.
 
     \note Intentionally this class does NOT implement Epetra_Operator though it has all methods
           an Epetra_Operator has as well.
 
-     \sa LightWeightOperatorBase, CORE::LINALG::ANA::inverse
+     \sa LightWeightOperatorBase, Core::LinAlg::Ana::inverse
 
     */
     class OperatorInverse : public LightWeightOperatorBase
     {
      public:
-      OperatorInverse(const Epetra_Operator& op, CORE::LINALG::Solver& solver, bool reset = true)
+      OperatorInverse(const Epetra_Operator& op, Core::LinAlg::Solver& solver, bool reset = true)
           : reset_(reset), solver_(solver), op_(op)
       {
       }
 
       OperatorInverse(
-          const CORE::LINALG::SparseOperator& op, CORE::LINALG::Solver& solver, bool reset = true)
+          const Core::LinAlg::SparseOperator& op, Core::LinAlg::Solver& solver, bool reset = true)
           : reset_(reset),
             solver_(solver),
-            op_(*(const_cast<CORE::LINALG::SparseOperator&>(op).EpetraOperator()))
+            op_(*(const_cast<Core::LinAlg::SparseOperator&>(op).EpetraOperator()))
       {
       }
 
@@ -579,27 +579,27 @@ namespace CORE::LINALG
                 [&]()
                 {
                   Teuchos::ParameterList solvparams;
-                  CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
-                      "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
-                  return Teuchos::rcp(new CORE::LINALG::Solver(solvparams, op.Comm()));
+                  Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+                      "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
+                  return Teuchos::rcp(new Core::LinAlg::Solver(solvparams, op.Comm()));
                 })),
             solver_(*defaultsolver_),
             op_(op)
       {
       }
 
-      OperatorInverse(const CORE::LINALG::SparseOperator& op)
+      OperatorInverse(const Core::LinAlg::SparseOperator& op)
           : reset_(true),
             defaultsolver_(std::invoke(
                 [&]()
                 {
                   Teuchos::ParameterList solvparams;
-                  CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>(
-                      "SOLVER", CORE::LINEAR_SOLVER::SolverType::umfpack, solvparams);
-                  return Teuchos::rcp(new CORE::LINALG::Solver(solvparams, op.Comm()));
+                  Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>(
+                      "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
+                  return Teuchos::rcp(new Core::LinAlg::Solver(solvparams, op.Comm()));
                 })),
             solver_(*defaultsolver_),
-            op_(*(const_cast<CORE::LINALG::SparseOperator&>(op).EpetraOperator()))
+            op_(*(const_cast<Core::LinAlg::SparseOperator&>(op).EpetraOperator()))
       {
       }
 
@@ -620,7 +620,7 @@ namespace CORE::LINALG
 
       int SetUseTranspose(bool UseTranspose) override
       {
-        FOUR_C_THROW("CORE::LINALG::ANA::OperatorInverse does not support transpose");
+        FOUR_C_THROW("Core::LinAlg::Ana::OperatorInverse does not support transpose");
         return -1;
       }
 
@@ -629,7 +629,7 @@ namespace CORE::LINALG
       int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
       {
         FOUR_C_THROW(
-            "CORE::LINALG::ANA::OperatorInverse does not support inverse of inverse of underlying "
+            "Core::LinAlg::Ana::OperatorInverse does not support inverse of inverse of underlying "
             "operator, use Apply instead");
         return -1;
       }
@@ -637,11 +637,11 @@ namespace CORE::LINALG
       double NormInf() const override
       {
         FOUR_C_THROW(
-            "CORE::LINALG::ANA::OperatorInverse does not support NormInf of inverse of operator");
+            "Core::LinAlg::Ana::OperatorInverse does not support NormInf of inverse of operator");
         return -1.0;
       }
 
-      const char* Label() const override { return "CORE::LINALG::ANA::OperatorInverse"; }
+      const char* Label() const override { return "Core::LinAlg::Ana::OperatorInverse"; }
 
       bool UseTranspose() const override { return false; }
 
@@ -661,8 +661,8 @@ namespace CORE::LINALG
 
      private:
       const bool reset_;
-      Teuchos::RCP<CORE::LINALG::Solver> defaultsolver_;
-      CORE::LINALG::Solver& solver_;
+      Teuchos::RCP<Core::LinAlg::Solver> defaultsolver_;
+      Core::LinAlg::Solver& solver_;
       const Epetra_Operator& op_;
 
     };  // class OperatorInverse
@@ -715,51 +715,51 @@ namespace CORE::LINALG
 
       \param rhs (in): Vector to init this vector with
       */
-      inline void operator=(const CORE::LINALG::ANA::Vector& rhs)
+      inline void operator=(const Core::LinAlg::Ana::Vector& rhs)
       {
 #if DEBUGGING_ANA
-        cout << "Vector::operator = (const CORE::LINALG::ANA::Vector& rhs)" << endl;
+        cout << "Vector::operator = (const Core::LinAlg::Ana::Vector& rhs)" << endl;
         fflush(stdout);
 #endif
         Update(1.0, rhs, 0.0);
       }
 
       /// Teuchos::RCP version of the above method
-      inline void operator=(const Teuchos::RCP<CORE::LINALG::ANA::Vector>& rhs) { *this = *rhs; }
+      inline void operator=(const Teuchos::RCP<Core::LinAlg::Ana::Vector>& rhs) { *this = *rhs; }
 
       /*!
       \brief Update this Vector with another Vector
 
       \param rhs (in): Vector to update this vector with
       */
-      inline void operator+=(const CORE::LINALG::ANA::Vector& rhs)
+      inline void operator+=(const Core::LinAlg::Ana::Vector& rhs)
       {
 #if DEBUGGING_ANA
-        cout << "Vector::operator += (const CORE::LINALG::ANA::Vector& rhs)" << endl;
+        cout << "Vector::operator += (const Core::LinAlg::Ana::Vector& rhs)" << endl;
         fflush(stdout);
 #endif
         Update(1.0, rhs, 1.0);
       }
 
       /// Teuchos::RCP version of the above method
-      inline void operator+=(const Teuchos::RCP<CORE::LINALG::ANA::Vector>& rhs) { *this += *rhs; }
+      inline void operator+=(const Teuchos::RCP<Core::LinAlg::Ana::Vector>& rhs) { *this += *rhs; }
 
       /*!
       \brief Update this Vector with negative of another Vector
 
       \param rhs (in): Vector to update this vector with
       */
-      inline void operator-=(const CORE::LINALG::ANA::Vector& rhs)
+      inline void operator-=(const Core::LinAlg::Ana::Vector& rhs)
       {
 #if DEBUGGING_ANA
-        cout << "Vector::operator -= (const CORE::LINALG::ANA::Vector& rhs)" << endl;
+        cout << "Vector::operator -= (const Core::LinAlg::Ana::Vector& rhs)" << endl;
         fflush(stdout);
 #endif
         Update(-1.0, rhs, 1.0);
       }
 
       /// Teuchos::RCP version of the above method
-      inline void operator-=(const Teuchos::RCP<CORE::LINALG::ANA::Vector>& rhs) { *this -= *rhs; }
+      inline void operator-=(const Teuchos::RCP<Core::LinAlg::Ana::Vector>& rhs) { *this -= *rhs; }
 
       /*!
       \brief Scale this Vector with a scalar
@@ -794,10 +794,10 @@ namespace CORE::LINALG
 
       \param rhs (in): Linear combination of which the result is put into this Vector
       */
-      inline void operator=(const CORE::LINALG::ANA::LCBase& rhs)
+      inline void operator=(const Core::LinAlg::Ana::LCBase& rhs)
       {
 #if DEBUGGING_ANA
-        cout << "Vector::operator = (const CORE::LINALG::ANA::LCBase& rhs)" << endl;
+        cout << "Vector::operator = (const Core::LinAlg::Ana::LCBase& rhs)" << endl;
         fflush(stdout);
 #endif
         rhs.Set(*this, 1.0);
@@ -808,10 +808,10 @@ namespace CORE::LINALG
 
       \param rhs (in): Linear combination of which the result is used to update this Vector
       */
-      inline void operator+=(const CORE::LINALG::ANA::LCBase& rhs)
+      inline void operator+=(const Core::LinAlg::Ana::LCBase& rhs)
       {
 #if DEBUGGING_ANA
-        cout << "Vector::operator += (CORE::LINALG::ANA::LCBase& rhs)" << endl;
+        cout << "Vector::operator += (Core::LinAlg::Ana::LCBase& rhs)" << endl;
         fflush(stdout);
 #endif
         rhs.Update(*this, 1.0);
@@ -823,10 +823,10 @@ namespace CORE::LINALG
       \param rhs (in): Linear combination of which the result is used to negatively update this
       Vector
       */
-      inline void operator-=(const CORE::LINALG::ANA::LCBase& rhs)
+      inline void operator-=(const Core::LinAlg::Ana::LCBase& rhs)
       {
 #if DEBUGGING_ANA
-        cout << "Vector::operator -= (CORE::LINALG::ANA::LCBase& rhs)" << endl;
+        cout << "Vector::operator -= (Core::LinAlg::Ana::LCBase& rhs)" << endl;
         fflush(stdout);
 #endif
         rhs.Update(*this, -1.0);
@@ -867,13 +867,13 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         left_.Update(v, scale);
         right_.Update(v, scale);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         left_.Set(v, scale);
         right_.Update(v, scale);
@@ -916,13 +916,13 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         left_.Update(v, scale);
         right_.Update(v, -scale);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         left_.Set(v, scale);
         right_.Update(v, -scale);
@@ -945,11 +945,11 @@ namespace CORE::LINALG
     class LcVecPlusLc : public LCBase
     {
      public:
-      LcVecPlusLc(const CORE::LINALG::ANA::Vector& vec, const LCBase& right)
+      LcVecPlusLc(const Core::LinAlg::Ana::Vector& vec, const LCBase& right)
           : LCBase(), vec_(vec), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_vec_plus_lc(const CORE::LINALG::ANA::Vector& vec, const LCBase& right)" << endl;
+        cout << "LC_vec_plus_lc(const Core::LinAlg::Ana::Vector& vec, const LCBase& right)" << endl;
         fflush(stdout);
 #endif
       }
@@ -965,20 +965,20 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, 1.0);
         right_.Update(v, scale);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, 0.0);
         right_.Update(v, scale);
       }
 
      private:
-      const CORE::LINALG::ANA::Vector& vec_;
+      const Core::LinAlg::Ana::Vector& vec_;
       const LCBase& right_;
 
     };  // class LC_vec_plus_lc
@@ -994,11 +994,11 @@ namespace CORE::LINALG
     class LcVecMinusLc : public LCBase
     {
      public:
-      LcVecMinusLc(const CORE::LINALG::ANA::Vector& vec, const LCBase& right)
+      LcVecMinusLc(const Core::LinAlg::Ana::Vector& vec, const LCBase& right)
           : LCBase(), vec_(vec), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_vec_minus_lc(const CORE::LINALG::ANA::Vector& vec, const LCBase& right)"
+        cout << "LC_vec_minus_lc(const Core::LinAlg::Ana::Vector& vec, const LCBase& right)"
              << endl;
         fflush(stdout);
 #endif
@@ -1015,20 +1015,20 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, 1.0);
         right_.Update(v, -scale);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, 0.0);
         right_.Update(v, -scale);
       }
 
      private:
-      const CORE::LINALG::ANA::Vector& vec_;
+      const Core::LinAlg::Ana::Vector& vec_;
       const LCBase& right_;
 
     };  // class LC_vec_minus_lc
@@ -1044,11 +1044,11 @@ namespace CORE::LINALG
     class LcLcMinusVec : public LCBase
     {
      public:
-      LcLcMinusVec(const LCBase& left, const CORE::LINALG::ANA::Vector& vec)
+      LcLcMinusVec(const LCBase& left, const Core::LinAlg::Ana::Vector& vec)
           : LCBase(), vec_(vec), left_(left)
       {
 #if DEBUGGING_ANA
-        cout << "LC_lc_minus_vec(const LCBase& left, const CORE::LINALG::ANA::Vector& vec)" << endl;
+        cout << "LC_lc_minus_vec(const LCBase& left, const Core::LinAlg::Ana::Vector& vec)" << endl;
         fflush(stdout);
 #endif
       }
@@ -1064,20 +1064,20 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         left_.Update(v, scale);
         v.Update(-scale, vec_, 1.0);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         left_.Set(v, scale);
         v.Update(-scale, vec_, 1.0);
       }
 
      private:
-      const CORE::LINALG::ANA::Vector& vec_;
+      const Core::LinAlg::Ana::Vector& vec_;
       const LCBase& left_;
 
     };  // class LC_lc_minus_vec
@@ -1093,11 +1093,11 @@ namespace CORE::LINALG
     class LCSTimesVec : public LCBase
     {
      public:
-      LCSTimesVec(const double scalar, const CORE::LINALG::ANA::Vector& vec)
+      LCSTimesVec(const double scalar, const Core::LinAlg::Ana::Vector& vec)
           : LCBase(), scalar_(scalar), vec_(vec)
       {
 #if DEBUGGING_ANA
-        cout << "LCSTimesVec(const double scalar, const CORE::LINALG::ANA::Vector& vec)" << endl;
+        cout << "LCSTimesVec(const double scalar, const Core::LinAlg::Ana::Vector& vec)" << endl;
         fflush(stdout);
 #endif
       }
@@ -1113,12 +1113,12 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale * scalar_, vec_, 1.0);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale * scalar_, vec_, 0.0);
       }
@@ -1126,11 +1126,11 @@ namespace CORE::LINALG
       // give access to the scalar (for specialization LCs)
       inline const double& Scalar() const { return scalar_; }
       // give access to the vector (for specialization LCs)
-      inline const CORE::LINALG::ANA::Vector& Vector() const { return vec_; }
+      inline const Core::LinAlg::Ana::Vector& Vector() const { return vec_; }
 
      private:
       const double scalar_;
-      const CORE::LINALG::ANA::Vector& vec_;
+      const Core::LinAlg::Ana::Vector& vec_;
 
     };  // class LCSTimesVec
 
@@ -1145,11 +1145,11 @@ namespace CORE::LINALG
     class LcSTimesLc : public LCBase
     {
      public:
-      LcSTimesLc(const double scalar, const CORE::LINALG::ANA::LCBase& right)
+      LcSTimesLc(const double scalar, const Core::LinAlg::Ana::LCBase& right)
           : LCBase(), scalar_(scalar), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_s_times_lc(const double scalar, const CORE::LINALG::ANA::LCBase& right)"
+        cout << "LC_s_times_lc(const double scalar, const Core::LinAlg::Ana::LCBase& right)"
              << endl;
         fflush(stdout);
 #endif
@@ -1166,19 +1166,19 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return right_.RangeMap(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         right_.Update(v, scale * scalar_);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         right_.Set(v, scale * scalar_);
       }
 
      private:
       const double scalar_;
-      const CORE::LINALG::ANA::LCBase& right_;
+      const Core::LinAlg::Ana::LCBase& right_;
 
     };  // class LC_s_times_lc
 
@@ -1215,13 +1215,13 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(
             scale * left_.Scalar(), left_.Vector(), scale * right_.Scalar(), right_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(
             scale * left_.Scalar(), left_.Vector(), scale * right_.Scalar(), right_.Vector(), 0.0);
@@ -1246,11 +1246,11 @@ namespace CORE::LINALG
     class LcVecPlusLcsv : public LCBase
     {
      public:
-      LcVecPlusLcsv(const CORE::LINALG::ANA::Vector& vec, const LCSTimesVec& right)
+      LcVecPlusLcsv(const Core::LinAlg::Ana::Vector& vec, const LCSTimesVec& right)
           : LCBase(), vec_(vec), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_vec_plus_lcsv(const CORE::LINALG::ANA::Vector& vec, const LCSTimesVec& right)"
+        cout << "LC_vec_plus_lcsv(const Core::LinAlg::Ana::Vector& vec, const LCSTimesVec& right)"
              << endl;
         fflush(stdout);
 #endif
@@ -1267,18 +1267,18 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, scale * right_.Scalar(), right_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, scale * right_.Scalar(), right_.Vector(), 0.0);
       }
 
      private:
-      const CORE::LINALG::ANA::Vector& vec_;
+      const Core::LinAlg::Ana::Vector& vec_;
       const LCSTimesVec right_;
 
     };  // class LC_vec_plus_lcsv
@@ -1315,13 +1315,13 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(
             scale * left_.Scalar(), left_.Vector(), -scale * right_.Scalar(), right_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(
             scale * left_.Scalar(), left_.Vector(), -scale * right_.Scalar(), right_.Vector(), 0.0);
@@ -1345,11 +1345,11 @@ namespace CORE::LINALG
     class LcVecMinusLcsv : public LCBase
     {
      public:
-      LcVecMinusLcsv(const CORE::LINALG::ANA::Vector& vec, const LCSTimesVec& right)
+      LcVecMinusLcsv(const Core::LinAlg::Ana::Vector& vec, const LCSTimesVec& right)
           : LCBase(), vec_(vec), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_vec_minus_lcsv(const CORE::LINALG::ANA::Vector& vec, const LCSTimesVec& "
+        cout << "LC_vec_minus_lcsv(const Core::LinAlg::Ana::Vector& vec, const LCSTimesVec& "
                 "right)"
              << endl;
         fflush(stdout);
@@ -1367,18 +1367,18 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, -scale * right_.Scalar(), right_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(scale, vec_, -scale * right_.Scalar(), right_.Vector(), 0.0);
       }
 
      private:
-      const CORE::LINALG::ANA::Vector& vec_;
+      const Core::LinAlg::Ana::Vector& vec_;
       const LCSTimesVec right_;
 
     };  // class LC_vec_minus_lcsv
@@ -1395,11 +1395,11 @@ namespace CORE::LINALG
     class LcLcsvMinusVec : public LCBase
     {
      public:
-      LcLcsvMinusVec(const LCSTimesVec& left, const CORE::LINALG::ANA::Vector& vec)
+      LcLcsvMinusVec(const LCSTimesVec& left, const Core::LinAlg::Ana::Vector& vec)
           : LCBase(), vec_(vec), left_(left)
       {
 #if DEBUGGING_ANA
-        cout << "LC_lcsv_minus_vec(const LCSTimesVec& left, const CORE::LINALG::ANA::Vector& vec)"
+        cout << "LC_lcsv_minus_vec(const LCSTimesVec& left, const Core::LinAlg::Ana::Vector& vec)"
              << endl;
         fflush(stdout);
 #endif
@@ -1416,18 +1416,18 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(-scale, vec_, scale * left_.Scalar(), left_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Update(-scale, vec_, scale * left_.Scalar(), left_.Vector(), 0.0);
       }
 
      private:
-      const CORE::LINALG::ANA::Vector& vec_;
+      const Core::LinAlg::Ana::Vector& vec_;
       const LCSTimesVec left_;
 
     };  // class LC_lcsv_minus_vec
@@ -1447,12 +1447,12 @@ namespace CORE::LINALG
     {
      public:
       LcVecPointwiseVec(
-          const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::Vector& vec2)
+          const Core::LinAlg::Ana::Vector& vec1, const Core::LinAlg::Ana::Vector& vec2)
           : LCBase(), vec1_(vec1), vec2_(vec2)
       {
 #if DEBUGGING_ANA
-        cout << "LC_vec_pointwise_vec(const CORE::LINALG::ANA::Vector& vec1, const "
-                "CORE::LINALG::ANA::Vector& "
+        cout << "LC_vec_pointwise_vec(const Core::LinAlg::Ana::Vector& vec1, const "
+                "Core::LinAlg::Ana::Vector& "
                 "vec2)"
              << endl;
         fflush(stdout);
@@ -1470,19 +1470,19 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return vec1_.Map(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Multiply(scale, vec1_, vec2_, 1.0);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Multiply(scale, vec1_, vec2_, 0.0);
       }
 
      private:
-      const CORE::LINALG::ANA::Vector& vec1_;
-      const CORE::LINALG::ANA::Vector& vec2_;
+      const Core::LinAlg::Ana::Vector& vec1_;
+      const Core::LinAlg::Ana::Vector& vec2_;
 
     };  // class LC_vec_pointwise_vec
 
@@ -1499,12 +1499,12 @@ namespace CORE::LINALG
     class LcVecPointwiseLc : public LCBase
     {
      public:
-      LcVecPointwiseLc(const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCBase& right)
+      LcVecPointwiseLc(const Core::LinAlg::Ana::Vector& vec, const Core::LinAlg::Ana::LCBase& right)
           : LCBase(), vec_(vec), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_vec_pointwise_lc(const CORE::LINALG::ANA::Vector& vec1, const "
-                "CORE::LINALG::ANA::LCBase& "
+        cout << "LC_vec_pointwise_lc(const Core::LinAlg::Ana::Vector& vec1, const "
+                "Core::LinAlg::Ana::LCBase& "
                 "right)"
              << endl;
         fflush(stdout);
@@ -1522,17 +1522,17 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override;
+      void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         right_.Set(v, 1.0);
         v.Multiply(scale, vec_, v, 0.0);
       }
 
      private:
-      const CORE::LINALG::ANA::Vector& vec_;
-      const CORE::LINALG::ANA::LCBase& right_;
+      const Core::LinAlg::Ana::Vector& vec_;
+      const Core::LinAlg::Ana::LCBase& right_;
 
     };  // class LC_vec_pointwise_lc
 
@@ -1552,12 +1552,12 @@ namespace CORE::LINALG
     {
      public:
       LcVecPointwiseLcsv(
-          const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCSTimesVec& right)
+          const Core::LinAlg::Ana::Vector& vec, const Core::LinAlg::Ana::LCSTimesVec& right)
           : LCBase(), vec_(vec), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_vec_pointwise_lcsv(const CORE::LINALG::ANA::Vector& vec, const "
-                "CORE::LINALG::ANA::LCSTimesVec& right)"
+        cout << "LC_vec_pointwise_lcsv(const Core::LinAlg::Ana::Vector& vec, const "
+                "Core::LinAlg::Ana::LCSTimesVec& right)"
              << endl;
         fflush(stdout);
 #endif
@@ -1574,19 +1574,19 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return vec_.Map(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Multiply(scale * right_.Scalar(), vec_, right_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Multiply(scale * right_.Scalar(), vec_, right_.Vector(), 0.0);
       }
 
      private:
-      const CORE::LINALG::ANA::Vector& vec_;
-      const CORE::LINALG::ANA::LCSTimesVec right_;
+      const Core::LinAlg::Ana::Vector& vec_;
+      const Core::LinAlg::Ana::LCSTimesVec right_;
 
     };  // class LC_vec_pointwise_lc
 
@@ -1604,12 +1604,12 @@ namespace CORE::LINALG
     class LcLcPointwiseLc : public LCBase
     {
      public:
-      LcLcPointwiseLc(const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::LCBase& right)
+      LcLcPointwiseLc(const Core::LinAlg::Ana::LCBase& left, const Core::LinAlg::Ana::LCBase& right)
           : LCBase(), left_(left), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_lc_pointwise_lc(const CORE::LINALG::ANA::LCBase& left, const "
-                "CORE::LINALG::ANA::LCBase& "
+        cout << "LC_lc_pointwise_lc(const Core::LinAlg::Ana::LCBase& left, const "
+                "Core::LinAlg::Ana::LCBase& "
                 "right)"
              << endl;
         fflush(stdout);
@@ -1627,13 +1627,13 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
       // perform 'v +=' operations
-      void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override;
+      void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
       // perform 'v =' operations
-      void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override;
+      void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
 
      private:
-      const CORE::LINALG::ANA::LCBase& left_;
-      const CORE::LINALG::ANA::LCBase& right_;
+      const Core::LinAlg::Ana::LCBase& left_;
+      const Core::LinAlg::Ana::LCBase& right_;
 
     };  // class LC_vec_pointwise_lc
 
@@ -1652,12 +1652,12 @@ namespace CORE::LINALG
     {
      public:
       LcLcsvPointwiseLcsv(
-          const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::LCSTimesVec& right)
+          const Core::LinAlg::Ana::LCSTimesVec& left, const Core::LinAlg::Ana::LCSTimesVec& right)
           : LCBase(), left_(left), right_(right)
       {
 #if DEBUGGING_ANA
-        cout << "LC_lcsv_pointwise_lcsv(const CORE::LINALG::ANA::LCSTimesVec& left, const "
-                "CORE::LINALG::ANA::LCSTimesVec& right)"
+        cout << "LC_lcsv_pointwise_lcsv(const Core::LinAlg::Ana::LCSTimesVec& left, const "
+                "Core::LinAlg::Ana::LCSTimesVec& right)"
              << endl;
         fflush(stdout);
 #endif
@@ -1674,19 +1674,19 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return left_.RangeMap(); }
       // perform 'v +=' operations
-      inline void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Multiply(scale * left_.Scalar() * right_.Scalar(), left_.Vector(), right_.Vector(), 1.0);
       }
       // perform 'v =' operations
-      inline void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override
+      inline void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override
       {
         v.Multiply(scale * left_.Scalar() * right_.Scalar(), left_.Vector(), right_.Vector(), 0.0);
       }
 
      private:
-      const CORE::LINALG::ANA::LCSTimesVec left_;
-      const CORE::LINALG::ANA::LCSTimesVec right_;
+      const Core::LinAlg::Ana::LCSTimesVec left_;
+      const Core::LinAlg::Ana::LCSTimesVec right_;
 
     };  // class LC_lcsv_pointwise_lcsv
 
@@ -1703,12 +1703,12 @@ namespace CORE::LINALG
     {
      public:
       LcOperatorTimesLcsv(
-          const LightWeightOperatorBase& op, const CORE::LINALG::ANA::LCSTimesVec& right)
+          const LightWeightOperatorBase& op, const Core::LinAlg::Ana::LCSTimesVec& right)
           : LCBase(), op_(op.Clone()), right_(right)
       {
 #if DEBUGGING_ANA
         cout << "LC_Operator_times_lcsv(const LightWeightOperatorBase& op, const "
-                "CORE::LINALG::ANA::LCSTimesVec& right)"
+                "Core::LinAlg::Ana::LCSTimesVec& right)"
              << endl;
         fflush(stdout);
 #endif
@@ -1725,13 +1725,13 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return op_->OperatorRangeMap(); }
       // perform 'v +=' operations
-      void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override;
+      void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
       // perform 'v =' operations
-      void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override;
+      void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
 
      private:
       const Teuchos::RCP<LightWeightOperatorBase> op_;
-      const CORE::LINALG::ANA::LCSTimesVec right_;
+      const Core::LinAlg::Ana::LCSTimesVec right_;
 
     };  // class LC_Operator_times_lcsv
 
@@ -1747,12 +1747,12 @@ namespace CORE::LINALG
     class LcOperatorTimesLc : public LCBase
     {
      public:
-      LcOperatorTimesLc(const LightWeightOperatorBase& op, const CORE::LINALG::ANA::LCBase& right)
+      LcOperatorTimesLc(const LightWeightOperatorBase& op, const Core::LinAlg::Ana::LCBase& right)
           : LCBase(), op_(op.Clone()), right_(right)
       {
 #if DEBUGGING_ANA
         cout << "LC_Operator_times_lc(const LightWeightOperatorBase& op, const "
-                "CORE::LINALG::ANA::LCBase& right)"
+                "Core::LinAlg::Ana::LCBase& right)"
              << endl;
         fflush(stdout);
 #endif
@@ -1769,13 +1769,13 @@ namespace CORE::LINALG
       // return the range space of the result of the linear combination
       inline const Epetra_BlockMap& RangeMap() const override { return op_->OperatorRangeMap(); }
       // perform 'v +=' operations
-      void Update(CORE::LINALG::ANA::Vector& v, const double& scale) const override;
+      void Update(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
       // perform 'v =' operations
-      void Set(CORE::LINALG::ANA::Vector& v, const double& scale) const override;
+      void Set(Core::LinAlg::Ana::Vector& v, const double& scale) const override;
 
      private:
       const Teuchos::RCP<LightWeightOperatorBase> op_;
-      const CORE::LINALG::ANA::LCBase& right_;
+      const Core::LinAlg::Ana::LCBase& right_;
 
     };  // class LC_Operator_times_lc
 
@@ -1784,178 +1784,178 @@ namespace CORE::LINALG
     /*----------------------------------------------------------------------*
        static (local) little helper method wrapping an Epetra_Operator
      *----------------------------------------------------------------------*/
-    static inline CORE::LINALG::ANA::LightWeightOperator lw(const Epetra_Operator& op)
+    static inline Core::LinAlg::Ana::LightWeightOperator lw(const Epetra_Operator& op)
     {
-      return CORE::LINALG::ANA::LightWeightOperator(op);
+      return Core::LinAlg::Ana::LightWeightOperator(op);
     }
 
     /*----------------------------------------------------------------------*
        scalar, vector and LC operations
      *----------------------------------------------------------------------*/
-    inline CORE::LINALG::ANA::LCSTimesVec operator*(
-        const double& scalar, const CORE::LINALG::ANA::Vector& vec)
+    inline Core::LinAlg::Ana::LCSTimesVec operator*(
+        const double& scalar, const Core::LinAlg::Ana::Vector& vec)
     {
-      return CORE::LINALG::ANA::LCSTimesVec(scalar, vec);
+      return Core::LinAlg::Ana::LCSTimesVec(scalar, vec);
     }
-    inline CORE::LINALG::ANA::LCSTimesVec operator*(
-        const CORE::LINALG::ANA::Vector& vec, const double& scalar)
+    inline Core::LinAlg::Ana::LCSTimesVec operator*(
+        const Core::LinAlg::Ana::Vector& vec, const double& scalar)
     {
-      return CORE::LINALG::ANA::LCSTimesVec(scalar, vec);
+      return Core::LinAlg::Ana::LCSTimesVec(scalar, vec);
     }
-    inline CORE::LINALG::ANA::LCSTimesVec operator/(
-        const CORE::LINALG::ANA::Vector& vec, const double& scalar)
+    inline Core::LinAlg::Ana::LCSTimesVec operator/(
+        const Core::LinAlg::Ana::Vector& vec, const double& scalar)
     {
-      return CORE::LINALG::ANA::LCSTimesVec(1. / scalar, vec);
+      return Core::LinAlg::Ana::LCSTimesVec(1. / scalar, vec);
     }
-    inline CORE::LINALG::ANA::LcLcPlusLc operator+(
-        const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::LCBase& right)
+    inline Core::LinAlg::Ana::LcLcPlusLc operator+(
+        const Core::LinAlg::Ana::LCBase& left, const Core::LinAlg::Ana::LCBase& right)
     {
-      return CORE::LINALG::ANA::LcLcPlusLc(left, right);
+      return Core::LinAlg::Ana::LcLcPlusLc(left, right);
     }
-    inline CORE::LINALG::ANA::LcLcMinusLc operator-(
-        const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::LCBase& right)
+    inline Core::LinAlg::Ana::LcLcMinusLc operator-(
+        const Core::LinAlg::Ana::LCBase& left, const Core::LinAlg::Ana::LCBase& right)
     {
-      return CORE::LINALG::ANA::LcLcMinusLc(left, right);
+      return Core::LinAlg::Ana::LcLcMinusLc(left, right);
     }
-    inline CORE::LINALG::ANA::LcVecPlusLc operator+(
-        const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCBase& right)
+    inline Core::LinAlg::Ana::LcVecPlusLc operator+(
+        const Core::LinAlg::Ana::Vector& vec, const Core::LinAlg::Ana::LCBase& right)
     {
-      return CORE::LINALG::ANA::LcVecPlusLc(vec, right);
+      return Core::LinAlg::Ana::LcVecPlusLc(vec, right);
     }
-    inline CORE::LINALG::ANA::LcVecPlusLc operator+(
-        const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::Vector& vec)
+    inline Core::LinAlg::Ana::LcVecPlusLc operator+(
+        const Core::LinAlg::Ana::LCBase& left, const Core::LinAlg::Ana::Vector& vec)
     {
-      return CORE::LINALG::ANA::LcVecPlusLc(vec, left);
+      return Core::LinAlg::Ana::LcVecPlusLc(vec, left);
     }
-    inline CORE::LINALG::ANA::LcVecMinusLc operator-(
-        const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCBase& right)
+    inline Core::LinAlg::Ana::LcVecMinusLc operator-(
+        const Core::LinAlg::Ana::Vector& vec, const Core::LinAlg::Ana::LCBase& right)
     {
-      return CORE::LINALG::ANA::LcVecMinusLc(vec, right);
+      return Core::LinAlg::Ana::LcVecMinusLc(vec, right);
     }
-    inline CORE::LINALG::ANA::LcLcMinusVec operator-(
-        const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::Vector& vec)
+    inline Core::LinAlg::Ana::LcLcMinusVec operator-(
+        const Core::LinAlg::Ana::LCBase& left, const Core::LinAlg::Ana::Vector& vec)
     {
-      return CORE::LINALG::ANA::LcLcMinusVec(left, vec);
+      return Core::LinAlg::Ana::LcLcMinusVec(left, vec);
     }
-    inline CORE::LINALG::ANA::LcLcsvPlusLcsv operator+(
-        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::LCSTimesVec& right)
+    inline Core::LinAlg::Ana::LcLcsvPlusLcsv operator+(
+        const Core::LinAlg::Ana::LCSTimesVec& left, const Core::LinAlg::Ana::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LcLcsvPlusLcsv(left, right);
+      return Core::LinAlg::Ana::LcLcsvPlusLcsv(left, right);
     }
-    inline CORE::LINALG::ANA::LcLcsvMinusLcsv operator-(
-        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::LCSTimesVec& right)
+    inline Core::LinAlg::Ana::LcLcsvMinusLcsv operator-(
+        const Core::LinAlg::Ana::LCSTimesVec& left, const Core::LinAlg::Ana::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LcLcsvMinusLcsv(left, right);
+      return Core::LinAlg::Ana::LcLcsvMinusLcsv(left, right);
     }
-    inline CORE::LINALG::ANA::LcVecPlusLcsv operator+(
-        const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCSTimesVec& right)
+    inline Core::LinAlg::Ana::LcVecPlusLcsv operator+(
+        const Core::LinAlg::Ana::Vector& vec, const Core::LinAlg::Ana::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LcVecPlusLcsv(vec, right);
+      return Core::LinAlg::Ana::LcVecPlusLcsv(vec, right);
     }
-    inline CORE::LINALG::ANA::LcVecPlusLcsv operator+(
-        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::Vector& vec)
+    inline Core::LinAlg::Ana::LcVecPlusLcsv operator+(
+        const Core::LinAlg::Ana::LCSTimesVec& left, const Core::LinAlg::Ana::Vector& vec)
     {
-      return CORE::LINALG::ANA::LcVecPlusLcsv(vec, left);
+      return Core::LinAlg::Ana::LcVecPlusLcsv(vec, left);
     }
-    inline CORE::LINALG::ANA::LcVecMinusLcsv operator-(
-        const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCSTimesVec& right)
+    inline Core::LinAlg::Ana::LcVecMinusLcsv operator-(
+        const Core::LinAlg::Ana::Vector& vec, const Core::LinAlg::Ana::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LcVecMinusLcsv(vec, right);
+      return Core::LinAlg::Ana::LcVecMinusLcsv(vec, right);
     }
-    inline CORE::LINALG::ANA::LcLcsvMinusVec operator-(
-        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::Vector& vec)
+    inline Core::LinAlg::Ana::LcLcsvMinusVec operator-(
+        const Core::LinAlg::Ana::LCSTimesVec& left, const Core::LinAlg::Ana::Vector& vec)
     {
-      return CORE::LINALG::ANA::LcLcsvMinusVec(left, vec);
+      return Core::LinAlg::Ana::LcLcsvMinusVec(left, vec);
     }
-    inline CORE::LINALG::ANA::LcLcsvPlusLcsv operator+(
-        const CORE::LINALG::ANA::Vector& left, const CORE::LINALG::ANA::Vector& right)
+    inline Core::LinAlg::Ana::LcLcsvPlusLcsv operator+(
+        const Core::LinAlg::Ana::Vector& left, const Core::LinAlg::Ana::Vector& right)
     {
       return (1.0 * left + 1.0 * right);
     }
-    inline CORE::LINALG::ANA::LcLcsvMinusLcsv operator-(
-        const CORE::LINALG::ANA::Vector& left, const CORE::LINALG::ANA::Vector& right)
+    inline Core::LinAlg::Ana::LcLcsvMinusLcsv operator-(
+        const Core::LinAlg::Ana::Vector& left, const Core::LinAlg::Ana::Vector& right)
     {
       return (1.0 * left - 1.0 * right);
     }
-    inline CORE::LINALG::ANA::LcSTimesLc operator*(
-        const double& scalar, const CORE::LINALG::ANA::LCBase& right)
+    inline Core::LinAlg::Ana::LcSTimesLc operator*(
+        const double& scalar, const Core::LinAlg::Ana::LCBase& right)
     {
-      return CORE::LINALG::ANA::LcSTimesLc(scalar, right);
+      return Core::LinAlg::Ana::LcSTimesLc(scalar, right);
     }
-    inline CORE::LINALG::ANA::LcSTimesLc operator*(
-        const CORE::LINALG::ANA::LCBase& left, const double& scalar)
+    inline Core::LinAlg::Ana::LcSTimesLc operator*(
+        const Core::LinAlg::Ana::LCBase& left, const double& scalar)
     {
       return (scalar * left);
     }
     // Teuchos::RCP versions of the above operations
-    inline CORE::LINALG::ANA::LCSTimesVec operator*(
-        const double& scalar, const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
+    inline Core::LinAlg::Ana::LCSTimesVec operator*(
+        const double& scalar, const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
     {
       return (scalar * (*vec));
     }
-    inline CORE::LINALG::ANA::LCSTimesVec operator*(
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec, const double& scalar)
+    inline Core::LinAlg::Ana::LCSTimesVec operator*(
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec, const double& scalar)
     {
       return (scalar * (*vec));
     }
-    inline CORE::LINALG::ANA::LCSTimesVec operator/(
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec, const double& scalar)
+    inline Core::LinAlg::Ana::LCSTimesVec operator/(
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec, const double& scalar)
     {
       return ((*vec) / scalar);
     }
-    inline CORE::LINALG::ANA::LcVecPlusLc operator+(
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec,
-        const CORE::LINALG::ANA::LCBase& right)
+    inline Core::LinAlg::Ana::LcVecPlusLc operator+(
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec,
+        const Core::LinAlg::Ana::LCBase& right)
     {
       return ((*vec) + right);
     }
-    inline CORE::LINALG::ANA::LcVecPlusLc operator+(const CORE::LINALG::ANA::LCBase& left,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
+    inline Core::LinAlg::Ana::LcVecPlusLc operator+(const Core::LinAlg::Ana::LCBase& left,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
     {
       return (left + (*vec));
     }
-    inline CORE::LINALG::ANA::LcVecMinusLc operator-(
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec,
-        const CORE::LINALG::ANA::LCBase& right)
+    inline Core::LinAlg::Ana::LcVecMinusLc operator-(
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec,
+        const Core::LinAlg::Ana::LCBase& right)
     {
       return (*vec - right);
     }
-    inline CORE::LINALG::ANA::LcLcMinusVec operator-(const CORE::LINALG::ANA::LCBase& left,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
+    inline Core::LinAlg::Ana::LcLcMinusVec operator-(const Core::LinAlg::Ana::LCBase& left,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
     {
       return (left - (*vec));
     }
-    inline CORE::LINALG::ANA::LcVecPlusLcsv operator+(
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec,
-        const CORE::LINALG::ANA::LCSTimesVec& right)
+    inline Core::LinAlg::Ana::LcVecPlusLcsv operator+(
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec,
+        const Core::LinAlg::Ana::LCSTimesVec& right)
     {
       return (*vec + right);
     }
-    inline CORE::LINALG::ANA::LcVecPlusLcsv operator+(const CORE::LINALG::ANA::LCSTimesVec& left,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
+    inline Core::LinAlg::Ana::LcVecPlusLcsv operator+(const Core::LinAlg::Ana::LCSTimesVec& left,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
     {
       return (left + (*vec));
     }
-    inline CORE::LINALG::ANA::LcVecMinusLcsv operator-(
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec,
-        const CORE::LINALG::ANA::LCSTimesVec& right)
+    inline Core::LinAlg::Ana::LcVecMinusLcsv operator-(
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec,
+        const Core::LinAlg::Ana::LCSTimesVec& right)
     {
       return (*vec - right);
     }
-    inline CORE::LINALG::ANA::LcLcsvMinusVec operator-(const CORE::LINALG::ANA::LCSTimesVec& left,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
+    inline Core::LinAlg::Ana::LcLcsvMinusVec operator-(const Core::LinAlg::Ana::LCSTimesVec& left,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
     {
       return (left - (*vec));
     }
-    inline CORE::LINALG::ANA::LcLcsvPlusLcsv operator+(
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> left,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> right)
+    inline Core::LinAlg::Ana::LcLcsvPlusLcsv operator+(
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> left,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> right)
     {
       return ((*left) + (*right));
     }
-    inline CORE::LINALG::ANA::LcLcsvMinusLcsv operator-(
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> left,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> right)
+    inline Core::LinAlg::Ana::LcLcsvMinusLcsv operator-(
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> left,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> right)
     {
       return (*left - (*right));
     }
@@ -1964,133 +1964,133 @@ namespace CORE::LINALG
     /*----------------------------------------------------------------------*
        LightWeightOperatorBase and  Epetra_Operator operations
      *----------------------------------------------------------------------*/
-    inline CORE::LINALG::ANA::LcOperatorTimesLc operator*(
-        const CORE::LINALG::ANA::LightWeightOperatorBase& op,
-        const CORE::LINALG::ANA::LCBase& right)
+    inline Core::LinAlg::Ana::LcOperatorTimesLc operator*(
+        const Core::LinAlg::Ana::LightWeightOperatorBase& op,
+        const Core::LinAlg::Ana::LCBase& right)
     {
-      return CORE::LINALG::ANA::LcOperatorTimesLc(op, right);
+      return Core::LinAlg::Ana::LcOperatorTimesLc(op, right);
     }
-    inline CORE::LINALG::ANA::LcOperatorTimesLc operator*(
-        const Epetra_Operator& op, const CORE::LINALG::ANA::LCBase& right)
+    inline Core::LinAlg::Ana::LcOperatorTimesLc operator*(
+        const Epetra_Operator& op, const Core::LinAlg::Ana::LCBase& right)
     {
-      return CORE::LINALG::ANA::LcOperatorTimesLc(CORE::LINALG::ANA::lw(op), right);
+      return Core::LinAlg::Ana::LcOperatorTimesLc(Core::LinAlg::Ana::lw(op), right);
     }
-    inline CORE::LINALG::ANA::LcOperatorTimesLcsv operator*(
-        const CORE::LINALG::ANA::LightWeightOperatorBase& op,
-        const CORE::LINALG::ANA::LCSTimesVec& right)
+    inline Core::LinAlg::Ana::LcOperatorTimesLcsv operator*(
+        const Core::LinAlg::Ana::LightWeightOperatorBase& op,
+        const Core::LinAlg::Ana::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LcOperatorTimesLcsv(op, right);
+      return Core::LinAlg::Ana::LcOperatorTimesLcsv(op, right);
     }
-    inline CORE::LINALG::ANA::LcOperatorTimesLcsv operator*(
-        const CORE::LINALG::ANA::LightWeightOperatorBase& op, const CORE::LINALG::ANA::Vector& vec)
+    inline Core::LinAlg::Ana::LcOperatorTimesLcsv operator*(
+        const Core::LinAlg::Ana::LightWeightOperatorBase& op, const Core::LinAlg::Ana::Vector& vec)
     {
       return op * (1.0 * vec);
     }
-    inline CORE::LINALG::ANA::LcOperatorTimesLcsv operator*(
-        const Epetra_Operator& op, const CORE::LINALG::ANA::LCSTimesVec& right)
+    inline Core::LinAlg::Ana::LcOperatorTimesLcsv operator*(
+        const Epetra_Operator& op, const Core::LinAlg::Ana::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LcOperatorTimesLcsv(CORE::LINALG::ANA::lw(op), right);
+      return Core::LinAlg::Ana::LcOperatorTimesLcsv(Core::LinAlg::Ana::lw(op), right);
     }
-    inline CORE::LINALG::ANA::LcOperatorTimesLcsv operator*(
-        const Epetra_Operator& op, const CORE::LINALG::ANA::Vector& vec)
+    inline Core::LinAlg::Ana::LcOperatorTimesLcsv operator*(
+        const Epetra_Operator& op, const Core::LinAlg::Ana::Vector& vec)
     {
-      return CORE::LINALG::ANA::lw(op) * (1.0 * vec);
+      return Core::LinAlg::Ana::lw(op) * (1.0 * vec);
     }
-    inline CORE::LINALG::ANA::OperatorScaled operator*(
-        const CORE::LINALG::ANA::LightWeightOperatorBase& op, const double& scalar)
+    inline Core::LinAlg::Ana::OperatorScaled operator*(
+        const Core::LinAlg::Ana::LightWeightOperatorBase& op, const double& scalar)
     {
-      return CORE::LINALG::ANA::OperatorScaled(op, scalar);
+      return Core::LinAlg::Ana::OperatorScaled(op, scalar);
     }
-    inline CORE::LINALG::ANA::OperatorScaled operator*(
-        const double& scalar, const CORE::LINALG::ANA::LightWeightOperatorBase& op)
+    inline Core::LinAlg::Ana::OperatorScaled operator*(
+        const double& scalar, const Core::LinAlg::Ana::LightWeightOperatorBase& op)
     {
-      return CORE::LINALG::ANA::OperatorScaled(op, scalar);
+      return Core::LinAlg::Ana::OperatorScaled(op, scalar);
     }
-    inline CORE::LINALG::ANA::OperatorScaled operator*(
+    inline Core::LinAlg::Ana::OperatorScaled operator*(
         const Epetra_Operator& op, const double& scalar)
     {
-      return CORE::LINALG::ANA::OperatorScaled(CORE::LINALG::ANA::lw(op), scalar);
+      return Core::LinAlg::Ana::OperatorScaled(Core::LinAlg::Ana::lw(op), scalar);
     }
-    inline CORE::LINALG::ANA::OperatorScaled operator*(
+    inline Core::LinAlg::Ana::OperatorScaled operator*(
         const double& scalar, const Epetra_Operator& op)
     {
-      return CORE::LINALG::ANA::OperatorScaled(CORE::LINALG::ANA::lw(op), scalar);
+      return Core::LinAlg::Ana::OperatorScaled(Core::LinAlg::Ana::lw(op), scalar);
     }
-    inline CORE::LINALG::ANA::OperatorProduct operator*(
-        const CORE::LINALG::ANA::LightWeightOperatorBase& left,
-        const CORE::LINALG::ANA::LightWeightOperatorBase& right)
+    inline Core::LinAlg::Ana::OperatorProduct operator*(
+        const Core::LinAlg::Ana::LightWeightOperatorBase& left,
+        const Core::LinAlg::Ana::LightWeightOperatorBase& right)
     {
-      return CORE::LINALG::ANA::OperatorProduct(left, right);
+      return Core::LinAlg::Ana::OperatorProduct(left, right);
     }
-    inline CORE::LINALG::ANA::OperatorProduct operator*(
+    inline Core::LinAlg::Ana::OperatorProduct operator*(
         const Epetra_Operator& left, const Epetra_Operator& right)
     {
-      return CORE::LINALG::ANA::OperatorProduct(
-          CORE::LINALG::ANA::lw(left), CORE::LINALG::ANA::lw(right));
+      return Core::LinAlg::Ana::OperatorProduct(
+          Core::LinAlg::Ana::lw(left), Core::LinAlg::Ana::lw(right));
     }
-    inline CORE::LINALG::ANA::OperatorProduct operator*(
-        const CORE::LINALG::ANA::LightWeightOperatorBase& left, const Epetra_Operator& right)
+    inline Core::LinAlg::Ana::OperatorProduct operator*(
+        const Core::LinAlg::Ana::LightWeightOperatorBase& left, const Epetra_Operator& right)
     {
-      return CORE::LINALG::ANA::OperatorProduct(left, CORE::LINALG::ANA::lw(right));
+      return Core::LinAlg::Ana::OperatorProduct(left, Core::LinAlg::Ana::lw(right));
     }
-    inline CORE::LINALG::ANA::OperatorProduct operator*(
-        const Epetra_Operator& left, const CORE::LINALG::ANA::LightWeightOperatorBase& right)
+    inline Core::LinAlg::Ana::OperatorProduct operator*(
+        const Epetra_Operator& left, const Core::LinAlg::Ana::LightWeightOperatorBase& right)
     {
-      return CORE::LINALG::ANA::OperatorProduct(CORE::LINALG::ANA::lw(left), right);
+      return Core::LinAlg::Ana::OperatorProduct(Core::LinAlg::Ana::lw(left), right);
     }
-    inline CORE::LINALG::ANA::OperatorSum operator+(
-        const CORE::LINALG::ANA::LightWeightOperatorBase& left,
-        const CORE::LINALG::ANA::LightWeightOperatorBase& right)
+    inline Core::LinAlg::Ana::OperatorSum operator+(
+        const Core::LinAlg::Ana::LightWeightOperatorBase& left,
+        const Core::LinAlg::Ana::LightWeightOperatorBase& right)
     {
-      return CORE::LINALG::ANA::OperatorSum(left, right, 1);
+      return Core::LinAlg::Ana::OperatorSum(left, right, 1);
     }
-    inline CORE::LINALG::ANA::OperatorSum operator+(
+    inline Core::LinAlg::Ana::OperatorSum operator+(
         const Epetra_Operator& left, const Epetra_Operator& right)
     {
-      return CORE::LINALG::ANA::OperatorSum(
-          CORE::LINALG::ANA::lw(left), CORE::LINALG::ANA::lw(right), 1);
+      return Core::LinAlg::Ana::OperatorSum(
+          Core::LinAlg::Ana::lw(left), Core::LinAlg::Ana::lw(right), 1);
     }
-    inline CORE::LINALG::ANA::OperatorSum operator+(
-        const CORE::LINALG::ANA::LightWeightOperatorBase& left, const Epetra_Operator& right)
+    inline Core::LinAlg::Ana::OperatorSum operator+(
+        const Core::LinAlg::Ana::LightWeightOperatorBase& left, const Epetra_Operator& right)
     {
-      return CORE::LINALG::ANA::OperatorSum(left, CORE::LINALG::ANA::lw(right), 1);
+      return Core::LinAlg::Ana::OperatorSum(left, Core::LinAlg::Ana::lw(right), 1);
     }
-    inline CORE::LINALG::ANA::OperatorSum operator+(
-        const Epetra_Operator& left, const CORE::LINALG::ANA::LightWeightOperatorBase& right)
+    inline Core::LinAlg::Ana::OperatorSum operator+(
+        const Epetra_Operator& left, const Core::LinAlg::Ana::LightWeightOperatorBase& right)
     {
-      return CORE::LINALG::ANA::OperatorSum(CORE::LINALG::ANA::lw(left), right, 1);
+      return Core::LinAlg::Ana::OperatorSum(Core::LinAlg::Ana::lw(left), right, 1);
     }
-    inline CORE::LINALG::ANA::OperatorSum operator-(
-        const CORE::LINALG::ANA::LightWeightOperatorBase& left,
-        const CORE::LINALG::ANA::LightWeightOperatorBase& right)
+    inline Core::LinAlg::Ana::OperatorSum operator-(
+        const Core::LinAlg::Ana::LightWeightOperatorBase& left,
+        const Core::LinAlg::Ana::LightWeightOperatorBase& right)
     {
-      return CORE::LINALG::ANA::OperatorSum(left, right, -1);
+      return Core::LinAlg::Ana::OperatorSum(left, right, -1);
     }
-    inline CORE::LINALG::ANA::OperatorSum operator-(
+    inline Core::LinAlg::Ana::OperatorSum operator-(
         const Epetra_Operator& left, const Epetra_Operator& right)
     {
-      return CORE::LINALG::ANA::OperatorSum(
-          CORE::LINALG::ANA::lw(left), CORE::LINALG::ANA::lw(right), -1);
+      return Core::LinAlg::Ana::OperatorSum(
+          Core::LinAlg::Ana::lw(left), Core::LinAlg::Ana::lw(right), -1);
     }
-    inline CORE::LINALG::ANA::OperatorSum operator-(
-        const CORE::LINALG::ANA::LightWeightOperatorBase& left, const Epetra_Operator& right)
+    inline Core::LinAlg::Ana::OperatorSum operator-(
+        const Core::LinAlg::Ana::LightWeightOperatorBase& left, const Epetra_Operator& right)
     {
-      return CORE::LINALG::ANA::OperatorSum(left, CORE::LINALG::ANA::lw(right), -1);
+      return Core::LinAlg::Ana::OperatorSum(left, Core::LinAlg::Ana::lw(right), -1);
     }
-    inline CORE::LINALG::ANA::OperatorSum operator-(
-        const Epetra_Operator& left, const CORE::LINALG::ANA::LightWeightOperatorBase& right)
+    inline Core::LinAlg::Ana::OperatorSum operator-(
+        const Epetra_Operator& left, const Core::LinAlg::Ana::LightWeightOperatorBase& right)
     {
-      return CORE::LINALG::ANA::OperatorSum(CORE::LINALG::ANA::lw(left), right, -1);
+      return Core::LinAlg::Ana::OperatorSum(Core::LinAlg::Ana::lw(left), right, -1);
     }
     // Teuchos::RCP versions of the above operations
-    inline CORE::LINALG::ANA::LcOperatorTimesLcsv operator*(
-        const CORE::LINALG::ANA::LightWeightOperatorBase& op,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
+    inline Core::LinAlg::Ana::LcOperatorTimesLcsv operator*(
+        const Core::LinAlg::Ana::LightWeightOperatorBase& op,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
     {
       return op * (*vec);
     }
-    inline CORE::LINALG::ANA::LcOperatorTimesLcsv operator*(
-        const Epetra_Operator& op, const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
+    inline Core::LinAlg::Ana::LcOperatorTimesLcsv operator*(
+        const Epetra_Operator& op, const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
     {
       return op * (*vec);
     }
@@ -2099,46 +2099,46 @@ namespace CORE::LINALG
     /*----------------------------------------------------------------------*
       dot products (result is scalar) (general and specialization versions)
     *----------------------------------------------------------------------*/
-    double operator*(const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::Vector& vec2);
-    double operator*(const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::LCBase& right);
+    double operator*(const Core::LinAlg::Ana::Vector& vec1, const Core::LinAlg::Ana::Vector& vec2);
+    double operator*(const Core::LinAlg::Ana::Vector& vec1, const Core::LinAlg::Ana::LCBase& right);
     double operator*(
-        const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::LCSTimesVec& right);
-    double operator*(const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::LCBase& right);
+        const Core::LinAlg::Ana::Vector& vec1, const Core::LinAlg::Ana::LCSTimesVec& right);
+    double operator*(const Core::LinAlg::Ana::LCBase& left, const Core::LinAlg::Ana::LCBase& right);
     double operator*(
-        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::LCSTimesVec& right);
+        const Core::LinAlg::Ana::LCSTimesVec& left, const Core::LinAlg::Ana::LCSTimesVec& right);
     inline double operator*(
-        const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::Vector& vec1)
+        const Core::LinAlg::Ana::LCBase& left, const Core::LinAlg::Ana::Vector& vec1)
     {
       return vec1 * left;
     }
     inline double operator*(
-        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::Vector& vec1)
+        const Core::LinAlg::Ana::LCSTimesVec& left, const Core::LinAlg::Ana::Vector& vec1)
     {
       return vec1 * left;
     }
     // Teuchos::RCP versions of the above operations
-    inline double operator*(const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec1,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec2)
+    inline double operator*(const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec1,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec2)
     {
       return (*vec1) * (*vec2);
     }
-    inline double operator*(const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec1,
-        const CORE::LINALG::ANA::LCBase& right)
+    inline double operator*(const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec1,
+        const Core::LinAlg::Ana::LCBase& right)
     {
       return (*vec1) * right;
     }
-    inline double operator*(const CORE::LINALG::ANA::LCBase& left,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec1)
+    inline double operator*(const Core::LinAlg::Ana::LCBase& left,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec1)
     {
       return (*vec1) * left;
     }
-    inline double operator*(const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec1,
-        const CORE::LINALG::ANA::LCSTimesVec& right)
+    inline double operator*(const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec1,
+        const Core::LinAlg::Ana::LCSTimesVec& right)
     {
       return (*vec1) * right;
     }
-    inline double operator*(const CORE::LINALG::ANA::LCSTimesVec& left,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec1)
+    inline double operator*(const Core::LinAlg::Ana::LCSTimesVec& left,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec1)
     {
       return (*vec1) * left;
     }
@@ -2146,154 +2146,154 @@ namespace CORE::LINALG
     /*----------------------------------------------------------------------*
        pointwise multiplications of vectors (result is a vector)
      *----------------------------------------------------------------------*/
-    inline CORE::LINALG::ANA::LcVecPointwiseVec pw(
-        const CORE::LINALG::ANA::Vector& vec1, const CORE::LINALG::ANA::Vector& vec2)
+    inline Core::LinAlg::Ana::LcVecPointwiseVec pw(
+        const Core::LinAlg::Ana::Vector& vec1, const Core::LinAlg::Ana::Vector& vec2)
     {
-      return CORE::LINALG::ANA::LcVecPointwiseVec(vec1, vec2);
+      return Core::LinAlg::Ana::LcVecPointwiseVec(vec1, vec2);
     }
-    inline CORE::LINALG::ANA::LcVecPointwiseLc pw(
-        const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCBase& right)
+    inline Core::LinAlg::Ana::LcVecPointwiseLc pw(
+        const Core::LinAlg::Ana::Vector& vec, const Core::LinAlg::Ana::LCBase& right)
     {
-      return CORE::LINALG::ANA::LcVecPointwiseLc(vec, right);
+      return Core::LinAlg::Ana::LcVecPointwiseLc(vec, right);
     }
-    inline CORE::LINALG::ANA::LcVecPointwiseLc pw(
-        const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::Vector& vec)
+    inline Core::LinAlg::Ana::LcVecPointwiseLc pw(
+        const Core::LinAlg::Ana::LCBase& left, const Core::LinAlg::Ana::Vector& vec)
     {
-      return CORE::LINALG::ANA::pw(vec, left);
+      return Core::LinAlg::Ana::pw(vec, left);
     }
-    inline CORE::LINALG::ANA::LcVecPointwiseLcsv pw(
-        const CORE::LINALG::ANA::Vector& vec, const CORE::LINALG::ANA::LCSTimesVec& right)
+    inline Core::LinAlg::Ana::LcVecPointwiseLcsv pw(
+        const Core::LinAlg::Ana::Vector& vec, const Core::LinAlg::Ana::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LcVecPointwiseLcsv(vec, right);
+      return Core::LinAlg::Ana::LcVecPointwiseLcsv(vec, right);
     }
-    inline CORE::LINALG::ANA::LcVecPointwiseLcsv pw(
-        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::Vector& vec)
+    inline Core::LinAlg::Ana::LcVecPointwiseLcsv pw(
+        const Core::LinAlg::Ana::LCSTimesVec& left, const Core::LinAlg::Ana::Vector& vec)
     {
-      return CORE::LINALG::ANA::pw(vec, left);
+      return Core::LinAlg::Ana::pw(vec, left);
     }
-    inline CORE::LINALG::ANA::LcLcPointwiseLc pw(
-        const CORE::LINALG::ANA::LCBase& left, const CORE::LINALG::ANA::LCBase& right)
+    inline Core::LinAlg::Ana::LcLcPointwiseLc pw(
+        const Core::LinAlg::Ana::LCBase& left, const Core::LinAlg::Ana::LCBase& right)
     {
-      return CORE::LINALG::ANA::LcLcPointwiseLc(left, right);
+      return Core::LinAlg::Ana::LcLcPointwiseLc(left, right);
     }
-    inline CORE::LINALG::ANA::LcLcsvPointwiseLcsv pw(
-        const CORE::LINALG::ANA::LCSTimesVec& left, const CORE::LINALG::ANA::LCSTimesVec& right)
+    inline Core::LinAlg::Ana::LcLcsvPointwiseLcsv pw(
+        const Core::LinAlg::Ana::LCSTimesVec& left, const Core::LinAlg::Ana::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::LcLcsvPointwiseLcsv(left, right);
+      return Core::LinAlg::Ana::LcLcsvPointwiseLcsv(left, right);
     }
     // Teuchos::RCP versions of the above operations
-    inline CORE::LINALG::ANA::LcVecPointwiseVec pw(
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec1,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec2)
+    inline Core::LinAlg::Ana::LcVecPointwiseVec pw(
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec1,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec2)
     {
-      return CORE::LINALG::ANA::pw(*vec1, *vec2);
+      return Core::LinAlg::Ana::pw(*vec1, *vec2);
     }
-    inline CORE::LINALG::ANA::LcVecPointwiseLc pw(
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec,
-        const CORE::LINALG::ANA::LCBase& right)
+    inline Core::LinAlg::Ana::LcVecPointwiseLc pw(
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec,
+        const Core::LinAlg::Ana::LCBase& right)
     {
-      return CORE::LINALG::ANA::pw(*vec, right);
+      return Core::LinAlg::Ana::pw(*vec, right);
     }
-    inline CORE::LINALG::ANA::LcVecPointwiseLc pw(const CORE::LINALG::ANA::LCBase& left,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
+    inline Core::LinAlg::Ana::LcVecPointwiseLc pw(const Core::LinAlg::Ana::LCBase& left,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
     {
-      return CORE::LINALG::ANA::pw(left, *vec);
+      return Core::LinAlg::Ana::pw(left, *vec);
     }
-    inline CORE::LINALG::ANA::LcVecPointwiseLcsv pw(
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec,
-        const CORE::LINALG::ANA::LCSTimesVec& right)
+    inline Core::LinAlg::Ana::LcVecPointwiseLcsv pw(
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec,
+        const Core::LinAlg::Ana::LCSTimesVec& right)
     {
-      return CORE::LINALG::ANA::pw(*vec, right);
+      return Core::LinAlg::Ana::pw(*vec, right);
     }
-    inline CORE::LINALG::ANA::LcVecPointwiseLcsv pw(const CORE::LINALG::ANA::LCSTimesVec& left,
-        const Teuchos::RCP<const CORE::LINALG::ANA::Vector> vec)
+    inline Core::LinAlg::Ana::LcVecPointwiseLcsv pw(const Core::LinAlg::Ana::LCSTimesVec& left,
+        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
     {
-      return CORE::LINALG::ANA::pw(left, *vec);
+      return Core::LinAlg::Ana::pw(left, *vec);
     }
     /*----------------------------------------------------------------------*
-       implicit transpose of an CORE::LINALG::ANA::LightWeightOperatorBase / Epetra_Operator
+       implicit transpose of an Core::LinAlg::Ana::LightWeightOperatorBase / Epetra_Operator
      *----------------------------------------------------------------------*/
-    inline CORE::LINALG::ANA::OperatorTransposed trans(
-        const CORE::LINALG::ANA::LightWeightOperatorBase& op)
+    inline Core::LinAlg::Ana::OperatorTransposed trans(
+        const Core::LinAlg::Ana::LightWeightOperatorBase& op)
     {
-      return CORE::LINALG::ANA::OperatorTransposed(op);
+      return Core::LinAlg::Ana::OperatorTransposed(op);
     }
-    inline CORE::LINALG::ANA::OperatorTransposed trans(const Epetra_Operator& op)
+    inline Core::LinAlg::Ana::OperatorTransposed trans(const Epetra_Operator& op)
     {
-      return CORE::LINALG::ANA::OperatorTransposed(CORE::LINALG::ANA::lw(op));
+      return Core::LinAlg::Ana::OperatorTransposed(Core::LinAlg::Ana::lw(op));
     }
     /*----------------------------------------------------------------------*
        implicit inverse of an operator
      *----------------------------------------------------------------------*/
-    inline CORE::LINALG::ANA::OperatorInverse inverse(
-        const Epetra_Operator& op, CORE::LINALG::Solver& solver, bool reset = true)
+    inline Core::LinAlg::Ana::OperatorInverse inverse(
+        const Epetra_Operator& op, Core::LinAlg::Solver& solver, bool reset = true)
     {
-      return CORE::LINALG::ANA::OperatorInverse(op, solver, reset);
+      return Core::LinAlg::Ana::OperatorInverse(op, solver, reset);
     }
-    inline CORE::LINALG::ANA::OperatorInverse inverse(
-        const CORE::LINALG::SparseOperator& op, CORE::LINALG::Solver& solver, bool reset = true)
+    inline Core::LinAlg::Ana::OperatorInverse inverse(
+        const Core::LinAlg::SparseOperator& op, Core::LinAlg::Solver& solver, bool reset = true)
     {
-      return CORE::LINALG::ANA::OperatorInverse(op, solver, reset);
+      return Core::LinAlg::Ana::OperatorInverse(op, solver, reset);
     }
-    inline CORE::LINALG::ANA::OperatorInverse inverse(const Epetra_Operator& op)
+    inline Core::LinAlg::Ana::OperatorInverse inverse(const Epetra_Operator& op)
     {
-      return CORE::LINALG::ANA::OperatorInverse(op);
+      return Core::LinAlg::Ana::OperatorInverse(op);
     }
-    inline CORE::LINALG::ANA::OperatorInverse inverse(const CORE::LINALG::SparseOperator& op)
+    inline Core::LinAlg::Ana::OperatorInverse inverse(const Core::LinAlg::SparseOperator& op)
     {
-      return CORE::LINALG::ANA::OperatorInverse(op);
+      return Core::LinAlg::Ana::OperatorInverse(op);
     }
     /*----------------------------------------------------------------------*
        norms
      *----------------------------------------------------------------------*/
-    inline double norm2(const CORE::LINALG::ANA::Vector& vec)
+    inline double norm2(const Core::LinAlg::Ana::Vector& vec)
     {
       double norm;
       vec.Norm2(&norm);
       return norm;
     }
-    inline double norm1(const CORE::LINALG::ANA::Vector& vec)
+    inline double norm1(const Core::LinAlg::Ana::Vector& vec)
     {
       double norm;
       vec.Norm1(&norm);
       return norm;
     }
-    inline double norminf(const CORE::LINALG::ANA::Vector& vec)
+    inline double norminf(const Core::LinAlg::Ana::Vector& vec)
     {
       double norm;
       vec.NormInf(&norm);
       return norm;
     }
-    inline double norm2(const Teuchos::RCP<const CORE::LINALG::ANA::Vector>& vec)
+    inline double norm2(const Teuchos::RCP<const Core::LinAlg::Ana::Vector>& vec)
     {
-      return CORE::LINALG::ANA::norm2(*vec);
+      return Core::LinAlg::Ana::norm2(*vec);
     }
-    inline double norm1(const Teuchos::RCP<const CORE::LINALG::ANA::Vector>& vec)
+    inline double norm1(const Teuchos::RCP<const Core::LinAlg::Ana::Vector>& vec)
     {
-      return CORE::LINALG::ANA::norm1(*vec);
+      return Core::LinAlg::Ana::norm1(*vec);
     }
-    inline double norminf(const Teuchos::RCP<const CORE::LINALG::ANA::Vector>& vec)
+    inline double norminf(const Teuchos::RCP<const Core::LinAlg::Ana::Vector>& vec)
     {
-      return CORE::LINALG::ANA::norminf(*vec);
+      return Core::LinAlg::Ana::norminf(*vec);
     }
-    double norm2(const CORE::LINALG::ANA::LCBase& lc);
-    double norm1(const CORE::LINALG::ANA::LCBase& lc);
-    double norminf(const CORE::LINALG::ANA::LCBase& lc);
-    inline double norm2(const CORE::LINALG::ANA::LCSTimesVec& lc)
+    double norm2(const Core::LinAlg::Ana::LCBase& lc);
+    double norm1(const Core::LinAlg::Ana::LCBase& lc);
+    double norminf(const Core::LinAlg::Ana::LCBase& lc);
+    inline double norm2(const Core::LinAlg::Ana::LCSTimesVec& lc)
     {
       return lc.Scalar() * norm2(lc.Vector());
     }
-    inline double norm1(const CORE::LINALG::ANA::LCSTimesVec& lc)
+    inline double norm1(const Core::LinAlg::Ana::LCSTimesVec& lc)
     {
       return lc.Scalar() * norm1(lc.Vector());
     }
-    inline double norminf(const CORE::LINALG::ANA::LCSTimesVec& lc)
+    inline double norminf(const Core::LinAlg::Ana::LCSTimesVec& lc)
     {
       return lc.Scalar() * norminf(lc.Vector());
     }
 
-  }  // namespace ANA
-}  // namespace CORE::LINALG
+  }  // namespace Ana
+}  // namespace Core::LinAlg
 
 
 

@@ -26,16 +26,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::IO
+namespace Core::IO
 {
   class LineDefinition;
 
-  namespace GRIDGENERATOR
+  namespace GridGenerator
   {
     struct RectangularCuboidInputs;
   }
@@ -59,13 +59,13 @@ namespace CORE::IO
       \param reader (i) the dat file reader
       \param sectionname (i) the section that contains the element lines
      */
-    DomainReader(Teuchos::RCP<DRT::Discretization> dis, const CORE::IO::DatFileReader& reader,
+    DomainReader(Teuchos::RCP<Discret::Discretization> dis, const Core::IO::DatFileReader& reader,
         std::string sectionname);
 
     //! Destructor
     virtual ~DomainReader() = default;
     /// give the discretization this reader fills
-    Teuchos::RCP<DRT::Discretization> MyDis() const { return dis_; }
+    Teuchos::RCP<Discret::Discretization> MyDis() const { return dis_; }
 
    private:
     /*! \brief generate elements, partition node graph, create nodes
@@ -86,7 +86,7 @@ namespace CORE::IO
     /*! \brief read input parameters from input file
        \return class holding all input parameters for rectangular cuboid domain
      */
-    CORE::IO::GRIDGENERATOR::RectangularCuboidInputs read_rectangular_cuboid_input_data() const;
+    Core::IO::GridGenerator::RectangularCuboidInputs read_rectangular_cuboid_input_data() const;
 
     /// finalize reading. fill_complete(false,false,false), that is, do not
     /// initialize elements. This is done later after reading boundary conditions.
@@ -96,7 +96,7 @@ namespace CORE::IO
     std::string name_;
 
     /// the main dat file reader
-    const CORE::IO::DatFileReader& reader_;
+    const Core::IO::DatFileReader& reader_;
 
     /// my comm
     Teuchos::RCP<Epetra_Comm> comm_;
@@ -105,10 +105,10 @@ namespace CORE::IO
     std::string sectionname_;
 
     /// my discretization
-    Teuchos::RCP<DRT::Discretization> dis_;
+    Teuchos::RCP<Discret::Discretization> dis_;
   };
 
-}  // namespace CORE::IO
+}  // namespace Core::IO
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

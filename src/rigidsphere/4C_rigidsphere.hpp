@@ -41,34 +41,34 @@ namespace STR
   }
 }  // namespace STR
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    class RigidsphereType : public CORE::Elements::ElementType
+    class RigidsphereType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return ("RigidsphereType"); }
 
       static RigidsphereType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -79,7 +79,7 @@ namespace DRT
     \brief Spherical particle element for brownian dynamics
 
     */
-    class Rigidsphere : public CORE::Elements::Element
+    class Rigidsphere : public Core::Elements::Element
     {
      public:
       //! @name Friends
@@ -113,12 +113,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
     .
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
      \brief Get shape type of element
      */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
 
       /*!
@@ -138,7 +138,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -148,7 +148,7 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return (RigidsphereType::Instance());
       }
@@ -163,13 +163,13 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
 
       /*!
       \brief Get number of degrees of freedom of a single node
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override
+      int NumDofPerNode(const Core::Nodes::Node& node) const override
       {
         /*note: this is not necessarily the number of DOF assigned to this node by the
          *discretization finally, but only the number of DOF requested for this node by this
@@ -209,7 +209,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       //@}
 
@@ -242,11 +242,11 @@ namespace DRT
                                   given in params
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
 
       /*!
@@ -268,10 +268,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override
       {
         return (0);
       };
@@ -281,8 +281,8 @@ namespace DRT
       */
       void nlnstiffmass(Teuchos::ParameterList& params, std::vector<double>& acc,
           std::vector<double>& vel, std::vector<double>& disp,
-          CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
-          CORE::LINALG::SerialDenseVector* force, CORE::LINALG::SerialDenseVector* inertia_force);
+          Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
+          Core::LinAlg::SerialDenseVector* force, Core::LinAlg::SerialDenseVector* inertia_force);
 
       /*! \brief set the parameter interface ptr for the solid elements
        *
@@ -302,7 +302,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<CORE::Elements::ParamsInterface> ParamsInterfacePtr() override;
+      Teuchos::RCP<Core::Elements::ParamsInterface> ParamsInterfacePtr() override;
       //@}
 
       //! @name methods for biopolymer network simulations
@@ -313,12 +313,12 @@ namespace DRT
 
       /// \brief get generalized interpolation matrix which yields the variation of the position
       virtual void get_generalized_interpolation_matrix_variations_at_xi(
-          CORE::LINALG::SerialDenseMatrix& Ivar, const double& dummy1,
+          Core::LinAlg::SerialDenseMatrix& Ivar, const double& dummy1,
           const std::vector<double>& dummy2) const;
 
       /// \brief get generalized interpolation matrix which yields the increments of the position
       virtual void get_generalized_interpolation_matrix_increments_at_xi(
-          CORE::LINALG::SerialDenseMatrix& Iinc, const double& dummy1,
+          Core::LinAlg::SerialDenseMatrix& Iinc, const double& dummy1,
           const std::vector<double>& dummy2) const;
 
       /** \brief get linearization of the product of (generalized interpolation matrix for
@@ -328,8 +328,8 @@ namespace DRT
        *  \author grill
        *  \date 01/17 */
       virtual void get_stiffmat_resulting_from_generalized_interpolation_matrix_at_xi(
-          CORE::LINALG::SerialDenseMatrix& stiffmat, const double& xi,
-          const std::vector<double>& disp, const CORE::LINALG::SerialDenseVector& force) const
+          Core::LinAlg::SerialDenseMatrix& stiffmat, const double& xi,
+          const std::vector<double>& disp, const Core::LinAlg::SerialDenseVector& force) const
       {
         // nothing to do here
         stiffmat.putScalar(0.0);
@@ -346,7 +346,7 @@ namespace DRT
       void ScaleRadius(double scalefac) { radius_ *= scalefac; };
 
       /// return binding spot xi function dummy
-      double GetBindingSpotXi(INPAR::BEAMINTERACTION::CrosslinkerType dummy1, int dummy2) const
+      double GetBindingSpotXi(Inpar::BEAMINTERACTION::CrosslinkerType dummy1, int dummy2) const
       {
         return 0.0;
       }
@@ -414,9 +414,9 @@ namespace DRT
        * @param result_data_dofbased Result data vector used for extracting positions
        * @return bounding volume of the respective element
        */
-      CORE::GEOMETRICSEARCH::BoundingVolume GetBoundingVolume(const DRT::Discretization& discret,
-          const Epetra_Vector& result_data_dofbased,
-          const CORE::GEOMETRICSEARCH::GeometricSearchParams& params) const override;
+      Core::GeometricSearch::BoundingVolume GetBoundingVolume(
+          const Discret::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+          const Core::GeometricSearch::GeometricSearchParams& params) const override;
 
       //@}
 
@@ -459,29 +459,29 @@ namespace DRT
 
       //! calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics
       void calc_brownian_forces_and_stiff(Teuchos::ParameterList& params, std::vector<double>& vel,
-          std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
-          CORE::LINALG::SerialDenseVector* force);
+          std::vector<double>& disp, Core::LinAlg::SerialDenseMatrix* stiffmatrix,
+          Core::LinAlg::SerialDenseVector* force);
 
       //! calculation of drag force and corresponding stiffness contribution
       void calc_drag_force(Teuchos::ParameterList& params, const std::vector<double>& vel,
-          const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
-          CORE::LINALG::SerialDenseVector* force);
+          const std::vector<double>& disp, Core::LinAlg::SerialDenseMatrix* stiffmatrix,
+          Core::LinAlg::SerialDenseVector* force);
 
       //! calculation of stochastic force and corresponding stiffness contribution
       void calc_stochastic_force(Teuchos::ParameterList& params, const std::vector<double>& vel,
-          const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
-          CORE::LINALG::SerialDenseVector* force);
+          const std::vector<double>& disp, Core::LinAlg::SerialDenseMatrix* stiffmatrix,
+          Core::LinAlg::SerialDenseVector* force);
 
       //  //!calculation of inertia force and corresponding stiffness contribution
       //  void CalcInertiaForce( Teuchos::ParameterList&   params,
       //                         std::vector<double>&      vel,
       //                         std::vector<double>&      disp,
-      //                         CORE::LINALG::SerialDenseMatrix* stiffmatrix,
-      //                         CORE::LINALG::SerialDenseVector* force);
+      //                         Core::LinAlg::SerialDenseMatrix* stiffmatrix,
+      //                         Core::LinAlg::SerialDenseVector* force);
 
       //! calculation of background fluid velocity and gradient of velocity
       void get_background_velocity(Teuchos::ParameterList& params,
-          CORE::LINALG::Matrix<3, 1>& velbackground, CORE::LINALG::Matrix<3, 3>& velbackgroundgrad);
+          Core::LinAlg::Matrix<3, 1>& velbackground, Core::LinAlg::Matrix<3, 3>& velbackgroundgrad);
 
       //! computes damping coefficient
       double my_damping_constant();
@@ -492,10 +492,10 @@ namespace DRT
     };  // class Rigidsphere
 
     // << operator
-    std::ostream& operator<<(std::ostream& os, const CORE::Elements::Element& ele);
+    std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& ele);
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

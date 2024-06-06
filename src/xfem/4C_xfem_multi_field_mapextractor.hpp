@@ -29,22 +29,22 @@ class Epetra_Map;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class SparseMatrix;
@@ -53,7 +53,7 @@ namespace CORE::LINALG
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace XFEM
 {
@@ -139,7 +139,7 @@ namespace XFEM
    *  \date 09/16 */
   class MultiFieldMapExtractor
   {
-    typedef std::vector<Teuchos::RCP<const DRT::Discretization>> XDisVec;
+    typedef std::vector<Teuchos::RCP<const Discret::Discretization>> XDisVec;
 
     // number of map extractor types
     static constexpr unsigned NUM_MAP_TYPES = 2;
@@ -164,7 +164,7 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 09/16 */
-    void Init(const std::vector<Teuchos::RCP<const DRT::Discretization>>& dis_vec,
+    void Init(const std::vector<Teuchos::RCP<const Discret::Discretization>>& dis_vec,
         int max_num_reserved_dofs_per_node);
 
     /** \brief Setup member variables
@@ -186,7 +186,7 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 10/16 */
-    CORE::Nodes::Node* gINode(const int& gid) const;
+    Core::Nodes::Node* gINode(const int& gid) const;
 
     /// access the interface node row map
     const Epetra_Map* INodeRowMap() const;
@@ -200,28 +200,28 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 10/16 */
-    int INumDof(const CORE::Nodes::Node* inode) const;
+    int INumDof(const Core::Nodes::Node* inode) const;
 
     /// get the number of standard DoF's of the discretization
     int INumStandardDof() const;
 
 
-    int IDof(const CORE::Nodes::Node* inode, int dof) const;
+    int IDof(const Core::Nodes::Node* inode, int dof) const;
 
-    void IDof(const CORE::Nodes::Node* inode, std::vector<int>& dofs) const;
+    void IDof(const Core::Nodes::Node* inode, std::vector<int>& dofs) const;
 
-    void IDof(std::vector<int>& dof, CORE::Nodes::Node* inode, unsigned nodaldofset_id,
-        const CORE::Elements::Element* element) const;
+    void IDof(std::vector<int>& dof, Core::Nodes::Node* inode, unsigned nodaldofset_id,
+        const Core::Elements::Element* element) const;
 
     /// @}
 
-    const CORE::LINALG::MultiMapExtractor& SlDofMapExtractor(enum FieldName field) const
+    const Core::LinAlg::MultiMapExtractor& SlDofMapExtractor(enum FieldName field) const
     {
       return sl_map_extractor(slave_id(field), map_dofs);
     }
 
     Teuchos::RCP<const Epetra_Map> NodeRowMap(
-        enum FieldName field, enum MULTIFIELD::BlockType block) const;
+        enum FieldName field, enum MultiField::BlockType block) const;
 
     /** \brief return TRUE if the given global node id corresponds to an
      *  interface node
@@ -377,17 +377,17 @@ namespace XFEM
 
     /// @name Add a partial system-matrix to the full matrix
     /// @{
-    inline void AddMatrix(const CORE::LINALG::SparseOperator& partial_mat, enum FieldName field,
-        CORE::LINALG::SparseOperator& full_mat, double scale)
+    inline void AddMatrix(const Core::LinAlg::SparseOperator& partial_mat, enum FieldName field,
+        Core::LinAlg::SparseOperator& full_mat, double scale)
     {
       AddMatrix(partial_mat, slave_id(field), full_mat, scale);
     }
 
-    void AddMatrix(const CORE::LINALG::SparseOperator& partial_mat, int block,
-        CORE::LINALG::SparseOperator& full_mat, double scale);
+    void AddMatrix(const Core::LinAlg::SparseOperator& partial_mat, int block,
+        Core::LinAlg::SparseOperator& full_mat, double scale);
 
-    void AddMatrix(const CORE::LINALG::BlockSparseMatrixBase& partial_mat, int block,
-        CORE::LINALG::SparseMatrix& full_mat, double scale);
+    void AddMatrix(const Core::LinAlg::BlockSparseMatrixBase& partial_mat, int block,
+        Core::LinAlg::SparseMatrix& full_mat, double scale);
 
     /// @}
 
@@ -456,7 +456,7 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 09/16 */
-    const CORE::LINALG::MultiMapExtractor& ma_map_extractor(enum MapType map_type) const
+    const Core::LinAlg::MultiMapExtractor& ma_map_extractor(enum MapType map_type) const
     {
       if (master_map_extractor_.at(map_type).is_null())
         FOUR_C_THROW("The master dof/node map extractor was not initialized!");
@@ -472,13 +472,13 @@ namespace XFEM
      *  \author hiermeier
      *  \date 10/16 */
     inline const Epetra_Map& slave_node_row_map(
-        enum XFEM::FieldName field, enum MULTIFIELD::BlockType btype) const
+        enum XFEM::FieldName field, enum MultiField::BlockType btype) const
     {
       return slave_node_row_map(slave_id(field), btype);
     }
-    const Epetra_Map& slave_node_row_map(unsigned dis_id, enum MULTIFIELD::BlockType btype) const;
+    const Epetra_Map& slave_node_row_map(unsigned dis_id, enum MultiField::BlockType btype) const;
 
-    const CORE::LINALG::MultiMapExtractor& sl_map_extractor(
+    const Core::LinAlg::MultiMapExtractor& sl_map_extractor(
         unsigned dis_id, enum MapType map_type) const
     {
       check_init();
@@ -501,11 +501,11 @@ namespace XFEM
     /** \brief Access the interface matrix row transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    CORE::LINALG::MatrixRowTransform& i_mat_row_transform(enum FieldName field)
+    Core::LinAlg::MatrixRowTransform& i_mat_row_transform(enum FieldName field)
     {
       return i_mat_row_transform(slave_id(field));
     }
-    CORE::LINALG::MatrixRowTransform& i_mat_row_transform(unsigned dis_id)
+    Core::LinAlg::MatrixRowTransform& i_mat_row_transform(unsigned dis_id)
     {
       check_init();
 
@@ -527,11 +527,11 @@ namespace XFEM
     /** \brief Access the interface matrix column transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    CORE::LINALG::MatrixColTransform& i_mat_col_transform(enum FieldName field)
+    Core::LinAlg::MatrixColTransform& i_mat_col_transform(enum FieldName field)
     {
       return i_mat_col_transform(slave_id(field));
     }
-    CORE::LINALG::MatrixColTransform& i_mat_col_transform(unsigned dis_id)
+    Core::LinAlg::MatrixColTransform& i_mat_col_transform(unsigned dis_id)
     {
       check_init();
 
@@ -553,11 +553,11 @@ namespace XFEM
     /** \brief Access the interface matrix row and column transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    CORE::LINALG::MatrixRowColTransform& i_mat_row_col_transform(enum FieldName field)
+    Core::LinAlg::MatrixRowColTransform& i_mat_row_col_transform(enum FieldName field)
     {
       return i_mat_row_col_transform(slave_id(field));
     }
-    CORE::LINALG::MatrixRowColTransform& i_mat_row_col_transform(unsigned dis_id)
+    Core::LinAlg::MatrixRowColTransform& i_mat_row_col_transform(unsigned dis_id)
     {
       check_init();
 
@@ -579,17 +579,17 @@ namespace XFEM
     /** \brief Access the interface discretization
      *
      *  \author hiermeier \date 10/16 */
-    inline const DRT::Discretization& i_discret() const
+    inline const Discret::Discretization& i_discret() const
     {
       check_init();
       return *idiscret_;
     }
 
-    inline const DRT::Discretization& sl_discret(enum FieldName field) const
+    inline const Discret::Discretization& sl_discret(enum FieldName field) const
     {
       return sl_discret(slave_id(field));
     }
-    const DRT::Discretization& sl_discret(unsigned dis_id) const
+    const Discret::Discretization& sl_discret(unsigned dis_id) const
     {
       check_init();
 
@@ -655,7 +655,7 @@ namespace XFEM
 
     int slave_id(enum FieldName field) const;
 
-    const std::vector<Teuchos::RCP<const DRT::Discretization>>& sl_dis_vec() const
+    const std::vector<Teuchos::RCP<const Discret::Discretization>>& sl_dis_vec() const
     {
       return slave_discret_vec_;
     }
@@ -694,7 +694,7 @@ namespace XFEM
     Teuchos::RCP<const Epetra_Comm> comm_;
 
     /// vector containing pointers to all the input discretizations
-    std::vector<Teuchos::RCP<const DRT::Discretization>> slave_discret_vec_;
+    std::vector<Teuchos::RCP<const Discret::Discretization>> slave_discret_vec_;
 
     /// mapping between the FieldName enumerator and the slave vector entry number
     std::map<enum FieldName, int> slave_discret_id_map_;
@@ -706,22 +706,22 @@ namespace XFEM
 
     std::vector<Teuchos::RCP<const Epetra_Map>> master_interface_node_maps_;
 
-    std::vector<std::vector<Teuchos::RCP<CORE::LINALG::MultiMapExtractor>>> slave_map_extractors_;
-    std::vector<Teuchos::RCP<CORE::LINALG::MultiMapExtractor>> master_map_extractor_;
+    std::vector<std::vector<Teuchos::RCP<Core::LinAlg::MultiMapExtractor>>> slave_map_extractors_;
+    std::vector<Teuchos::RCP<Core::LinAlg::MultiMapExtractor>> master_map_extractor_;
 
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> element_map_extractor_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> element_map_extractor_;
 
     std::vector<Teuchos::RCP<XFEM::XFieldField::Coupling>> interface_couplings_;
 
-    std::vector<Teuchos::RCP<CORE::LINALG::MatrixRowTransform>> interface_matrix_row_transformers_;
-    std::vector<Teuchos::RCP<CORE::LINALG::MatrixColTransform>> interface_matrix_col_transformers_;
-    std::vector<Teuchos::RCP<CORE::LINALG::MatrixRowColTransform>>
+    std::vector<Teuchos::RCP<Core::LinAlg::MatrixRowTransform>> interface_matrix_row_transformers_;
+    std::vector<Teuchos::RCP<Core::LinAlg::MatrixColTransform>> interface_matrix_col_transformers_;
+    std::vector<Teuchos::RCP<Core::LinAlg::MatrixRowColTransform>>
         interface_matrix_row_col_transformers_;
 
     std::set<int> xfem_dis_ids_;
 
     /// interface discretization
-    Teuchos::RCP<DRT::Discretization> idiscret_;
+    Teuchos::RCP<Discret::Discretization> idiscret_;
 
     /// interface coupling DoF-set
     Teuchos::RCP<XFEM::XFieldField::CouplingDofSet> icoupl_dofset_;

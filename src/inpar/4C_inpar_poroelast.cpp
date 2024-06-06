@@ -20,9 +20,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::PoroElast::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
-  using namespace INPUT;
+  using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
@@ -42,7 +42,7 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
   // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq
   // approximation)
   setStringToIntegralParameter<int>("PHYSICAL_TYPE", "Poro", "Physical Type of Porofluid",
-      tuple<std::string>("Poro", "Poro_P1"), tuple<int>(INPAR::FLUID::poro, INPAR::FLUID::poro_p1),
+      tuple<std::string>("Poro", "Poro_P1"), tuple<int>(Inpar::FLUID::poro, Inpar::FLUID::poro_p1),
       &poroelastdyn);
 
   // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq
@@ -54,39 +54,39 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
       &poroelastdyn);
 
   // Output type
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter(
       "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &poroelastdyn);
   // Time loop control
-  CORE::UTILS::IntParameter("NUMSTEP", 200, "maximum number of Timesteps", &poroelastdyn);
-  CORE::UTILS::DoubleParameter("MAXTIME", 1000.0, "total simulation time", &poroelastdyn);
-  CORE::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size dt", &poroelastdyn);
-  CORE::UTILS::IntParameter(
+  Core::UTILS::IntParameter("NUMSTEP", 200, "maximum number of Timesteps", &poroelastdyn);
+  Core::UTILS::DoubleParameter("MAXTIME", 1000.0, "total simulation time", &poroelastdyn);
+  Core::UTILS::DoubleParameter("TIMESTEP", 0.05, "time step size dt", &poroelastdyn);
+  Core::UTILS::IntParameter(
       "ITEMAX", 10, "maximum number of iterations over fields", &poroelastdyn);
-  CORE::UTILS::IntParameter("ITEMIN", 1, "minimal number of iterations over fields", &poroelastdyn);
-  CORE::UTILS::IntParameter("RESULTSEVRY", 1, "increment for writing solution", &poroelastdyn);
+  Core::UTILS::IntParameter("ITEMIN", 1, "minimal number of iterations over fields", &poroelastdyn);
+  Core::UTILS::IntParameter("RESULTSEVRY", 1, "increment for writing solution", &poroelastdyn);
 
   // Iterationparameters
-  CORE::UTILS::DoubleParameter("TOLRES_GLOBAL", 1e-8,
+  Core::UTILS::DoubleParameter("TOLRES_GLOBAL", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
-  CORE::UTILS::DoubleParameter("TOLINC_GLOBAL", 1e-8,
+  Core::UTILS::DoubleParameter("TOLINC_GLOBAL", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poroelastdyn);
-  CORE::UTILS::DoubleParameter("TOLRES_DISP", 1e-8,
+  Core::UTILS::DoubleParameter("TOLRES_DISP", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
-  CORE::UTILS::DoubleParameter("TOLINC_DISP", 1e-8,
+  Core::UTILS::DoubleParameter("TOLINC_DISP", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poroelastdyn);
-  CORE::UTILS::DoubleParameter("TOLRES_PORO", 1e-8,
+  Core::UTILS::DoubleParameter("TOLRES_PORO", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
-  CORE::UTILS::DoubleParameter("TOLINC_PORO", 1e-8,
+  Core::UTILS::DoubleParameter("TOLINC_PORO", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poroelastdyn);
-  CORE::UTILS::DoubleParameter(
+  Core::UTILS::DoubleParameter(
       "TOLRES_VEL", 1e-8, "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
-  CORE::UTILS::DoubleParameter("TOLINC_VEL", 1e-8,
+  Core::UTILS::DoubleParameter("TOLINC_VEL", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poroelastdyn);
-  CORE::UTILS::DoubleParameter("TOLRES_PRES", 1e-8,
+  Core::UTILS::DoubleParameter("TOLRES_PRES", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
-  CORE::UTILS::DoubleParameter("TOLINC_PRES", 1e-8,
+  Core::UTILS::DoubleParameter("TOLINC_PRES", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poroelastdyn);
-  CORE::UTILS::DoubleParameter("TOLRES_NCOUP", 1e-8,
+  Core::UTILS::DoubleParameter("TOLRES_NCOUP", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poroelastdyn);
 
   setStringToIntegralParameter<int>("NORM_INC", "AbsSingleFields",
@@ -113,36 +113,36 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
       tuple<int>(norm_l1, norm_l1_scaled, norm_l2, norm_rms, norm_inf), &poroelastdyn);
 
-  CORE::UTILS::BoolParameter(
+  Core::UTILS::BoolParameter(
       "SECONDORDER", "Yes", "Second order coupling at the interface.", &poroelastdyn);
 
-  CORE::UTILS::BoolParameter("CONTIPARTINT", "No",
+  Core::UTILS::BoolParameter("CONTIPARTINT", "No",
       "Partial integration of porosity gradient in continuity equation", &poroelastdyn);
 
-  CORE::UTILS::BoolParameter("CONTACTNOPEN", "No",
+  Core::UTILS::BoolParameter("CONTACTNOPEN", "No",
       "No-Penetration Condition on active contact surface in case of poro contact problem!",
       &poroelastdyn);
 
-  CORE::UTILS::BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &poroelastdyn);
+  Core::UTILS::BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &poroelastdyn);
 
-  CORE::UTILS::BoolParameter("CONVECTIVE_TERM", "No", "convective term ", &poroelastdyn);
+  Core::UTILS::BoolParameter("CONVECTIVE_TERM", "No", "convective term ", &poroelastdyn);
 
   // number of linear solver used for poroelasticity
-  CORE::UTILS::IntParameter("LINEAR_SOLVER", -1,
+  Core::UTILS::IntParameter("LINEAR_SOLVER", -1,
       "number of linear solver used for poroelasticity problems", &poroelastdyn);
 
   // flag for equilibration of global system of equations
-  setStringToIntegralParameter<CORE::LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
+  setStringToIntegralParameter<Core::LinAlg::EquilibrationMethod>("EQUILIBRATION", "none",
       "flag for equilibration of global system of equations",
       tuple<std::string>("none", "rows_full", "rows_maindiag", "columns_full", "columns_maindiag",
           "rowsandcolumns_full", "rowsandcolumns_maindiag"),
-      tuple<CORE::LINALG::EquilibrationMethod>(CORE::LINALG::EquilibrationMethod::none,
-          CORE::LINALG::EquilibrationMethod::rows_full,
-          CORE::LINALG::EquilibrationMethod::rows_maindiag,
-          CORE::LINALG::EquilibrationMethod::columns_full,
-          CORE::LINALG::EquilibrationMethod::columns_maindiag,
-          CORE::LINALG::EquilibrationMethod::rowsandcolumns_full,
-          CORE::LINALG::EquilibrationMethod::rowsandcolumns_maindiag),
+      tuple<Core::LinAlg::EquilibrationMethod>(Core::LinAlg::EquilibrationMethod::none,
+          Core::LinAlg::EquilibrationMethod::rows_full,
+          Core::LinAlg::EquilibrationMethod::rows_maindiag,
+          Core::LinAlg::EquilibrationMethod::columns_full,
+          Core::LinAlg::EquilibrationMethod::columns_maindiag,
+          Core::LinAlg::EquilibrationMethod::rowsandcolumns_full,
+          Core::LinAlg::EquilibrationMethod::rowsandcolumns_maindiag),
       &poroelastdyn);
 }
 

@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
  *   Returns the actual base function to be integrated over the volume to form the moment fitting
  *matrix    *
  *----------------------------------------------------------------------------------------------------------*/
-double CORE::GEO::CUT::base_function(std::vector<double> coordi, int base_num)
+double Core::Geo::Cut::base_function(std::vector<double> coordi, int base_num)
 {
   if (base_num == 1)  // f(x,y,z) = 1.0
     return 1.0;

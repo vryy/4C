@@ -40,7 +40,7 @@ namespace ArborX::Details
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEOMETRICSEARCH
+namespace Core::GeometricSearch
 {
 #ifdef FOUR_C_WITH_ARBORX
   //! kdop_directions is the number of directions defining the possible faces of the k-DOP. In this
@@ -68,11 +68,11 @@ namespace CORE::GEOMETRICSEARCH
     BoundingVolume()
     {
       FOUR_C_THROW(
-          "The struct 'CORE::GEOMETRICSEARCH::BoundingVolume' can only be used with ArborX."
+          "The struct 'Core::GeometricSearch::BoundingVolume' can only be used with ArborX."
           "To use it, enable ArborX during the configure process.");
     }
     inline void ExtendBoundaries(const double offset) {}
-    inline void AddPoint(const CORE::LINALG::Matrix<3, 1, double> &point) {}
+    inline void AddPoint(const Core::LinAlg::Matrix<3, 1, double> &point) {}
 #else
     /*! \brief Constructor initializing the bounding volume corners with numerical limit values.
      */
@@ -82,7 +82,7 @@ namespace CORE::GEOMETRICSEARCH
      *
      * @param point Point to add to the bounding volume
      */
-    inline void AddPoint(const CORE::LINALG::Matrix<3, 1, double>& point)
+    inline void AddPoint(const Core::LinAlg::Matrix<3, 1, double>& point)
     {
       bounding_volume_ += ArborX::Point{
           static_cast<float>(point(0)), static_cast<float>(point(1)), static_cast<float>(point(2))};
@@ -112,7 +112,7 @@ namespace CORE::GEOMETRICSEARCH
     ArborX::Experimental::KDOP<kdop_k> bounding_volume_;
 #endif
   };
-}  // namespace CORE::GEOMETRICSEARCH
+}  // namespace Core::GeometricSearch
 
 FOUR_C_NAMESPACE_CLOSE
 

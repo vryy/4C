@@ -38,7 +38,7 @@ namespace
     {
       // Set up the evaluation data container for the geometry pairs.
       Teuchos::ParameterList line_to_volume_params_list;
-      INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+      Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
       evaluation_data_ =
           Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
     }
@@ -58,9 +58,9 @@ namespace
     void create_evaluate_pairs(
         std::vector<Teuchos::RCP<
             GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>>>& geometry_pairs,
-        const std::vector<CORE::LINALG::Matrix<el1::n_dof_, 1, double>>& q_line_elements,
+        const std::vector<Core::LinAlg::Matrix<el1::n_dof_, 1, double>>& q_line_elements,
         const std::vector<double>& line_ref_lengths,
-        const std::vector<CORE::LINALG::Matrix<el2::n_dof_, 1, double>>& q_volume_elements,
+        const std::vector<Core::LinAlg::Matrix<el2::n_dof_, 1, double>>& q_volume_elements,
         std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>>& segments_vector)
     {
       // Check that the vectors have the right size.
@@ -114,10 +114,10 @@ namespace
     Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
 
     //! Vector of line elements.
-    std::vector<Teuchos::RCP<CORE::Elements::Element>> line_elements_;
+    std::vector<Teuchos::RCP<Core::Elements::Element>> line_elements_;
 
     //! Vector of volume elements.
-    std::vector<Teuchos::RCP<CORE::Elements::Element>> volume_elements_;
+    std::vector<Teuchos::RCP<Core::Elements::Element>> volume_elements_;
   };
 
   /**
@@ -127,9 +127,9 @@ namespace
   TEST_F(GeometryPairLineToVolumeSegmentationTest, TestLineAlongElementSurface)
   {
     // Definition of variables for this test case.
-    std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
-    std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
+    std::vector<Core::LinAlg::Matrix<24, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
         geometry_pairs;
@@ -153,9 +153,9 @@ namespace
 
       // The first pair contains the full beam.
       EXPECT_NEAR(
-          -1., segments_vector[0][0].GetEtaA(), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          -1., segments_vector[0][0].GetEtaA(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(
-          1., segments_vector[0][0].GetEtaB(), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          1., segments_vector[0][0].GetEtaB(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
   }
 
@@ -168,9 +168,9 @@ namespace
   TEST_F(GeometryPairLineToVolumeSegmentationTest, TestLineInSmallElements)
   {
     // Definition of variables for this test case.
-    std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
-    std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
+    std::vector<Core::LinAlg::Matrix<24, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
         geometry_pairs;
@@ -193,13 +193,13 @@ namespace
 
       // Check the parameter coordinates.
       EXPECT_NEAR(
-          -1., segments_vector[0][0].GetEtaA(), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          -1., segments_vector[0][0].GetEtaA(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.36285977578126655, segments_vector[0][0].GetEtaB(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.36285977578126744, segments_vector[1][0].GetEtaA(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(
-          1.0, segments_vector[1][0].GetEtaB(), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          1.0, segments_vector[1][0].GetEtaB(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
   }
 
@@ -209,9 +209,9 @@ namespace
   TEST_F(GeometryPairLineToVolumeSegmentationTest, TestMultipleIntersectionsHex27)
   {
     // Definition of variables for this test case.
-    std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
-    std::vector<CORE::LINALG::Matrix<81, 1, double>> q_volume_elements;
+    std::vector<Core::LinAlg::Matrix<81, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>>>
         geometry_pairs;
@@ -234,13 +234,13 @@ namespace
 
       // Check the segment coordinates on the line.
       EXPECT_NEAR(-0.7495456134309243, segments_vector[0][0].GetEtaA(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(-0.44451080329628256, segments_vector[0][0].GetEtaB(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.076870238957896297, segments_vector[0][1].GetEtaA(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.95200105410689462, segments_vector[0][1].GetEtaB(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
   }
 
@@ -250,9 +250,9 @@ namespace
   TEST_F(GeometryPairLineToVolumeSegmentationTest, TestMultipleIntersectionsTet10)
   {
     // Definition of variables for this test case.
-    std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
-    std::vector<CORE::LINALG::Matrix<30, 1, double>> q_volume_elements;
+    std::vector<Core::LinAlg::Matrix<30, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>>>
         geometry_pairs;
@@ -275,13 +275,13 @@ namespace
 
       // Check the segment coordinates on the line.
       EXPECT_NEAR(-0.40853230756138476, segments_vector[0][0].GetEtaA(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(-0.079518054716933712, segments_vector[0][0].GetEtaB(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.88282786408473413, segments_vector[0][1].GetEtaA(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.97917616983415101, segments_vector[0][1].GetEtaB(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
   }
 
@@ -291,9 +291,9 @@ namespace
   TEST_F(GeometryPairLineToVolumeSegmentationTest, TestMultipleIntersectionsNurbs27)
   {
     // Definition of variables for this test case.
-    std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
-    std::vector<CORE::LINALG::Matrix<81, 1, double>> q_volume_elements;
+    std::vector<Core::LinAlg::Matrix<81, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27>>>
         geometry_pairs;
@@ -302,9 +302,9 @@ namespace
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
 
     // Add the relevant nurbs information to the discretization.
-    Teuchos::RCP<DRT::NURBS::NurbsDiscretization> structdis =
-        Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure", Teuchos::null, 3));
-    GLOBAL::Problem::Instance()->AddDis("structure", structdis);
+    Teuchos::RCP<Discret::Nurbs::NurbsDiscretization> structdis =
+        Teuchos::rcp(new Discret::Nurbs::NurbsDiscretization("structure", Teuchos::null, 3));
+    Global::Problem::Instance()->AddDis("structure", structdis);
 
     // Get the geometry.
     XtestMultipleIntersectionsNurbs27Geometry(line_elements_, volume_elements_, q_line_elements,
@@ -321,9 +321,9 @@ namespace
 
       // Check the segment coordinates on the line.
       EXPECT_NEAR(-0.40769440465702655, segments_vector[0][0].GetEtaA(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(-0.0090552523537554153, segments_vector[0][0].GetEtaB(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
   }
 
@@ -333,9 +333,9 @@ namespace
   TEST_F(GeometryPairLineToVolumeSegmentationTest, TestHex8WithLine)
   {
     // Definition of variables for this test case.
-    std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
-    std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
+    std::vector<Core::LinAlg::Matrix<24, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
         geometry_pairs;
@@ -358,13 +358,13 @@ namespace
 
       // Check the segment coordinates on the line.
       EXPECT_NEAR(
-          -1.0, segments_vector[0][0].GetEtaA(), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          -1.0, segments_vector[0][0].GetEtaA(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(-0.9435487116990338, segments_vector[0][0].GetEtaB(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(-0.03868932051359714, segments_vector[0][1].GetEtaA(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.9822380322126314, segments_vector[0][1].GetEtaB(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
   }
 
@@ -374,9 +374,9 @@ namespace
   TEST_F(GeometryPairLineToVolumeSegmentationTest, TestNonValidGaussPointsHex8)
   {
     // Definition of variables for this test case.
-    std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
-    std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
+    std::vector<Core::LinAlg::Matrix<24, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
         geometry_pairs;
@@ -388,7 +388,7 @@ namespace
     // We change the default settings here, to run into the case where the obtained segment has
     // Gauss points that do not project valid
     Teuchos::ParameterList line_to_volume_params_list;
-    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+    Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
     line_to_volume_params_list.set("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 2);
     line_to_volume_params_list.set(
         "GEOMETRY_PAIR_SEGMENTATION_NOT_ALL_GAUSS_POINTS_PROJECT_VALID_ACTION", "warning");
@@ -406,9 +406,9 @@ namespace
     {
       EXPECT_EQ(segments_vector[0].size(), 1);
       EXPECT_NEAR(
-          -1.0, segments_vector[0][0].GetEtaA(), GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          -1.0, segments_vector[0][0].GetEtaA(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.9822380322126314, segments_vector[0][0].GetEtaB(),
-          GEOMETRYPAIR::CONSTANTS::projection_xi_eta_tol);
+          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
   }
 
@@ -418,9 +418,9 @@ namespace
   TEST_F(GeometryPairLineToVolumeSegmentationTest, TestNonValidGaussPointsThrowHex8)
   {
     // Definition of variables for this test case.
-    std::vector<CORE::LINALG::Matrix<12, 1, double>> q_line_elements;
+    std::vector<Core::LinAlg::Matrix<12, 1, double>> q_line_elements;
     std::vector<double> line_ref_lengths;
-    std::vector<CORE::LINALG::Matrix<24, 1, double>> q_volume_elements;
+    std::vector<Core::LinAlg::Matrix<24, 1, double>> q_volume_elements;
     std::vector<Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double,
         GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>>>
         geometry_pairs;
@@ -432,7 +432,7 @@ namespace
     // We change the default settings here, to run into the case where the obtained segment has
     // Gauss points that do not project valid
     Teuchos::ParameterList line_to_volume_params_list;
-    INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
+    Inpar::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_volume_params_list);
     line_to_volume_params_list.set("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 2);
     evaluation_data_ =
         Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
@@ -443,6 +443,6 @@ namespace
     // Create and evaluate the geometry pairs.
     FOUR_C_EXPECT_THROW_WITH_MESSAGE(create_evaluate_pairs(geometry_pairs, q_line_elements,
                                          line_ref_lengths, q_volume_elements, segments_vector),
-        CORE::Exception, "Error when projecting the Gauss points.");
+        Core::Exception, "Error when projecting the Gauss points.");
   }
 }  // namespace

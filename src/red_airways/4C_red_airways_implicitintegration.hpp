@@ -37,19 +37,19 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class ResultTest;
   class RedAirwayResultTest;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
   class Solver;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace AIRWAY
+namespace Airway
 {
   /*!
   \brief time integration for reduced dimensional airway network problems
@@ -62,9 +62,9 @@ namespace AIRWAY
     \brief Standard Constructor
 
     */
-    RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization> dis,
-        std::unique_ptr<CORE::LINALG::Solver> solver, Teuchos::ParameterList& params,
-        CORE::IO::DiscretizationWriter& output);
+    RedAirwayImplicitTimeInt(Teuchos::RCP<Discret::Discretization> dis,
+        std::unique_ptr<Core::LinAlg::Solver> solver, Teuchos::ParameterList& params,
+        Core::IO::DiscretizationWriter& output);
 
 
     /*!
@@ -182,7 +182,7 @@ namespace AIRWAY
     \brief Assembling AIRWAY_ACINUS_DEP Vector for getting pext of nearest acinus
 
     */
-    void compute_nearest_acinus(Teuchos::RCP<DRT::Discretization const> search_discret,
+    void compute_nearest_acinus(Teuchos::RCP<Discret::Discretization const> search_discret,
         std::set<int>* elecolset, std::set<int>* nodecolset,
         Teuchos::RCP<Epetra_Vector> airway_acinus_dep);
 
@@ -214,7 +214,7 @@ namespace AIRWAY
     */
     void read_restart(int step, bool coupledTo3D = false);
 
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest();
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest();
 
 
     //! @name access methods for composite algorithms
@@ -226,7 +226,7 @@ namespace AIRWAY
     Teuchos::RCP<Epetra_Vector> Qout_np() { return qout_np_; }
 
     /// provide access to the Dirichlet map
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
@@ -242,11 +242,11 @@ namespace AIRWAY
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
     const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> MassMatrix()
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> MassMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(massmat_);
+      return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(massmat_);
     }
-    Teuchos::RCP<DRT::Discretization> discretization() { return discret_; }
+    Teuchos::RCP<Discret::Discretization> discretization() { return discret_; }
 
     double Dt() const { return dta_; }
     double Time() const { return time_; }
@@ -279,13 +279,13 @@ namespace AIRWAY
     void ExtractPressure(Teuchos::RCP<Epetra_Vector> couppres);
 
     /// Hand over outputwriter to redairway_tissue
-    CORE::IO::DiscretizationWriter& GetOutputWriter() { return output_; }
+    Core::IO::DiscretizationWriter& GetOutputWriter() { return output_; }
 
     /// Hand over restartreader to redairway_tissue
-    Teuchos::RCP<CORE::IO::DiscretizationReader> GetRestartReader(int step)
+    Teuchos::RCP<Core::IO::DiscretizationReader> GetRestartReader(int step)
     {
-      return Teuchos::rcp(new CORE::IO::DiscretizationReader(
-          discret_, GLOBAL::Problem::Instance()->InputControlFile(), step));
+      return Teuchos::rcp(new Core::IO::DiscretizationReader(
+          discret_, Global::Problem::Instance()->InputControlFile(), step));
     }
 
     //@}
@@ -293,10 +293,10 @@ namespace AIRWAY
    protected:
     //! @name general algorithm parameters
     //! reduced dimensional airway network discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
-    std::unique_ptr<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Discret::Discretization> discret_;
+    std::unique_ptr<Core::LinAlg::Solver> solver_;
     Teuchos::ParameterList params_;
-    CORE::IO::DiscretizationWriter& output_;
+    Core::IO::DiscretizationWriter& output_;
     //! the processor ID from the communicator
     int myrank_;
 
@@ -330,13 +330,13 @@ namespace AIRWAY
     double dtsolve_;
 
     /// (standard) mass matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> massmat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> massmat_;
 
     /// (standard) system matrix
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     /// rhs: right hand side vector
     Teuchos::RCP<Epetra_Vector> rhs_;
@@ -528,7 +528,7 @@ namespace AIRWAY
     //! @name Additional stuff related to coupling with 3D tissue models
 
     /// map between coupling ID and conditions on structure
-    std::map<int, CORE::Conditions::Condition*> coupcond_;
+    std::map<int, Core::Conditions::Condition*> coupcond_;
 
     /// map of coupling IDs
     Teuchos::RCP<Epetra_Map> coupmap_;
@@ -539,7 +539,7 @@ namespace AIRWAY
 
   };  // class RedAirwayImplicitTimeInt
 
-}  // namespace AIRWAY
+}  // namespace Airway
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -23,17 +23,17 @@ with condensed fluid interface velocities
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class CouplingMortar;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class BlockSparseMatrixBase;
   class MatrixColTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace FSI
 {
@@ -59,7 +59,7 @@ namespace FSI
 
     The fluid interface velocities are computed based on the structural
     interface displacements. The conversion is done by
-    ADAPTER::FluidFSI::displacement_to_velocity().
+    Adapter::FluidFSI::displacement_to_velocity().
 
     \sa MortarMonolithicFluidSplit
   */
@@ -85,22 +85,22 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    void setup_system_matrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
+    void setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat) override;
 
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SystemMatrix() const override;
 
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    void scale_system(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
+    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
         Epetra_Vector& b                                         ///< right hand side
         ) override;
 
     /// undo infnorm scaling from scaled solution
-    void unscale_solution(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
+    void unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
         Epetra_Vector& x,                                            ///< solution vector
         Epetra_Vector& b                                             ///< right hand side
         ) override;
@@ -198,10 +198,11 @@ namespace FSI
      */
     void create_node_owner_relationship(std::map<int, int>* nodeOwner,
         std::map<int, std::list<int>>* inverseNodeOwner,
-        std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
-        std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
-        Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
-        const INPAR::FSI::Redistribute domain) override;
+        std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
+        std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
+        Teuchos::RCP<Discret::Discretization> structuredis,
+        Teuchos::RCP<Discret::Discretization> fluiddis,
+        const Inpar::FSI::Redistribute domain) override;
 
 
     /*! \brief Find neighboring node of the opposing field for each node at the interface
@@ -209,10 +210,10 @@ namespace FSI
      * The relation is saved in the map \c fluidToStructureMap as fluidnode -- structurenode and
      * in the map \c structureToFluidMap as structurenode -- fluidnode.
      */
-    void create_interface_mapping(Teuchos::RCP<DRT::Discretization> structuredis,
-        Teuchos::RCP<DRT::Discretization> fluiddis,
-        std::map<int, CORE::Nodes::Node*>* fluidnodesPtr,
-        std::map<int, CORE::Nodes::Node*>* structuregnodesPtr,
+    void create_interface_mapping(Teuchos::RCP<Discret::Discretization> structuredis,
+        Teuchos::RCP<Discret::Discretization> fluiddis,
+        std::map<int, Core::Nodes::Node*>* fluidnodesPtr,
+        std::map<int, Core::Nodes::Node*>* structuregnodesPtr,
         std::map<int, std::vector<int>>& fluidToStructureMap,
         std::map<int, std::vector<int>>& structureToFluidMap) override;
 
@@ -244,7 +245,7 @@ namespace FSI
      *  solution increments due to predictors have to be treated in a special
      *  way.
      *
-     *  \sa  ADAPTER::FluidFSI::displacement_to_velocity()
+     *  \sa  Adapter::FluidFSI::displacement_to_velocity()
      */
     void extract_field_vectors(
         Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
@@ -299,7 +300,7 @@ namespace FSI
      *  \f$\Delta x^T = [\Delta d_I^{S,n+1}~\Delta d_\Gamma^{S,n+1}~\Delta u_I^{F,n+1}~\Delta
      * d_I^{G,n+1}]\f$
      */
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     /// communicator
     const Epetra_Comm& comm_;
@@ -308,13 +309,13 @@ namespace FSI
     /// Handle row and column map exchange for matrix blocks
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<CORE::ADAPTER::Coupling> fscoupfa_;
+    Teuchos::RCP<Core::Adapter::Coupling> fscoupfa_;
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<CORE::ADAPTER::CouplingMortar> coupsfm_;
+    Teuchos::RCP<Core::Adapter::CouplingMortar> coupsfm_;
 
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform> fmiitransform_;
 
     ///@}
 
@@ -331,10 +332,10 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> aleresidual_;
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
+    Inpar::FSI::LinearBlockSolver linearsolverstrategy_;
 
     /// ale movement relative to structure (none, slide_curr, slide_ref)
-    INPAR::FSI::SlideALEProj aleproj_;
+    Inpar::FSI::SlideALEProj aleproj_;
     bool notsetup_;  ///< indicates if Setup has not been called yet
 
     Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
@@ -379,32 +380,32 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> ddialeinc_;
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fgicur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fgicur_;
 
     //! block \f$F_{\Gamma I,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fgiprev_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fgiprev_;
 
     //! block \f$F_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fggcur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fggcur_;
 
     //! block \f$F_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fggprev_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fggprev_;
 
     //! block \f$F_{\Gamma I,i+1}^G\f$ of fluid shape derivatives matrix at current NOX iteration
     //! \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmgicur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fmgicur_;
 
     //! block \f$F_{\Gamma I,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration
     //! \f$i\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmgiprev_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fmgiprev_;
 
     //! block \f$F_{\Gamma\Gamma,i+1}^G\f$ of fluid shape derivatives matrix at current NOX
     //! iteration \f$i+1\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmggcur_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fmggcur_;
 
     //! block \f$F_{\Gamma\Gamma,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration
     //! \f$i\f$
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmggprev_;
+    Teuchos::RCP<const Core::LinAlg::SparseMatrix> fmggprev_;
 
     //@}
 

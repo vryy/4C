@@ -31,15 +31,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
-  namespace NURBS
+  namespace Nurbs
   {
     class Knotvector;
   }
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::IO
+namespace Core::IO
 {
   /*----------------------------------------------------------------------*/
   /// reading, broadcasting and storing of dat file contents
@@ -119,7 +119,7 @@ namespace CORE::IO
     /// @param dobj_fenode Resulting collection of all nodes that belong to a design.
     /// @param get_discretization Callback to return a discretization by name.
     void ReadDesign(const std::string& name, std::vector<std::vector<int>>& dobj_fenode,
-        const std::function<const DRT::Discretization&(const std::string& name)>&
+        const std::function<const Discret::Discretization&(const std::string& name)>&
             get_discretization);
 
     /*!
@@ -129,7 +129,7 @@ namespace CORE::IO
       \param  disknots       (out): node vector coordinates
 
     */
-    void ReadKnots(const std::string& name, Teuchos::RCP<DRT::NURBS::Knotvector>& disknots);
+    void ReadKnots(const std::string& name, Teuchos::RCP<Discret::Nurbs::Knotvector>& disknots);
 
 
     /// print unknown section names found in the input file
@@ -181,14 +181,14 @@ namespace CORE::IO
    * whitespace character on both sides. In this case, key and value may contain spaces
    * internally. Leading and trailing whitespace is trimmed from both key and value.
    *
-   * @throws CORE::Exception If the @p line cannot be read.
+   * @throws Core::Exception If the @p line cannot be read.
    *
    * @return A pair of key and value.
    */
   std::pair<std::string, std::string> ReadKeyValue(const std::string& line);
 
 
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 FOUR_C_NAMESPACE_CLOSE
 

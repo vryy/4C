@@ -10,11 +10,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // template classes
-template class DRT::ELEMENTS::So3Plast<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex18>;
-template class DRT::ELEMENTS::So3Plast<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::So3Plast<CORE::FE::CellType::nurbs27>;
+template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>;
+template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>;
+template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE
 

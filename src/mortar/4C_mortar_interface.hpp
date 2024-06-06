@@ -33,22 +33,22 @@ namespace BINSTRATEGY
   class BinningStrategy;
 }  // namespace BINSTRATEGY
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace MORTAR
+namespace Mortar
 {
   // forward declarations
   class Interface;
@@ -105,16 +105,16 @@ namespace MORTAR
       case state_thermo_lagrange_multiplier:
         return "thermo_lm";
       default:
-        return "unknown MORTAR::StateType";
+        return "unknown Mortar::StateType";
     }
   }
 
   /*! \brief Map std::string to state type enum
    *
    *  \author hiermeier */
-  static inline enum MORTAR::StateType String2StateType(const std::string& name)
+  static inline enum Mortar::StateType String2StateType(const std::string& name)
   {
-    MORTAR::StateType type = state_vague;
+    Mortar::StateType type = state_vague;
     if (name == "displacement")
       type = state_new_displacement;
     else if (name == "olddisplacement")
@@ -178,9 +178,9 @@ namespace MORTAR
 
     inline bool IsRedistributed() const { return redistributed_; }
 
-    inline Teuchos::RCP<DRT::Discretization>& i_discret() { return idiscret_; }
+    inline Teuchos::RCP<Discret::Discretization>& i_discret() { return idiscret_; }
 
-    inline Teuchos::RCP<const DRT::Discretization> i_discret() const { return idiscret_; }
+    inline Teuchos::RCP<const Discret::Discretization> i_discret() const { return idiscret_; }
 
     inline int& Dim() { return dim_; }
 
@@ -190,20 +190,20 @@ namespace MORTAR
 
     inline const Teuchos::ParameterList& IMortar() const { return imortar_; }
 
-    inline enum INPAR::MORTAR::ShapeFcn& ShapeFcn() { return shapefcn_; }
+    inline enum Inpar::Mortar::ShapeFcn& ShapeFcn() { return shapefcn_; }
 
-    inline enum INPAR::MORTAR::ShapeFcn ShapeFcn() const { return shapefcn_; }
+    inline enum Inpar::Mortar::ShapeFcn ShapeFcn() const { return shapefcn_; }
 
     inline bool& IsQuadSlave() { return quadslave_; }
 
     inline bool IsQuadSlave() const { return quadslave_; }
 
-    inline const enum INPAR::MORTAR::ExtendGhosting& GetExtendGhosting() const
+    inline const enum Inpar::Mortar::ExtendGhosting& GetExtendGhosting() const
     {
       return extendghosting_;
     }
 
-    inline void SetExtendGhosting(const enum INPAR::MORTAR::ExtendGhosting& extendghosting)
+    inline void SetExtendGhosting(const enum Inpar::Mortar::ExtendGhosting& extendghosting)
     {
       extendghosting_ = extendghosting;
     }
@@ -309,13 +309,13 @@ namespace MORTAR
 
     inline int MaxDofGlobal() const { return maxdofglobal_; }
 
-    inline INPAR::MORTAR::SearchAlgorithm& SearchAlgorithm() { return searchalgo_; }
+    inline Inpar::Mortar::SearchAlgorithm& SearchAlgorithm() { return searchalgo_; }
 
-    inline enum INPAR::MORTAR::SearchAlgorithm SearchAlgorithm() const { return searchalgo_; }
+    inline enum Inpar::Mortar::SearchAlgorithm SearchAlgorithm() const { return searchalgo_; }
 
-    inline Teuchos::RCP<MORTAR::BinaryTree>& BinaryTree() { return binarytree_; }
+    inline Teuchos::RCP<Mortar::BinaryTree>& BinaryTree() { return binarytree_; }
 
-    inline Teuchos::RCP<const MORTAR::BinaryTree> BinaryTree() const { return binarytree_; }
+    inline Teuchos::RCP<const Mortar::BinaryTree> BinaryTree() const { return binarytree_; }
 
     inline double& SearchParam() { return searchparam_; }
 
@@ -339,13 +339,13 @@ namespace MORTAR
 
 
 
-    inline INPAR::MORTAR::Problemtype& PoroType() { return porotype_; }
+    inline Inpar::Mortar::Problemtype& PoroType() { return porotype_; }
 
-    inline INPAR::MORTAR::Problemtype PoroType() const { return porotype_; }
+    inline Inpar::Mortar::Problemtype PoroType() const { return porotype_; }
 
-    inline Teuchos::RCP<CORE::COMM::Exporter>& sl_exporter_ptr() { return sl_exporter_; }
+    inline Teuchos::RCP<Core::Communication::Exporter>& sl_exporter_ptr() { return sl_exporter_; }
 
-    inline CORE::COMM::Exporter& Exporter()
+    inline Core::Communication::Exporter& Exporter()
     {
       if (sl_exporter_.is_null()) FOUR_C_THROW("The exporter has not been initialized.");
 
@@ -402,7 +402,7 @@ namespace MORTAR
     const Interface* masharingrefinterface_ = nullptr;
 
     //! the discretization of the mortar interface
-    Teuchos::RCP<DRT::Discretization> idiscret_;
+    Teuchos::RCP<Discret::Discretization> idiscret_;
 
     //! Spatial dimension of problem (2D or 3D)
     int dim_;
@@ -411,13 +411,13 @@ namespace MORTAR
     Teuchos::ParameterList imortar_;
 
     //! employed type of shape function set
-    INPAR::MORTAR::ShapeFcn shapefcn_;
+    Inpar::Mortar::ShapeFcn shapefcn_;
 
     //! flag indicating quadratic 2d/3d slave elements
     bool quadslave_;
 
     //! employed type of redundancy in storage of interface
-    INPAR::MORTAR::ExtendGhosting extendghosting_;
+    Inpar::Mortar::ExtendGhosting extendghosting_;
 
     //! @name Maps
     //! @{
@@ -503,10 +503,10 @@ namespace MORTAR
     //! @{
 
     //! type of search algorithm
-    INPAR::MORTAR::SearchAlgorithm searchalgo_;
+    Inpar::Mortar::SearchAlgorithm searchalgo_;
 
     //! binary searchtree
-    Teuchos::RCP<MORTAR::BinaryTree> binarytree_;
+    Teuchos::RCP<Mortar::BinaryTree> binarytree_;
 
     //! search parameter
     double searchparam_;
@@ -527,12 +527,12 @@ namespace MORTAR
 
 
     //! value for poro problem type!
-    INPAR::MORTAR::Problemtype porotype_;
+    Inpar::Mortar::Problemtype porotype_;
 
     //! flag if ehl contact problem!
     bool ehl_;
 
-    Teuchos::RCP<CORE::COMM::Exporter> sl_exporter_;
+    Teuchos::RCP<Core::Communication::Exporter> sl_exporter_;
 
     //! Is this data container object initialized?
     bool isinit_;
@@ -552,7 +552,7 @@ namespace MORTAR
 
     @param[in] interfaceData_ptr Interface data container
     */
-    Interface(Teuchos::RCP<MORTAR::InterfaceDataContainer> interfaceData_ptr);
+    Interface(Teuchos::RCP<Mortar::InterfaceDataContainer> interfaceData_ptr);
 
    public:
     /**
@@ -633,7 +633,7 @@ namespace MORTAR
     /*!
     \brief Get discretization of this interface
     */
-    DRT::Discretization& Discret() const { return *idiscret_; }
+    Discret::Discretization& Discret() const { return *idiscret_; }
 
     /*!
     \brief Get problem dimension
@@ -665,7 +665,7 @@ namespace MORTAR
     /*!
     \brief Get type of search algorithm
     */
-    INPAR::MORTAR::SearchAlgorithm SearchAlg() const { return searchalgo_; };
+    Inpar::Mortar::SearchAlgorithm SearchAlg() const { return searchalgo_; };
 
     /*!
     \brief Get search algorithm parameter
@@ -685,7 +685,7 @@ namespace MORTAR
       if (Filled())
         return oldnodecolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -697,7 +697,7 @@ namespace MORTAR
       if (Filled())
         return oldelecolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -709,7 +709,7 @@ namespace MORTAR
       if (Filled())
         return snoderowmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -720,7 +720,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PSlaveRowNodes() const
     {
-      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+      if (not Filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
 
       return interface_data_->PSNodeRowMap();
     }
@@ -733,7 +733,7 @@ namespace MORTAR
       if (Filled())
         return mnoderowmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -744,7 +744,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PMasterRowNodes() const
     {
-      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+      if (not Filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
 
       return interface_data_->PMNodeRowMap();
     }
@@ -757,7 +757,7 @@ namespace MORTAR
       if (Filled())
         return snodecolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -769,7 +769,7 @@ namespace MORTAR
       if (Filled())
         return mnodecolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -781,7 +781,7 @@ namespace MORTAR
       if (Filled())
         return snoderowmapbound_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -793,7 +793,7 @@ namespace MORTAR
       if (Filled())
         return snodecolmapbound_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -805,7 +805,7 @@ namespace MORTAR
       if (Filled())
         return mnoderowmapnobound_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -817,7 +817,7 @@ namespace MORTAR
       if (Filled())
         return mnodecolmapnobound_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -829,7 +829,7 @@ namespace MORTAR
       if (Filled())
         return selerowmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -841,7 +841,7 @@ namespace MORTAR
       if (Filled())
         return melerowmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -853,7 +853,7 @@ namespace MORTAR
       if (Filled())
         return selecolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -865,7 +865,7 @@ namespace MORTAR
       if (Filled())
         return melecolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -877,7 +877,7 @@ namespace MORTAR
       if (Filled())
         return sdofrowmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -889,7 +889,7 @@ namespace MORTAR
       if (Filled())
         return sdofcolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -900,7 +900,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PSlaveRowDofs() const
     {
-      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+      if (not Filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
 
       return interface_data_->PSDofRowMap();
     }
@@ -913,7 +913,7 @@ namespace MORTAR
       if (Filled())
         return mdofrowmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -925,7 +925,7 @@ namespace MORTAR
       if (Filled())
         return mdofcolmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -936,7 +936,7 @@ namespace MORTAR
     */
     const Teuchos::RCP<Epetra_Map>& PMasterRowDofs() const
     {
-      if (not Filled()) FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+      if (not Filled()) FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
 
       return interface_data_->PMDofRowMap();
     }
@@ -949,7 +949,7 @@ namespace MORTAR
       if (Filled())
         return lmdofmap_;
       else
-        FOUR_C_THROW("MORTAR::Interface::fill_complete was not called");
+        FOUR_C_THROW("Mortar::Interface::fill_complete was not called");
       exit(EXIT_FAILURE);  // calm down the compiler
     }
 
@@ -967,23 +967,23 @@ namespace MORTAR
     //! @name Evlauation methods
 
     /*!
-    \brief Add a MORTAR::Node to the interface (Filled()==true NOT prerequisite)
+    \brief Add a Mortar::Node to the interface (Filled()==true NOT prerequisite)
 
     \param mrtrnode (in): Teuchos::rcp to a mortar node
 
     \return Filled()==false
     */
-    void AddMortarNode(Teuchos::RCP<MORTAR::Node> mrtrnode);
+    void AddMortarNode(Teuchos::RCP<Mortar::Node> mrtrnode);
 
     /*!
-    \brief Add a MORTAR::Element to the interface (Filled()==true is prerequisite)
+    \brief Add a Mortar::Element to the interface (Filled()==true is prerequisite)
 
     \param mrtrele (in): Teuchos::rcp to a mortar element
 
     \return Filled()==false
 
     */
-    void AddMortarElement(Teuchos::RCP<MORTAR::Element> mrtrele);
+    void AddMortarElement(Teuchos::RCP<Mortar::Element> mrtrele);
 
     //! @name Parallel distribution and ghosting
     //! @{
@@ -996,8 +996,8 @@ namespace MORTAR
     ghosting.
 
     If we have arrived at the final parallel distribution, we have to ask the underlying
-    DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
-    only if requested by the user/algorithm.
+    Discret::Discretization to assign degrees of freedom. Since this is very expensive, let's do
+    this only if requested by the user/algorithm.
 
     \sa extend_interface_ghosting()
 
@@ -1131,11 +1131,11 @@ namespace MORTAR
     \brief Create integration cells for interface
 
     */
-    void EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell>>& intcells);
+    void EvaluateGeometry(std::vector<Teuchos::RCP<Mortar::IntCell>>& intcells);
 
     /*! @name Evaluate mortar interface
      *
-     * This is the main routine of the MORTAR::Interface class, where nodal normals
+     * This is the main routine of the Mortar::Interface class, where nodal normals
      * are computed, search is performed, mortar segments are set up and the entries
      * of the mortar matrices D and M are integrated. If the boolean flag "nonlinear"
      * is set to true (only for contact), then nonlinear mortar coupling is performed
@@ -1171,7 +1171,7 @@ namespace MORTAR
     /** \brief Evaluate mortar interface
      *
      *  \param mparams_ptr (in/out) : mortar parameter interface pointer */
-    void Evaluate(Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
+    void Evaluate(Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
     {
       Evaluate(0, mparams_ptr->GetStepNp(), mparams_ptr->GetNlnIter(), mparams_ptr);
     };
@@ -1180,7 +1180,7 @@ namespace MORTAR
      *
      *  \param rriter      (in)     : round robin iteration
      *  \param mparams_ptr (in/out) : mortar parameter interface pointer */
-    void Evaluate(int rriter, Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
+    void Evaluate(int rriter, Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr)
     {
       Evaluate(rriter, mparams_ptr->GetStepNp(), mparams_ptr->GetNlnIter(), mparams_ptr);
     };
@@ -1192,7 +1192,7 @@ namespace MORTAR
      *  \param iter        (in)     : current iteration number
      *  \param mparams_ptr (in/out) : mortar parameter interface pointer */
     void Evaluate(int rriter, const int& step, const int& iter,
-        Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr);
+        Teuchos::RCP<Mortar::ParamsInterface> mparams_ptr);
 
     /// @}
 
@@ -1216,8 +1216,8 @@ namespace MORTAR
     \brief Integrate Mortar matrices D and M and gap g on slave/master overlaps
 
     */
-    virtual bool MortarCoupling(MORTAR::Element* sele, std::vector<MORTAR::Element*> mele,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    virtual bool MortarCoupling(Mortar::Element* sele, std::vector<Mortar::Element*> mele,
+        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
 
     /*!
     \brief Assemble lagrange multipliers into global z vector (penalty strategy)
@@ -1229,25 +1229,25 @@ namespace MORTAR
     \brief Assemble Mortar matrices D and M
 
     */
-    void AssembleDM(CORE::LINALG::SparseMatrix& dglobal, CORE::LINALG::SparseMatrix& mglobal);
+    void AssembleDM(Core::LinAlg::SparseMatrix& dglobal, Core::LinAlg::SparseMatrix& mglobal);
 
     /*!
     \brief Assemble Mortar matrix D
 
     */
-    void AssembleD(CORE::LINALG::SparseMatrix& dglobal);
+    void AssembleD(Core::LinAlg::SparseMatrix& dglobal);
 
     /*!
     \brief Assemble Mortar matrix M
 
     */
-    void AssembleM(CORE::LINALG::SparseMatrix& mglobal);
+    void AssembleM(Core::LinAlg::SparseMatrix& mglobal);
 
     /*!
     \brief Assemble matrix of normals N
 
     */
-    void assemble_normals(CORE::LINALG::SparseMatrix& nglobal);
+    void assemble_normals(Core::LinAlg::SparseMatrix& nglobal);
 
     /*!
     \brief Assemble transformation matrices T and T^(-1)
@@ -1261,7 +1261,7 @@ namespace MORTAR
     {d}, we have to apply the transformation matrix T and vice
     versa with the transformation matrix T^(-1).
     */
-    void AssembleTrafo(CORE::LINALG::SparseMatrix& trafo, CORE::LINALG::SparseMatrix& invtrafo,
+    void AssembleTrafo(Core::LinAlg::SparseMatrix& trafo, Core::LinAlg::SparseMatrix& invtrafo,
         std::set<int>& donebefore);
 
     /*!
@@ -1289,7 +1289,7 @@ namespace MORTAR
     /*!
     \brief find meles for one snode
     */
-    void FindMEles(Node& mrtrnode, std::vector<MORTAR::Element*>& meles) const;
+    void FindMEles(Node& mrtrnode, std::vector<Mortar::Element*>& meles) const;
 
     /*!
     \brief return integration time for current interface
@@ -1316,7 +1316,7 @@ namespace MORTAR
     void PrintShapeFcn() { std::cout << shapefcn_ << std::endl; };
 
     void SetPoroFlag(bool poro) { interface_data_->IsPoro() = poro; }
-    void SetPoroType(INPAR::MORTAR::Problemtype type) { interface_data_->PoroType() = type; }
+    void SetPoroType(Inpar::Mortar::Problemtype type) { interface_data_->PoroType() = type; }
     void SetEhlFlag(bool ehl) { ehl_ = ehl; }
 
     //@}
@@ -1408,9 +1408,9 @@ namespace MORTAR
      *
      *  \author hiermeier
      *  \date 11/16 */
-    virtual void pre_mortar_coupling(const MORTAR::Element* sele,
-        const std::vector<MORTAR::Element*> mele,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const {
+    virtual void pre_mortar_coupling(const Mortar::Element* sele,
+        const std::vector<Mortar::Element*> mele,
+        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) const {
         /* does nothing in the default case */
     };
 
@@ -1422,9 +1422,9 @@ namespace MORTAR
      *
      *  \author hiermeier
      *  \date 11/16 */
-    virtual void post_mortar_coupling(const MORTAR::Element* sele,
-        const std::vector<MORTAR::Element*> mele,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const {
+    virtual void post_mortar_coupling(const Mortar::Element* sele,
+        const std::vector<Mortar::Element*> mele,
+        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr) const {
         /* does nothing in the default case */
     };
 
@@ -1433,7 +1433,7 @@ namespace MORTAR
 
     */
     virtual void evaluate_sts(
-        const Epetra_Map& selecolmap, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+        const Epetra_Map& selecolmap, const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
 
     /*!
     \brief Evaluate node-to-segment coupling
@@ -1486,7 +1486,7 @@ namespace MORTAR
 
     */
     virtual void evaluate_coupling(const Epetra_Map& selecolmap, const Epetra_Map* snoderowmap,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
 
     /*!
     \brief do scaling and other operations after real coupling
@@ -1499,7 +1499,7 @@ namespace MORTAR
 
     */
     void find_m_nodes(
-        Node& mrtrnode, std::vector<MORTAR::Element*>& meles, std::vector<Node*>& mnodes);
+        Node& mrtrnode, std::vector<Mortar::Element*>& meles, std::vector<Node*>& mnodes);
 
     /*!
     \brief Initialize data container for nodes and elements
@@ -1520,11 +1520,11 @@ namespace MORTAR
     virtual void set_element_areas();
 
     /*!
-    \brief Split MORTAR::Elements into IntElements for 3D quadratic coupling
+    \brief Split Mortar::Elements into IntElements for 3D quadratic coupling
 
     */
     bool split_int_elements(
-        MORTAR::Element& ele, std::vector<Teuchos::RCP<MORTAR::IntElement>>& auxele);
+        Mortar::Element& ele, std::vector<Teuchos::RCP<Mortar::IntElement>>& auxele);
 
     /*!
     \brief Update interface master and slave sets
@@ -1551,8 +1551,8 @@ namespace MORTAR
     ghosting.
 
     If we have arrived at the final parallel distribution, we have to ask the underlying
-    DRT::Discretization to assign degrees of freedom. Since this is very expensive, let's do this
-    only if requested by the user/algorithm.
+    Discret::Discretization to assign degrees of freedom. Since this is very expensive, let's do
+    this only if requested by the user/algorithm.
 
     \sa extend_interface_ghosting_safely()
 
@@ -1724,7 +1724,7 @@ namespace MORTAR
     /*!
     \brief Setup interface discretization
 
-    Creates either a regular DRT::Discretization or a DRT::NurbsDiscretization.
+    Creates either a regular Discret::Discretization or a Discret::NurbsDiscretization.
     */
     void create_interface_discretization();
 
@@ -1752,11 +1752,11 @@ namespace MORTAR
     std::map<int, int>& procmap_;            ///< ref. to mapping global -> local communicator PIDs
     bool& redistributed_;                    ///< ref. to redistribution for this time step?
 
-    Teuchos::RCP<DRT::Discretization>&
+    Teuchos::RCP<Discret::Discretization>&
         idiscret_;                     ///< ref. to the discretization of the mortar interface
     int& dim_;                         ///< ref. to dimension of problem (2D or 3D)
     Teuchos::ParameterList& imortar_;  ///< ref. to containing contact input parameters of interface
-    INPAR::MORTAR::ShapeFcn& shapefcn_;  ///< ref. to employed type of shape function set
+    Inpar::Mortar::ShapeFcn& shapefcn_;  ///< ref. to employed type of shape function set
     bool& quadslave_;                    ///< ref. to flag indicating quadratic 2d/3d slave elements
 
     Teuchos::RCP<Epetra_Map>&
@@ -1796,8 +1796,8 @@ namespace MORTAR
     Teuchos::RCP<Epetra_Map>& lmdofmap_;  ///< ref. to row map of all Lagrange multiplier dofs
     int& maxdofglobal_;                   ///< ref. to maximum dof ID in global discretization
 
-    INPAR::MORTAR::SearchAlgorithm& searchalgo_;    ///< ref. to type of search algorithm
-    Teuchos::RCP<MORTAR::BinaryTree>& binarytree_;  ///< ref. to binary searchtree
+    Inpar::Mortar::SearchAlgorithm& searchalgo_;    ///< ref. to type of search algorithm
+    Teuchos::RCP<Mortar::BinaryTree>& binarytree_;  ///< ref. to binary searchtree
     double& searchparam_;                           ///< ref. to search parameter
     bool& searchuseauxpos_;      ///< ref. to use auxiliary position when computing dops
     double& inttime_interface_;  ///< ref. to integration time
@@ -1807,11 +1807,11 @@ namespace MORTAR
 
     /// @}
   };  // class Interface
-}  // namespace MORTAR
+}  // namespace Mortar
 
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const MORTAR::Interface& interface);
+std::ostream& operator<<(std::ostream& os, const Mortar::Interface& interface);
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -17,16 +17,16 @@ namespace
   class SoHex8DetermAnalys : public ::testing::Test
   {
    protected:
-    Teuchos::RCP<DRT::ELEMENTS::SoHex8DeterminantAnalysis> analyser_;
+    Teuchos::RCP<Discret::ELEMENTS::SoHex8DeterminantAnalysis> analyser_;
     // Set up testing environment.
-    void SetUp() override { analyser_ = DRT::ELEMENTS::SoHex8DeterminantAnalysis::create(); }
+    void SetUp() override { analyser_ = Discret::ELEMENTS::SoHex8DeterminantAnalysis::create(); }
     // Delete pointers.
     void TearDown() override { analyser_ = Teuchos::null; }
   };
 
   TEST_F(SoHex8DetermAnalys, TestElementUndeformed)
   {
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> x_test;
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> x_test;
     x_test(0, 0) = 0.0;
     x_test(0, 1) = 1.0;
     x_test(0, 2) = 1.0;
@@ -62,7 +62,7 @@ namespace
    *  Expected result = INVALID */
   TEST_F(SoHex8DetermAnalys, TestElementFig5Johnen2017)
   {
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> x_test;
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> x_test;
     x_test(0, 0) = 0.0;
     x_test(0, 1) = 1.0;
     x_test(0, 2) = 1.7615170641459;
@@ -98,7 +98,7 @@ namespace
    *  Expected result = VALID */
   TEST_F(SoHex8DetermAnalys, TestElementFig6Johnen2017)
   {
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> x_test;
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> x_test;
     x_test(0, 0) = 0.0;
     x_test(0, 1) = 1.0;
     x_test(0, 2) = 1.539;
@@ -134,7 +134,7 @@ namespace
    *  Expected result = INVALID */
   TEST_F(SoHex8DetermAnalys, TestElementFig7Johnen2017)
   {
-    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> x_test;
+    Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> x_test;
     x_test(0, 0) = 0.464949491866817;
     x_test(0, 1) = 0.481795709097567;
     x_test(0, 2) = 0.482406079287087;

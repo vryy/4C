@@ -17,23 +17,23 @@
 
 #include "4C_config.hpp"
 
-#include "4C_solver_nonlin_nox_abstract_prepostoperator.hpp"  // base class of NOX::NLN::LinSystem::PrePostOp::PseudoTransient
-#include "4C_solver_nonlin_nox_solver_linesearchbased.hpp"  // base class of NOX::NLN::Solver::PseudoTransient
+#include "4C_solver_nonlin_nox_abstract_prepostoperator.hpp"  // base class of NOX::Nln::LinSystem::PrePostOp::PseudoTransient
+#include "4C_solver_nonlin_nox_solver_linesearchbased.hpp"  // base class of NOX::Nln::Solver::PseudoTransient
 
 #include <NOX_Abstract_Vector.H>
 
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     class LinearSystem;
     namespace Solver
@@ -64,7 +64,7 @@ namespace NOX
        *     Int. J. Numer. Meth. Engng., Vol. 102, pp. 1683-1703, 2015.
        *
        * \author Michael Hiermeier */
-      class PseudoTransient : public NOX::NLN::Solver::LineSearchBased
+      class PseudoTransient : public NOX::Nln::Solver::LineSearchBased
       {
        public:
         //! Different pseudo time step control types
@@ -159,14 +159,14 @@ namespace NOX
         //! constructor
         PseudoTransient(const Teuchos::RCP<::NOX::Abstract::Group>& grp,
             const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
-            const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
+            const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,
             const Teuchos::RCP<Teuchos::ParameterList>& params);
 
 
         //! reset the non-linear solver
         void reset(const ::NOX::Abstract::Vector& initialGuess,
             const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
-            const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests);
+            const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests);
         void reset(const ::NOX::Abstract::Vector& initialGuess,
             const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) override;
 
@@ -295,20 +295,20 @@ namespace NOX
 
        protected:
         //! Inner Stopping test
-        Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> iTestPtr_;
+        Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> iTestPtr_;
 
         /*! Pointer to a linear system pre/post operator, which is used
          *  to modify the jacobian directly from the non-linear solver. */
-        Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prePostLinSysPtr_;
+        Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> prePostLinSysPtr_;
 
         /*! Pointer to a nln group pre/post operator, which is used
          *  to modify the right-hand-side directly from the non-linear solver. */
-        Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prePostGroupPtr_;
+        Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> prePostGroupPtr_;
 
         //! Pointer to the scaling Operator (Identity scaling)
         Teuchos::RCP<Epetra_Vector> scalingDiagOpPtr_;
         //! Pointer to the scaling Operator (Element based scaling)
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> scalingMatrixOpPtr_;
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> scalingMatrixOpPtr_;
 
         //! @name Special pseudo transient continuation parameters
         //@{
@@ -382,39 +382,39 @@ namespace NOX
         /*! \brief Pseudo Transient Continuation (PTC) non-linear solver helper class
          *
          * This class implementation is an example for the usage of the
-         * NOX::NLN::Abstract::PrePostOperator and its wrapper the
-         * NOX::NLN::LinSystem::PrePostOperator classes. The PTC solver uses them to modify the
+         * NOX::Nln::Abstract::PrePostOperator and its wrapper the
+         * NOX::Nln::LinSystem::PrePostOperator classes. The PTC solver uses them to modify the
          * linear system or to be even more precise the jacobian.
          *
          * \author Michael Hiermeier */
-        class PseudoTransient : public NOX::NLN::Abstract::PrePostOperator
+        class PseudoTransient : public NOX::Nln::Abstract::PrePostOperator
         {
          public:
           //! constructor
           PseudoTransient(Teuchos::RCP<Epetra_Vector>& scalingDiagOp,
-              Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr,
-              const NOX::NLN::Solver::PseudoTransient& ptcsolver);
+              Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr,
+              const NOX::Nln::Solver::PseudoTransient& ptcsolver);
 
 
-          void run_post_compute_jacobian(CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
-              const NOX::NLN::LinearSystem& linsys) override;
+          void run_post_compute_jacobian(Core::LinAlg::SparseOperator& jac, const Epetra_Vector& x,
+              const NOX::Nln::LinearSystem& linsys) override;
 
-          void run_post_compute_fand_jacobian(Epetra_Vector& rhs, CORE::LINALG::SparseOperator& jac,
-              const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys) override;
+          void run_post_compute_fand_jacobian(Epetra_Vector& rhs, Core::LinAlg::SparseOperator& jac,
+              const Epetra_Vector& x, const NOX::Nln::LinearSystem& linsys) override;
 
          protected:
           //! modify the jacobian as defined by the scaling operator type
-          virtual void modify_jacobian(CORE::LINALG::SparseMatrix& jac);
+          virtual void modify_jacobian(Core::LinAlg::SparseMatrix& jac);
 
          private:
           //! read-only access
-          const NOX::NLN::Solver::PseudoTransient& ptcsolver_;
+          const NOX::Nln::Solver::PseudoTransient& ptcsolver_;
 
           //! reference to the scaling diagonal operator
           Teuchos::RCP<Epetra_Vector>& scaling_diag_op_ptr_;
 
           //! reference to the scaling diagonal operator matrix
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scaling_matrix_op_ptr_;
+          Teuchos::RCP<Core::LinAlg::SparseMatrix>& scaling_matrix_op_ptr_;
 
         };  // class PseudoTransient
       }     // namespace PrePostOp
@@ -428,32 +428,32 @@ namespace NOX
          * The PTC solver uses this helper class to modify the right hand side.
          *
          * \author Michael Hiermeier */
-        class PseudoTransient : public NOX::NLN::Abstract::PrePostOperator
+        class PseudoTransient : public NOX::Nln::Abstract::PrePostOperator
         {
          public:
           //! constructor
           PseudoTransient(Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr,
-              Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr,
-              const NOX::NLN::Solver::PseudoTransient& ptcsolver);
+              Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr,
+              const NOX::Nln::Solver::PseudoTransient& ptcsolver);
 
 
-          void runPreComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp) override;
+          void runPreComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
 
-          void runPostComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp) override;
+          void runPostComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
 
          protected:
           Teuchos::RCP<::NOX::Epetra::Vector> eval_pseudo_transient_f_update(
-              const NOX::NLN::Group& grp);
+              const NOX::Nln::Group& grp);
 
          private:
           //! read-only access
-          const NOX::NLN::Solver::PseudoTransient& ptcsolver_;
+          const NOX::Nln::Solver::PseudoTransient& ptcsolver_;
 
           //! reference to the scaling diagonal operator
           Teuchos::RCP<Epetra_Vector>& scaling_diag_op_ptr_;
 
           //! reference to the scaling diagonal operator matrix
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scaling_matrix_op_ptr_;
+          Teuchos::RCP<Core::LinAlg::SparseMatrix>& scaling_matrix_op_ptr_;
 
           //! reference to the flag which indicates, if the current right-hand-side is the transient
           //! right-hand-side
@@ -462,7 +462,7 @@ namespace NOX
         };  // class PseudoTransient
       }     // namespace PrePostOp
     }       // namespace GROUP
-  }         // namespace NLN
+  }         // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

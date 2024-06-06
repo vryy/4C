@@ -46,17 +46,17 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
 {
   check_init();
 
-  // build the NOX::NLN::CONSTRAINT::Interface::Required object
+  // build the NOX::Nln::CONSTRAINT::Interface::Required object
   noxinterface_ptr_ = Teuchos::rcp(new LAGPENCONSTRAINT::NoxInterface);
   noxinterface_ptr_->Init(g_state_ptr());
   noxinterface_ptr_->Setup();
 
-  // build the NOX::NLN::CONSTRAINT::Interface::Preconditioner object
+  // build the NOX::Nln::CONSTRAINT::Interface::Preconditioner object
   noxinterface_prec_ptr_ = Teuchos::rcp(new LAGPENCONSTRAINT::NoxInterfacePrec());
   noxinterface_prec_ptr_->Init(g_state_ptr());
   noxinterface_prec_ptr_->Setup();
 
-  Teuchos::RCP<DRT::Discretization> dis = discret_ptr();
+  Teuchos::RCP<Discret::Discretization> dis = discret_ptr();
 
   // setup the displacement pointer
   disnp_ptr_ = g_state().GetDisNp();
@@ -64,15 +64,15 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
   // contributions of constraints to structural rhs and stiffness
   fstrconstr_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().DofRowMapView()));
   stiff_constr_ptr_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
 
   // ToDo: we do not want to hand in the structural dynamics parameter list
   // to the manager in the future! -> get rid of it as soon as old
   // time-integration dies ...
   // initialize constraint manager
   constrman_ = Teuchos::rcp(new CONSTRAINTS::ConstrManager());
-  constrman_->Init(dis, GLOBAL::Problem::Instance()->structural_dynamic_params());
-  constrman_->Setup(disnp_ptr_, GLOBAL::Problem::Instance()->structural_dynamic_params());
+  constrman_->Init(dis, Global::Problem::Instance()->structural_dynamic_params());
+  constrman_->Setup(disnp_ptr_, Global::Problem::Instance()->structural_dynamic_params());
 
   // set flag
   issetup_ = true;
@@ -153,7 +153,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_force(
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
-  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *fstrconstr_np_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *fstrconstr_np_ptr_);
 
   if (noxinterface_prec_ptr_->IsSaddlePointSystem())
   {
@@ -171,7 +171,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_force(
     // only call when f is the rhs of the full problem (not for structural
     // equilibriate initial state call)
     if (elements_f == max_gid + 1)
-      CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+      Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
 
   return true;
@@ -181,12 +181,12 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_force(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
-    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
+    Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> block_ptr = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> block_ptr = Teuchos::null;
 
   // --- Kdd - block ---------------------------------------------------
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_constr_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_constr_ptr_->Zero();
@@ -194,7 +194,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
   if (noxinterface_prec_ptr_->IsSaddlePointSystem())
   {
     // --- Kdz - block - scale with time-integrator dependent value!-----
-    block_ptr = (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(
+    block_ptr = (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(
         constrman_->GetConstrMatrix(), true));
     block_ptr->Scale(timefac_np);
     GState().AssignModelBlock(jac, *block_ptr, Type(), STR::MatBlockType::displ_lm);
@@ -203,7 +203,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
 
     // --- Kzd - block - no scaling of this block (cf. diss Kloeppel p78)
     block_ptr =
-        (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(constrman_->GetConstrMatrix(), true))
+        (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(constrman_->GetConstrMatrix(), true))
             ->Transpose();
     GState().AssignModelBlock(jac, *block_ptr, Type(), STR::MatBlockType::lm_displ);
     // reset the block pointer, just to be on the safe side
@@ -217,7 +217,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::LagPenConstraint::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   iowriter.WriteVector("lagrmultiplier", constrman_->GetLagrMultVector());
   iowriter.WriteVector("refconval", constrman_->GetRefBaseValues());
@@ -225,7 +225,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::read_restart(CORE::IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::LagPenConstraint::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   double time_n = g_state().GetTimeN();
   constrman_->read_restart(ioreader, time_n);
@@ -241,7 +241,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::run_post_compute_x(
   Teuchos::RCP<Epetra_Vector> lagmult_incr =
       Teuchos::rcp(new Epetra_Vector(*get_block_dof_row_map_ptr()));
 
-  CORE::LINALG::Export(dir, *lagmult_incr);
+  Core::LinAlg::Export(dir, *lagmult_incr);
 
   constrman_->UpdateLagrMult(lagmult_incr);
 }
@@ -293,7 +293,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::determine_optional_quantity()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::LagPenConstraint::OutputStepState(
-    CORE::IO::DiscretizationWriter& iowriter) const
+    Core::IO::DiscretizationWriter& iowriter) const
 {
   // nothing to do
 }

@@ -21,12 +21,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   class FunctionManager;
 }
@@ -35,13 +35,13 @@ namespace CORE::UTILS
 namespace FLD
 {
   /// add valid fluid-specific function lines
-  void AddValidFluidFunctions(CORE::UTILS::FunctionManager& function_manager);
+  void AddValidFluidFunctions(Core::UTILS::FunctionManager& function_manager);
 
   /// special implementation for beltrami flow (velocity, pressure)
-  class BeltramiUP : public CORE::UTILS::FunctionOfSpaceTime
+  class BeltramiUP : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    BeltramiUP(const MAT::PAR::NewtonianFluid& fparams);
+    BeltramiUP(const Mat::PAR::NewtonianFluid& fparams);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -61,10 +61,10 @@ namespace FLD
   };
 
   /// special implementation beltrami flow (gradient of velocity)
-  class BeltramiGradU : public CORE::UTILS::FunctionOfSpaceTime
+  class BeltramiGradU : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    BeltramiGradU(const MAT::PAR::NewtonianFluid& fparams);
+    BeltramiGradU(const Mat::PAR::NewtonianFluid& fparams);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -82,10 +82,10 @@ namespace FLD
 
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (velocity,
   /// pressure)
-  class KimMoinUP : public CORE::UTILS::FunctionOfSpaceTime
+  class KimMoinUP : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    KimMoinUP(const MAT::PAR::NewtonianFluid& fparams, bool is_stationary);
+    KimMoinUP(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -108,10 +108,10 @@ namespace FLD
 
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (gradient of
   /// velocity)
-  class KimMoinGradU : public CORE::UTILS::FunctionOfSpaceTime
+  class KimMoinGradU : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    KimMoinGradU(const MAT::PAR::NewtonianFluid& fparams, bool is_stationary);
+    KimMoinGradU(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -132,7 +132,7 @@ namespace FLD
   };
 
   /// special implementation for 3d Beltrami flow
-  class BeltramiFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class BeltramiFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
     BeltramiFunction(double c1);
@@ -155,7 +155,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow in a channel
-  class ChannelWeaklyCompressibleFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class ChannelWeaklyCompressibleFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
     double Evaluate(const double* x, double t, std::size_t component) const override;
@@ -173,7 +173,7 @@ namespace FLD
   };
 
   /// correction term for weakly compressible flow in a channel
-  class CorrectionTermChannelWeaklyCompressibleFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class CorrectionTermChannelWeaklyCompressibleFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
     double Evaluate(const double* x, double t, std::size_t component) const override;
@@ -185,11 +185,11 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible Poiseuille flow
-  class WeaklyCompressiblePoiseuilleFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressiblePoiseuilleFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressiblePoiseuilleFunction(
-        const MAT::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U);
+        const Mat::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -209,11 +209,11 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible Poiseuille flow (force)
-  class WeaklyCompressiblePoiseuilleForceFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressiblePoiseuilleForceFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressiblePoiseuilleForceFunction(
-        const MAT::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U);
+        const Mat::PAR::WeaklyCompressibleFluid& fparams, double L, double R, double U);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -232,10 +232,10 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow with manufactured solution
-  class WeaklyCompressibleManufacturedFlowFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleManufacturedFlowFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    WeaklyCompressibleManufacturedFlowFunction(const MAT::PAR::WeaklyCompressibleFluid& fparams);
+    WeaklyCompressibleManufacturedFlowFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -252,11 +252,11 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow with manufactured solution (force)
-  class WeaklyCompressibleManufacturedFlowForceFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleManufacturedFlowForceFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleManufacturedFlowForceFunction(
-        const MAT::PAR::WeaklyCompressibleFluid& fparams);
+        const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -273,10 +273,10 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne CFD problem
-  class WeaklyCompressibleEtienneCFDFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneCFDFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    WeaklyCompressibleEtienneCFDFunction(const MAT::PAR::WeaklyCompressibleFluid& fparams);
+    WeaklyCompressibleEtienneCFDFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -292,10 +292,10 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne CFD problem (force)
-  class WeaklyCompressibleEtienneCFDForceFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneCFDForceFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    WeaklyCompressibleEtienneCFDForceFunction(const MAT::PAR::WeaklyCompressibleFluid& fparams);
+    WeaklyCompressibleEtienneCFDForceFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -309,10 +309,10 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne CFD problem (viscosity)
-  class WeaklyCompressibleEtienneCFDViscosityFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneCFDViscosityFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    WeaklyCompressibleEtienneCFDViscosityFunction(const MAT::PAR::WeaklyCompressibleFluid& fparams);
+    WeaklyCompressibleEtienneCFDViscosityFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -323,12 +323,12 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
-  class WeaklyCompressibleEtienneFSIFluidFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneFSIFluidFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIFluidFunction(
-        const MAT::PAR::WeaklyCompressibleFluid& fparams_fluid,
-        const MAT::PAR::StVenantKirchhoff& fparams_struc);
+        const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
+        const Mat::PAR::StVenantKirchhoff& fparams_struc);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -347,12 +347,12 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem (force)
-  class WeaklyCompressibleEtienneFSIFluidForceFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneFSIFluidForceFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIFluidForceFunction(
-        const MAT::PAR::WeaklyCompressibleFluid& fparams_fluid,
-        const MAT::PAR::StVenantKirchhoff& fparams_struc);
+        const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
+        const Mat::PAR::StVenantKirchhoff& fparams_struc);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -371,12 +371,12 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem (viscosity)
-  class WeaklyCompressibleEtienneFSIFluidViscosityFunction : public CORE::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneFSIFluidViscosityFunction : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIFluidViscosityFunction(
-        const MAT::PAR::WeaklyCompressibleFluid& fparams_fluid,
-        const MAT::PAR::StVenantKirchhoff& fparams_struc);
+        const Mat::PAR::WeaklyCompressibleFluid& fparams_fluid,
+        const Mat::PAR::StVenantKirchhoff& fparams_struc);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -395,10 +395,10 @@ namespace FLD
   };
 
   /// special implementation for beltrami flow (rhs)
-  class BeltramiRHS : public CORE::UTILS::FunctionOfSpaceTime
+  class BeltramiRHS : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    BeltramiRHS(const MAT::PAR::NewtonianFluid& fparams, bool is_stokes);
+    BeltramiRHS(const Mat::PAR::NewtonianFluid& fparams, bool is_stokes);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -419,10 +419,10 @@ namespace FLD
   };
 
   /// special implementation for 2d(3D) stationary kim-moin flow (rhs) for pure stokes equation
-  class KimMoinRHS : public CORE::UTILS::FunctionOfSpaceTime
+  class KimMoinRHS : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
-    KimMoinRHS(const MAT::PAR::NewtonianFluid& fparams, bool is_stationary, bool is_stokes);
+    KimMoinRHS(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary, bool is_stokes);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -445,11 +445,11 @@ namespace FLD
 
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (analytical
   /// stress)
-  class KimMoinStress : public CORE::UTILS::FunctionOfSpaceTime
+  class KimMoinStress : public Core::UTILS::FunctionOfSpaceTime
   {
    public:
     KimMoinStress(
-        const MAT::PAR::NewtonianFluid& fparams, bool is_stationary, double amplitude = 1.0);
+        const Mat::PAR::NewtonianFluid& fparams, bool is_stationary, double amplitude = 1.0);
 
     double Evaluate(const double* x, double t, std::size_t component) const override;
 

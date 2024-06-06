@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT::UTILS::MUSCLE
+namespace Mat::UTILS::Muscle
 {
   /*!
    * @brief Evaluate Lambert W function with Halley's method
@@ -266,8 +266,8 @@ namespace MAT::UTILS::MUSCLE
    * @param[out]    sigma_max_ft Time-/space-dependent optimal active stress at x, t_current
    */
   double EvaluateTimeSpaceDependentActiveStressByFunct(const double sigma_max,
-      const CORE::UTILS::FunctionOfSpaceTime &activation_function, const double t_current,
-      const CORE::LINALG::Matrix<3, 1> &x);
+      const Core::UTILS::FunctionOfSpaceTime &activation_function, const double t_current,
+      const Core::LinAlg::Matrix<3, 1> &x);
 
   /*!
    * @brief Evaluate the time- and space-dependent optimal (i.e. maximal) active stress through
@@ -302,7 +302,7 @@ namespace MAT::UTILS::MUSCLE
    *  @param[in] M Structural tensor of fiber directions
    *  @param[out] lambdaM Fiber stretch
    */
-  double FiberStretch(const CORE::LINALG::Matrix<3, 3> &C, const CORE::LINALG::Matrix<3, 3> &M);
+  double FiberStretch(const Core::LinAlg::Matrix<3, 3> &C, const Core::LinAlg::Matrix<3, 3> &M);
 
   /*!
    *  @brief Returns the derivative of the fiber stretch w.r.t. the Cauchy-Green strain
@@ -312,8 +312,8 @@ namespace MAT::UTILS::MUSCLE
    *  @param[in] M Structural tensor of fiber directions
    *  @param[out] dlambdaMdC Derivative of the fiber stretch w.r.t. the Cauchy-Green strains
    */
-  CORE::LINALG::Matrix<3, 3> DFiberStretch_DC(const double lambdaM,
-      const CORE::LINALG::Matrix<3, 3> &C, const CORE::LINALG::Matrix<3, 3> &M);
+  Core::LinAlg::Matrix<3, 3> DFiberStretch_DC(const double lambdaM,
+      const Core::LinAlg::Matrix<3, 3> &C, const Core::LinAlg::Matrix<3, 3> &M);
 
   /*!
    *  @brief Returns the contraction velocity computed by a Backward Euler approximation
@@ -325,7 +325,7 @@ namespace MAT::UTILS::MUSCLE
    */
   double ContractionVelocityBWEuler(
       const double lambdaM, const double lambdaMOld, const double timeStepSize);
-}  // namespace MAT::UTILS::MUSCLE
+}  // namespace Mat::UTILS::Muscle
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -37,7 +37,7 @@ namespace FLD
    *--------------------------------------------------------------*/
   HomIsoTurbForcing::HomIsoTurbForcing(FluidImplicitTimeInt& timeint)
       : ForcingInterface(),
-        forcing_type_(CORE::UTILS::IntegralValue<INPAR::FLUID::ForcingType>(
+        forcing_type_(Core::UTILS::IntegralValue<Inpar::FLUID::ForcingType>(
             timeint.params_->sublist("TURBULENCE MODEL"), "FORCING_TYPE")),
         discret_(timeint.discret_),
         forcing_(timeint.forcing_),
@@ -120,7 +120,7 @@ namespace FLD
     // loop all nodes and store x1-coordinate
     for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
     {
-      CORE::Nodes::Node* node = discret_->lRowNode(inode);
+      Core::Nodes::Node* node = discret_->lRowNode(inode);
       if ((node->X()[1] < 2e-9 && node->X()[1] > -2e-9) and
           (node->X()[2] < 2e-9 && node->X()[2] > -2e-9))
         coords.insert(node->X()[0]);
@@ -134,23 +134,23 @@ namespace FLD
       std::vector<char> rblock;
 
       // create an exporter for point to point communication
-      CORE::COMM::Exporter exporter(discret_->Comm());
+      Core::Communication::Exporter exporter(discret_->Comm());
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
 
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *x1line);
+          Core::Communication::ParObject::AddtoPack(data, *x1line);
         }
         data.StartPacking();
         for (std::set<double, LineSortCriterion>::iterator x1line = coords.begin();
              x1line != coords.end(); ++x1line)
         {
-          CORE::COMM::ParObject::AddtoPack(data, *x1line);
+          Core::Communication::ParObject::AddtoPack(data, *x1line);
         }
         std::swap(sblock, data());
 
@@ -192,7 +192,7 @@ namespace FLD
           while (index < rblock.size())
           {
             double onecoord;
-            CORE::COMM::ParObject::ExtractfromPack(index, rblock, onecoord);
+            Core::Communication::ParObject::ExtractfromPack(index, rblock, onecoord);
             coords.insert(onecoord);
           }
         }
@@ -235,7 +235,7 @@ namespace FLD
 
     // forcing factor: factor to multiply Fourier coefficients of velocity
     force_fac_ = Teuchos::rcp(
-        new CORE::LINALG::SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
+        new Core::LinAlg::SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     return;
   }
@@ -244,12 +244,12 @@ namespace FLD
   /*--------------------------------------------------------------*
    | initialize energy spectrum by initial field  rasthofer 05/13 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcing::SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type)
+  void HomIsoTurbForcing::SetInitialSpectrum(Inpar::FLUID::InitialField init_field_type)
   {
-    if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+    if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
     {
 #ifdef USE_TRAGET_SPECTRUM
-      if (init_field_type == INPAR::FLUID::initfield_forced_hit_simple_algebraic_spectrum)
+      if (init_field_type == Inpar::FLUID::initfield_forced_hit_simple_algebraic_spectrum)
       {
         for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
         {
@@ -259,7 +259,7 @@ namespace FLD
             (*energyspectrum_n_)[rr] = 0.0;
         }
       }
-      else if (init_field_type == INPAR::FLUID::initfield_passive_hit_const_input)
+      else if (init_field_type == Inpar::FLUID::initfield_passive_hit_const_input)
       {
         (*energyspectrum_n_)[0] = 0.0;
         for (std::size_t rr = 1; rr < wavenumbers_->size(); rr++)
@@ -271,7 +271,7 @@ namespace FLD
                 0.1 * pow(2.0, 5.0 / 3.0) * pow((*wavenumbers_)[rr], -5.0 / 3.0);
         }
       }
-      else if (init_field_type == INPAR::FLUID::initfield_hit_comte_bellot_corrsin)
+      else if (init_field_type == Inpar::FLUID::initfield_hit_comte_bellot_corrsin)
       {
         //----------------------------------------
         // set-up wave numbers
@@ -455,10 +455,10 @@ namespace FLD
       for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
       {
         // get node
-        CORE::Nodes::Node* node = discret_->lRowNode(inode);
+        Core::Nodes::Node* node = discret_->lRowNode(inode);
 
         // get coordinates
-        CORE::LINALG::Matrix<3, 1> xyz(true);
+        Core::LinAlg::Matrix<3, 1> xyz(true);
         for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
         // get global ids of all dofs of the node
@@ -492,8 +492,8 @@ namespace FLD
         // get local dof id corresponding to the global id
         int lid = discret_->dof_row_map()->LID(dofs[0]);
         // set value
-        if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum or
-            (forcing_type_ == INPAR::FLUID::fixed_power_input and (not is_genalpha_)))
+        if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum or
+            (forcing_type_ == Inpar::FLUID::fixed_power_input and (not is_genalpha_)))
         {
           (*local_u1)[pos] = (*velnp_)[lid];
           // analogously for remaining directions
@@ -688,7 +688,7 @@ namespace FLD
             const double energy =
                 0.5 * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
 
-            if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+            if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
             {
               // get wave number
               const double k = sqrt(k_1 * k_1 + k_2 * k_2 + k_3 * k_3);
@@ -703,7 +703,7 @@ namespace FLD
                 }
               }
             }
-            else if (forcing_type_ == INPAR::FLUID::fixed_power_input)
+            else if (forcing_type_ == Inpar::FLUID::fixed_power_input)
             {
               if ((abs(k_1) < threshold_wavenumber_ and abs(k_2) < threshold_wavenumber_ and
                       abs(k_3) < threshold_wavenumber_) and
@@ -765,7 +765,7 @@ namespace FLD
               }
             }
 
-            if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+            if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
             {
               // compute linear compensation factor from energy spectrum
 
@@ -803,7 +803,7 @@ namespace FLD
                 (*force_fac_)(pos) = (1.0 / (2.0 * E_np)) * (E_np - E_n) / dt_;
               }
             }
-            else if (forcing_type_ == INPAR::FLUID::fixed_power_input)
+            else if (forcing_type_ == Inpar::FLUID::fixed_power_input)
             {
               // compute power input
 
@@ -890,10 +890,10 @@ namespace FLD
       for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
       {
         // get node
-        CORE::Nodes::Node* node = discret_->lRowNode(inode);
+        Core::Nodes::Node* node = discret_->lRowNode(inode);
 
         // get coordinates
-        CORE::LINALG::Matrix<3, 1> xyz(true);
+        Core::LinAlg::Matrix<3, 1> xyz(true);
         for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
         // get global ids of all dofs of the node
@@ -1061,10 +1061,10 @@ namespace FLD
       for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
       {
         // get node
-        CORE::Nodes::Node* node = discret_->lRowNode(inode);
+        Core::Nodes::Node* node = discret_->lRowNode(inode);
 
         // get coordinates
-        CORE::LINALG::Matrix<3, 1> xyz(true);
+        Core::LinAlg::Matrix<3, 1> xyz(true);
         for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
         // get global ids of all dofs of the node
@@ -1124,7 +1124,7 @@ namespace FLD
   void HomIsoTurbForcing::TimeUpdateForcing()
   {
 #ifdef TIME_UPDATE_FORCING_SPECTRUM
-    if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+    if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
     {
       // compute E^n+1 from forced solution
       CalculateForcing(0);
@@ -1221,7 +1221,7 @@ namespace FLD
 
     // forcing factor: factor to multiply Fourier coefficients of velocity
     force_fac_ = Teuchos::rcp(
-        new CORE::LINALG::SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
+        new Core::LinAlg::SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     return;
   }
@@ -1229,7 +1229,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | initialize energy spectrum by initial field         bk 04/15 |
    *--------------------------------------------------------------*/
-  void HomIsoTurbForcingHDG::SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type)
+  void HomIsoTurbForcingHDG::SetInitialSpectrum(Inpar::FLUID::InitialField init_field_type)
   {
 #ifdef USE_TRAGET_SPECTRUM
     HomIsoTurbForcing::SetInitialSpectrum(init_field_type);
@@ -1293,8 +1293,8 @@ namespace FLD
       Teuchos::ParameterList params;
       params.set<int>("action", FLD::interpolate_hdg_for_hit);
 
-      if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum or
-          (forcing_type_ == INPAR::FLUID::fixed_power_input and (not is_genalpha_)))
+      if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum or
+          (forcing_type_ == Inpar::FLUID::fixed_power_input and (not is_genalpha_)))
       {
         discret_->set_state(1, "intvelnp", velnp_);
       }
@@ -1303,13 +1303,13 @@ namespace FLD
             "it seems like you need velaf_ here, which is not implemented for hit and hdg yet");
 
       std::vector<int> dummy;
-      CORE::LINALG::SerialDenseMatrix dummyMat;
-      CORE::LINALG::SerialDenseVector dummyVec;
+      Core::LinAlg::SerialDenseMatrix dummyMat;
+      Core::LinAlg::SerialDenseVector dummyVec;
 
       for (int el = 0; el < discret_->NumMyRowElements(); ++el)
       {
-        CORE::LINALG::SerialDenseVector interpolVec;
-        CORE::Elements::Element* ele = discret_->lRowElement(el);
+        Core::LinAlg::SerialDenseVector interpolVec;
+        Core::Elements::Element* ele = discret_->lRowElement(el);
 
         interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
@@ -1320,7 +1320,7 @@ namespace FLD
         for (int i = 0; i < 5 * 5 * 5; ++i)
         {
           // get coordinates
-          CORE::LINALG::Matrix<3, 1> xyz(true);
+          Core::LinAlg::Matrix<3, 1> xyz(true);
           for (int d = 0; d < 3; ++d) xyz(d) = interpolVec(i * 6 + d + 3);
           // determine position
           std::vector<int> loc(3);
@@ -1532,7 +1532,7 @@ namespace FLD
             const double energy =
                 0.5 * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
 
-            if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+            if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
             {
               // get wave number
               const double k = sqrt(k_1 * k_1 + k_2 * k_2 + k_3 * k_3);
@@ -1547,7 +1547,7 @@ namespace FLD
                 }
               }
             }
-            else if (forcing_type_ == INPAR::FLUID::fixed_power_input)
+            else if (forcing_type_ == Inpar::FLUID::fixed_power_input)
             {
               if ((abs(k_1) < threshold_wavenumber_ and abs(k_2) < threshold_wavenumber_ and
                       abs(k_3) < threshold_wavenumber_) and
@@ -1609,7 +1609,7 @@ namespace FLD
               }
             }
 
-            if (forcing_type_ == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+            if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
             {
               // compute linear compensation factor from energy spectrum
 
@@ -1647,7 +1647,7 @@ namespace FLD
                 (*force_fac_)(pos) = (1.0 / (2.0 * E_np)) * (E_np - E_n) / dt_;
               }
             }
-            else if (forcing_type_ == INPAR::FLUID::fixed_power_input)
+            else if (forcing_type_ == Inpar::FLUID::fixed_power_input)
             {
               // compute power input
 
@@ -1745,14 +1745,14 @@ namespace FLD
       discret_->set_state(1, "intvelnp", velnp_);
 
       std::vector<int> dummy;
-      CORE::LINALG::SerialDenseMatrix dummyMat;
-      CORE::LINALG::SerialDenseVector dummyVec;
+      Core::LinAlg::SerialDenseMatrix dummyMat;
+      Core::LinAlg::SerialDenseVector dummyVec;
 
 
       for (int el = 0; el < discret_->NumMyRowElements(); ++el)
       {
-        CORE::LINALG::SerialDenseVector interpolVec;
-        CORE::Elements::Element* ele = discret_->lRowElement(el);
+        Core::LinAlg::SerialDenseVector interpolVec;
+        Core::Elements::Element* ele = discret_->lRowElement(el);
 
         interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
@@ -1763,7 +1763,7 @@ namespace FLD
         for (int i = 0; i < 5 * 5 * 5; ++i)
         {
           // get coordinates
-          CORE::LINALG::Matrix<3, 1> xyz(true);
+          Core::LinAlg::Matrix<3, 1> xyz(true);
           for (int d = 0; d < 3; ++d) xyz(d) = interpolVec(i * 6 + d + 3);
           // determine position
           std::vector<int> loc(3);
@@ -1922,22 +1922,22 @@ namespace FLD
 
       // for 2nd evaluate
       const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
-      CORE::LINALG::SerialDenseVector elevec1, elevec3;
-      CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
+      Core::LinAlg::SerialDenseVector elevec1, elevec3;
+      Core::LinAlg::SerialDenseMatrix elemat1, elemat2;
       Teuchos::ParameterList initParams;
       initParams.set<int>("action", FLD::project_hdg_force_on_dof_vec_for_hit);
 
       // loop over all elements on the processor
-      CORE::Elements::Element::LocationArray la(2);
+      Core::Elements::Element::LocationArray la(2);
       for (int el = 0; el < discret_->NumMyRowElements(); ++el)
       {
         // 1st evaluate
-        CORE::Elements::Element* ele = discret_->lRowElement(el);
+        Core::Elements::Element* ele = discret_->lRowElement(el);
 
         std::vector<int> dummy;
-        CORE::LINALG::SerialDenseMatrix dummyMat;
-        CORE::LINALG::SerialDenseVector dummyVec;
-        CORE::LINALG::SerialDenseVector interpolVec;
+        Core::LinAlg::SerialDenseMatrix dummyMat;
+        Core::LinAlg::SerialDenseVector dummyVec;
+        Core::LinAlg::SerialDenseVector interpolVec;
         interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
         ele->Evaluate(
@@ -1947,7 +1947,7 @@ namespace FLD
         for (int i = 0; i < 5 * 5 * 5; ++i)
         {
           // get coordinates
-          CORE::LINALG::Matrix<3, 1> xyz(true);
+          Core::LinAlg::Matrix<3, 1> xyz(true);
           for (int d = 0; d < 3; ++d) xyz(d) = interpolVec(i * 6 + d + 3);
           // determine position
           std::vector<int> loc(3);
@@ -2032,7 +2032,7 @@ namespace FLD
     if (discret_->Comm().MyPID() == 0)
       std::cout << "\nforcing for periodic hill such that a mass flow of " << idealmassflow_
                 << " is achieved" << std::endl;
-    std::vector<CORE::Conditions::Condition*> bodycond;
+    std::vector<Core::Conditions::Condition*> bodycond;
     discret_->GetCondition("VolumeNeumann", bodycond);
     const auto& val = bodycond[0]->parameters().Get<std::vector<double>>("val");
     oldforce_ = val.at(0);
@@ -2114,7 +2114,7 @@ namespace FLD
     for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
     {
       int gid = discret_->NodeRowMap()->GID(i);
-      CORE::Nodes::Node* node = discret_->gNode(gid);
+      Core::Nodes::Node* node = discret_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find node");
 
       int firstgdofid = discret_->Dof(0, node, 0);

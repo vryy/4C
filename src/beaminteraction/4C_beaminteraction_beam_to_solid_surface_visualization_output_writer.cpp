@@ -40,7 +40,7 @@ FOUR_C_NAMESPACE_OPEN
  */
 BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
     BeamToSolidSurfaceVisualizationOutputWriter(
-        CORE::IO::VisualizationParameters visualization_params)
+        Core::IO::VisualizationParameters visualization_params)
     : isinit_(false),
       issetup_(false),
       output_params_ptr_(Teuchos::null),
@@ -62,7 +62,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Init()
  *
  */
 void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::Setup(
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+    Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
         output_params_ptr)
 {
@@ -186,7 +186,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the next
   // step.
-  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN());
   write_output_beam_to_solid_surface(beam_contact, output_step, output_time);
 }
@@ -202,7 +202,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::write_output_
   if (output_params_ptr_->get_output_every_iteration())
   {
     auto [output_time, output_step] =
-        CORE::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
+        Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
             beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN(), i_iteration);
     write_output_beam_to_solid_surface(beam_contact, output_step, output_time);
   }
@@ -230,7 +230,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
   {
     const std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& surface_condition_vector =
         beam_contact->GetConditions()->GetConditionMap().at(
-            INPAR::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying);
+            Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying);
     for (const auto& condition : surface_condition_vector)
     {
       // Get the line-to-surface evaluation data for the current condition.
@@ -286,7 +286,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
       {
         // This array will hold the global coupling moment around the origin.
         auto global_coupling_moment_origin =
-            Teuchos::rcp(new CORE::LINALG::Matrix<3, 1, double>(true));
+            Teuchos::rcp(new Core::LinAlg::Matrix<3, 1, double>(true));
         visualization_params.set("global_coupling_moment_origin", global_coupling_moment_origin);
       }
 
@@ -314,8 +314,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
       {
         // Get the global force and moment resultants from the nodal forces. The first column
         // represents the forces, the second one the moments.
-        CORE::LINALG::Matrix<3, 2, double> beam_resultant(true);
-        CORE::LINALG::Matrix<3, 2, double> solid_resultant(true);
+        Core::LinAlg::Matrix<3, 2, double> beam_resultant(true);
+        Core::LinAlg::Matrix<3, 2, double> solid_resultant(true);
         GetGlobalCouplingForceResultants(beam_contact->Discret(),
             *(beam_contact->beam_interaction_data_state().GetForceNp()),
             *(beam_contact->beam_interaction_data_state().GetDisNp()), beam_resultant,
@@ -324,14 +324,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
         // The beam coupling moments are calculated in each pair and replace the ones evaluated in
         // the previous function.
         auto global_coupling_moment_origin =
-            visualization_params.get<Teuchos::RCP<CORE::LINALG::Matrix<3, 1, double>>>(
+            visualization_params.get<Teuchos::RCP<Core::LinAlg::Matrix<3, 1, double>>>(
                 "global_coupling_moment_origin");
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           beam_resultant(i_dim, 1) = (*global_coupling_moment_origin)(i_dim);
 
         // Sum the values over all ranks.
-        CORE::LINALG::Matrix<3, 2, double> beam_resultant_global(true);
-        CORE::LINALG::Matrix<3, 2, double> solid_resultant_global(true);
+        Core::LinAlg::Matrix<3, 2, double> beam_resultant_global(true);
+        Core::LinAlg::Matrix<3, 2, double> solid_resultant_global(true);
         MPI_Allreduce(beam_resultant.A(), beam_resultant_global.A(),
             beam_resultant.numRows() * beam_resultant.numCols(), MPI_DOUBLE, MPI_SUM,
             dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->Discret().Comm()))->Comm());

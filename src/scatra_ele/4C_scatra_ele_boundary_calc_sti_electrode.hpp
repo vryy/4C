@@ -17,12 +17,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace MAT
+namespace Mat
 {
   class Electrode;
 }
 
-namespace DRT
+namespace Discret
 {
   // forward declaration
   class Discretization;
@@ -32,11 +32,11 @@ namespace DRT
     class ScaTraEleBoundaryCalcElchElectrodeUtils;
 
     // class implementation
-    template <CORE::FE::CellType distype, int probdim = CORE::FE::dim<distype> + 1>
+    template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcSTIElectrode : public ScaTraEleBoundaryCalc<distype, probdim>
     {
-      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
-      using myelectrodeutils = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
+      using my = Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelectrodeutils = Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
       using my::nen_;
       using my::nsd_;
       using my::nsd_ele_;
@@ -73,20 +73,20 @@ namespace DRT
        *
        * \tparam distype_master  This method is templated on the master-side discretization type.
        */
-      template <CORE::FE::CellType distype_master>
+      template <Core::FE::CellType distype_master>
       static void evaluate_s2_i_coupling_at_integration_point(
-          const Teuchos::RCP<const MAT::Electrode>& matelectrode,
-          const CORE::LINALG::Matrix<nen_, 1>& eslavetempnp,
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& emastertempnp,
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
-          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>>&
+          const Teuchos::RCP<const Mat::Electrode>& matelectrode,
+          const Core::LinAlg::Matrix<nen_, 1>& eslavetempnp,
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& emastertempnp,
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
+          const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>>&
               emasterphinp,
-          double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& funct_master,
-          const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+          double pseudo_contact_fac, const Core::LinAlg::Matrix<nen_, 1>& funct_slave,
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& funct_master,
+          const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacrhsfac, double detF,
-          CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
-          CORE::LINALG::SerialDenseVector& r_s);
+          Core::LinAlg::SerialDenseMatrix& k_ss, Core::LinAlg::SerialDenseMatrix& k_sm,
+          Core::LinAlg::SerialDenseVector& r_s);
 
       /*!
        * \brief evaluate off-diagonal system matrix contributions associated with scatra-scatra
@@ -112,22 +112,22 @@ namespace DRT
        * @param[out] k_ss         linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_sm         linearizations of slave-side residuals w.r.t. master-side dofs
        */
-      template <CORE::FE::CellType distype_master>
+      template <Core::FE::CellType distype_master>
       static void evaluate_s2_i_coupling_od_at_integration_point(
-          const Teuchos::RCP<const MAT::Electrode>& matelectrode,
-          const CORE::LINALG::Matrix<nen_, 1>& eslavetempnp,
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& emastertempnp,
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
-          const std::vector<CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>>&
+          const Teuchos::RCP<const Mat::Electrode>& matelectrode,
+          const Core::LinAlg::Matrix<nen_, 1>& eslavetempnp,
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& emastertempnp,
+          const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
+          const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>>&
               emasterphinp,
-          double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
-          const CORE::LINALG::Matrix<CORE::FE::num_nodes<distype_master>, 1>& funct_master,
-          const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+          double pseudo_contact_fac, const Core::LinAlg::Matrix<nen_, 1>& funct_slave,
+          const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& funct_master,
+          const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacwgt, double detF,
-          SCATRA::DifferentiationType differentiationtype,
-          const CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd,
-          const CORE::LINALG::Matrix<nsd_, nen_>& shape_spatial_derivatives,
-          CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm);
+          ScaTra::DifferentiationType differentiationtype,
+          const Core::LinAlg::Matrix<nsd_, nen_>& dsqrtdetg_dd,
+          const Core::LinAlg::Matrix<nsd_, nen_>& shape_spatial_derivatives,
+          Core::LinAlg::SerialDenseMatrix& k_ss, Core::LinAlg::SerialDenseMatrix& k_sm);
 
      private:
       //! private constructor for singletons
@@ -137,49 +137,49 @@ namespace DRT
       //! evaluate main-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition
       void evaluate_s2_i_coupling(
-          const CORE::Elements::FaceElement* ele,          ///< current boundary element
+          const Core::Elements::FaceElement* ele,          ///< current boundary element
           Teuchos::ParameterList& params,                  ///< parameter list
-          DRT::Discretization& discretization,             ///< discretization
-          CORE::Elements::Element::LocationArray& la,      ///< location array
-          CORE::LINALG::SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
-          CORE::LINALG::SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
-          CORE::LINALG::SerialDenseVector& eslaveresidual  ///< element residual for slave side
+          Discret::Discretization& discretization,         ///< discretization
+          Core::Elements::Element::LocationArray& la,      ///< location array
+          Core::LinAlg::SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
+          Core::LinAlg::SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
+          Core::LinAlg::SerialDenseVector& eslaveresidual  ///< element residual for slave side
           ) override;
 
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition
       void evaluate_s2_i_coupling_od(
-          const CORE::Elements::FaceElement* ele,         ///< current boundary element
+          const Core::Elements::FaceElement* ele,         ///< current boundary element
           Teuchos::ParameterList& params,                 ///< parameter list
-          DRT::Discretization& discretization,            ///< discretization
-          CORE::Elements::Element::LocationArray& la,     ///< location array
-          CORE::LINALG::SerialDenseMatrix& eslavematrix,  ///< element matrix for slave side
-          CORE::LINALG::SerialDenseMatrix& emastermatrix  ///< element matrix for master side
+          Discret::Discretization& discretization,        ///< discretization
+          Core::Elements::Element::LocationArray& la,     ///< location array
+          Core::LinAlg::SerialDenseMatrix& eslavematrix,  ///< element matrix for slave side
+          Core::LinAlg::SerialDenseMatrix& emastermatrix  ///< element matrix for master side
       );
 
       //! evaluate action
-      int evaluate_action(CORE::Elements::FaceElement* ele,  //!< boundary element
+      int evaluate_action(Core::Elements::FaceElement* ele,  //!< boundary element
           Teuchos::ParameterList& params,                    //!< parameter list
-          DRT::Discretization& discretization,               //!< discretization
-          SCATRA::BoundaryAction action,                     //!< action
-          CORE::Elements::Element::LocationArray& la,        //!< location array
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,   //!< element matrix 1
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,   //!< element matrix 2
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,   //!< element right-hand side vector 1
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,   //!< element right-hand side vector 2
-          CORE::LINALG::SerialDenseVector& elevec3_epetra    //!< element right-hand side vector 3
+          Discret::Discretization& discretization,           //!< discretization
+          ScaTra::BoundaryAction action,                     //!< action
+          Core::Elements::Element::LocationArray& la,        //!< location array
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,   //!< element matrix 1
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,   //!< element matrix 2
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,   //!< element right-hand side vector 1
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,   //!< element right-hand side vector 2
+          Core::LinAlg::SerialDenseVector& elevec3_epetra    //!< element right-hand side vector 3
           ) override;
 
       //! extract nodal state variables associated with boundary element
-      void extract_node_values(const DRT::Discretization& discretization,  //!< discretization
-          CORE::Elements::Element::LocationArray& la                       //!< location array
+      void extract_node_values(const Discret::Discretization& discretization,  //!< discretization
+          Core::Elements::Element::LocationArray& la                           //!< location array
           ) override;
 
       //! nodal electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
-      std::vector<CORE::LINALG::Matrix<nen_, 1>> eelchnp_;
+      std::vector<Core::LinAlg::Matrix<nen_, 1>> eelchnp_;
     };  // class ScaTraEleBoundaryCalcSTIElectrode
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

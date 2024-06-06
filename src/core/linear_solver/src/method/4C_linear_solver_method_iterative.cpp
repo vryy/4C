@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::IterativeSolver(
+Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::IterativeSolver(
     const Epetra_Comm& comm, Teuchos::ParameterList& params)
     : comm_(comm), params_(params)
 {
@@ -42,9 +42,9 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::IterativeSolver(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-void CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Setup(
+void Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::Setup(
     Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
-    const bool refactor, const bool reset, Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
+    const bool refactor, const bool reset, Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
 {
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
@@ -70,7 +70,7 @@ void CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Setup(
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
+int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::Solve()
 {
   Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
 
@@ -84,7 +84,7 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
 
   const bool set = problem->setProblem();
   if (set == false)
-    FOUR_C_THROW("CORE::LINEAR_SOLVER::BelosSolver: Iterative solver failed to set up correctly.");
+    FOUR_C_THROW("Core::LinearSolver::BelosSolver: Iterative solver failed to set up correctly.");
 
   Teuchos::RCP<Belos::SolverManager<double, VectorType, MatrixType>> newSolver;
   std::string solverType = belist.get<std::string>("Solver Type");
@@ -98,7 +98,7 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
     newSolver = Teuchos::rcp(new Belos::BiCGStabSolMgr<double, VectorType, MatrixType>(
         problem, Teuchos::rcp(&belist, false)));
   else
-    FOUR_C_THROW("CORE::LINEAR_SOLVER::BelosSolver: Unknown iterative solver solver type chosen.");
+    FOUR_C_THROW("Core::LinearSolver::BelosSolver: Unknown iterative solver solver type chosen.");
 
   Belos::ReturnType ret = newSolver->solve();
 
@@ -109,7 +109,7 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
 
   if (glob_error > 0 and this->comm_.MyPID() == 0)
     std::cout << std::endl
-              << "CORE::LINEAR_SOLVER::BelosSolver: WARNING: Iterative solver did not converge!"
+              << "Core::LinearSolver::BelosSolver: WARNING: Iterative solver did not converge!"
               << std::endl;
 
   numiters_ = newSolver->getNumIters();
@@ -122,7 +122,7 @@ int CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::Solve()
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::allow_reuse_preconditioner(
+bool Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::allow_reuse_preconditioner(
     const int reuse, const bool reset)
 {
   // first, check some parameters with information that has to be updated
@@ -152,7 +152,7 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::allow_reuse_p
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::check_reuse_status_of_active_set(
+bool Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::check_reuse_status_of_active_set(
     const Teuchos::ParameterList& linSysParams)
 {
   bool bAllowReuse = true;  // default: allow reuse of preconditioner
@@ -192,14 +192,14 @@ bool CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::check_reuse_s
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
-Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase>
-CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::create_preconditioner(
+Teuchos::RCP<Core::LinearSolver::PreconditionerTypeBase>
+Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::create_preconditioner(
     Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
-    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
+    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  1.1)   create_preconditioner");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Solver:  1.1)   create_preconditioner");
 
-  Teuchos::RCP<CORE::LINEAR_SOLVER::PreconditionerTypeBase> preconditioner;
+  Teuchos::RCP<Core::LinearSolver::PreconditionerTypeBase> preconditioner;
 
   if (isCrsMatrix)
   {
@@ -208,33 +208,33 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::create_preconditio
     // if we have an ml parameter list we do ml
     if (Params().isSublist("IFPACK Parameters"))
     {
-      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::IFPACKPreconditioner(
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::IFPACKPreconditioner(
           Params().sublist("IFPACK Parameters"), solverlist));
     }
     else if (Params().isSublist("ML Parameters"))
     {
-      preconditioner = Teuchos::rcp(
-          new CORE::LINEAR_SOLVER::MLPreconditioner(Params().sublist("ML Parameters")));
+      preconditioner =
+          Teuchos::rcp(new Core::LinearSolver::MLPreconditioner(Params().sublist("ML Parameters")));
     }
     else if (Params().isSublist("MueLu Parameters"))
     {
       preconditioner = Teuchos::rcp(
-          new CORE::LINEAR_SOLVER::MueLuPreconditioner(Params().sublist("MueLu Parameters")));
+          new Core::LinearSolver::MueLuPreconditioner(Params().sublist("MueLu Parameters")));
     }
     else if (Params().isSublist("MueLu (BeamSolid) Parameters"))
     {
       preconditioner =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner(Params()));
+          Teuchos::rcp(new Core::LinearSolver::MueLuBeamSolidBlockPreconditioner(Params()));
     }
     else
       FOUR_C_THROW(
-          "CORE::LINEAR_SOLVER::IterativeSolver::create_preconditioner: Unknown preconditioner for "
+          "Core::LinearSolver::IterativeSolver::create_preconditioner: Unknown preconditioner for "
           "iterative solver chosen.");
 
     if (projector != Teuchos::null)
     {
       preconditioner = Teuchos::rcp(
-          new CORE::LINEAR_SOLVER::KrylovProjectionPreconditioner(preconditioner, projector));
+          new Core::LinearSolver::KrylovProjectionPreconditioner(preconditioner, projector));
     }
   }
   else
@@ -242,38 +242,37 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::create_preconditio
     // assume block matrix
     if (Params().isSublist("CheapSIMPLE Parameters"))
     {
-      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::SimplePreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::SimplePreconditioner(Params()));
     }
     else if (Params().isSublist("BGS Parameters"))
     {
       preconditioner = Teuchos::rcp(
-          new CORE::LINEAR_SOLVER::BGSPreconditioner(Params(), Params().sublist("BGS Parameters")));
+          new Core::LinearSolver::BGSPreconditioner(Params(), Params().sublist("BGS Parameters")));
     }
     else if (Params().isSublist("MueLu (Fluid) Parameters"))
     {
-      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner(
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuFluidBlockPreconditioner(
           Params().sublist("MueLu (Fluid) Parameters")));
     }
     else if (Params().isSublist("MueLu (TSI) Parameters"))
     {
-      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuTsiBlockPreconditioner(Params()));
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-      preconditioner =
-          Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuContactSpPreconditioner(Params()));
     }
     else if (Params().isSublist("MueLu (FSI) Parameters"))
     {
-      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::MueLuFsiBlockPreconditioner(Params()));
     }
     else if (Params().isSublist("AMGnxn Parameters"))
     {
-      preconditioner = Teuchos::rcp(new CORE::LINEAR_SOLVER::AmGnxnPreconditioner(Params()));
+      preconditioner = Teuchos::rcp(new Core::LinearSolver::AmGnxnPreconditioner(Params()));
     }
     else
       FOUR_C_THROW(
-          "CORE::LINEAR_SOLVER::IterativeSolver::create_preconditioner: Unknown preconditioner for "
+          "Core::LinearSolver::IterativeSolver::create_preconditioner: Unknown preconditioner for "
           "block iterative solver chosen.");
   }
 
@@ -283,6 +282,6 @@ CORE::LINEAR_SOLVER::IterativeSolver<MatrixType, VectorType>::create_preconditio
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 // explicit initialization
-template class CORE::LINEAR_SOLVER::IterativeSolver<Epetra_Operator, Epetra_MultiVector>;
+template class Core::LinearSolver::IterativeSolver<Epetra_Operator, Epetra_MultiVector>;
 
 FOUR_C_NAMESPACE_CLOSE

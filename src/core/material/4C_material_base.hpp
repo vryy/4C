@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /// MAT: materials
-namespace CORE::MAT
+namespace Core::Mat
 {
   namespace PAR
   {
@@ -46,20 +46,20 @@ namespace CORE::MAT
    * <h3>Storage</h3>
    *
    * In order to support storage of material data (for restart, post
-   * processing, ...) this class does implement CORE::COMM::ParObject. The
+   * processing, ...) this class does implement Core::Communication::ParObject. The
    * elements pack and unpack its materials along with its other data.
    */
-  class Material : public CORE::COMM::ParObject
+  class Material : public Core::Communication::ParObject
   {
    public:
     /// return type of this material
-    virtual CORE::Materials::MaterialType MaterialType() const = 0;
+    virtual Core::Materials::MaterialType MaterialType() const = 0;
 
     /// return copy of this material object
-    virtual Teuchos::RCP<CORE::MAT::Material> Clone() const = 0;
+    virtual Teuchos::RCP<Core::Mat::Material> Clone() const = 0;
 
     /// return quick accessible material parameter data
-    virtual CORE::MAT::PAR::Parameter* Parameter() const = 0;
+    virtual Core::Mat::PAR::Parameter* Parameter() const = 0;
 
     /// return material density at gauss point (if provided by the specific material)
     virtual double Density(int gp) const { return Density(); }
@@ -77,7 +77,7 @@ namespace CORE::MAT
     }
   };
 
-}  // namespace CORE::MAT
+}  // namespace Core::Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

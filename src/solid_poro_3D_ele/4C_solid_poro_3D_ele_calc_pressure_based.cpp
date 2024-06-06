@@ -18,38 +18,38 @@ implementation
 
 FOUR_C_NAMESPACE_OPEN
 
-template <CORE::FE::CellType celltype>
-DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::SolidPoroPressureBasedEleCalc()
+template <Core::FE::CellType celltype>
+Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::SolidPoroPressureBasedEleCalc()
     : gauss_integration_(
           CreateGaussIntegration<celltype>(GetGaussRuleStiffnessMatrixPoro<celltype>()))
 {
 }
 
-template <CORE::FE::CellType celltype>
-void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::PoroSetup(
-    MAT::StructPoro& porostructmat, INPUT::LineDefinition* linedef)
+template <Core::FE::CellType celltype>
+void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::PoroSetup(
+    Mat::StructPoro& porostructmat, Input::LineDefinition* linedef)
 {
   porostructmat.PoroSetup(gauss_integration_.NumPoints(), linedef);
 }
 
-template <CORE::FE::CellType celltype>
-void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_force_stiffness(
-    const CORE::Elements::Element& ele, MAT::StructPoro& porostructmat,
-    MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,
-    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
-    CORE::LINALG::SerialDenseMatrix* stiffness_matrix)
+template <Core::FE::CellType celltype>
+void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_force_stiffness(
+    const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
+    Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::STR::KinemType& kinematictype,
+    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
+    Core::LinAlg::SerialDenseMatrix* stiffness_matrix)
 {
   // Create views to SerialDenseMatrices
-  std::optional<CORE::LINALG::Matrix<num_dim_ * num_nodes_, num_dim_* num_nodes_>> stiff = {};
-  std::optional<CORE::LINALG::Matrix<num_dim_ * num_nodes_, 1>> force = {};
+  std::optional<Core::LinAlg::Matrix<num_dim_ * num_nodes_, num_dim_* num_nodes_>> stiff = {};
+  std::optional<Core::LinAlg::Matrix<num_dim_ * num_nodes_, 1>> force = {};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
 
   // get primary variables of multiphase porous medium flow
   std::vector<double> fluidmultiphase_ephi(la[1].Size());
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "porofluid");
-  CORE::FE::ExtractMyValues(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
+  Core::FE::ExtractMyValues(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
 
   // Initialize variables of multiphase porous medium flow
   const int nummultifluiddofpernode = porofluidmat.NumMat();
@@ -63,7 +63,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_
 
   // Loop over all Gauss points
   ForEachGaussPoint(nodal_coordinates, gauss_integration_,
-      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
+      [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -74,21 +74,21 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_
         const CauchyGreenAndInverse<celltype> cauchygreen =
             EvaluateCauchyGreenAndInverse(spatial_material_mapping);
 
-        CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
+        Core::LinAlg::Matrix<num_str_, num_dof_per_ele_> Bop =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
-        CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> dInverseRightCauchyGreen_dDisp =
+        Core::LinAlg::Matrix<num_str_, num_dof_per_ele_> dInverseRightCauchyGreen_dDisp =
             EvaluateInverseCauchyGreenLinearization(
                 cauchygreen, jacobian_mapping, spatial_material_mapping);
 
         const double volchange = ComputeVolumeChange<celltype>(spatial_material_mapping,
             jacobian_mapping, ele, discretization, la[0].lm_, kinematictype);
 
-        CORE::LINALG::Matrix<1, num_dof_per_ele_> dDetDefGrad_dDisp =
+        Core::LinAlg::Matrix<1, num_dof_per_ele_> dDetDefGrad_dDisp =
             ComputeLinearizationOfDetDefGradWrtDisp<celltype>(
                 spatial_material_mapping, jacobian_mapping, kinematictype);
 
-        const CORE::LINALG::Matrix<1, num_dof_per_ele_> dVolchange_dDisp =
+        const Core::LinAlg::Matrix<1, num_dof_per_ele_> dVolchange_dDisp =
             ComputeLinearizationOfVolchangeWrtDisp<celltype>(
                 dDetDefGrad_dDisp, jacobian_mapping, kinematictype);
 
@@ -99,11 +99,11 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_
         double solidpressure = compute_sol_pressure_at_gp<celltype>(
             nummultifluiddofpernode, numfluidphases, fluidmultiphase_phiAtGP, porofluidmat);
         // derivative of press w.r.t. displacements (only in case of volfracs)
-        CORE::LINALG::Matrix<1, num_dof_per_ele_> dSolidpressure_dDisp(true);
+        Core::LinAlg::Matrix<1, num_dof_per_ele_> dSolidpressure_dDisp(true);
 
         if (hasvolfracs)
         {
-          CORE::LINALG::Matrix<1, num_dof_per_ele_> dPorosity_dDisp;
+          Core::LinAlg::Matrix<1, num_dof_per_ele_> dPorosity_dDisp;
           double porosity = 0.0;
 
           compute_porosity_and_linearization<celltype>(porostructmat, params, solidpressure, gp,
@@ -122,12 +122,12 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_
         }
 
         // inverse Right Cauchy-Green tensor as vector in voigt notation
-        CORE::LINALG::Matrix<num_str_, 1> C_inv_vec(false);
-        CORE::LINALG::VOIGT::Stresses::MatrixToVector(
+        Core::LinAlg::Matrix<num_str_, 1> C_inv_vec(false);
+        Core::LinAlg::Voigt::Stresses::MatrixToVector(
             cauchygreen.inverse_right_cauchy_green_, C_inv_vec);
 
         // B^T . C^-1
-        CORE::LINALG::Matrix<num_dof_per_ele_, 1> BopCinv(true);
+        Core::LinAlg::Matrix<num_dof_per_ele_, 1> BopCinv(true);
         BopCinv.MultiplyTN(Bop, C_inv_vec);
 
         // update internal force vector
@@ -152,17 +152,17 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_
       });
 }
 
-template <CORE::FE::CellType celltype>
-void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroelast(
-    const CORE::Elements::Element& ele, MAT::StructPoro& porostructmat,
-    MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,
-    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& stiffness_matrix)
+template <Core::FE::CellType celltype>
+void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroelast(
+    const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
+    Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::STR::KinemType& kinematictype,
+    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
 {
   // get primary variables of multiphase porous medium flow
   std::vector<double> fluidmultiphase_ephi(la[1].Size());
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "porofluid");
-  CORE::FE::ExtractMyValues(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
+  Core::FE::ExtractMyValues(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
 
   // Initialize variables of multiphase porous medium flow
   const int nummultifluiddofpernode = porofluidmat.NumMat();
@@ -176,7 +176,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroelast(
 
   // Loop over all Gauss points
   ForEachGaussPoint(nodal_coordinates, gauss_integration_,
-      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
+      [&](const Core::LinAlg::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp
 
@@ -189,7 +189,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroelast(
         const CauchyGreenAndInverse<celltype> cauchygreen =
             EvaluateCauchyGreenAndInverse(spatial_material_mapping);
 
-        CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
+        Core::LinAlg::Matrix<num_str_, num_dof_per_ele_> Bop =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
         // volume change (used for porosity law). Same as J in nonlinear theory.
@@ -218,12 +218,12 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroelast(
         const double detJ_w = jacobian_mapping.determinant_ * gauss_integration_.Weight(gp);
 
         // inverse Right Cauchy-Green tensor as vector in voigt notation
-        CORE::LINALG::Matrix<num_str_, 1> C_inv_vec(false);
-        CORE::LINALG::VOIGT::Stresses::MatrixToVector(
+        Core::LinAlg::Matrix<num_str_, 1> C_inv_vec(false);
+        Core::LinAlg::Voigt::Stresses::MatrixToVector(
             cauchygreen.inverse_right_cauchy_green_, C_inv_vec);
 
         // B^T . C^-1
-        CORE::LINALG::Matrix<num_dof_per_ele_, 1> BopCinv(true);
+        Core::LinAlg::Matrix<num_dof_per_ele_, 1> BopCinv(true);
         BopCinv.MultiplyTN(Bop, C_inv_vec);
 
         UpdateStiffnessMatrixCouplingMultiPhasePressureBased<celltype>(detJ_w, solidpressurederiv,
@@ -232,16 +232,16 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroelast(
       });
 }
 
-template <CORE::FE::CellType celltype>
-void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingStress(
-    const CORE::Elements::Element& ele, const DRT::Discretization& discretization,
+template <Core::FE::CellType celltype>
+void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingStress(
+    const Core::Elements::Element& ele, const Discret::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
-  auto iocouplingstress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
-      params, "iocouplstress", INPAR::STR::stress_none);
+  auto iocouplingstress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
+      params, "iocouplstress", Inpar::STR::stress_none);
 
   // check for output of coupling stress
-  if (iocouplingstress == INPAR::STR::stress_none)
+  if (iocouplingstress == Inpar::STR::stress_none)
   {
     // nothing to do for calculation of effective stress
     return;
@@ -253,9 +253,9 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::CouplingStress(
 }
 
 // template classes
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex8>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<CORE::FE::CellType::tet10>;
+template class Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<Core::FE::CellType::hex8>;
+template class Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<Core::FE::CellType::tet10>;
 
 FOUR_C_NAMESPACE_CLOSE

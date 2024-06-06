@@ -32,10 +32,10 @@ FOUR_C_NAMESPACE_OPEN
  |  overlap pair to the weighted gap of the adjacent slave nodes.       |
  *----------------------------------------------------------------------*/
 bool CONTACT::Integrator::AssembleG(
-    const Epetra_Comm& comm, MORTAR::Element& sele, CORE::LINALG::SerialDenseVector& gseg)
+    const Epetra_Comm& comm, Mortar::Element& sele, Core::LinAlg::SerialDenseVector& gseg)
 {
   // get adjacent slave nodes to assemble to
-  CORE::Nodes::Node** snodes = sele.Nodes();
+  Core::Nodes::Node** snodes = sele.Nodes();
   if (!snodes) FOUR_C_THROW("AssembleG: Null pointer for snodes!");
 
   // loop over all slave nodes
@@ -70,10 +70,10 @@ bool CONTACT::Integrator::AssembleG(
  |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
  *----------------------------------------------------------------------*/
 bool CONTACT::Integrator::AssembleG(
-    const Epetra_Comm& comm, MORTAR::IntElement& sintele, CORE::LINALG::SerialDenseVector& gseg)
+    const Epetra_Comm& comm, Mortar::IntElement& sintele, Core::LinAlg::SerialDenseVector& gseg)
 {
   // get adjacent slave int nodes to assemble to
-  CORE::Nodes::Node** snodes = sintele.Nodes();
+  Core::Nodes::Node** snodes = sintele.Nodes();
   if (!snodes) FOUR_C_THROW("AssembleG: Null pointer for sintnodes!");
 
   // loop over all slave nodes

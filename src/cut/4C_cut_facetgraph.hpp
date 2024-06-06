@@ -17,9 +17,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Point;
     class Facet;
@@ -40,7 +40,7 @@ namespace CORE::GEO
     {
      public:
       /// create the FacetGraph object for the given element dimension
-      static Teuchos::RCP<CORE::GEO::CUT::FacetGraph> Create(
+      static Teuchos::RCP<Core::Geo::Cut::FacetGraph> Create(
           const std::vector<Side*>& sides, const plain_facet_set& facets);
 
      public:
@@ -77,13 +77,13 @@ namespace CORE::GEO
       }
 
       std::vector<Facet*> all_facets_;
-      COLOREDGRAPH::Graph graph_;
-      COLOREDGRAPH::CycleList cycle_list_;
+      ColoredGraph::Graph graph_;
+      ColoredGraph::CycleList cycle_list_;
       std::vector<std::pair<Point*, Point*>> all_lines_;
     };  // class FacetGraph
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

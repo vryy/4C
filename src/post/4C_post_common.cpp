@@ -158,9 +158,9 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
 
   const char* type = map_read_string(&control_table_, "problem_type");
   const std::string probtype(type);
-  problemtype_ = INPAR::PROBLEMTYPE::StringToProblemType(probtype);
+  problemtype_ = Inpar::PROBLEMTYPE::StringToProblemType(probtype);
 
-  spatial_approx_ = CORE::FE::StringToShapeFunctionType(
+  spatial_approx_ = Core::FE::StringToShapeFunctionType(
       map_read_string(&control_table_, "spatial_approximation"));
 
   /*--------------------------------------------------------------------*/
@@ -479,7 +479,7 @@ void PostProblem::read_meshes()
         FOUR_C_THROW(
             "No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
       std::string filename = fn;
-      CORE::IO::HDFReader reader = CORE::IO::HDFReader(input_dir_);
+      Core::IO::HDFReader reader = Core::IO::HDFReader(input_dir_);
       reader.Open(filename, num_output_procs, comm_->NumProc(), comm_->MyPID());
 
       if (currfield.num_nodes() != 0)
@@ -502,11 +502,11 @@ void PostProblem::read_meshes()
       // read knot vectors for nurbs discretisations
       switch (spatial_approx_)
       {
-        case CORE::FE::ShapeFunctionType::nurbs:
+        case Core::FE::ShapeFunctionType::nurbs:
         {
           // try a dynamic cast of the discretisation to a nurbs discretisation
-          DRT::NURBS::NurbsDiscretization* nurbsdis =
-              dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
+          Discret::Nurbs::NurbsDiscretization* nurbsdis =
+              dynamic_cast<Discret::Nurbs::NurbsDiscretization*>(&(*currfield.discretization()));
 
           if (nurbsdis == nullptr)
             FOUR_C_THROW("discretization %s is not a NurbsDiscretization",
@@ -521,7 +521,7 @@ void PostProblem::read_meshes()
           // distribute knots to all procs
           if (comm_->NumProc() > 1)
           {
-            CORE::COMM::Exporter exporter(nurbsdis->Comm());
+            Core::Communication::Exporter exporter(nurbsdis->Comm());
 
             if (comm_->MyPID() == 0)
             {
@@ -553,7 +553,8 @@ void PostProblem::read_meshes()
             }
           }
 
-          Teuchos::RCP<DRT::NURBS::Knotvector> knots = Teuchos::rcp(new DRT::NURBS::Knotvector());
+          Teuchos::RCP<Discret::Nurbs::Knotvector> knots =
+              Teuchos::rcp(new Discret::Nurbs::Knotvector());
 
           knots->Unpack(*packed_knots);
 
@@ -603,7 +604,7 @@ void PostProblem::read_meshes()
       if ((cond_pbcssurf != Teuchos::null and not cond_pbcssurf->empty()) or
           (cond_pbcsline != Teuchos::null and not cond_pbcsline->empty()))
       {
-        CORE::Conditions::PeriodicBoundaryConditions pbc(currfield.discretization());
+        Core::Conditions::PeriodicBoundaryConditions pbc(currfield.discretization());
         pbc.update_dofs_for_periodic_boundary_conditions();
       }
 
@@ -624,19 +625,19 @@ PostField PostProblem::getfield(MAP* field_info)
   const int numele = map_read_int(field_info, "num_ele");
   const int ndim = map_read_int(field_info, "num_dim");
 
-  Teuchos::RCP<DRT::Discretization> dis;
+  Teuchos::RCP<Discret::Discretization> dis;
 
   switch (spatial_approx_)
   {
-    case CORE::FE::ShapeFunctionType::polynomial:
-    case CORE::FE::ShapeFunctionType::hdg:
+    case Core::FE::ShapeFunctionType::polynomial:
+    case Core::FE::ShapeFunctionType::hdg:
     {
-      dis = Teuchos::rcp(new DRT::Discretization(field_name, comm_, ndim));
+      dis = Teuchos::rcp(new Discret::Discretization(field_name, comm_, ndim));
       break;
     }
-    case CORE::FE::ShapeFunctionType::nurbs:
+    case Core::FE::ShapeFunctionType::nurbs:
     {
-      dis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(field_name, comm_, ndim));
+      dis = Teuchos::rcp(new Discret::Nurbs::NurbsDiscretization(field_name, comm_, ndim));
       break;
     }
     default:
@@ -680,7 +681,7 @@ int PostProblem::get_max_nodeid(const std::string& fieldname)
 /*----------------------------------------------------------------------*
  * Constructor of PostField.
  *----------------------------------------------------------------------*/
-PostField::PostField(Teuchos::RCP<DRT::Discretization> dis, PostProblem* problem,
+PostField::PostField(Teuchos::RCP<Discret::Discretization> dis, PostProblem* problem,
     std::string field_name, const int numnd, const int numele)
     : dis_(dis), problem_(problem), field_name_(field_name), numnd_(numnd), numele_(numele)
 {
@@ -893,7 +894,7 @@ Teuchos::RCP<Epetra_Vector> PostResult::read_result(const std::string name)
  * block and returns it as an std::vector<char>. the corresponding
  * elemap is returned, too.
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>
 PostResult::read_result_serialdensematrix(const std::string name)
 {
   using namespace FourC;
@@ -914,21 +915,21 @@ PostResult::read_result_serialdensematrix(const std::string name)
   Teuchos::RCP<std::vector<char>> data =
       file_.read_result_data_vec_char(id_path, value_path, columns, *comm, elemap);
 
-  Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> mapdata =
-      Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> mapdata =
+      Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
   std::vector<char>::size_type position = 0;
   //   std::cout << "elemap:\n" << *elemap << std::endl;
   //   std::cout << "myelenum: " << elemap->NumMyElements() << std::endl;
   for (int i = 0; i < elemap->NumMyElements(); ++i)
   {
-    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-    CORE::COMM::ParObject::ExtractfromPack(position, *data, *gpstress);
+    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
+        Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+    Core::Communication::ParObject::ExtractfromPack(position, *data, *gpstress);
     (*mapdata)[elemap->GID(i)] = gpstress;
   }
 
   const Epetra_Map& elecolmap = *field_->discretization()->ElementColMap();
-  CORE::COMM::Exporter ex(*elemap, elecolmap, *comm);
+  Core::Communication::Exporter ex(*elemap, elecolmap, *comm);
   ex.Export(*mapdata);
 
   return mapdata;

@@ -21,19 +21,19 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace StatusTest
     {
       enum QuantityType : int;
     }  // namespace StatusTest
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace INNER
+    }    // namespace Inner
     namespace Solver
     {
       class LineSearchBased : public ::NOX::Solver::LineSearchBased
@@ -46,7 +46,7 @@ namespace NOX
          */
         LineSearchBased(const Teuchos::RCP<::NOX::Abstract::Group>& grp,
             const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
-            const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
+            const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,
             const Teuchos::RCP<Teuchos::ParameterList>& params);
 
 
@@ -76,7 +76,7 @@ namespace NOX
          *  \author hiermeier \date 08/18 */
         template <class T>
         ::NOX::StatusTest::Generic* get_outer_status_test_with_quantity(
-            const NOX::NLN::StatusTest::QuantityType qtype) const;
+            const NOX::Nln::StatusTest::QuantityType qtype) const;
 
         //! Returns the ::NOX::Utils object
         [[nodiscard]] const ::NOX::Utils& GetUtils() const;
@@ -90,12 +90,12 @@ namespace NOX
 
        protected:
         //! initialize additional variables or overwrite base class initialization
-        virtual void init(const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests);
+        virtual void init(const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests);
 
         void printUpdate() override;
       };  // class LineSearchBased
     }     // namespace Solver
-  }       // namespace NLN
+  }       // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

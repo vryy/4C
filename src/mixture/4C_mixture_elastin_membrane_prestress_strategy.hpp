@@ -24,7 +24,7 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   class CoordinateSystemProvider;
 }
@@ -62,7 +62,7 @@ namespace MIXTURE
      * \return double Fraction of the elastin membrane contribution to the total elastin response
      */
     virtual double EvaluateMueFrac(MixtureRule& mixtureRule,
-        const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
+        const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
         MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
         Teuchos::ParameterList& params, int gp, int eleGID) const = 0;
   };
@@ -87,7 +87,7 @@ namespace MIXTURE
      * \param eleGID (in) : Global element id
      */
     virtual void evaluate_membrane_stress(
-        CORE::LINALG::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
+        Core::LinAlg::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 }  // namespace MIXTURE
 FOUR_C_NAMESPACE_CLOSE

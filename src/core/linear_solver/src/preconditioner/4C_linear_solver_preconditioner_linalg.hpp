@@ -21,12 +21,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
 
@@ -45,7 +45,7 @@ namespace CORE::LINALG
     direct solver or the like) to our block matrix. This is what this class
     provides.
 
-    \note This class is not used by CORE::LINALG::Solver. We use the same input
+    \note This class is not used by Core::LinAlg::Solver. We use the same input
     parameters here, but that is all. No connection.
 
     \author u.kue
@@ -70,8 +70,8 @@ namespace CORE::LINALG
       Destroy any existing one.
      */
     void Setup(Teuchos::RCP<Epetra_Operator> matrix,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex = Teuchos::null,
-        Teuchos::RCP<DRT::Discretization> fdis = Teuchos::null,
+        Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null,
+        Teuchos::RCP<Discret::Discretization> fdis = Teuchos::null,
         Teuchos::RCP<Epetra_Map> inodes = Teuchos::null, bool structuresplit = false);
 
     /// Solve system of equations
@@ -152,7 +152,7 @@ namespace CORE::LINALG
     //! counting how many times matrix was solved between resets
     int ncall_;
   };
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 FOUR_C_NAMESPACE_CLOSE
 

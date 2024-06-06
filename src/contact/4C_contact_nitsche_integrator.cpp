@@ -28,16 +28,16 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitsche::integrate_gp_3_d(MORTAR::Element& sele, MORTAR::Element& mele,
-    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
-    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
-    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
-    double& jac, CORE::GEN::Pairedvector<int, double>& derivjac, double* normal,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double& gap,
-    CORE::GEN::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi)
+void CONTACT::IntegratorNitsche::integrate_gp_3_d(Mortar::Element& sele, Mortar::Element& mele,
+    Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
+    Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
+    Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, Core::Gen::Pairedvector<int, double>& derivjac, double* normal,
+    std::vector<Core::Gen::Pairedvector<int, double>>& dnmap_unit, double& gap,
+    Core::Gen::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi)
 {
   gpts_forces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
       gap, deriv_gap, normal, dnmap_unit, sxi, mxi);
@@ -45,16 +45,16 @@ void CONTACT::IntegratorNitsche::integrate_gp_3_d(MORTAR::Element& sele, MORTAR:
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::IntegratorNitsche::integrate_gp_2_d(MORTAR::Element& sele, MORTAR::Element& mele,
-    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
-    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
-    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
-    double& jac, CORE::GEN::Pairedvector<int, double>& derivjac, double* normal,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& dnmap_unit, double& gap,
-    CORE::GEN::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi)
+void CONTACT::IntegratorNitsche::integrate_gp_2_d(Mortar::Element& sele, Mortar::Element& mele,
+    Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseVector& lmval,
+    Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& sderiv,
+    Core::LinAlg::SerialDenseMatrix& mderiv, Core::LinAlg::SerialDenseMatrix& lmderiv,
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, Core::Gen::Pairedvector<int, double>& derivjac, double* normal,
+    std::vector<Core::Gen::Pairedvector<int, double>>& dnmap_unit, double& gap,
+    Core::Gen::Pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
+    std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi)
 {
   gpts_forces<2>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
       gap, deriv_gap, normal, dnmap_unit, sxi, mxi);
@@ -63,32 +63,32 @@ void CONTACT::IntegratorNitsche::integrate_gp_2_d(MORTAR::Element& sele, MORTAR:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::IntegratorNitsche::gpts_forces(MORTAR::Element& sele, MORTAR::Element& mele,
-    const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& dsxi,
-    const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& dmxi, const double jac,
-    const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-    const CORE::GEN::Pairedvector<int, double>& dgapgp, const double* gpn,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& deriv_contact_normal, double* sxi,
+void CONTACT::IntegratorNitsche::gpts_forces(Mortar::Element& sele, Mortar::Element& mele,
+    const Core::LinAlg::SerialDenseVector& sval, const Core::LinAlg::SerialDenseMatrix& sderiv,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& dsxi,
+    const Core::LinAlg::SerialDenseVector& mval, const Core::LinAlg::SerialDenseMatrix& mderiv,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& dmxi, const double jac,
+    const Core::Gen::Pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
+    const Core::Gen::Pairedvector<int, double>& dgapgp, const double* gpn,
+    std::vector<Core::Gen::Pairedvector<int, double>>& deriv_contact_normal, double* sxi,
     double* mxi)
 {
   if (sele.Owner() != Comm_.MyPID()) return;
 
   if (dim != Dim()) FOUR_C_THROW("dimension inconsistency");
 
-  if (frtype_ != INPAR::CONTACT::friction_none && dim != 3) FOUR_C_THROW("only 3D friction");
-  if (frtype_ != INPAR::CONTACT::friction_none && frtype_ != INPAR::CONTACT::friction_coulomb &&
-      frtype_ != INPAR::CONTACT::friction_tresca)
+  if (frtype_ != Inpar::CONTACT::friction_none && dim != 3) FOUR_C_THROW("only 3D friction");
+  if (frtype_ != Inpar::CONTACT::friction_none && frtype_ != Inpar::CONTACT::friction_coulomb &&
+      frtype_ != Inpar::CONTACT::friction_tresca)
     FOUR_C_THROW("only coulomb or tresca friction");
-  if (frtype_ == INPAR::CONTACT::friction_coulomb && frcoeff_ < 0.)
+  if (frtype_ == Inpar::CONTACT::friction_coulomb && frcoeff_ < 0.)
     FOUR_C_THROW("negative coulomb friction coefficient");
-  if (frtype_ == INPAR::CONTACT::friction_tresca && frbound_ < 0.)
+  if (frtype_ == Inpar::CONTACT::friction_tresca && frbound_ < 0.)
     FOUR_C_THROW("negative tresca friction bound");
 
-  CORE::LINALG::Matrix<dim, 1> slave_normal, master_normal;
-  std::vector<CORE::GEN::Pairedvector<int, double>> deriv_slave_normal(0, 0);
-  std::vector<CORE::GEN::Pairedvector<int, double>> deriv_master_normal(0, 0);
+  Core::LinAlg::Matrix<dim, 1> slave_normal, master_normal;
+  std::vector<Core::Gen::Pairedvector<int, double>> deriv_slave_normal(0, 0);
+  std::vector<Core::Gen::Pairedvector<int, double>> deriv_master_normal(0, 0);
   sele.compute_unit_normal_at_xi(sxi, slave_normal.A());
   mele.compute_unit_normal_at_xi(mxi, master_normal.A());
   sele.DerivUnitNormalAtXi(sxi, deriv_slave_normal);
@@ -97,68 +97,68 @@ void CONTACT::IntegratorNitsche::gpts_forces(MORTAR::Element& sele, MORTAR::Elem
   double pen = ppn_;
   double pet = ppt_;
 
-  const CORE::LINALG::Matrix<dim, 1> contact_normal(gpn, true);
+  const Core::LinAlg::Matrix<dim, 1> contact_normal(gpn, true);
 
-  if (stype_ == INPAR::CONTACT::solution_nitsche)
+  if (stype_ == Inpar::CONTACT::solution_nitsche)
   {
     double cauchy_nn_weighted_average = 0.;
-    CORE::GEN::Pairedvector<int, double> cauchy_nn_weighted_average_deriv(
+    Core::Gen::Pairedvector<int, double> cauchy_nn_weighted_average_deriv(
         sele.num_node() * 3 * 12 + sele.MoData().ParentDisp().size() +
         mele.MoData().ParentDisp().size());
 
-    CORE::LINALG::SerialDenseVector normal_adjoint_test_slave(sele.MoData().ParentDof().size());
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector> deriv_normal_adjoint_test_slave(
+    Core::LinAlg::SerialDenseVector normal_adjoint_test_slave(sele.MoData().ParentDof().size());
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector> deriv_normal_adjoint_test_slave(
         sele.MoData().ParentDof().size() + deriv_contact_normal[0].size() + dsxi[0].size(), -1,
-        CORE::LINALG::SerialDenseVector(sele.MoData().ParentDof().size(), true));
+        Core::LinAlg::SerialDenseVector(sele.MoData().ParentDof().size(), true));
 
-    CORE::LINALG::SerialDenseVector normal_adjoint_test_master(mele.MoData().ParentDof().size());
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector> deriv_normal_adjoint_test_master(
+    Core::LinAlg::SerialDenseVector normal_adjoint_test_master(mele.MoData().ParentDof().size());
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector> deriv_normal_adjoint_test_master(
         mele.MoData().ParentDof().size() + deriv_contact_normal[0].size() + dmxi[0].size(), -1,
-        CORE::LINALG::SerialDenseVector(mele.MoData().ParentDof().size(), true));
+        Core::LinAlg::SerialDenseVector(mele.MoData().ParentDof().size(), true));
 
     double ws = 0.;
     double wm = 0.;
     CONTACT::UTILS::NitscheWeightsAndScaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
 
     // variables for friction (declaration only)
-    CORE::LINALG::Matrix<dim, 1> t1, t2;
-    std::vector<CORE::GEN::Pairedvector<int, double>> dt1, dt2;
-    CORE::LINALG::Matrix<dim, 1> relVel;
-    std::vector<CORE::GEN::Pairedvector<int, double>> relVel_deriv(
+    Core::LinAlg::Matrix<dim, 1> t1, t2;
+    std::vector<Core::Gen::Pairedvector<int, double>> dt1, dt2;
+    Core::LinAlg::Matrix<dim, 1> relVel;
+    std::vector<Core::Gen::Pairedvector<int, double>> relVel_deriv(
         dim, sele.num_node() * dim + mele.num_node() * dim + dsxi[0].size() + dmxi[0].size());
     double vt1(0.0), vt2(0.0);
-    CORE::GEN::Pairedvector<int, double> dvt1(0);
-    CORE::GEN::Pairedvector<int, double> dvt2(0);
+    Core::Gen::Pairedvector<int, double> dvt1(0);
+    Core::Gen::Pairedvector<int, double> dvt2(0);
     double cauchy_nt1_weighted_average = 0.;
-    CORE::GEN::Pairedvector<int, double> cauchy_nt1_weighted_average_deriv(
+    Core::Gen::Pairedvector<int, double> cauchy_nt1_weighted_average_deriv(
         sele.num_node() * 3 * 12 + sele.MoData().ParentDisp().size() +
         mele.MoData().ParentDisp().size());
-    CORE::LINALG::SerialDenseVector t1_adjoint_test_slave(sele.MoData().ParentDof().size());
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector> deriv_t1_adjoint_test_slave(
+    Core::LinAlg::SerialDenseVector t1_adjoint_test_slave(sele.MoData().ParentDof().size());
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector> deriv_t1_adjoint_test_slave(
         sele.MoData().ParentDof().size() + deriv_contact_normal[0].size() + dsxi[0].size(), -1,
-        CORE::LINALG::SerialDenseVector(sele.MoData().ParentDof().size(), true));
-    CORE::LINALG::SerialDenseVector t1_adjoint_test_master(mele.MoData().ParentDof().size());
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector> deriv_t1_adjoint_test_master(
+        Core::LinAlg::SerialDenseVector(sele.MoData().ParentDof().size(), true));
+    Core::LinAlg::SerialDenseVector t1_adjoint_test_master(mele.MoData().ParentDof().size());
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector> deriv_t1_adjoint_test_master(
         mele.MoData().ParentDof().size() + deriv_contact_normal[0].size() + dmxi[0].size(), -1,
-        CORE::LINALG::SerialDenseVector(mele.MoData().ParentDof().size(), true));
+        Core::LinAlg::SerialDenseVector(mele.MoData().ParentDof().size(), true));
     double cauchy_nt2_weighted_average = 0.;
-    CORE::GEN::Pairedvector<int, double> cauchy_nt2_weighted_average_deriv(
+    Core::Gen::Pairedvector<int, double> cauchy_nt2_weighted_average_deriv(
         sele.num_node() * 3 * 12 + sele.MoData().ParentDisp().size() +
         mele.MoData().ParentDisp().size());
-    CORE::LINALG::SerialDenseVector t2_adjoint_test_slave(sele.MoData().ParentDof().size());
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector> deriv_t2_adjoint_test_slave(
+    Core::LinAlg::SerialDenseVector t2_adjoint_test_slave(sele.MoData().ParentDof().size());
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector> deriv_t2_adjoint_test_slave(
         sele.MoData().ParentDof().size() + deriv_contact_normal[0].size() + dsxi[0].size(), -1,
-        CORE::LINALG::SerialDenseVector(sele.MoData().ParentDof().size(), true));
-    CORE::LINALG::SerialDenseVector t2_adjoint_test_master(mele.MoData().ParentDof().size());
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector> deriv_t2_adjoint_test_master(
+        Core::LinAlg::SerialDenseVector(sele.MoData().ParentDof().size(), true));
+    Core::LinAlg::SerialDenseVector t2_adjoint_test_master(mele.MoData().ParentDof().size());
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector> deriv_t2_adjoint_test_master(
         mele.MoData().ParentDof().size() + deriv_contact_normal[0].size() + dmxi[0].size(), -1,
-        CORE::LINALG::SerialDenseVector(mele.MoData().ParentDof().size(), true));
+        Core::LinAlg::SerialDenseVector(mele.MoData().ParentDof().size(), true));
     double sigma_nt1_pen_vt1(0.0), sigma_nt2_pen_vt2(0.0);
-    CORE::GEN::Pairedvector<int, double> d_sigma_nt1_pen_vt1(
+    Core::Gen::Pairedvector<int, double> d_sigma_nt1_pen_vt1(
         dgapgp.capacity() + cauchy_nn_weighted_average_deriv.capacity() +
             cauchy_nt1_weighted_average_deriv.capacity() + dvt1.capacity(),
         0, 0);
-    CORE::GEN::Pairedvector<int, double> d_sigma_nt2_pen_vt2(
+    Core::Gen::Pairedvector<int, double> d_sigma_nt2_pen_vt2(
         dgapgp.capacity() + cauchy_nn_weighted_average_deriv.capacity() +
             cauchy_nt2_weighted_average_deriv.capacity() + dvt2.capacity(),
         0, 0);
@@ -172,7 +172,7 @@ void CONTACT::IntegratorNitsche::gpts_forces(MORTAR::Element& sele, MORTAR::Elem
         normal_adjoint_test_master, deriv_normal_adjoint_test_master);
 
     const double snn_av_pen_gap = cauchy_nn_weighted_average + pen * gap;
-    CORE::GEN::Pairedvector<int, double> d_snn_av_pen_gap(
+    Core::Gen::Pairedvector<int, double> d_snn_av_pen_gap(
         cauchy_nn_weighted_average_deriv.size() + dgapgp.size());
     for (const auto& p : cauchy_nn_weighted_average_deriv) d_snn_av_pen_gap[p.first] += p.second;
     for (const auto& p : dgapgp) d_snn_av_pen_gap[p.first] += pen * p.second;
@@ -289,10 +289,10 @@ void CONTACT::IntegratorNitsche::gpts_forces(MORTAR::Element& sele, MORTAR::Elem
         double fr = 0.0;
         switch (frtype_)
         {
-          case INPAR::CONTACT::friction_coulomb:
+          case Inpar::CONTACT::friction_coulomb:
             fr = frcoeff_ * (-1.) * (snn_av_pen_gap);
             break;
-          case INPAR::CONTACT::friction_tresca:
+          case Inpar::CONTACT::friction_tresca:
             fr = frbound_;
             break;
           default:
@@ -320,11 +320,11 @@ void CONTACT::IntegratorNitsche::gpts_forces(MORTAR::Element& sele, MORTAR::Elem
         // slip
         else
         {
-          CORE::GEN::Pairedvector<int, double> tmp_d(
+          Core::Gen::Pairedvector<int, double> tmp_d(
               dgapgp.size() + cauchy_nn_weighted_average_deriv.size() +
                   cauchy_nt1_weighted_average_deriv.size() + dvt1.size(),
               0, 0);
-          if (frtype_ == INPAR::CONTACT::friction_coulomb)
+          if (frtype_ == Inpar::CONTACT::friction_coulomb)
             for (const auto& p : d_snn_av_pen_gap) tmp_d[p.first] += -frcoeff_ / tan_tr * p.second;
 
           for (const auto& p : cauchy_nt1_weighted_average_deriv)
@@ -382,8 +382,8 @@ void CONTACT::IntegratorNitsche::gpts_forces(MORTAR::Element& sele, MORTAR::Elem
       }
     }
   }
-  else if ((stype_ == INPAR::CONTACT::solution_penalty) ||
-           stype_ == INPAR::CONTACT::solution_multiscale)
+  else if ((stype_ == Inpar::CONTACT::solution_penalty) ||
+           stype_ == Inpar::CONTACT::solution_multiscale)
   {
     if (gap < 0.)
     {
@@ -404,35 +404,35 @@ void CONTACT::IntegratorNitsche::gpts_forces(MORTAR::Element& sele, MORTAR::Elem
  *----------------------------------------------------------------------*/
 
 template <int dim>
-void CONTACT::UTILS::MapGPtoParent(MORTAR::Element& moEle, double* boundary_gpcoord,
-    const double wgt, CORE::LINALG::Matrix<dim, 1>& pxsi,
-    CORE::LINALG::Matrix<dim, dim>& derivtravo_slave)
+void CONTACT::UTILS::MapGPtoParent(Mortar::Element& moEle, double* boundary_gpcoord,
+    const double wgt, Core::LinAlg::Matrix<dim, 1>& pxsi,
+    Core::LinAlg::Matrix<dim, dim>& derivtravo_slave)
 {
-  CORE::FE::CellType distype = moEle.parent_element()->Shape();
+  Core::FE::CellType distype = moEle.parent_element()->Shape();
   switch (distype)
   {
-    case CORE::FE::CellType::hex8:
-      CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::hex8, dim>(
+    case Core::FE::CellType::hex8:
+      CONTACT::UTILS::so_ele_gp<Core::FE::CellType::hex8, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case CORE::FE::CellType::tet4:
-      CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::tet4, dim>(
+    case Core::FE::CellType::tet4:
+      CONTACT::UTILS::so_ele_gp<Core::FE::CellType::tet4, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case CORE::FE::CellType::quad4:
-      CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::quad4, dim>(
+    case Core::FE::CellType::quad4:
+      CONTACT::UTILS::so_ele_gp<Core::FE::CellType::quad4, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case CORE::FE::CellType::quad9:
-      CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::quad9, dim>(
+    case Core::FE::CellType::quad9:
+      CONTACT::UTILS::so_ele_gp<Core::FE::CellType::quad9, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case CORE::FE::CellType::tri3:
-      CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::tri3, dim>(
+    case Core::FE::CellType::tri3:
+      CONTACT::UTILS::so_ele_gp<Core::FE::CellType::tri3, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case CORE::FE::CellType::nurbs27:
-      CONTACT::UTILS::so_ele_gp<CORE::FE::CellType::nurbs27, dim>(
+    case Core::FE::CellType::nurbs27:
+      CONTACT::UTILS::so_ele_gp<Core::FE::CellType::nurbs27, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     default:
@@ -442,31 +442,31 @@ void CONTACT::UTILS::MapGPtoParent(MORTAR::Element& moEle, double* boundary_gpco
 
 
 template <int dim>
-void CONTACT::IntegratorNitsche::so_ele_cauchy(MORTAR::Element& moEle, double* boundary_gpcoord,
-    std::vector<CORE::GEN::Pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
-    const CORE::LINALG::Matrix<dim, 1>& normal,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& normal_deriv,
-    const CORE::LINALG::Matrix<dim, 1>& direction,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& direction_deriv, const double w,
-    double& cauchy_nt, CORE::GEN::Pairedvector<int, double>& deriv_sigma_nt,
-    CORE::LINALG::SerialDenseVector& adjoint_test,
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test)
+void CONTACT::IntegratorNitsche::so_ele_cauchy(Mortar::Element& moEle, double* boundary_gpcoord,
+    std::vector<Core::Gen::Pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
+    const Core::LinAlg::Matrix<dim, 1>& normal,
+    std::vector<Core::Gen::Pairedvector<int, double>>& normal_deriv,
+    const Core::LinAlg::Matrix<dim, 1>& direction,
+    std::vector<Core::Gen::Pairedvector<int, double>>& direction_deriv, const double w,
+    double& cauchy_nt, Core::Gen::Pairedvector<int, double>& deriv_sigma_nt,
+    Core::LinAlg::SerialDenseVector& adjoint_test,
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector>& deriv_adjoint_test)
 {
-  CORE::LINALG::Matrix<dim, 1> pxsi(true);
-  CORE::LINALG::Matrix<dim, dim> derivtravo_slave;
+  Core::LinAlg::Matrix<dim, 1> pxsi(true);
+  Core::LinAlg::Matrix<dim, dim> derivtravo_slave;
   CONTACT::UTILS::MapGPtoParent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
 
   // define which linearizations we need
-  CORE::LINALG::SerialDenseMatrix d_cauchyndir_dd{};
-  CORE::LINALG::SerialDenseMatrix d2_cauchyndir_dd2{};
-  CORE::LINALG::SerialDenseMatrix d2_cauchyndir_dd_dn{};
-  CORE::LINALG::SerialDenseMatrix d2_cauchyndir_dd_ddir{};
-  CORE::LINALG::SerialDenseMatrix d2_cauchyndir_dd_dxi{};
-  CORE::LINALG::Matrix<dim, 1> d_cauchyndir_dn{};
-  CORE::LINALG::Matrix<dim, 1> d_cauchyndir_ddir{};
-  CORE::LINALG::Matrix<dim, 1> d_cauchyndir_dxi{};
+  Core::LinAlg::SerialDenseMatrix d_cauchyndir_dd{};
+  Core::LinAlg::SerialDenseMatrix d2_cauchyndir_dd2{};
+  Core::LinAlg::SerialDenseMatrix d2_cauchyndir_dd_dn{};
+  Core::LinAlg::SerialDenseMatrix d2_cauchyndir_dd_ddir{};
+  Core::LinAlg::SerialDenseMatrix d2_cauchyndir_dd_dxi{};
+  Core::LinAlg::Matrix<dim, 1> d_cauchyndir_dn{};
+  Core::LinAlg::Matrix<dim, 1> d_cauchyndir_ddir{};
+  Core::LinAlg::Matrix<dim, 1> d_cauchyndir_dxi{};
 
-  DRT::ELEMENTS::CauchyNDirLinearizations<dim> linearizations{};
+  Discret::ELEMENTS::CauchyNDirLinearizations<dim> linearizations{};
   linearizations.d_cauchyndir_dd = &d_cauchyndir_dd;
   linearizations.d2_cauchyndir_dd2 = &d2_cauchyndir_dd2;
   linearizations.d2_cauchyndir_dd_dn = &d2_cauchyndir_dd_dn;
@@ -480,7 +480,7 @@ void CONTACT::IntegratorNitsche::so_ele_cauchy(MORTAR::Element& moEle, double* b
   const double cauchy_n_dir = std::invoke(
       [&]()
       {
-        if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::SoBase*>(moEle.parent_element());
+        if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::SoBase*>(moEle.parent_element());
             solid_ele != nullptr)
         {
           // old solid element
@@ -494,7 +494,7 @@ void CONTACT::IntegratorNitsche::so_ele_cauchy(MORTAR::Element& moEle, double* b
 
           return cauchy_n_dir;
         }
-        else if (auto* solid_ele = dynamic_cast<DRT::ELEMENTS::Solid*>(moEle.parent_element());
+        else if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::Solid*>(moEle.parent_element());
                  solid_ele != nullptr)
         {
           // new solid element
@@ -538,13 +538,13 @@ void CONTACT::IntegratorNitsche::so_ele_cauchy(MORTAR::Element& moEle, double* b
 }
 
 template <int dim>
-void CONTACT::IntegratorNitsche::integrate_test(const double fac, MORTAR::Element& ele,
-    const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& dxi, const double jac,
-    const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt,
-    const double test_val, const CORE::GEN::Pairedvector<int, double>& test_deriv,
-    const CORE::LINALG::Matrix<dim, 1>& test_dir,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& test_dir_deriv)
+void CONTACT::IntegratorNitsche::integrate_test(const double fac, Mortar::Element& ele,
+    const Core::LinAlg::SerialDenseVector& shape, const Core::LinAlg::SerialDenseMatrix& deriv,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& dxi, const double jac,
+    const Core::Gen::Pairedvector<int, double>& jacintcellmap, const double wgt,
+    const double test_val, const Core::Gen::Pairedvector<int, double>& test_deriv,
+    const Core::LinAlg::Matrix<dim, 1>& test_dir,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& test_dir_deriv)
 {
   if (abs(fac) < 1.e-16) return;
 
@@ -555,7 +555,7 @@ void CONTACT::IntegratorNitsche::integrate_test(const double fac, MORTAR::Elemen
     for (int s = 0; s < ele.num_node(); ++s)
     {
       *(ele.GetNitscheContainer().Rhs(
-          CORE::FE::getParentNodeNumberFromFaceNodeNumber(
+          Core::FE::getParentNodeNumberFromFaceNodeNumber(
               ele.parent_element()->Shape(), ele.FaceParentNumber(), s) *
               dim +
           d)) += val * shape(s);
@@ -574,7 +574,7 @@ void CONTACT::IntegratorNitsche::integrate_test(const double fac, MORTAR::Elemen
       double* row = ele.GetNitscheContainer().K(p.first);
       for (int s = 0; s < ele.num_node(); ++s)
       {
-        row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(
+        row[Core::FE::getParentNodeNumberFromFaceNodeNumber(
                 ele.parent_element()->Shape(), ele.FaceParentNumber(), s) *
                 dim +
             d] += p.second * shape(s);
@@ -588,7 +588,7 @@ void CONTACT::IntegratorNitsche::integrate_test(const double fac, MORTAR::Elemen
         double* row = ele.GetNitscheContainer().K(p.first);
         for (int s = 0; s < ele.num_node(); ++s)
         {
-          row[CORE::FE::getParentNodeNumberFromFaceNodeNumber(
+          row[Core::FE::getParentNodeNumberFromFaceNodeNumber(
                   ele.parent_element()->Shape(), ele.FaceParentNumber(), s) *
                   dim +
               d] += val * deriv(s, e) * p.second;
@@ -599,22 +599,22 @@ void CONTACT::IntegratorNitsche::integrate_test(const double fac, MORTAR::Elemen
 }
 
 template <int dim>
-void CONTACT::IntegratorNitsche::build_adjoint_test(MORTAR::Element& moEle, const double fac,
-    const CORE::LINALG::SerialDenseMatrix& dsntdd, const CORE::LINALG::SerialDenseMatrix& d2sntdd2,
-    const CORE::LINALG::SerialDenseMatrix& d2sntDdDn,
-    const CORE::LINALG::SerialDenseMatrix& d2sntDdDt,
-    const CORE::LINALG::SerialDenseMatrix& d2sntDdDpxi,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& boundary_gpcoord_lin,
-    CORE::LINALG::Matrix<dim, dim> derivtravo_slave,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& normal_deriv,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& direction_deriv,
-    CORE::LINALG::SerialDenseVector& adjoint_test,
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test)
+void CONTACT::IntegratorNitsche::build_adjoint_test(Mortar::Element& moEle, const double fac,
+    const Core::LinAlg::SerialDenseMatrix& dsntdd, const Core::LinAlg::SerialDenseMatrix& d2sntdd2,
+    const Core::LinAlg::SerialDenseMatrix& d2sntDdDn,
+    const Core::LinAlg::SerialDenseMatrix& d2sntDdDt,
+    const Core::LinAlg::SerialDenseMatrix& d2sntDdDpxi,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& boundary_gpcoord_lin,
+    Core::LinAlg::Matrix<dim, dim> derivtravo_slave,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& normal_deriv,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& direction_deriv,
+    Core::LinAlg::SerialDenseVector& adjoint_test,
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector>& deriv_adjoint_test)
 {
   for (int i = 0; i < moEle.parent_element()->num_node() * dim; ++i)
   {
     adjoint_test(i) = fac * dsntdd(i, 0);
-    CORE::LINALG::SerialDenseVector& at = deriv_adjoint_test[moEle.MoData().ParentDof().at(i)];
+    Core::LinAlg::SerialDenseVector& at = deriv_adjoint_test[moEle.MoData().ParentDof().at(i)];
     for (int j = 0; j < moEle.parent_element()->num_node() * dim; ++j)
       at(j) += fac * d2sntdd2(i, j);
   }
@@ -623,7 +623,7 @@ void CONTACT::IntegratorNitsche::build_adjoint_test(MORTAR::Element& moEle, cons
   {
     for (const auto& p : normal_deriv[d])
     {
-      CORE::LINALG::SerialDenseVector& at = deriv_adjoint_test[p.first];
+      Core::LinAlg::SerialDenseVector& at = deriv_adjoint_test[p.first];
       for (int i = 0; i < moEle.parent_element()->num_node() * dim; ++i)
         at(i) += fac * d2sntDdDn(i, d) * p.second;
     }
@@ -633,21 +633,21 @@ void CONTACT::IntegratorNitsche::build_adjoint_test(MORTAR::Element& moEle, cons
   {
     for (const auto& p : direction_deriv[d])
     {
-      CORE::LINALG::SerialDenseVector& at = deriv_adjoint_test[p.first];
+      Core::LinAlg::SerialDenseVector& at = deriv_adjoint_test[p.first];
       for (int i = 0; i < moEle.parent_element()->num_node() * dim; ++i)
         at(i) += fac * d2sntDdDt(i, d) * p.second;
     }
   }
 
-  CORE::LINALG::SerialDenseMatrix tmp(moEle.parent_element()->num_node() * dim, dim, false);
-  CORE::LINALG::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.A(),
+  Core::LinAlg::SerialDenseMatrix tmp(moEle.parent_element()->num_node() * dim, dim, false);
+  Core::LinAlg::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.A(),
       derivtravo_slave.numRows(), derivtravo_slave.numRows(), derivtravo_slave.numCols());
-  if (CORE::LINALG::multiply(tmp, d2sntDdDpxi, deriv_trafo)) FOUR_C_THROW("multiply failed");
+  if (Core::LinAlg::multiply(tmp, d2sntDdDpxi, deriv_trafo)) FOUR_C_THROW("multiply failed");
   for (int d = 0; d < dim - 1; ++d)
   {
     for (const auto& p : boundary_gpcoord_lin[d])
     {
-      CORE::LINALG::SerialDenseVector& at = deriv_adjoint_test[p.first];
+      Core::LinAlg::SerialDenseVector& at = deriv_adjoint_test[p.first];
       for (int i = 0; i < moEle.parent_element()->num_node() * dim; ++i)
         at(i) += fac * tmp(i, d) * p.second;
     }
@@ -657,41 +657,41 @@ void CONTACT::IntegratorNitsche::build_adjoint_test(MORTAR::Element& moEle, cons
 
 template <int dim>
 void CONTACT::IntegratorNitsche::integrate_adjoint_test(const double fac, const double jac,
-    const CORE::GEN::Pairedvector<int, double>& jacintcellmap, const double wgt, const double test,
-    const CORE::GEN::Pairedvector<int, double>& deriv_test, MORTAR::Element& moEle,
-    CORE::LINALG::SerialDenseVector& adjoint_test,
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test)
+    const Core::Gen::Pairedvector<int, double>& jacintcellmap, const double wgt, const double test,
+    const Core::Gen::Pairedvector<int, double>& deriv_test, Mortar::Element& moEle,
+    Core::LinAlg::SerialDenseVector& adjoint_test,
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector>& deriv_adjoint_test)
 {
   if (abs(fac) < 1.e-16) return;
 
-  CORE::LINALG::SerialDenseVector Tmp(
+  Core::LinAlg::SerialDenseVector Tmp(
       Teuchos::View, moEle.GetNitscheContainer().Rhs(), moEle.MoData().ParentDof().size());
-  CORE::LINALG::Update(fac * jac * wgt * test, adjoint_test, 1.0, Tmp);
+  Core::LinAlg::Update(fac * jac * wgt * test, adjoint_test, 1.0, Tmp);
 
   for (const auto& p : deriv_adjoint_test)
   {
-    CORE::LINALG::SerialDenseVector Tmp(
+    Core::LinAlg::SerialDenseVector Tmp(
         Teuchos::View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size());
-    CORE::LINALG::Update(fac * jac * wgt * test, p.second, 1.0, Tmp);
+    Core::LinAlg::Update(fac * jac * wgt * test, p.second, 1.0, Tmp);
   }
 
   for (const auto& p : jacintcellmap)
   {
-    CORE::LINALG::SerialDenseVector Tmp(
+    Core::LinAlg::SerialDenseVector Tmp(
         Teuchos::View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size());
-    CORE::LINALG::Update(fac * p.second * wgt * test, adjoint_test, 1.0, Tmp);
+    Core::LinAlg::Update(fac * p.second * wgt * test, adjoint_test, 1.0, Tmp);
   }
 
   for (const auto& p : deriv_test)
   {
-    CORE::LINALG::SerialDenseVector Tmp(
+    Core::LinAlg::SerialDenseVector Tmp(
         Teuchos::View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size());
-    CORE::LINALG::Update(fac * jac * wgt * p.second, adjoint_test, 1.0, Tmp);
+    Core::LinAlg::Update(fac * jac * wgt * p.second, adjoint_test, 1.0, Tmp);
   }
 }
 
-void CONTACT::UTILS::NitscheWeightsAndScaling(MORTAR::Element& sele, MORTAR::Element& mele,
-    const INPAR::CONTACT::NitscheWeighting nit_wgt, const double dt, double& ws, double& wm,
+void CONTACT::UTILS::NitscheWeightsAndScaling(Mortar::Element& sele, Mortar::Element& mele,
+    const Inpar::CONTACT::NitscheWeighting nit_wgt, const double dt, double& ws, double& wm,
     double& pen, double& pet)
 {
   const double he_slave = dynamic_cast<CONTACT::Element&>(sele).TraceHE();
@@ -699,7 +699,7 @@ void CONTACT::UTILS::NitscheWeightsAndScaling(MORTAR::Element& sele, MORTAR::Ele
 
   switch (nit_wgt)
   {
-    case INPAR::CONTACT::NitWgt_slave:
+    case Inpar::CONTACT::NitWgt_slave:
     {
       ws = 1.;
       wm = 0.;
@@ -707,7 +707,7 @@ void CONTACT::UTILS::NitscheWeightsAndScaling(MORTAR::Element& sele, MORTAR::Ele
       pet /= he_slave;
     }
     break;
-    case INPAR::CONTACT::NitWgt_master:
+    case Inpar::CONTACT::NitWgt_master:
     {
       wm = 1.;
       ws = 0.;
@@ -715,7 +715,7 @@ void CONTACT::UTILS::NitscheWeightsAndScaling(MORTAR::Element& sele, MORTAR::Ele
       pet /= he_master;
     }
     break;
-    case INPAR::CONTACT::NitWgt_harmonic:
+    case Inpar::CONTACT::NitWgt_harmonic:
       ws = 1. / he_master;
       wm = 1. / he_slave;
       ws /= (ws + wm);
@@ -731,18 +731,18 @@ void CONTACT::UTILS::NitscheWeightsAndScaling(MORTAR::Element& sele, MORTAR::Ele
 }
 
 template <int dim>
-void CONTACT::UTILS::RelVel(MORTAR::Element& ele, const CORE::LINALG::SerialDenseVector& shape,
-    const CORE::LINALG::SerialDenseMatrix& deriv,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& dxi, const double fac,
-    CORE::LINALG::Matrix<dim, 1>& relVel,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& relVel_deriv)
+void CONTACT::UTILS::RelVel(Mortar::Element& ele, const Core::LinAlg::SerialDenseVector& shape,
+    const Core::LinAlg::SerialDenseMatrix& deriv,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& dxi, const double fac,
+    Core::LinAlg::Matrix<dim, 1>& relVel,
+    std::vector<Core::Gen::Pairedvector<int, double>>& relVel_deriv)
 {
   for (int n = 0; n < ele.num_node(); ++n)
   {
     for (int d = 0; d < dim; ++d)
     {
       relVel(d) += fac * shape(n) * (ele.GetNodalCoords(d, n) - ele.GetNodalCoordsOld(d, n));
-      relVel_deriv[d][dynamic_cast<MORTAR::Node*>(ele.Nodes()[n])->Dofs()[d]] += fac * shape(n);
+      relVel_deriv[d][dynamic_cast<Mortar::Node*>(ele.Nodes()[n])->Dofs()[d]] += fac * shape(n);
 
       for (int sd = 0; sd < dim - 1; ++sd)
       {
@@ -759,18 +759,18 @@ void CONTACT::UTILS::RelVel(MORTAR::Element& ele, const CORE::LINALG::SerialDens
 
 
 template <int dim>
-void CONTACT::UTILS::RelVelInvariant(MORTAR::Element& sele, const double* sxi,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& derivsxi,
-    const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
-    MORTAR::Element& mele, const double* mxi,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& derivmxi,
-    const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
-    const double& gap, const CORE::GEN::Pairedvector<int, double>& deriv_gap,
-    CORE::LINALG::Matrix<dim, 1>& relVel,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& relVel_deriv, const double fac)
+void CONTACT::UTILS::RelVelInvariant(Mortar::Element& sele, const double* sxi,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
+    const Core::LinAlg::SerialDenseVector& sval, const Core::LinAlg::SerialDenseMatrix& sderiv,
+    Mortar::Element& mele, const double* mxi,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& derivmxi,
+    const Core::LinAlg::SerialDenseVector& mval, const Core::LinAlg::SerialDenseMatrix& mderiv,
+    const double& gap, const Core::Gen::Pairedvector<int, double>& deriv_gap,
+    Core::LinAlg::Matrix<dim, 1>& relVel,
+    std::vector<Core::Gen::Pairedvector<int, double>>& relVel_deriv, const double fac)
 {
-  CORE::LINALG::Matrix<3, 1> n_old;
-  CORE::LINALG::Matrix<3, 2> d_n_old_dxi;
+  Core::LinAlg::Matrix<3, 1> n_old;
+  Core::LinAlg::Matrix<3, 2> d_n_old_dxi;
   dynamic_cast<CONTACT::Element&>(sele).OldUnitNormalAtXi(sxi, n_old, d_n_old_dxi);
   for (int i = 0; i < sele.num_node(); ++i)
   {
@@ -808,11 +808,11 @@ void CONTACT::UTILS::RelVelInvariant(MORTAR::Element& sele, const double* sxi,
 }
 
 template <int dim>
-void CONTACT::UTILS::VectorScalarProduct(const CORE::LINALG::Matrix<dim, 1>& v1,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& v1d,
-    const CORE::LINALG::Matrix<dim, 1>& v2,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& v2d, double& val,
-    CORE::GEN::Pairedvector<int, double>& val_deriv)
+void CONTACT::UTILS::VectorScalarProduct(const Core::LinAlg::Matrix<dim, 1>& v1,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& v1d,
+    const Core::LinAlg::Matrix<dim, 1>& v2,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& v2d, double& val,
+    Core::Gen::Pairedvector<int, double>& val_deriv)
 {
   val = v1.Dot(v2);
   val_deriv.clear();
@@ -825,16 +825,16 @@ void CONTACT::UTILS::VectorScalarProduct(const CORE::LINALG::Matrix<dim, 1>& v1,
 }
 
 void CONTACT::UTILS::BuildTangentVectors3D(const double* np,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& dn, double* t1p,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& dt1, double* t2p,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& dt2)
+    const std::vector<Core::Gen::Pairedvector<int, double>>& dn, double* t1p,
+    std::vector<Core::Gen::Pairedvector<int, double>>& dt1, double* t2p,
+    std::vector<Core::Gen::Pairedvector<int, double>>& dt2)
 {
-  const CORE::LINALG::Matrix<3, 1> n(np, false);
-  CORE::LINALG::Matrix<3, 1> t1(t1p, true);
-  CORE::LINALG::Matrix<3, 1> t2(t2p, true);
+  const Core::LinAlg::Matrix<3, 1> n(np, false);
+  Core::LinAlg::Matrix<3, 1> t1(t1p, true);
+  Core::LinAlg::Matrix<3, 1> t2(t2p, true);
 
   bool z = true;
-  CORE::LINALG::Matrix<3, 1> tmp;
+  Core::LinAlg::Matrix<3, 1> tmp;
   tmp(2) = 1.;
   if (abs(tmp.Dot(n)) > 1. - 1.e-4)
   {
@@ -849,7 +849,7 @@ void CONTACT::UTILS::BuildTangentVectors3D(const double* np,
 
   const double lt1 = t1.Norm2();
   t1.Scale(1. / lt1);
-  CORE::LINALG::Matrix<3, 3> p;
+  Core::LinAlg::Matrix<3, 3> p;
   for (int i = 0; i < 3; ++i) p(i, i) = 1.;
   p.MultiplyNT(-1., t1, t1, 1.);
   p.Scale(1. / lt1);
@@ -907,9 +907,9 @@ void CONTACT::UTILS::BuildTangentVectors3D(const double* np,
 
 template <int dim>
 void CONTACT::UTILS::BuildTangentVectors(const double* np,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& dn, double* t1p,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& dt1, double* t2p,
-    std::vector<CORE::GEN::Pairedvector<int, double>>& dt2)
+    const std::vector<Core::Gen::Pairedvector<int, double>>& dn, double* t1p,
+    std::vector<Core::Gen::Pairedvector<int, double>>& dt1, double* t2p,
+    std::vector<Core::Gen::Pairedvector<int, double>>& dt2)
 {
   if (dim == 3)
     BuildTangentVectors3D(np, dn, t1p, dt1, t2p, dt2);
@@ -918,98 +918,98 @@ void CONTACT::UTILS::BuildTangentVectors(const double* np,
 }
 
 template void CONTACT::UTILS::BuildTangentVectors<2>(const double*,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&, double*,
-    std::vector<CORE::GEN::Pairedvector<int, double>>&, double*,
-    std::vector<CORE::GEN::Pairedvector<int, double>>&);
+    const std::vector<Core::Gen::Pairedvector<int, double>>&, double*,
+    std::vector<Core::Gen::Pairedvector<int, double>>&, double*,
+    std::vector<Core::Gen::Pairedvector<int, double>>&);
 
 template void CONTACT::UTILS::BuildTangentVectors<3>(const double*,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&, double*,
-    std::vector<CORE::GEN::Pairedvector<int, double>>&, double*,
-    std::vector<CORE::GEN::Pairedvector<int, double>>&);
+    const std::vector<Core::Gen::Pairedvector<int, double>>&, double*,
+    std::vector<Core::Gen::Pairedvector<int, double>>&, double*,
+    std::vector<Core::Gen::Pairedvector<int, double>>&);
 
 
 
-template void CONTACT::IntegratorNitsche::integrate_test<2>(const double, MORTAR::Element&,
-    const CORE::LINALG::SerialDenseVector&, const CORE::LINALG::SerialDenseMatrix&,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& i, const double,
-    const CORE::GEN::Pairedvector<int, double>&, const double, const double,
-    const CORE::GEN::Pairedvector<int, double>&, const CORE::LINALG::Matrix<2, 1>& test_dir,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& test_dir_deriv);
-template void CONTACT::IntegratorNitsche::integrate_test<3>(const double, MORTAR::Element&,
-    const CORE::LINALG::SerialDenseVector&, const CORE::LINALG::SerialDenseMatrix&,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& i, const double,
-    const CORE::GEN::Pairedvector<int, double>&, const double, const double,
-    const CORE::GEN::Pairedvector<int, double>&, const CORE::LINALG::Matrix<3, 1>& test_dir,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>& test_dir_deriv);
+template void CONTACT::IntegratorNitsche::integrate_test<2>(const double, Mortar::Element&,
+    const Core::LinAlg::SerialDenseVector&, const Core::LinAlg::SerialDenseMatrix&,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& i, const double,
+    const Core::Gen::Pairedvector<int, double>&, const double, const double,
+    const Core::Gen::Pairedvector<int, double>&, const Core::LinAlg::Matrix<2, 1>& test_dir,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& test_dir_deriv);
+template void CONTACT::IntegratorNitsche::integrate_test<3>(const double, Mortar::Element&,
+    const Core::LinAlg::SerialDenseVector&, const Core::LinAlg::SerialDenseMatrix&,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& i, const double,
+    const Core::Gen::Pairedvector<int, double>&, const double, const double,
+    const Core::Gen::Pairedvector<int, double>&, const Core::LinAlg::Matrix<3, 1>& test_dir,
+    const std::vector<Core::Gen::Pairedvector<int, double>>& test_dir_deriv);
 
 template void CONTACT::IntegratorNitsche::integrate_adjoint_test<2>(const double, const double,
-    const CORE::GEN::Pairedvector<int, double>&, const double, const double,
-    const CORE::GEN::Pairedvector<int, double>&, MORTAR::Element&, CORE::LINALG::SerialDenseVector&,
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>&);
+    const Core::Gen::Pairedvector<int, double>&, const double, const double,
+    const Core::Gen::Pairedvector<int, double>&, Mortar::Element&, Core::LinAlg::SerialDenseVector&,
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector>&);
 
 template void CONTACT::IntegratorNitsche::integrate_adjoint_test<3>(const double, const double,
-    const CORE::GEN::Pairedvector<int, double>&, const double, const double,
-    const CORE::GEN::Pairedvector<int, double>&, MORTAR::Element&, CORE::LINALG::SerialDenseVector&,
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>&);
+    const Core::Gen::Pairedvector<int, double>&, const double, const double,
+    const Core::Gen::Pairedvector<int, double>&, Mortar::Element&, Core::LinAlg::SerialDenseVector&,
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector>&);
 
-template void CONTACT::IntegratorNitsche::build_adjoint_test<2>(MORTAR::Element&, const double,
-    const CORE::LINALG::SerialDenseMatrix&, const CORE::LINALG::SerialDenseMatrix&,
-    const CORE::LINALG::SerialDenseMatrix&, const CORE::LINALG::SerialDenseMatrix&,
-    const CORE::LINALG::SerialDenseMatrix&,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&, CORE::LINALG::Matrix<2, 2>,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&, CORE::LINALG::SerialDenseVector&,
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>&);
+template void CONTACT::IntegratorNitsche::build_adjoint_test<2>(Mortar::Element&, const double,
+    const Core::LinAlg::SerialDenseMatrix&, const Core::LinAlg::SerialDenseMatrix&,
+    const Core::LinAlg::SerialDenseMatrix&, const Core::LinAlg::SerialDenseMatrix&,
+    const Core::LinAlg::SerialDenseMatrix&,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&, Core::LinAlg::Matrix<2, 2>,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&, Core::LinAlg::SerialDenseVector&,
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector>&);
 
-template void CONTACT::IntegratorNitsche::build_adjoint_test<3>(MORTAR::Element&, const double,
-    const CORE::LINALG::SerialDenseMatrix&, const CORE::LINALG::SerialDenseMatrix&,
-    const CORE::LINALG::SerialDenseMatrix&, const CORE::LINALG::SerialDenseMatrix&,
-    const CORE::LINALG::SerialDenseMatrix&,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&, CORE::LINALG::Matrix<3, 3>,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&, CORE::LINALG::SerialDenseVector&,
-    CORE::GEN::Pairedvector<int, CORE::LINALG::SerialDenseVector>&);
+template void CONTACT::IntegratorNitsche::build_adjoint_test<3>(Mortar::Element&, const double,
+    const Core::LinAlg::SerialDenseMatrix&, const Core::LinAlg::SerialDenseMatrix&,
+    const Core::LinAlg::SerialDenseMatrix&, const Core::LinAlg::SerialDenseMatrix&,
+    const Core::LinAlg::SerialDenseMatrix&,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&, Core::LinAlg::Matrix<3, 3>,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&, Core::LinAlg::SerialDenseVector&,
+    Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector>&);
 
 
-template void CONTACT::UTILS::RelVel<2>(MORTAR::Element&, const CORE::LINALG::SerialDenseVector&,
-    const CORE::LINALG::SerialDenseMatrix&,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&, const double,
-    CORE::LINALG::Matrix<2, 1>&, std::vector<CORE::GEN::Pairedvector<int, double>>&);
+template void CONTACT::UTILS::RelVel<2>(Mortar::Element&, const Core::LinAlg::SerialDenseVector&,
+    const Core::LinAlg::SerialDenseMatrix&,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&, const double,
+    Core::LinAlg::Matrix<2, 1>&, std::vector<Core::Gen::Pairedvector<int, double>>&);
 
-template void CONTACT::UTILS::RelVel<3>(MORTAR::Element&, const CORE::LINALG::SerialDenseVector&,
-    const CORE::LINALG::SerialDenseMatrix&,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&, const double,
-    CORE::LINALG::Matrix<3, 1>&, std::vector<CORE::GEN::Pairedvector<int, double>>&);
+template void CONTACT::UTILS::RelVel<3>(Mortar::Element&, const Core::LinAlg::SerialDenseVector&,
+    const Core::LinAlg::SerialDenseMatrix&,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&, const double,
+    Core::LinAlg::Matrix<3, 1>&, std::vector<Core::Gen::Pairedvector<int, double>>&);
 
-template void CONTACT::UTILS::VectorScalarProduct<2>(const CORE::LINALG::Matrix<2, 1>&,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&, const CORE::LINALG::Matrix<2, 1>&,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&, double&,
-    CORE::GEN::Pairedvector<int, double>&);
-template void CONTACT::UTILS::VectorScalarProduct<3>(const CORE::LINALG::Matrix<3, 1>&,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&, const CORE::LINALG::Matrix<3, 1>&,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&, double&,
-    CORE::GEN::Pairedvector<int, double>&);
+template void CONTACT::UTILS::VectorScalarProduct<2>(const Core::LinAlg::Matrix<2, 1>&,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&, const Core::LinAlg::Matrix<2, 1>&,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&, double&,
+    Core::Gen::Pairedvector<int, double>&);
+template void CONTACT::UTILS::VectorScalarProduct<3>(const Core::LinAlg::Matrix<3, 1>&,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&, const Core::LinAlg::Matrix<3, 1>&,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&, double&,
+    Core::Gen::Pairedvector<int, double>&);
 
-template void CONTACT::UTILS::RelVelInvariant<2>(MORTAR::Element&, const double*,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&,
-    const CORE::LINALG::SerialDenseVector&, const CORE::LINALG::SerialDenseMatrix&,
-    MORTAR::Element&, const double*, const std::vector<CORE::GEN::Pairedvector<int, double>>&,
-    const CORE::LINALG::SerialDenseVector&, const CORE::LINALG::SerialDenseMatrix&, const double&,
-    const CORE::GEN::Pairedvector<int, double>&, CORE::LINALG::Matrix<2, 1>&,
-    std::vector<CORE::GEN::Pairedvector<int, double>>&, const double);
+template void CONTACT::UTILS::RelVelInvariant<2>(Mortar::Element&, const double*,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&,
+    const Core::LinAlg::SerialDenseVector&, const Core::LinAlg::SerialDenseMatrix&,
+    Mortar::Element&, const double*, const std::vector<Core::Gen::Pairedvector<int, double>>&,
+    const Core::LinAlg::SerialDenseVector&, const Core::LinAlg::SerialDenseMatrix&, const double&,
+    const Core::Gen::Pairedvector<int, double>&, Core::LinAlg::Matrix<2, 1>&,
+    std::vector<Core::Gen::Pairedvector<int, double>>&, const double);
 
-template void CONTACT::UTILS::RelVelInvariant<3>(MORTAR::Element&, const double*,
-    const std::vector<CORE::GEN::Pairedvector<int, double>>&,
-    const CORE::LINALG::SerialDenseVector&, const CORE::LINALG::SerialDenseMatrix&,
-    MORTAR::Element&, const double*, const std::vector<CORE::GEN::Pairedvector<int, double>>&,
-    const CORE::LINALG::SerialDenseVector&, const CORE::LINALG::SerialDenseMatrix&, const double&,
-    const CORE::GEN::Pairedvector<int, double>&, CORE::LINALG::Matrix<3, 1>&,
-    std::vector<CORE::GEN::Pairedvector<int, double>>&, const double);
+template void CONTACT::UTILS::RelVelInvariant<3>(Mortar::Element&, const double*,
+    const std::vector<Core::Gen::Pairedvector<int, double>>&,
+    const Core::LinAlg::SerialDenseVector&, const Core::LinAlg::SerialDenseMatrix&,
+    Mortar::Element&, const double*, const std::vector<Core::Gen::Pairedvector<int, double>>&,
+    const Core::LinAlg::SerialDenseVector&, const Core::LinAlg::SerialDenseMatrix&, const double&,
+    const Core::Gen::Pairedvector<int, double>&, Core::LinAlg::Matrix<3, 1>&,
+    std::vector<Core::Gen::Pairedvector<int, double>>&, const double);
 
-template void CONTACT::UTILS::MapGPtoParent<2>(MORTAR::Element&, double*, const double,
-    CORE::LINALG::Matrix<2, 1>&, CORE::LINALG::Matrix<2, 2>&);
+template void CONTACT::UTILS::MapGPtoParent<2>(Mortar::Element&, double*, const double,
+    Core::LinAlg::Matrix<2, 1>&, Core::LinAlg::Matrix<2, 2>&);
 
-template void CONTACT::UTILS::MapGPtoParent<3>(MORTAR::Element&, double*, const double,
-    CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&);
+template void CONTACT::UTILS::MapGPtoParent<3>(Mortar::Element&, double*, const double,
+    Core::LinAlg::Matrix<3, 1>&, Core::LinAlg::Matrix<3, 3>&);
 
 FOUR_C_NAMESPACE_CLOSE

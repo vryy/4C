@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   class SearchTree;
 }
@@ -84,7 +84,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> ale_to_structure(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     /// coupling of structure and ale at the interface
-    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> coupsa_;
+    Teuchos::RCP<Core::Adapter::MortarVolCoupl> coupsa_;
 
     /// coupling of structure and ale at the interface
     Teuchos::RCP<InterfaceCorrector> icorrector_;
@@ -101,20 +101,20 @@ namespace FSI
     /// destructor
     virtual ~InterfaceCorrector() = default;
 
-    virtual void Setup(Teuchos::RCP<ADAPTER::FluidAle> fluidale);
+    virtual void Setup(Teuchos::RCP<Adapter::FluidAle> fluidale);
 
     void set_interface_displacements(
-        Teuchos::RCP<Epetra_Vector>& idisp_struct, CORE::ADAPTER::Coupling& icoupfs);
+        Teuchos::RCP<Epetra_Vector>& idisp_struct, Core::Adapter::Coupling& icoupfs);
 
     virtual void correct_interface_displacements(Teuchos::RCP<Epetra_Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
    private:
     Teuchos::RCP<const Epetra_Vector> idisp_;
-    Teuchos::RCP<CORE::ADAPTER::Coupling> icoupfs_;
+    Teuchos::RCP<Core::Adapter::Coupling> icoupfs_;
 
     Teuchos::RCP<Epetra_Vector> deltadisp_;
-    Teuchos::RCP<ADAPTER::FluidAle> fluidale_;
+    Teuchos::RCP<Adapter::FluidAle> fluidale_;
 
     Teuchos::RCP<VolCorrector> volcorrector_;
   };
@@ -129,39 +129,39 @@ namespace FSI
     /// destructor
     virtual ~VolCorrector() = default;
 
-    virtual void Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> fluidale);
+    virtual void Setup(const int dim, Teuchos::RCP<Adapter::FluidAle> fluidale);
 
-    virtual void correct_vol_displacements(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+    virtual void correct_vol_displacements(Teuchos::RCP<Adapter::FluidAle> fluidale,
         Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
    private:
-    virtual void correct_vol_displacements_para_space(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+    virtual void correct_vol_displacements_para_space(Teuchos::RCP<Adapter::FluidAle> fluidale,
         Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
-    virtual void correct_vol_displacements_phys_space(Teuchos::RCP<ADAPTER::FluidAle> fluidale,
+    virtual void correct_vol_displacements_phys_space(Teuchos::RCP<Adapter::FluidAle> fluidale,
         Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
     void init_dop_normals();
 
-    std::map<int, CORE::LINALG::Matrix<9, 2>> calc_background_dops(
-        Teuchos::RCP<DRT::Discretization> searchdis);
+    std::map<int, Core::LinAlg::Matrix<9, 2>> calc_background_dops(
+        Teuchos::RCP<Discret::Discretization> searchdis);
 
-    CORE::LINALG::Matrix<9, 2> calc_dop(CORE::Elements::Element& ele);
+    Core::LinAlg::Matrix<9, 2> calc_dop(Core::Elements::Element& ele);
 
     std::vector<int> search(
-        CORE::Elements::Element& ele, std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
+        Core::Elements::Element& ele, std::map<int, Core::LinAlg::Matrix<9, 2>>& currentKDOPs);
 
     //! Spatial dimension of the problem
     int dim_;
 
     //! Searchtree for mortar evaluations
-    Teuchos::RCP<CORE::GEO::SearchTree> search_tree_;
+    Teuchos::RCP<Core::Geo::SearchTree> search_tree_;
 
     //! Dop normals for search algorithm
-    CORE::LINALG::Matrix<9, 3> dopnormals_;
+    Core::LinAlg::Matrix<9, 3> dopnormals_;
 
     std::map<int, std::vector<int>> fluidaleelemap_;
 

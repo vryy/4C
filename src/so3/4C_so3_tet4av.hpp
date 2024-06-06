@@ -32,37 +32,37 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   // forward declarations
   class Discretization;
 
   namespace ELEMENTS
   {
-    class SoTet4avType : public CORE::Elements::ElementType
+    class SoTet4avType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "So_tet4avType"; }
 
       static SoTet4avType& Instance();
 
-      CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+      Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const std::string eletype,
+      Teuchos::RCP<Core::Elements::Element> Create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
-      int Initialize(DRT::Discretization& dis) override;
+      int Initialize(Discret::Discretization& dis) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void setup_element_definition(
-          std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+          std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
           override;
 
      private:
@@ -109,12 +109,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Return number of volumes of this element
@@ -135,13 +135,13 @@ namespace DRT
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Lines() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<CORE::Elements::Element>> Surfaces() override;
+      std::vector<Teuchos::RCP<Core::Elements::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -160,7 +160,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -177,18 +177,18 @@ namespace DRT
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 4; }
+      int NumDofPerNode(const Core::Nodes::Node& node) const override { return 4; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -204,7 +204,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override { return SoTet4avType::Instance(); }
+      Core::Elements::ElementType& ElementType() const override { return SoTet4avType::Instance(); }
 
       //@}
 
@@ -260,7 +260,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
 
       //@}
@@ -293,11 +293,11 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3) override;
+      int Evaluate(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
+          Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseVector& elevec2,
+          Core::LinAlg::SerialDenseVector& elevec3) override;
 
 
       /*!
@@ -314,10 +314,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Return value how expensive it is to evaluate this element
@@ -326,7 +326,7 @@ namespace DRT
       */
       double EvaluationCost() override
       {
-        if (Material()->MaterialType() == CORE::Materials::m_struct_multiscale)
+        if (Material()->MaterialType() == Core::Materials::m_struct_multiscale)
           return 25000.0;
         else
           return 10.0;
@@ -351,11 +351,11 @@ namespace DRT
       };
 
       //! vector of inverses of the jacobian in material frame
-      std::vector<CORE::LINALG::Matrix<3, 3>> invJ_;
+      std::vector<Core::LinAlg::Matrix<3, 3>> invJ_;
       //! determinant of Jacobian in material frame
       std::vector<double> detJ_;
       //! vector of coordinates of current integration point in reference coordinates
-      std::vector<CORE::LINALG::Matrix<3, 1>> xsi_;
+      std::vector<Core::LinAlg::Matrix<3, 1>> xsi_;
       //! Gauss point weights
       std::vector<double> wgt_;
       int numgpt_{};
@@ -370,13 +370,13 @@ namespace DRT
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void nlnstiffmass(std::vector<int>& lm, std::vector<double>& disp,
-          CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* stiffmatrix,
-          CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* massmatrix,
-          CORE::LINALG::Matrix<NUMDOF_SOTET4av, 1>* force,
-          CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* elestress,
-          CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* elestrain,
-          Teuchos::ParameterList& params, const INPAR::STR::StressType iostress,
-          const INPAR::STR::StrainType iostrain);
+          Core::LinAlg::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* stiffmatrix,
+          Core::LinAlg::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* massmatrix,
+          Core::LinAlg::Matrix<NUMDOF_SOTET4av, 1>* force,
+          Core::LinAlg::Matrix<NUMGPT_SOTET4av, Mat::NUM_STRESS_3D>* elestress,
+          Core::LinAlg::Matrix<NUMGPT_SOTET4av, Mat::NUM_STRESS_3D>* elestrain,
+          Teuchos::ParameterList& params, const Inpar::STR::StressType iostress,
+          const Inpar::STR::StrainType iostrain);
 
       //@}
 
@@ -386,7 +386,7 @@ namespace DRT
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

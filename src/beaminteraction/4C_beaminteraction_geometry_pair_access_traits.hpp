@@ -26,10 +26,10 @@ namespace GEOMETRYPAIR
   struct SetShapeFunctionData<t_hermite>
   {
     static void Set(
-        ShapeFunctionData<t_hermite>& shape_function_data, const CORE::Elements::Element* element)
+        ShapeFunctionData<t_hermite>& shape_function_data, const Core::Elements::Element* element)
     {
       // Get the reference length of the beam element
-      const auto* beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
+      const auto* beam_element = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
       if (beam_element == nullptr)
         FOUR_C_THROW(
             "The element pointer has to point to a valid beam element when evaluating the shape "

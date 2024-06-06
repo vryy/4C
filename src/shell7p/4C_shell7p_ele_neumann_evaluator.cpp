@@ -16,27 +16,27 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(CORE::Elements::Element& ele,
-    const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
-    CORE::LINALG::SerialDenseMatrix* element_stiffness_matrix, double total_time)
+void Discret::ELEMENTS::Shell::EvaluateNeumannByElement(Core::Elements::Element& ele,
+    const Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
+    Core::LinAlg::SerialDenseMatrix* element_stiffness_matrix, double total_time)
 {
   switch (ele.Shape())
   {
-    case CORE::FE::CellType::quad4:
-      return evaluate_neumann<CORE::FE::CellType::quad4>(ele, discretization, condition,
+    case Core::FE::CellType::quad4:
+      return evaluate_neumann<Core::FE::CellType::quad4>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
-    case CORE::FE::CellType::quad8:
-      return evaluate_neumann<CORE::FE::CellType::quad8>(ele, discretization, condition,
+    case Core::FE::CellType::quad8:
+      return evaluate_neumann<Core::FE::CellType::quad8>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
-    case CORE::FE::CellType::quad9:
-      return evaluate_neumann<CORE::FE::CellType::quad9>(ele, discretization, condition,
+    case Core::FE::CellType::quad9:
+      return evaluate_neumann<Core::FE::CellType::quad9>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
-    case CORE::FE::CellType::tri3:
-      return evaluate_neumann<CORE::FE::CellType::tri3>(ele, discretization, condition,
+    case Core::FE::CellType::tri3:
+      return evaluate_neumann<Core::FE::CellType::tri3>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
-    case CORE::FE::CellType::tri6:
-      return evaluate_neumann<CORE::FE::CellType::tri6>(ele, discretization, condition,
+    case Core::FE::CellType::tri6:
+      return evaluate_neumann<Core::FE::CellType::tri6>(ele, discretization, condition,
           dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
     default:
       FOUR_C_THROW(
@@ -45,17 +45,17 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(CORE::Elements::Element& ele
   }
 }
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::SHELL::evaluate_neumann(CORE::Elements::Element& ele,
-    const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
-    CORE::LINALG::SerialDenseMatrix* element_stiffness_matrix, double total_time)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
+    const Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
+    Core::LinAlg::SerialDenseMatrix* element_stiffness_matrix, double total_time)
 {
-  constexpr auto num_dim = SHELL::DETAIL::num_dim;
-  constexpr auto numnod = SHELL::DETAIL::num_node<distype>;
-  constexpr auto noddof = SHELL::DETAIL::node_dof;
+  constexpr auto num_dim = Shell::DETAIL::num_dim;
+  constexpr auto numnod = Shell::DETAIL::num_node<distype>;
+  constexpr auto noddof = Shell::DETAIL::node_dof;
 
-  CORE::FE::IntegrationPoints2D intpoints =
+  Core::FE::IntegrationPoints2D intpoints =
       CreateGaussIntegrationPoints<distype>(get_gauss_rule<distype>());
 
   // IMPORTANT: The 'neum_orthopressure' case represents a truly nonlinear follower-load
@@ -160,10 +160,10 @@ void DRT::ELEMENTS::SHELL::evaluate_neumann(CORE::Elements::Element& ele,
     // get shape functions and derivatives at gaussian points
     ShapefunctionsAndDerivatives<distype> shapefunctions =
         EvaluateShapefunctionsAndDerivs<distype>(xi_gp);
-    CORE::LINALG::Matrix<num_dim, num_dim> g_metrics_kovariant(true);
+    Core::LinAlg::Matrix<num_dim, num_dim> g_metrics_kovariant(true);
 
-    CORE::LINALG::Matrix<numnod, num_dim> x_refe(true);
-    CORE::LINALG::Matrix<numnod, num_dim> x_curr(true);
+    Core::LinAlg::Matrix<numnod, num_dim> x_refe(true);
+    Core::LinAlg::Matrix<numnod, num_dim> x_curr(true);
 
     for (int i = 0; i < numnod; ++i)
     {
@@ -187,7 +187,7 @@ void DRT::ELEMENTS::SHELL::evaluate_neumann(CORE::Elements::Element& ele,
         loadlin = false;
         const Epetra_Vector& disp = *discretization.GetState("displacement");
         std::vector<double> displacements(dof_index_array.size());
-        CORE::FE::ExtractMyValues(disp, displacements, dof_index_array);
+        Core::FE::ExtractMyValues(disp, displacements, dof_index_array);
 
         spatial_configuration<distype>(x_curr, x_refe, displacements, 0);
 
@@ -198,7 +198,7 @@ void DRT::ELEMENTS::SHELL::evaluate_neumann(CORE::Elements::Element& ele,
       {
         const Epetra_Vector& disp = *discretization.GetState("displacement new");
         std::vector<double> displacements(dof_index_array.size());
-        CORE::FE::ExtractMyValues(disp, displacements, dof_index_array);
+        Core::FE::ExtractMyValues(disp, displacements, dof_index_array);
 
         spatial_configuration<distype>(x_curr, x_refe, displacements, 0);
 
@@ -211,7 +211,7 @@ void DRT::ELEMENTS::SHELL::evaluate_neumann(CORE::Elements::Element& ele,
 
     // get thickness direction derivative perpendicular to g1 and g2 (with area as length)
     // -> g3 = (g1 x g2) / (|g1 x g2 |)
-    CORE::LINALG::Matrix<num_dim, 1> g3(true);
+    Core::LinAlg::Matrix<num_dim, 1> g3(true);
     g3(0) = g_metrics_kovariant(0, 1) * g_metrics_kovariant(1, 2) -
             g_metrics_kovariant(0, 2) * g_metrics_kovariant(1, 1);
     g3(1) = g_metrics_kovariant(0, 2) * g_metrics_kovariant(1, 0) -
@@ -223,10 +223,10 @@ void DRT::ELEMENTS::SHELL::evaluate_neumann(CORE::Elements::Element& ele,
     if (ds <= 1.0e-14) FOUR_C_THROW("Element Area equal 0.0 or negativ detected");
 
     // material/reference coordinates of Gaussian point
-    CORE::LINALG::Matrix<num_dim, 1> gauss_point_reference_coordinates;
+    Core::LinAlg::Matrix<num_dim, 1> gauss_point_reference_coordinates;
     gauss_point_reference_coordinates.MultiplyTN(x_refe, shapefunctions.shapefunctions_);
     // current coordinates of Gaussian point
-    CORE::LINALG::Matrix<num_dim, 1> gauss_point_current_coordinates;
+    Core::LinAlg::Matrix<num_dim, 1> gauss_point_current_coordinates;
     if (ltype != neum_live)
       gauss_point_current_coordinates.MultiplyTN(x_curr, shapefunctions.shapefunctions_);
 
@@ -240,15 +240,15 @@ void DRT::ELEMENTS::SHELL::evaluate_neumann(CORE::Elements::Element& ele,
         const int function_number = (function_ids != nullptr) ? (*function_ids)[dim] : -1;
         function_scale_factors[dim] =
             (function_number > 0)
-                ? GLOBAL::Problem::Instance()
-                      ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(function_number - 1)
+                ? Global::Problem::Instance()
+                      ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(function_number - 1)
                       .Evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
                 : 1.0;
       }
     }
 
     double value_times_integration_factor = 0.0;
-    for (int dim = 0; dim < SHELL::DETAIL::num_dim; ++dim)
+    for (int dim = 0; dim < Shell::DETAIL::num_dim; ++dim)
     {
       switch (ltype)
       {
@@ -293,7 +293,7 @@ void DRT::ELEMENTS::SHELL::evaluate_neumann(CORE::Elements::Element& ele,
           FOUR_C_THROW("Unknown type of SurfaceNeumann load");
       }  // end switch(eletype)
 
-      for (auto nodeid = 0; nodeid < SHELL::DETAIL::num_node<distype>; ++nodeid)
+      for (auto nodeid = 0; nodeid < Shell::DETAIL::num_node<distype>; ++nodeid)
       {
         // Evaluates the Neumann boundary condition: f_{x,y,z}^i=\sum_j N^i(xi^j) * value(t) *
         // integration_factor_j
@@ -306,9 +306,9 @@ void DRT::ELEMENTS::SHELL::evaluate_neumann(CORE::Elements::Element& ele,
     if (loadlin)
     {
       constexpr auto numdof = DETAIL::numdofperelement<distype>;
-      CORE::LINALG::Matrix<num_dim, numdof> dnormal;
-      CORE::LINALG::Matrix<num_dim, numdof> dg1;
-      CORE::LINALG::Matrix<num_dim, numdof> dg2;
+      Core::LinAlg::Matrix<num_dim, numdof> dnormal;
+      Core::LinAlg::Matrix<num_dim, numdof> dg1;
+      Core::LinAlg::Matrix<num_dim, numdof> dg2;
 
       // linearization of basis vectors
       for (int nodeid = 0; nodeid < numnod; ++nodeid)

@@ -50,33 +50,34 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
   /***********************/
 
   // initialize maps for row nodes
-  std::map<int, CORE::Nodes::Node*> structurenodes;
-  std::map<int, CORE::Nodes::Node*> fluidnodes;
+  std::map<int, Core::Nodes::Node*> structurenodes;
+  std::map<int, Core::Nodes::Node*> fluidnodes;
 
   // initialize maps for column nodes
-  std::map<int, CORE::Nodes::Node*> structuregnodes;
-  std::map<int, CORE::Nodes::Node*> fluidgnodes;
+  std::map<int, Core::Nodes::Node*> structuregnodes;
+  std::map<int, Core::Nodes::Node*> fluidgnodes;
 
   // initialize maps for elements
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>> structureelements;
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>> fluidelements;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>> structureelements;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>> fluidelements;
 
 
   // access the discretizations
-  Teuchos::RCP<DRT::Discretization> structuredis = GLOBAL::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
-  Teuchos::RCP<DRT::Discretization> aledis = GLOBAL::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<Discret::Discretization> structuredis =
+      Global::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Discret::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<Discret::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
 
   // Fill maps based on condition for master side (masterdis != slavedis)
-  CORE::Conditions::FindConditionObjects(
+  Core::Conditions::FindConditionObjects(
       *structuredis, structurenodes, structuregnodes, structureelements, "FSICoupling");
 
   // Fill maps based on condition for slave side (masterdis != slavedis)
-  CORE::Conditions::FindConditionObjects(
+  Core::Conditions::FindConditionObjects(
       *fluiddis, fluidnodes, fluidgnodes, fluidelements, "FSICoupling");
 
-  std::map<int, CORE::Nodes::Node*>* slavenodesPtr = nullptr;
-  std::map<int, CORE::Nodes::Node*>* mastergnodesPtr = nullptr;
+  std::map<int, Core::Nodes::Node*>* slavenodesPtr = nullptr;
+  std::map<int, Core::Nodes::Node*>* mastergnodesPtr = nullptr;
 
   // ToDo (mayr) Move this to routine in derived classes to replace the if-clause by inheritence
   if (coupling == fsi_iter_mortar_monolithicfluidsplit or
@@ -243,12 +244,12 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
 
   // Distribute dofs in time integration vectors to right procs by creating time integrators new.
   // The Control File has to be rewritten as well.
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
       Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> structureoutput = structuredis->Writer();
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> fluidoutput = fluiddis->Writer();
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> aleoutput = aledis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> structureoutput = structuredis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> fluidoutput = fluiddis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> aleoutput = aledis->Writer();
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
@@ -289,7 +290,7 @@ void FSI::BlockMonolithic::redistribute_monolithic_graph(
 }
 
 /*----------------------------------------------------------------------------*/
-void FSI::BlockMonolithic::redistribute_domain_decomposition(const INPAR::FSI::Redistribute domain,
+void FSI::BlockMonolithic::redistribute_domain_decomposition(const Inpar::FSI::Redistribute domain,
     const FSI_COUPLING coupling, const double inputWeight1, const double inputWeight2,
     const Epetra_Comm& comm, int unbalance)
 {
@@ -302,33 +303,34 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const INPAR::FSI::R
   /***********************/
 
   // initialize maps for row nodes
-  std::map<int, CORE::Nodes::Node*> structurenodes;
-  std::map<int, CORE::Nodes::Node*> fluidnodes;
+  std::map<int, Core::Nodes::Node*> structurenodes;
+  std::map<int, Core::Nodes::Node*> fluidnodes;
 
   // initialize maps for column nodes
-  std::map<int, CORE::Nodes::Node*> structuregnodes;
-  std::map<int, CORE::Nodes::Node*> fluidgnodes;
+  std::map<int, Core::Nodes::Node*> structuregnodes;
+  std::map<int, Core::Nodes::Node*> fluidgnodes;
 
   // initialize maps for elements
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>> structureelements;
-  std::map<int, Teuchos::RCP<CORE::Elements::Element>> fluidelements;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>> structureelements;
+  std::map<int, Teuchos::RCP<Core::Elements::Element>> fluidelements;
 
 
   // access the discretizations
-  Teuchos::RCP<DRT::Discretization> structuredis = GLOBAL::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<DRT::Discretization> fluiddis = GLOBAL::Problem::Instance()->GetDis("fluid");
-  Teuchos::RCP<DRT::Discretization> aledis = GLOBAL::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<Discret::Discretization> structuredis =
+      Global::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<Discret::Discretization> fluiddis = Global::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<Discret::Discretization> aledis = Global::Problem::Instance()->GetDis("ale");
 
   // Fill maps based on condition for master side (masterdis != slavedis)
-  CORE::Conditions::FindConditionObjects(
+  Core::Conditions::FindConditionObjects(
       *structuredis, structurenodes, structuregnodes, structureelements, "FSICoupling");
 
   // Fill maps based on condition for slave side (masterdis != slavedis)
-  CORE::Conditions::FindConditionObjects(
+  Core::Conditions::FindConditionObjects(
       *fluiddis, fluidnodes, fluidgnodes, fluidelements, "FSICoupling");
 
-  std::map<int, CORE::Nodes::Node*>* slavenodesPtr = nullptr;
-  std::map<int, CORE::Nodes::Node*>* mastergnodesPtr = nullptr;
+  std::map<int, Core::Nodes::Node*>* slavenodesPtr = nullptr;
+  std::map<int, Core::Nodes::Node*>* mastergnodesPtr = nullptr;
 
   // ToDo (mayr) Move this to routine in derived classes to replace the if-clause by inheritence
   if (coupling == fsi_iter_mortar_monolithicfluidsplit or
@@ -365,10 +367,10 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const INPAR::FSI::R
   /* build nodal graph and insert edge weights */
   /*********************************************/
 
-  Teuchos::RCP<DRT::Discretization> dis;
-  if (domain == INPAR::FSI::Redistribute_structure)
+  Teuchos::RCP<Discret::Discretization> dis;
+  if (domain == Inpar::FSI::Redistribute_structure)
     dis = structuredis;
-  else if (domain == INPAR::FSI::Redistribute_fluid)
+  else if (domain == Inpar::FSI::Redistribute_fluid)
     dis = fluiddis;
 
   // create nodal graph of master field
@@ -458,23 +460,23 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const INPAR::FSI::R
   // redistribute nodes to procs
   dis->Redistribute(*switched_rownodes, *switched_colnodes);
 
-  if (domain == INPAR::FSI::Redistribute_fluid)
+  if (domain == Inpar::FSI::Redistribute_fluid)
   {
     aledis->Redistribute(*switched_rownodes, *switched_colnodes);
   }
 
   // Distribute dofs in time integration vectors to right procs by creating time integrators new.
   // The Control File has to be rewritten as well.
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
       Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> structureoutput = structuredis->Writer();
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> fluidoutput = fluiddis->Writer();
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> aleoutput = aledis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> structureoutput = structuredis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> fluidoutput = fluiddis->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> aleoutput = aledis->Writer();
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
-  if (domain == INPAR::FSI::Redistribute_structure)
+  if (domain == Inpar::FSI::Redistribute_structure)
   {
     fluidoutput->OverwriteResultFile();
     aleoutput->OverwriteResultFile();
@@ -482,7 +484,7 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const INPAR::FSI::R
     create_structure_time_integrator(fsidyn, structuredis);
     SetLambda();
   }
-  else if (domain == INPAR::FSI::Redistribute_fluid)
+  else if (domain == Inpar::FSI::Redistribute_fluid)
   {
     fluidoutput->OverwriteResultFile();
     aleoutput->OverwriteResultFile();
@@ -492,12 +494,12 @@ void FSI::BlockMonolithic::redistribute_domain_decomposition(const INPAR::FSI::R
   }
 
   //  // add missing sections "fluid" and "ale" in control file
-  //  if (CORE::UTILS::IntegralValue<int>(*ioflags,"OUTPUT_BIN")){
-  //    if (domain == INPAR::FSI::Redistribute_structure){
+  //  if (Core::UTILS::IntegralValue<int>(*ioflags,"OUTPUT_BIN")){
+  //    if (domain == Inpar::FSI::Redistribute_structure){
   //      fluidoutput->WriteMesh(0, 0.0);
   //      aleoutput->WriteMesh(0, 0.0);
   //    }
-  //    else if (domain == INPAR::FSI::Redistribute_fluid){
+  //    else if (domain == Inpar::FSI::Redistribute_fluid){
   ////      structureoutput->OverwriteResultFile();
   ////      fluidoutput->OverwriteResultFile();
   ////      aleoutput->OverwriteResultFile();
@@ -825,13 +827,13 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallPartitioner(
 
   // Set imbalance tolerance for relative subdomain sizes to avoid empty procs
   const Teuchos::ParameterList& fsimono =
-      GLOBAL::Problem::Instance()->FSIDynamicParams().sublist("MONOLITHIC SOLVER");
+      Global::Problem::Instance()->FSIDynamicParams().sublist("MONOLITHIC SOLVER");
   const double imbalance_tol = fsimono.get<double>("HYBRID_IMBALANCE_TOL");
   paramlist.set("IMBALANCE_TOL", imbalance_tol);
 
   if (parts != -1) paramlist.set("NUM_PARTS", std::to_string(parts));
 
-  return CORE::REBALANCE::RebalanceGraph(*initgraph_manip, paramlist);
+  return Core::Rebalance::RebalanceGraph(*initgraph_manip, paramlist);
 }
 
 
@@ -1297,17 +1299,17 @@ void FSI::BlockMonolithic::InsertDeletedEdges(std::map<int, std::list<int>>* del
 }
 
 /*----------------------------------------------------------------------------*/
-void FSI::BlockMonolithic::find_node_related_to_dof(std::map<int, CORE::Nodes::Node*>* nodes,
-    int gdofid, Teuchos::RCP<DRT::Discretization> discretization, int* re)
+void FSI::BlockMonolithic::find_node_related_to_dof(std::map<int, Core::Nodes::Node*>* nodes,
+    int gdofid, Teuchos::RCP<Discret::Discretization> discretization, int* re)
 {
   re[0] = -2;  // code: the node cannot be found on this proc
   bool breakout = false;
   std::vector<int> dofs;
-  std::map<int, CORE::Nodes::Node*>::iterator nodeiterator;
+  std::map<int, Core::Nodes::Node*>::iterator nodeiterator;
 
   for (nodeiterator = nodes->begin(); nodeiterator != nodes->end(); nodeiterator++)
   {
-    discretization->Dof((const CORE::Nodes::Node*)nodeiterator->second, dofs);
+    discretization->Dof((const Core::Nodes::Node*)nodeiterator->second, dofs);
     for (int i = 0; i < (int)dofs.size(); ++i)
     {
       if (dofs[i] == gdofid)
@@ -1327,8 +1329,8 @@ void FSI::BlockMonolithic::build_monolithic_graph(Teuchos::RCP<Epetra_CrsGraph> 
     std::map<int, std::vector<int>>& deletedEdges, std::map<int, std::vector<int>>& insertedEdges,
     std::map<int, std::vector<int>>& fluidToStructureMap,
     std::map<int, std::vector<int>>& structureToFluidMap,
-    Teuchos::RCP<DRT::Discretization> structuredis,  ///< structure discretization
-    Teuchos::RCP<DRT::Discretization> fluiddis)
+    Teuchos::RCP<Discret::Discretization> structuredis,  ///< structure discretization
+    Teuchos::RCP<Discret::Discretization> fluiddis)
 {
   int numproc = monolithicGraph->Comm().NumProc();
   int myrank = monolithicGraph->Comm().MyPID();

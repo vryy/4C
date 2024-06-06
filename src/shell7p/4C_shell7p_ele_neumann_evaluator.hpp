@@ -16,20 +16,20 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
-}  // namespace DRT
+}  // namespace Discret
 
 
-namespace DRT::ELEMENTS::SHELL
+namespace Discret::ELEMENTS::Shell
 {
   /*!
    * @brief Evaluates a Neumann condition @p condition for the element @p element.
    *
    * @note This function determines the shape of the element at runtime and calls the respective
-   * templated version of @p evaluate_neumann. If you already know the CORE::FE::CellType
+   * templated version of @p evaluate_neumann. If you already know the Core::FE::CellType
    * of the element at compile-time, you could directly call @evaluate_neumann.
    *
    * @param element (in) : The element where we integrate
@@ -42,11 +42,11 @@ namespace DRT::ELEMENTS::SHELL
    * Neumann condition
    * @param total_time (in) : The total time for time dependent Neumann conditions
    */
-  void EvaluateNeumannByElement(CORE::Elements::Element& element,
-      const DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
+  void EvaluateNeumannByElement(Core::Elements::Element& element,
+      const Discret::Discretization& discretization, Core::Conditions::Condition& condition,
       const std::vector<int>& dof_index_array,
-      CORE::LINALG::SerialDenseVector& element_force_vector,
-      CORE::LINALG::SerialDenseMatrix* element_stiffness_matrix, double total_time);
+      Core::LinAlg::SerialDenseVector& element_force_vector,
+      Core::LinAlg::SerialDenseMatrix* element_stiffness_matrix, double total_time);
 
   /*!
    * @brief Evaluates a Neumann condition @p condition for the element @p element with the
@@ -65,13 +65,14 @@ namespace DRT::ELEMENTS::SHELL
    * Neumann condition
    * @param total_time (in) : The total time for time dependent Neumann conditions
    */
-  template <CORE::FE::CellType distype>
-  void evaluate_neumann(CORE::Elements::Element& element, const DRT::Discretization& discretization,
-      CORE::Conditions::Condition& condition, const std::vector<int>& dof_index_array,
-      CORE::LINALG::SerialDenseVector& element_force_vector,
-      CORE::LINALG::SerialDenseMatrix* element_stiffness_matrix, double total_time);
+  template <Core::FE::CellType distype>
+  void evaluate_neumann(Core::Elements::Element& element,
+      const Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+      const std::vector<int>& dof_index_array,
+      Core::LinAlg::SerialDenseVector& element_force_vector,
+      Core::LinAlg::SerialDenseMatrix* element_stiffness_matrix, double total_time);
 
-}  // namespace DRT::ELEMENTS::SHELL
+}  // namespace Discret::ELEMENTS::Shell
 
 FOUR_C_NAMESPACE_CLOSE
 

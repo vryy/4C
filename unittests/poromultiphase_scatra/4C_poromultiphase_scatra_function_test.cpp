@@ -32,10 +32,10 @@ namespace
 
       // construct LungOxygenExchangeLaw
       LungOxygenExchangeLaw_ =
-          std::make_unique<POROMULTIPHASESCATRA::LungOxygenExchangeLaw<3>>(func_params);
+          std::make_unique<PoroMultiPhaseScaTra::LungOxygenExchangeLaw<3>>(func_params);
     }
 
-    std::unique_ptr<POROMULTIPHASESCATRA::LungOxygenExchangeLaw<3>> LungOxygenExchangeLaw_;
+    std::unique_ptr<PoroMultiPhaseScaTra::LungOxygenExchangeLaw<3>> LungOxygenExchangeLaw_;
   };
 
   class LungCarbonDioxideExchangeLawTest : public ::testing::Test
@@ -52,10 +52,10 @@ namespace
 
       // construct LungCarbonDioxideExchangeLaw
       LungCarbonDioxideExchangeLaw_ =
-          std::make_unique<POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<3>>(func_params);
+          std::make_unique<PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<3>>(func_params);
     }
 
-    std::unique_ptr<POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<3>>
+    std::unique_ptr<PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<3>>
         LungCarbonDioxideExchangeLaw_;
   };
 

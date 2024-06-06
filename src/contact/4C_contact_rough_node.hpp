@@ -15,14 +15,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  class RoughNodeType : public CORE::COMM::ParObjectType
+  class RoughNodeType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const final { return "RoughNodeType"; }
 
     static RoughNodeType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static RoughNodeType instance_;
@@ -37,7 +37,7 @@ namespace CONTACT
     /*!
      \brief The discretization is a friend of RoughNode
      */
-    friend class DRT::Discretization;
+    friend class Discret::Discretization;
 
     //@}
 
@@ -81,7 +81,7 @@ namespace CONTACT
      \ref Pack and \ref Unpack are used to communicate this node
 
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -93,7 +93,7 @@ namespace CONTACT
 
     // //! @name Access methods
 
-    CORE::LINALG::SerialDenseMatrix* GetTopology() { return &topology_; };
+    Core::LinAlg::SerialDenseMatrix* GetTopology() { return &topology_; };
     double get_max_topology_height() { return maxTopologyHeight_; };
 
    protected:
@@ -106,7 +106,7 @@ namespace CONTACT
 
     double hurstExponent_ = 0;
     double initialTopologyStdDeviation_ = 0;
-    CORE::LINALG::SerialDenseMatrix topology_;
+    Core::LinAlg::SerialDenseMatrix topology_;
     double maxTopologyHeight_;
   };
 }  // namespace CONTACT

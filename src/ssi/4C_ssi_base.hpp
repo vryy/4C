@@ -21,7 +21,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class CouplingSlaveConverter;
@@ -29,28 +29,28 @@ namespace ADAPTER
   class ScaTraBaseAlgorithm;
   class SSIStructureWrapper;
   class StructureBaseAlgorithmNew;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 namespace CONTACT
 {
   class NitscheStrategySsi;
 }
 
-namespace INPAR::SSI
+namespace Inpar::SSI
 {
   enum class FieldCoupling;
-}  // namespace INPAR::SSI
+}  // namespace Inpar::SSI
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MultiMapExtractor;
 }
 
-namespace SCATRA
+namespace ScaTra
 {
   class MeshtyingStrategyS2I;
   class ScaTraTimIntImpl;
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 namespace SSI
 {
@@ -71,7 +71,7 @@ namespace SSI
   };
 
   //! Base class of all solid-scatra algorithms
-  class SSIBase : public ADAPTER::AlgorithmBase
+  class SSIBase : public Adapter::AlgorithmBase
   {
    public:
     /// create using a Epetra_Comm
@@ -180,31 +180,31 @@ namespace SSI
     void read_restart(int restart) override;
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::SSIStructureWrapper>& structure_field() const { return structure_; }
+    const Teuchos::RCP<Adapter::SSIStructureWrapper>& structure_field() const { return structure_; }
 
     /// pointer to the underlying structure problem base algorithm
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> structure_base_algorithm() const
+    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> structure_base_algorithm() const
     {
       return struct_adapterbase_ptr_;
     }
 
     //! access the scalar transport base algorithm
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& ScaTraBaseAlgorithm() const
+    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& ScaTraBaseAlgorithm() const
     {
       return scatra_base_algorithm_;
     }
 
     //! access the scalar transport base algorithm on manifolds
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& sca_tra_manifold_base_algorithm() const
+    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& sca_tra_manifold_base_algorithm() const
     {
       return scatra_manifold_base_algorithm_;
     }
 
     //! access the scalar transport field
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const;
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTraField() const;
 
     //! access the scalar transport field on manifolds
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraManifold() const;
+    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> ScaTraManifold() const;
 
     /// set structure solution on other fields
     void set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp,
@@ -230,7 +230,7 @@ namespace SSI
     bool ssi_interface_meshtying() const { return ssiinterfacemeshtying_; }
 
     //! return the scatra-scatra interface meshtying strategy
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2_i() const
+    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2_i() const
     {
       return meshtying_strategy_s2i_;
     }
@@ -378,7 +378,7 @@ namespace SSI
     const bool diff_time_step_size_;
 
     //! Type of coupling strategy between the two fields of the SSI problems
-    const INPAR::SSI::FieldCoupling fieldcoupling_;
+    const Inpar::SSI::FieldCoupling fieldcoupling_;
 
     //! flag indicating if class is initialized
     bool isinit_ = false;
@@ -403,16 +403,16 @@ namespace SSI
     const bool macro_scale_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
+    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
     //! structure model evaluator for ssi problems
     Teuchos::RCP<STR::MODELEVALUATOR::Generic> modelevaluator_ssi_base_;
 
     //! underlying scatra problem base algorithm
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_base_algorithm_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_base_algorithm_;
 
     //! underlying scatra problem base algorithm on manifolds
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_manifold_base_algorithm_;
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_manifold_base_algorithm_;
 
     //! SSI structure mesh tying object containing coupling adapters, converters and maps
     Teuchos::RCP<SSI::UTILS::SSIMeshTying> ssi_structure_meshtying_;
@@ -427,10 +427,10 @@ namespace SSI
     const bool ssiinterfacemeshtying_;
 
     /// ptr to underlying structure
-    Teuchos::RCP<ADAPTER::SSIStructureWrapper> structure_;
+    Teuchos::RCP<Adapter::SSIStructureWrapper> structure_;
 
     /// ptr to the underlying structure problem base algorithm
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
+    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
 
     //! number of function for prescribed temperature
     const int temperature_funct_num_;

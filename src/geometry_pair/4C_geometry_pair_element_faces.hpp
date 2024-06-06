@@ -31,13 +31,13 @@ namespace GEOMETRYPAIR
 {
   struct ConnectedFace;
 }  // namespace GEOMETRYPAIR
-namespace INPAR
+namespace Inpar
 {
   namespace GEOMETRYPAIR
   {
     enum class SurfaceNormals;
   }
-}  // namespace INPAR
+}  // namespace Inpar
 
 
 namespace GEOMETRYPAIR
@@ -45,23 +45,23 @@ namespace GEOMETRYPAIR
   /**
    * \brief This structure "converts" a DRT face element type to the underlying volume element.
    */
-  template <CORE::FE::CellType discretization>
+  template <Core::FE::CellType discretization>
   struct FaceDiscretizationTypeToVolumeElement
   {
     using volume_type_ = void;
   };
   template <>
-  struct FaceDiscretizationTypeToVolumeElement<CORE::FE::CellType::quad4>
+  struct FaceDiscretizationTypeToVolumeElement<Core::FE::CellType::quad4>
   {
     using volume_type_ = t_hex8;
   };
   template <>
-  struct FaceDiscretizationTypeToVolumeElement<CORE::FE::CellType::quad8>
+  struct FaceDiscretizationTypeToVolumeElement<Core::FE::CellType::quad8>
   {
     using volume_type_ = t_hex20;
   };
   template <>
-  struct FaceDiscretizationTypeToVolumeElement<CORE::FE::CellType::quad9>
+  struct FaceDiscretizationTypeToVolumeElement<Core::FE::CellType::quad9>
   {
     using volume_type_ = t_hex27;
   };
@@ -93,7 +93,7 @@ namespace GEOMETRYPAIR
      * \brief Constructor.
      * @param face_element (in) Pointer to the DRT face element.
      */
-    FaceElement(const Teuchos::RCP<const CORE::Elements::FaceElement>& face_element)
+    FaceElement(const Teuchos::RCP<const Core::Elements::FaceElement>& face_element)
         : drt_face_element_(face_element), part_of_pair_(false), patch_dof_gid_(){};
 
     /**
@@ -105,7 +105,7 @@ namespace GEOMETRYPAIR
      * \brief Get the RCP to the DRT face element.
      * @return RCP to the DRT face element.
      */
-    const CORE::Elements::FaceElement* GetDrtFaceElement() const
+    const Core::Elements::FaceElement* GetDrtFaceElement() const
     {
       return drt_face_element_.getRawPtr();
     }
@@ -115,7 +115,7 @@ namespace GEOMETRYPAIR
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    virtual void Setup(const Teuchos::RCP<const DRT::Discretization>& discret,
+    virtual void Setup(const Teuchos::RCP<const Discret::Discretization>& discret,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements) = 0;
 
     /**
@@ -144,8 +144,8 @@ namespace GEOMETRYPAIR
      * @param r (out) Position on the face.
      * @param reference (in) If the reference position or the current position should be returned.
      */
-    virtual void evaluate_face_position_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
-        CORE::LINALG::Matrix<3, 1, double>& r, bool reference = false) const = 0;
+    virtual void evaluate_face_position_double(const Core::LinAlg::Matrix<2, 1, double>& xi,
+        Core::LinAlg::Matrix<3, 1, double>& r, bool reference = false) const = 0;
 
     /**
      * \brief Return a normal on the element.
@@ -159,8 +159,8 @@ namespace GEOMETRYPAIR
      * @param averaged_normal (in) If an averaged normal or an geometrical normal should be
      * returned.
      */
-    virtual void evaluate_face_normal_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
-        CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
+    virtual void evaluate_face_normal_double(const Core::LinAlg::Matrix<2, 1, double>& xi,
+        Core::LinAlg::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const = 0;
 
     /**
@@ -183,7 +183,7 @@ namespace GEOMETRYPAIR
 
    protected:
     //! Pointer to the drt face element.
-    Teuchos::RCP<const CORE::Elements::FaceElement> drt_face_element_;
+    Teuchos::RCP<const Core::Elements::FaceElement> drt_face_element_;
 
     //! Flag if this face element is part of a contact pair, i.e. if it has evaluate it's averaged
     //! normals.
@@ -212,7 +212,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor (derived).
      */
-    FaceElementTemplate(const Teuchos::RCP<const CORE::Elements::FaceElement>& face_element)
+    FaceElementTemplate(const Teuchos::RCP<const Core::Elements::FaceElement>& face_element)
         : FaceElement(face_element), n_dof_other_element_(0){};
 
 
@@ -222,7 +222,7 @@ namespace GEOMETRYPAIR
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    void Setup(const Teuchos::RCP<const DRT::Discretization>& discret,
+    void Setup(const Teuchos::RCP<const Discret::Discretization>& discret,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
@@ -246,7 +246,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the reference normals on this face.
      */
-    virtual const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals()
+    virtual const Core::LinAlg::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals()
         const
     {
       return nullptr;
@@ -255,7 +255,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the current normals on this face.
      */
-    virtual const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals()
+    virtual const Core::LinAlg::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals()
         const
     {
       return nullptr;
@@ -264,14 +264,14 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the position on this face as a double. (derived)
      */
-    void evaluate_face_position_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
-        CORE::LINALG::Matrix<3, 1, double>& r, bool reference = false) const override;
+    void evaluate_face_position_double(const Core::LinAlg::Matrix<2, 1, double>& xi,
+        Core::LinAlg::Matrix<3, 1, double>& r, bool reference = false) const override;
 
     /**
      * \brief Return a normal on the element. (derived)
      */
-    void evaluate_face_normal_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
-        CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
+    void evaluate_face_normal_double(const Core::LinAlg::Matrix<2, 1, double>& xi,
+        Core::LinAlg::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const override;
 
     /**
@@ -339,7 +339,7 @@ namespace GEOMETRYPAIR
      * \brief Constructor (derived).
      * @param evaluate_current_normals (in) If the current normals should be evaluated.
      */
-    FaceElementPatchTemplate(const Teuchos::RCP<const CORE::Elements::FaceElement>& face_element,
+    FaceElementPatchTemplate(const Teuchos::RCP<const Core::Elements::FaceElement>& face_element,
         const bool evaluate_current_normals)
         : base_class(face_element),
           connected_faces_(),
@@ -357,7 +357,7 @@ namespace GEOMETRYPAIR
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    void Setup(const Teuchos::RCP<const DRT::Discretization>& discret,
+    void Setup(const Teuchos::RCP<const Discret::Discretization>& discret,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
@@ -378,8 +378,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return a normal on the element. (derived)
      */
-    void evaluate_face_normal_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
-        CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
+    void evaluate_face_normal_double(const Core::LinAlg::Matrix<2, 1, double>& xi,
+        Core::LinAlg::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const override;
 
    private:
@@ -391,8 +391,8 @@ namespace GEOMETRYPAIR
      */
     template <typename T>
     void average_nodal_normals(
-        CORE::LINALG::Matrix<surface::n_nodes_, 1, CORE::LINALG::Matrix<3, 1, T>>& normals,
-        CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const;
+        Core::LinAlg::Matrix<surface::n_nodes_, 1, Core::LinAlg::Matrix<3, 1, T>>& normals,
+        Core::LinAlg::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const;
 
    protected:
     //! Store the relevant information of the connected faces. The key of this map is the GID of the
@@ -423,7 +423,7 @@ namespace GEOMETRYPAIR
      * \brief Constructor (derived).
      */
     FaceElementTemplateExtendedVolume(
-        const Teuchos::RCP<const CORE::Elements::FaceElement>& face_element)
+        const Teuchos::RCP<const Core::Elements::FaceElement>& face_element)
         : base_class(face_element),
           surface_dof_lid_map_(true),
           face_to_volume_coordinate_axis_map_(true),
@@ -437,7 +437,7 @@ namespace GEOMETRYPAIR
      * @param discret (in) Pointer to the discretization.
      * @param face_elements (in) Vector with all face elements in the surface condition.
      */
-    void Setup(const Teuchos::RCP<const DRT::Discretization>& discret,
+    void Setup(const Teuchos::RCP<const Discret::Discretization>& discret,
         const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
         override;
 
@@ -459,13 +459,13 @@ namespace GEOMETRYPAIR
     void CalculateNormals(
         const GEOMETRYPAIR::ElementData<volume, scalar_type_normal>& volume_position,
         const GEOMETRYPAIR::ElementData<surface, scalar_type_normal>& surface_position,
-        CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_normal>& normals) const;
+        Core::LinAlg::Matrix<3 * surface::n_nodes_, 1, scalar_type_normal>& normals) const;
 
     /**
      * \brief Return a normal on the element. (derived)
      */
-    void evaluate_face_normal_double(const CORE::LINALG::Matrix<2, 1, double>& xi,
-        CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
+    void evaluate_face_normal_double(const Core::LinAlg::Matrix<2, 1, double>& xi,
+        Core::LinAlg::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const override;
 
    protected:
@@ -473,12 +473,12 @@ namespace GEOMETRYPAIR
      * \brief Convert the face element parameter coordinates to the volume element parameter
      * coordinates.
      */
-    void xi_face_to_xi_volume(const CORE::LINALG::Matrix<2, 1, double>& xi_face,
-        CORE::LINALG::Matrix<3, 1, double>& xi_volume) const;
+    void xi_face_to_xi_volume(const Core::LinAlg::Matrix<2, 1, double>& xi_face,
+        Core::LinAlg::Matrix<3, 1, double>& xi_volume) const;
 
    protected:
     //! Map between surface DOFs and volume DOFs.
-    CORE::LINALG::Matrix<surface::n_dof_, 1, int> surface_dof_lid_map_;
+    Core::LinAlg::Matrix<surface::n_dof_, 1, int> surface_dof_lid_map_;
 
     //! Reference position.
     GEOMETRYPAIR::ElementData<volume, double> volume_reference_position_;
@@ -487,10 +487,10 @@ namespace GEOMETRYPAIR
     GEOMETRYPAIR::ElementData<volume, scalar_type> volume_position_;
 
     //! Map the face coordinate axis to the volume coordinate axis.
-    CORE::LINALG::Matrix<2, 1, int> face_to_volume_coordinate_axis_map_;
+    Core::LinAlg::Matrix<2, 1, int> face_to_volume_coordinate_axis_map_;
 
     //! Factor for the transformed coordinate axis.
-    CORE::LINALG::Matrix<2, 1, int> face_to_volume_coordinate_axis_factor_;
+    Core::LinAlg::Matrix<2, 1, int> face_to_volume_coordinate_axis_factor_;
 
     //! Third, i.e. normal direction.
     int third_direction_;
@@ -508,8 +508,8 @@ namespace GEOMETRYPAIR
    * @return RCP to the created GEOMETRYPAIR FaceElement.
    */
   Teuchos::RCP<FaceElement> FaceElementFactory(
-      const Teuchos::RCP<const CORE::Elements::FaceElement>& drt_face_element, const int fad_order,
-      const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
+      const Teuchos::RCP<const Core::Elements::FaceElement>& drt_face_element, const int fad_order,
+      const Inpar::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
 
 }  // namespace GEOMETRYPAIR
 

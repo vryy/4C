@@ -27,7 +27,7 @@ void poromultiphasescatra_dyn(int restart)
   const std::string scatra_disname = "scatra";
 
   // access the problem
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
 
   // access the communicator
   const Epetra_Comm& comm = problem->GetDis(struct_disname)->Comm();
@@ -35,7 +35,7 @@ void poromultiphasescatra_dyn(int restart)
   // print problem type
   if (comm.MyPID() == 0)
   {
-    POROMULTIPHASESCATRA::PrintLogo();
+    PoroMultiPhaseScaTra::PrintLogo();
     std::cout << "###################################################" << std::endl;
     std::cout << "# YOUR PROBLEM TYPE: " << problem->ProblemName() << std::endl;
     std::cout << "###################################################" << std::endl;
@@ -55,7 +55,7 @@ void poromultiphasescatra_dyn(int restart)
   const Teuchos::ParameterList& scatraparams = problem->scalar_transport_dynamic_params();
 
   // do we perform coupling with 1D artery
-  const bool artery_coupl = CORE::UTILS::IntegralValue<int>(poroscatraparams, "ARTERY_COUPLING");
+  const bool artery_coupl = Core::UTILS::IntegralValue<int>(poroscatraparams, "ARTERY_COUPLING");
 
   // initialize variables for dof set numbers
   int ndsporo_disp(-1);
@@ -65,7 +65,7 @@ void poromultiphasescatra_dyn(int restart)
 
   // Setup discretizations and coupling. Assign the dof sets and return the numbers
   std::map<int, std::set<int>> nearbyelepairs =
-      POROMULTIPHASESCATRA::UTILS::SetupDiscretizationsAndFieldCoupling(comm, struct_disname,
+      PoroMultiPhaseScaTra::UTILS::SetupDiscretizationsAndFieldCoupling(comm, struct_disname,
           fluid_disname, scatra_disname, ndsporo_disp, ndsporo_vel, ndsporo_solidpressure,
           ndsporofluid_scatra, artery_coupl);
 
@@ -73,12 +73,12 @@ void poromultiphasescatra_dyn(int restart)
   // algorithm construction depending on
   // coupling scheme
   // -------------------------------------------------------------------
-  INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields solscheme =
-      CORE::UTILS::IntegralValue<INPAR::POROMULTIPHASESCATRA::SolutionSchemeOverFields>(
+  Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields solscheme =
+      Core::UTILS::IntegralValue<Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields>(
           poroscatraparams, "COUPALGO");
 
-  Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraBase> algo =
-      POROMULTIPHASESCATRA::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
+  Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase> algo =
+      PoroMultiPhaseScaTra::UTILS::CreatePoroMultiPhaseScatraAlgorithm(
           solscheme, poroscatraparams, comm);
 
   algo->Init(poroscatraparams, poroscatraparams, poroparams, structparams, fluidparams,
@@ -91,7 +91,7 @@ void poromultiphasescatra_dyn(int restart)
   // assign materials
   // note: to be done after potential restart, as in read_restart()
   //       the secondary material is destroyed
-  POROMULTIPHASESCATRA::UTILS::assign_material_pointers(
+  PoroMultiPhaseScaTra::UTILS::assign_material_pointers(
       struct_disname, fluid_disname, scatra_disname, artery_coupl);
 
   // Setup Solver (necessary if poro-structure coupling solved monolithically)

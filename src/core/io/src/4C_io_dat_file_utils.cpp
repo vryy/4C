@@ -9,7 +9,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void CORE::IO::DatFileUtils::print_section_header(std::ostream& out, const std::string& header)
+void Core::IO::DatFileUtils::print_section_header(std::ostream& out, const std::string& header)
 {
   constexpr std::size_t max_line_width = 65ul;
   FOUR_C_THROW_UNLESS(header.length() <= max_line_width, "Header '%s' too long", header.c_str());
@@ -21,8 +21,8 @@ void CORE::IO::DatFileUtils::print_section_header(std::ostream& out, const std::
 
 
 
-void CORE::IO::DatFileUtils::print_section(std::ostream& out, const std::string& header,
-    const std::vector<INPUT::LineDefinition>& possible_lines)
+void Core::IO::DatFileUtils::print_section(std::ostream& out, const std::string& header,
+    const std::vector<Input::LineDefinition>& possible_lines)
 {
   print_section_header(out, header);
 
@@ -35,9 +35,9 @@ void CORE::IO::DatFileUtils::print_section(std::ostream& out, const std::string&
 }
 
 
-std::vector<INPUT::LineDefinition> CORE::IO::DatFileUtils::read_all_lines_in_section(
-    CORE::IO::DatFileReader& reader, const std::string& section,
-    const std::vector<INPUT::LineDefinition>& possible_lines)
+std::vector<Input::LineDefinition> Core::IO::DatFileUtils::read_all_lines_in_section(
+    Core::IO::DatFileReader& reader, const std::string& section,
+    const std::vector<Input::LineDefinition>& possible_lines)
 {
   auto [parsed_lines, unparsed_lines] =
       read_matching_lines_in_section(reader, section, possible_lines);
@@ -53,7 +53,7 @@ std::vector<INPUT::LineDefinition> CORE::IO::DatFileUtils::read_all_lines_in_sec
     }
     out << "Valid lines are:\n";
     std::for_each(possible_lines.begin(), possible_lines.end(),
-        [&](const INPUT::LineDefinition& def)
+        [&](const Input::LineDefinition& def)
         {
           def.Print(out);
           out << '\n';
@@ -65,14 +65,14 @@ std::vector<INPUT::LineDefinition> CORE::IO::DatFileUtils::read_all_lines_in_sec
 }
 
 
-std::pair<std::vector<INPUT::LineDefinition>, std::vector<std::string>>
-CORE::IO::DatFileUtils::read_matching_lines_in_section(CORE::IO::DatFileReader& reader,
-    const std::string& section, const std::vector<INPUT::LineDefinition>& possible_lines)
+std::pair<std::vector<Input::LineDefinition>, std::vector<std::string>>
+Core::IO::DatFileUtils::read_matching_lines_in_section(Core::IO::DatFileReader& reader,
+    const std::string& section, const std::vector<Input::LineDefinition>& possible_lines)
 {
   const std::vector<const char*> lines_in_section = reader.Section("--" + section);
 
   std::vector<std::string> unparsed_lines;
-  std::vector<INPUT::LineDefinition> parsed_lines;
+  std::vector<Input::LineDefinition> parsed_lines;
 
   const auto process_line = [&](const std::string& input_line)
   {

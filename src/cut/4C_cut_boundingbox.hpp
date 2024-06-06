@@ -18,9 +18,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Node;
     class Edge;
@@ -94,7 +94,7 @@ namespace CORE::GEO
 
       /*! \brief If necessary make the boundingbox larger to include
        *  this point as one of the corners of the box */
-      void AddPoint(const CORE::LINALG::Matrix<3, 1>& p) { AddPoint(p.A()); }
+      void AddPoint(const Core::LinAlg::Matrix<3, 1>& p) { AddPoint(p.A()); }
 
       /*! \brief If necessary make the boundingbox larger to include
        *  all these nodes as one of the corners of the box */
@@ -107,7 +107,7 @@ namespace CORE::GEO
       virtual bool Within(double norm, const double* x) const;
 
       /*! \brief Check these points are within this boundingbox */
-      bool Within(double norm, const CORE::LINALG::SerialDenseMatrix& xyz) const;
+      bool Within(double norm, const Core::LinAlg::SerialDenseMatrix& xyz) const;
 
       /*! \brief Check the element is within this boundingbox */
       bool Within(double norm, Element& element) const;
@@ -127,7 +127,7 @@ namespace CORE::GEO
       void CornerPoint(int i, double* x);
 
       /*! \brief Get the boundingbox */
-      const CORE::LINALG::Matrix<3, 2>& GetBoundingVolume() const { return box_; }
+      const Core::LinAlg::Matrix<3, 2>& GetBoundingVolume() const { return box_; }
 
       /// Compute and return the diagonal length of the BoundingBox
       double Diagonal()
@@ -141,7 +141,7 @@ namespace CORE::GEO
           const double& omin, const double& omax) const;
 
       bool empty_;
-      CORE::LINALG::Matrix<3, 2> box_;
+      Core::LinAlg::Matrix<3, 2> box_;
     };  // class BoundingBox
 
     /*--------------------------------------------------------------------------*/
@@ -168,8 +168,8 @@ namespace CORE::GEO
       bool Within(double norm, const double* x) const override;
     };  // class ConcreteBoundingBox
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WC::DoPoroStep()
+void PoroElastScaTra::PoroScatraPart1WC::DoPoroStep()
 {
   if (Comm().MyPID() == 0)
   {
@@ -39,7 +39,7 @@ void POROELASTSCATRA::PoroScatraPart1WC::DoPoroStep()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WC::do_scatra_step()
+void PoroElastScaTra::PoroScatraPart1WC::do_scatra_step()
 {
   if (Comm().MyPID() == 0)
   {
@@ -54,7 +54,7 @@ void POROELASTSCATRA::PoroScatraPart1WC::do_scatra_step()
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WC::prepare_output()
+void PoroElastScaTra::PoroScatraPart1WC::prepare_output()
 {
   constexpr bool force_prepare = false;
   poro_field()->prepare_output(force_prepare);
@@ -63,7 +63,7 @@ void POROELASTSCATRA::PoroScatraPart1WC::prepare_output()
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WC::update()
+void PoroElastScaTra::PoroScatraPart1WC::update()
 {
   // -------------------------------------------------------------------
   //                         update solution
@@ -81,7 +81,7 @@ void POROELASTSCATRA::PoroScatraPart1WC::update()
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WC::output()
+void PoroElastScaTra::PoroScatraPart1WC::output()
 {
   // -------------------------------------------------------------------
   //                         output of solution
@@ -93,7 +93,7 @@ void POROELASTSCATRA::PoroScatraPart1WC::output()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::PoroScatraPart1WCPoroToScatra(
+PoroElastScaTra::PoroScatraPart1WCPoroToScatra::PoroScatraPart1WCPoroToScatra(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraPart1WC(comm, timeparams)
 {
@@ -104,7 +104,7 @@ POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::PoroScatraPart1WCPoroToScatra(
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::Timeloop()
+void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::Timeloop()
 {
   // initial_calculations();
 
@@ -125,7 +125,7 @@ void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::Timeloop()
 /*----------------------------------------------------------------------*/
 // prepare time step                                  rauch/vuong 04/15  |
 /*----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::prepare_time_step(bool printheader)
+void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::prepare_time_step(bool printheader)
 {
   increment_time_and_step();
   if (printheader) print_header();
@@ -138,7 +138,7 @@ void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::prepare_time_step(bool prin
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::Solve()
+void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::Solve()
 {
   DoPoroStep();  // It has its own time and timestep variables, and it increments them by itself.
   SetPoroSolution();
@@ -149,7 +149,7 @@ void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::Solve()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::read_restart(int restart)
+void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::read_restart(int restart)
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
@@ -163,9 +163,9 @@ void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::read_restart(int restart)
 
     // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(
+    PoroElast::UTILS::SetMaterialPointersMatchingGrid(
         poro_field()->structure_field()->discretization(), ScaTraField()->discretization());
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(
+    PoroElast::UTILS::SetMaterialPointersMatchingGrid(
         poro_field()->fluid_field()->discretization(), ScaTraField()->discretization());
   }
 }
@@ -173,7 +173,7 @@ void POROELASTSCATRA::PoroScatraPart1WCPoroToScatra::read_restart(int restart)
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
+PoroElastScaTra::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
     : PoroScatraPart1WC(comm, timeparams)
 {
@@ -181,7 +181,7 @@ POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
     std::cout << "\n Create PoroScatraPart1WCScatraToPoro algorithm ... \n" << std::endl;
 
   // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<CORE::Dofsets::DofSetInterface> scatradofset =
+  Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset =
       ScaTraField()->discretization()->GetDofSetProxy();
 
   // check if structure field has 2 discretizations, so that coupling is possible
@@ -192,7 +192,7 @@ POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::PoroScatraPart1WCScatraToPoro(
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::Timeloop()
+void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::Timeloop()
 {
   // initial_calculations();
 
@@ -213,7 +213,7 @@ void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::Timeloop()
 /*----------------------------------------------------------------------*/
 // prepare time step                                  rauch/vuong 04/15  |
 /*----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::prepare_time_step(bool printheader)
+void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::prepare_time_step(bool printheader)
 {
   increment_time_and_step();
   if (printheader) print_header();
@@ -227,7 +227,7 @@ void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::prepare_time_step(bool prin
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::Solve()
+void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::Solve()
 {
   do_scatra_step();  // It has its own time and timestep variables, and it increments them by
                      // itself.
@@ -238,7 +238,7 @@ void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::Solve()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::read_restart(int restart)
+void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::read_restart(int restart)
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
@@ -252,9 +252,9 @@ void POROELASTSCATRA::PoroScatraPart1WCScatraToPoro::read_restart(int restart)
 
     // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(
+    PoroElast::UTILS::SetMaterialPointersMatchingGrid(
         poro_field()->structure_field()->discretization(), ScaTraField()->discretization());
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(
+    PoroElast::UTILS::SetMaterialPointersMatchingGrid(
         poro_field()->fluid_field()->discretization(), ScaTraField()->discretization());
   }
 }

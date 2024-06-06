@@ -48,154 +48,154 @@ void ntacal()
 {
   using namespace FourC;
 
-  int restart = GLOBAL::Problem::Instance()->Restart();
+  int restart = Global::Problem::Instance()->Restart();
 
   // choose the entry-routine depending on the problem type
-  switch (GLOBAL::Problem::Instance()->GetProblemType())
+  switch (Global::Problem::Instance()->GetProblemType())
   {
-    case CORE::ProblemType::structure:
-    case CORE::ProblemType::polymernetwork:
+    case Core::ProblemType::structure:
+    case Core::ProblemType::polymernetwork:
       caldyn_drt();
       break;
-    case CORE::ProblemType::fluid:
-    case CORE::ProblemType::fluid_redmodels:
+    case Core::ProblemType::fluid:
+    case Core::ProblemType::fluid_redmodels:
       dyn_fluid_drt(restart);
       break;
-    case CORE::ProblemType::lubrication:
+    case Core::ProblemType::lubrication:
       lubrication_dyn(restart);
       break;
-    case CORE::ProblemType::ehl:
+    case Core::ProblemType::ehl:
       ehl_dyn();
       break;
-    case CORE::ProblemType::scatra:
+    case Core::ProblemType::scatra:
       scatra_dyn(restart);
       break;
-    case CORE::ProblemType::cardiac_monodomain:
+    case Core::ProblemType::cardiac_monodomain:
       scatra_cardiac_monodomain_dyn(restart);
       break;
-    case CORE::ProblemType::sti:
+    case Core::ProblemType::sti:
       sti_dyn(restart);
       break;
-    case CORE::ProblemType::fluid_xfem:
+    case Core::ProblemType::fluid_xfem:
       fluid_xfem_drt();
       break;
       break;
-    case CORE::ProblemType::fluid_ale:
+    case Core::ProblemType::fluid_ale:
       fluid_ale_drt();
       break;
-    case CORE::ProblemType::freesurf:
+    case Core::ProblemType::freesurf:
       fluid_freesurf_drt();
       break;
 
-    case CORE::ProblemType::fsi:
-    case CORE::ProblemType::fsi_redmodels:
-    case CORE::ProblemType::fsi_lung:
+    case Core::ProblemType::fsi:
+    case Core::ProblemType::fsi_redmodels:
+    case Core::ProblemType::fsi_lung:
       fsi_ale_drt();
       break;
-    case CORE::ProblemType::fsi_xfem:
+    case Core::ProblemType::fsi_xfem:
       xfsi_drt();
       break;
-    case CORE::ProblemType::fpsi_xfem:
+    case Core::ProblemType::fpsi_xfem:
       xfpsi_drt();
       break;
-    case CORE::ProblemType::gas_fsi:
-    case CORE::ProblemType::ac_fsi:
-    case CORE::ProblemType::biofilm_fsi:
-    case CORE::ProblemType::thermo_fsi:
-    case CORE::ProblemType::fps3i:
+    case Core::ProblemType::gas_fsi:
+    case Core::ProblemType::ac_fsi:
+    case Core::ProblemType::biofilm_fsi:
+    case Core::ProblemType::thermo_fsi:
+    case Core::ProblemType::fps3i:
       fs3i_dyn();
       break;
-    case CORE::ProblemType::fbi:
+    case Core::ProblemType::fbi:
       fsi_immersed_drt();
       break;
 
-    case CORE::ProblemType::ale:
+    case Core::ProblemType::ale:
       dyn_ale_drt();
       break;
 
-    case CORE::ProblemType::thermo:
+    case Core::ProblemType::thermo:
       thr_dyn_drt();
       break;
 
-    case CORE::ProblemType::tsi:
+    case Core::ProblemType::tsi:
       tsi_dyn_drt();
       break;
 
-    case CORE::ProblemType::loma:
+    case Core::ProblemType::loma:
       loma_dyn(restart);
       break;
 
-    case CORE::ProblemType::elch:
+    case Core::ProblemType::elch:
       elch_dyn(restart);
       break;
 
-    case CORE::ProblemType::art_net:
+    case Core::ProblemType::art_net:
       dyn_art_net_drt();
       break;
 
-    case CORE::ProblemType::red_airways:
+    case Core::ProblemType::red_airways:
       dyn_red_airways_drt();
       break;
 
-    case CORE::ProblemType::struct_ale:
+    case Core::ProblemType::struct_ale:
       wear_dyn_drt(restart);
       break;
 
-    case CORE::ProblemType::immersed_fsi:
+    case Core::ProblemType::immersed_fsi:
       immersed_problem_drt();
       break;
 
-    case CORE::ProblemType::poroelast:
+    case Core::ProblemType::poroelast:
       poroelast_drt();
       break;
-    case CORE::ProblemType::poroscatra:
+    case Core::ProblemType::poroscatra:
       poro_scatra_drt();
       break;
-    case CORE::ProblemType::porofluidmultiphase:
+    case Core::ProblemType::porofluidmultiphase:
       porofluidmultiphase_dyn(restart);
       break;
-    case CORE::ProblemType::poromultiphase:
+    case Core::ProblemType::poromultiphase:
       poromultiphase_dyn(restart);
       break;
-    case CORE::ProblemType::poromultiphasescatra:
+    case Core::ProblemType::poromultiphasescatra:
       poromultiphasescatra_dyn(restart);
       break;
-    case CORE::ProblemType::fpsi:
+    case Core::ProblemType::fpsi:
       fpsi_drt();
       break;
-    case CORE::ProblemType::ssi:
+    case Core::ProblemType::ssi:
       ssi_drt();
       break;
-    case CORE::ProblemType::ssti:
+    case Core::ProblemType::ssti:
       ssti_drt();
       break;
-    case CORE::ProblemType::redairways_tissue:
+    case Core::ProblemType::redairways_tissue:
       redairway_tissue_dyn();
       break;
 
-    case CORE::ProblemType::particle:
+    case Core::ProblemType::particle:
       particle_drt();
       break;
 
-    case CORE::ProblemType::pasi:
+    case Core::ProblemType::pasi:
       pasi_dyn();
       break;
 
-    case CORE::ProblemType::level_set:
+    case Core::ProblemType::level_set:
       levelset_dyn(restart);
       break;
 
-    case CORE::ProblemType::np_support:
-      STRUMULTI::np_support_drt();
+    case Core::ProblemType::np_support:
+      MultiScale::np_support_drt();
       break;
 
-    case CORE::ProblemType::elemag:
+    case Core::ProblemType::elemag:
       electromagnetics_drt();
       break;
 
     default:
       FOUR_C_THROW("solution of unknown problemtyp %d requested",
-          GLOBAL::Problem::Instance()->GetProblemType());
+          Global::Problem::Instance()->GetProblemType());
       break;
   }
 }

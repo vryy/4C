@@ -39,16 +39,16 @@ namespace PARTICLEWALL
 /*---------------------------------------------------------------------------*
  | type definitions                                                          |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
-  using DEMParticlePairData = std::vector<PARTICLEINTERACTION::DEMParticlePair>;
-  using DEMParticleWallPairData = std::vector<PARTICLEINTERACTION::DEMParticleWallPair>;
-}  // namespace PARTICLEINTERACTION
+  using DEMParticlePairData = std::vector<ParticleInteraction::DEMParticlePair>;
+  using DEMParticleWallPairData = std::vector<ParticleInteraction::DEMParticleWallPair>;
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   class DEMNeighborPairs final
   {
@@ -129,7 +129,7 @@ namespace PARTICLEINTERACTION
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
   };
 
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

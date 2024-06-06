@@ -16,11 +16,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
+void Input::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
     std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& contactconstitutivlawlist)
 {
   const std::string sectionname = "Contact Constitutive Law";
-  CORE::IO::DatFileUtils::print_section_header(stream, sectionname);
+  Core::IO::DatFileUtils::print_section_header(stream, sectionname);
 
   for (unsigned i = 0; i < contactconstitutivlawlist.size(); ++i)
   {
@@ -34,15 +34,15 @@ void INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
 void PrintContactConstitutiveLawDatHeader()
 {
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> coconstlawlist =
-      INPUT::ValidContactConstitutiveLaws();
-  INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::cout, *coconstlawlist);
+      Input::ValidContactConstitutiveLaws();
+  Input::PrintEmptyContactConstitutiveLawDefinitions(std::cout, *coconstlawlist);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>>
-INPUT::ValidContactConstitutiveLaws()
+Input::ValidContactConstitutiveLaws()
 {
   // a list containing all valid contact constitutivelaw definitions
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
@@ -56,7 +56,7 @@ INPUT::ValidContactConstitutiveLaws()
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_brokenrational",
-            "Broken rational law", INPAR::CONTACT::ConstitutiveLawType::colaw_brokenrational));
+            "Broken rational law", Inpar::CONTACT::ConstitutiveLawType::colaw_brokenrational));
 
     AddNamedReal(m, "A", "scaling factor");
     AddNamedReal(m, "B", "asymptote");
@@ -69,7 +69,7 @@ INPUT::ValidContactConstitutiveLaws()
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition(
-            "CoConstLaw_power", "Power law", INPAR::CONTACT::ConstitutiveLawType::colaw_power));
+            "CoConstLaw_power", "Power law", Inpar::CONTACT::ConstitutiveLawType::colaw_power));
 
     AddNamedReal(m, "A", "scaling factor");
     AddNamedReal(m, "B", "power coefficient");
@@ -82,7 +82,7 @@ INPUT::ValidContactConstitutiveLaws()
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_cubic",
-            "Cubic function", INPAR::CONTACT::ConstitutiveLawType::colaw_cubic));
+            "Cubic function", Inpar::CONTACT::ConstitutiveLawType::colaw_cubic));
 
     AddNamedReal(m, "A", "A");
     AddNamedReal(m, "B", "B");
@@ -97,7 +97,7 @@ INPUT::ValidContactConstitutiveLaws()
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_linear",
-            "Linear function", INPAR::CONTACT::ConstitutiveLawType::colaw_linear));
+            "Linear function", Inpar::CONTACT::ConstitutiveLawType::colaw_linear));
 
     AddNamedReal(m, "A", "slope");
     AddNamedReal(m, "B", "y intercept");
@@ -110,7 +110,7 @@ INPUT::ValidContactConstitutiveLaws()
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
         Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_mirco",
-            "Mirco function", INPAR::CONTACT::ConstitutiveLawType::colaw_mirco));
+            "Mirco function", Inpar::CONTACT::ConstitutiveLawType::colaw_mirco));
 
     AddNamedInt(m, "FirstMatID", "First material ID");
     AddNamedInt(m, "SecondMatID", "Second material ID");

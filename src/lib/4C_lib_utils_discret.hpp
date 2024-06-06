@@ -34,22 +34,22 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::FE
+namespace Core::FE
 {
   class AssembleStrategy;
 }
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   class FunctionManager;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
   class DiscretizationFaces;
@@ -63,7 +63,7 @@ namespace DRT
      *  This evaluate routine supports the evaluation of a subset of all column
      *  elements inside the given discretization. If the \c col_ele_map pointer
      *  is not set or set to \c nullptr, this routine generates almost no overhead
-     *  and is equivalent to the more familiar implementation in DRT::Discretization.
+     *  and is equivalent to the more familiar implementation in Discret::Discretization.
      *
      *  \param discret      (in)  : discretization containing the considered elements
      *  \param eparams      (in)  : element parameter list
@@ -72,8 +72,8 @@ namespace DRT
      *  \param col_ele_map  (in)  : column element map, which can be a subset of the
      *                              discretization column map ( optional )
      */
-    void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
+    void Evaluate(Discret::Discretization& discret, Teuchos::ParameterList& eparams,
+        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& systemvector, const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate the elements of the given discretization and fill the
@@ -82,7 +82,7 @@ namespace DRT
      *  This evaluate routine supports the evaluation of a subset of all column
      *  elements inside the given discretization. If the \c col_ele_map pointer
      *  is not set or set to \c nullptr, this routine generates almost no overhead
-     *  and is equivalent to the more familiar implementation in DRT::Discretization.
+     *  and is equivalent to the more familiar implementation in Discret::Discretization.
      *
      *  \param discret      (in)  : discretization containing the considered elements
      *  \param eparams      (in)  : element parameter list
@@ -91,8 +91,8 @@ namespace DRT
      *  \param col_ele_map  (in)  : column element map, which can be a subset of the
      *                              discretization column map ( optional )
      */
-    void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-        std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>>& systemmatrices,
+    void Evaluate(Discret::Discretization& discret, Teuchos::ParameterList& eparams,
+        std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>>& systemmatrices,
         std::vector<Teuchos::RCP<Epetra_Vector>>& systemvector,
         const Epetra_Map* col_ele_map = nullptr);
 
@@ -102,7 +102,7 @@ namespace DRT
      *  This evaluate routine supports the evaluation of a subset of all column
      *  elements inside the given discretization. If the \c col_ele_map pointer
      *  is not set or set to \c nullptr, this routine generates almost no overhead
-     *  and is equivalent to the more familiar implementation in DRT::Discretization.
+     *  and is equivalent to the more familiar implementation in Discret::Discretization.
      *
      *  \param discret      (in)  : discretization containing the considered elements
      *  \param eparams      (in)  : element parameter list
@@ -111,26 +111,26 @@ namespace DRT
      *  \param col_ele_map  (in)  : column element map, which can be a subset of the
      *                              discretization column map ( optional )
      */
-    void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-        CORE::FE::AssembleStrategy& strategy, const Epetra_Map* col_ele_map = nullptr);
+    void Evaluate(Discret::Discretization& discret, Teuchos::ParameterList& eparams,
+        Core::FE::AssembleStrategy& strategy, const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate Dirichlet boundary conditions
      *
      *  non-member functions to call the dbc public routines
      */
-    void evaluate_dirichlet(const DRT::Discretization& discret,
+    void evaluate_dirichlet(const Discret::Discretization& discret,
         const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
         const Teuchos::RCP<Epetra_Vector>& systemvectord,
         const Teuchos::RCP<Epetra_Vector>& systemvectordd,
         const Teuchos::RCP<Epetra_IntVector>& toggle,
-        const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor);
+        const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor);
 
     /** \brief Evaluate Dirichlet boundary conditions
      *
      *  Call this variant, if you need no new dbc map extractor.
      *  See the corresponding called function for more detailed information.
      */
-    inline void evaluate_dirichlet(const DRT::Discretization& discret,
+    inline void evaluate_dirichlet(const Discret::Discretization& discret,
         const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
         const Teuchos::RCP<Epetra_Vector>& systemvectord,
         const Teuchos::RCP<Epetra_Vector>& systemvectordd,
@@ -151,8 +151,8 @@ namespace DRT
     prescribing an initial pressure in a 3D fluid dynamics simulation, where locids would have to
     contain only the local pressure DOF id, namely {3}.
     */
-    void evaluate_initial_field(const CORE::UTILS::FunctionManager& function_manager,
-        const DRT::Discretization& discret, const std::string& fieldstring,
+    void evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
+        const Discret::Discretization& discret, const std::string& fieldstring,
         Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids);
 
 
@@ -162,15 +162,15 @@ namespace DRT
     This is the actual evaluation method.
 
     */
-    void DoInitialField(const CORE::UTILS::FunctionManager& function_manager,
-        const DRT::Discretization& discret, CORE::Conditions::Condition& cond,
+    void DoInitialField(const Core::UTILS::FunctionManager& function_manager,
+        const Discret::Discretization& discret, Core::Conditions::Condition& cond,
         Epetra_Vector& fieldvector, const std::vector<int>& locids);
 
     /** \brief Build a Dbc object
      *
      *  The Dbc object is build in dependency of the given discretization.
      */
-    Teuchos::RCP<const Dbc> BuildDbc(const DRT::Discretization* discret_ptr);
+    Teuchos::RCP<const Dbc> BuildDbc(const Discret::Discretization* discret_ptr);
 
     /** \brief Default Dirchilet boundary condition evaluation class
      */
@@ -247,12 +247,12 @@ namespace DRT
       /** \brief Extract parameters and setup some temporal variables, before the actual
        *  evaluation process can start
        */
-      void operator()(const DRT::Discretization& discret, const Teuchos::ParameterList& params,
+      void operator()(const Discret::Discretization& discret, const Teuchos::ParameterList& params,
           const Teuchos::RCP<Epetra_Vector>& systemvector,
           const Teuchos::RCP<Epetra_Vector>& systemvectord,
           const Teuchos::RCP<Epetra_Vector>& systemvectordd,
           const Teuchos::RCP<Epetra_IntVector>& toggle,
-          const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const;
+          const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
 
      protected:
       /// create the toggle vector based on the given systemvector maps
@@ -298,8 +298,8 @@ namespace DRT
        *                                subjected to Dirichlet boundary conditions
        *                                and the remaining/free DOFs
        */
-      virtual void evaluate(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret, double time,
+      virtual void evaluate(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const;
 
@@ -334,17 +334,17 @@ namespace DRT
        *  dofs is actually touched, or not, irrespective of the dirichlet BC
        *  definition of a lower entity.
        */
-      void read_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret,
-          const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
+      void read_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret,
+          const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and read the given type
-      void read_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret,
-          const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
+      void read_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret,
+          const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
-          const enum CORE::Conditions::ConditionType& type) const;
+          const enum Core::Conditions::ConditionType& type) const;
 
       /** \brief Determine dofs subject to Dirichlet condition from input file
        *
@@ -372,9 +372,10 @@ namespace DRT
        *  No matter what is defined in a condition line of lower priority. The
        *  corresponding entries in the systemvectors remain untouched.
        */
-      virtual void read_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret, const CORE::Conditions::Condition& cond, double time,
-          DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const;
+      virtual void read_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+          int hierarchical_order) const;
 
       /** \brief Assignment of the values to the system vectors.
        *
@@ -383,19 +384,19 @@ namespace DRT
        *  (3) Assign LineDirichlet DBC GIDs
        *  (4) Assign PointDirichlet DBC GIDs
        */
-      void do_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret,
-          const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
+      void do_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret,
+          const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and assign the given type
-      void do_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret,
-          const std::vector<Teuchos::RCP<CORE::Conditions::Condition>>& conds, double time,
+      void do_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret,
+          const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids,
-          const enum CORE::Conditions::ConditionType& type) const;
+          const enum Core::Conditions::ConditionType& type) const;
 
       /** \brief Apply the Dirichlet values to the system vectors
        *
@@ -435,20 +436,20 @@ namespace DRT
        *  read_dirichlet_condition(...). Then, they are applied by
        *  do_dirichlet_condition(...).
        */
-      virtual void do_dirichlet_condition(const CORE::UTILS::FunctionManager& function_manager,
-          const DRT::Discretization& discret, const CORE::Conditions::Condition& cond, double time,
-          const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
-          const Teuchos::RCP<std::set<int>>* dbcgids) const;
+      virtual void do_dirichlet_condition(const Core::UTILS::FunctionManager& function_manager,
+          const Discret::Discretization& discret, const Core::Conditions::Condition& cond,
+          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+          const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief Create a Dbc map extractor, if desired
        */
-      void build_dbc_map_extractor(const DRT::Discretization& discret,
+      void build_dbc_map_extractor(const Discret::Discretization& discret,
           const Teuchos::RCP<const std::set<int>>& dbcrowgids,
-          const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const;
+          const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
 
     };  // class Dbc
   }     // namespace UTILS
-}  // namespace DRT
+}  // namespace Discret
 
 
 FOUR_C_NAMESPACE_CLOSE

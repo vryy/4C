@@ -20,10 +20,10 @@ contribution
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace MAT::PAR
+namespace Mat::PAR
 {
   class Material;
-}  // namespace MAT::PAR
+}  // namespace Mat::PAR
 
 namespace MIXTURE
 {
@@ -40,7 +40,7 @@ namespace MIXTURE
 
      public:
       explicit RemodelFiberMaterialExponentialActive(
-          const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+          const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
       [[nodiscard]] std::unique_ptr<MIXTURE::RemodelFiberMaterial<T>>
       create_remodel_fiber_material() const override;

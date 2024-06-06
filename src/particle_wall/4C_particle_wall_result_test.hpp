@@ -29,7 +29,7 @@ namespace PARTICLEWALL
   class WallHandlerInterface;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -44,7 +44,7 @@ namespace PARTICLEWALL
    *
    * \author Sebastian Fuchs \date 03/2019
    */
-  class WallResultTest final : public CORE::UTILS::ResultTest
+  class WallResultTest final : public Core::UTILS::ResultTest
   {
    public:
     //! constructor
@@ -75,7 +75,7 @@ namespace PARTICLEWALL
      * \param[out] nerr       number of tests with errors
      * \param[out] test_count number of tests performed
      */
-    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
     /*!
      * \brief test special quantity
@@ -86,14 +86,14 @@ namespace PARTICLEWALL
      * \param[out] nerr       number of tests with errors
      * \param[out] test_count number of tests performed
      */
-    void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     //! interface to particle wall handler
     std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
 
     //! wall discretization
-    Teuchos::RCP<const DRT::Discretization> walldiscretization_;
+    Teuchos::RCP<const Discret::Discretization> walldiscretization_;
   };
 
 }  // namespace PARTICLEWALL

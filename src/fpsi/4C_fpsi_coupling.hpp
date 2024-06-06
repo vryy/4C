@@ -23,28 +23,28 @@ Fluid-Poro-Coupling Matrixes!
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
-namespace POROELAST
+namespace PoroElast
 {
   class Monolithic;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class Fluid;
   class AleFpsiWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 /*----------------------------------------------------------------------*/
 
@@ -59,8 +59,8 @@ namespace FPSI
   {
    public:
     // ctor
-    explicit FpsiCoupling(Teuchos::RCP<POROELAST::Monolithic> poro,
-        Teuchos::RCP<ADAPTER::Fluid> fluid, Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale,
+    explicit FpsiCoupling(Teuchos::RCP<PoroElast::Monolithic> poro,
+        Teuchos::RCP<Adapter::Fluid> fluid, Teuchos::RCP<Adapter::AleFpsiWrapper> ale,
         Teuchos::RCP<std::map<int, int>> Fluid_PoroFluid_InterfaceMap,
         Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap);
 
@@ -76,20 +76,20 @@ namespace FPSI
     //! @name access coupling matrixes
 
     // Poro-Poro Coupling Matrix
-    CORE::LINALG::BlockSparseMatrixBase& C_pp() { return *c_pp_; }
+    Core::LinAlg::BlockSparseMatrixBase& C_pp() { return *c_pp_; }
     // Fluid-Fluid Coupling Matrix
-    CORE::LINALG::BlockSparseMatrixBase& C_ff()
+    Core::LinAlg::BlockSparseMatrixBase& C_ff()
     {
       return *c_ff_;
     }  // blockmatrix for condensation!!!
     // Poro-Fluid Coupling Matrix
-    CORE::LINALG::BlockSparseMatrixBase& C_pf() { return *c_pf_; }
+    Core::LinAlg::BlockSparseMatrixBase& C_pf() { return *c_pf_; }
     // Fluid-Poro Coupling Matrix
-    CORE::LINALG::BlockSparseMatrixBase& C_fp() { return *c_fp_; }
+    Core::LinAlg::BlockSparseMatrixBase& C_fp() { return *c_fp_; }
     // Poro-Ale Coupling Matrix
-    CORE::LINALG::BlockSparseMatrixBase& C_pa() { return *c_pa_; }
+    Core::LinAlg::BlockSparseMatrixBase& C_pa() { return *c_pa_; }
     // Fluid-Ale Coupling Matrix
-    CORE::LINALG::SparseMatrix& C_fa() { return *c_fa_; }
+    Core::LinAlg::SparseMatrix& C_fa() { return *c_fa_; }
 
     //@}
 
@@ -137,29 +137,29 @@ namespace FPSI
 
     //! @name access coupling objects
 
-    CORE::ADAPTER::Coupling& poro_fluid_fluid_coupling() { return *icoup_pf_f_; }
+    Core::Adapter::Coupling& poro_fluid_fluid_coupling() { return *icoup_pf_f_; }
 
-    CORE::ADAPTER::Coupling& poro_structure_fluid_coupling() { return *icoup_ps_f_; }
+    Core::Adapter::Coupling& poro_structure_fluid_coupling() { return *icoup_ps_f_; }
 
-    CORE::ADAPTER::Coupling& poro_structure_ale_coupling() { return *icoup_ps_a_; }
+    Core::Adapter::Coupling& poro_structure_ale_coupling() { return *icoup_ps_a_; }
 
     //@}
 
     //! @name access extractors
 
-    const Teuchos::RCP<CORE::LINALG::MapExtractor>& fluid_fpsi_vel_pres_extractor() const
+    const Teuchos::RCP<Core::LinAlg::MapExtractor>& fluid_fpsi_vel_pres_extractor() const
     {
       return fluidvelpres_extractor_;
     }
-    const Teuchos::RCP<CORE::LINALG::MapExtractor>& fluid_fpsi_vel_extractor() const
+    const Teuchos::RCP<Core::LinAlg::MapExtractor>& fluid_fpsi_vel_extractor() const
     {
       return fluidvel_extractor_;
     }
-    const Teuchos::RCP<CORE::LINALG::MapExtractor>& poro_fluid_fpsi_vel_pres_extractor() const
+    const Teuchos::RCP<Core::LinAlg::MapExtractor>& poro_fluid_fpsi_vel_pres_extractor() const
     {
       return porofluid_extractor_;
     }
-    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor>& PoroExtractor() const
+    const Teuchos::RCP<Core::LinAlg::MultiMapExtractor>& PoroExtractor() const
     {
       return poro_extractor_;
     }
@@ -175,32 +175,32 @@ namespace FPSI
 
    private:
     // access to the fields
-    const Teuchos::RCP<POROELAST::Monolithic>& poro_field() { return poro_; }
-    const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() { return fluid_; }
-    const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& ale_field() { return ale_; }
+    const Teuchos::RCP<PoroElast::Monolithic>& poro_field() { return poro_; }
+    const Teuchos::RCP<Adapter::Fluid>& fluid_field() { return fluid_; }
+    const Teuchos::RCP<Adapter::AleFpsiWrapper>& ale_field() { return ale_; }
 
     // Initialize Coupling Matrixes and Coupling RHS
     void init_coupling_matrixes_rhs();
 
     // underlying poroelast problem
-    Teuchos::RCP<POROELAST::Monolithic> poro_;
+    Teuchos::RCP<PoroElast::Monolithic> poro_;
     // underlying fluid of the FPSI problem
-    Teuchos::RCP<ADAPTER::Fluid> fluid_;
+    Teuchos::RCP<Adapter::Fluid> fluid_;
     // underlying ale of the FPSI problem
-    Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale_;
+    Teuchos::RCP<Adapter::AleFpsiWrapper> ale_;
 
     // Poro-Poro Coupling Matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> c_pp_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> c_pp_;
     // Fluid-Fluid Coupling Matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> c_ff_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> c_ff_;
     // Poro-Fluid Coupling Matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> c_pf_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> c_pf_;
     // Fluid-Poro Coupling Matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> c_fp_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> c_fp_;
     // Poro-Ale Coupling Matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> c_pa_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> c_pa_;
     // Fluid-Ale Coupling Matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>
         c_fa_;  // block matrix to cut out just ale other block (-->interface (fpsi & fsi) is
                 // condensed to structural dofs!)
 
@@ -211,22 +211,22 @@ namespace FPSI
     Teuchos::RCP<Epetra_Vector> c_rhs_f_;
 
     // Interface Coupling PoroFluid - Fluid velocities and pressure are/is coupled
-    Teuchos::RCP<CORE::ADAPTER::Coupling> icoup_pf_f_;
+    Teuchos::RCP<Core::Adapter::Coupling> icoup_pf_f_;
     // Interface Coupling PoroStructure - Fluid
-    Teuchos::RCP<CORE::ADAPTER::Coupling> icoup_ps_f_;
+    Teuchos::RCP<Core::Adapter::Coupling> icoup_ps_f_;
     // Interface Coupling PoroStructure - Ale
-    Teuchos::RCP<CORE::ADAPTER::Coupling> icoup_ps_a_;
+    Teuchos::RCP<Core::Adapter::Coupling> icoup_ps_a_;
 
     // extractor for fpsi condition from fluid
-    Teuchos::RCP<CORE::LINALG::MapExtractor> fluidvelpres_extractor_;
-    Teuchos::RCP<CORE::LINALG::MapExtractor> fluidvel_extractor_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> fluidvelpres_extractor_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> fluidvel_extractor_;
     // extractor for fpsi condition from poro fluid
-    Teuchos::RCP<CORE::LINALG::MapExtractor> porofluid_extractor_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> porofluid_extractor_;
     // extractor for fpsi condition from (poro) structure
-    Teuchos::RCP<CORE::LINALG::MapExtractor> porostruct_extractor_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> porostruct_extractor_;
     //! dof row map splitted in inner structure (0), struct interface (1)
     //! inner porofluid (2) and porofluidinterface (3)
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> poro_extractor_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> poro_extractor_;
     Teuchos::RCP<FPSI::UTILS::MapExtractor> fluid_fsifpsi_extractor_;
 
     // Evaluate is called first time!
@@ -235,23 +235,23 @@ namespace FPSI
     Teuchos::RCP<std::map<int, int>> fluid_poro_fluid_interface_map_;
     Teuchos::RCP<std::map<int, int>> poro_fluid_fluid_interface_map_;
 
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform>
         couplingrowtransform_;  /// g_fpsi || F->PF transform (FPSI)
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform>
         couplingrowtransform2_;  /// g_fpsi || PF->F transform (FPSI)
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform>
         couplingrowtransform3_;  /// g_fpsi || PF->F transform (FPSI)
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform>
         couplingrowtransform4_;  /// g_fpsi || F->PS transform (FPSI)
-    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> couplingrowtransform5_;
+    Teuchos::RCP<Core::LinAlg::MatrixRowTransform> couplingrowtransform5_;
     ;  /// g_fpsi || F->PS transform (FPSI)
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform>
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform>
         couplingcoltransform_;  /// for Row/Col-Map for Full - fluid_field & F->PS transform (FPSI)
-    Teuchos::RCP<CORE::LINALG::MatrixColTransform>
+    Teuchos::RCP<Core::LinAlg::MatrixColTransform>
         couplingcoltransform2_;  /// for Row/Col-Map for Full - ale_field & A->PS transform (FPSI)
-    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform>
+    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform>
         couplingrowcoltransform_;  /// g_fpsi/g_fpsi || F->PS/F->PS transform (FPSI/FPSI)
-    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform>
+    Teuchos::RCP<Core::LinAlg::MatrixRowColTransform>
         couplingrowcoltransform2_;  /// g_fpsi/g_fpsi || F->PF/F->PS transform (FPSI/FPSI)
 
     // hydraulic conductivity (needed for coupling in case of probtype fps3i)

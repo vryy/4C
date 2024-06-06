@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEALGORITHM::ParticleResultTest::ParticleResultTest() : CORE::UTILS::ResultTest("PARTICLE")
+PARTICLEALGORITHM::ParticleResultTest::ParticleResultTest() : Core::UTILS::ResultTest("PARTICLE")
 {
   // empty constructor
 }
@@ -38,7 +38,7 @@ void PARTICLEALGORITHM::ParticleResultTest::Setup(
 }
 
 void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
-    INPUT::LineDefinition& res, int& nerr, int& test_count)
+    Input::LineDefinition& res, int& nerr, int& test_count)
 {
   // extract global particle id
   int globalid;

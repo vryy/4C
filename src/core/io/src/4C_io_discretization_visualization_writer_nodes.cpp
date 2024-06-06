@@ -21,15 +21,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::IO
+namespace Core::IO
 {
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   DiscretizationVisualizationWriterNodes::DiscretizationVisualizationWriterNodes(
-      const Teuchos::RCP<const DRT::Discretization>& discretization,
+      const Teuchos::RCP<const Discret::Discretization>& discretization,
       VisualizationParameters parameters)
       : discretization_(discretization),
-        visualization_manager_(Teuchos::rcp(new CORE::IO::VisualizationManager(
+        visualization_manager_(Teuchos::rcp(new Core::IO::VisualizationManager(
             std::move(parameters), discretization->Comm(), discretization->Name())))
   {
   }
@@ -54,7 +54,7 @@ namespace CORE::IO
 
 
     // loop over my nodes and collect the geometry/grid data, i.e. reference positions of nodes
-    for (const CORE::Nodes::Node* node : discretization_->MyRowNodeRange())
+    for (const Core::Nodes::Node* node : discretization_->MyRowNodeRange())
     {
       for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
       {
@@ -135,5 +135,5 @@ namespace CORE::IO
   {
     visualization_manager_->WriteToDisk(visualization_time, visualization_step);
   }
-}  // namespace CORE::IO
+}  // namespace Core::IO
 FOUR_C_NAMESPACE_CLOSE

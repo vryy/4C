@@ -22,18 +22,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   //  class DefaultBlockMatrixStrategy;
   //  class BlockSparseMatrix;
-}  // namespace CORE::LINALG
-namespace MOR
+}  // namespace Core::LinAlg
+namespace ModelOrderRed
 {
   class ProperOrthogonalDecomposition
   {
@@ -41,7 +41,7 @@ namespace MOR
     /*!
         \brief Constructor
      */
-    ProperOrthogonalDecomposition(Teuchos::RCP<DRT::Discretization> discr);
+    ProperOrthogonalDecomposition(Teuchos::RCP<Discret::Discretization> discr);
 
 
     /*!
@@ -55,11 +55,11 @@ namespace MOR
      */
     void ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVector>& projmatrix);
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ReduceDiagnoal(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> M);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> ReduceDiagnoal(
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> M);
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> ReduceOffDiagonal(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> M);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> ReduceOffDiagonal(
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> M);
 
     Teuchos::RCP<Epetra_MultiVector> ReduceRHS(Teuchos::RCP<Epetra_MultiVector> v);
 
@@ -80,11 +80,11 @@ namespace MOR
 
     void epetra_multi_vector_to_linalg_sparse_matrix(Teuchos::RCP<Epetra_MultiVector> multivect,
         Teuchos::RCP<Epetra_Map> rangemap, Teuchos::RCP<Epetra_Map> domainmap,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsemat);
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsemat);
 
     bool is_orthogonal(Teuchos::RCP<Epetra_MultiVector> M);
 
-    Teuchos::RCP<DRT::Discretization> actdisc_;
+    Teuchos::RCP<Discret::Discretization> actdisc_;
     int myrank_;  //!< ID of actual processor in parallel
     Teuchos::ParameterList morparams_;
     bool havemor_;
@@ -100,7 +100,7 @@ namespace MOR
                                                   ///< dofs after POD-MOR into fully redundant one
 
   };  // class
-}  // namespace MOR
+}  // namespace ModelOrderRed
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

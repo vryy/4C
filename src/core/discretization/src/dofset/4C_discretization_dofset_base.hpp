@@ -20,12 +20,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
 
   /*! \brief Base class set of degrees of freedom
@@ -106,7 +106,7 @@ namespace CORE::Dofsets
 
 
   };  // class DofSetBase
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 FOUR_C_NAMESPACE_CLOSE
 

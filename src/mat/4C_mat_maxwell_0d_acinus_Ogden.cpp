@@ -38,25 +38,25 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Maxwell0dAcinus(matdata)
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::Maxwell0dAcinusOgden::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::Maxwell0dAcinusOgden::create_material()
 {
-  return Teuchos::rcp(new MAT::Maxwell0dAcinusOgden(this));
+  return Teuchos::rcp(new Mat::Maxwell0dAcinusOgden(this));
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-MAT::Maxwell0dAcinusOgdenType MAT::Maxwell0dAcinusOgdenType::instance_;
+Mat::Maxwell0dAcinusOgdenType Mat::Maxwell0dAcinusOgdenType::instance_;
 
 
-CORE::COMM::ParObject* MAT::Maxwell0dAcinusOgdenType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::Maxwell0dAcinusOgdenType::Create(const std::vector<char>& data)
 {
-  MAT::Maxwell0dAcinusOgden* mxwll_0d_acin = new MAT::Maxwell0dAcinusOgden();
+  Mat::Maxwell0dAcinusOgden* mxwll_0d_acin = new Mat::Maxwell0dAcinusOgden();
   mxwll_0d_acin->Unpack(data);
   return mxwll_0d_acin;
 }
@@ -64,12 +64,12 @@ CORE::COMM::ParObject* MAT::Maxwell0dAcinusOgdenType::Create(const std::vector<c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden() : Maxwell0dAcinus() {}
+Mat::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden() : Maxwell0dAcinus() {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden(MAT::PAR::Maxwell0dAcinus* params)
+Mat::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden(Mat::PAR::Maxwell0dAcinus* params)
     : Maxwell0dAcinus(params)
 {
 }
@@ -77,9 +77,9 @@ MAT::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden(MAT::PAR::Maxwell0dAcinus* param
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusOgden::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::Maxwell0dAcinusOgden::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // Pack type of this instance of ParObject
@@ -98,11 +98,11 @@ void MAT::Maxwell0dAcinusOgden::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusOgden::Unpack(const std::vector<char>& data)
+void Mat::Maxwell0dAcinusOgden::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // Extract kappa and beta
   ExtractfromPack(position, data, kappa_);
@@ -112,14 +112,14 @@ void MAT::Maxwell0dAcinusOgden::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::Maxwell0dAcinusOgden*>(mat);
+        params_ = static_cast<Mat::PAR::Maxwell0dAcinusOgden*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -134,7 +134,7 @@ void MAT::Maxwell0dAcinusOgden::Unpack(const std::vector<char>& data)
  | Setup routine to add Ogden material specific parameters kappa and    |
  | beta to material                                         roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusOgden::Setup(INPUT::LineDefinition* linedef)
+void Mat::Maxwell0dAcinusOgden::Setup(Input::LineDefinition* linedef)
 {
   linedef->ExtractDouble("KAPPA", kappa_);
   linedef->ExtractDouble("BETA", beta_);
@@ -149,10 +149,10 @@ void MAT::Maxwell0dAcinusOgden::Setup(INPUT::LineDefinition* linedef)
  | deformation                                                          |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusOgden::Evaluate(CORE::LINALG::SerialDenseVector& epnp,
-    CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
-    CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
-    const DRT::REDAIRWAYS::ElemParams& params, const double NumOfAcini, const double Vo,
+void Mat::Maxwell0dAcinusOgden::Evaluate(Core::LinAlg::SerialDenseVector& epnp,
+    Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
+    Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
+    const Discret::ReducedLung::ElemParams& params, const double NumOfAcini, const double Vo,
     double time, double dt)
 {
   // Set sysmat and rhs to zero
@@ -215,7 +215,7 @@ void MAT::Maxwell0dAcinusOgden::Evaluate(CORE::LINALG::SerialDenseVector& epnp,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double MAT::Maxwell0dAcinusOgden::GetParams(std::string parametername)
+double Mat::Maxwell0dAcinusOgden::GetParams(std::string parametername)
 {
   if (parametername == "kappa")
     return kappa_;
@@ -230,7 +230,7 @@ double MAT::Maxwell0dAcinusOgden::GetParams(std::string parametername)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusOgden::SetParams(std::string parametername, double new_value)
+void Mat::Maxwell0dAcinusOgden::SetParams(std::string parametername, double new_value)
 {
   if (parametername == "kappa")
     kappa_ = new_value;
@@ -240,7 +240,7 @@ void MAT::Maxwell0dAcinusOgden::SetParams(std::string parametername, double new_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Maxwell0dAcinusOgden::VisNames(std::map<std::string, int>& names)
+void Mat::Maxwell0dAcinusOgden::VisNames(std::map<std::string, int>& names)
 {
   std::string fiber = "kappa";
   names[fiber] = 1;  // scalar
@@ -248,7 +248,7 @@ void MAT::Maxwell0dAcinusOgden::VisNames(std::map<std::string, int>& names)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool MAT::Maxwell0dAcinusOgden::VisData(
+bool Mat::Maxwell0dAcinusOgden::VisData(
     const std::string& name, std::vector<double>& data, int eleGID)
 {
   if (name == "kappa")

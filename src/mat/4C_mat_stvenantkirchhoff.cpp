@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::PAR::StVenantKirchhoff::StVenantKirchhoff(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::StVenantKirchhoff::StVenantKirchhoff(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       youngs_(matdata->Get<double>("YOUNG")),
       poissonratio_(matdata->Get<double>("NUE")),
@@ -29,17 +29,17 @@ MAT::PAR::StVenantKirchhoff::StVenantKirchhoff(Teuchos::RCP<CORE::MAT::PAR::Mate
     FOUR_C_THROW("Poisson's ratio must be in [-1;0.5)");
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::StVenantKirchhoff::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::StVenantKirchhoff::create_material()
 {
-  return Teuchos::rcp(new MAT::StVenantKirchhoff(this));
+  return Teuchos::rcp(new Mat::StVenantKirchhoff(this));
 }
 
-MAT::StVenantKirchhoffType MAT::StVenantKirchhoffType::instance_;
+Mat::StVenantKirchhoffType Mat::StVenantKirchhoffType::instance_;
 
 
-CORE::COMM::ParObject* MAT::StVenantKirchhoffType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::StVenantKirchhoffType::Create(const std::vector<char>& data)
 {
-  auto* stvenantk = new MAT::StVenantKirchhoff();
+  auto* stvenantk = new Mat::StVenantKirchhoff();
   stvenantk->Unpack(data);
   return stvenantk;
 }
@@ -48,21 +48,21 @@ CORE::COMM::ParObject* MAT::StVenantKirchhoffType::Create(const std::vector<char
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::StVenantKirchhoff::StVenantKirchhoff() : params_(nullptr) {}
+Mat::StVenantKirchhoff::StVenantKirchhoff() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::StVenantKirchhoff::StVenantKirchhoff(MAT::PAR::StVenantKirchhoff* params) : params_(params) {}
+Mat::StVenantKirchhoff::StVenantKirchhoff(Mat::PAR::StVenantKirchhoff* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::StVenantKirchhoff::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -79,25 +79,25 @@ void MAT::StVenantKirchhoff::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::Unpack(const std::vector<char>& data)
+void Mat::StVenantKirchhoff::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
   {
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::StVenantKirchhoff*>(mat);
+        params_ = static_cast<Mat::PAR::StVenantKirchhoff*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -111,7 +111,7 @@ void MAT::StVenantKirchhoff::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
 // computes isotropic elasticity tensor in matrix notion for 3d
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::setup_cmat(CORE::LINALG::Matrix<6, 6>& cmat)
+void Mat::StVenantKirchhoff::setup_cmat(Core::LinAlg::Matrix<6, 6>& cmat)
 {
   // get material parameters
   const double Emod = params_->youngs_;      // Young's modulus (modulus of elasticity)
@@ -120,8 +120,8 @@ void MAT::StVenantKirchhoff::setup_cmat(CORE::LINALG::Matrix<6, 6>& cmat)
   FillCmat(cmat, Emod, nu);
 }
 
-void MAT::StVenantKirchhoff::FillCmat(
-    CORE::LINALG::Matrix<6, 6>& cmat, const double Emod, const double nu)
+void Mat::StVenantKirchhoff::FillCmat(
+    Core::LinAlg::Matrix<6, 6>& cmat, const double Emod, const double nu)
 {
   // isotropic elasticity tensor C in Voigt matrix notation
   //                     [ 1-nu     nu     nu |       0       0       0    ]
@@ -156,14 +156,14 @@ void MAT::StVenantKirchhoff::FillCmat(
 /*----------------------------------------------------------------------*
 //calculates stresses using one of the above method to evaluate the elasticity tensor
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::Evaluate(const CORE::LINALG::SerialDenseVector* glstrain_e,
-    CORE::LINALG::SerialDenseMatrix* cmat_e, CORE::LINALG::SerialDenseVector* stress_e)
+void Mat::StVenantKirchhoff::Evaluate(const Core::LinAlg::SerialDenseVector* glstrain_e,
+    Core::LinAlg::SerialDenseMatrix* cmat_e, Core::LinAlg::SerialDenseVector* stress_e)
 {
   // this is temporary as long as the material does not have a
   // Matrix-type interface
-  const CORE::LINALG::Matrix<6, 1> glstrain(glstrain_e->values(), true);
-  CORE::LINALG::Matrix<6, 6> cmat(cmat_e->values(), true);
-  CORE::LINALG::Matrix<6, 1> stress(stress_e->values(), true);
+  const Core::LinAlg::Matrix<6, 1> glstrain(glstrain_e->values(), true);
+  Core::LinAlg::Matrix<6, 6> cmat(cmat_e->values(), true);
+  Core::LinAlg::Matrix<6, 1> stress(stress_e->values(), true);
 
   setup_cmat(cmat);
   // evaluate stresses
@@ -174,9 +174,9 @@ void MAT::StVenantKirchhoff::Evaluate(const CORE::LINALG::SerialDenseVector* gls
 /*----------------------------------------------------------------------*
 //calculates stresses using one of the above method to evaluate the elasticity tensor
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::StVenantKirchhoff::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   setup_cmat(*cmat);
@@ -188,13 +188,13 @@ void MAT::StVenantKirchhoff::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 /*----------------------------------------------------------------------*
  |  Calculate strain energy                                    gee 10/09|
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::StrainEnergy(
-    const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+void Mat::StVenantKirchhoff::StrainEnergy(
+    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
-  CORE::LINALG::Matrix<6, 6> cmat(true);
+  Core::LinAlg::Matrix<6, 6> cmat(true);
   setup_cmat(cmat);
 
-  CORE::LINALG::Matrix<6, 1> stress(true);
+  Core::LinAlg::Matrix<6, 1> stress(true);
   stress.MultiplyNN(cmat, glstrain);
 
   for (int k = 0; k < 6; ++k) psi += glstrain(k) * stress(k);

@@ -21,17 +21,17 @@ namespace
     static const unsigned int n_dim = 2;
     using fad_type = Sacado::Fad::DFad<double>;
 
-    CORE::LINALG::Matrix<n_dim, 1, double> X;
+    Core::LinAlg::Matrix<n_dim, 1, double> X;
     X(0) = 3.0;
     X(1) = 4.1;
 
-    CORE::LINALG::Matrix<n_dim, 1, fad_type> u;
-    u(0) = CORE::FADUTILS::HigherOrderFadValue<fad_type>::apply(n_dim, 0, 0.4);
-    u(1) = CORE::FADUTILS::HigherOrderFadValue<fad_type>::apply(n_dim, 1, 0.3);
+    Core::LinAlg::Matrix<n_dim, 1, fad_type> u;
+    u(0) = Core::FADUtils::HigherOrderFadValue<fad_type>::apply(n_dim, 0, 0.4);
+    u(1) = Core::FADUtils::HigherOrderFadValue<fad_type>::apply(n_dim, 1, 0.3);
 
-    CORE::LINALG::Matrix<n_dim, 1, fad_type> x_ref;
-    x_ref(0) = CORE::FADUTILS::HigherOrderFadValue<fad_type>::apply(n_dim, 0, 3.4);
-    x_ref(1) = CORE::FADUTILS::HigherOrderFadValue<fad_type>::apply(n_dim, 1, 4.4);
+    Core::LinAlg::Matrix<n_dim, 1, fad_type> x_ref;
+    x_ref(0) = Core::FADUtils::HigherOrderFadValue<fad_type>::apply(n_dim, 0, 3.4);
+    x_ref(1) = Core::FADUtils::HigherOrderFadValue<fad_type>::apply(n_dim, 1, 4.4);
 
     return std::tuple{X, u, x_ref};
   };
@@ -45,11 +45,11 @@ namespace
     // Check the values of the result as well as the first derivatives
     for (unsigned int i = 0; i < n_dim; i++)
     {
-      EXPECT_NEAR(CORE::FADUTILS::CastToDouble(x(i)), CORE::FADUTILS::CastToDouble(x_ref(i)), eps);
+      EXPECT_NEAR(Core::FADUtils::CastToDouble(x(i)), Core::FADUtils::CastToDouble(x_ref(i)), eps);
       for (unsigned int j = 0; j < (unsigned int)x(i).length(); j++)
       {
-        EXPECT_NEAR(CORE::FADUTILS::CastToDouble(x(i).dx(j)),
-            CORE::FADUTILS::CastToDouble(x_ref(i).dx(j)), eps);
+        EXPECT_NEAR(Core::FADUtils::CastToDouble(x(i).dx(j)),
+            Core::FADUtils::CastToDouble(x_ref(i).dx(j)), eps);
       }
     }
   }
@@ -96,24 +96,24 @@ namespace
   {
     using fad_type = Sacado::Fad::DFad<double>;
 
-    CORE::LINALG::Matrix<2, 4> shape_function_matrix(true);
+    Core::LinAlg::Matrix<2, 4> shape_function_matrix(true);
     shape_function_matrix(0, 0) = 0.75;
     shape_function_matrix(1, 1) = 0.75;
     shape_function_matrix(0, 2) = 0.25;
     shape_function_matrix(1, 3) = 0.25;
 
-    CORE::LINALG::Matrix<4, 1, fad_type> nodal_dof;
-    nodal_dof(0) = CORE::FADUTILS::HigherOrderFadValue<fad_type>::apply(4, 0, 0.4);
-    nodal_dof(1) = CORE::FADUTILS::HigherOrderFadValue<fad_type>::apply(4, 1, 1.4);
-    nodal_dof(2) = CORE::FADUTILS::HigherOrderFadValue<fad_type>::apply(4, 2, 2.4);
-    nodal_dof(3) = CORE::FADUTILS::HigherOrderFadValue<fad_type>::apply(4, 3, 3.4);
+    Core::LinAlg::Matrix<4, 1, fad_type> nodal_dof;
+    nodal_dof(0) = Core::FADUtils::HigherOrderFadValue<fad_type>::apply(4, 0, 0.4);
+    nodal_dof(1) = Core::FADUtils::HigherOrderFadValue<fad_type>::apply(4, 1, 1.4);
+    nodal_dof(2) = Core::FADUtils::HigherOrderFadValue<fad_type>::apply(4, 2, 2.4);
+    nodal_dof(3) = Core::FADUtils::HigherOrderFadValue<fad_type>::apply(4, 3, 3.4);
 
-    CORE::LINALG::Matrix<2, 1, fad_type> u;
+    Core::LinAlg::Matrix<2, 1, fad_type> u;
     u.Multiply(shape_function_matrix, nodal_dof);
 
-    CORE::LINALG::Matrix<2, 1, fad_type> u_ref;
-    u_ref(0) = CORE::FADUTILS::HigherOrderFadValue<fad_type>::apply(4, 0, 0.9);
-    u_ref(1) = CORE::FADUTILS::HigherOrderFadValue<fad_type>::apply(4, 1, 1.9);
+    Core::LinAlg::Matrix<2, 1, fad_type> u_ref;
+    u_ref(0) = Core::FADUtils::HigherOrderFadValue<fad_type>::apply(4, 0, 0.9);
+    u_ref(1) = Core::FADUtils::HigherOrderFadValue<fad_type>::apply(4, 1, 1.9);
     u_ref(0).fastAccessDx(0) = 0.75;
     u_ref(0).fastAccessDx(2) = 0.25;
     u_ref(1).fastAccessDx(1) = 0.75;

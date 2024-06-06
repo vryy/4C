@@ -25,13 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 07/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::Bele3Line::ActionType act = Bele3Line::none;
+  Discret::ELEMENTS::Bele3Line::ActionType act = Bele3Line::none;
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
     FOUR_C_THROW("No action supplied");
@@ -53,7 +53,7 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
         if (dispnp != Teuchos::null)
         {
           mydispnp.resize(lm.size());
-          CORE::FE::ExtractMyValues(*dispnp, mydispnp, lm);
+          Core::FE::ExtractMyValues(*dispnp, mydispnp, lm);
         }
         else
         {
@@ -72,17 +72,17 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
 
   return 0;
 
-}  // DRT::ELEMENTS::Bele3Line::Evaluate
+}  // Discret::ELEMENTS::Bele3Line::Evaluate
 
 
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)     gammi 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   // there are 2 velocities and 1 pressure
   const int numdf = 3;
@@ -101,19 +101,19 @@ int DRT::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& params,
   // set number of nodes
   const size_t iel = this->num_node();
 
-  const CORE::FE::CellType distype = this->Shape();
+  const Core::FE::CellType distype = this->Shape();
 
   // gaussian points
-  const CORE::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
-  const CORE::FE::IntegrationPoints1D intpoints(gaussrule);
+  const Core::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
+  const Core::FE::IntegrationPoints1D intpoints(gaussrule);
 
 
   // allocate vector for shape functions and for derivatives
-  CORE::LINALG::SerialDenseVector funct(iel);
-  CORE::LINALG::SerialDenseMatrix deriv(1, iel);
+  Core::LinAlg::SerialDenseVector funct(iel);
+  Core::LinAlg::SerialDenseMatrix deriv(1, iel);
 
   // node coordinates
-  CORE::LINALG::SerialDenseMatrix xye(2, iel);
+  Core::LinAlg::SerialDenseMatrix xye(2, iel);
 
   // get node coordinates
   for (size_t i = 0; i < iel; ++i)
@@ -128,8 +128,8 @@ int DRT::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& params,
   {
     const double e1 = intpoints.qxg[gpid][0];
     // get shape functions and derivatives in the line
-    CORE::FE::shape_function_1D(funct, e1, distype);
-    CORE::FE::shape_function_1D_deriv1(deriv, e1, distype);
+    Core::FE::shape_function_1D(funct, e1, distype);
+    Core::FE::shape_function_1D_deriv1(deriv, e1, distype);
 
     // compute infinitesimal line element dr for integration along the line
     const double dr = f2_substitution(xye, deriv, iel);
@@ -166,8 +166,8 @@ int DRT::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& params,
         {
           if (functnum > 0)
             // evaluate function at current gauss point (3D position vector required!)
-            functionfac = GLOBAL::Problem::Instance()
-                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
+            functionfac = Global::Problem::Instance()
+                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
                               .Evaluate(coordgpref, time, dim);
           else
             functionfac = 1.0;
@@ -183,17 +183,17 @@ int DRT::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& params,
   return 0;
 }
 
-CORE::FE::GaussRule1D DRT::ELEMENTS::Bele3Line::get_optimal_gaussrule(
-    const CORE::FE::CellType& distype)
+Core::FE::GaussRule1D Discret::ELEMENTS::Bele3Line::get_optimal_gaussrule(
+    const Core::FE::CellType& distype)
 {
-  CORE::FE::GaussRule1D rule = CORE::FE::GaussRule1D::undefined;
+  Core::FE::GaussRule1D rule = Core::FE::GaussRule1D::undefined;
   switch (distype)
   {
-    case CORE::FE::CellType::line2:
-      rule = CORE::FE::GaussRule1D::line_2point;
+    case Core::FE::CellType::line2:
+      rule = Core::FE::GaussRule1D::line_2point;
       break;
-    case CORE::FE::CellType::line3:
-      rule = CORE::FE::GaussRule1D::line_3point;
+    case Core::FE::CellType::line3:
+      rule = Core::FE::GaussRule1D::line_3point;
       break;
     default:
       FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
@@ -203,23 +203,23 @@ CORE::FE::GaussRule1D DRT::ELEMENTS::Bele3Line::get_optimal_gaussrule(
 }
 
 
-double DRT::ELEMENTS::Bele3Line::f2_substitution(const CORE::LINALG::SerialDenseMatrix xye,
-    const CORE::LINALG::SerialDenseMatrix deriv, const int iel)
+double Discret::ELEMENTS::Bele3Line::f2_substitution(const Core::LinAlg::SerialDenseMatrix xye,
+    const Core::LinAlg::SerialDenseMatrix deriv, const int iel)
 {
   // compute derivative of parametrization
   double dr = 0.0;
-  CORE::LINALG::SerialDenseVector der_par(iel);
-  CORE::LINALG::multiplyNT(der_par, xye, deriv);
-  dr = CORE::LINALG::Norm2(der_par);
+  Core::LinAlg::SerialDenseVector der_par(iel);
+  Core::LinAlg::multiplyNT(der_par, xye, deriv);
+  dr = Core::LinAlg::Norm2(der_par);
   return dr;
 }
 
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over line (public)              g.bau 07/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, const std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp)
+void Discret::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, const std::vector<int>& lm,
+    Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp)
 {
   // there are 2 velocities and 1 pressure
   const int numdf = 3;
@@ -237,16 +237,16 @@ void DRT::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterList& 
   const size_t iel = this->num_node();
 
   // gaussian points
-  const CORE::FE::CellType distype = this->Shape();
-  const CORE::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
-  const CORE::FE::IntegrationPoints1D intpoints(gaussrule);
+  const Core::FE::CellType distype = this->Shape();
+  const Core::FE::GaussRule1D gaussrule = get_optimal_gaussrule(distype);
+  const Core::FE::IntegrationPoints1D intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives
-  CORE::LINALG::SerialDenseVector funct(iel);
-  CORE::LINALG::SerialDenseMatrix deriv(1, iel);
+  Core::LinAlg::SerialDenseVector funct(iel);
+  Core::LinAlg::SerialDenseMatrix deriv(1, iel);
 
   // node coordinates
-  CORE::LINALG::SerialDenseMatrix xye(2, iel);
+  Core::LinAlg::SerialDenseMatrix xye(2, iel);
 
   // get node coordinates
   for (size_t i = 0; i < iel; ++i)
@@ -271,8 +271,8 @@ void DRT::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterList& 
   {
     const double e1 = intpoints.qxg[gpid][0];
     // get shape functions and derivatives in the line
-    CORE::FE::shape_function_1D(funct, e1, distype);
-    CORE::FE::shape_function_1D_deriv1(deriv, e1, distype);
+    Core::FE::shape_function_1D(funct, e1, distype);
+    Core::FE::shape_function_1D_deriv1(deriv, e1, distype);
 
     // compute infinitesimal line element dr for integration along the line
     const double dr = f2_substitution(xye, deriv, iel);
@@ -295,6 +295,6 @@ void DRT::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterList& 
   }  // end of loop over integrationen points
 
   return;
-}  // DRT::ELEMENTS::Bele3Line::integrate_shape_function
+}  // Discret::ELEMENTS::Bele3Line::integrate_shape_function
 
 FOUR_C_NAMESPACE_CLOSE

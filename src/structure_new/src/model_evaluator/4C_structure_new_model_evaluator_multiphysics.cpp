@@ -26,10 +26,10 @@ STR::MODELEVALUATOR::Multiphysics::Multiphysics() : active_mt_(mt_none)
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Multiphysics::Init(
     const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
-    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
+    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
     const Teuchos::RCP<STR::Integrator>& int_ptr,
-    const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr, const int& dof_offset)
+    const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset)
 {
   STR::MODELEVALUATOR::Generic::Init(
       eval_data_ptr, gstate_ptr, gio_ptr, int_ptr, timint_ptr, dof_offset);
@@ -69,7 +69,7 @@ bool STR::MODELEVALUATOR::Multiphysics::assemble_force(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Multiphysics::assemble_jacobian(
-    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
+    Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   check_active_model_type();
 

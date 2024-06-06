@@ -30,35 +30,35 @@ namespace
     MircoConstitutiveLawForceTest()
     {
       const int problemid(0);
-      GLOBAL::Problem& problem = (*GLOBAL::Problem::Instance());
+      Global::Problem& problem = (*Global::Problem::Instance());
       problem.Materials()->SetReadFromProblem(problemid);
 
-      Teuchos::RCP<CORE::UTILS::SymbolicFunctionOfSpaceTime<1>> FFUNCT1 =
-          Teuchos::rcp(new CORE::UTILS::SymbolicFunctionOfSpaceTime<1>({"0.7"}, {}));
-      Teuchos::RCP<CORE::UTILS::SymbolicFunctionOfSpaceTime<1>> FFUNCT2 =
-          Teuchos::rcp(new CORE::UTILS::SymbolicFunctionOfSpaceTime<1>({"20.0"}, {}));
+      Teuchos::RCP<Core::UTILS::SymbolicFunctionOfSpaceTime<1>> FFUNCT1 =
+          Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfSpaceTime<1>({"0.7"}, {}));
+      Teuchos::RCP<Core::UTILS::SymbolicFunctionOfSpaceTime<1>> FFUNCT2 =
+          Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfSpaceTime<1>({"20.0"}, {}));
 
-      Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> FUNCT1 = FFUNCT1;
-      Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> FUNCT2 = FFUNCT2;
+      Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> FUNCT1 = FFUNCT1;
+      Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> FUNCT2 = FFUNCT2;
 
-      CORE::UTILS::FunctionManager functionmanager_;
+      Core::UTILS::FunctionManager functionmanager_;
       functionmanager_.SetFunctions<std::any>({FUNCT1, FUNCT2});
       problem.SetFunctionManager(std::move(functionmanager_));
 
       // set up material to be added to problem instance
-      CORE::IO::InputParameterContainer mat_stvenant;
+      Core::IO::InputParameterContainer mat_stvenant;
       mat_stvenant.Add("YOUNG", 1.0);
       mat_stvenant.Add("NUE", 0.3);
       mat_stvenant.Add("DENS", 1.0);
 
       problem.Materials()->insert(
-          1, CORE::UTILS::LazyPtr<CORE::MAT::PAR::Parameter>(
-                 MAT::make_parameter(1, CORE::Materials::MaterialType::m_stvenant, mat_stvenant)));
+          1, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter>(
+                 Mat::make_parameter(1, Core::Materials::MaterialType::m_stvenant, mat_stvenant)));
 
       // initialize container for material parameters
       const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
           Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Container(
-              1, INPAR::CONTACT::ConstitutiveLawType::colaw_mirco, "Mirco Constitutivelaw"));
+              1, Inpar::CONTACT::ConstitutiveLawType::colaw_mirco, "Mirco Constitutivelaw"));
 
       // add parameters to container
       container->Add("FirstMatID", 1);

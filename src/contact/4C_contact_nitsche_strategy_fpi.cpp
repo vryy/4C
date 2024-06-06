@@ -18,10 +18,10 @@ FOUR_C_NAMESPACE_OPEN
 
 
 void CONTACT::NitscheStrategyFpi::set_state(
-    const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
+    const enum Mortar::StateType& statename, const Epetra_Vector& vec)
 {
   CONTACT::NitscheStrategyPoro::set_state(statename, vec);
-  if (statename == MORTAR::state_new_displacement)
+  if (statename == Mortar::state_new_displacement)
   {
     do_contact_search();
   }
@@ -40,7 +40,7 @@ void CONTACT::NitscheStrategyFpi::do_contact_search()
 
 bool CONTACT::NitscheStrategyFpi::check_nitsche_contact_state(
     CONTACT::Element* cele,                 // the contact element
-    const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
+    const Core::LinAlg::Matrix<2, 1>& xsi,  // local coord on the ele element
     const double& full_fsi_traction,        // stressfluid + penalty
     double& gap                             // gap
 )

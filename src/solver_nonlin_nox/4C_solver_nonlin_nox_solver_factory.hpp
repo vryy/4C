@@ -23,16 +23,16 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     class GlobalData;
-    namespace INNER
+    namespace Inner
     {
       namespace StatusTest
       {
         class Generic;
       }  // namespace StatusTest
-    }    // namespace INNER
+    }    // namespace Inner
 
     namespace Solver
     {
@@ -54,24 +54,24 @@ namespace NOX
         Teuchos::RCP<::NOX::Solver::Generic> BuildSolver(
             const Teuchos::RCP<::NOX::Abstract::Group>& grp,
             const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
-            const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
-            const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData);
+            const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,
+            const Teuchos::RCP<NOX::Nln::GlobalData>& nlnGlobalData);
       };
 
       /*! \brief Nonmember helper function for the NOX::Constraint::Solver::Factory.
 
-      \relates NOX::NLNSOL::Constraint::Solver::Factory
+      \relates NOX::NlnSol::Constraint::Solver::Factory
 
       */
 
       Teuchos::RCP<::NOX::Solver::Generic> BuildSolver(
           const Teuchos::RCP<::NOX::Abstract::Group>& grp,
           const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
-          const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
-          const Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData);
+          const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,
+          const Teuchos::RCP<NOX::Nln::GlobalData>& nlnGlobalData);
 
     }  // namespace Solver
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

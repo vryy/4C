@@ -29,7 +29,7 @@ CONTACT::Beam3contactvariables<numnodes, numnodalvalues>::Beam3contactvariables(
       intids_(intids),
       jacobi_(jacobi),
       gap_(0.0),
-      normal_(CORE::LINALG::Matrix<3, 1, TYPE>(true)),
+      normal_(Core::LinAlg::Matrix<3, 1, TYPE>(true)),
       pp_(pp),
       ppfac_(0.0),
       dppfac_(0.0),

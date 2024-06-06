@@ -24,28 +24,28 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
+Adapter::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn, std::string condname)
 {
-  const CORE::ProblemType probtyp = GLOBAL::Problem::Instance()->GetProblemType();
+  const Core::ProblemType probtyp = Global::Problem::Instance()->GetProblemType();
 
   // switch between moving domain fluid implementations
   switch (probtyp)
   {
-    case CORE::ProblemType::fsi:
-    case CORE::ProblemType::fluid_ale:
-    case CORE::ProblemType::freesurf:
-    case CORE::ProblemType::fsi_redmodels:
+    case Core::ProblemType::fsi:
+    case Core::ProblemType::fluid_ale:
+    case Core::ProblemType::freesurf:
+    case Core::ProblemType::fsi_redmodels:
     {
       // std::cout << "using FluidAle as FluidMovingBoundary" << std::endl;
       fluid_ = Teuchos::rcp(new FluidAle(prbdyn, condname));
       break;
     }
-    case CORE::ProblemType::fluid_xfem:
-    case CORE::ProblemType::fsi_xfem:
+    case Core::ProblemType::fluid_xfem:
+    case Core::ProblemType::fsi_xfem:
     {
-      const Teuchos::ParameterList xfluid = GLOBAL::Problem::Instance()->XFluidDynamicParams();
-      bool alefluid = CORE::UTILS::IntegralValue<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
+      const Teuchos::ParameterList xfluid = Global::Problem::Instance()->XFluidDynamicParams();
+      bool alefluid = Core::UTILS::IntegralValue<bool>((xfluid.sublist("GENERAL")), "ALE_XFluid");
       if (!alefluid)  // xfluid
       {
         // std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;
@@ -57,12 +57,12 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
       }
       break;
     }
-    case CORE::ProblemType::immersed_fsi:
+    case Core::ProblemType::immersed_fsi:
     {
       fluid_ = Teuchos::rcp(new FluidImmersed(prbdyn, condname));
       break;
     }
-    case CORE::ProblemType::fbi:
+    case Core::ProblemType::fbi:
     {
       fluid_ = Teuchos::rcp(new FBIFluidMB(prbdyn, condname));
       break;

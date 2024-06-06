@@ -17,9 +17,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Mesh;
 
@@ -34,7 +34,7 @@ namespace CORE::GEO
      public:
       static bool CreateCells(Mesh& mesh, Element* element, const plain_volumecell_set& cells);
 
-      static bool CreateCell(Mesh& mesh, CORE::FE::CellType shape, VolumeCell* cell);
+      static bool CreateCell(Mesh& mesh, Core::FE::CellType shape, VolumeCell* cell);
 
      private:
       /** \brief loop over all volume cells and initiate the volume and boundary integration cell
@@ -52,9 +52,9 @@ namespace CORE::GEO
       /** \brief fill the 2-D volume cells
        *
        *  \author hiermeier \date 01/17 */
-      template <CORE::FE::CellType celltype,
-          CORE::FE::CellType facetype = CORE::FE::DisTypeToFaceShapeType<celltype>::shape,
-          unsigned numfaces = CORE::FE::num_faces<celltype>>
+      template <Core::FE::CellType celltype,
+          Core::FE::CellType facetype = Core::FE::DisTypeToFaceShapeType<celltype>::shape,
+          unsigned numfaces = Core::FE::num_faces<celltype>>
       bool create2_d_cell(Mesh& mesh, VolumeCell* cell, const plain_facet_set& facets);
 
       /// fill the tet4 volume cell
@@ -75,7 +75,7 @@ namespace CORE::GEO
           const plain_facet_set& facets, int axis, double r);
 
       /// add the volume cell information during the Create<Shape>Cell calls
-      void add(VolumeCell* vc, CORE::FE::CellType shape, const std::vector<Point*>& points)
+      void add(VolumeCell* vc, Core::FE::CellType shape, const std::vector<Point*>& points)
       {
         Volume& v = cells_[vc];
         std::vector<Ic>& cells = v.domain_;
@@ -90,12 +90,12 @@ namespace CORE::GEO
        *         for the desired boundary cell positions
        *
        *  \author hiermeier \date 01/17   */
-      void add_side(INPAR::CUT::BoundaryCellPosition bcell_position, VolumeCell* vc, Facet* facet,
-          CORE::FE::CellType shape, const std::vector<Point*>& side);
+      void add_side(Inpar::Cut::BoundaryCellPosition bcell_position, VolumeCell* vc, Facet* facet,
+          Core::FE::CellType shape, const std::vector<Point*>& side);
 
       /// add the side (boundary cell) information during the Create<Shape>Cell calls
       void add_side(
-          VolumeCell* vc, Facet* facet, CORE::FE::CellType shape, const std::vector<Point*>& side)
+          VolumeCell* vc, Facet* facet, Core::FE::CellType shape, const std::vector<Point*>& side)
       {
         Volume& cell = cells_[vc];
         std::vector<Bc>& bcells = cell.boundary_;
@@ -111,7 +111,7 @@ namespace CORE::GEO
       /// construction of a boundary integration cell
       struct Bc
       {
-        CORE::FE::CellType shape_;
+        Core::FE::CellType shape_;
         std::vector<Point*> side_;
         Facet* facet_;
 
@@ -126,7 +126,7 @@ namespace CORE::GEO
       /// construction of a volume integration cell
       struct Ic
       {
-        CORE::FE::CellType shape_;
+        Core::FE::CellType shape_;
         std::vector<Point*> points_;
 
         /// actual creation of the desired volume integration cell
@@ -162,8 +162,8 @@ namespace CORE::GEO
       std::map<VolumeCell*, Volume> cells_;
     };
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

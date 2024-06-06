@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace LARGEROTATIONS
+namespace LargeRotations
 {
   /**
    * \brief a triad interpolation scheme based on local rotation vectors
@@ -27,7 +27,7 @@ namespace LARGEROTATIONS
    */
 
   template <unsigned int numnodes, typename T>
-  class TriadInterpolationLocalRotationVectors : public LARGEROTATIONS::TriadInterpolation<T>
+  class TriadInterpolationLocalRotationVectors : public LargeRotations::TriadInterpolation<T>
   {
    public:
     //! @name Friends
@@ -68,27 +68,27 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    void Reset(std::vector<CORE::LINALG::Matrix<4, 1, T>> const& nodal_quaternions) override;
+    void Reset(std::vector<Core::LinAlg::Matrix<4, 1, T>> const& nodal_quaternions) override;
 
     /** \brief reset interpolation scheme with nodal triads
      *
      *  \author grill
      *  \date 01/17 */
-    void Reset(std::vector<CORE::LINALG::Matrix<3, 3, T>> const& nodal_triads) override;
+    void Reset(std::vector<Core::LinAlg::Matrix<3, 3, T>> const& nodal_triads) override;
 
     /** \brief compute the interpolated triad at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
     void get_interpolated_triad_at_xi(
-        CORE::LINALG::Matrix<3, 3, T>& triad, const double xi) const override;
+        Core::LinAlg::Matrix<3, 3, T>& triad, const double xi) const override;
 
     /** \brief compute the interpolated quaternion at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
     void get_interpolated_quaternion_at_xi(
-        CORE::LINALG::Matrix<4, 1, T>& quaternion, const double xi) const override;
+        Core::LinAlg::Matrix<4, 1, T>& quaternion, const double xi) const override;
 
     //@}
 
@@ -99,28 +99,28 @@ namespace LARGEROTATIONS
      *  \author grill
      *  \date 01/17 */
     void get_interpolated_triad(
-        CORE::LINALG::Matrix<3, 3, T>& triad, const CORE::LINALG::Matrix<3, 1, T>& Psi_l) const;
+        Core::LinAlg::Matrix<3, 3, T>& triad, const Core::LinAlg::Matrix<3, 1, T>& Psi_l) const;
 
     /** \brief compute the interpolated quaternion based on given local rotation vector
      *
      *  \author grill
      *  \date 01/17 */
-    void get_interpolated_quaternion(CORE::LINALG::Matrix<4, 1, T>& quaternion,
-        const CORE::LINALG::Matrix<3, 1, T>& Psi_l) const;
+    void get_interpolated_quaternion(Core::LinAlg::Matrix<4, 1, T>& quaternion,
+        const Core::LinAlg::Matrix<3, 1, T>& Psi_l) const;
 
     /** \brief compute the local rotation vector at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
     void get_interpolated_local_rotation_vector_at_xi(
-        CORE::LINALG::Matrix<3, 1, T>& Psi_l, const double xi) const;
+        Core::LinAlg::Matrix<3, 1, T>& Psi_l, const double xi) const;
 
     /** \brief compute the local rotation vector based on given shape function values
      *
      *  \author grill
      *  \date 01/17 */
-    void get_interpolated_local_rotation_vector(CORE::LINALG::Matrix<3, 1, T>& Psi_l,
-        const CORE::LINALG::Matrix<1, numnodes, double>& I_i) const;
+    void get_interpolated_local_rotation_vector(Core::LinAlg::Matrix<3, 1, T>& Psi_l,
+        const Core::LinAlg::Matrix<1, numnodes, double>& I_i) const;
 
 
     /** \brief compute the arc-length derivative of the local rotation vector at any point
@@ -129,15 +129,15 @@ namespace LARGEROTATIONS
      *  \author grill
      *  \date 01/17 */
     void get_interpolated_local_rotation_vector_derivative_at_xi(
-        CORE::LINALG::Matrix<3, 1, T>& Psi_l_s, const double jacobifac, const double xi) const;
+        Core::LinAlg::Matrix<3, 1, T>& Psi_l_s, const double jacobifac, const double xi) const;
 
     /** \brief compute the arc-length derivative of the local rotation vector based on given
      *         shape function values
      *
      *  \author grill
      *  \date 01/17 */
-    void get_interpolated_local_rotation_vector_derivative(CORE::LINALG::Matrix<3, 1, T>& Psi_l_s,
-        const CORE::LINALG::Matrix<1, numnodes, double>& I_i_xi, const double jacobifac) const;
+    void get_interpolated_local_rotation_vector_derivative(Core::LinAlg::Matrix<3, 1, T>& Psi_l_s,
+        const Core::LinAlg::Matrix<1, numnodes, double>& I_i_xi, const double jacobifac) const;
 
 
     /** \brief compute the generalized rotational interpolation matrices for all nodes at
@@ -146,7 +146,7 @@ namespace LARGEROTATIONS
      *  \author grill
      *  \date 01/17 */
     void get_nodal_generalized_rotation_interpolation_matrices_at_xi(
-        std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde, const double xi) const;
+        std::vector<Core::LinAlg::Matrix<3, 3, T>>& Itilde, const double xi) const;
 
     /** \brief compute the generalized rotational interpolation matrices for all nodes
      *         based on given local rotation vector and shape function values
@@ -154,9 +154,9 @@ namespace LARGEROTATIONS
      *  \author grill
      *  \date 01/17 */
     void get_nodal_generalized_rotation_interpolation_matrices(
-        std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde,
-        const CORE::LINALG::Matrix<3, 1, T>& Psi_l,
-        const CORE::LINALG::Matrix<1, numnodes, double>& I_i) const;
+        std::vector<Core::LinAlg::Matrix<3, 3, T>>& Itilde,
+        const Core::LinAlg::Matrix<3, 1, T>& Psi_l,
+        const Core::LinAlg::Matrix<1, numnodes, double>& I_i) const;
 
 
     /** \brief compute the arc-length derivative of generalized rotational interpolation
@@ -165,10 +165,10 @@ namespace LARGEROTATIONS
      *  \author grill
      *  \date 01/17 */
     void get_nodal_generalized_rotation_interpolation_matrices_derivative(
-        std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde_prime,
-        const CORE::LINALG::Matrix<3, 1, T>& Psi_l, const CORE::LINALG::Matrix<3, 1, T>& Psi_l_s,
-        const CORE::LINALG::Matrix<1, numnodes, double>& I_i,
-        const CORE::LINALG::Matrix<1, numnodes, double>& I_i_xi, const double jacobifac) const;
+        std::vector<Core::LinAlg::Matrix<3, 3, T>>& Itilde_prime,
+        const Core::LinAlg::Matrix<3, 1, T>& Psi_l, const Core::LinAlg::Matrix<3, 1, T>& Psi_l_s,
+        const Core::LinAlg::Matrix<1, numnodes, double>& I_i,
+        const Core::LinAlg::Matrix<1, numnodes, double>& I_i_xi, const double jacobifac) const;
 
     /** \brief compute the arc-length derivative of generalized rotational interpolation
      *         matrices for all nodes based on given local rotation vector and shape function values
@@ -176,10 +176,10 @@ namespace LARGEROTATIONS
      *  \author grill
      *  \date 01/17 */
     void get_nodal_generalized_rotation_interpolation_matrices_derivative(
-        std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde_prime,
-        const CORE::LINALG::Matrix<3, 1, T>& Psi_l, const CORE::LINALG::Matrix<3, 1, T>& Psi_l_s,
-        const CORE::LINALG::Matrix<1, numnodes, double>& I_i,
-        const CORE::LINALG::Matrix<1, numnodes, double>& I_i_s) const;
+        std::vector<Core::LinAlg::Matrix<3, 3, T>>& Itilde_prime,
+        const Core::LinAlg::Matrix<3, 1, T>& Psi_l, const Core::LinAlg::Matrix<3, 1, T>& Psi_l_s,
+        const Core::LinAlg::Matrix<1, numnodes, double>& I_i,
+        const Core::LinAlg::Matrix<1, numnodes, double>& I_i_s) const;
 
     //@}
 
@@ -193,65 +193,65 @@ namespace LARGEROTATIONS
     void set_node_iand_j();
 
     //! get the interpolation scheme from the given number of nodes
-    CORE::FE::CellType get_dis_type() const;
+    Core::FE::CellType get_dis_type() const;
 
     //! compute quaternion corresponding to reference triad Lambda_r according to (3.9), Jelenic
     //! 1999
-    void calc_ref_quaternion(const CORE::LINALG::Matrix<4, 1, T>& Q_nodeI,
-        const CORE::LINALG::Matrix<4, 1, T>& Q_nodeJ, CORE::LINALG::Matrix<4, 1, T>& Q_r) const;
+    void calc_ref_quaternion(const Core::LinAlg::Matrix<4, 1, T>& Q_nodeI,
+        const Core::LinAlg::Matrix<4, 1, T>& Q_nodeJ, Core::LinAlg::Matrix<4, 1, T>& Q_r) const;
 
     //! compute angle of relative rotation between node I and J according to (3.10), Jelenic 1999
-    void calc_phi_ij(const CORE::LINALG::Matrix<4, 1, T>& Q_nodeI,
-        const CORE::LINALG::Matrix<4, 1, T>& Q_nodeJ, CORE::LINALG::Matrix<3, 1, T>& Phi_IJ) const;
+    void calc_phi_ij(const Core::LinAlg::Matrix<4, 1, T>& Q_nodeI,
+        const Core::LinAlg::Matrix<4, 1, T>& Q_nodeJ, Core::LinAlg::Matrix<3, 1, T>& Phi_IJ) const;
 
     //! compute nodal local rotations according to (3.8), Jelenic 1999
-    void calc_psi_li(const CORE::LINALG::Matrix<4, 1, T>& Q_i,
-        const CORE::LINALG::Matrix<4, 1, T>& Q_r, CORE::LINALG::Matrix<3, 1, T>& Psi_li) const;
+    void calc_psi_li(const Core::LinAlg::Matrix<4, 1, T>& Q_i,
+        const Core::LinAlg::Matrix<4, 1, T>& Q_r, Core::LinAlg::Matrix<3, 1, T>& Psi_li) const;
 
     //! compute interpolated local relative rotation \Psi^l according to (3.11), Jelenic 1999
-    void calc_psi_l(const std::vector<CORE::LINALG::Matrix<3, 1, T>>& Psi_li,
-        const CORE::LINALG::Matrix<1, numnodes, double>& func,
-        CORE::LINALG::Matrix<3, 1, T>& Psi_l) const;
+    void calc_psi_l(const std::vector<Core::LinAlg::Matrix<3, 1, T>>& Psi_li,
+        const Core::LinAlg::Matrix<1, numnodes, double>& func,
+        Core::LinAlg::Matrix<3, 1, T>& Psi_l) const;
 
     //! compute derivative of interpolated local relative rotation \Psi^l with respect to reference
     //! arc-length parameter s according to (3.11), Jelenic 1999
-    void calc_psi_l_s(const std::vector<CORE::LINALG::Matrix<3, 1, T>>& Psi_li,
-        const CORE::LINALG::Matrix<1, numnodes, double>& deriv_xi, const double& jacobi,
-        CORE::LINALG::Matrix<3, 1, T>& Psi_l_s) const;
+    void calc_psi_l_s(const std::vector<Core::LinAlg::Matrix<3, 1, T>>& Psi_li,
+        const Core::LinAlg::Matrix<1, numnodes, double>& deriv_xi, const double& jacobi,
+        Core::LinAlg::Matrix<3, 1, T>& Psi_l_s) const;
 
     //! compute local triad \Lambda from Crisfield 1999, eq. (4.7)
-    void calc_lambda(const CORE::LINALG::Matrix<3, 1, T>& Psi_l,
-        const CORE::LINALG::Matrix<4, 1, T>& Q_r, CORE::LINALG::Matrix<3, 3, T>& Lambda) const;
+    void calc_lambda(const Core::LinAlg::Matrix<3, 1, T>& Psi_l,
+        const Core::LinAlg::Matrix<4, 1, T>& Q_r, Core::LinAlg::Matrix<3, 3, T>& Lambda) const;
 
     //! compute quaternion equivalent to local triad \Lambda from Crisfield 1999, eq. (4.7)
-    void calc_qgauss(const CORE::LINALG::Matrix<3, 1, T>& Psi_l,
-        const CORE::LINALG::Matrix<4, 1, T>& Q_r, CORE::LINALG::Matrix<4, 1, T>& Qgauss) const;
+    void calc_qgauss(const Core::LinAlg::Matrix<3, 1, T>& Psi_l,
+        const Core::LinAlg::Matrix<4, 1, T>& Q_r, Core::LinAlg::Matrix<4, 1, T>& Qgauss) const;
 
     //! compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certain Gauss
     //! point
-    void compute_itilde(const CORE::LINALG::Matrix<3, 1, T>& Psil,
-        std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itilde,
-        const CORE::LINALG::Matrix<3, 1, T>& phiIJ, const CORE::LINALG::Matrix<3, 3, T>& Lambdar,
-        const std::vector<CORE::LINALG::Matrix<3, 1, T>>& Psili,
-        const CORE::LINALG::Matrix<1, numnodes, double>& funct) const;
+    void compute_itilde(const Core::LinAlg::Matrix<3, 1, T>& Psil,
+        std::vector<Core::LinAlg::Matrix<3, 3, T>>& Itilde,
+        const Core::LinAlg::Matrix<3, 1, T>& phiIJ, const Core::LinAlg::Matrix<3, 3, T>& Lambdar,
+        const std::vector<Core::LinAlg::Matrix<3, 1, T>>& Psili,
+        const Core::LinAlg::Matrix<1, numnodes, double>& funct) const;
 
     //! compute \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999 for all nodes i at a certain Gauss
     //! point
-    void compute_itildeprime(const CORE::LINALG::Matrix<3, 1, T>& Psil,
-        const CORE::LINALG::Matrix<3, 1, T>& Psilprime,
-        std::vector<CORE::LINALG::Matrix<3, 3, T>>& Itildeprime,
-        const CORE::LINALG::Matrix<3, 1, T>& phiIJ, const CORE::LINALG::Matrix<3, 3, T>& Lambdar,
-        const std::vector<CORE::LINALG::Matrix<3, 1, T>>& Psili,
-        const CORE::LINALG::Matrix<1, numnodes, double>& funct,
-        const CORE::LINALG::Matrix<1, numnodes, double>& deriv_s) const;
+    void compute_itildeprime(const Core::LinAlg::Matrix<3, 1, T>& Psil,
+        const Core::LinAlg::Matrix<3, 1, T>& Psilprime,
+        std::vector<Core::LinAlg::Matrix<3, 3, T>>& Itildeprime,
+        const Core::LinAlg::Matrix<3, 1, T>& phiIJ, const Core::LinAlg::Matrix<3, 3, T>& Lambdar,
+        const std::vector<Core::LinAlg::Matrix<3, 1, T>>& Psili,
+        const Core::LinAlg::Matrix<1, numnodes, double>& funct,
+        const Core::LinAlg::Matrix<1, numnodes, double>& deriv_s) const;
 
     //! compute matrix v_I as outlined in the equations above (3.15) on page 152 of Jelenic 1999
     void calc_v_i(
-        CORE::LINALG::Matrix<3, 3, T>& vI, const CORE::LINALG::Matrix<3, 1, T>& phiIJ) const;
+        Core::LinAlg::Matrix<3, 3, T>& vI, const Core::LinAlg::Matrix<3, 1, T>& phiIJ) const;
 
     //! compute matrix v_J as outlined in the equations above (3.15) on page 152 of Jelenic 1999
     void calc_v_j(
-        CORE::LINALG::Matrix<3, 3, T>& vJ, const CORE::LINALG::Matrix<3, 1, T>& phiIJ) const;
+        Core::LinAlg::Matrix<3, 3, T>& vJ, const Core::LinAlg::Matrix<3, 1, T>& phiIJ) const;
 
     //@}
 
@@ -266,21 +266,21 @@ namespace LARGEROTATIONS
     unsigned int node_j_;
 
     //! this determines the kind of shape functions which are to be applied
-    CORE::FE::CellType distype_;
+    Core::FE::CellType distype_;
 
     //! nodal triads stored as quaternions
-    std::vector<CORE::LINALG::Matrix<4, 1, T>> qnode_;
+    std::vector<Core::LinAlg::Matrix<4, 1, T>> qnode_;
 
     //! reference quaternion Q_r corresponding to reference triad Lambda_r
-    CORE::LINALG::Matrix<4, 1, T> q_r_;
+    Core::LinAlg::Matrix<4, 1, T> q_r_;
 
     //! local rotation angles at nodes: angles between nodal triads and reference triad
-    std::vector<CORE::LINALG::Matrix<3, 1, T>> psi_li_;
+    std::vector<Core::LinAlg::Matrix<3, 1, T>> psi_li_;
 
     //@}
   };
 
-}  // namespace LARGEROTATIONS
+}  // namespace LargeRotations
 
 FOUR_C_NAMESPACE_CLOSE
 

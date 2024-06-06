@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     /** \brief Class which is used to disable and enable the inherent floating
      *  point exception checks.
@@ -82,7 +82,7 @@ namespace NOX
        *  exception checks for a moment. */
       bool shall_be_caught_ = false;
     };
-  }  // namespace NLN
+  }  // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

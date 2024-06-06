@@ -32,19 +32,19 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace STR
 {
-  namespace AUX
+  namespace Aux
   {
     class MapExtractor;
   }
 }  // namespace STR
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MapExtractor;
 }
 
 /*----------------------------------------------------------------------*/
-namespace ADAPTER
+namespace Adapter
 {
   /*====================================================================*/
   /*!
@@ -102,10 +102,10 @@ namespace ADAPTER
     void apply_interface_forces_temporary_deprecated(Teuchos::RCP<Epetra_Vector> iforce) override;
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override;
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
     /// update displacement and evaluate elements
     void Evaluate(Teuchos::RCP<const Epetra_Vector>
@@ -113,7 +113,7 @@ namespace ADAPTER
         ) override;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
     {
       return structure_->GetDBCMapExtractor();
     };
@@ -130,9 +130,9 @@ namespace ADAPTER
       return structure_->get_constraint_manager();
     };
 
-    INPAR::STR::StcScale GetSTCAlgo() override { return structure_->GetSTCAlgo(); };
+    Inpar::STR::StcScale GetSTCAlgo() override { return structure_->GetSTCAlgo(); };
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override
     {
       FOUR_C_THROW("FSI with merged structural constraints does not work in combination with STC!");
       return structure_->GetSTCMat();
@@ -156,7 +156,7 @@ namespace ADAPTER
 
    private:
     /// the constraint map setup for full <-> stuct+constr transition
-    Teuchos::RCP<CORE::LINALG::MapExtractor> conmerger_;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> conmerger_;
 
     /// the complete non-overlapping degree of freedom row map for structure and lagrange
     /// multipliers
@@ -164,12 +164,12 @@ namespace ADAPTER
 
     /// @name local copies of input parameters
     //{@
-    Teuchos::RCP<DRT::Discretization> discret_;  ///< the discretization
+    Teuchos::RCP<Discret::Discretization> discret_;  ///< the discretization
     Teuchos::RCP<Teuchos::ParameterList>
         sdynparams_;  ///< dynamic control flags ... used, but could/should be circumvented
     Teuchos::RCP<Teuchos::ParameterList> xparams_;         ///< eXtra input parameters
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;            ///< the linear solver
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output_;  ///< the output writer
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;            ///< the linear solver
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;  ///< the output writer
 
     //@}
 
@@ -178,7 +178,7 @@ namespace ADAPTER
 
   };  // class StructureConstrained
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

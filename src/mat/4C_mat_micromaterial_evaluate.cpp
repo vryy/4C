@@ -36,14 +36,14 @@ FOUR_C_NAMESPACE_OPEN
 // corresponding prototype in src/filter_common/filter_evaluation.cpp is adapted, too!!
 
 // evaluate for master procs
-void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::MicroMaterial::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   if (eleGID == -1) FOUR_C_THROW("no element ID provided in material");
 
-  CORE::LINALG::Matrix<3, 3>* defgrd_enh = const_cast<CORE::LINALG::Matrix<3, 3>*>(defgrd);
+  Core::LinAlg::Matrix<3, 3>* defgrd_enh = const_cast<Core::LinAlg::Matrix<3, 3>*>(defgrd);
 
   if (params.get("EASTYPE", "none") != "none")
   {
@@ -52,7 +52,7 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
     // First step: determine enhanced material stretch tensor U_enh from C_enh=U_enh^T*U_enh
     // -> get C_enh from enhanced GL strains
-    CORE::LINALG::Matrix<3, 3> C_enh;
+    Core::LinAlg::Matrix<3, 3> C_enh;
     for (int i = 0; i < 3; ++i) C_enh(i, i) = 2.0 * (*glstrain)(i) + 1.0;
     // off-diagonal terms are already twice in the Voigt-GLstrain-vector
     C_enh(0, 1) = (*glstrain)(3);
@@ -63,20 +63,20 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     C_enh(2, 0) = (*glstrain)(5);
 
     // -> polar decomposition of (U^mod)^2
-    CORE::LINALG::Matrix<3, 3> Q;
-    CORE::LINALG::Matrix<3, 3> S;
-    CORE::LINALG::Matrix<3, 3> VT;
-    CORE::LINALG::SVD<3, 3>(C_enh, Q, S, VT);  // Singular Value Decomposition
-    CORE::LINALG::Matrix<3, 3> U_enh;
-    CORE::LINALG::Matrix<3, 3> temp;
+    Core::LinAlg::Matrix<3, 3> Q;
+    Core::LinAlg::Matrix<3, 3> S;
+    Core::LinAlg::Matrix<3, 3> VT;
+    Core::LinAlg::SVD<3, 3>(C_enh, Q, S, VT);  // Singular Value Decomposition
+    Core::LinAlg::Matrix<3, 3> U_enh;
+    Core::LinAlg::Matrix<3, 3> temp;
     for (int i = 0; i < 3; ++i) S(i, i) = sqrt(S(i, i));
     temp.MultiplyNN(Q, S);
     U_enh.MultiplyNN(temp, VT);
 
     // Second step: determine rotation tensor R from F (F=R*U)
     // -> polar decomposition of displacement based F
-    CORE::LINALG::SVD<3, 3>(*(defgrd_enh), Q, S, VT);  // Singular Value Decomposition
-    CORE::LINALG::Matrix<3, 3> R;
+    Core::LinAlg::SVD<3, 3>(*(defgrd_enh), Q, S, VT);  // Singular Value Decomposition
+    Core::LinAlg::Matrix<3, 3> R;
     R.MultiplyNN(Q, VT);
 
     // Third step: determine "enhanced" deformation gradient (F_enh=R*U_enh)
@@ -87,35 +87,35 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   int microdisnum = MicroDisNum();
   double V0 = InitVol();
-  GLOBAL::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
+  Global::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
 
   // avoid writing output also for ghosted elements
   const bool eleowner =
-      GLOBAL::Problem::Instance(0)->GetDis("structure")->ElementRowMap()->MyGID(eleGID);
+      Global::Problem::Instance(0)->GetDis("structure")->ElementRowMap()->MyGID(eleGID);
 
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
 
   // tell the supporting procs that the micro material will be evaluated
   int task[2] = {0, eleGID};
   subcomm->Broadcast(task, 2, 0);
 
   // container is filled with data for supporting procs
-  std::map<int, Teuchos::RCP<STRUMULTI::MicroStaticParObject>> condnamemap;
-  condnamemap[0] = Teuchos::rcp(new STRUMULTI::MicroStaticParObject());
+  std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
+  condnamemap[0] = Teuchos::rcp(new MultiScale::MicroStaticParObject());
 
   const auto convert_to_serial_dense_matrix = [](const auto& matrix)
   {
     using MatrixType = std::decay_t<decltype(matrix)>;
     constexpr int n_rows = MatrixType::numRows();
     constexpr int n_cols = MatrixType::numCols();
-    CORE::LINALG::SerialDenseMatrix data(n_rows, n_cols);
+    Core::LinAlg::SerialDenseMatrix data(n_rows, n_cols);
     for (int i = 0; i < n_rows; i++)
       for (int j = 0; j < n_cols; j++) data(i, j) = matrix(i, j);
     return data;
   };
 
-  STRUMULTI::MicroStaticParObject::MicroStaticData microdata{};
+  MultiScale::MicroStaticParObject::MicroStaticData microdata{};
   microdata.defgrd_ = convert_to_serial_dense_matrix(*defgrd_enh);
   microdata.cmat_ = convert_to_serial_dense_matrix(*cmat);
   microdata.stress_ = convert_to_serial_dense_matrix(*stress);
@@ -129,8 +129,8 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   int tag = 0;
   Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
-  CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
-  exporter.Export<STRUMULTI::MicroStaticParObject>(condnamemap);
+  Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
+  exporter.Export<MultiScale::MicroStaticParObject>(condnamemap);
 
   // standard evaluation of the micro material
   if (matgp_.find(gp) == matgp_.end())
@@ -154,18 +154,18 @@ void MAT::MicroMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   actmicromatgp->perform_micro_simulation(defgrd_enh, stress, cmat);
 
   // reactivate macroscale material
-  GLOBAL::Problem::Instance()->Materials()->reset_read_from_problem();
+  Global::Problem::Instance()->Materials()->reset_read_from_problem();
 }
 
-double MAT::MicroMaterial::Density() const { return density_; }
+double Mat::MicroMaterial::Density() const { return density_; }
 
 
 // evaluate for supporting procs
-void MAT::MicroMaterial::Evaluate(CORE::LINALG::Matrix<3, 3>* defgrd,
-    CORE::LINALG::Matrix<6, 6>* cmat, CORE::LINALG::Matrix<6, 1>* stress, const int gp,
+void Mat::MicroMaterial::Evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
+    Core::LinAlg::Matrix<6, 6>* cmat, Core::LinAlg::Matrix<6, 1>* stress, const int gp,
     const int ele_ID, const int microdisnum, double V0, bool eleowner)
 {
-  GLOBAL::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
+  Global::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
 
   if (matgp_.find(gp) == matgp_.end())
   {
@@ -179,15 +179,15 @@ void MAT::MicroMaterial::Evaluate(CORE::LINALG::Matrix<3, 3>* defgrd,
   actmicromatgp->perform_micro_simulation(defgrd, stress, cmat);
 
   // reactivate macroscale material
-  GLOBAL::Problem::Instance()->Materials()->reset_read_from_problem();
+  Global::Problem::Instance()->Materials()->reset_read_from_problem();
 }
 
 
 // update for all procs
-void MAT::MicroMaterial::Update()
+void Mat::MicroMaterial::Update()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be evaluated for the element with id
@@ -207,10 +207,10 @@ void MAT::MicroMaterial::Update()
 
 
 // prepare output for all procs
-void MAT::MicroMaterial::prepare_output()
+void Mat::MicroMaterial::prepare_output()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be prepared for output
@@ -229,10 +229,10 @@ void MAT::MicroMaterial::prepare_output()
 
 
 // output for all procs
-void MAT::MicroMaterial::Output()
+void Mat::MicroMaterial::Output()
 {
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
   if (subcomm->MyPID() == 0)
   {
     // tell the supporting procs that the micro material will be output
@@ -251,23 +251,23 @@ void MAT::MicroMaterial::Output()
 
 
 // read restart for master procs
-void MAT::MicroMaterial::read_restart(const int gp, const int eleID, const bool eleowner)
+void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool eleowner)
 {
   int microdisnum = MicroDisNum();
   double V0 = InitVol();
 
   // get sub communicator including the supporting procs
-  Teuchos::RCP<Epetra_Comm> subcomm = GLOBAL::Problem::Instance(0)->GetCommunicators()->SubComm();
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::Instance(0)->GetCommunicators()->SubComm();
 
   // tell the supporting procs that the micro material will restart
   int task[2] = {4, eleID};
   subcomm->Broadcast(task, 2, 0);
 
   // container is filled with data for supporting procs
-  std::map<int, Teuchos::RCP<STRUMULTI::MicroStaticParObject>> condnamemap;
-  condnamemap[0] = Teuchos::rcp(new STRUMULTI::MicroStaticParObject());
+  std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
+  condnamemap[0] = Teuchos::rcp(new MultiScale::MicroStaticParObject());
 
-  STRUMULTI::MicroStaticParObject::MicroStaticData microdata{};
+  MultiScale::MicroStaticParObject::MicroStaticData microdata{};
   microdata.gp_ = gp;
   microdata.microdisnum_ = microdisnum;
   microdata.V0_ = V0;
@@ -278,8 +278,8 @@ void MAT::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
   int tag = 0;
   Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
-  CORE::COMM::Exporter exporter(*oldmap, *newmap, *subcomm);
-  exporter.Export<STRUMULTI::MicroStaticParObject>(condnamemap);
+  Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
+  exporter.Export<MultiScale::MicroStaticParObject>(condnamemap);
 
   if (matgp_.find(gp) == matgp_.end())
   {
@@ -292,7 +292,7 @@ void MAT::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
 
 
 // read restart for supporting procs
-void MAT::MicroMaterial::read_restart(
+void Mat::MicroMaterial::read_restart(
     const int gp, const int eleID, const bool eleowner, int microdisnum, double V0)
 {
   if (matgp_.find(gp) == matgp_.end())

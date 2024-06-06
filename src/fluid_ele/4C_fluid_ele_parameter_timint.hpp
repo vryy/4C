@@ -25,7 +25,7 @@ with different parameters in more than one fluid field is not yet supported.
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -35,7 +35,7 @@ namespace DRT
      public:
       //! Singleton access method
       static FluidEleParameterTimInt* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
+          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
       //! time parameter are set
       void set_element_time_parameter(Teuchos::ParameterList& params  //> parameter list
@@ -65,7 +65,7 @@ namespace DRT
 
       /// parameters for the time integration
       //! time algorithm
-      INPAR::FLUID::TimeIntegrationScheme TimeAlgo() { return timealgo_; };
+      Inpar::FLUID::TimeIntegrationScheme TimeAlgo() { return timealgo_; };
       //! actual time to evaluate the body BC
       double Time() { return time_; };
       //! time-step length
@@ -110,9 +110,9 @@ namespace DRT
 
       /// parameters for the time integration
       //! time algorithm
-      INPAR::FLUID::TimeIntegrationScheme timealgo_;
+      Inpar::FLUID::TimeIntegrationScheme timealgo_;
       //! One Step Theta discretization for the continuity and pressure.
-      INPAR::FLUID::OstContAndPress ostalgo_;
+      Inpar::FLUID::OstContAndPress ostalgo_;
       //! New One Step Theta implementation flag
       bool ostnew_;
       //! actual time to evaluate the body BC
@@ -146,7 +146,7 @@ namespace DRT
     };  // class FluidEleParameterTimInt
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

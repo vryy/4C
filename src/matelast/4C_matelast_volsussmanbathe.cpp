@@ -16,20 +16,20 @@ Mechanics, 2000"
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::VolSussmanBathe::VolSussmanBathe(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::VolSussmanBathe::VolSussmanBathe(
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), kappa_(matdata->Get<double>("KAPPA"))
 {
 }
 
-MAT::ELASTIC::VolSussmanBathe::VolSussmanBathe(MAT::ELASTIC::PAR::VolSussmanBathe* params)
+Mat::Elastic::VolSussmanBathe::VolSussmanBathe(Mat::Elastic::PAR::VolSussmanBathe* params)
     : params_(params)
 {
 }
 
-void MAT::ELASTIC::VolSussmanBathe::AddStrainEnergy(double& psi,
-    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
-    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
+void Mat::Elastic::VolSussmanBathe::AddStrainEnergy(double& psi,
+    const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& modinv,
+    const Core::LinAlg::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double kappa = params_->kappa_;
 
@@ -38,8 +38,8 @@ void MAT::ELASTIC::VolSussmanBathe::AddStrainEnergy(double& psi,
   psi += kappa * 0.5 * (modinv(2) - 1.) * (modinv(2) - 1.);
 }
 
-void MAT::ELASTIC::VolSussmanBathe::add_derivatives_modified(CORE::LINALG::Matrix<3, 1>& dPmodI,
-    CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
+void Mat::Elastic::VolSussmanBathe::add_derivatives_modified(Core::LinAlg::Matrix<3, 1>& dPmodI,
+    Core::LinAlg::Matrix<6, 1>& ddPmodII, const Core::LinAlg::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {
   const double kappa = params_->kappa_;
@@ -49,8 +49,8 @@ void MAT::ELASTIC::VolSussmanBathe::add_derivatives_modified(CORE::LINALG::Matri
   ddPmodII(2) += kappa;
 }
 
-void MAT::ELASTIC::VolSussmanBathe::Add3rdVolDeriv(
-    const CORE::LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
+void Mat::Elastic::VolSussmanBathe::Add3rdVolDeriv(
+    const Core::LinAlg::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
 {
   d3PsiVolDJ3 += 0.;
 }

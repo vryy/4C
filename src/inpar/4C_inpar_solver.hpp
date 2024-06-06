@@ -17,12 +17,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPAR::SOLVER
+namespace Inpar::SOLVER
 {
   //! set the parameters for the linear solver
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-}  // namespace INPAR::SOLVER
+}  // namespace Inpar::SOLVER
 
 FOUR_C_NAMESPACE_CLOSE
 

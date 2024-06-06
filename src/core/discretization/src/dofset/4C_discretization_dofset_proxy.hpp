@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   /*! \brief Proxy to a DofSet that does not own dofs itself
 
@@ -62,7 +62,7 @@ namespace CORE::Dofsets
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int assign_degrees_of_freedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
+        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// returns true if \ref dofset_ is filled
     bool Filled() const override;
@@ -88,7 +88,7 @@ namespace CORE::Dofsets
 
     /// Get number of dofs for given node
     int NumDof(
-        const CORE::Nodes::Node* node  ///< node, for which you want to know the number of dofs
+        const Core::Nodes::Node* node  ///< node, for which you want to know the number of dofs
     ) const override
     {
       check_is_assigned();
@@ -96,7 +96,7 @@ namespace CORE::Dofsets
     };
 
     /// Get number of dofs for given element
-    int NumDof(const CORE::Elements::Element*
+    int NumDof(const Core::Elements::Element*
             element  ///< element, for which you want to know the number of dofs
     ) const override
     {
@@ -106,7 +106,7 @@ namespace CORE::Dofsets
 
     /// get number of nodal dofs
     int NumDofPerNode(
-        const CORE::Nodes::Node& node  ///< node, for which you want to know the number of dofs
+        const Core::Nodes::Node& node  ///< node, for which you want to know the number of dofs
     ) const override
     {
       check_is_assigned();
@@ -114,7 +114,7 @@ namespace CORE::Dofsets
     };
 
     /// Get the gid of a dof for given node
-    int Dof(const CORE::Nodes::Node* node, int dof) const override
+    int Dof(const Core::Nodes::Node* node, int dof) const override
     {
       check_is_assigned();
       return dofset_->Dof(node, dof);
@@ -122,7 +122,7 @@ namespace CORE::Dofsets
 
     /// Get the gid of a dof for given element
     int Dof(
-        const CORE::Elements::Element* element,  ///< element, for which you want the dof positions
+        const Core::Elements::Element* element,  ///< element, for which you want the dof positions
         int dof) const override
     {
       check_is_assigned();
@@ -131,7 +131,7 @@ namespace CORE::Dofsets
 
     /// Get the gid of all dofs of a node
     std::vector<int> Dof(
-        const CORE::Nodes::Node* node  ///< node, for which you want the dof positions
+        const Core::Nodes::Node* node  ///< node, for which you want the dof positions
     ) const override
     {
       check_is_assigned();
@@ -140,7 +140,7 @@ namespace CORE::Dofsets
 
     /// Get the gid of all dofs of a node
     void Dof(std::vector<int>& dof,     ///< vector of dof gids (to be filled)
-        const CORE::Nodes::Node* node,  ///< node, for which you want the dof positions
+        const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
@@ -149,21 +149,21 @@ namespace CORE::Dofsets
     };
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const CORE::Elements::Element* element) const override
+    std::vector<int> Dof(const Core::Elements::Element* element) const override
     {
       check_is_assigned();
       return dofset_->Dof(element);
     };
 
     /// Get the gid of all dofs of a node and the location matrix
-    void Dof(const CORE::Nodes::Node* node, std::vector<int>& lm) const override
+    void Dof(const Core::Nodes::Node* node, std::vector<int>& lm) const override
     {
       check_is_assigned();
       dofset_->Dof(node, lm);
     };
 
     /// Get the gid of all dofs of a node
-    void Dof(const CORE::Nodes::Node* node,  ///< node, for which you want the dof positions
+    void Dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,  ///< first index of vector at which will be written to end
         std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
     ) const override
@@ -173,16 +173,16 @@ namespace CORE::Dofsets
     };
 
     /// Get the gid of all dofs of a element and the location matrix
-    void Dof(const CORE::Elements::Element* element, std::vector<int>& lm) const override
+    void Dof(const Core::Elements::Element* element, std::vector<int>& lm) const override
     {
       check_is_assigned();
       dofset_->Dof(element, lm);
     };
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(const CORE::Elements::Element*
+    void Dof(const Core::Elements::Element*
                  element,  ///< element which provides its expected number of DOFs per node
-        const CORE::Nodes::Node* node,  ///< node, for which you want the DOF positions
+        const Core::Nodes::Node* node,  ///< node, for which you want the DOF positions
         std::vector<int>& lm  ///< already allocated vector to be filled with DOF positions
     ) const override
     {
@@ -262,7 +262,7 @@ namespace CORE::Dofsets
 
   };  // class DofSetProxy
 
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 
 FOUR_C_NAMESPACE_CLOSE

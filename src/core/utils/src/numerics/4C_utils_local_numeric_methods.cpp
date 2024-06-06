@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CORE::UTILS::Bisection(const std::function<double(double)> &funct, const double a_init,
+double Core::UTILS::Bisection(const std::function<double(double)> &funct, const double a_init,
     const double b_init, const double tol, const int maxiter)
 {
   double a = a_init;
@@ -58,8 +58,8 @@ double CORE::UTILS::Bisection(const std::function<double(double)> &funct, const 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::UTILS::ValuesFunctAndFunctDerivs
-CORE::UTILS::EvaluateFunctionAndDerivativesCentralDifferences(
+Core::UTILS::ValuesFunctAndFunctDerivs
+Core::UTILS::EvaluateFunctionAndDerivativesCentralDifferences(
     const std::function<double(double)> &func, const double x, const double delta_x)
 {
   ValuesFunctAndFunctDerivs f_df_ddf;
@@ -77,7 +77,7 @@ CORE::UTILS::EvaluateFunctionAndDerivativesCentralDifferences(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CORE::UTILS::FirstDerivativeCentralDifferences(
+double Core::UTILS::FirstDerivativeCentralDifferences(
     const double f_i_minus_1, const double f_i_plus_1, const double delta_x)
 {
   double dfdx = (f_i_plus_1 - f_i_minus_1) / (2 * delta_x);
@@ -86,7 +86,7 @@ double CORE::UTILS::FirstDerivativeCentralDifferences(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CORE::UTILS::SecondDerivativeCentralDifferences(
+double Core::UTILS::SecondDerivativeCentralDifferences(
     const double f_i_minus_1, const double f_i, const double f_i_plus_1, const double delta_x)
 {
   double ddfddx = (f_i_plus_1 - 2 * f_i + f_i_minus_1) / (delta_x * delta_x);

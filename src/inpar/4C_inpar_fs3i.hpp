@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace FS3I
   {
@@ -50,7 +50,7 @@ namespace INPAR
 
   }  // namespace FS3I
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE
 

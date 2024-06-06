@@ -20,14 +20,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerArtery;
 
-    template <CORE::FE::CellType distype, int probdim>
+    template <Core::FE::CellType distype, int probdim>
     class ScaTraEleCalcArtery : public ScaTraEleCalc<distype, probdim>
     {
      private:
@@ -48,18 +48,18 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       /// Setup element evaluation
-      int SetupCalc(CORE::Elements::Element* ele, DRT::Discretization& discretization) override;
+      int SetupCalc(Core::Elements::Element* ele, Discret::Discretization& discretization) override;
 
      protected:
       //! extract element based or nodal values
       //  return extracted values of phinp
-      void extract_element_and_node_values(CORE::Elements::Element* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la) override;
+      void extract_element_and_node_values(Core::Elements::Element* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la) override;
 
       //! evaluate shape functions and their derivatives at current integration point
       double eval_shape_func_and_derivs_at_int_point(
-          const CORE::FE::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
+          const Core::FE::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
           const int iquad                                            //!< id of current Gauss point
           ) override
       {
@@ -73,8 +73,8 @@ namespace DRT
       double eval_shape_func_and_derivs_at_ele_center() override
       {
         // use one-point Gauss rule to do calculations at the element center
-        const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
-            SCATRA::DisTypeToStabGaussRule<distype>::rule);
+        const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
+            ScaTra::DisTypeToStabGaussRule<distype>::rule);
 
         // volume of the element (2D: element surface area; 1D: element length)
         // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -86,7 +86,7 @@ namespace DRT
 
       //! evaluate material
       void materials(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -97,18 +97,18 @@ namespace DRT
 
       //! calculation of convective element matrix in convective form (off diagonal term fluid)
       void calc_mat_conv_od_fluid(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodefluid,             //!< number of dofs per node of fluid element
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
+          const Core::LinAlg::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
           ) override;
 
       //! calculation of convective element matrix: add conservative contributions (off diagonal
       //! term fluid)
       void calc_mat_conv_add_cons_od_fluid(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodefluid,             //!< number of dofs per node of fluid element
           const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -131,7 +131,7 @@ namespace DRT
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! artery pressure values at t_(n+1)
-      CORE::LINALG::Matrix<nen_, 1> earterypressurenp_;
+      Core::LinAlg::Matrix<nen_, 1> earterypressurenp_;
     };
 
     template <int NSD, int NEN>
@@ -148,25 +148,25 @@ namespace DRT
 
       // compute and set internal variables -- no L2-projection but evaluation at GP
       void set_internal_variables_artery(
-          const CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
-          const CORE::LINALG::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<NEN, 1>& funct,  //! array for shape functions
+          const Core::LinAlg::Matrix<NSD, NEN>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          const CORE::LINALG::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<NSD, NEN>&
               deriv,  //! global derivatives of shape functions w.r.t r,s,t
-          const CORE::LINALG::Matrix<NSD, NSD>& xjm,
-          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
+          const Core::LinAlg::Matrix<NSD, NSD>& xjm,
+          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
               ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
-          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephin,  //! scalar at t_(n)
-          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephin,  //! scalar at t_(n)
+          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
               ehist,  //! history vector of transported scalars
-          const CORE::LINALG::Matrix<NEN, 1>& earterypressure)
+          const Core::LinAlg::Matrix<NEN, 1>& earterypressure)
       {
         // call base class (scatra) with dummy variable econvelnp
-        const CORE::LINALG::Matrix<NSD, NEN> econvelnp(true);
-        const CORE::LINALG::Matrix<NSD, NEN> eforcevelocity(true);
+        const Core::LinAlg::Matrix<NSD, NEN> econvelnp(true);
+        const Core::LinAlg::Matrix<NSD, NEN> eforcevelocity(true);
         my::set_internal_variables(funct, derxy, ephinp, ephin, econvelnp, ehist, eforcevelocity);
 
-        static CORE::LINALG::Matrix<NSD, 1> pressuregrad(true);
+        static Core::LinAlg::Matrix<NSD, 1> pressuregrad(true);
         pressuregrad.Multiply(derxy, earterypressure);
 
         for (int k = 0; k < my::numscal_; ++k)
@@ -182,17 +182,17 @@ namespace DRT
       };
 
       // Set the artery material in the scatra-Varmanager
-      void SetArteryMaterial(CORE::Elements::Element* ele)
+      void SetArteryMaterial(Core::Elements::Element* ele)
       {
         // check if we actually have two materials
         if (ele->NumMaterial() < 2) FOUR_C_THROW("no second material available");
         // check for artery material
-        if (ele->Material(1)->MaterialType() != CORE::Materials::MaterialType::m_cnst_art)
+        if (ele->Material(1)->MaterialType() != Core::Materials::MaterialType::m_cnst_art)
           FOUR_C_THROW("Secondary material is not of type m_cnst_art, but %d",
               ele->Material(1)->MaterialType());
 
         // here we rely that the Artery material has been added as second material
-        arterymat_ = Teuchos::rcp_dynamic_cast<MAT::Cnst1dArt>(ele->Material(1));
+        arterymat_ = Teuchos::rcp_dynamic_cast<Mat::Cnst1dArt>(ele->Material(1));
 
         materialset_ = true;
       }
@@ -207,7 +207,7 @@ namespace DRT
       double Visc() { return ArteryMat()->Viscosity(); }
 
       //! return artery material
-      Teuchos::RCP<MAT::Cnst1dArt> ArteryMat()
+      Teuchos::RCP<Mat::Cnst1dArt> ArteryMat()
       {
         if (!materialset_) FOUR_C_THROW("Artery Material has not yet been set in Variablemanager");
 
@@ -216,13 +216,13 @@ namespace DRT
 
      private:
       //! artery material
-      Teuchos::RCP<MAT::Cnst1dArt> arterymat_;
+      Teuchos::RCP<Mat::Cnst1dArt> arterymat_;
 
       //! check if artery material has been set
       bool materialset_;
     };
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 

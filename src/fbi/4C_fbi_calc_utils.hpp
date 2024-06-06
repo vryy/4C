@@ -20,23 +20,23 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
   class SparseOperator;
   class SparseMatrix;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 namespace FBI
 {
@@ -54,8 +54,8 @@ namespace FBI
      * @param num_dof (out) Number total DOFs on the element.
      *
      */
-    void GetFBIElementCenterlineDOFIndices(DRT::Discretization const& discret,
-        const CORE::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
+    void GetFBIElementCenterlineDOFIndices(Discret::Discretization const& discret,
+        const Core::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
         unsigned int& num_dof);
 
     /*----------------------------------------------------------------------------*
@@ -81,12 +81,12 @@ namespace FBI
      */
 
     void AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
-        const DRT::Discretization& discretization1, const DRT::Discretization& discretization2,
-        std::vector<int> const& elegid,
-        std::vector<CORE::LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
-        std::vector<CORE::LINALG::SerialDenseVector>* eleforce,
-        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>* elestiff);
+        const Discret::Discretization& discretization1,
+        const Discret::Discretization& discretization2, std::vector<int> const& elegid,
+        std::vector<Core::LinAlg::SerialDenseVector> const& eleforce_centerlineDOFs,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
+        std::vector<Core::LinAlg::SerialDenseVector>* eleforce,
+        std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>* elestiff);
 
   }  // namespace UTILS
 }  // namespace FBI

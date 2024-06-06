@@ -29,7 +29,7 @@ class LineIntegration
 {
  public:
   LineIntegration(
-      CORE::LINALG::Matrix<2, 2> endPts, int inte_num, std::vector<double> alpha, bool bcellInt)
+      Core::LinAlg::Matrix<2, 2> endPts, int inte_num, std::vector<double> alpha, bool bcellInt)
       : end_pts_(endPts), inte_num_(inte_num), alpha_(alpha), bcell_int_(bcellInt)
   {
   }
@@ -42,24 +42,24 @@ class LineIntegration
   /*!
   \brief Choose the base function to be integrated
   */
-  void set_integ_type(CORE::GEO::CUT::ProjectionDirection inttype) { int_type_ = inttype; }
+  void set_integ_type(Core::Geo::Cut::ProjectionDirection inttype) { int_type_ = inttype; }
 
   /*!
   \brief Transform the Gauss integration point available in the limit (-1,1) to the actual line
   coordinates
    */
-  void Transform(const CORE::LINALG::Matrix<2, 2> &xyze, const double &eta,
-      CORE::LINALG::Matrix<2, 1> &x_gp_lin, CORE::LINALG::Matrix<2, 1> &normal, double &drs);
+  void Transform(const Core::LinAlg::Matrix<2, 2> &xyze, const double &eta,
+      Core::LinAlg::Matrix<2, 1> &x_gp_lin, Core::LinAlg::Matrix<2, 1> &normal, double &drs);
 
  private:
   /*!
   \brief Compute the normal vector of the line
   */
-  CORE::LINALG::Matrix<2, 1> compute_normal();
+  Core::LinAlg::Matrix<2, 1> compute_normal();
 
   //! end point of the line
   // first index decides the x or y coordinate, second index decides the start point or end point
-  CORE::LINALG::Matrix<2, 2> end_pts_;
+  Core::LinAlg::Matrix<2, 2> end_pts_;
 
   //! defines the base function to be integrated
   int inte_num_;
@@ -72,7 +72,7 @@ class LineIntegration
 
   //! over which plane (x, y or z) boundarycell has to be projected when performing boundarycell
   //! integration
-  CORE::GEO::CUT::ProjectionDirection int_type_;
+  Core::Geo::Cut::ProjectionDirection int_type_;
 };
 
 FOUR_C_NAMESPACE_CLOSE

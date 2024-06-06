@@ -33,13 +33,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
-    const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::FSIStructureWrapper& structure,
-    ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale, bool structuresplit, int symmetric,
+    const Core::LinAlg::MultiMapExtractor& maps, Adapter::FSIStructureWrapper& structure,
+    Adapter::Fluid& fluid, Adapter::AleFsiWrapper& ale, bool structuresplit, int symmetric,
     std::vector<std::string>& blocksmoother, std::vector<double>& schuromega,
     std::vector<double>& omega, std::vector<int>& iterations, std::vector<double>& somega,
     std::vector<int>& siterations, std::vector<double>& fomega, std::vector<int>& fiterations,
     std::vector<double>& aomega, std::vector<int>& aiterations, int analyze,
-    INPAR::FSI::LinearBlockSolver strategy, INPAR::FSI::Verbosity verbosity,
+    Inpar::FSI::LinearBlockSolver strategy, Inpar::FSI::Verbosity verbosity,
     OverlappingBlockMatrixHybridSchwarz* hybridPrec)
     : OverlappingBlockMatrix(Teuchos::null, maps, structure, fluid, ale, structuresplit, symmetric,
           omega[0], iterations[0], somega[0],
@@ -67,7 +67,7 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
       verbosity_(verbosity),
       hybridPrec_(hybridPrec)
 {
-  if (strategy_ != INPAR::FSI::PreconditionedKrylov && strategy_ != INPAR::FSI::LinalgSolver)
+  if (strategy_ != Inpar::FSI::PreconditionedKrylov && strategy_ != Inpar::FSI::LinalgSolver)
     FOUR_C_THROW("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
 }
 
@@ -81,7 +81,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   FOUR_C_THROW("class OverlappingBlockMatrixFSIAMG does not support #define BLOCKMATRIXMERGE");
 #endif
 
-  if (GLOBAL::Problem::Instance()->GetCommunicators()->NumGroups() != 1)
+  if (Global::Problem::Instance()->GetCommunicators()->NumGroups() != 1)
     FOUR_C_THROW(
         "No nested parallelism for AMG FSI. See comments in "
         "FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()!");
@@ -94,14 +94,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   const int myrank = (hybridPrec_ == nullptr) ? Matrix(0, 0).Comm().MyPID()
                                               : hybridPrec_->Matrix(0, 0).Comm().MyPID();
 
-  const CORE::LINALG::SparseMatrix& structInnerOp =
+  const Core::LinAlg::SparseMatrix& structInnerOp =
       (hybridPrec_ == nullptr) ? Matrix(0, 0) : hybridPrec_->Matrix(0, 0);
-  const CORE::LINALG::SparseMatrix& fluidInnerOp =
+  const Core::LinAlg::SparseMatrix& fluidInnerOp =
       (hybridPrec_ == nullptr) ? Matrix(1, 1) : hybridPrec_->Matrix(1, 1);
-  const CORE::LINALG::SparseMatrix& aleInnerOp =
+  const Core::LinAlg::SparseMatrix& aleInnerOp =
       (hybridPrec_ == nullptr) ? Matrix(2, 2) : hybridPrec_->Matrix(2, 2);
 
-  Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null;
   Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
 
   // build AMG hierarchies
@@ -166,12 +166,12 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   minnlevel_ = 1;
   maxnlevel_ = 1;
 
-  if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
+  if (!myrank && verbosity_ == Inpar::FSI::verbosity_full)
   {
     printf("       -----------------------------------------------------------------------\n");
     switch (strategy_)
     {
-      case INPAR::FSI::PreconditionedKrylov:
+      case Inpar::FSI::PreconditionedKrylov:
       {
         printf(
             "       Setting up BGS(AMG): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
@@ -227,7 +227,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(structInnerOp.RowMap());
-    if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
+    if (!myrank && verbosity_ == Inpar::FSI::verbosity_full)
       printf("       Structure: NumGlobalElements fine level %d\n",
           structInnerOp.RowMap().NumGlobalElements());
 
@@ -289,7 +289,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(fluidInnerOp.RowMap());
-    if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
+    if (!myrank && verbosity_ == Inpar::FSI::verbosity_full)
       printf("       Fluid    : NumGlobalElements fine level %d\n",
           fluidInnerOp.RowMap().NumGlobalElements());
 
@@ -353,7 +353,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(aleInnerOp.RowMap());
-    if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
+    if (!myrank && verbosity_ == Inpar::FSI::verbosity_full)
       printf("       Ale      : NumGlobalElements fine level %d\n",
           aleInnerOp.RowMap().NumGlobalElements());
 
@@ -415,7 +415,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   //-----------------------------------------------------------------
   // wrap the off-diagonal matrix blocks into MLAPI operators
   {
-    const CORE::LINALG::SparseMatrix& Matrix01 =
+    const Core::LinAlg::SparseMatrix& Matrix01 =
         (hybridPrec_ == nullptr) ? Matrix(0, 1) : hybridPrec_->Matrix(0, 1);
     MLAPI::Space dspace(Matrix01.EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix01.EpetraMatrix()->RangeMap());
@@ -423,7 +423,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     ASF_[0] = Asf_;
   }
   {
-    const CORE::LINALG::SparseMatrix& Matrix10 =
+    const Core::LinAlg::SparseMatrix& Matrix10 =
         (hybridPrec_ == nullptr) ? Matrix(1, 0) : hybridPrec_->Matrix(1, 0);
     MLAPI::Space dspace(Matrix10.EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix10.EpetraMatrix()->RangeMap());
@@ -431,7 +431,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     AFS_[0] = Afs_;
   }
   {
-    const CORE::LINALG::SparseMatrix& Matrix12 =
+    const Core::LinAlg::SparseMatrix& Matrix12 =
         (hybridPrec_ == nullptr) ? Matrix(1, 2) : hybridPrec_->Matrix(1, 2);
     MLAPI::Space dspace(Matrix12.EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix12.EpetraMatrix()->RangeMap());
@@ -441,7 +441,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
 
   if (structuresplit_)
   {
-    const CORE::LINALG::SparseMatrix& Matrix21 =
+    const Core::LinAlg::SparseMatrix& Matrix21 =
         (hybridPrec_ == nullptr) ? Matrix(2, 1) : hybridPrec_->Matrix(2, 1);
     MLAPI::Space dspace(Matrix21.EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix21.EpetraMatrix()->RangeMap());
@@ -450,7 +450,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   }
   else
   {
-    const CORE::LINALG::SparseMatrix& Matrix20 =
+    const Core::LinAlg::SparseMatrix& Matrix20 =
         (hybridPrec_ == nullptr) ? Matrix(2, 0) : hybridPrec_->Matrix(2, 0);
     MLAPI::Space dspace(Matrix20.EpetraMatrix()->DomainMap());
     MLAPI::Space rspace(Matrix20.EpetraMatrix()->RangeMap());
@@ -501,7 +501,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   else
   {
     // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
-    const CORE::LINALG::SparseMatrix& Matrix00 =
+    const Core::LinAlg::SparseMatrix& Matrix00 =
         (hybridPrec_ == nullptr) ? Matrix(0, 0) : hybridPrec_->Matrix(0, 0);
     structuresolver_->Setup(Matrix00.EpetraMatrix());
     Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(Matrix00.RangeMap(), true));
@@ -569,9 +569,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   else
   {
     // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
-    Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex = Teuchos::null;
+    Teuchos::RCP<Core::LinAlg::MapExtractor> fsidofmapex = Teuchos::null;
     Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
-    const CORE::LINALG::SparseMatrix& Matrix11 =
+    const Core::LinAlg::SparseMatrix& Matrix11 =
         (hybridPrec_ == nullptr) ? Matrix(1, 1) : hybridPrec_->Matrix(1, 1);
     fluidsolver_->Setup(
         Matrix11.EpetraMatrix(), fsidofmapex, fluid_.discretization(), irownodes, structuresplit_);
@@ -619,7 +619,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   else
   {
     // setup direct solver/ILU prec and do a dummy solve to create factorization/preconditioner
-    const CORE::LINALG::SparseMatrix& Matrix22 =
+    const Core::LinAlg::SparseMatrix& Matrix22 =
         (hybridPrec_ == nullptr) ? Matrix(2, 2) : hybridPrec_->Matrix(2, 2);
     alesolver_->Setup(Matrix22.EpetraMatrix());
     Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(Matrix22.RangeMap(), true));
@@ -634,7 +634,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   minnlevel_ = maxnlevel_;
 
   //-------------------------------------------------------------- timing
-  if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
+  if (!myrank && verbosity_ == Inpar::FSI::verbosity_full)
   {
     printf("       -----------------------------------------------------------------------\n");
     printf("       Additional AMG(BGS/Schur)/ BGS(AMG) setup time %10.5e [s]\n",
@@ -1210,11 +1210,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
   const Epetra_Vector& x = Teuchos::dyn_cast<const Epetra_Vector>(X);
 
   // various range and domain spaces
-  const CORE::LINALG::SparseMatrix& Matrix00 =
+  const Core::LinAlg::SparseMatrix& Matrix00 =
       (hybridPrec_ == nullptr) ? Matrix(0, 0) : hybridPrec_->Matrix(0, 0);
-  const CORE::LINALG::SparseMatrix& Matrix11 =
+  const Core::LinAlg::SparseMatrix& Matrix11 =
       (hybridPrec_ == nullptr) ? Matrix(1, 1) : hybridPrec_->Matrix(1, 1);
-  const CORE::LINALG::SparseMatrix& Matrix22 =
+  const Core::LinAlg::SparseMatrix& Matrix22 =
       (hybridPrec_ == nullptr) ? Matrix(2, 2) : hybridPrec_->Matrix(2, 2);
   MLAPI::Space rsspace(Matrix00.RangeMap());
   MLAPI::Space rfspace(Matrix11.RangeMap());
@@ -1261,7 +1261,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
   // run FSIAMG
   switch (strategy_)
   {
-    case INPAR::FSI::PreconditionedKrylov:
+    case Inpar::FSI::PreconditionedKrylov:
     {
       int myrank = X.Comm().MyPID();
       std::vector<int> Vsweeps(3, 1);
@@ -1320,9 +1320,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::sgs(
 
       break;
     }
-    case INPAR::FSI::LinalgSolver:
+    case Inpar::FSI::LinalgSolver:
     {
-      // Do nothing. Will be done by CORE::LINALG::Solver internally.
+      // Do nothing. Will be done by Core::LinAlg::Solver internally.
       break;
     }
     default:
@@ -1404,7 +1404,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::vcycle(const int level, const int nlevel
  *----------------------------------------------------------------------*/
 const char* FSI::OverlappingBlockMatrixFSIAMG::Label() const
 {
-  if (strategy_ == INPAR::FSI::PreconditionedKrylov)
+  if (strategy_ == Inpar::FSI::PreconditionedKrylov)
   {
     if (structuresplit_)
       return "structuresplit BGS(AMG) / PreconditionedKrylov";

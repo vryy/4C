@@ -17,13 +17,13 @@
 
 void test_ls_hex8_florian1()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -71,19 +71,19 @@ void test_ls_hex8_florian1()
   xyze(1, 7) = 124.031;
   xyze(2, 7) = 0.75;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_florian2()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -131,19 +131,19 @@ void test_ls_hex8_florian2()
   xyze(1, 7) = 124.031;
   xyze(2, 7) = 0.75;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_florian3()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -191,19 +191,19 @@ void test_ls_hex8_florian3()
   xyze(1, 7) = 102.326;
   xyze(2, 7) = 0.75;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_florian4()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -251,19 +251,19 @@ void test_ls_hex8_florian4()
   xyze(1, 7) = 115.152;
   xyze(2, 7) = 2.94118;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_florian5()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -311,19 +311,19 @@ void test_ls_hex8_florian5()
   xyze(1, 7) = 85.2713;
   xyze(2, 7) = 0.769231;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_florian6()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -371,19 +371,19 @@ void test_ls_hex8_florian6()
   xyze(1, 7) = 85.2713;
   xyze(2, 7) = 0.769231;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_florian7()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -431,19 +431,19 @@ void test_ls_hex8_florian7()
   xyze(1, 7) = 132.308;
   xyze(2, 7) = 1.51515;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_florian8()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -491,19 +491,19 @@ void test_ls_hex8_florian8()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_florian9()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -551,19 +551,19 @@ void test_ls_hex8_florian9()
   xyze(1, 7) = 98.4615;
   xyze(2, 7) = 1.51515;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_florian10()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -611,19 +611,19 @@ void test_ls_hex8_florian10()
   xyze(1, 7) = 79.0698;
   xyze(2, 7) = 0.769231;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_florian11()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -671,19 +671,19 @@ void test_ls_hex8_florian11()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_florian12()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -731,19 +731,19 @@ void test_ls_hex8_florian12()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_florian13()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -791,19 +791,19 @@ void test_ls_hex8_florian13()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_ursula1()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -851,19 +851,19 @@ void test_ls_hex8_ursula1()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_ursula2()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -911,19 +911,19 @@ void test_ls_hex8_ursula2()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_ursula3()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -971,19 +971,19 @@ void test_ls_hex8_ursula3()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_ursula4()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1031,19 +1031,19 @@ void test_ls_hex8_ursula4()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_ursula5()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1091,19 +1091,19 @@ void test_ls_hex8_ursula5()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_ursula6()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1151,19 +1151,19 @@ void test_ls_hex8_ursula6()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_simple()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1205,19 +1205,19 @@ void test_ls_hex8_simple()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_simple2()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, -1);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1259,19 +1259,19 @@ void test_ls_hex8_simple2()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_simple3()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, -1);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1313,19 +1313,19 @@ void test_ls_hex8_simple3()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_simple4()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, 0);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1367,19 +1367,19 @@ void test_ls_hex8_simple4()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_simple5()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, 1);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1422,19 +1422,19 @@ void test_ls_hex8_simple5()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
 void test_ls_hex8_simple6()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, -1);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1480,7 +1480,7 @@ void test_ls_hex8_simple6()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1490,13 +1490,13 @@ void test_ls_hex8_simple7()
   {
     double dy = 0.1 * a;
 
-    CORE::GEO::CUT::LevelSetIntersection lsi;
+    Core::Geo::Cut::LevelSetIntersection lsi;
     lsi.GetOptions().Init_for_Cuttests();
 
     // simple hex8 element
     std::vector<int> nids(8);
     std::vector<double> lsvs(8);
-    CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+    Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
     for (int i = 0; i < 8; ++i)
     {
@@ -1544,20 +1544,20 @@ void test_ls_hex8_simple7()
     xyze(1, 7) = 1;
     xyze(2, 7) = 1;
 
-    lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+    lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
     lsi.Cut();
   }
 }
 
 void test_ls_hex8_touch()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, -1);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1603,7 +1603,7 @@ void test_ls_hex8_touch()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1626,13 +1626,13 @@ void test_ls_hex8_between()
 {
   for (int e = 0; e < 2; ++e)
   {
-    CORE::GEO::CUT::LevelSetIntersection lsi;
+    Core::Geo::Cut::LevelSetIntersection lsi;
     lsi.GetOptions().Init_for_Cuttests();
 
     // simple hex8 element
     std::vector<int> nids(8);
     std::vector<double> lsvs(8, -1);
-    CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+    Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
     for (int i = 0; i < 8; ++i)
     {
@@ -1642,24 +1642,24 @@ void test_ls_hex8_between()
     // std::copy( lsvs.begin(), lsvs.end(), std::ostream_iterator<double>( std::cout, " " ) );
     // std::cout << "\n";
 
-    lsi.add_element(e, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
-    lsi.Cut(true, false, INPAR::CUT::VCellGaussPts_DirectDivergence);
+    lsi.add_element(e, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
+    lsi.Cut(true, false, Inpar::Cut::VCellGaussPts_DirectDivergence);
   }
 }
 
 void test_ls_hex8_experiment()
 {
-  CORE::GEO::CUT::LevelSetIntersection lsi;
+  Core::Geo::Cut::LevelSetIntersection lsi;
   lsi.GetOptions().Init_for_Cuttests();
 
-  CORE::GEO::CUT::Options options;
+  Core::Geo::Cut::Options options;
   lsi.GetOptions(options);
   options.SetSimpleShapes(false);
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1707,6 +1707,6 @@ void test_ls_hex8_experiment()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.add_element(1, nids, xyze, CORE::FE::CellType::hex8, &lsvs[0]);
+  lsi.add_element(1, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
   lsi.Cut();
 }

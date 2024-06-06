@@ -19,9 +19,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Point;
     class Line;
@@ -29,7 +29,7 @@ namespace CORE::GEO
     class Element;
     class Mesh;
 
-    namespace IMPL
+    namespace Impl
     {
       /// a planar graph that is used to create facets out of lines and points
       class PointGraph
@@ -166,20 +166,20 @@ namespace CORE::GEO
         virtual inline const Teuchos::RCP<PointGraph::Graph> &graph_ptr() { return graph_; }
 
        private:
-        Teuchos::RCP<CORE::GEO::CUT::IMPL::PointGraph::Graph> create_graph(unsigned dim);
+        Teuchos::RCP<Core::Geo::Cut::Impl::PointGraph::Graph> create_graph(unsigned dim);
 
         Teuchos::RCP<Graph> graph_;
       };  // class PointGraph
 
       // non-member function
       bool find_cycles(graph_t &g, Cycle &cycle,
-          std::map<vertex_t, CORE::LINALG::Matrix<3, 1>> &local, std::vector<Cycle> &cycles);
+          std::map<vertex_t, Core::LinAlg::Matrix<3, 1>> &local, std::vector<Cycle> &cycles);
 
       Teuchos::RCP<PointGraph> CreatePointGraph(Mesh &mesh, Element *element, Side *side,
           const PointGraph::Location &location, const PointGraph::Strategy &strategy);
-    }  // namespace IMPL
-  }    // namespace CUT
-}  // namespace CORE::GEO
+    }  // namespace Impl
+  }    // namespace Cut
+}  // namespace Core::Geo
 
 
 FOUR_C_NAMESPACE_CLOSE

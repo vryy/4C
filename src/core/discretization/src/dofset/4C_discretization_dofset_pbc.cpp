@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/07|
  *----------------------------------------------------------------------*/
-CORE::Dofsets::PBCDofSet::PBCDofSet(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
+Core::DOFSets::PBCDofSet::PBCDofSet(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
     : DofSet(), perbndcouples_(Teuchos::null), myMaxGID_(-1)
 {
   SetCoupledNodes(couplednodes);
@@ -31,16 +31,16 @@ CORE::Dofsets::PBCDofSet::PBCDofSet(Teuchos::RCP<std::map<int, std::vector<int>>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::PBCDofSet::MaxAllGID() const { return myMaxGID_; }
+int Core::DOFSets::PBCDofSet::MaxAllGID() const { return myMaxGID_; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CORE::Dofsets::PBCDofSet::MinAllGID() const { return myMinGID_; }
+int Core::DOFSets::PBCDofSet::MinAllGID() const { return myMinGID_; }
 
 
-int CORE::Dofsets::PBCDofSet::assign_degrees_of_freedom(
-    const DRT::Discretization& dis, const unsigned dspos, const int start)
+int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
+    const Discret::Discretization& dis, const unsigned dspos, const int start)
 {
   // temporarily store the slave node set
   Teuchos::RCP<std::set<int>> tempset = slavenodeids_;
@@ -106,7 +106,7 @@ int CORE::Dofsets::PBCDofSet::assign_degrees_of_freedom(
  |  update coupled nodes map                             rasthofer 07/11|
  |                                                       DA wichmann    |
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::PBCDofSet::SetCoupledNodes(
+void Core::DOFSets::PBCDofSet::SetCoupledNodes(
     Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
 {
   perbndcouples_ = couplednodes;
@@ -129,7 +129,7 @@ void CORE::Dofsets::PBCDofSet::SetCoupledNodes(
  |  Build the connectivity between slave node and its master node       |
  |                                                       schott 05/15   |
  *----------------------------------------------------------------------*/
-void CORE::Dofsets::PBCDofSet::build_slave_to_master_node_connectivity()
+void Core::DOFSets::PBCDofSet::build_slave_to_master_node_connectivity()
 {
   perbnd_slavetomaster_ = Teuchos::rcp(new std::map<int, int>);
 

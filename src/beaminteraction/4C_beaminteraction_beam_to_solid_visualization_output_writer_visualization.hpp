@@ -25,11 +25,11 @@ FOUR_C_NAMESPACE_OPEN
 
 // Forward declarations.
 
-namespace STR::TIMINT
+namespace STR::TimeInt
 {
   class ParamsRuntimeOutput;
 }
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -43,7 +43,7 @@ namespace BEAMINTERACTION
    * files to disc, i.e. one file that will be opened with ParaView. The data that can be stored, is
    * point geometry, cell connected to the points, point data and cell data.
    */
-  class BeamToSolidOutputWriterVisualization : public CORE::IO::VisualizationManager
+  class BeamToSolidOutputWriterVisualization : public Core::IO::VisualizationManager
   {
    public:
     /**
@@ -52,8 +52,8 @@ namespace BEAMINTERACTION
      * @param visualization_output_params (in) Global visualization parameter pointer.
      */
     BeamToSolidOutputWriterVisualization(const std::string& writer_full_name,
-        CORE::IO::VisualizationParameters visualization_params,
-        Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params);
+        Core::IO::VisualizationParameters visualization_params,
+        Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params);
 
     /**
      * \brief Destructor.
@@ -69,7 +69,7 @@ namespace BEAMINTERACTION
      * @param discret (in) Pointer to the discretization.
      */
     void add_discretization_nodal_reference_position(
-        const Teuchos::RCP<const DRT::Discretization>& discret);
+        const Teuchos::RCP<const Discret::Discretization>& discret);
 
     /**
      * \brief Add global DOF based data to the writer.
@@ -91,13 +91,13 @@ namespace BEAMINTERACTION
 
    private:
     //! Global parameters of visualization output.
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params_;
+    Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params_;
 
     //! Full name of this visualization.
     const std::string writer_full_name_;
 
     //! discretization based on which global dof data can be written.
-    Teuchos::RCP<const DRT::Discretization> discret_;
+    Teuchos::RCP<const Discret::Discretization> discret_;
 
     //! Map for nodal GID of discretization.
     Teuchos::RCP<Epetra_Map> node_gid_map_;

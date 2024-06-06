@@ -18,8 +18,8 @@ space-time varying coefficients
 FOUR_C_NAMESPACE_OPEN
 
 
-MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp::CoupAnisoNeoHookeVarProp(
-    const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::CoupAnisoNeoHookeVarProp::CoupAnisoNeoHookeVarProp(
+    const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : ParameterAniso(matdata),
       c_(matdata->Get<double>("C")),
       sourceactiv_(matdata->Get<int>("SOURCE_ACTIVATION")),
@@ -30,33 +30,34 @@ MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp::CoupAnisoNeoHookeVarProp(
 {
 }
 
-MAT::ELASTIC::CoupAnisoNeoHookeVarProp::CoupAnisoNeoHookeVarProp(
-    MAT::ELASTIC::PAR::CoupAnisoNeoHookeVarProp* params)
+Mat::Elastic::CoupAnisoNeoHookeVarProp::CoupAnisoNeoHookeVarProp(
+    Mat::Elastic::PAR::CoupAnisoNeoHookeVarProp* params)
     : params_(params)
 {
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::PackSummand(CORE::COMM::PackBuffer& data) const
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::PackSummand(
+    Core::Communication::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, structural_tensor_);
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::UnpackSummand(
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   ExtractfromPack(position, data, a_);
   ExtractfromPack(position, data, structural_tensor_);
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::Setup(int numgp, Input::LineDefinition* linedef)
 {
   // path if fibers aren't given in .dat file
   if (params_->init_ == 0)
   {
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
-    CORE::LINALG::Matrix<3, 3> Id(true);
-    CORE::LINALG::Matrix<3, 3> locsys(true);
+    Core::LinAlg::Matrix<3, 3> Id(true);
+    Core::LinAlg::Matrix<3, 3> locsys(true);
     for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
 
     // To realize a full rotated fiber orientation and to keep the general structure of
@@ -99,9 +100,9 @@ void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::Setup(int numgp, INPUT::LineDefinit
     if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
     {
       // Read in of data
-      CORE::LINALG::Matrix<3, 3> locsys(true);
+      Core::LinAlg::Matrix<3, 3> locsys(true);
       ReadRadAxiCir(linedef, locsys);
-      CORE::LINALG::Matrix<3, 3> Id(true);
+      Core::LinAlg::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
       // final setup of fiber data
       SetFiberVecs(0.0, locsys, Id);
@@ -125,17 +126,17 @@ void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::Setup(int numgp, INPUT::LineDefinit
     FOUR_C_THROW("INIT mode not implemented");
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::add_stress_aniso_principal(
-    const CORE::LINALG::Matrix<6, 1>& rcg, CORE::LINALG::Matrix<6, 6>& cmat,
-    CORE::LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::add_stress_aniso_principal(
+    const Core::LinAlg::Matrix<6, 1>& rcg, Core::LinAlg::Matrix<6, 6>& cmat,
+    Core::LinAlg::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
   double time_ = params.get<double>("total time", 0.0);
   const auto& element_center_coordinates_ref =
-      params.get<CORE::LINALG::Matrix<3, 1>>("elecenter_coords_ref");
+      params.get<Core::LinAlg::Matrix<3, 1>>("elecenter_coords_ref");
   double stressFact_ =
-      GLOBAL::Problem::Instance()
-          ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
+      Global::Problem::Instance()
+          ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
           .Evaluate(element_center_coordinates_ref.A(), time_, 0);
 
 
@@ -147,15 +148,15 @@ void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::add_stress_aniso_principal(
   // cmat.MultiplyNT(delta, A_, A_, 1.0);
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::GetFiberVecs(
-    std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::GetFiberVecs(
+    std::vector<Core::LinAlg::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
   fibervecs.push_back(a_);
 }
 
-void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::SetFiberVecs(const double newgamma,
-    const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
+void Mat::Elastic::CoupAnisoNeoHookeVarProp::SetFiberVecs(const double newgamma,
+    const Core::LinAlg::Matrix<3, 3>& locsys, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   if ((params_->gamma_ < -90) || (params_->gamma_ > 90))
     FOUR_C_THROW("Fiber angle not in [-90,90]");
@@ -170,15 +171,15 @@ void MAT::ELASTIC::CoupAnisoNeoHookeVarProp::SetFiberVecs(const double newgamma,
       gamma = newgamma;
   }
 
-  CORE::LINALG::Matrix<3, 1> ca(true);
+  Core::LinAlg::Matrix<3, 1> ca(true);
   for (int i = 0; i < 3; ++i)
   {
     // a = cos gamma e3 + sin gamma e2
     ca(i) = cos(gamma) * locsys(i, 2) + sin(gamma) * locsys(i, 1);
   }
   // pull back in reference configuration
-  CORE::LINALG::Matrix<3, 1> a_0(true);
-  CORE::LINALG::Matrix<3, 3> idefgrd(true);
+  Core::LinAlg::Matrix<3, 1> a_0(true);
+  Core::LinAlg::Matrix<3, 3> idefgrd(true);
   idefgrd.Invert(defgrd);
 
   a_0.Multiply(idefgrd, ca);

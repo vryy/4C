@@ -16,9 +16,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace ELASTIC
+  namespace Elastic
   {
     namespace PAR
     {
@@ -29,11 +29,11 @@ namespace MAT
        * MAT 1 VISCO_GenMax TAU 0.1 BETA 1 SOLVE OST
        * MAT 1 VISCO_GenMax TAU 0.1 BETA 1 SOLVE CONVOL
        */
-      class GenMax : public CORE::MAT::PAR::Parameter
+      class GenMax : public Core::Mat::PAR::Parameter
       {
        public:
         /// standard constructor
-        GenMax(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata);
+        GenMax(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -47,11 +47,11 @@ namespace MAT
 
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<CORE::MAT::Material> create_material() override
+        Teuchos::RCP<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
-              "MAT::ELASTIC::Summand::Factory.");
+              "Mat::Elastic::Summand::Factory.");
           return Teuchos::null;
         };
       };  // class GenMax
@@ -71,7 +71,7 @@ namespace MAT
      *  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
      * \f]
      *
-     * in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELASTIC::Summand.
+     * in which the individual \f$\Psi_i\f$ is implemented as #Mat::Elastic::Summand.
      *
      *
      * The stress tensor of the viscous part is calculated from the evolution equation
@@ -98,15 +98,15 @@ namespace MAT
     {
      public:
       /// constructor with given material parameters
-      GenMax(MAT::ELASTIC::PAR::GenMax* params);
+      GenMax(Mat::Elastic::PAR::GenMax* params);
 
       /// @name Access material constants
       //@{
 
       /// material type
-      CORE::Materials::MaterialType MaterialType() const override
+      Core::Materials::MaterialType MaterialType() const override
       {
-        return CORE::Materials::mes_genmax;
+        return Core::Materials::mes_genmax;
       }
 
       //@}
@@ -148,12 +148,12 @@ namespace MAT
 
      private:
       /// my material parameters
-      MAT::ELASTIC::PAR::GenMax* params_;
+      Mat::Elastic::PAR::GenMax* params_;
     };
 
 
-  }  // namespace ELASTIC
-}  // namespace MAT
+  }  // namespace Elastic
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

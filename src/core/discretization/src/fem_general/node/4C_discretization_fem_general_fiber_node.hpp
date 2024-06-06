@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   /*!
    * \brief Type of the coordinate system direction
@@ -36,14 +36,14 @@ namespace CORE::Nodes
     Transverse
   };
 
-  class FiberNodeType : public CORE::COMM::ParObjectType
+  class FiberNodeType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "FiberNodeType"; }
 
     static FiberNodeType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FiberNodeType instance_;
@@ -53,7 +53,7 @@ namespace CORE::Nodes
   \brief Node with additional fiber information
 
   */
-  class FiberNode : public CORE::Nodes::Node
+  class FiberNode : public Core::Nodes::Node
   {
    public:
     //! @name Enums and Friends
@@ -108,7 +108,7 @@ namespace CORE::Nodes
     \param data (in/out): a char vector to pack the data into
 
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -153,7 +153,7 @@ namespace CORE::Nodes
 
   };  // class FiberNode
 
-}  // namespace CORE::Nodes
+}  // namespace Core::Nodes
 
 FOUR_C_NAMESPACE_CLOSE
 

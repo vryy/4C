@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -26,11 +26,11 @@ namespace DRT
     {
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::AddSlaveEleDisp(
-          const DRT::Discretization& slavedis,  ///< coupling slave discretization
-          const std::vector<int>& lm            ///< local map
+          const Discret::Discretization& slavedis,  ///< coupling slave discretization
+          const std::vector<int>& lm                ///< local map
       )
       {
         std::vector<double> mymatrix(lm.size());
@@ -40,12 +40,12 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::AddSlaveEleDisp(
-          const DRT::Discretization& slavedis,  ///< coupling slave discretization
-          const std::vector<int>& lm,           ///< local map
-          std::vector<double>& mymatrix         ///< slave element displacement vector
+          const Discret::Discretization& slavedis,  ///< coupling slave discretization
+          const std::vector<int>& lm,               ///< local map
+          std::vector<double>& mymatrix             ///< slave element displacement vector
       )
       {
         // leave, if displacements are not set
@@ -56,7 +56,7 @@ namespace DRT
           FOUR_C_THROW("Cannot get state vector %s", disp_statename_.c_str());
 
         // extract local values of the global vector
-        CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+        Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -82,11 +82,11 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetSlaveState(
-          const DRT::Discretization& slavedis,  ///< coupling slave discretization
-          const std::vector<int>& lm            ///< local map
+          const Discret::Discretization& slavedis,  ///< coupling slave discretization
+          const std::vector<int>& lm                ///< local map
       )
       {
         // get state of the global vector
@@ -96,7 +96,7 @@ namespace DRT
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
-        CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+        Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -115,11 +115,11 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::SetSlaveStaten(
-          const DRT::Discretization& slavedis,  ///< coupling slave discretization
-          const std::vector<int>& lm            ///< local map
+          const Discret::Discretization& slavedis,  ///< coupling slave discretization
+          const std::vector<int>& lm                ///< local map
       )
       {
         // get state of the global vector
@@ -129,7 +129,7 @@ namespace DRT
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
-        CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+        Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -148,10 +148,10 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelnp(
-          CORE::LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
+          Core::LinAlg::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
       ) const
       {
         ivelint.Multiply(slave_vel_, slave_funct_);
@@ -159,10 +159,10 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVeln(
-          CORE::LINALG::Matrix<nsd_, 1>& ivelintn  ///< interface velocity at coupling slave side
+          Core::LinAlg::Matrix<nsd_, 1>& ivelintn  ///< interface velocity at coupling slave side
       ) const
       {
         ivelintn.Multiply(slave_veln_, slave_funct_);
@@ -170,7 +170,7 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfacePresnp(
           double& ipres  ///< interface pressure at coupling slave side
@@ -182,7 +182,7 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfacePresn(
           double& ipresn  ///< interface pressure at coupling slave side
@@ -194,11 +194,11 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void
       SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_interface_vel_gradnp(
-          CORE::LINALG::Matrix<nsd_, nsd_>&
+          Core::LinAlg::Matrix<nsd_, nsd_>&
               velgradint  ///< interface velocity gradients at coupling slave side
       ) const
       {
@@ -207,11 +207,11 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void
       SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_interface_vel_gradn(
-          CORE::LINALG::Matrix<nsd_, nsd_>&
+          Core::LinAlg::Matrix<nsd_, nsd_>&
               velgradintn  ///< interface velocity gradients at coupling slave side
       ) const
       {
@@ -220,10 +220,10 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetSlaveFunct(
-          CORE::LINALG::Matrix<slave_nen_, 1>& slave_funct  ///< coupling slave shape functions
+          Core::LinAlg::Matrix<slave_nen_, 1>& slave_funct  ///< coupling slave shape functions
       ) const
       {
         slave_funct = slave_funct_;
@@ -231,13 +231,13 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void
       SlaveElementRepresentation<distype, slave_distype, slave_numdof>::set_interface_jump_statenp(
-          const DRT::Discretization& cutterdis,  ///< cutter discretization
-          const std::string state,               ///< state
-          const std::vector<int>& lm             ///< local map
+          const Discret::Discretization& cutterdis,  ///< cutter discretization
+          const std::string state,                   ///< state
+          const std::vector<int>& lm                 ///< local map
       )
       {
         // get state of the global vector
@@ -247,7 +247,7 @@ namespace DRT
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
-        CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+        Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -265,13 +265,13 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void
       SlaveElementRepresentation<distype, slave_distype, slave_numdof>::set_interface_jump_staten(
-          const DRT::Discretization& cutterdis,  ///< cutter discretization
-          const std::string state,               ///< state
-          const std::vector<int>& lm             ///< local map
+          const Discret::Discretization& cutterdis,  ///< cutter discretization
+          const std::string state,                   ///< state
+          const std::vector<int>& lm                 ///< local map
       )
       {
         // get state of the global vector
@@ -281,7 +281,7 @@ namespace DRT
 
         // extract local values of the global vectors
         std::vector<double> mymatrix(lm.size());
-        CORE::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
+        Core::FE::ExtractMyValues(*matrix_state, mymatrix, lm);
 
         for (unsigned inode = 0; inode < slave_nen_; ++inode)  // number of nodes
         {
@@ -299,11 +299,11 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void
       SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_interface_jump_velnp(
-          CORE::LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump
+          Core::LinAlg::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump
                                                        ///< or prescribed DBC at Gaussian point
       ) const
       {
@@ -312,11 +312,11 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void
       SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_interface_jump_veln(
-          CORE::LINALG::Matrix<nsd_, 1>& ivelintn_jump  ///< cutter element interface velocity jump
+          Core::LinAlg::Matrix<nsd_, 1>& ivelintn_jump  ///< cutter element interface velocity jump
                                                         ///< or prescribed DBC at Gaussian point
       ) const
       {
@@ -326,27 +326,27 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::Evaluate(
-          CORE::LINALG::Matrix<nsd_, 1>& xslave)
+          Core::LinAlg::Matrix<nsd_, 1>& xslave)
       {
-        CORE::LINALG::Matrix<3, 1> rst_slave(true);
+        Core::LinAlg::Matrix<3, 1> rst_slave(true);
         Evaluate(xslave, rst_slave);
       }
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::Evaluate(
-          CORE::LINALG::Matrix<nsd_, 1>& xslave, CORE::LINALG::Matrix<nsd_, 1>& rst_slave)
+          Core::LinAlg::Matrix<nsd_, 1>& xslave, Core::LinAlg::Matrix<nsd_, 1>& rst_slave)
       {
         // coupling with a 2D element
         if (slave_nsd_ == nsd_ - 1)
         {
           // evaluate shape function at solution
-          CORE::FE::shape_function_2D(slave_funct_, xslave(0), xslave(1), slave_distype);
+          Core::FE::shape_function_2D(slave_funct_, xslave(0), xslave(1), slave_distype);
           rst_slave(0) = xslave(0);
           rst_slave(1) = xslave(1);
           //    FOUR_C_THROW("You called 3D evaluation routine when coupling with a 2D element.");
@@ -354,25 +354,25 @@ namespace DRT
         }
 
         // find element local position of gauss point
-        Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-            CORE::GEO::CUT::PositionFactory::build_position<nsd_, slave_distype>(
+        Teuchos::RCP<Core::Geo::Cut::Position> pos =
+            Core::Geo::Cut::PositionFactory::build_position<nsd_, slave_distype>(
                 slave_xyze_, xslave);
         pos->Compute();
 
         if (slave_nsd_ == nsd_)
         {
           pos->local_coordinates(rst_slave);
-          CORE::FE::shape_function_3D(
+          Core::FE::shape_function_3D(
               slave_funct_, rst_slave(0), rst_slave(1), rst_slave(2), slave_distype);
-          CORE::FE::shape_function_3D_deriv1(
+          Core::FE::shape_function_3D_deriv1(
               slave_deriv_, rst_slave(0), rst_slave(1), rst_slave(2), slave_distype);
         }
         else
           FOUR_C_THROW("Unsupported dimension clash!");
 
 
-        CORE::LINALG::Matrix<nsd_, nsd_> slave_xjm(true);
-        CORE::LINALG::Matrix<nsd_, nsd_> slave_xji(true);
+        Core::LinAlg::Matrix<nsd_, nsd_> slave_xjm(true);
+        Core::LinAlg::Matrix<nsd_, nsd_> slave_xji(true);
 
         slave_xjm.MultiplyNT(slave_deriv_, slave_xyze_);
         slave_xji.Invert(slave_xjm);
@@ -391,12 +391,12 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void
       SlaveElementRepresentation<distype, slave_distype, slave_numdof>::compute_interface_force(
-          CORE::LINALG::SerialDenseVector& iforce,  ///< interface force vector
-          CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
+          Core::LinAlg::SerialDenseVector& iforce,  ///< interface force vector
+          Core::LinAlg::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
           const double& fac                         ///< integration factor
       )
       {
@@ -416,13 +416,13 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::project_on_side(
-          CORE::LINALG::Matrix<nsd_, 1>&
+          Core::LinAlg::Matrix<nsd_, 1>&
               x_gp_lin,  ///< global coordinates of gaussian point w.r.t linearized interface
-          CORE::LINALG::Matrix<nsd_, 1>& x_side,  ///< projected gaussian point on side
-          CORE::LINALG::Matrix<nsd_, 1>&
+          Core::LinAlg::Matrix<nsd_, 1>& x_side,  ///< projected gaussian point on side
+          Core::LinAlg::Matrix<nsd_, 1>&
               xi_side  ///< local coordinates of projected gaussian point w.r.t side
       )
       {
@@ -441,14 +441,14 @@ namespace DRT
         TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::project_on_side");
 
 
-        if (slave_distype == CORE::FE::CellType::tri3 or slave_distype == CORE::FE::CellType::tri6)
+        if (slave_distype == Core::FE::CellType::tri3 or slave_distype == Core::FE::CellType::tri6)
         {
           proj_sol_(0) = 0.333333333333333;
           proj_sol_(1) = 0.333333333333333;
         }
-        else if (slave_distype == CORE::FE::CellType::quad4 or
-                 slave_distype == CORE::FE::CellType::quad8 or
-                 slave_distype == CORE::FE::CellType::quad9)
+        else if (slave_distype == Core::FE::CellType::quad4 or
+                 slave_distype == Core::FE::CellType::quad8 or
+                 slave_distype == Core::FE::CellType::quad9)
         {
           proj_sol_(0) = 0.0;
           proj_sol_(1) = 0.0;
@@ -474,10 +474,10 @@ namespace DRT
           ++iter;
 
           // get current values
-          CORE::FE::shape_function_2D(proj_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
-          CORE::FE::shape_function_2D_deriv1(
+          Core::FE::shape_function_2D(proj_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
+          Core::FE::shape_function_2D_deriv1(
               proj_deriv_, proj_sol_(0), proj_sol_(1), slave_distype);
-          CORE::FE::shape_function_2D_deriv2(
+          Core::FE::shape_function_2D_deriv2(
               proj_deriv2_, proj_sol_(0), proj_sol_(1), slave_distype);
 
           proj_x_.Multiply(slave_xyze_, proj_funct_);
@@ -585,7 +585,7 @@ namespace DRT
         }
 
         // evaluate shape function at solution
-        CORE::FE::shape_function_2D(slave_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
+        Core::FE::shape_function_2D(slave_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
 
         // get projected gauss point
         x_side.Multiply(slave_xyze_, slave_funct_);
@@ -598,11 +598,11 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       double SlaveElementRepresentation<distype, slave_distype, slave_numdof>::EvalElementVolume()
       {
-        switch (CORE::FE::dim<slave_distype>)
+        switch (Core::FE::dim<slave_distype>)
         {
           case 3:
           {
@@ -619,10 +619,10 @@ namespace DRT
 
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
-      template <CORE::FE::CellType distype, CORE::FE::CellType slave_distype,
+      template <Core::FE::CellType distype, Core::FE::CellType slave_distype,
           unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::get_slave_funct_deriv(
-          CORE::LINALG::Matrix<nsd_, slave_nen_>& slave_derxy) const
+          Core::LinAlg::Matrix<nsd_, slave_nen_>& slave_derxy) const
       {
         slave_derxy = slave_derxy_;
       }
@@ -630,259 +630,259 @@ namespace DRT
 
     }  // namespace XFLUID
   }    // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 // pairs with numdof=3
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::quad9, 3>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+    Core::FE::CellType::quad9, 3>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::quad9, 3>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+    Core::FE::CellType::quad9, 3>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::quad9, 3>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+    Core::FE::CellType::quad9, 3>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::quad9, 3>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+    Core::FE::CellType::quad9, 3>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::quad9, 3>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+    Core::FE::CellType::quad9, 3>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::quad9, 3>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+    Core::FE::CellType::quad9, 3>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-// CORE::FE::CellType::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-// CORE::FE::CellType::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::quad9, 3>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+// Core::FE::CellType::tri3,3>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+// Core::FE::CellType::tri6,3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+    Core::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+    Core::FE::CellType::quad8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+    Core::FE::CellType::quad9, 3>;
 
 // volume coupled with numdof = 3, FSI Slavesided, FPI
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::hex8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+    Core::FE::CellType::hex8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+    Core::FE::CellType::hex8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+    Core::FE::CellType::hex8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+    Core::FE::CellType::hex8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+    Core::FE::CellType::hex8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+    Core::FE::CellType::hex8, 3>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+    Core::FE::CellType::hex8, 3>;
 
 // pairs with numdof=4
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::quad9, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+    Core::FE::CellType::quad9, 4>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::quad9, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+    Core::FE::CellType::quad9, 4>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::quad9, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+    Core::FE::CellType::quad9, 4>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::quad9, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+    Core::FE::CellType::quad9, 4>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::quad9, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+    Core::FE::CellType::quad9, 4>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::quad9, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+    Core::FE::CellType::quad9, 4>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-// CORE::FE::CellType::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-// CORE::FE::CellType::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::quad9, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+// Core::FE::CellType::tri3,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+// Core::FE::CellType::tri6,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+    Core::FE::CellType::quad4, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+    Core::FE::CellType::quad8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+    Core::FE::CellType::quad9, 4>;
 
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-// CORE::FE::CellType::tet4, 4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-// CORE::FE::CellType::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex8,
-    CORE::FE::CellType::hex27, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+// Core::FE::CellType::tet4, 4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+// Core::FE::CellType::tet10,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+    Core::FE::CellType::hex8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+    Core::FE::CellType::hex20, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex8,
+    Core::FE::CellType::hex27, 4>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-// CORE::FE::CellType::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-// CORE::FE::CellType::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex20,
-    CORE::FE::CellType::hex27, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+// Core::FE::CellType::tet4,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+// Core::FE::CellType::tet10,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+    Core::FE::CellType::hex8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+    Core::FE::CellType::hex20, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex20,
+    Core::FE::CellType::hex27, 4>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-// CORE::FE::CellType::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-// CORE::FE::CellType::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::hex27,
-    CORE::FE::CellType::hex27, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+// Core::FE::CellType::tet4,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+// Core::FE::CellType::tet10,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+    Core::FE::CellType::hex8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+    Core::FE::CellType::hex20, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::hex27,
+    Core::FE::CellType::hex27, 4>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-// CORE::FE::CellType::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-// CORE::FE::CellType::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet4,
-    CORE::FE::CellType::hex27, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+// Core::FE::CellType::tet4,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+// Core::FE::CellType::tet10,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+    Core::FE::CellType::hex8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+    Core::FE::CellType::hex20, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet4,
+    Core::FE::CellType::hex27, 4>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-// CORE::FE::CellType::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-// CORE::FE::CellType::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::tet10,
-    CORE::FE::CellType::hex27, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+// Core::FE::CellType::tet4,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+// Core::FE::CellType::tet10,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+    Core::FE::CellType::hex8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+    Core::FE::CellType::hex20, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::tet10,
+    Core::FE::CellType::hex27, 4>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-// CORE::FE::CellType::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-// CORE::FE::CellType::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge6,
-    CORE::FE::CellType::hex27, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+// Core::FE::CellType::tet4,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+// Core::FE::CellType::tet10,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+    Core::FE::CellType::hex8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+    Core::FE::CellType::hex20, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge6,
+    Core::FE::CellType::hex27, 4>;
 // template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-// CORE::FE::CellType::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-// CORE::FE::CellType::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<CORE::FE::CellType::wedge15,
-    CORE::FE::CellType::hex27, 4>;
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+// Core::FE::CellType::tet4,4>; template class
+// Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+// Core::FE::CellType::tet10,4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+    Core::FE::CellType::hex8, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+    Core::FE::CellType::hex20, 4>;
+template class Discret::ELEMENTS::XFLUID::SlaveElementRepresentation<Core::FE::CellType::wedge15,
+    Core::FE::CellType::hex27, 4>;
 
 FOUR_C_NAMESPACE_CLOSE

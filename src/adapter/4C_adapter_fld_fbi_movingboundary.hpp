@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class Fluid;
@@ -43,10 +43,10 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// fluid field
-    const Teuchos::RCP<ADAPTER::Fluid>& fluid_field() override { return fluidadapter_; }
+    const Teuchos::RCP<Adapter::Fluid>& fluid_field() override { return fluidadapter_; }
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<DRT::Discretization> discretization() override;
+    Teuchos::RCP<Discret::Discretization> discretization() override;
 
     /// communication object at the interface
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override;
@@ -121,7 +121,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
 
     /// create the testing of fields
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
     /// Get velocity at timestep n+1
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
@@ -138,7 +138,7 @@ namespace ADAPTER
      * need to be assembled into the overall fluid system matrix
      */
     virtual void set_coupling_contributions(
-        Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix);
+        Teuchos::RCP<const Core::LinAlg::SparseOperator> matrix);
 
     /**
      * \brief Pass additional contributions to the fluid residual to the fluid class
@@ -158,10 +158,10 @@ namespace ADAPTER
 
    private:
     /// fluid base algorithm object
-    Teuchos::RCP<ADAPTER::Fluid> fluidadapter_;
+    Teuchos::RCP<Adapter::Fluid> fluidadapter_;
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

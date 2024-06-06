@@ -34,22 +34,22 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | Constitutive matrix C and stresses (private)                mgit 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
-    const CORE::LINALG::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
-    CORE::LINALG::SerialDenseMatrix& stress,           ///< stress vector
-    CORE::LINALG::SerialDenseMatrix& C,                ///< elasticity matrix
+void Discret::ELEMENTS::Wall1::w1_call_matgeononl(
+    const Core::LinAlg::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
+    Core::LinAlg::SerialDenseMatrix& stress,           ///< stress vector
+    Core::LinAlg::SerialDenseMatrix& C,                ///< elasticity matrix
     const int numeps,                                  ///< number of strains
-    Teuchos::RCP<const CORE::MAT::Material> material,  ///< the material data
+    Teuchos::RCP<const Core::Mat::Material> material,  ///< the material data
     Teuchos::ParameterList& params,                    ///< element parameter list
     const int gp                                       ///< Gauss point
 )
 {
-  if (material->MaterialType() == CORE::Materials::m_structporo or
-      material->MaterialType() == CORE::Materials::m_structpororeaction or
-      material->MaterialType() == CORE::Materials::m_structpororeactionECM)
+  if (material->MaterialType() == Core::Materials::m_structporo or
+      material->MaterialType() == Core::Materials::m_structpororeaction or
+      material->MaterialType() == Core::Materials::m_structpororeactionECM)
   {
-    Teuchos::RCP<const MAT::StructPoro> actmat =
-        Teuchos::rcp_static_cast<const MAT::StructPoro>(material);
+    Teuchos::RCP<const Mat::StructPoro> actmat =
+        Teuchos::rcp_static_cast<const Mat::StructPoro>(material);
     // setup is done in so3_poro
     // actmat->Setup(NUMGPT_SOH8);
     material = actmat->GetMaterial();
@@ -58,10 +58,10 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
   /*--------------------------- call material law -> get tangent modulus--*/
   switch (material->MaterialType())
   {
-    case CORE::Materials::m_stvenant: /*----------------------- linear elastic ---*/
+    case Core::Materials::m_stvenant: /*----------------------- linear elastic ---*/
     {
-      const MAT::StVenantKirchhoff* actmat =
-          static_cast<const MAT::StVenantKirchhoff*>(material.get());
+      const Mat::StVenantKirchhoff* actmat =
+          static_cast<const Mat::StVenantKirchhoff*>(material.get());
       double ym = actmat->Youngs();
       double pv = actmat->PoissonRatio();
 
@@ -147,7 +147,7 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
       /*-------------------------- evaluate 2.PK-stresses -------------------*/
       /*------------------ Summenschleife -> += (2.PK stored as vecor) ------*/
 
-      CORE::LINALG::SerialDenseVector svector;
+      Core::LinAlg::SerialDenseVector svector;
       svector.size(3);
 
       for (int k = 0; k < 3; k++)
@@ -170,8 +170,8 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
       break;
     }
 
-    case CORE::Materials::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
-                                         // case CORE::Materials::m_stvenant:  //
+    case Core::Materials::m_elasthyper:  // general hyperelastic matrial (bborn, 06/09)
+                                         // case Core::Materials::m_stvenant:  //
                                          // st.venant-kirchhoff-material
     {
       material_response3d_plane(stress, C, strain, params, gp);
@@ -186,21 +186,21 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
   }  // switch(material->MaterialType())
 
   return;
-}  // DRT::ELEMENTS::Wall1::w1_call_matgeononl
+}  // Discret::ELEMENTS::Wall1::w1_call_matgeononl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::material_response3d_plane(CORE::LINALG::SerialDenseMatrix& stress,
-    CORE::LINALG::SerialDenseMatrix& C, const CORE::LINALG::SerialDenseVector& strain,
+void Discret::ELEMENTS::Wall1::material_response3d_plane(Core::LinAlg::SerialDenseMatrix& stress,
+    Core::LinAlg::SerialDenseMatrix& C, const Core::LinAlg::SerialDenseVector& strain,
     Teuchos::ParameterList& params, const int gp)
 {
   // make 3d equivalent of Green-Lagrange strain
-  CORE::LINALG::Matrix<6, 1> gl(false);
+  Core::LinAlg::Matrix<6, 1> gl(false);
   green_lagrange_plane3d(strain, gl);
 
   // call 3d stress response
-  CORE::LINALG::Matrix<6, 1> pk2(true);   // must be zerofied!!!
-  CORE::LINALG::Matrix<6, 6> cmat(true);  // must be zerofied!!!
+  Core::LinAlg::Matrix<6, 1> pk2(true);   // must be zerofied!!!
+  Core::LinAlg::Matrix<6, 6> cmat(true);  // must be zerofied!!!
   material_response3d(&pk2, &cmat, &gl, params, gp);
 
   // dimension reduction type
@@ -222,12 +222,12 @@ void DRT::ELEMENTS::Wall1::material_response3d_plane(CORE::LINALG::SerialDenseMa
     const double tol = 1e-6;
     const int n = 10;
     // working arrays
-    CORE::LINALG::Matrix<3, 3> crr(
+    Core::LinAlg::Matrix<3, 3> crr(
         true);  // LHS // constitutive matrix of restraint compo
                 // this matrix needs to be zeroed out for further usage
                 // in case the following while loop is entirely skipped during runtime
-    CORE::LINALG::Matrix<3, 1> rr(false);  // RHS // stress residual of restraint compo
-    CORE::LINALG::Matrix<3, 1> ir(false);  // SOL  // restraint strain components
+    Core::LinAlg::Matrix<3, 1> rr(false);  // RHS // stress residual of restraint compo
+    Core::LinAlg::Matrix<3, 1> ir(false);  // SOL  // restraint strain components
     // the Newton-Raphson loop
     while ((pserr > tol) and (i < n))
     {
@@ -278,7 +278,7 @@ void DRT::ELEMENTS::Wall1::material_response3d_plane(CORE::LINALG::SerialDenseMa
       // --- with an implicit function.
       // Thus the effect of the linearisation with respect to the
       // dependent strains must be added onto the free strains.
-      CORE::LINALG::Matrix<3, 3> cfr(false);
+      Core::LinAlg::Matrix<3, 3> cfr(false);
       cfr(0, 0) = cmat(0, 2);
       cfr(0, 1) = cmat(0, 4);
       cfr(0, 2) = cmat(0, 5);
@@ -288,9 +288,9 @@ void DRT::ELEMENTS::Wall1::material_response3d_plane(CORE::LINALG::SerialDenseMa
       cfr(2, 0) = cmat(3, 2);
       cfr(2, 1) = cmat(3, 4);
       cfr(2, 2) = cmat(3, 5);
-      CORE::LINALG::Matrix<3, 3> crrrf(false);
+      Core::LinAlg::Matrix<3, 3> crrrf(false);
       crrrf.MultiplyNT(crr, cfr);
-      CORE::LINALG::Matrix<3, 3> cfrrrrf(false);
+      Core::LinAlg::Matrix<3, 3> cfrrrrf(false);
       cfrrrrf.MultiplyNN(cfr, crrrf);
       // update constitutive matrix of free components
       cmat(0, 0) -= cfrrrrf(0, 0);
@@ -342,8 +342,8 @@ void DRT::ELEMENTS::Wall1::material_response3d_plane(CORE::LINALG::SerialDenseMa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::material_response3d(CORE::LINALG::Matrix<6, 1>* stress,
-    CORE::LINALG::Matrix<6, 6>* cmat, const CORE::LINALG::Matrix<6, 1>* glstrain,
+void Discret::ELEMENTS::Wall1::material_response3d(Core::LinAlg::Matrix<6, 1>* stress,
+    Core::LinAlg::Matrix<6, 6>* cmat, const Core::LinAlg::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
   SolidMaterial()->Evaluate(nullptr, glstrain, params, stress, cmat, gp, Id());
@@ -354,28 +354,28 @@ void DRT::ELEMENTS::Wall1::material_response3d(CORE::LINALG::Matrix<6, 1>* stres
 /*-----------------------------------------------------------------------------*
 | deliver internal/strain energy                                    bborn 08/08|
 *-----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Wall1::energy_internal(Teuchos::RCP<const CORE::MAT::Material> material,
-    Teuchos::ParameterList& params, const CORE::LINALG::SerialDenseVector& Ev, const int gp)
+double Discret::ELEMENTS::Wall1::energy_internal(Teuchos::RCP<const Core::Mat::Material> material,
+    Teuchos::ParameterList& params, const Core::LinAlg::SerialDenseVector& Ev, const int gp)
 {
   // switch material type
   switch (material->MaterialType())
   {
-    case CORE::Materials::m_stvenant:  // linear elastic
+    case Core::Materials::m_stvenant:  // linear elastic
     {
-      CORE::LINALG::SerialDenseMatrix Cm(Wall1::numnstr_, Wall1::numnstr_);  // elasticity matrix
-      CORE::LINALG::SerialDenseMatrix Sm(Wall1::numnstr_, Wall1::numnstr_);  // 2nd PK stress matrix
+      Core::LinAlg::SerialDenseMatrix Cm(Wall1::numnstr_, Wall1::numnstr_);  // elasticity matrix
+      Core::LinAlg::SerialDenseMatrix Sm(Wall1::numnstr_, Wall1::numnstr_);  // 2nd PK stress matrix
       w1_call_matgeononl(Ev, Sm, Cm, Wall1::numnstr_, material, params, gp);
-      CORE::LINALG::SerialDenseVector Sv(Wall1::numnstr_);  // 2nd PK stress vector
+      Core::LinAlg::SerialDenseVector Sv(Wall1::numnstr_);  // 2nd PK stress vector
       Sv(0) = Sm(0, 0);
       Sv(1) = Sm(1, 1);
       Sv(2) = Sv(3) = Sm(0, 2);
       return 0.5 * Sv.dot(Ev);
     }
     break;
-    case CORE::Materials::m_elasthyper:
+    case Core::Materials::m_elasthyper:
     {
       // transform the 2d Green-Lagrange strains into 3d notation
-      CORE::LINALG::Matrix<6, 1> glstrain(true);
+      Core::LinAlg::Matrix<6, 1> glstrain(true);
       green_lagrange_plane3d(Ev, glstrain);
 
       // strain energy
@@ -387,12 +387,12 @@ double DRT::ELEMENTS::Wall1::energy_internal(Teuchos::RCP<const CORE::MAT::Mater
       return psi;
     }
     break;
-    case CORE::Materials::m_structporo:
-    case CORE::Materials::m_structpororeaction:
-    case CORE::Materials::m_structpororeactionECM:
+    case Core::Materials::m_structporo:
+    case Core::Materials::m_structpororeaction:
+    case Core::Materials::m_structpororeactionECM:
     {
       // transform the 2d Green-Lagrange strains into 3d notation
-      CORE::LINALG::Matrix<6, 1> glstrain(true);
+      Core::LinAlg::Matrix<6, 1> glstrain(true);
       green_lagrange_plane3d(Ev, glstrain);
 
       // strain energy
@@ -422,8 +422,8 @@ double DRT::ELEMENTS::Wall1::energy_internal(Teuchos::RCP<const CORE::MAT::Mater
 /*-----------------------------------------------------------------------------*
 | deliver kinetic energy                                            bborn 08/08|
 *-----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Wall1::energy_kinetic(
-    const CORE::LINALG::SerialDenseMatrix& mass, const std::vector<double>& vel)
+double Discret::ELEMENTS::Wall1::energy_kinetic(
+    const Core::LinAlg::SerialDenseMatrix& mass, const std::vector<double>& vel)
 {
   double kin = 0.0;
   for (int i = 0; i < 2 * num_node(); ++i)

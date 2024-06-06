@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPUT
+namespace Input
 {
 
   /**
@@ -46,13 +46,13 @@ namespace INPUT
 
     /// Write whatever this LineComponent owns in the given @p container.
     virtual void Print(
-        std::ostream& stream, const CORE::IO::InputParameterContainer& container) = 0;
+        std::ostream& stream, const Core::IO::InputParameterContainer& container) = 0;
 
     /// A human-readable description of this component used in help messages.
     virtual void Describe(std::ostream& stream) {}
 
     virtual Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, CORE::IO::InputParameterContainer& container) = 0;
+        Teuchos::RCP<std::stringstream> condline, Core::IO::InputParameterContainer& container) = 0;
 
     /* write my part of a default line of the condition
      * as restructuredText for ReadTheDocs
@@ -82,16 +82,16 @@ namespace INPUT
    * @p already_parsed_container.
    */
   using LengthDefinition =
-      std::function<int(const CORE::IO::InputParameterContainer& already_parsed_container)>;
+      std::function<int(const Core::IO::InputParameterContainer& already_parsed_container)>;
 
   struct LengthFromInt
   {
     /**
-     * Determine the length of the vector component at runtime from an INPUT::IntComponent of
+     * Determine the length of the vector component at runtime from an Input::IntComponent of
      * given @p name.
      */
     LengthFromInt(std::string name) : name_(std::move(name)) {}
-    int operator()(const CORE::IO::InputParameterContainer& already_read_line)
+    int operator()(const Core::IO::InputParameterContainer& already_read_line)
     {
       return already_read_line.Get<int>(name_);
     }
@@ -109,14 +109,14 @@ namespace INPUT
   /// part. It might be reasonable to specify names that have to appear in the
   /// dat file to enhance human readability.
   ///
-  class SeparatorComponent : public INPUT::LineComponent
+  class SeparatorComponent : public Input::LineComponent
   {
    public:
     SeparatorComponent(std::string separator, std::string description = {}, bool optional = false);
 
     void DefaultLine(std::ostream& stream) override;
 
-    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
@@ -126,7 +126,7 @@ namespace INPUT
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
         Teuchos::RCP<std::stringstream> condline,
-        CORE::IO::InputParameterContainer& container) override;
+        Core::IO::InputParameterContainer& container) override;
 
    private:
     /// separator string, i.e. the NAME of variable in DAT input file
@@ -140,20 +140,20 @@ namespace INPUT
   /**
    * Component that parses a single string.
    */
-  class StringComponent : public INPUT::LineComponent
+  class StringComponent : public Input::LineComponent
   {
    public:
     StringComponent(std::string name, std::string defaultvalue, bool optional = false);
 
     void DefaultLine(std::ostream& stream) override;
 
-    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
         Teuchos::RCP<std::stringstream> condline,
-        CORE::IO::InputParameterContainer& container) override;
+        Core::IO::InputParameterContainer& container) override;
 
    private:
     /// default value
@@ -166,7 +166,7 @@ namespace INPUT
    * Parse a string from a selection of different strings. The parsed strings are either converted
    * into an integer or a string value.
    */
-  class SelectionComponent : public INPUT::LineComponent
+  class SelectionComponent : public Input::LineComponent
   {
    public:
     SelectionComponent(std::string name, std::string defaultvalue,
@@ -181,13 +181,13 @@ namespace INPUT
 
     std::string WriteReadTheDocs() override;
 
-    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     Teuchos::Array<std::string> GetOptions() override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
         Teuchos::RCP<std::stringstream> condline,
-        CORE::IO::InputParameterContainer& container) override;
+        Core::IO::InputParameterContainer& container) override;
 
    private:
     std::string defaultvalue_;
@@ -213,20 +213,20 @@ namespace INPUT
   /**
    * Parse an integer.
    */
-  class IntComponent : public INPUT::LineComponent
+  class IntComponent : public Input::LineComponent
   {
    public:
     explicit IntComponent(std::string name, IntComponentData data = IntComponentData{});
 
     void DefaultLine(std::ostream& stream) override;
 
-    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
         Teuchos::RCP<std::stringstream> condline,
-        CORE::IO::InputParameterContainer& container) override;
+        Core::IO::InputParameterContainer& container) override;
 
     std::string WriteReadTheDocs() override;
 
@@ -238,7 +238,7 @@ namespace INPUT
   /**
    * Parse a vector of integers.
    */
-  class IntVectorComponent : public INPUT::LineComponent
+  class IntVectorComponent : public Input::LineComponent
   {
    public:
     IntVectorComponent(std::string name, int length, IntComponentData data = {});
@@ -250,13 +250,13 @@ namespace INPUT
 
     std::string WriteReadTheDocs() override;
 
-    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
         Teuchos::RCP<std::stringstream> condline,
-        CORE::IO::InputParameterContainer& container) override;
+        Core::IO::InputParameterContainer& container) override;
 
     void SetLength(int newlength);
 
@@ -281,20 +281,20 @@ namespace INPUT
   /**
    * Parse a single double value.
    */
-  class RealComponent : public INPUT::LineComponent
+  class RealComponent : public Input::LineComponent
   {
    public:
     RealComponent(std::string name, RealComponentData data = {});
 
     void DefaultLine(std::ostream& stream) override;
 
-    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
         Teuchos::RCP<std::stringstream> condline,
-        CORE::IO::InputParameterContainer& container) override;
+        Core::IO::InputParameterContainer& container) override;
 
    private:
     RealComponentData data_;
@@ -304,7 +304,7 @@ namespace INPUT
   /**
    * Parse a vector of doubles.
    */
-  class RealVectorComponent : public INPUT::LineComponent
+  class RealVectorComponent : public Input::LineComponent
   {
    public:
     RealVectorComponent(std::string name, int length, RealComponentData data = {});
@@ -318,13 +318,13 @@ namespace INPUT
 
     void SetLength(int newlength);
 
-    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
         Teuchos::RCP<std::stringstream> condline,
-        CORE::IO::InputParameterContainer& container) override;
+        Core::IO::InputParameterContainer& container) override;
 
    private:
     std::variant<int, LengthDefinition> length_;
@@ -335,7 +335,7 @@ namespace INPUT
   /**
    * Parse a single bool value.
    */
-  class BoolComponent : public INPUT::LineComponent
+  class BoolComponent : public Input::LineComponent
   {
    public:
     explicit BoolComponent(
@@ -343,13 +343,13 @@ namespace INPUT
 
     void DefaultLine(std::ostream& stream) override;
 
-    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
         Teuchos::RCP<std::stringstream> condline,
-        CORE::IO::InputParameterContainer& container) override;
+        Core::IO::InputParameterContainer& container) override;
 
    private:
     void print_yes_no(std::ostream& stream,  ///< stream to add output
@@ -370,7 +370,7 @@ namespace INPUT
   /**
    * This component contains a series of LineComponents that are selected by a key parameter.
    */
-  class SwitchComponent : public INPUT::LineComponent
+  class SwitchComponent : public Input::LineComponent
   {
     //! This component only supports integers for keys. Unscoped enums convert automatically to
     //! int and can be used to increase readability.
@@ -384,7 +384,7 @@ namespace INPUT
      * continues with these components. By default, the selection is made based on @p default_key.
      */
     SwitchComponent(std::string name, const KeyType& default_key,
-        std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<INPUT::LineComponent>>>>
+        std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<Input::LineComponent>>>>
             choices);
 
     void DefaultLine(std::ostream& stream) override;
@@ -395,26 +395,26 @@ namespace INPUT
 
     Teuchos::Array<std::string> GetOptions() override;
 
-    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
         Teuchos::RCP<std::stringstream> condline,
-        CORE::IO::InputParameterContainer& container) override;
+        Core::IO::InputParameterContainer& container) override;
 
    private:
     KeyType default_key_;
-    std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<INPUT::LineComponent>>>>
+    std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<Input::LineComponent>>>>
         choices_;
 
     //! Helper component to read the selected key from input.
-    std::unique_ptr<INPUT::SelectionComponent> component_for_key_;
+    std::unique_ptr<Input::SelectionComponent> component_for_key_;
   };
 
 
   /**
    * A LineComponent where an input string is processed by a user-defined operation.
    */
-  class ProcessedComponent : public INPUT::LineComponent
+  class ProcessedComponent : public Input::LineComponent
   {
    public:
     /*!
@@ -439,22 +439,22 @@ namespace INPUT
         : LineComponent(name, optional),
           insert_operation_(
               [process_operation](const std::string& name, const std::string& read_string,
-                  CORE::IO::InputParameterContainer& container)
+                  Core::IO::InputParameterContainer& container)
               { container.Add(name, process_operation(read_string)); }),
           print_string_(std::move(print_string)){};
 
     void DefaultLine(std::ostream& stream) override;
 
-    void Print(std::ostream& stream, const CORE::IO::InputParameterContainer& container) override;
+    void Print(std::ostream& stream, const Core::IO::InputParameterContainer& container) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
         Teuchos::RCP<std::stringstream> condline,
-        CORE::IO::InputParameterContainer& container) override;
+        Core::IO::InputParameterContainer& container) override;
 
    private:
     //! add processed data to the container
     std::function<void(
-        const std::string&, const std::string&, CORE::IO::InputParameterContainer& container)>
+        const std::string&, const std::string&, Core::IO::InputParameterContainer& container)>
         insert_operation_;
 
     //! string defining print out for this component
@@ -471,11 +471,11 @@ namespace INPUT
       const std::string& description = {}, const int defaultvalue = 0, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
-    definition->AddComponent(Teuchos::rcp(new INPUT::IntComponent(name, data)));
+    definition->AddComponent(Teuchos::rcp(new Input::IntComponent(name, data)));
   }
 
   /// add a separator followed by a number integer values
@@ -488,11 +488,11 @@ namespace INPUT
       const int defaultvalue = 0, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
-    definition->AddComponent(Teuchos::rcp(new INPUT::IntVectorComponent(name, size, data)));
+    definition->AddComponent(Teuchos::rcp(new Input::IntVectorComponent(name, size, data)));
   }
 
   /// add a separator followed by a number integer values
@@ -505,12 +505,12 @@ namespace INPUT
       const int defaultvalue = 0, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::IntVectorComponent(name, LengthFromInt(sizename), data)));
+        Teuchos::rcp(new Input::IntVectorComponent(name, LengthFromInt(sizename), data)));
   }
 
   /// add a separator followed by a single real value
@@ -522,9 +522,9 @@ namespace INPUT
       const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::RealComponent(name, {defaultvalue, optional})));
+        Teuchos::rcp(new Input::RealComponent(name, {defaultvalue, optional})));
   }
 
   /// add a separator followed by a number of real values
@@ -536,9 +536,9 @@ namespace INPUT
       const double defaultvalue = 0.0, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::RealVectorComponent(name, size, {defaultvalue, optional})));
+        Teuchos::rcp(new Input::RealVectorComponent(name, size, {defaultvalue, optional})));
   }
 
   /// add a separator followed by a number of real values
@@ -550,9 +550,9 @@ namespace INPUT
       const double defaultvalue = 0.0, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     definition->AddComponent(Teuchos::rcp(
-        new INPUT::RealVectorComponent(name, LengthFromInt(sizename), {defaultvalue, optional})));
+        new Input::RealVectorComponent(name, LengthFromInt(sizename), {defaultvalue, optional})));
   }
 
   /// add a separator followed by a single string value
@@ -564,9 +564,9 @@ namespace INPUT
       const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::StringComponent(name, defaultvalue, optional)));
+        Teuchos::rcp(new Input::StringComponent(name, defaultvalue, optional)));
   }
 
   /// add a separator followed by a single Boolean value
@@ -578,8 +578,8 @@ namespace INPUT
       const std::string& description, const bool defaultvalue = false, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
-    definition->AddComponent(Teuchos::rcp(new INPUT::BoolComponent(name, defaultvalue, optional)));
+        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
+    definition->AddComponent(Teuchos::rcp(new Input::BoolComponent(name, defaultvalue, optional)));
   }
 
   /// add a separator
@@ -590,7 +590,7 @@ namespace INPUT
       const std::string& name, const std::string& description, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::SeparatorComponent(name, description, optional)));
+        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
   }
 
   /*!
@@ -630,11 +630,11 @@ namespace INPUT
       const std::string& print_string, const bool optional = false)
   {
     definition->AddComponent(
-        Teuchos::rcp(new INPUT::SeparatorComponent(name, separator_description, optional)));
+        Teuchos::rcp(new Input::SeparatorComponent(name, separator_description, optional)));
     definition->AddComponent(Teuchos::rcp(
-        new INPUT::ProcessedComponent(name, process_operation, print_string, optional)));
+        new Input::ProcessedComponent(name, process_operation, print_string, optional)));
   }
-}  // namespace INPUT
+}  // namespace Input
 
 FOUR_C_NAMESPACE_CLOSE
 

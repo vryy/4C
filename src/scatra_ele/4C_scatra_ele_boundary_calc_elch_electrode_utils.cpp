@@ -17,20 +17,20 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmodel, const double j0,
-    const double frt, const double epdderiv, const double alphaa, const double alphac,
-    const double resistance, const double expterm1, const double expterm2, const double kr,
-    const double faraday, const double emasterphiint, const double eslavephiint, const double cmax,
-    const double eta, double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave,
-    double& dj_dpot_master)
+void Discret::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmodel,
+    const double j0, const double frt, const double epdderiv, const double alphaa,
+    const double alphac, const double resistance, const double expterm1, const double expterm2,
+    const double kr, const double faraday, const double emasterphiint, const double eslavephiint,
+    const double cmax, const double eta, double& dj_dc_slave, double& dj_dc_master,
+    double& dj_dpot_slave, double& dj_dpot_master)
 {
   const double expterm = expterm1 - expterm2;
   // core linearizations associated with Butler-Volmer mass flux density
   switch (kineticmodel)
   {
-    case INPAR::S2I::kinetics_butlervolmerreduced:
-    case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
-    case INPAR::S2I::kinetics_butlervolmerreducedcapacitance:
+    case Inpar::S2I::kinetics_butlervolmerreduced:
+    case Inpar::S2I::kinetics_butlervolmerreducedthermoresistance:
+    case Inpar::S2I::kinetics_butlervolmerreducedcapacitance:
     {
       dj_dc_slave = j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2);
       dj_dc_master = 0.0;
@@ -38,7 +38,7 @@ void DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmod
       dj_dpot_master = -dj_dpot_slave;
       break;
     }
-    case INPAR::S2I::kinetics_butlervolmerreducedlinearized:
+    case Inpar::S2I::kinetics_butlervolmerreducedlinearized:
     {
       dj_dc_slave = -j0 * frt * epdderiv;
       dj_dc_master = 0.0;
@@ -46,8 +46,8 @@ void DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmod
       dj_dpot_master = -dj_dpot_slave;
       break;
     }
-    case INPAR::S2I::kinetics_butlervolmer:
-    case INPAR::S2I::kinetics_butlervolmerpeltier:
+    case Inpar::S2I::kinetics_butlervolmer:
+    case Inpar::S2I::kinetics_butlervolmerpeltier:
     {
       dj_dc_slave =
           (kr * std::pow(emasterphiint, alphaa) * std::pow(cmax - eslavephiint, alphaa - 1.0) *
@@ -59,7 +59,7 @@ void DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmod
       dj_dpot_master = -dj_dpot_slave;
       break;
     }
-    case INPAR::S2I::kinetics_butlervolmerlinearized:
+    case Inpar::S2I::kinetics_butlervolmerlinearized:
     {
       dj_dc_slave =
           (kr * std::pow(emasterphiint, alphaa) * std::pow(cmax - eslavephiint, alphaa - 1.0) *
@@ -71,7 +71,7 @@ void DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmod
       dj_dpot_master = -dj_dpot_slave;
       break;
     }
-    case INPAR::S2I::kinetics_butlervolmerresistance:
+    case Inpar::S2I::kinetics_butlervolmerresistance:
     {
       // core linearizations associated with Butler-Volmer current density according to MA Schmidt
       // 2016 via implicit differentiation where F(x,i) = i - i0 * expterm
@@ -92,8 +92,8 @@ void DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmod
       dj_dpot_slave = -dF_dpot_slave * dF_di_inverse;
       dj_dpot_master = -dF_dpot_master * dF_di_inverse;
       break;
-    }  // case INPAR::S2I::kinetics_butlervolmerresistance
-    case INPAR::S2I::kinetics_butlervolmerreducedresistance:
+    }  // case Inpar::S2I::kinetics_butlervolmerresistance
+    case Inpar::S2I::kinetics_butlervolmerreducedresistance:
     {
       // core linearizations associated with Butler-Volmer current density according to MA Schmidt
       // 2016 via implicit differentiation where F(x,i) = i - i0 * expterm
@@ -110,7 +110,7 @@ void DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmod
       dj_dpot_slave = -dF_dpot_slave * dF_di_inverse;
       dj_dpot_master = -dF_dpot_master * dF_di_inverse;
       break;
-    }  // case INPAR::S2I::kinetics_butlervolmerreducedwithresistance
+    }  // case Inpar::S2I::kinetics_butlervolmerreducedwithresistance
     default:
     {
       FOUR_C_THROW("Unknown scatra-scatra interface kinetic model: %i", kineticmodel);
@@ -120,7 +120,7 @@ void DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmod
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::CalculateButlerVolmerTempLinearizations(const double alphaa,
+void Discret::ELEMENTS::CalculateButlerVolmerTempLinearizations(const double alphaa,
     const double alphac, const double depddT, const double eta, const double etempint,
     const double faraday, const double frt, const double gasconstant, const double j0,
     double& dj_dT_slave)
@@ -150,7 +150,7 @@ void DRT::ELEMENTS::CalculateButlerVolmerTempLinearizations(const double alphaa,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::CalculateButlerVolmerDispLinearizations(const int kineticmodel,
+void Discret::ELEMENTS::CalculateButlerVolmerDispLinearizations(const int kineticmodel,
     const double alphaa, const double alphac, const double frt, const double j0, const double eta,
     const double depd_ddetF, double& dj_dsqrtdetg, double& dj_ddetF)
 {
@@ -177,12 +177,12 @@ void DRT::ELEMENTS::CalculateButlerVolmerDispLinearizations(const int kineticmod
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::CalculateButlerVolmerExchangeMassFluxDensity(const double kr,
+double Discret::ELEMENTS::CalculateButlerVolmerExchangeMassFluxDensity(const double kr,
     const double alpha_a, const double alpha_c, const double c_max, const double c_ed,
     const double c_el, const int kinetic_model,
-    const CORE::Conditions::ConditionType& s2i_condition_type)
+    const Core::Conditions::ConditionType& s2i_condition_type)
 {
-  FOUR_C_ASSERT(s2i_condition_type == CORE::Conditions::S2IKinetics,
+  FOUR_C_ASSERT(s2i_condition_type == Core::Conditions::S2IKinetics,
       "This method is called with the wrong condition type. Check the implementation!");
 
   if (IsReducedButlerVolmer(kinetic_model))
@@ -197,7 +197,7 @@ double DRT::ELEMENTS::CalculateButlerVolmerExchangeMassFluxDensity(const double 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::CalculateModifiedButlerVolmerMassFluxDensity(const double j0,
+double Discret::ELEMENTS::CalculateModifiedButlerVolmerMassFluxDensity(const double j0,
     const double alphaa, const double alphac, const double frt, const double pot_ed,
     const double pot_el, const double epd, const double resistance, const double itemax,
     const double convtol, const double faraday)
@@ -254,20 +254,20 @@ double DRT::ELEMENTS::CalculateModifiedButlerVolmerMassFluxDensity(const double 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::IsButlerVolmerLinearized(const int kineticmodel)
+bool Discret::ELEMENTS::IsButlerVolmerLinearized(const int kineticmodel)
 {
-  return (kineticmodel == INPAR::S2I::kinetics_butlervolmerlinearized or
-          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedlinearized);
+  return (kineticmodel == Inpar::S2I::kinetics_butlervolmerlinearized or
+          kineticmodel == Inpar::S2I::kinetics_butlervolmerreducedlinearized);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::IsReducedButlerVolmer(const int kineticmodel)
+bool Discret::ELEMENTS::IsReducedButlerVolmer(const int kineticmodel)
 {
-  return (kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
-          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedlinearized or
-          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedresistance or
-          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance or
-          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedcapacitance);
+  return (kineticmodel == Inpar::S2I::kinetics_butlervolmerreduced or
+          kineticmodel == Inpar::S2I::kinetics_butlervolmerreducedlinearized or
+          kineticmodel == Inpar::S2I::kinetics_butlervolmerreducedresistance or
+          kineticmodel == Inpar::S2I::kinetics_butlervolmerreducedthermoresistance or
+          kineticmodel == Inpar::S2I::kinetics_butlervolmerreducedcapacitance);
 }
 FOUR_C_NAMESPACE_CLOSE

@@ -21,29 +21,29 @@ namespace
 {
   bool PrestressIsActive(const double currentTime)
   {
-    INPAR::STR::PreStress pstype = Teuchos::getIntegralValue<INPAR::STR::PreStress>(
-        GLOBAL::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+    Inpar::STR::PreStress pstype = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+        Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     const double pstime =
-        GLOBAL::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
-    return pstype != INPAR::STR::PreStress::none && currentTime <= pstime + 1.0e-15;
+        Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
+    return pstype != Inpar::STR::PreStress::none && currentTime <= pstime + 1.0e-15;
   }
 }  // namespace
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FPSIStructureWrapper::FPSIStructureWrapper(Teuchos::RCP<Structure> structure)
+Adapter::FPSIStructureWrapper::FPSIStructureWrapper(Teuchos::RCP<Structure> structure)
     : FSIStructureWrapper(structure)
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::extract_interface_dispn(bool FPSI)
+Teuchos::RCP<Epetra_Vector> Adapter::FPSIStructureWrapper::extract_interface_dispn(bool FPSI)
 {
   if (!FPSI)
   {
-    return ADAPTER::FSIStructureWrapper::extract_interface_dispn();
+    return Adapter::FSIStructureWrapper::extract_interface_dispn();
   }
   else
   {
@@ -62,11 +62,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::extract_interface_dis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FPSIStructureWrapper::extract_interface_dispnp(bool FPSI)
+Teuchos::RCP<Epetra_Vector> Adapter::FPSIStructureWrapper::extract_interface_dispnp(bool FPSI)
 {
   if (!FPSI)
   {
-    return ADAPTER::FSIStructureWrapper::extract_interface_dispnp();
+    return Adapter::FSIStructureWrapper::extract_interface_dispnp();
   }
   else
   {

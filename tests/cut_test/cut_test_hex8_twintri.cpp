@@ -22,13 +22,13 @@
 
 void test_hex8_twintri()
 {
-  CORE::GEO::CUT::MeshIntersection intersection;
+  Core::Geo::Cut::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
   {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+    Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.5;
     tri3_xyze(1, 0) = 0.0;
@@ -43,10 +43,10 @@ void test_hex8_twintri()
     nids.push_back(11);
     nids.push_back(12);
     nids.push_back(13);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
   {
-    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
+    Core::LinAlg::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.5;
     tri3_xyze(1, 0) = 0.0;
@@ -61,10 +61,10 @@ void test_hex8_twintri()
     nids.push_back(11);
     nids.push_back(14);
     nids.push_back(12);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, CORE::FE::CellType::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, Core::FE::CellType::tri3);
   }
 
-  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 1.0;
   hex8_xyze(1, 0) = 1.0;
@@ -94,20 +94,20 @@ void test_hex8_twintri()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.add_element(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
+  intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
+  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_twinQuad()
 {
-  CORE::GEO::CUT::MeshIntersection intersection;
+  Core::Geo::Cut::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
 
   {
-    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
+    Core::LinAlg::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.1;
     quad4_xyze(1, 0) = 0.02;
@@ -130,10 +130,10 @@ void test_hex8_twinQuad()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, CORE::FE::CellType::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, Core::FE::CellType::quad4);
   }
   {
-    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
+    Core::LinAlg::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.1;
     quad4_xyze(1, 0) = 0.02;
@@ -156,10 +156,10 @@ void test_hex8_twinQuad()
     nids.push_back(14);
     nids.push_back(15);
     nids.push_back(16);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, CORE::FE::CellType::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, Core::FE::CellType::quad4);
   }
 
-  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 1.0;
   hex8_xyze(1, 0) = 1.0;
@@ -189,21 +189,21 @@ void test_hex8_twinQuad()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.add_element(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
+  intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_chairCut()
 {
-  CORE::GEO::CUT::MeshIntersection intersection;
+  Core::Geo::Cut::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
 
   {
-    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
+    Core::LinAlg::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.01;
     quad4_xyze(1, 0) = 0.0;
@@ -226,10 +226,10 @@ void test_hex8_chairCut()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, CORE::FE::CellType::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, Core::FE::CellType::quad4);
   }
   {
-    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
+    Core::LinAlg::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.02;
     quad4_xyze(1, 0) = 0.45;
@@ -252,11 +252,11 @@ void test_hex8_chairCut()
     nids.push_back(15);
     nids.push_back(16);
     nids.push_back(13);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, CORE::FE::CellType::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, Core::FE::CellType::quad4);
   }
 
   {
-    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
+    Core::LinAlg::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.0;
     quad4_xyze(1, 0) = 0.55;
@@ -279,11 +279,11 @@ void test_hex8_chairCut()
     nids.push_back(18);
     nids.push_back(19);
     nids.push_back(20);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, CORE::FE::CellType::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, Core::FE::CellType::quad4);
   }
 
   {
-    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
+    Core::LinAlg::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.95;
     quad4_xyze(1, 0) = 1.0;
@@ -306,10 +306,10 @@ void test_hex8_chairCut()
     nids.push_back(20);
     nids.push_back(19);
     nids.push_back(22);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, CORE::FE::CellType::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, Core::FE::CellType::quad4);
   }
 
-  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 1.0;
   hex8_xyze(1, 0) = 1.0;
@@ -339,21 +339,21 @@ void test_hex8_chairCut()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.add_element(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
+  intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_VCut()
 {
-  CORE::GEO::CUT::MeshIntersection intersection;
+  Core::Geo::Cut::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
 
   {
-    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
+    Core::LinAlg::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.5;
     quad4_xyze(1, 0) = 0.5;
@@ -376,10 +376,10 @@ void test_hex8_VCut()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, CORE::FE::CellType::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, Core::FE::CellType::quad4);
   }
   {
-    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
+    Core::LinAlg::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.9;
     quad4_xyze(1, 0) = 1.5;
@@ -402,10 +402,10 @@ void test_hex8_VCut()
     nids.push_back(15);
     nids.push_back(12);
     nids.push_back(11);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, CORE::FE::CellType::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, Core::FE::CellType::quad4);
   }
 
-  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
+  Core::LinAlg::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 1.0;
   hex8_xyze(1, 0) = 1.0;
@@ -435,6 +435,6 @@ void test_hex8_VCut()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.add_element(1, nids, hex8_xyze, CORE::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
+  intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
+  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
 }

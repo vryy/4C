@@ -41,15 +41,15 @@ namespace BEAMINTERACTION
      * @param condition_line_2 (in) The other line condition containing the beam elements.
      */
     BeamToBeamContactCondition(
-        const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line_1,
-        const Teuchos::RCP<const CORE::Conditions::Condition>& condition_line_2);
+        const Teuchos::RCP<const Core::Conditions::Condition>& condition_line_1,
+        const Teuchos::RCP<const Core::Conditions::Condition>& condition_line_2);
 
     /**
      * \brief Build the ID sets for this condition.
      *
      * The BuildIdSets method from the base class is called to build the beam IDs.
      */
-    void BuildIdSets(const Teuchos::RCP<const DRT::Discretization>& discretization) override;
+    void BuildIdSets(const Teuchos::RCP<const Discret::Discretization>& discretization) override;
 
     /**
      * \brief Check if a combination of beam and beam id is in this condition.
@@ -65,7 +65,7 @@ namespace BEAMINTERACTION
      * \brief Create the beam to beam pairs needed for this condition (derived).
      */
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPair(
-        const std::vector<CORE::Elements::Element const*>& ele_ptrs) override;
+        const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
    protected:
     /**
@@ -78,7 +78,7 @@ namespace BEAMINTERACTION
 
    private:
     //! Pointer to the other line condition.
-    Teuchos::RCP<const CORE::Conditions::Condition> condition_other_;
+    Teuchos::RCP<const Core::Conditions::Condition> condition_other_;
 
     //! Vector containing all beam contact pairs created by this condition.
     std::vector<Teuchos::RCP<BeamContactPair>> condition_contact_pairs_;

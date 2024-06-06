@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::PAR::ViscoNeoHooke::ViscoNeoHooke(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ViscoNeoHooke::ViscoNeoHooke(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       youngs_slow_(matdata->Get<double>("YOUNGS_SLOW")),
       poisson_(matdata->Get<double>("POISSON")),
@@ -36,18 +36,18 @@ MAT::PAR::ViscoNeoHooke::ViscoNeoHooke(Teuchos::RCP<CORE::MAT::PAR::Material> ma
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ViscoNeoHooke::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ViscoNeoHooke::create_material()
 {
-  return Teuchos::rcp(new MAT::ViscoNeoHooke(this));
+  return Teuchos::rcp(new Mat::ViscoNeoHooke(this));
 }
 
 
-MAT::ViscoNeoHookeType MAT::ViscoNeoHookeType::instance_;
+Mat::ViscoNeoHookeType Mat::ViscoNeoHookeType::instance_;
 
 
-CORE::COMM::ParObject* MAT::ViscoNeoHookeType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ViscoNeoHookeType::Create(const std::vector<char>& data)
 {
-  MAT::ViscoNeoHooke* visco = new MAT::ViscoNeoHooke();
+  Mat::ViscoNeoHooke* visco = new Mat::ViscoNeoHooke();
   visco->Unpack(data);
   return visco;
 }
@@ -56,28 +56,28 @@ CORE::COMM::ParObject* MAT::ViscoNeoHookeType::Create(const std::vector<char>& d
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         05/08|
  *----------------------------------------------------------------------*/
-MAT::ViscoNeoHooke::ViscoNeoHooke() : params_(nullptr)
+Mat::ViscoNeoHooke::ViscoNeoHooke() : params_(nullptr)
 {
   isinit_ = false;
-  histstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  artstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  histstresslast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  artstresslast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  histstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  artstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  histstresslast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  artstresslast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
 }
 
 
 /*----------------------------------------------------------------------*
  |  Copy-Constructor                             (public)          05/08|
  *----------------------------------------------------------------------*/
-MAT::ViscoNeoHooke::ViscoNeoHooke(MAT::PAR::ViscoNeoHooke* params) : params_(params) {}
+Mat::ViscoNeoHooke::ViscoNeoHooke(Mat::PAR::ViscoNeoHooke* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ViscoNeoHooke::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -112,25 +112,25 @@ void MAT::ViscoNeoHooke::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Unpack(const std::vector<char>& data)
+void Mat::ViscoNeoHooke::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ViscoNeoHooke*>(mat);
+        params_ = static_cast<Mat::PAR::ViscoNeoHooke*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -142,13 +142,13 @@ void MAT::ViscoNeoHooke::Unpack(const std::vector<char>& data)
 
   if (twicehistsize == 0) isinit_ = false;
 
-  histstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  artstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  histstresslast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  artstresslast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  histstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  artstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  histstresslast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  artstresslast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
   for (int var = 0; var < twicehistsize; var += 2)
   {
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> tmp(true);
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1> tmp(true);
     histstresscurr_->push_back(tmp);
     artstresscurr_->push_back(tmp);
     ExtractfromPack(position, data, tmp);
@@ -166,13 +166,13 @@ void MAT::ViscoNeoHooke::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Initialise/allocate internal stress variables (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::ViscoNeoHooke::Setup(int numgp, Input::LineDefinition* linedef)
 {
-  histstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  artstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  histstresslast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  artstresslast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> emptyvec(true);
+  histstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  artstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  histstresslast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  artstresslast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  const Core::LinAlg::Matrix<NUM_STRESS_3D, 1> emptyvec(true);
   histstresscurr_->resize(numgp);
   histstresslast_->resize(numgp);
   artstresscurr_->resize(numgp);
@@ -198,13 +198,13 @@ void MAT::ViscoNeoHooke::Setup(int numgp, INPUT::LineDefinition* linedef)
 /*----------------------------------------------------------------------*
  |  Update internal stress variables              (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Update()
+void Mat::ViscoNeoHooke::Update()
 {
   histstresslast_ = histstresscurr_;
   artstresslast_ = artstresscurr_;
-  const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> emptyvec(true);
-  histstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  artstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  const Core::LinAlg::Matrix<NUM_STRESS_3D, 1> emptyvec(true);
+  histstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  artstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
   const int numgp = histstresslast_->size();
   histstresscurr_->resize(numgp);
   artstresscurr_->resize(numgp);
@@ -220,10 +220,10 @@ void MAT::ViscoNeoHooke::Update()
 /*----------------------------------------------------------------------*
  |  Evaluate Material                             (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,
-    CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, const int gp, const int eleGID)
+void Mat::ViscoNeoHooke::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,
+    Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, const int gp, const int eleGID)
 {
   // get material parameters
   const double E_s = params_->youngs_slow_;
@@ -306,10 +306,10 @@ void MAT::ViscoNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
-  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Id;
+  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Id;
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
   for (int i = 3; i < 6; i++) Id(i) = 0.0;
-  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
+  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
   C.Scale(2.0);
   C += Id;
 
@@ -322,7 +322,7 @@ void MAT::ViscoNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   const double I3invcubroot = std::pow(I3, -1.0 / 3.0);
 
   // invert C
-  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Cinv;
+  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Cinv;
   Cinv(0) = C(1) * C(2) - 0.25 * C(4) * C(4);
   Cinv(1) = C(0) * C(2) - 0.25 * C(5) * C(5);
   Cinv(2) = C(0) * C(1) - 0.25 * C(3) * C(3);
@@ -337,24 +337,24 @@ void MAT::ViscoNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // Split into volumetric and deviatoric parts. Viscosity affects only deviatoric part
   // Volumetric part of PK2 stress
-  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> SVol(Cinv);
+  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> SVol(Cinv);
   SVol.Scale(kappa * (J - 1.0) * J);
   *stress += SVol;
 
   // Deviatoric elastic part (2 d W^dev/d C)
-  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> SDevEla(Cinv);
+  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> SDevEla(Cinv);
   SDevEla.Scale(-1.0 / 3.0 * I1);
   SDevEla += Id;
   SDevEla.Scale(mue * I3invcubroot);  // mue*I3^(-1/3) (Id-1/3*I1*Cinv)
 
   // visco part
   // read history
-  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> S_n(histstresslast_->at(gp));
+  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> S_n(histstresslast_->at(gp));
   S_n.Scale(-1.0);
-  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Q_n(artstresslast_->at(gp));
+  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_n(artstresslast_->at(gp));
 
   // artificial visco stresses
-  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Q(Q_n);
+  Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(Q_n);
   Q.Scale(artscalar1);
   Q += SDevEla;
   Q += S_n;

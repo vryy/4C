@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace SSI
   {
@@ -64,11 +64,11 @@ namespace INPAR
 
     /// set specific ssi conditions
     void SetValidConditions(
-        std::vector<Teuchos::RCP<CORE::Conditions::ConditionDefinition>>& condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace SSI
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace POROELAST
+namespace PoroElast
 {
   //! base class of all monolithic Poroelasticity algorithms
   class Partitioned : public PoroBase
@@ -26,7 +26,7 @@ namespace POROELAST
    public:
     //! create using a Epetra_Comm
     explicit Partitioned(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter);
+        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! proceed one time step (prepare, solve, update)
     void do_time_step() override;
@@ -72,7 +72,7 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Vector> fluidveln_;  //!< global fluid velocities and pressures
   };
 
-}  // namespace POROELAST
+}  // namespace PoroElast
 
 FOUR_C_NAMESPACE_CLOSE
 

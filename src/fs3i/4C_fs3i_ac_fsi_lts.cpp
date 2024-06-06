@@ -111,7 +111,7 @@ void FS3I::ACFSI::set_mean_wall_shear_stresses() const
 
   // insert structure interface entries into vector with full structure length
   Teuchos::RCP<Epetra_Vector> structurewss =
-      CORE::LINALG::CreateVector(*(fsi_->structure_field()->Interface()->FullMap()), true);
+      Core::LinAlg::CreateVector(*(fsi_->structure_field()->Interface()->FullMap()), true);
 
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
   // structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
@@ -163,7 +163,7 @@ void FS3I::ACFSI::evaluateith_scatra_surface_permeability(const int i  // id of 
   // evaluate simplified kedem-katchalsy condtion
   //----------------------------------------------------------------------
   Teuchos::RCP<Epetra_Vector> rhs_scal = scatracoupforce_[i];
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_scal = scatracoupmat_[i];
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_scal = scatracoupmat_[i];
 
   rhs_scal->PutScalar(0.0);
   mat_scal->Zero();
@@ -174,7 +174,7 @@ void FS3I::ACFSI::evaluateith_scatra_surface_permeability(const int i  // id of 
   const Teuchos::RCP<const Epetra_Map> dbcmap =
       scatravec_[i]->ScaTraField()->DirichMaps()->CondMap();
   mat_scal->ApplyDirichlet(*dbcmap, false);
-  CORE::LINALG::apply_dirichlet_to_system(*rhs_scal, *scatrazeros_[i], *dbcmap);
+  Core::LinAlg::apply_dirichlet_to_system(*rhs_scal, *scatrazeros_[i], *dbcmap);
 }
 
 /*----------------------------------------------------------------------*
@@ -218,22 +218,22 @@ void FS3I::ACFSI::finish_large_time_scale_loop()
   //*-------------------------------------------------------------------------------*
   // | create new output file
   //*-------------------------------------------------------------------------------*/
-  Teuchos::RCP<CORE::IO::DiscretizationWriter> output_writer =
-      GLOBAL::Problem::Instance()->GetDis("structure")->Writer();
+  Teuchos::RCP<Core::IO::DiscretizationWriter> output_writer =
+      Global::Problem::Instance()->GetDis("structure")->Writer();
   output_writer->new_result_file(step_);
   // and write all meshes
   output_writer->create_new_result_and_mesh_file();
   output_writer->WriteMesh(0, 0.0);
-  output_writer = GLOBAL::Problem::Instance()->GetDis("fluid")->Writer();
+  output_writer = Global::Problem::Instance()->GetDis("fluid")->Writer();
   output_writer->create_new_result_and_mesh_file();
   output_writer->WriteMesh(0, 0.0);
-  output_writer = GLOBAL::Problem::Instance()->GetDis("ale")->Writer();
+  output_writer = Global::Problem::Instance()->GetDis("ale")->Writer();
   output_writer->create_new_result_and_mesh_file();
   output_writer->WriteMesh(0, 0.0);
-  output_writer = GLOBAL::Problem::Instance()->GetDis("scatra1")->Writer();
+  output_writer = Global::Problem::Instance()->GetDis("scatra1")->Writer();
   output_writer->create_new_result_and_mesh_file();
   output_writer->WriteMesh(0, 0.0);
-  output_writer = GLOBAL::Problem::Instance()->GetDis("scatra2")->Writer();
+  output_writer = Global::Problem::Instance()->GetDis("scatra2")->Writer();
   output_writer->create_new_result_and_mesh_file();
   output_writer->WriteMesh(0, 0.0);
 
@@ -326,7 +326,7 @@ void FS3I::ACFSI::struct_scatra_evaluate_solve_iter_update()
 {
   if (infperm_) FOUR_C_THROW("This not a valid option!");  // just for safety
 
-  const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra =
+  const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra =
       scatravec_[1]->ScaTraField();  // structure scatra
 
   //----------------------------------------------------------------------
@@ -349,7 +349,7 @@ void FS3I::ACFSI::struct_scatra_evaluate_solve_iter_update()
   // add coupling to the resiudal
   //----------------------------------------------------------------------
   const Teuchos::RCP<Epetra_Vector> rhs_struct_scal = scatracoupforce_[1];
-  const Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_struct_scal = scatracoupmat_[1];
+  const Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_struct_scal = scatracoupmat_[1];
   const Teuchos::RCP<Epetra_Vector> residual = scatra->Residual();
 
   residual->Update(1.0, *rhs_struct_scal, 1.0);
@@ -365,16 +365,16 @@ void FS3I::ACFSI::struct_scatra_evaluate_solve_iter_update()
   //----------------------------------------------------------------------
   // add coupling to the sysmat
   //----------------------------------------------------------------------
-  const Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat = scatra->SystemMatrix();
+  const Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat = scatra->SystemMatrix();
   sysmat->Add(*mat_struct_scal, false, 1.0, 1.0);
 
   //----------------------------------------------------------------------
   // solve the scatra problem
   //----------------------------------------------------------------------
   const Teuchos::RCP<Epetra_Vector> structurescatraincrement =
-      CORE::LINALG::CreateVector(*scatra->dof_row_map(), true);
+      Core::LinAlg::CreateVector(*scatra->dof_row_map(), true);
 
-  CORE::LINALG::SolverParams solver_params;
+  Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = true;
   scatra->Solver()->Solve(
@@ -391,12 +391,12 @@ void FS3I::ACFSI::struct_scatra_evaluate_solve_iter_update()
  *----------------------------------------------------------------------*/
 bool FS3I::ACFSI::struct_scatra_convergence_check(const int itnum)
 {
-  const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra =
+  const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra =
       scatravec_[1]->ScaTraField();  // structure scatra
 
   // some input parameters for the scatra fields
   const Teuchos::ParameterList& scatradyn =
-      GLOBAL::Problem::Instance()->scalar_transport_dynamic_params();
+      Global::Problem::Instance()->scalar_transport_dynamic_params();
   const int scatraitemax = scatradyn.sublist("NONLINEAR").get<int>("ITEMAX");
   const double scatraittol = scatradyn.sublist("NONLINEAR").get<double>("CONVTOL");
   const double scatraabstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");
@@ -459,12 +459,12 @@ bool FS3I::ACFSI::does_growth_needs_update()
   // check if the structure material is a growth material. We assume here
   // that the structure has the same material for the whole discretiazation.
   // Hence we check only the first element:
-  Teuchos::RCP<DRT::Discretization> structuredis = fsi_->structure_field()->discretization();
+  Teuchos::RCP<Discret::Discretization> structuredis = fsi_->structure_field()->discretization();
   const int GID = structuredis->ElementColMap()->GID(0);  // global element ID
 
-  Teuchos::RCP<CORE::MAT::Material> structurematerial = structuredis->gElement(GID)->Material();
+  Teuchos::RCP<Core::Mat::Material> structurematerial = structuredis->gElement(GID)->Material();
 
-  if (structurematerial->MaterialType() != CORE::Materials::m_growth_volumetric)
+  if (structurematerial->MaterialType() != Core::Materials::m_growth_volumetric)
   {
     FOUR_C_THROW("In AC-FS3I we want growth, so use a growth material like MAT_GrowthVolumetric!");
   }
@@ -476,42 +476,42 @@ bool FS3I::ACFSI::does_growth_needs_update()
     double alpha = 0.0;
     int sc1 = 1;
 
-    Teuchos::RCP<MAT::GrowthVolumetric> growthmaterial =
-        Teuchos::rcp_dynamic_cast<MAT::GrowthVolumetric>(structurematerial);
+    Teuchos::RCP<Mat::GrowthVolumetric> growthmaterial =
+        Teuchos::rcp_dynamic_cast<Mat::GrowthVolumetric>(structurematerial);
 
     if (growthmaterial == Teuchos::null)
-      FOUR_C_THROW("Dynamic cast to MAT::GrowthVolumetric failed!");
+      FOUR_C_THROW("Dynamic cast to Mat::GrowthVolumetric failed!");
 
-    Teuchos::RCP<MAT::GrowthLaw> growthlaw = growthmaterial->Parameter()->growthlaw_;
+    Teuchos::RCP<Mat::GrowthLaw> growthlaw = growthmaterial->Parameter()->growthlaw_;
 
     switch (growthlaw->MaterialType())
     {
-      case CORE::Materials::m_growth_ac:
+      case Core::Materials::m_growth_ac:
       {
-        Teuchos::RCP<MAT::GrowthLawAC> growthlawac =
-            Teuchos::rcp_dynamic_cast<MAT::GrowthLawAC>(growthlaw);
+        Teuchos::RCP<Mat::GrowthLawAC> growthlawac =
+            Teuchos::rcp_dynamic_cast<Mat::GrowthLawAC>(growthlaw);
         if (growthmaterial == Teuchos::null)
-          FOUR_C_THROW("Dynamic cast to MAT::GrowthLawAC failed!");
+          FOUR_C_THROW("Dynamic cast to Mat::GrowthLawAC failed!");
         alpha = growthlawac->Parameter()->alpha_;
         sc1 = growthlawac->Parameter()->Sc1_;
         break;
       }
-      case CORE::Materials::m_growth_ac_radial:
+      case Core::Materials::m_growth_ac_radial:
       {
-        Teuchos::RCP<MAT::GrowthLawACRadial> growthlawacradial =
-            Teuchos::rcp_dynamic_cast<MAT::GrowthLawACRadial>(growthlaw);
+        Teuchos::RCP<Mat::GrowthLawACRadial> growthlawacradial =
+            Teuchos::rcp_dynamic_cast<Mat::GrowthLawACRadial>(growthlaw);
         if (growthlawacradial == Teuchos::null)
-          FOUR_C_THROW("Dynamic cast to MAT::GrowthLawACRadial failed!");
+          FOUR_C_THROW("Dynamic cast to Mat::GrowthLawACRadial failed!");
         alpha = growthlawacradial->Parameter()->alpha_;
         sc1 = growthlawacradial->Parameter()->Sc1_;
         break;
       }
-      case CORE::Materials::m_growth_ac_radial_refconc:
+      case Core::Materials::m_growth_ac_radial_refconc:
       {
-        Teuchos::RCP<MAT::GrowthLawACRadialRefConc> growthlawacradialrefconc =
-            Teuchos::rcp_dynamic_cast<MAT::GrowthLawACRadialRefConc>(growthlaw);
+        Teuchos::RCP<Mat::GrowthLawACRadialRefConc> growthlawacradialrefconc =
+            Teuchos::rcp_dynamic_cast<Mat::GrowthLawACRadialRefConc>(growthlaw);
         if (growthlawacradialrefconc == Teuchos::null)
-          FOUR_C_THROW("Dynamic cast to MAT::GrowthLawACRadialRefConc failed!");
+          FOUR_C_THROW("Dynamic cast to Mat::GrowthLawACRadialRefConc failed!");
         alpha = growthlawacradialrefconc->Parameter()->alpha_;
         sc1 = growthlawacradialrefconc->Parameter()->Sc1_;
         break;
@@ -528,13 +528,13 @@ bool FS3I::ACFSI::does_growth_needs_update()
     // get the approx. increase of volume due to growth since the beginning of the large time scale
     // loop
     //----------------------------------------------------------------------------------------------------
-    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra =
+    const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra =
         scatravec_[1]->ScaTraField();                                 // structure scatra
     const Teuchos::RCP<const Epetra_Vector> phinp = scatra->Phinp();  // fluidscatra
 
     // build difference vector with the reference
     const Teuchos::RCP<Epetra_Vector> phidiff_bltsl_ =
-        CORE::LINALG::CreateVector(*scatra->dof_row_map(), true);
+        Core::LinAlg::CreateVector(*scatra->dof_row_map(), true);
     phidiff_bltsl_->Update(1.0, *phinp, -1.0, *structurephinp_blts_, 0.0);
 
     // Extract the dof of interest
@@ -549,9 +549,9 @@ bool FS3I::ACFSI::does_growth_needs_update()
     // screen output
     //----------------------------------------------------------------------------------------------------
     const int growth_updates =
-        GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("GROWTH_UPDATES");
+        Global::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("GROWTH_UPDATES");
     const double fsi_update_tol =
-        GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
+        Global::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>(
             "FSI_UPDATE_TOL");
 
     if (Comm().MyPID() == 0)
@@ -592,10 +592,10 @@ bool FS3I::ACFSI::does_growth_needs_update()
 void FS3I::ACFSI::large_time_scale_do_growth_update()
 {
   const int growth_updates =
-      GLOBAL::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("GROWTH_UPDATES");
+      Global::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("GROWTH_UPDATES");
 
-  const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> fluidscatra = scatravec_[0]->ScaTraField();
-  const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> structurescatra = scatravec_[1]->ScaTraField();
+  const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> fluidscatra = scatravec_[0]->ScaTraField();
+  const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> structurescatra = scatravec_[1]->ScaTraField();
 
   // Note: we never do never proceed with time_ and step_, so this really just about updating the
   // growth, i.e. the displacements of the structure scatra fields
@@ -773,14 +773,14 @@ void FS3I::ACFSI::large_time_scale_update_and_output()
 /*----------------------------------------------------------------------*
  | Build map extractor which extracts the j-th dof           Thon 08/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> FS3I::ACFSI::BuildMapExtractor()
+std::vector<Teuchos::RCP<Core::LinAlg::MapExtractor>> FS3I::ACFSI::BuildMapExtractor()
 {
-  std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> extractjthscalar;
+  std::vector<Teuchos::RCP<Core::LinAlg::MapExtractor>> extractjthscalar;
 
-  const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra =
+  const Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra =
       scatravec_[1]->ScaTraField();  // structure scatra
   const int numscal = scatra->NumScal();
-  const Teuchos::RCP<const DRT::Discretization> dis = scatra->discretization();
+  const Teuchos::RCP<const Discret::Discretization> dis = scatra->discretization();
 
   for (int k = 0; k < numscal; k++)
   {
@@ -790,7 +790,7 @@ std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> FS3I::ACFSI::BuildMapExtra
     int numrownodes = dis->NumMyRowNodes();
     for (int i = 0; i < numrownodes; ++i)
     {
-      CORE::Nodes::Node* node = dis->lRowNode(i);
+      Core::Nodes::Node* node = dis->lRowNode(i);
 
       std::vector<int> dof = dis->Dof(0, node);
       if (dof.size() != (unsigned)scatravec_[1]->ScaTraField()->NumScal())
@@ -824,7 +824,7 @@ std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> FS3I::ACFSI::BuildMapExtra
         new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis->Comm()));
     otherdofmapvec.clear();
 
-    Teuchos::RCP<CORE::LINALG::MapExtractor> getjdof = Teuchos::rcp(new CORE::LINALG::MapExtractor);
+    Teuchos::RCP<Core::LinAlg::MapExtractor> getjdof = Teuchos::rcp(new Core::LinAlg::MapExtractor);
     getjdof->Setup(*dis->dof_row_map(), conddofmap, otherdofmap);
     extractjthscalar.push_back(getjdof);
   }
@@ -853,9 +853,9 @@ bool FS3I::ACFSI::modulo_is_realtive_zero(const double value, const double modul
  *----------------------------------------------------------------------*/
 FS3I::MeanManager::MeanManager(
     const Epetra_Map& wssmap, const Epetra_Map& phimap, const Epetra_Map& pressuremap)
-    : sum_wss_(CORE::LINALG::CreateVector(wssmap, true)),
-      sum_phi_(CORE::LINALG::CreateVector(phimap, true)),
-      sum_pres_(CORE::LINALG::CreateVector(pressuremap, true)),
+    : sum_wss_(Core::LinAlg::CreateVector(wssmap, true)),
+      sum_phi_(Core::LinAlg::CreateVector(phimap, true)),
+      sum_pres_(Core::LinAlg::CreateVector(pressuremap, true)),
       sum_dt_wss_(0.0),
       sum_dt_phi_(0.0),
       sum_dt_pres_(0.0)
@@ -995,7 +995,7 @@ Teuchos::RCP<const Epetra_Vector> FS3I::MeanManager::GetMeanValue(const std::str
  | Write restart of mean manager                             Thon 10/15 |
  *----------------------------------------------------------------------*/
 void FS3I::MeanManager::write_restart(
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> fluidwriter) const
+    Teuchos::RCP<Core::IO::DiscretizationWriter> fluidwriter) const
 {
   // first some checking
   if (abs(sum_dt_wss_ - sum_dt_phi_) > 1e-14 or abs(sum_dt_wss_ - sum_dt_pres_) > 1e-14)
@@ -1012,7 +1012,7 @@ void FS3I::MeanManager::write_restart(
 /*----------------------------------------------------------------------*
  | Read restart of mean manager                             Thon 10/15 |
  *----------------------------------------------------------------------*/
-void FS3I::MeanManager::read_restart(CORE::IO::DiscretizationReader& fluidreader)
+void FS3I::MeanManager::read_restart(Core::IO::DiscretizationReader& fluidreader)
 {
   // read all values...
   fluidreader.ReadVector(sum_wss_, "SumWss");

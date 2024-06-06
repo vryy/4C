@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::COMM
+namespace Core::Communication
 {
   class PackBuffer;
 }
@@ -32,7 +32,7 @@ namespace MIXTURE
   class LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution;
 
 
-  namespace IMPLEMENTATION
+  namespace Implementation
   {
     template <int numstates, typename T>
     class RemodelFiberImplementation
@@ -54,11 +54,11 @@ namespace MIXTURE
        *
        * @param data (out) : buffer to serialize data to.
        */
-      void Pack(CORE::COMM::PackBuffer& data) const;
+      void Pack(Core::Communication::PackBuffer& data) const;
 
       /*!
        * @brief Unpack all internal data that was previously packed by
-       * #Pack(CORE::COMM::PackBuffer&)
+       * #Pack(Core::Communication::PackBuffer&)
        *
        * @param position (in/out) : Position, where to start reading
        * @param data (in) : Vector of chars to extract data from
@@ -131,7 +131,7 @@ namespace MIXTURE
        * @return Derivative of the residuum of the time integration scheme w.r.t. growth scalar and
        * lambda_r
        */
-      CORE::LINALG::Matrix<2, 2, T> integrate_local_evolution_equations_implicit(T dt);
+      Core::LinAlg::Matrix<2, 2, T> integrate_local_evolution_equations_implicit(T dt);
 
       /*!
        * @brief Integrate the local evolution equation with an explicit time integration scheme.
@@ -179,7 +179,7 @@ namespace MIXTURE
       bool state_is_set_ = false;
 #endif
     };
-  }  // namespace IMPLEMENTATION
+  }  // namespace Implementation
 }  // namespace MIXTURE
 
 FOUR_C_NAMESPACE_CLOSE

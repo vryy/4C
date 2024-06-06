@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace NOX
 {
-  namespace NLN
+  namespace Nln
   {
     namespace Direction
     {
@@ -60,14 +60,14 @@ namespace NOX
 
       /*! Nonmember function to build a direction object.
 
-      \relates NOX::NLN::Direction::Factory
+      \relates NOX::Nln::Direction::Factory
 
       */
       Teuchos::RCP<::NOX::Direction::Generic> BuildDirection(
           const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
     }  // namespace Direction
-  }    // namespace NLN
+  }    // namespace Nln
 }  // namespace NOX
 
 FOUR_C_NAMESPACE_CLOSE

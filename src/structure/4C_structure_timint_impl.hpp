@@ -25,17 +25,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class MultiMapExtractor;
   class KrylovProjector;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
 namespace STR
 {
-  namespace AUX
+  namespace Aux
   {
     class MapExtractor;
   }
@@ -73,10 +73,10 @@ namespace STR
         const Teuchos::ParameterList& ioparams,              //!< ioflags
         const Teuchos::ParameterList& sdynparams,            //!< input parameters
         const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,            //!< current discretisation
-        Teuchos::RCP<CORE::LINALG::Solver> solver,           //!< the solver
-        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-        Teuchos::RCP<CORE::IO::DiscretizationWriter> output  //!< the output
+        Teuchos::RCP<Discret::Discretization> actdis,        //!< current discretisation
+        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
+        Teuchos::RCP<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact meshtying
+        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     /*! \brief Initialize this object
@@ -101,8 +101,8 @@ namespace STR
     \date 08/16
     \author rauch  */
     void Init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-        Teuchos::RCP<CORE::LINALG::Solver> solver) override;
+        const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+        Teuchos::RCP<Core::LinAlg::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -191,7 +191,7 @@ namespace STR
     void predict_tang_dis_consist_vel_acc();
 
     //!
-    void setup_krylov_space_projection(CORE::Conditions::Condition* kspcond);
+    void setup_krylov_space_projection(Core::Conditions::Condition* kspcond);
     //!
     void update_krylov_space_projection();
 
@@ -256,7 +256,7 @@ namespace STR
         const Teuchos::RCP<Epetra_Vector> disn,              //!< new displacement state
         const Teuchos::RCP<Epetra_Vector> vel,               // velocity state
         Teuchos::RCP<Epetra_Vector>& fext,                   //!< external force
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& fextlin  //!< linearization of external force
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& fextlin  //!< linearization of external force
     );
 
     //! Evaluate ordinary internal force, its stiffness at state
@@ -266,9 +266,9 @@ namespace STR
         const Teuchos::RCP<Epetra_Vector> disi,            //!< residual displacements
         const Teuchos::RCP<Epetra_Vector> vel,             // velocity state
         Teuchos::RCP<Epetra_Vector> fint,                  //!< internal force
-        Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,  //!< stiffness matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,  //!< stiffness matrix
         Teuchos::ParameterList& params,                    //!< parameters from nonlinear solver
-        Teuchos::RCP<CORE::LINALG::SparseOperator> damp =
+        Teuchos::RCP<Core::LinAlg::SparseOperator> damp =
             Teuchos::null  //!< material damping matrix
     );
 
@@ -283,8 +283,8 @@ namespace STR
         const Teuchos::RCP<Epetra_Vector> acc,   //! acceleration state
         Teuchos::RCP<Epetra_Vector> fint,        //!< internal force
         Teuchos::RCP<Epetra_Vector> finert,      //!< inertia force
-        Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,  //!< stiffness matrix
-        Teuchos::RCP<CORE::LINALG::SparseOperator> mass,   //!< mass matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,  //!< stiffness matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> mass,   //!< mass matrix
         Teuchos::ParameterList& params,                    //!< parameters from nonlinear solver
         const double beta = 1000.0,   //!< time integration parameters for element-wise time
                                       //!< integration (necessary for time integration of rotations)
@@ -302,7 +302,7 @@ namespace STR
         const Teuchos::RCP<Epetra_Vector> dis,              //!< last evaluated displacements
         const Teuchos::RCP<Epetra_Vector> disn,             //!< evaluation displacements
         Teuchos::RCP<Epetra_Vector>& fint,                  //!< forces are added onto
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,  //!< stiffness is added onto
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff,  //!< stiffness is added onto
         Teuchos::ParameterList pcon  //!< parameter list containing scale factors for matrix entries
     );
 
@@ -310,7 +310,7 @@ namespace STR
     void apply_force_stiff_cardiovascular0_d(const double time,  //!< evaluation time
         const Teuchos::RCP<Epetra_Vector> disn,                  //!< evaluation displacements
         Teuchos::RCP<Epetra_Vector>& fint,                       //!< forces are added onto
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,       //!< stiffness is added onto
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff,       //!< stiffness is added onto
         Teuchos::ParameterList
             pwindk  //!< parameter list containing scale factors for matrix entries
     );
@@ -318,7 +318,7 @@ namespace STR
 
     //! Evaluate forces and stiffness due to contact / meshtying
     void apply_force_stiff_contact_meshtying(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,  //!< stiffness is modified
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff,  //!< stiffness is modified
         Teuchos::RCP<Epetra_Vector>& fres,                  //!< residual forces are modified
         Teuchos::RCP<Epetra_Vector>& dis,                   //!< current displacement state
         bool predict                                        //!< flag indicating predictor step
@@ -326,7 +326,7 @@ namespace STR
 
     //! Evaluate forces and stiffness due to beam contact
     void apply_force_stiff_beam_contact(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,  //!< stiffness is modified
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff,  //!< stiffness is modified
         Teuchos::RCP<Epetra_Vector>& fres,                  //!< residual forces are modified
         Teuchos::RCP<Epetra_Vector>& dis,                   //!< current displacement state
         bool predict                                        //!< flag indicating predictor step
@@ -339,7 +339,7 @@ namespace STR
 
     //! Evaluate forces and stiffness due to spring dash-pot boundary condition
     void apply_force_stiff_spring_dashpot(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,  //!< stiffness is modified
+        Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,  //!< stiffness is modified
         Teuchos::RCP<Epetra_Vector> fint,                  //!< internal forces are modified
         Teuchos::RCP<Epetra_Vector> dis,                   //!< current displacement state
         Teuchos::RCP<Epetra_Vector> vel,                   //!< current velocity state
@@ -377,7 +377,7 @@ namespace STR
 
     \return Enum to indicate convergence status or failure
     */
-    INPAR::STR::ConvergenceStatus Solve() final;
+    Inpar::STR::ConvergenceStatus Solve() final;
 
     //! Do full Newton-Raphson iteration
     //!
@@ -686,7 +686,7 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    enum INPAR::STR::DynamicType MethodName() const override = 0;
+    enum Inpar::STR::DynamicType MethodName() const override = 0;
 
     //! These time integrators are all implicit (mark their name)
     bool MethodImplicit() override { return true; }
@@ -732,10 +732,10 @@ namespace STR
     }
 
     //! Get type of thickness scaling for thin shell structures
-    INPAR::STR::StcScale GetSTCAlgo() override { return stcscale_; }
+    Inpar::STR::StcScale GetSTCAlgo() override { return stcscale_; }
 
     //! Access to scaling matrix for STC
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetSTCMat() override
     {
       if (!stccompl_) ComputeSTCMatrix();
       stccompl_ = true;
@@ -760,8 +760,8 @@ namespace STR
     //@{
 
     //! switch structure field to block matrix in fsi simulations
-    void use_block_matrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override;
+    void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override;
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with solve_relaxation_linear
@@ -771,10 +771,10 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override;
 
     //! check, if according to divercont flag time step size can be increased
-    void check_for_time_step_increase(INPAR::STR::ConvergenceStatus& status);
+    void check_for_time_step_increase(Inpar::STR::ConvergenceStatus& status);
 
     //! check, if according to divercont flag 3D0D PTC can be reset to normal Newton
-    void check_for3_d0_dptc_reset(INPAR::STR::ConvergenceStatus& status);
+    void check_for3_d0_dptc_reset(Inpar::STR::ConvergenceStatus& status);
 
     /*! \brief Prepare system for solving with Newton's method
      *
@@ -814,7 +814,7 @@ namespace STR
     void ReadRestartForce() override = 0;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output) override = 0;
+    void WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
 
     //! FORMERLY: Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     //! Called from the previous adapters as initial_guess()
@@ -928,46 +928,46 @@ namespace STR
 
     //! @name General purpose algorithm parameters
     //@{
-    enum INPAR::STR::PredEnum pred_;  //!< predictor
+    enum Inpar::STR::PredEnum pred_;  //!< predictor
     //@}
 
     //! @name Iterative solution technique
     //@{
-    enum INPAR::STR::NonlinSolTech
+    enum Inpar::STR::NonlinSolTech
         itertype_;  //!< kind of iteration technique or non-linear solution technique
 
-    enum INPAR::STR::ConvNorm normtypedisi_;   //!< convergence check for residual displacements
-    enum INPAR::STR::ConvNorm normtypefres_;   //!< convergence check for residual forces
-    enum INPAR::STR::ConvNorm normtypepres_;   //!< convergence check for residual pressure
-    enum INPAR::STR::ConvNorm normtypepfres_;  //!< convergence check for residual pressure forces
-    enum INPAR::STR::ConvNorm normtypecontconstr_;  //!< convergence check for contact constraints
+    enum Inpar::STR::ConvNorm normtypedisi_;   //!< convergence check for residual displacements
+    enum Inpar::STR::ConvNorm normtypefres_;   //!< convergence check for residual forces
+    enum Inpar::STR::ConvNorm normtypepres_;   //!< convergence check for residual pressure
+    enum Inpar::STR::ConvNorm normtypepfres_;  //!< convergence check for residual pressure forces
+    enum Inpar::STR::ConvNorm normtypecontconstr_;  //!< convergence check for contact constraints
                                                     //!< (saddlepoint formulation only)
-    enum INPAR::STR::ConvNorm normtypeplagrincr_;   //!< convergence check for Lagrange multiplier
+    enum Inpar::STR::ConvNorm normtypeplagrincr_;   //!< convergence check for Lagrange multiplier
                                                     //!< increment (saddlepoint formulation only)
-    enum INPAR::STR::BinaryOp
+    enum Inpar::STR::BinaryOp
         combfresplconstr_;  //!< binary operator to combine field norms (forces and plastic
                             //!< constraints, semi-smooth plasticity only)
-    enum INPAR::STR::BinaryOp
+    enum Inpar::STR::BinaryOp
         combdisiLp_;  //!< binary operator to combine field norms (displacement increments and Lp
                       //!< increments, semi-smooth plasticity only)
-    enum INPAR::STR::BinaryOp combfresEasres_;  //!< binary operator to combine field norms (forces
+    enum Inpar::STR::BinaryOp combfresEasres_;  //!< binary operator to combine field norms (forces
                                                 //!< and EAS residuals, semi-smooth plasticity only)
-    enum INPAR::STR::BinaryOp
+    enum Inpar::STR::BinaryOp
         combdisiEasIncr_;  //!< binary operator to combine field norms (displacement increments and
                            //!< EAS increments, semi-smooth plasticity only)
 
-    enum INPAR::STR::BinaryOp combdispre_;     //!< binary operator to combine field norms
-    enum INPAR::STR::BinaryOp combfrespfres_;  //!< binary operator to combine field norms
-    enum INPAR::STR::BinaryOp
+    enum Inpar::STR::BinaryOp combdispre_;     //!< binary operator to combine field norms
+    enum Inpar::STR::BinaryOp combfrespfres_;  //!< binary operator to combine field norms
+    enum Inpar::STR::BinaryOp
         combdisifres_;  //!< binary operator to combine displacement and forces
-    enum INPAR::STR::BinaryOp
+    enum Inpar::STR::BinaryOp
         combfrescontconstr_;  //!< binary operator to combine field norms (forces and contact
                               //!< constraints, contact/meshtying in saddlepoint formulation only)
-    enum INPAR::STR::BinaryOp
+    enum Inpar::STR::BinaryOp
         combdisilagr_;  //!< binary operator to combine field norms (displacement increments and LM
                         //!< increments, contact/meshtying in saddlepoint formulation only)
 
-    enum INPAR::STR::VectorNorm iternorm_;  //!< vector norm to check with
+    enum Inpar::STR::VectorNorm iternorm_;  //!< vector norm to check with
     int itermax_;                           //!< maximally permitted iterations
     int itermin_;                           //!< minimally requested iterations
 
@@ -1032,15 +1032,15 @@ namespace STR
 
     //! @name Krylov projection variables
     bool updateprojection_;  //!< bool triggering update of Krylov projection
-    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;  //!< Krylov projector himself
+    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;  //!< Krylov projector himself
     //@}
 
     //! @name STC Scaling for thin shell structures
     //@{
-    enum INPAR::STR::StcScale stcscale_;               //!< scale thickness of shells?
+    enum Inpar::STR::StcScale stcscale_;               //!< scale thickness of shells?
     double stcfact_;                                   //!< scaling factor for STC
     int stclayer_;                                     //! number of layers for multilayered case
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat_;  //!< scaling matrix for STC
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat_;  //!< scaling matrix for STC
     bool stccompl_;  //!< keep track if stc matrix has been evaluated
     //@}
 

@@ -25,38 +25,38 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidIntFaceImplInterface* DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(
-    const CORE::Elements::Element* ele)
+Discret::ELEMENTS::FluidIntFaceImplInterface* Discret::ELEMENTS::FluidIntFaceImplInterface::Impl(
+    const Core::Elements::Element* ele)
 {
   switch (ele->Shape())
   {
-    case CORE::FE::CellType::quad4:
+    case Core::FE::CellType::quad4:
     {
-      return FluidIntFaceImpl<CORE::FE::CellType::quad4>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::quad4>::Instance();
     }
-    case CORE::FE::CellType::quad8:
+    case Core::FE::CellType::quad8:
     {
-      return FluidIntFaceImpl<CORE::FE::CellType::quad8>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::quad8>::Instance();
     }
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad9:
     {
-      return FluidIntFaceImpl<CORE::FE::CellType::quad9>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::quad9>::Instance();
     }
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
-      return FluidIntFaceImpl<CORE::FE::CellType::tri3>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::tri3>::Instance();
     }
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri6:
     {
-      return FluidIntFaceImpl<CORE::FE::CellType::tri6>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::tri6>::Instance();
     }
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
-      return FluidIntFaceImpl<CORE::FE::CellType::line2>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::line2>::Instance();
     }
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line3:
     {
-      return FluidIntFaceImpl<CORE::FE::CellType::line3>::Instance();
+      return FluidIntFaceImpl<Core::FE::CellType::line3>::Instance();
     }
     default:
       FOUR_C_THROW(
@@ -66,15 +66,15 @@ DRT::ELEMENTS::FluidIntFaceImplInterface* DRT::ELEMENTS::FluidIntFaceImplInterfa
   return nullptr;
 }
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidIntFaceImpl<distype>* DRT::ELEMENTS::FluidIntFaceImpl<distype>::Instance(
-    CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidIntFaceImpl<distype>*
+Discret::ELEMENTS::FluidIntFaceImpl<distype>::Instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::FluidIntFaceImpl<distype>>(
-            new DRT::ELEMENTS::FluidIntFaceImpl<distype>());
+        return std::unique_ptr<Discret::ELEMENTS::FluidIntFaceImpl<distype>>(
+            new Discret::ELEMENTS::FluidIntFaceImpl<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -83,13 +83,13 @@ DRT::ELEMENTS::FluidIntFaceImpl<distype>* DRT::ELEMENTS::FluidIntFaceImpl<distyp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
 {
   // pointer to class FluidImplParameterTimInt (access to the time-integration parameter)
-  fldparatimint_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
+  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::Instance();
   // pointer to class FluidEleParameterIntFace (access to the faces specific parameter)
-  fldpara_intface_ = DRT::ELEMENTS::FluidEleParameterIntFace::Instance();
+  fldpara_intface_ = Discret::ELEMENTS::FluidEleParameterIntFace::Instance();
 
   return;
 }
@@ -97,16 +97,16 @@ DRT::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
-    DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
-    Teuchos::RCP<CORE::MAT::Material>& material,  ///< material for face stabilization
-    std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
-    std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
-    const INPAR::XFEM::FaceType& face_type,       ///< which type of face std, ghost, ghost-penalty
-    Teuchos::ParameterList& params,               ///< parameter list
-    DRT::DiscretizationFaces& discretization,     ///< faces discretization
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
+    Discret::ELEMENTS::FluidIntFace* intface,      ///< internal face element
+    Teuchos::RCP<Core::Mat::Material>& material,   ///< material for face stabilization
+    std::vector<int>& nds_master,                  ///< nodal dofset w.r.t. master element
+    std::vector<int>& nds_slave,                   ///< nodal dofset w.r.t. slave element
+    const Inpar::XFEM::FaceType& face_type,        ///< which type of face std, ghost, ghost-penalty
+    Teuchos::ParameterList& params,                ///< parameter list
+    Discret::DiscretizationFaces& discretization,  ///< faces discretization
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
     Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
 {
@@ -127,7 +127,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_nei
 
   //--------------------------------------------------------
   /// number of space dimensions of the FluidIntFace element
-  static const int facensd = CORE::FE::dim<distype>;
+  static const int facensd = Core::FE::dim<distype>;
 
   /// number of space dimensions of the parent element
   static const int nsd = facensd + 1;
@@ -214,24 +214,24 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_nei
   // p-block separated pattern = "full matrix pattern";                      // assembles the whole
   // u-p matrix
 
-  INPAR::FLUID::EosGpPattern eos_gp_pattern = fldpara_intface_->Face_EOS_GP_Pattern();
+  Inpar::FLUID::EosGpPattern eos_gp_pattern = fldpara_intface_->Face_EOS_GP_Pattern();
 
 
   int numblocks = 0;
 
-  if (eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_uvwp)
+  if (eos_gp_pattern == Inpar::FLUID::EOS_GP_Pattern_uvwp)
   {
     // 3D: 4 blocks =  u-u block, v-v block, w-w block and p-p block
     // 2D: 3 blocks =  u-u block, v-v block and p-p block
     numblocks = numdofpernode;
   }
-  else if (eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_up)
+  else if (eos_gp_pattern == Inpar::FLUID::EOS_GP_Pattern_up)
   {
     // 3D: 10 blocks = 3x3 u-u blocks + 1x1 p-p block
     // 3D: 5 blocks  = 2x2 u-u blocks + 1x1 p-p block
     numblocks = nsd * nsd + 1;  // 10 blocks = 3x3 u-u blocks + 1x1 p-p block
   }
-  else if (eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_full)
+  else if (eos_gp_pattern == Inpar::FLUID::EOS_GP_Pattern_full)
   {
     // 3D: 16 blocks = 4x4 uvwp blocks
     // 2D: 9  blocks = 3x3 uvp blocks
@@ -243,8 +243,8 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_nei
 
 
   // define element matrices and vectors
-  std::vector<CORE::LINALG::SerialDenseMatrix> elemat_blocks(numblocks);
-  std::vector<CORE::LINALG::SerialDenseVector> elevec_blocks(
+  std::vector<Core::LinAlg::SerialDenseMatrix> elemat_blocks(numblocks);
+  std::vector<Core::LinAlg::SerialDenseVector> elevec_blocks(
       numdofpernode);  // 3D: 4 vectors for u,v,w,p components, 2D: 3 vectors for u,v,p
 
 
@@ -281,7 +281,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_nei
     // entries
     if (assemblemat)
     {
-      if (eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_uvwp)
+      if (eos_gp_pattern == Inpar::FLUID::EOS_GP_Pattern_uvwp)
       {
         for (int ij = 0; ij < numdofpernode; ij++)
         {
@@ -289,7 +289,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_nei
               patch_components_lmowner[ij], patch_components_lm[ij]);
         }
       }
-      else if (eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_up)
+      else if (eos_gp_pattern == Inpar::FLUID::EOS_GP_Pattern_up)
       {
         for (int i = 0; i < nsd; i++)
         {
@@ -302,7 +302,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_nei
         systemmatrix->FEAssemble(elemat_blocks[nsd * nsd], patch_components_lm[nsd],
             patch_components_lmowner[nsd], patch_components_lm[nsd]);
       }
-      else if (eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_full)
+      else if (eos_gp_pattern == Inpar::FLUID::EOS_GP_Pattern_full)
       {
         for (int i = 0; i < numdofpernode; i++)
         {
@@ -330,7 +330,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_nei
     // right value for shared nodes
     for (int i = 0; i < numdofpernode; i++)
     {
-      CORE::LINALG::Assemble(
+      Core::LinAlg::Assemble(
           *systemvector, elevec_blocks[i], patch_components_lm[i], patch_components_lmowner[i]);
     }
   }
@@ -343,30 +343,30 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_nei
 /*----------------------------------------------------------------------*
  |  Evaluate internal faces (public)                        schott 01/12|
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::FluidIntFaceImpl<distype>::evaluate_internal_faces(
-    DRT::ELEMENTS::FluidIntFace* intface,         ///< internal face element
-    Teuchos::RCP<CORE::MAT::Material>& material,  ///< material associated with the faces
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::FluidIntFaceImpl<distype>::evaluate_internal_faces(
+    Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+    Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
     Teuchos::ParameterList& params,               ///< parameter list
-    DRT::Discretization& discretization,          ///< discretization
+    Discret::Discretization& discretization,      ///< discretization
     std::vector<int>& patchlm,                    ///< patch local map
     std::vector<int>& lm_masterToPatch,           ///< local map between master dofs and patchlm
     std::vector<int>& lm_slaveToPatch,            ///< local map between slave dofs and patchlm
     std::vector<int>& lm_faceToPatch,             ///< local map between face dofs and patchlm
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch,   ///< local map between slave nodes and nodes in patch
-    std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
-    std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
+    std::vector<Core::LinAlg::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
+    std::vector<Core::LinAlg::SerialDenseVector>& elevec_blocks   ///< element vector blocks
 )
 {
   FLD::IntFaceAction act = FLD::ifa_none;
-  act = CORE::UTILS::GetAsEnum<FLD::IntFaceAction>(params, "action");
+  act = Core::UTILS::GetAsEnum<FLD::IntFaceAction>(params, "action");
 
   switch (act)
   {
     case FLD::EOS_and_GhostPenalty_stabilization:
     {
-      return DRT::ELEMENTS::FluidIntFaceStab::Impl(intface)->evaluate_edge_based_stabilization(
+      return Discret::ELEMENTS::FluidIntFaceStab::Impl(intface)->evaluate_edge_based_stabilization(
           intface, material, *fldparatimint_, *fldpara_intface_, params, discretization, patchlm,
           lm_masterToPatch, lm_slaveToPatch, lm_faceToPatch, lm_masterNodeToPatch,
           lm_slaveNodeToPatch, elemat_blocks, elevec_blocks);

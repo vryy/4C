@@ -25,24 +25,24 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
-namespace CORE::GEO
+namespace Core::Geo
 {
   class CutWizard;
 }
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseMatrix;
   class MultiMapExtractor;
   class MapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
@@ -77,13 +77,13 @@ namespace FLD
         Teuchos::ParameterList& params_xfem, int maxnumdofsets, int minnumdofsets,
         bool include_inner)
         : condition_manager_(condition_manager),
-          nodal_dofset_strategy_(CORE::UTILS::IntegralValue<INPAR::CUT::NodalDofSetStrategy>(
+          nodal_dofset_strategy_(Core::UTILS::IntegralValue<Inpar::Cut::NodalDofSetStrategy>(
               params_xfem, "NODAL_DOFSET_STRATEGY")),
-          volume_cell_gauss_point_by_(CORE::UTILS::IntegralValue<INPAR::CUT::VCellGaussPts>(
+          volume_cell_gauss_point_by_(Core::UTILS::IntegralValue<Inpar::Cut::VCellGaussPts>(
               params_xfem, "VOLUME_GAUSS_POINTS_BY")),
-          bound_cell_gauss_point_by_(CORE::UTILS::IntegralValue<INPAR::CUT::BCellGaussPts>(
+          bound_cell_gauss_point_by_(Core::UTILS::IntegralValue<Inpar::Cut::BCellGaussPts>(
               params_xfem, "BOUNDARY_GAUSS_POINTS_BY")),
-          gmsh_cut_out_(CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_CUT_OUT")),
+          gmsh_cut_out_(Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_CUT_OUT")),
           maxnumdofsets_(maxnumdofsets),
           minnumdofsets_(minnumdofsets),
           include_inner_(include_inner)
@@ -103,7 +103,7 @@ namespace FLD
     /// create a state-object after a cut (XFEM fluid with embedded fluid mesh)
     Teuchos::RCP<XFluidFluidState> Create(const Teuchos::RCP<XFEM::DiscretizationXFEM>&
                                               xdiscret,  //!< xfluid background discretization
-        const Teuchos::RCP<DRT::Discretization>&
+        const Teuchos::RCP<Discret::Discretization>&
             embfluiddiscret,  //!< embedded fluid discretization
         Teuchos::RCP<const Epetra_Vector>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
@@ -117,7 +117,7 @@ namespace FLD
     /// create wizard, perform cut, create new dofset and update xfem discretization
     void create_new_cut_state(
         Teuchos::RCP<XFEM::XFEMDofSet>& dofset,  //!< xfem dofset obtained from the new wizard
-        Teuchos::RCP<CORE::GEO::CutWizard>&
+        Teuchos::RCP<Core::Geo::CutWizard>&
             wizard,  //!< cut wizard associated with current intersection state
         const Teuchos::RCP<XFEM::DiscretizationXFEM>&
             xdiscret,  //!< xfluid background discretization
@@ -132,10 +132,10 @@ namespace FLD
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
 
     //! strategy for nodal dofset management
-    const INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy_;
+    const Inpar::Cut::NodalDofSetStrategy nodal_dofset_strategy_;
 
-    const INPAR::CUT::VCellGaussPts volume_cell_gauss_point_by_;
-    const INPAR::CUT::BCellGaussPts bound_cell_gauss_point_by_;
+    const Inpar::Cut::VCellGaussPts volume_cell_gauss_point_by_;
+    const Inpar::Cut::BCellGaussPts bound_cell_gauss_point_by_;
 
     /// is gmsh-output active?
     const bool gmsh_cut_out_;

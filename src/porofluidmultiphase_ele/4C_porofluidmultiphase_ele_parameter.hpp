@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -107,7 +107,7 @@ namespace DRT
 
     };  // class PoroFluidMultiPhaseEleParameter
   }     // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 
 

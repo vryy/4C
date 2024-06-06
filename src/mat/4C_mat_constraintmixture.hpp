@@ -34,17 +34,17 @@ For a detailed description see:
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters
-    class ConstraintMixture : public CORE::MAT::PAR::Parameter
+    class ConstraintMixture : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      ConstraintMixture(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ConstraintMixture(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -117,7 +117,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       // !brief enum for mapping between material parameter and entry in the matparams_ vector
       enum Matparamnames
@@ -134,14 +134,14 @@ namespace MAT
 
   class ConstraintMixtureHistory;
 
-  class ConstraintMixtureType : public CORE::COMM::ParObjectType
+  class ConstraintMixtureType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ConstraintMixtureType"; }
 
     static ConstraintMixtureType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ConstraintMixtureType instance_;
@@ -156,7 +156,7 @@ namespace MAT
     ConstraintMixture();
 
     /// construct the material object given material parameters
-    explicit ConstraintMixture(MAT::PAR::ConstraintMixture* params);
+    explicit ConstraintMixture(Mat::PAR::ConstraintMixture* params);
 
     //! @name Packing and Unpacking
 
@@ -182,7 +182,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -202,27 +202,27 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_constraintmixture;
+      return Core::Materials::m_constraintmixture;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (!(kinem == Inpar::STR::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ConstraintMixture(*this));
     }
 
     /// Setup
     void Setup(int numgp,               ///< number of Gauss points
-        INPUT::LineDefinition* linedef  ///< definition of element line
+        Input::LineDefinition* linedef  ///< definition of element line
         ) override;
 
     /// SetupHistory
@@ -235,53 +235,53 @@ namespace MAT
     void reset_step() override;
 
     /// Evaluate material
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, const int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat, const int gp,
         const int eleGID) override;
 
     /// Return density
     double Density() const override { return params_->density_; }
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return variables for visualization
-    CORE::LINALG::Matrix<3, 1> GetVis(int gp) const { return vismassstress_->at(gp); }
+    Core::LinAlg::Matrix<3, 1> GetVis(int gp) const { return vismassstress_->at(gp); }
     /// Return actual mass density in reference configuration
     double GetMassDensity(int gp) const { return refmassdens_->at(gp); }
     /// Return actual mass density in reference configuration
-    CORE::LINALG::Matrix<3, 1> get_mass_density_collagen(int gp) const
+    Core::LinAlg::Matrix<3, 1> get_mass_density_collagen(int gp) const
     {
       return visrefmassdens_->at(gp);
     }
     /// Return prestretch of collagen fibers
-    CORE::LINALG::Matrix<3, 1> GetPrestretch(int gp) const
+    Core::LinAlg::Matrix<3, 1> GetPrestretch(int gp) const
     {
-      CORE::LINALG::Matrix<3, 1> visprestretch(true);
+      Core::LinAlg::Matrix<3, 1> visprestretch(true);
       visprestretch(0) = localprestretch_->at(gp)(0);
       visprestretch(1) = localprestretch_->at(gp)(1);
       visprestretch(2) = localprestretch_->at(gp)(2);
       return visprestretch;
     }
     /// Return prestretch of collagen fibers
-    CORE::LINALG::Matrix<3, 1> GetHomstress(int gp) const
+    Core::LinAlg::Matrix<3, 1> GetHomstress(int gp) const
     {
-      CORE::LINALG::Matrix<3, 1> visprestretch(true);
+      Core::LinAlg::Matrix<3, 1> visprestretch(true);
       visprestretch(0) = localhomstress_->at(gp)(0);
       visprestretch(1) = localhomstress_->at(gp)(1);
       visprestretch(2) = localhomstress_->at(gp)(2);
       return visprestretch;
     }
     /// Return circumferential fiber direction
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 1>>> Geta1() const { return a1_; }
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> Geta1() const { return a1_; }
     /// Return axial fiber direction
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 1>>> Geta2() const { return a2_; }
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> Geta2() const { return a2_; }
 
     /// evaluate fiber directions from locsys, pull back
-    void EvaluateFiberVecs(const int gp, const CORE::LINALG::Matrix<3, 3>& locsys,
-        const CORE::LINALG::Matrix<3, 3>& defgrd);
+    void EvaluateFiberVecs(const int gp, const Core::LinAlg::Matrix<3, 3>& locsys,
+        const Core::LinAlg::Matrix<3, 3>& defgrd);
 
     /// Return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;
@@ -291,34 +291,34 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::ConstraintMixture* params_;
+    Mat::PAR::ConstraintMixture* params_;
 
     /// temporary for visualization
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 1>>> vismassstress_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> vismassstress_;
     /// actual mass density in reference configuration
     Teuchos::RCP<std::vector<double>> refmassdens_;
     /// actual mass density in reference configuration for collagen fibers
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 1>>> visrefmassdens_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> visrefmassdens_;
     /// basal rate of mass production
     double massprodbasal_;
 
     /// first fiber vector per gp (reference), circumferential
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 1>>> a1_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> a1_;
     /// second fiber vector per gp (reference), axial
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 1>>> a2_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> a2_;
     /// third fiber vector per gp (reference), diagonal
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 1>>> a3_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> a3_;
     /// fourth fiber vector per gp (reference), diagonal
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 1>>> a4_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> a4_;
     /// homeostatic prestretch of collagen fibers
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<4, 1>>> localprestretch_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<4, 1>>> localprestretch_;
     /// homeostatic stress for growth
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<4, 1>>> localhomstress_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<4, 1>>> localhomstress_;
     /// homeostatic radius
     double homradius_;
     /// list of fibers which have been overstretched and are deleted at the end of the time step
     /// (gp, idpast, idfiber)
-    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 1>>> deletemass_;
+    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> deletemass_;
     /// index of oldest fiber still alive, needed if the complete history is stored to avoid
     /// summation of zeros
     int minindex_;
@@ -330,21 +330,21 @@ namespace MAT
 
     /// compute stress and cmat
     void evaluate_stress(
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,    ///< green lagrange strain
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain,    ///< green lagrange strain
         const int gp,                                              ///< current Gauss point
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
         const int firstiter,  ///< iteration index, different for explicit and implicit integration
         double time,          ///< time
         double elastin_survival  ///< amount of elastin which is still there
     );
 
     /// elastic response for one collagen fiber family
-    void evaluate_fiber_family(const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> C,  ///< Cauchy-Green
+    void evaluate_fiber_family(const Core::LinAlg::Matrix<NUM_STRESS_3D, 1> C,  ///< Cauchy-Green
         const int gp,                                              ///< current Gauss point
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
-        CORE::LINALG::Matrix<3, 1> a,                              ///< fiber vector
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
+        Core::LinAlg::Matrix<3, 1> a,                              ///< fiber vector
         double* currmassdens,                                      ///< current massdensity
         const int firstiter,  ///< iteration index, different for explicit and implicit integration
         double time,          ///< time
@@ -360,48 +360,48 @@ namespace MAT
     );
 
     /// elastic response for Elastin
-    void evaluate_elastin(const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> C,  ///< Cauchy-Green
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
+    void evaluate_elastin(const Core::LinAlg::Matrix<NUM_STRESS_3D, 1> C,  ///< Cauchy-Green
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
         double time,                                               ///< time
         double* currmassdens,                                      ///< current massdensity
         double elastin_survival  ///< amount of elastin which is still there
     );
 
     /// elastic response for smooth muscle cells
-    void evaluate_muscle(const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> C,  ///< Cauchy-Green
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
+    void evaluate_muscle(const Core::LinAlg::Matrix<NUM_STRESS_3D, 1> C,  ///< Cauchy-Green
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
         const int gp,                                              ///< current Gauss point
         double* currmassdens                                       ///< current massdensity
     );
 
     /// volumetric part
-    void evaluate_volumetric(const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> C,  ///< Cauchy-Green
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
+    void evaluate_volumetric(const Core::LinAlg::Matrix<NUM_STRESS_3D, 1> C,  ///< Cauchy-Green
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
         double currMassDens,                                       ///< current mass density
         double refMassDens                                         ///< initial mass density
     );
 
     /// computes mass production rates for all fiber families
     void mass_production(const int gp,             ///< current Gauss point
-        CORE::LINALG::Matrix<3, 3> defgrd,         ///< deformation gradient
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> S,  ///< 2nd PK-stress
-        CORE::LINALG::Matrix<4, 1>* massstress,    ///< growth stress measure
+        Core::LinAlg::Matrix<3, 3> defgrd,         ///< deformation gradient
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1> S,  ///< 2nd PK-stress
+        Core::LinAlg::Matrix<4, 1>* massstress,    ///< growth stress measure
         double inner_radius,                       ///< inner radius
-        CORE::LINALG::Matrix<4, 1>* massprodcomp,  ///< mass production rate
+        Core::LinAlg::Matrix<4, 1>* massprodcomp,  ///< mass production rate
         double growthfactor                        ///< growth factor for stress
     );
 
     /// computes mass production rate for one fiber family
     void mass_production_single_fiber(const int gp,  ///< current Gauss point
-        CORE::LINALG::Matrix<3, 3> defgrd,           ///< deformation gradient
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> S,    ///< 2nd PK-stress
+        Core::LinAlg::Matrix<3, 3> defgrd,           ///< deformation gradient
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1> S,    ///< 2nd PK-stress
         double* massstress,                          ///< growth stress measure
         double inner_radius,                         ///< inner radius
         double* massprodcomp,                        ///< mass production rate
-        CORE::LINALG::Matrix<3, 1> a,                ///< fiber vector
+        Core::LinAlg::Matrix<3, 1> a,                ///< fiber vector
         const int idfiber,                           ///< number of fiber family 0,1,2,3
         double growthfactor                          ///< growth factor for stress
     );
@@ -418,30 +418,30 @@ namespace MAT
 
     /// function of elastin degradation (initial)
     void elastin_degradation(
-        CORE::LINALG::Matrix<3, 1> coord,  ///< gp coordinate in reference configuration
+        Core::LinAlg::Matrix<3, 1> coord,  ///< gp coordinate in reference configuration
         double& elastin_survival           ///< amount of elastin which is still there
     );
 
     /// compute stress and cmat for implicit integration with whole stress as driving force
-    void evaluate_implicit_all(CORE::LINALG::Matrix<3, 3> defgrd,  ///< deformation gradient
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,    ///< green lagrange strain
+    void evaluate_implicit_all(Core::LinAlg::Matrix<3, 3> defgrd,  ///< deformation gradient
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain,    ///< green lagrange strain
         const int gp,                                              ///< current Gauss point
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
         double dt,                                                 ///< delta time
         double time,                                               ///< time
-        CORE::LINALG::Matrix<4, 1> massprodcomp,                   ///< mass production rate
-        CORE::LINALG::Matrix<4, 1> massstress,                     ///< growth stress measure
+        Core::LinAlg::Matrix<4, 1> massprodcomp,                   ///< mass production rate
+        Core::LinAlg::Matrix<4, 1> massstress,                     ///< growth stress measure
         double elastin_survival,  ///< amount of elastin which is still there
         double growthfactor       ///< growth factor for stress
     );
 
     /// compute stress and cmat for implicit integration with fiber stress as driving force
-    void evaluate_implicit_single(CORE::LINALG::Matrix<3, 3> defgrd,  ///< deformation gradient
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,       ///< green lagrange strain
+    void evaluate_implicit_single(Core::LinAlg::Matrix<3, 3> defgrd,  ///< deformation gradient
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain,       ///< green lagrange strain
         const int gp,                                                 ///< current Gauss point
-        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,     ///< material stiffness matrix
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,               ///< 2nd PK-stress
+        Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,     ///< material stiffness matrix
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* stress,               ///< 2nd PK-stress
         double dt,                                                    ///< delta time
         double time,                                                  ///< time
         double elastin_survival,  ///< amount of elastin which is still there
@@ -450,10 +450,10 @@ namespace MAT
 
     /// derivative of stress with respect to massproduction of a single fiber family
     void grad_stress_d_mass(
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,  ///< green lagrange strain
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* derivative,      ///< result
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Cinv,             ///< inverse cauchy green strain
-        CORE::LINALG::Matrix<3, 1> a,                            ///< fiber vector
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* glstrain,  ///< green lagrange strain
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* derivative,      ///< result
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Cinv,             ///< inverse cauchy green strain
+        Core::LinAlg::Matrix<3, 1> a,                            ///< fiber vector
         double stretch,  ///< prestretch / stretch at deposition time
         double J,        ///< determinant of F
         double dt,       ///< delta time
@@ -461,10 +461,10 @@ namespace MAT
     );
 
     /// derivative of massproduction of a single fiber family with respect to stress
-    void grad_mass_d_stress(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* derivative,  ///< result
-        CORE::LINALG::Matrix<3, 3> defgrd,   ///< deformation gradient
-        CORE::LINALG::Matrix<3, 3> Smatrix,  ///< 2nd PK-stress in matrix notation
-        CORE::LINALG::Matrix<3, 1> a,        ///< fiber vector
+    void grad_mass_d_stress(Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* derivative,  ///< result
+        Core::LinAlg::Matrix<3, 3> defgrd,   ///< deformation gradient
+        Core::LinAlg::Matrix<3, 3> Smatrix,  ///< 2nd PK-stress in matrix notation
+        Core::LinAlg::Matrix<3, 1> a,        ///< fiber vector
         double J,                            ///< determinant of F
         double massstress,                   ///< growth stress measure
         double homstress,                    ///< homeostatic stress
@@ -473,11 +473,11 @@ namespace MAT
     );
 
     /// derivative of massproduction of a single fiber family with respect to stretch
-    void grad_mass_d_stretch(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* derivative,  ///< result
-        CORE::LINALG::Matrix<3, 3> defgrd,   ///< deformation gradient
-        CORE::LINALG::Matrix<3, 3> Smatrix,  ///< 2nd PK-stress in matrix notation
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Cinv,
-        CORE::LINALG::Matrix<3, 1> a,  ///< fiber vector
+    void grad_mass_d_stretch(Core::LinAlg::Matrix<NUM_STRESS_3D, 1>* derivative,  ///< result
+        Core::LinAlg::Matrix<3, 3> defgrd,   ///< deformation gradient
+        Core::LinAlg::Matrix<3, 3> Smatrix,  ///< 2nd PK-stress in matrix notation
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Cinv,
+        Core::LinAlg::Matrix<3, 1> a,  ///< fiber vector
         double J,                      ///< determinant of F
         double massstress,             ///< growth stress measure
         double homstress,              ///< homeostatic stress
@@ -491,16 +491,16 @@ namespace MAT
   /* this needs to be copied to STR::TimInt::OutputStep() to enable debug output
   {
     discret_->set_state("displacement",Dis());
-    MAT::ConstraintMixtureOutputToGmsh(discret_, StepOld(), 1);
+    Mat::ConstraintMixtureOutputToGmsh(discret_, StepOld(), 1);
   }
   don't forget to include constraintmixture.H */
   void ConstraintMixtureOutputToGmsh(
-      const Teuchos::RCP<DRT::Discretization> dis,  ///< discretization with displacements
-      const int timestep,                           ///< index of timestep
-      const int iter                                ///< iteration index of newton iteration
+      const Teuchos::RCP<Discret::Discretization> dis,  ///< discretization with displacements
+      const int timestep,                               ///< index of timestep
+      const int iter                                    ///< iteration index of newton iteration
   );
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

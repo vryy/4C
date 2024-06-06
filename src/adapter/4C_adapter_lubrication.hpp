@@ -24,7 +24,7 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class ResultTest;
 }
@@ -34,12 +34,12 @@ namespace LUBRICATION
   class TimIntImpl;
 }
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   /// general Lubrication field interface for multiphysics problems
   /*!
@@ -69,9 +69,9 @@ namespace ADAPTER
     Teuchos::RCP<LUBRICATION::TimIntImpl> LubricationField() { return lubrication_; }
 
     /// create result test for Lubrication field
-    Teuchos::RCP<CORE::UTILS::ResultTest> create_lubrication_field_test();
+    Teuchos::RCP<Core::UTILS::ResultTest> create_lubrication_field_test();
 
-    virtual Teuchos::RCP<CORE::IO::DiscretizationWriter> DiscWriter();
+    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> DiscWriter();
 
    private:
     /// Lubrication field solver
@@ -79,7 +79,7 @@ namespace ADAPTER
 
   };  // class LubricationBaseAlgorithm
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 FOUR_C_NAMESPACE_CLOSE

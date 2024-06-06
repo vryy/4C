@@ -26,12 +26,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace INPUT
+namespace Input
 {
   class LineDefinition;
 }
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
 
   template <class T>
@@ -140,7 +140,7 @@ namespace CORE::UTILS
     using SecondDerivativeType = Sacado::Fad::DFad<Sacado::Fad::DFad<ValueType>>;
 
     /// vector of parsed expressions
-    std::vector<Teuchos::RCP<CORE::UTILS::SymbolicExpression<ValueType>>> expr_;
+    std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<ValueType>>> expr_;
 
     /// vector of the function variables and all their definitions
     std::vector<Teuchos::RCP<FunctionVariable>> variables_;
@@ -250,7 +250,7 @@ namespace CORE::UTILS
     using ValueType = double;
 
     //! vector of parsed expressions
-    std::vector<Teuchos::RCP<CORE::UTILS::SymbolicExpression<ValueType>>> expr_;
+    std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<ValueType>>> expr_;
 
     //! vector of the function variables and all their definitions
     std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables_;
@@ -263,13 +263,13 @@ namespace CORE::UTILS
   /// try to create SymbolicFunctionOfAnything from a given line definition
   template <int dim>
   Teuchos::RCP<FunctionOfAnything> TryCreateSymbolicFunctionOfAnything(
-      const std::vector<INPUT::LineDefinition>& function_line_defs);
+      const std::vector<Input::LineDefinition>& function_line_defs);
 
   /// create a vector function from multiple expressions
   template <int dim>
   Teuchos::RCP<FunctionOfSpaceTime> TryCreateSymbolicFunctionOfSpaceTime(
-      const std::vector<INPUT::LineDefinition>& function_line_defs);
-}  // namespace CORE::UTILS
+      const std::vector<Input::LineDefinition>& function_line_defs);
+}  // namespace Core::UTILS
 
 
 

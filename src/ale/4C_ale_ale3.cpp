@@ -19,31 +19,31 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-DRT::ELEMENTS::Ale3Type DRT::ELEMENTS::Ale3Type::instance_;
+Discret::ELEMENTS::Ale3Type Discret::ELEMENTS::Ale3Type::instance_;
 
-DRT::ELEMENTS::Ale3Type& DRT::ELEMENTS::Ale3Type::Instance() { return instance_; }
+Discret::ELEMENTS::Ale3Type& Discret::ELEMENTS::Ale3Type::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::COMM::ParObject* DRT::ELEMENTS::Ale3Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::Ale3Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Ale3* object = new DRT::ELEMENTS::Ale3(-1, -1);
+  Discret::ELEMENTS::Ale3* object = new Discret::ELEMENTS::Ale3(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Ale3Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale3Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele;
+  Teuchos::RCP<Core::Elements::Element> ele;
 
   if (eletype == "ALE3")
   {
     if (eledistype != "NURBS27")
     {
-      ele = Teuchos::rcp(new DRT::ELEMENTS::Ale3(id, owner));
+      ele = Teuchos::rcp(new Discret::ELEMENTS::Ale3(id, owner));
     }
   }
 
@@ -52,15 +52,16 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Ale3Type::Create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Ale3Type::Create(const int id, const int owner)
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale3Type::Create(
+    const int id, const int owner)
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::Ale3(id, owner));
+  return Teuchos::rcp(new Discret::ELEMENTS::Ale3(id, owner));
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale3Type::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::Ale3Type::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
@@ -69,47 +70,47 @@ void DRT::ELEMENTS::Ale3Type::nodal_block_information(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Ale3Type::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Ale3Type::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale3Type::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::Ale3Type::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions["ALE3"];
+  std::map<std::string, Input::LineDefinition>& defs = definitions["ALE3"];
 
   defs["HEX8"] =
-      INPUT::LineDefinition::Builder().AddIntVector("HEX8", 8).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("HEX8", 8).AddNamedInt("MAT").Build();
 
   defs["HEX20"] =
-      INPUT::LineDefinition::Builder().AddIntVector("HEX20", 20).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("HEX20", 20).AddNamedInt("MAT").Build();
 
   defs["HEX27"] =
-      INPUT::LineDefinition::Builder().AddIntVector("HEX27", 27).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("HEX27", 27).AddNamedInt("MAT").Build();
 
   defs["TET4"] =
-      INPUT::LineDefinition::Builder().AddIntVector("TET4", 4).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("TET4", 4).AddNamedInt("MAT").Build();
 
   defs["TET10"] =
-      INPUT::LineDefinition::Builder().AddIntVector("TET10", 10).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("TET10", 10).AddNamedInt("MAT").Build();
 
   defs["WEDGE6"] =
-      INPUT::LineDefinition::Builder().AddIntVector("WEDGE6", 6).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("WEDGE6", 6).AddNamedInt("MAT").Build();
 
   defs["WEDGE15"] =
-      INPUT::LineDefinition::Builder().AddIntVector("WEDGE15", 15).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("WEDGE15", 15).AddNamedInt("MAT").Build();
 
   defs["PYRAMID5"] =
-      INPUT::LineDefinition::Builder().AddIntVector("PYRAMID5", 5).AddNamedInt("MAT").Build();
+      Input::LineDefinition::Builder().AddIntVector("PYRAMID5", 5).AddNamedInt("MAT").Build();
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Ale3SurfaceType::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale3SurfaceType::Create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Ale3Surface( id, owner ) );
@@ -118,40 +119,43 @@ Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::Ale3SurfaceType::Create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale3::Ale3(int id, int owner) : CORE::Elements::Element(id, owner) {}
+Discret::ELEMENTS::Ale3::Ale3(int id, int owner) : Core::Elements::Element(id, owner) {}
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale3::Ale3(const DRT::ELEMENTS::Ale3& old) : CORE::Elements::Element(old) { return; }
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Ale3::Clone() const
+Discret::ELEMENTS::Ale3::Ale3(const Discret::ELEMENTS::Ale3& old) : Core::Elements::Element(old)
 {
-  DRT::ELEMENTS::Ale3* newelement = new DRT::ELEMENTS::Ale3(*this);
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Core::Elements::Element* Discret::ELEMENTS::Ale3::Clone() const
+{
+  Discret::ELEMENTS::Ale3* newelement = new Discret::ELEMENTS::Ale3(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::Ale3::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Ale3::Shape() const
 {
   switch (num_node())
   {
     case 4:
-      return CORE::FE::CellType::tet4;
+      return Core::FE::CellType::tet4;
     case 5:
-      return CORE::FE::CellType::pyramid5;
+      return Core::FE::CellType::pyramid5;
     case 6:
-      return CORE::FE::CellType::wedge6;
+      return Core::FE::CellType::wedge6;
     case 8:
-      return CORE::FE::CellType::hex8;
+      return Core::FE::CellType::hex8;
     case 10:
-      return CORE::FE::CellType::tet10;
+      return Core::FE::CellType::tet10;
     case 20:
-      return CORE::FE::CellType::hex20;
+      return Core::FE::CellType::hex20;
     case 27:
-      return CORE::FE::CellType::hex27;
+      return Core::FE::CellType::hex27;
     default:
       FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;
@@ -160,9 +164,9 @@ CORE::FE::CellType DRT::ELEMENTS::Ale3::Shape() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale3::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Ale3::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -174,11 +178,11 @@ void DRT::ELEMENTS::Ale3::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale3::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Ale3::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -191,7 +195,7 @@ void DRT::ELEMENTS::Ale3::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale3::Print(std::ostream& os) const
+void Discret::ELEMENTS::Ale3::Print(std::ostream& os) const
 {
   os << "Ale3 ";
   Element::Print(os);
@@ -202,9 +206,10 @@ void DRT::ELEMENTS::Ale3::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<CORE::Elements::Element>> DRT::ELEMENTS::Ale3::Surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Ale3::Surfaces()
 {
-  return CORE::COMM::ElementBoundaryFactory<Ale3Surface, Ale3>(CORE::COMM::buildSurfaces, *this);
+  return Core::Communication::ElementBoundaryFactory<Ale3Surface, Ale3>(
+      Core::Communication::buildSurfaces, *this);
 }
 
 FOUR_C_NAMESPACE_CLOSE

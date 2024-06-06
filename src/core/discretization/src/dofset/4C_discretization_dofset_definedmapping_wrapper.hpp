@@ -22,12 +22,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace CORE::Dofsets
+namespace Core::DOFSets
 {
   /*!
   \brief A dofset that does not rely on same GID/LID numbers but uses
@@ -36,7 +36,7 @@ namespace CORE::Dofsets
   \warning not implemented for element DOFs
 
   This dofset was originally written to handle heterogeneous reactions :
-  \ref SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionStrategy .
+  \ref ScaTra::HeterogeneousReactionStrategy::HeterogeneousReactionStrategy .
   This means reactions between volume-bound scalars and surface-bound scalars in the
   context of scalar transport simulations.
   It is also used in solid-scatra interaction \ref SSI::SSI_Base::SSI_Base .
@@ -60,9 +60,9 @@ namespace CORE::Dofsets
 
   \code
 
-    Teuchos::RCP<CORE::Dofsets::DofSet> newsourcedofset_for_target_dis =
+    Teuchos::RCP<Core::DOFSets::DofSet> newsourcedofset_for_target_dis =
         Teuchos::rcp(new
-  CORE::Dofsets::DofSetMappedProxy(sourcedis->GetDofSetProxy(),sourcedis,"CouplingSourceToTarget",setofcouplingids));
+  Core::DOFSets::DofSetMappedProxy(sourcedis->GetDofSetProxy(),sourcedis,"CouplingSourceToTarget",setofcouplingids));
 
     target_dis->AddDofSet(newsourcedofset_for_target_dis);
 
@@ -88,7 +88,7 @@ namespace CORE::Dofsets
     \param couplingcond (in) : condition to be coupled
     \param condids      (in) : set of condition ids to merge into one dofset    */
     DofSetDefinedMappingWrapper(Teuchos::RCP<DofSetInterface> dofset,
-        Teuchos::RCP<const DRT::Discretization> sourcedis, const std::string& couplingcond,
+        Teuchos::RCP<const Discret::Discretization> sourcedis, const std::string& couplingcond,
         const std::set<int> condids);
 
     //! destructor
@@ -137,9 +137,9 @@ namespace CORE::Dofsets
          We can now create the dofset proxy from the struct dis via
 
          \code
-          Teuchos::RCP<CORE::Dofsets::DofSet> newdofset =
+          Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
               Teuchos::rcp(new
-       CORE::Dofsets::DofSetMappedProxy(structdis->GetDofSetProxy(), structdis,
+       Core::DOFSets::DofSetMappedProxy(structdis->GetDofSetProxy(), structdis,
                                                       "SSICouplingSolidToScatra",
                                                       couplingids));
          \endcode
@@ -147,7 +147,7 @@ namespace CORE::Dofsets
          The std::set 'couplingids' contains the ids from both, VOL and SURF conditions
          given above. This way, one unique struct dofset for all scatra nodes is created.    */
     int assign_degrees_of_freedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
+        const Discret::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables
     void Reset() override;
@@ -174,10 +174,10 @@ namespace CORE::Dofsets
 
     /// Get number of dofs for given node
     int NumDof(
-        const CORE::Nodes::Node* node  ///< node, for which you want to know the number of dofs
+        const Core::Nodes::Node* node  ///< node, for which you want to know the number of dofs
     ) const override
     {
-      const CORE::Nodes::Node* sourcenode = get_source_node(node->LID());
+      const Core::Nodes::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         return sourcedofset_->NumDof(node);
       else
@@ -185,7 +185,7 @@ namespace CORE::Dofsets
     }
 
     /// Get number of dofs for given element
-    int NumDof(const CORE::Elements::Element*
+    int NumDof(const Core::Elements::Element*
             element  ///< element, for which you want to know the number of dofs
     ) const override
     {
@@ -195,10 +195,10 @@ namespace CORE::Dofsets
 
     /// get number of nodal dofs
     int NumDofPerNode(
-        const CORE::Nodes::Node& node  ///< node, for which you want to know the number of dofs
+        const Core::Nodes::Node& node  ///< node, for which you want to know the number of dofs
     ) const override
     {
-      const CORE::Nodes::Node* sourcenode = get_source_node(node.LID());
+      const Core::Nodes::Node* sourcenode = get_source_node(node.LID());
       if (sourcenode == nullptr)
         return sourcedofset_->NumDofPerNode(node);
       else
@@ -207,10 +207,10 @@ namespace CORE::Dofsets
 
     /// Get the gid of all dofs of a node
     std::vector<int> Dof(
-        const CORE::Nodes::Node* node  ///< node, for which you want to know the number of dofs
+        const Core::Nodes::Node* node  ///< node, for which you want to know the number of dofs
     ) const override
     {
-      const CORE::Nodes::Node* sourcenode = get_source_node(node->LID());
+      const Core::Nodes::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         return sourcedofset_->Dof(node);
       else
@@ -219,11 +219,11 @@ namespace CORE::Dofsets
 
     /// Get the gid of all dofs of a node
     void Dof(std::vector<int>& dof,     ///< vector of dof gids (to be filled)
-        const CORE::Nodes::Node* node,  ///< node, for which you want the dof positions
+        const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
     ) const override
     {
-      const CORE::Nodes::Node* sourcenode = get_source_node(node->LID());
+      const Core::Nodes::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         sourcedofset_->Dof(dof, node, nodaldofset);
       else
@@ -231,15 +231,15 @@ namespace CORE::Dofsets
     };
 
     /// Get the gid of all dofs of a element
-    std::vector<int> Dof(const CORE::Elements::Element* element) const override
+    std::vector<int> Dof(const Core::Elements::Element* element) const override
     {
       return std::vector<int>();
     }
 
     /// Get the gid of a dof for given node
-    int Dof(const CORE::Nodes::Node* node, int dof) const override
+    int Dof(const Core::Nodes::Node* node, int dof) const override
     {
-      const CORE::Nodes::Node* sourcenode = get_source_node(node->LID());
+      const Core::Nodes::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         return sourcedofset_->Dof(node, dof);
       else
@@ -247,16 +247,16 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of a dof for given element
-    int Dof(const CORE::Elements::Element* element, int dof) const override
+    int Dof(const Core::Elements::Element* element, int dof) const override
     {
       // element dofs not yet supported
       return 0;
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const CORE::Nodes::Node* node, std::vector<int>& lm) const override
+    void Dof(const Core::Nodes::Node* node, std::vector<int>& lm) const override
     {
-      const CORE::Nodes::Node* sourcenode = get_source_node(node->LID());
+      const Core::Nodes::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         return sourcedofset_->Dof(node, lm);
       else
@@ -264,12 +264,12 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of all dofs of a node
-    void Dof(const CORE::Nodes::Node* node,  ///< node, for which you want the dof positions
+    void Dof(const Core::Nodes::Node* node,  ///< node, for which you want the dof positions
         const unsigned startindex,  ///< first index of vector at which will be written to end
         std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
     ) const override
     {
-      const CORE::Nodes::Node* sourcenode = get_source_node(node->LID());
+      const Core::Nodes::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         sourcedofset_->Dof(node, startindex, lm);
       else
@@ -277,20 +277,20 @@ namespace CORE::Dofsets
     }
 
     /// Get the gid of all dofs of a element
-    void Dof(const CORE::Elements::Element* element, std::vector<int>& lm) const override
+    void Dof(const Core::Elements::Element* element, std::vector<int>& lm) const override
     {
       // element dofs not yet supported
       return;
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    void Dof(const CORE::Elements::Element*
+    void Dof(const Core::Elements::Element*
                  element,  ///< element which provides its expected number of DOFs per node
-        const CORE::Nodes::Node* node,  ///< node, for which you want the DOF positions
+        const Core::Nodes::Node* node,  ///< node, for which you want the DOF positions
         std::vector<int>& lm  ///< already allocated vector to be filled with DOF positions
     ) const override
     {
-      const CORE::Nodes::Node* sourcenode = get_source_node(node->LID());
+      const Core::Nodes::Node* sourcenode = get_source_node(node->LID());
       if (sourcenode == nullptr)
         sourcedofset_->Dof(element, node, lm);
       else
@@ -318,7 +318,7 @@ namespace CORE::Dofsets
 
    private:
     //! get corresponding source node from source discretization
-    const CORE::Nodes::Node* get_source_node(int targetLid) const;
+    const Core::Nodes::Node* get_source_node(int targetLid) const;
 
     // dofset
     Teuchos::RCP<DofSetInterface> sourcedofset_;
@@ -328,7 +328,7 @@ namespace CORE::Dofsets
     Teuchos::RCP<Epetra_IntVector> targetlidtosourcegidmapping_;
 
     //! source discretization
-    Teuchos::RCP<const DRT::Discretization> sourcedis_;
+    Teuchos::RCP<const Discret::Discretization> sourcedis_;
 
     //! condition string defining the coupling
     const std::string couplingcond_;
@@ -339,7 +339,7 @@ namespace CORE::Dofsets
     /// filled flag
     bool filled_;
   };  // DofSetDefinedMappingWrapper
-}  // namespace CORE::Dofsets
+}  // namespace Core::DOFSets
 
 
 

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                           dano 11/09 |
  *----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
   namespace TSI
   {
@@ -116,22 +116,22 @@ namespace INPAR
     {
       switch (norm)
       {
-        case INPAR::TSI::norm_vague:
+        case Inpar::TSI::norm_vague:
           return "Vague";
           break;
-        case INPAR::TSI::norm_l1:
+        case Inpar::TSI::norm_l1:
           return "L1";
           break;
-        case INPAR::TSI::norm_l1_scaled:
+        case Inpar::TSI::norm_l1_scaled:
           return "L1_scaled";
           break;
-        case INPAR::TSI::norm_l2:
+        case Inpar::TSI::norm_l2:
           return "L2";
           break;
-        case INPAR::TSI::norm_rms:
+        case Inpar::TSI::norm_rms:
           return "Rms";
           break;
-        case INPAR::TSI::norm_inf:
+        case Inpar::TSI::norm_inf:
           return "Inf";
           break;
         default:
@@ -156,7 +156,7 @@ namespace INPAR
 
   }  // namespace TSI
 
-}  // namespace INPAR
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

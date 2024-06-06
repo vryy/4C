@@ -30,7 +30,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
@@ -40,11 +40,11 @@ namespace MAT
     //!
     //! <h3>Input line</h3>
     //! MAT 1 MAT_Struct_ThrStVenantK YOUNG 400 NUE 0.3 DENS 1 THEXPANS 1 INITTEMP 20
-    class ThermoStVenantKirchhoff : public CORE::MAT::PAR::Parameter
+    class ThermoStVenantKirchhoff : public Core::Mat::PAR::Parameter
     {
      public:
       //! standard constructor
-      explicit ThermoStVenantKirchhoff(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      explicit ThermoStVenantKirchhoff(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! @name material parameters
       //@{
@@ -68,20 +68,20 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class ThermoStVenantKirchhoff
 
   }  // namespace PAR
 
-  class ThermoStVenantKirchhoffType : public CORE::COMM::ParObjectType
+  class ThermoStVenantKirchhoffType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ThermoStVenantKirchhoffType"; }
 
     static ThermoStVenantKirchhoffType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ThermoStVenantKirchhoffType instance_;
@@ -96,7 +96,7 @@ namespace MAT
     ThermoStVenantKirchhoff();
 
     //! construct the material object given material parameters
-    explicit ThermoStVenantKirchhoff(MAT::PAR::ThermoStVenantKirchhoff* params);
+    explicit ThermoStVenantKirchhoff(Mat::PAR::ThermoStVenantKirchhoff* params);
 
     //! @name Packing and Unpacking
 
@@ -112,9 +112,9 @@ namespace MAT
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (kinem != INPAR::STR::KinemType::linear && kinem != INPAR::STR::KinemType::nonlinearTotLag)
+      if (kinem != Inpar::STR::KinemType::linear && kinem != Inpar::STR::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
@@ -126,7 +126,8 @@ namespace MAT
       unique parobject id delivered by UniqueParObjectId() which will then
       identify the exact class on the receiving processor.
     */
-    void Pack(CORE::COMM::PackBuffer& data  //!< (i/o): char vector to store class information
+    void Pack(
+        Core::Communication::PackBuffer& data  //!< (i/o): char vector to store class information
     ) const override;
 
     /*!
@@ -145,29 +146,29 @@ namespace MAT
     //@}
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_thermostvenant;
+      return Core::Materials::m_thermostvenant;
     }
 
     //! return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ThermoStVenantKirchhoff(*this));
     }
 
     //! evaluates stresses for 3d
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
-        const CORE::LINALG::Matrix<6, 1>* glstrain,          //!< Green-Lagrange strain
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  //!< deformation gradient
+        const Core::LinAlg::Matrix<6, 1>* glstrain,          //!< Green-Lagrange strain
         Teuchos::ParameterList& params,                      //!< parameter list
-        CORE::LINALG::Matrix<6, 1>* stress,                  //!< stress
-        CORE::LINALG::Matrix<6, 6>* cmat,                    //!< elastic material tangent
+        Core::LinAlg::Matrix<6, 1>* stress,                  //!< stress
+        Core::LinAlg::Matrix<6, 6>* cmat,                    //!< elastic material tangent
         int gp,                                              ///< Gauss point
         int eleGID                                           //!< element GID
         ) override;
 
     /// add strain energy
-    void StrainEnergy(const CORE::LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
+    void StrainEnergy(const Core::LinAlg::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
         double& psi,                                               ///< strain energy functions
         int gp,                                                    ///< Gauss point
         int eleGID                                                 ///< element GID
@@ -189,22 +190,22 @@ namespace MAT
     double InitTemp() const { return params_->thetainit_; }
 
     //! Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
-    void Evaluate(const CORE::LINALG::Matrix<3, 1>& gradtemp, CORE::LINALG::Matrix<3, 3>& cmat,
-        CORE::LINALG::Matrix<3, 1>& heatflux) const override;
+    void Evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp, Core::LinAlg::Matrix<3, 3>& cmat,
+        Core::LinAlg::Matrix<3, 1>& heatflux) const override;
 
-    void Evaluate(const CORE::LINALG::Matrix<2, 1>& gradtemp, CORE::LINALG::Matrix<2, 2>& cmat,
-        CORE::LINALG::Matrix<2, 1>& heatflux) const override;
+    void Evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp, Core::LinAlg::Matrix<2, 2>& cmat,
+        Core::LinAlg::Matrix<2, 1>& heatflux) const override;
 
-    void Evaluate(const CORE::LINALG::Matrix<1, 1>& gradtemp, CORE::LINALG::Matrix<1, 1>& cmat,
-        CORE::LINALG::Matrix<1, 1>& heatflux) const override;
+    void Evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp, Core::LinAlg::Matrix<1, 1>& cmat,
+        Core::LinAlg::Matrix<1, 1>& heatflux) const override;
 
-    void ConductivityDerivT(CORE::LINALG::Matrix<3, 3>& dCondDT) const override;
+    void ConductivityDerivT(Core::LinAlg::Matrix<3, 3>& dCondDT) const override;
 
-    void ConductivityDerivT(CORE::LINALG::Matrix<2, 2>& dCondDT) const override;
+    void ConductivityDerivT(Core::LinAlg::Matrix<2, 2>& dCondDT) const override;
 
-    void ConductivityDerivT(CORE::LINALG::Matrix<1, 1>& dCondDT) const override;
+    void ConductivityDerivT(Core::LinAlg::Matrix<1, 1>& dCondDT) const override;
 
     double CapacityDerivT() const override;
 
@@ -214,24 +215,24 @@ namespace MAT
 
     void CommitCurrentState() override;
 
-    void Reinit(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, double temperature, unsigned gp) override;
+    void Reinit(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, double temperature, unsigned gp) override;
 
-    void GetdSdT(CORE::LINALG::Matrix<6, 1>* dS_dT) override;
+    void GetdSdT(Core::LinAlg::Matrix<6, 1>* dS_dT) override;
 
     void stress_temperature_modulus_and_deriv(
-        CORE::LINALG::Matrix<6, 1>& stm, CORE::LINALG::Matrix<6, 1>& stm_dT) override;
+        Core::LinAlg::Matrix<6, 1>& stm, Core::LinAlg::Matrix<6, 1>& stm_dT) override;
 
     //! general thermal tangent of material law depending on stress-temperature modulus
-    static void FillCthermo(CORE::LINALG::Matrix<6, 1>& ctemp, double m);
+    static void FillCthermo(Core::LinAlg::Matrix<6, 1>& ctemp, double m);
 
    private:
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void setup_cmat(CORE::LINALG::Matrix<6, 6>& cmat);
+    void setup_cmat(Core::LinAlg::Matrix<6, 6>& cmat);
 
     //! computes temperature dependent isotropic elasticity tensor in matrix
     //! notion for 3d
-    void setup_cthermo(CORE::LINALG::Matrix<6, 1>& ctemp);
+    void setup_cthermo(Core::LinAlg::Matrix<6, 1>& ctemp);
 
     //! calculates stress-temperature modulus
     double st_modulus() const;
@@ -241,12 +242,12 @@ namespace MAT
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
-    void get_cmat_at_tempnp_t(CORE::LINALG::Matrix<6, 6>& derivcmat);
+    void get_cmat_at_tempnp_t(Core::LinAlg::Matrix<6, 6>& derivcmat);
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
     void get_cthermo_at_tempnp_t(
-        CORE::LINALG::Matrix<6, 1>& derivctemp  //!< linearisation of ctemp w.r.t. T
+        Core::LinAlg::Matrix<6, 1>& derivctemp  //!< linearisation of ctemp w.r.t. T
     );
 
     //! calculate temperature dependent material parameter and return value
@@ -265,19 +266,19 @@ namespace MAT
     void create_thermo_material_if_set();
 
     //! my material parameters
-    MAT::PAR::ThermoStVenantKirchhoff* params_;
+    Mat::PAR::ThermoStVenantKirchhoff* params_;
 
     //! pointer to the internal thermal material
-    Teuchos::RCP<MAT::TRAIT::Thermo> thermo_;
+    Teuchos::RCP<Mat::Trait::Thermo> thermo_;
 
     //! current temperature (set by Reinit())
     double current_temperature_{};
 
     //! current Green-Lagrange strain
-    const CORE::LINALG::Matrix<6, 1>* current_glstrain_{};
+    const Core::LinAlg::Matrix<6, 1>* current_glstrain_{};
 
   };  // ThermoStVenantKirchhoff
-}  // namespace MAT
+}  // namespace Mat
 
 
 /*----------------------------------------------------------------------*/

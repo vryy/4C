@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace PARTICLERIGIDBODY
+namespace ParticleRigidBody
 {
   class RigidBodyHandlerInterface;
 }
@@ -33,14 +33,14 @@ namespace PARTICLERIGIDBODY
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLERIGIDBODY
+namespace ParticleRigidBody
 {
   /*!
    * \brief rigid body result test handler
    *
    * \author Sebastian Fuchs \date 09/2020
    */
-  class RigidBodyResultTest final : public CORE::UTILS::ResultTest
+  class RigidBodyResultTest final : public Core::UTILS::ResultTest
   {
    public:
     //! constructor
@@ -60,7 +60,7 @@ namespace PARTICLERIGIDBODY
      *
      * \param[in] particlerigidbodyinterface interface to rigid body handler
      */
-    void Setup(const std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandlerInterface>
+    void Setup(const std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface>
             particlerigidbodyinterface);
 
     /*!
@@ -72,14 +72,14 @@ namespace PARTICLERIGIDBODY
      * \param[out] nerr       number of tests with errors
      * \param[out] test_count number of tests performed
      */
-    void TestSpecial(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void TestSpecial(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     //! interface to rigid body handler
-    std::shared_ptr<PARTICLERIGIDBODY::RigidBodyHandlerInterface> particlerigidbodyinterface_;
+    std::shared_ptr<ParticleRigidBody::RigidBodyHandlerInterface> particlerigidbodyinterface_;
   };
 
-}  // namespace PARTICLERIGIDBODY
+}  // namespace ParticleRigidBody
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

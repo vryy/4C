@@ -25,11 +25,11 @@ namespace GEOMETRYPAIR
   template <typename scalar_type>
   class ProjectionPointVolumeToVolume;
 }  // namespace GEOMETRYPAIR
-namespace LARGEROTATIONS
+namespace LargeRotations
 {
   template <unsigned int numnodes, typename T>
   class TriadInterpolationLocalRotationVectors;
-}  // namespace LARGEROTATIONS
+}  // namespace LargeRotations
 
 
 namespace GEOMETRYPAIR
@@ -51,7 +51,7 @@ namespace GEOMETRYPAIR
      * \brief Constructor.
      */
     GeometryPairLineToVolumeGaussPointProjectionCrossSection(
-        const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
+        const Core::Elements::Element* element1, const Core::Elements::Element* element2,
         const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
 
 
@@ -65,7 +65,7 @@ namespace GEOMETRYPAIR
     void pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
         const ElementData<volume, scalar_type>& element_data_volume,
         std::vector<LineSegment<scalar_type>>& segments,
-        const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>*
+        const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>*
             line_triad_interpolation = nullptr) const;
 
     /**

@@ -26,12 +26,12 @@ passive-scalar transport
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
 
-namespace SCATRA
+namespace ScaTra
 {
   // forward declarations
   class ScaTraTimIntImpl;
@@ -43,7 +43,7 @@ namespace SCATRA
     HomIsoTurbScalarForcing(ScaTraTimIntImpl* timeint);
 
     //! initialize with initial spectrum
-    void SetInitialSpectrum(INPAR::SCATRA::InitialField init_field_type);
+    void SetInitialSpectrum(Inpar::ScaTra::InitialField init_field_type);
 
     //! turn on forcing
     void ActivateForcing(const bool activate);
@@ -70,10 +70,10 @@ namespace SCATRA
 
    private:
     //! type of forcing
-    INPAR::FLUID::ForcingType forcing_type_;
+    Inpar::FLUID::ForcingType forcing_type_;
 
     //! scatra discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<Discret::Discretization> discret_;
 
     //! state vector of volume force to be computed
     Teuchos::RCP<Epetra_Vector> forcing_;
@@ -111,7 +111,7 @@ namespace SCATRA
     bool activate_;
 
     //! linear compensation factor
-    Teuchos::RCP<CORE::LINALG::SerialDenseVector> force_fac_;
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector> force_fac_;
 
     //! interpolation function
     static double interpolate(
@@ -122,7 +122,7 @@ namespace SCATRA
     }
   };
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 FOUR_C_NAMESPACE_CLOSE
 

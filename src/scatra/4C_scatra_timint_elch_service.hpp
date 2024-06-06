@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 /*==========================================================================*/
 
-namespace SCATRA
+namespace ScaTra
 {
   /*!
    * \brief Control routine for constant-current, constant-voltage half cycle
@@ -37,10 +37,10 @@ namespace SCATRA
    public:
     //! constructor
     CCCVHalfCycleCondition(
-        const CORE::Conditions::Condition& cccvhalfcyclecondition, bool adaptivetimestepping);
+        const Core::Conditions::Condition& cccvhalfcyclecondition, bool adaptivetimestepping);
 
     //! Get phase of half cycle
-    INPAR::ELCH::CCCVHalfCyclePhase get_cccv_half_cycle_phase() const { return phase_cccv_; };
+    Inpar::ElCh::CCCVHalfCyclePhase get_cccv_half_cycle_phase() const { return phase_cccv_; };
 
     //! Get ID of this half cycle condition
     int GetConditionID() const { return halfcyclecondition_id_; };
@@ -64,7 +64,7 @@ namespace SCATRA
     void ResetPhase();
 
     //! read restart
-    void read_restart(CORE::IO::DiscretizationReader& reader);
+    void read_restart(Core::IO::DiscretizationReader& reader);
 
    private:
     //! adaptive time stepping at end of phases?
@@ -81,7 +81,7 @@ namespace SCATRA
 
     //! flag indicating whether cell is currently being operated in constant-current (CC),
     //! constant-voltage (CV), relaxation (RX), or initial relaxation mode
-    INPAR::ELCH::CCCVHalfCyclePhase phase_cccv_;
+    Inpar::ElCh::CCCVHalfCyclePhase phase_cccv_;
 
     //! end time of current relaxation phase
     double relaxendtime_;
@@ -103,15 +103,15 @@ namespace SCATRA
   {
    public:
     //! constructor
-    CCCVCondition(const CORE::Conditions::Condition& cccvcyclingcondition,
-        const std::vector<CORE::Conditions::Condition*>& cccvhalfcycleconditions,
+    CCCVCondition(const Core::Conditions::Condition& cccvcyclingcondition,
+        const std::vector<Core::Conditions::Condition*>& cccvhalfcycleconditions,
         bool adaptivetimestepping, int num_dofs);
 
     //! true, when all half cylces are completed
     bool NotFinished() const { return nhalfcycles_ >= ihalfcycle_; };
 
     //! phase of active half cycle
-    INPAR::ELCH::CCCVHalfCyclePhase get_cccv_half_cycle_phase() const;
+    Inpar::ElCh::CCCVHalfCyclePhase get_cccv_half_cycle_phase() const;
 
     //! ID of current half cycle
     int get_half_cycle_condition_id() const;
@@ -167,7 +167,7 @@ namespace SCATRA
     int NumDofs() const { return num_dofs_; }
 
     //! read restart
-    void read_restart(CORE::IO::DiscretizationReader& reader);
+    void read_restart(Core::IO::DiscretizationReader& reader);
 
     //! reset phasechanged_
     void reset_phase_change_observer();
@@ -189,10 +189,10 @@ namespace SCATRA
     bool charging_;
 
     //! half cycle of charge
-    Teuchos::RCP<SCATRA::CCCVHalfCycleCondition> halfcycle_charge_;
+    Teuchos::RCP<ScaTra::CCCVHalfCycleCondition> halfcycle_charge_;
 
     //! half cycle of discharge
-    Teuchos::RCP<SCATRA::CCCVHalfCycleCondition> halfcycle_discharge_;
+    Teuchos::RCP<ScaTra::CCCVHalfCycleCondition> halfcycle_discharge_;
 
     //! number of current charge or discharge half-cycle
     int ihalfcycle_;
@@ -224,7 +224,7 @@ namespace SCATRA
 
   };  // class CCCVCondition
 
-}  // namespace SCATRA
+}  // namespace ScaTra
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

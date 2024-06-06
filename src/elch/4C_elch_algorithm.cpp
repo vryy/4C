@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ELCH::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& elchcontrol,
+ElCh::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& elchcontrol,
     const Teuchos::ParameterList& scatradyn, const Teuchos::ParameterList& fdyn,
     const Teuchos::ParameterList& solverparams)
     : ScaTraAlgorithm(comm, scatradyn, fdyn, "scatra", solverparams)
@@ -26,7 +26,7 @@ ELCH::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ELCH::Algorithm::prepare_time_loop()
+void ElCh::Algorithm::prepare_time_loop()
 {
   // provide information about initial field (do not do for restarts!)
   if (Step() == 0)
@@ -42,7 +42,7 @@ void ELCH::Algorithm::prepare_time_loop()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ELCH::Algorithm::print_sca_tra_solver()
+void ElCh::Algorithm::print_sca_tra_solver()
 {
   if (Comm().MyPID() == 0)
     std::cout
@@ -52,7 +52,7 @@ void ELCH::Algorithm::print_sca_tra_solver()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool ELCH::Algorithm::convergence_check(
+bool ElCh::Algorithm::convergence_check(
     int natconvitnum, const int natconvitmax, const double natconvittol)
 {
   // convergence check based on the concentration, potential and
@@ -63,7 +63,7 @@ bool ELCH::Algorithm::convergence_check(
   //     | concentration_n+1 |_2
 
   bool stopnonliniter = false;
-  Teuchos::RCP<CORE::LINALG::MapExtractor> conpotsplitter = ScaTraField()->Splitter();
+  Teuchos::RCP<Core::LinAlg::MapExtractor> conpotsplitter = ScaTraField()->Splitter();
   // Variables to save different L2 - Norms
 
   double potincnorm_L2 = 0.0;

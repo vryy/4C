@@ -10,7 +10,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::UTILS
+namespace Core::UTILS
 {
   /**
    * This interface encodes functions \f$ y = f(s) \f$ which take a single scalar \f$ s \f$ and
@@ -34,7 +34,7 @@ namespace CORE::UTILS
      */
     [[nodiscard]] virtual double EvaluateDerivative(double scalar, int deriv_order) const = 0;
   };
-}  // namespace CORE::UTILS
+}  // namespace Core::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

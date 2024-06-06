@@ -18,9 +18,9 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /* constructor */
-ADAPTER::FluidFPSI::FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
+Adapter::FluidFPSI::FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Discret::Discretization> dis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond),
       fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor()))
 {
@@ -29,7 +29,7 @@ ADAPTER::FluidFPSI::FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discr
 
 
 /* initialization */
-void ADAPTER::FluidFPSI::Init()
+void Adapter::FluidFPSI::Init()
 {
   // call base class init
   FluidFSI::Init();
@@ -42,7 +42,7 @@ void ADAPTER::FluidFPSI::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFPSI::setup_interface(const int nds_master)
+void Adapter::FluidFPSI::setup_interface(const int nds_master)
 {
   // check nds_master
   if (nds_master != 0) FOUR_C_THROW("nds_master is supposed to be 0 here");
@@ -52,7 +52,7 @@ void ADAPTER::FluidFPSI::setup_interface(const int nds_master)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFPSI::use_block_matrix(
+void Adapter::FluidFPSI::use_block_matrix(
     bool splitmatrix, Teuchos::RCP<FPSI::UTILS::MapExtractor> const& shapederivSplitter)
 {
   Teuchos::RCP<std::set<int>> condelements =
@@ -65,7 +65,7 @@ void ADAPTER::FluidFPSI::use_block_matrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFPSI::use_block_matrix(bool splitmatrix)
+void Adapter::FluidFPSI::use_block_matrix(bool splitmatrix)
 {
   Teuchos::RCP<std::set<int>> condelements =
       Interface()->conditioned_element_map(*discretization());

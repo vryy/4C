@@ -37,7 +37,7 @@ namespace THR
   //! \brief Thermo specific result test class
   //!
   //! \author cd
-  class ResultTest : public CORE::UTILS::ResultTest
+  class ResultTest : public Core::UTILS::ResultTest
   {
    public:
     //! Constructor for time integrators of general kind
@@ -48,11 +48,11 @@ namespace THR
     //!
     //! Possible position flags are "temp",
     //!                             "rate",
-    void test_node(INPUT::LineDefinition& res, int& nerr, int& test_count) override;
+    void test_node(Input::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     //! our discretisation
-    Teuchos::RCP<DRT::Discretization> thrdisc_;
+    Teuchos::RCP<Discret::Discretization> thrdisc_;
     // our solution
     //! global temperature DOFs
     Teuchos::RCP<Epetra_Vector> temp_;
@@ -63,7 +63,7 @@ namespace THR
     //! NOTE: these have to be present explicitly
     //! as they are not part of the problem instance like in fluid3
 
-  };  // CORE::UTILS::ResultTest
+  };  // Core::UTILS::ResultTest
 
 }  // namespace THR
 

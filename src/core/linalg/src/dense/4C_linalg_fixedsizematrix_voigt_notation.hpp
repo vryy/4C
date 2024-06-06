@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG::VOIGT
+namespace Core::LinAlg::Voigt
 {
   /*! Voigt notation types
    *
@@ -56,8 +56,8 @@ namespace CORE::LINALG::VOIGT
      *  \param[in] vtensor      input tensor in Voigt <type> notation
      *  \param[in] vtensor_pow  result, i.e. input tensor to the given power
      */
-    static void power_of_symmetric_tensor(unsigned pow, const CORE::LINALG::Matrix<6, 1>& strain,
-        CORE::LINALG::Matrix<6, 1>& strain_pow);
+    static void power_of_symmetric_tensor(unsigned pow, const Core::LinAlg::Matrix<6, 1>& strain,
+        Core::LinAlg::Matrix<6, 1>& strain_pow);
 
     /** \brief Compute the inverse tensor in perturbed Voigt notation
      *
@@ -65,14 +65,14 @@ namespace CORE::LINALG::VOIGT
      *  \param[out] vtensor_inv  inverse tensor in Voigt <type> notation
      */
     static void InverseTensor(
-        const CORE::LINALG::Matrix<6, 1>& tens, CORE::LINALG::Matrix<6, 1>& tens_inv);
+        const Core::LinAlg::Matrix<6, 1>& tens, Core::LinAlg::Matrix<6, 1>& tens_inv);
 
     /**
      * \brief Compute the determinant of a matrix in Voigt <type> notation
      *
      * @param vtensor Tensor in Voigt <type> notation
      */
-    static inline double Determinant(const CORE::LINALG::Matrix<6, 1>& vtensor)
+    static inline double Determinant(const Core::LinAlg::Matrix<6, 1>& vtensor)
     {
       return triple_entry_product(vtensor, 0, 1, 2) + 2 * triple_entry_product(vtensor, 3, 4, 5) -
              triple_entry_product(vtensor, 1, 5, 5) - triple_entry_product(vtensor, 2, 3, 3) -
@@ -85,7 +85,7 @@ namespace CORE::LINALG::VOIGT
      * @param vtensor tensor in Voigt <type> notation
      */
     static inline void InvariantsPrincipal(
-        CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<6, 1>& vtensor)
+        Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<6, 1>& vtensor)
     {
       // 1st invariant, trace tens
       prinv(0) = vtensor(0) + vtensor(1) + vtensor(2);
@@ -107,8 +107,8 @@ namespace CORE::LINALG::VOIGT
      *  \param[in]  vtensor      tensor in Voigt <type> notation
      *  \param[out] vtensor_inv  inverser tensor in Voigt <type> notation
      */
-    static void multiply_tensor_vector(const CORE::LINALG::Matrix<6, 1>& strain,
-        const CORE::LINALG::Matrix<3, 1>& vec, CORE::LINALG::Matrix<3, 1>& vec_res);
+    static void multiply_tensor_vector(const Core::LinAlg::Matrix<6, 1>& strain,
+        const Core::LinAlg::Matrix<3, 1>& vec, Core::LinAlg::Matrix<3, 1>& vec_res);
 
     /** \brief Compute the symmetric outer product of two vectors
      *
@@ -119,8 +119,8 @@ namespace CORE::LINALG::VOIGT
      *  \param[out] ab_ba  symmetric outer product of the two input vectors
      *                     in the Voigt <type> notation
      */
-    static void symmetric_outer_product(const CORE::LINALG::Matrix<3, 1>& vec_a,
-        const CORE::LINALG::Matrix<3, 1>& vec_b, CORE::LINALG::Matrix<6, 1>& ab_ba);
+    static void symmetric_outer_product(const Core::LinAlg::Matrix<3, 1>& vec_a,
+        const Core::LinAlg::Matrix<3, 1>& vec_b, Core::LinAlg::Matrix<6, 1>& ab_ba);
 
     /*!
      * Converts a <type>-like tensor to stress-like Voigt notation
@@ -128,7 +128,7 @@ namespace CORE::LINALG::VOIGT
      * @param vtensor_out tensor in stress-like Voigt notation
      */
     static void ToStressLike(
-        const CORE::LINALG::Matrix<6, 1>& vtensor_in, CORE::LINALG::Matrix<6, 1>& vtensor_out);
+        const Core::LinAlg::Matrix<6, 1>& vtensor_in, Core::LinAlg::Matrix<6, 1>& vtensor_out);
 
     /*!
      * Converts a <type>-like tensor to strain-like Voigt notation
@@ -136,7 +136,7 @@ namespace CORE::LINALG::VOIGT
      * @param vtensor_out tensor in strain-like Voigt notation
      */
     static void ToStrainLike(
-        const CORE::LINALG::Matrix<6, 1>& vtensor_in, CORE::LINALG::Matrix<6, 1>& vtensor_out);
+        const Core::LinAlg::Matrix<6, 1>& vtensor_in, Core::LinAlg::Matrix<6, 1>& vtensor_out);
 
     /*!
      * Converts a <type>-like tensor in Voigt notation to a matrix
@@ -144,7 +144,7 @@ namespace CORE::LINALG::VOIGT
      * @param tensor_out tensor as a matrix
      */
     static void VectorToMatrix(
-        const CORE::LINALG::Matrix<6, 1>& vtensor_in, CORE::LINALG::Matrix<3, 3>& tensor_out);
+        const Core::LinAlg::Matrix<6, 1>& vtensor_in, Core::LinAlg::Matrix<3, 3>& tensor_out);
 
 
     /*! Copy matrix contents to type-like Voigt notation
@@ -159,7 +159,7 @@ namespace CORE::LINALG::VOIGT
      */
     template <typename T>
     static void MatrixToVector(
-        const CORE::LINALG::Matrix<3, 3, T>& tensor_in, CORE::LINALG::Matrix<6, 1, T>& vtensor_out);
+        const Core::LinAlg::Matrix<3, 3, T>& tensor_in, Core::LinAlg::Matrix<6, 1, T>& vtensor_out);
 
     /// access scaling factors
     static inline double ScaleFactor(unsigned i) { return scale_fac_[i]; };
@@ -174,7 +174,7 @@ namespace CORE::LINALG::VOIGT
      *
      *  \param[out] tensor  scale the off-diagonal values of this tensor
      */
-    static void scale_off_diagonal_vals(CORE::LINALG::Matrix<6, 1>& strain);
+    static void scale_off_diagonal_vals(Core::LinAlg::Matrix<6, 1>& strain);
 
     /** \brief unscale off diagonal values
      *
@@ -182,7 +182,7 @@ namespace CORE::LINALG::VOIGT
      *
      *  \param[out] tensor  unscale the off-diagonal values of this tensor
      */
-    static void unscale_off_diagonal_vals(CORE::LINALG::Matrix<6, 1>& strain);
+    static void unscale_off_diagonal_vals(Core::LinAlg::Matrix<6, 1>& strain);
 
 
     /** \brief unscale factors for the perturbed Voigt strain notation
@@ -210,7 +210,7 @@ namespace CORE::LINALG::VOIGT
      * @return product of the three entries
      */
     static inline double triple_entry_product(
-        const CORE::LINALG::Matrix<6, 1>& vtensor, unsigned i, unsigned j, unsigned k)
+        const Core::LinAlg::Matrix<6, 1>& vtensor, unsigned i, unsigned j, unsigned k)
     {
       return vtensor(i) * UnscaleFactor(i) * vtensor(j) * UnscaleFactor(j) * vtensor(k) *
              UnscaleFactor(k);
@@ -225,7 +225,7 @@ namespace CORE::LINALG::VOIGT
   ///
   /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = A_01; V_4 = A_12; V_5 = A_02; V_6 = A_10;
   /// V_7 = A_21; V_8 = A_20
-  void Matrix3x3to9x1(CORE::LINALG::Matrix<3, 3> const& in, CORE::LINALG::Matrix<9, 1>& out);
+  void Matrix3x3to9x1(Core::LinAlg::Matrix<3, 3> const& in, Core::LinAlg::Matrix<9, 1>& out);
 
   /// convert 9x1 vector to non-symmetric 2-tensor
   ///
@@ -237,13 +237,13 @@ namespace CORE::LINALG::VOIGT
   ///          A_00 A_01 A_02
   /// Matrix   A_10 A_11 A_12
   ///          A_20 A_21 A_22
-  void Matrix9x1to3x3(CORE::LINALG::Matrix<9, 1> const& in, CORE::LINALG::Matrix<3, 3>& out);
+  void Matrix9x1to3x3(Core::LinAlg::Matrix<9, 1> const& in, Core::LinAlg::Matrix<3, 3>& out);
 
   /**
    * \brief Identity matrix in stress/strain-like Voigt notation
    * @param id (out) : 2nd order identity tensor in stress/strain-like Voigt notation
    */
-  inline void IdentityMatrix(CORE::LINALG::Matrix<6, 1>& id)
+  inline void IdentityMatrix(Core::LinAlg::Matrix<6, 1>& id)
   {
     id.Clear();
     for (unsigned i = 0; i < 3; ++i) id(i) = 1.0;
@@ -257,7 +257,7 @@ namespace CORE::LINALG::VOIGT
    * @param id (out) : Voigt-Matrix
    */
   template <NotationType rows_notation, NotationType cols_notation>
-  void FourthOrderIdentityMatrix(CORE::LINALG::Matrix<6, 6>& id);
+  void FourthOrderIdentityMatrix(Core::LinAlg::Matrix<6, 6>& id);
 
   /// collection of index mappings from matrix to Voigt-notation or vice versa
   struct IndexMappings
@@ -335,11 +335,11 @@ namespace CORE::LINALG::VOIGT
 
   //! typedefs for improved readability
   //! @{
-  using Stresses = VoigtUtils<CORE::LINALG::VOIGT::NotationType::stress>;
-  using Strains = VoigtUtils<CORE::LINALG::VOIGT::NotationType::strain>;
+  using Stresses = VoigtUtils<Core::LinAlg::Voigt::NotationType::stress>;
+  using Strains = VoigtUtils<Core::LinAlg::Voigt::NotationType::strain>;
   //! @}
 
-}  // namespace CORE::LINALG::VOIGT
+}  // namespace Core::LinAlg::Voigt
 
 
 FOUR_C_NAMESPACE_CLOSE

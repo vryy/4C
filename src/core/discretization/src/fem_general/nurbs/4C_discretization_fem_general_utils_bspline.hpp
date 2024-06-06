@@ -23,7 +23,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::FE::NURBS
+namespace Core::FE::Nurbs
 {
   /*!
         \class BsplinePolynomial
@@ -41,7 +41,7 @@ namespace CORE::FE::NURBS
                                 degree of polynomial, for
                                 consistency checks
 
-        \param local_knotvector CORE::LINALG::SerialDenseVector (i)
+        \param local_knotvector Core::LinAlg::SerialDenseVector (i)
                                 knot range that contains
                                 the compact support of
                                 all bsplines which are
@@ -68,7 +68,7 @@ namespace CORE::FE::NURBS
 
     */
     //--------------------------------------------------
-    BsplinePolynomial(const int degree, const CORE::LINALG::SerialDenseVector local_knotvector);
+    BsplinePolynomial(const int degree, const Core::LinAlg::SerialDenseVector local_knotvector);
     //--------------------------------------------------
     //! \brief destructor
     //--------------------------------------------------
@@ -1426,7 +1426,7 @@ namespace CORE::FE::NURBS
    private:
     //! the part of the knotvector where bspline
     //! polynomials of the center-interval are non-zero
-    CORE::LINALG::SerialDenseVector myknotvector_;
+    Core::LinAlg::SerialDenseVector myknotvector_;
 
     //! a working array for the construction of bsplines
     std::vector<double> bspline_;
@@ -1450,7 +1450,7 @@ namespace CORE::FE::NURBS
     void throwerror(const std::string errormessage);
   };
 
-}  // namespace CORE::FE::NURBS
+}  // namespace Core::FE::Nurbs
 
 FOUR_C_NAMESPACE_CLOSE
 

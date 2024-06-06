@@ -18,12 +18,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>*
-DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>*
+Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = CORE::UTILS::MakeSingletonMap<std::string>(
+  static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcElchElectrodeSTIThermo<distype>>(
@@ -31,17 +31,18 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(
       });
 
   return singleton_map[disname].Instance(
-      CORE::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 
 /*----------------------------------------------------------------------*
  | extract quantities for element evaluation                 fang 11/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::extract_element_and_node_values(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<
+    distype>::extract_element_and_node_values(Core::Elements::Element* ele,
+    Teuchos::ParameterList& params, Discret::Discretization& discretization,
+    Core::Elements::Element::LocationArray& la)
 {
   // call base class routine to extract scatra-related quantities
   myelch::extract_element_and_node_values(ele, params, discretization, la);
@@ -54,9 +55,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::extract_elemen
 /*----------------------------------------------------------------------*
  | get material parameters                                   fang 11/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::get_material_params(
-    const CORE::Elements::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::get_material_params(
+    const Core::Elements::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
     std::vector<double>& densam, double& visc, const int iquad)
 {
   // Set GP values to mat_electrode
@@ -64,28 +65,28 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::get_material_p
       ele->Material(), var_manager()->Phinp(0), var_manager()->Temp(), myelectrode::diff_manager());
 
   // get parameters of secondary, thermodynamic electrolyte material
-  Teuchos::RCP<const CORE::MAT::Material> material = ele->Material(1);
+  Teuchos::RCP<const Core::Mat::Material> material = ele->Material(1);
   materialtype_ = material->MaterialType();
-  if (materialtype_ == CORE::Materials::m_soret) mythermo::mat_soret(material);
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::get_material_params
+  if (materialtype_ == Core::Materials::m_soret) mythermo::mat_soret(material);
+}  // Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::get_material_params
 
 
 /*--------------------------------------------------------------------------*
  | calculate element matrix and element right-hand side vector   fang 11/15 |
  *--------------------------------------------------------------------------*/
 
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::calc_mat_and_rhs(
-    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const int k,
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::calc_mat_and_rhs(
+    Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs, const int k,
     const double fac, const double timefacfac, const double rhsfac, const double taufac,
-    const double timetaufac, const double rhstaufac, CORE::LINALG::Matrix<nen_, 1>& tauderpot,
+    const double timetaufac, const double rhstaufac, Core::LinAlg::Matrix<nen_, 1>& tauderpot,
     double& rhsint)
 {
   // call base class routine for isothermal problems
   myelectrode::calc_mat_and_rhs(
       emat, erhs, k, fac, timefacfac, rhsfac, taufac, timetaufac, rhstaufac, tauderpot, rhsint);
 
-  if (materialtype_ == CORE::Materials::m_soret)
+  if (materialtype_ == Core::Materials::m_soret)
   {
     // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
     mythermo::calc_mat_soret(emat, timefacfac, var_manager()->Phinp(0),
@@ -102,20 +103,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::calc_mat_and_r
 /*----------------------------------------------------------------------*
  | evaluate action for off-diagonal system matrix block      fang 11/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-int DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::EvaluateActionOD(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, const SCATRA::Action& action,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype>
+int Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::EvaluateActionOD(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::Action::calc_scatra_mono_odblock_scatrathermo:
+    case ScaTra::Action::calc_scatra_mono_odblock_scatrathermo:
     {
       sysmat_od_scatra_thermo(ele, elemat1_epetra);
 
@@ -140,12 +141,12 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::EvaluateActionO
  | fill element matrix with linearizations of discrete scatra residuals w.r.t. thermo dofs   fang
  11/15 |
  *------------------------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::sysmat_od_scatra_thermo(
-    CORE::Elements::Element* ele, CORE::LINALG::SerialDenseMatrix& emat)
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::sysmat_od_scatra_thermo(
+    Core::Elements::Element* ele, Core::LinAlg::SerialDenseMatrix& emat)
 {
   // integration points and weights
-  CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -172,7 +173,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::sysmat_od_scat
         myelectrode::diff_manager()->get_temp_deriv_iso_diff_coef(0, 0),
         myelectrode::diff_manager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.);
 
-    if (materialtype_ == CORE::Materials::m_soret)
+    if (materialtype_ == Core::Materials::m_soret)
     {
       // provide element matrix with linearizations of Soret term in discrete scatra residuals
       // w.r.t. thermo dofs
@@ -187,8 +188,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::sysmat_od_scat
 /*------------------------------------------------------------------------------*
  | set internal variables for element evaluation                     fang 11/15 |
  *------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<
+template <Core::FE::CellType distype>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<
     distype>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables for element evaluation
@@ -199,9 +200,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 11/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::ScaTraEleCalcElchElectrodeSTIThermo(
-    const int numdofpernode, const int numscal, const std::string& disname)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<
+    distype>::ScaTraEleCalcElchElectrodeSTIThermo(const int numdofpernode, const int numscal,
+    const std::string& disname)
     :  // constructors of base classes
       ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(
           numdofpernode, numscal, disname),
@@ -221,29 +223,29 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::ScaTraEleCalcElchEl
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::line3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::quad4>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::quad4>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::nurbs9>;
+// Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::hex8>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::hex8>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::tet10>;
+// Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::hex27>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::tet4>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::tet10>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::pyramid5>;
+// Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::pyramid5>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<CORE::FE::CellType::nurbs27>;
+// Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

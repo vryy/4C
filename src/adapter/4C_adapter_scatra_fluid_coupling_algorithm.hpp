@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class MortarVolCoupl;
 
@@ -41,8 +41,8 @@ namespace ADAPTER
     \date 07/08
    */
   class ScaTraFluidCouplingAlgorithm : public AlgorithmBase,
-                                       public ADAPTER::FluidBaseAlgorithm,
-                                       public ADAPTER::ScaTraBaseAlgorithm
+                                       public Adapter::FluidBaseAlgorithm,
+                                       public Adapter::ScaTraBaseAlgorithm
   {
    public:
     /// constructor using a Epetra_Comm
@@ -85,10 +85,10 @@ namespace ADAPTER
     void setup_field_coupling(const std::string fluid_disname, const std::string scatra_disname);
 
     /// flag for type of field coupling (i.e. matching or volmortar)
-    INPAR::SCATRA::FieldCoupling fieldcoupling_;
+    Inpar::ScaTra::FieldCoupling fieldcoupling_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<CORE::ADAPTER::MortarVolCoupl> volcoupl_fluidscatra_;
+    Teuchos::RCP<Core::Adapter::MortarVolCoupl> volcoupl_fluidscatra_;
 
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;
@@ -130,7 +130,7 @@ namespace ADAPTER
     void set_is_init(bool trueorfalse) { isinit_ = trueorfalse; };
   };
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

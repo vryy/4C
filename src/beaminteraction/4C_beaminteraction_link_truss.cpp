@@ -29,7 +29,8 @@ BEAMINTERACTION::BeamLinkTrussType BEAMINTERACTION::BeamLinkTrussType::instance_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::COMM::ParObject* BEAMINTERACTION::BeamLinkTrussType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* BEAMINTERACTION::BeamLinkTrussType::Create(
+    const std::vector<char>& data)
 {
   BEAMINTERACTION::BeamLinkTruss* my_truss_linker = new BEAMINTERACTION::BeamLinkTruss();
   my_truss_linker->Unpack(data);
@@ -42,7 +43,7 @@ CORE::COMM::ParObject* BEAMINTERACTION::BeamLinkTrussType::Create(const std::vec
 BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss()
     : BeamLinkPinJointed(),
       linkele_(Teuchos::null),
-      bspotforces_(2, CORE::LINALG::SerialDenseVector(true))
+      bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
 {
 }
 
@@ -50,11 +51,11 @@ BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss()
  *----------------------------------------------------------------------*/
 BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss(const BEAMINTERACTION::BeamLinkTruss& old)
     : BEAMINTERACTION::BeamLinkPinJointed(old),
-      bspotforces_(2, CORE::LINALG::SerialDenseVector(true))
+      bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
 {
   if (linkele_ != Teuchos::null)
-    linkele_ =
-        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Truss3>(Teuchos::rcp(old.linkele_->Clone(), true));
+    linkele_ = Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Truss3>(
+        Teuchos::rcp(old.linkele_->Clone(), true));
   else
     linkele_ = Teuchos::null;
 }
@@ -71,9 +72,9 @@ Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkTruss::Clone() 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkTruss::Init(int id, const std::vector<std::pair<int, int>>& eleids,
-    const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,
-    const std::vector<CORE::LINALG::Matrix<3, 3>>& inittriad,
-    INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
+    const std::vector<Core::LinAlg::Matrix<3, 1>>& initpos,
+    const std::vector<Core::LinAlg::Matrix<3, 3>>& inittriad,
+    Inpar::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
 {
   issetup_ = false;
 
@@ -100,10 +101,10 @@ void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
    *
    *       We really only use it as a calculation routine for a sophisticated
    *       (displacement-reaction force) relation here! */
-  linkele_ = Teuchos::rcp(new DRT::ELEMENTS::Truss3(-1, 0));
+  linkele_ = Teuchos::rcp(new Discret::ELEMENTS::Truss3(-1, 0));
 
   // set material
-  linkele_->SetMaterial(0, MAT::Factory(matnum));
+  linkele_->SetMaterial(0, Mat::Factory(matnum));
 
   // set cross-section area Fixme hard-coded dummy value for now
   linkele_->SetCrossSec(1.0);
@@ -128,11 +129,11 @@ void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::Pack(CORE::COMM::PackBuffer& data) const
+void BEAMINTERACTION::BeamLinkTruss::Pack(Core::Communication::PackBuffer& data) const
 {
   check_init_setup();
 
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -153,7 +154,7 @@ void BEAMINTERACTION::BeamLinkTruss::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class
   std::vector<char> basedata(0);
@@ -165,8 +166,9 @@ void BEAMINTERACTION::BeamLinkTruss::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, dataele);
   if (dataele.size() > 0)
   {
-    CORE::COMM::ParObject* object = CORE::COMM::Factory(dataele);  // Unpack is done here
-    DRT::ELEMENTS::Truss3* linkele = dynamic_cast<DRT::ELEMENTS::Truss3*>(object);
+    Core::Communication::ParObject* object =
+        Core::Communication::Factory(dataele);  // Unpack is done here
+    Discret::ELEMENTS::Truss3* linkele = dynamic_cast<Discret::ELEMENTS::Truss3*>(object);
     if (linkele == nullptr) FOUR_C_THROW("failed to unpack Truss3 object within BeamLinkTruss");
     linkele_ = Teuchos::rcp(linkele);
   }
@@ -179,15 +181,15 @@ void BEAMINTERACTION::BeamLinkTruss::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool BEAMINTERACTION::BeamLinkTruss::evaluate_force(
-    CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2)
+    Core::LinAlg::SerialDenseVector& forcevec1, Core::LinAlg::SerialDenseVector& forcevec2)
 {
   check_init_setup();
 
   std::map<std::string, std::vector<double>> ele_state;
   get_disp_for_element_evaluation(ele_state);
 
-  CORE::LINALG::SerialDenseVector force(6, true);
-  CORE::LINALG::SerialDenseMatrix stiffmat(6, 6, true);
+  Core::LinAlg::SerialDenseVector force(6, true);
+  Core::LinAlg::SerialDenseMatrix stiffmat(6, 6, true);
 
   linkele_->calc_internal_force_stiff_tot_lag(ele_state, force, stiffmat);
 
@@ -202,17 +204,17 @@ bool BEAMINTERACTION::BeamLinkTruss::evaluate_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool BEAMINTERACTION::BeamLinkTruss::evaluate_stiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
-    CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
-    CORE::LINALG::SerialDenseMatrix& stiffmat22)
+bool BEAMINTERACTION::BeamLinkTruss::evaluate_stiff(Core::LinAlg::SerialDenseMatrix& stiffmat11,
+    Core::LinAlg::SerialDenseMatrix& stiffmat12, Core::LinAlg::SerialDenseMatrix& stiffmat21,
+    Core::LinAlg::SerialDenseMatrix& stiffmat22)
 {
   check_init_setup();
 
   std::map<std::string, std::vector<double>> ele_state;
   get_disp_for_element_evaluation(ele_state);
 
-  CORE::LINALG::SerialDenseVector force(6, true);
-  CORE::LINALG::SerialDenseMatrix stiffmat(6, 6, true);
+  Core::LinAlg::SerialDenseVector force(6, true);
+  Core::LinAlg::SerialDenseMatrix stiffmat(6, 6, true);
 
   linkele_->calc_internal_force_stiff_tot_lag(ele_state, force, stiffmat);
 
@@ -233,17 +235,17 @@ bool BEAMINTERACTION::BeamLinkTruss::evaluate_stiff(CORE::LINALG::SerialDenseMat
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool BEAMINTERACTION::BeamLinkTruss::evaluate_force_stiff(
-    CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2,
-    CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
-    CORE::LINALG::SerialDenseMatrix& stiffmat21, CORE::LINALG::SerialDenseMatrix& stiffmat22)
+    Core::LinAlg::SerialDenseVector& forcevec1, Core::LinAlg::SerialDenseVector& forcevec2,
+    Core::LinAlg::SerialDenseMatrix& stiffmat11, Core::LinAlg::SerialDenseMatrix& stiffmat12,
+    Core::LinAlg::SerialDenseMatrix& stiffmat21, Core::LinAlg::SerialDenseMatrix& stiffmat22)
 {
   check_init_setup();
 
   std::map<std::string, std::vector<double>> ele_state;
   get_disp_for_element_evaluation(ele_state);
 
-  CORE::LINALG::SerialDenseVector force(6, true);
-  CORE::LINALG::SerialDenseMatrix stiffmat(6, 6, true);
+  Core::LinAlg::SerialDenseVector force(6, true);
+  Core::LinAlg::SerialDenseMatrix stiffmat(6, 6, true);
 
   linkele_->calc_internal_force_stiff_tot_lag(ele_state, force, stiffmat);
 
@@ -266,8 +268,8 @@ bool BEAMINTERACTION::BeamLinkTruss::evaluate_force_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkTruss::ResetState(std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
-    std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad)
+void BEAMINTERACTION::BeamLinkTruss::ResetState(std::vector<Core::LinAlg::Matrix<3, 1>>& bspotpos,
+    std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad)
 {
   check_init_setup();
 
@@ -277,7 +279,7 @@ void BEAMINTERACTION::BeamLinkTruss::ResetState(std::vector<CORE::LINALG::Matrix
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkTruss::fill_state_variables_for_element_evaluation(
-    CORE::LINALG::Matrix<6, 1, double>& absolute_nodal_positions) const
+    Core::LinAlg::Matrix<6, 1, double>& absolute_nodal_positions) const
 {
   for (unsigned int i = 0; i < 3; ++i)
   {
@@ -312,7 +314,7 @@ void BEAMINTERACTION::BeamLinkTruss::scale_linker_reference_length(double scalef
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkTruss::GetBindingSpotForce(
-    int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const
+    int bspotid, Core::LinAlg::SerialDenseVector& bspotforce) const
 {
   bspotforce = bspotforces_[bspotid];
 }
@@ -321,11 +323,11 @@ void BEAMINTERACTION::BeamLinkTruss::GetBindingSpotForce(
  *----------------------------------------------------------------------------*/
 double BEAMINTERACTION::BeamLinkTruss::get_current_linker_length() const
 {
-  CORE::LINALG::Matrix<6, 1> xcurr;
+  Core::LinAlg::Matrix<6, 1> xcurr;
 
   fill_state_variables_for_element_evaluation(xcurr);
 
-  CORE::LINALG::Matrix<6, 1> curr_nodal_coords;
+  Core::LinAlg::Matrix<6, 1> curr_nodal_coords;
   curr_nodal_coords(0) = xcurr(0) - xcurr(3);
   curr_nodal_coords(1) = xcurr(1) - xcurr(4);
   curr_nodal_coords(2) = xcurr(2) - xcurr(5);

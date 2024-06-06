@@ -46,7 +46,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
   FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 
   // get all spring dashpot conditions
-  std::vector<Teuchos::RCP<CORE::Conditions::Condition>> springdashpots;
+  std::vector<Teuchos::RCP<Core::Conditions::Condition>> springdashpots;
   discret().GetCondition("RobinSpringDashpot", springdashpots);
 
   // new instance of spring dashpot BC for each condition
@@ -60,7 +60,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
 
   fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().DofRowMapView()));
   stiff_spring_ptr_ =
-      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*g_state().DofRowMapView(), 81, true, true));
 
   // set flag
   issetup_ = true;
@@ -204,16 +204,16 @@ bool STR::MODELEVALUATOR::SpringDashpot::evaluate_force_stiff()
 bool STR::MODELEVALUATOR::SpringDashpot::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *fspring_np_ptr_);
+  Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *fspring_np_ptr_);
   return true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::SpringDashpot::assemble_jacobian(
-    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
+    Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_spring_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_spring_ptr_->Zero();
@@ -224,7 +224,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::assemble_jacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::SpringDashpot::write_restart(
-    CORE::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
+    Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // row maps for export
   Teuchos::RCP<Epetra_Vector> springoffsetprestr =
@@ -253,7 +253,7 @@ void STR::MODELEVALUATOR::SpringDashpot::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::read_restart(CORE::IO::DiscretizationReader& ioreader)
+void STR::MODELEVALUATOR::SpringDashpot::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> tempvecold =
@@ -284,16 +284,16 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
   fstructold_ptr->Update(timefac_n, *fspring_np_ptr_, 1.0);
 
   // check for prestressing and reset if necessary
-  const INPAR::STR::PreStress prestress_type = TimInt().GetDataSDyn().GetPreStressType();
+  const Inpar::STR::PreStress prestress_type = TimInt().GetDataSDyn().GetPreStressType();
   const double prestress_time = TimInt().GetDataSDyn().GetPreStressTime();
 
-  if (prestress_type != INPAR::STR::PreStress::none &&
+  if (prestress_type != Inpar::STR::PreStress::none &&
       g_state().GetTimeNp() <= prestress_time + 1.0e-15)
   {
     switch (prestress_type)
     {
-      case INPAR::STR::PreStress::mulf:
-      case INPAR::STR::PreStress::material_iterative:
+      case Inpar::STR::PreStress::mulf:
+      case Inpar::STR::PreStress::material_iterative:
         for (const auto& spring : springs_) spring->ResetPrestress(g_state().GetDisNp());
       default:
         break;
@@ -305,7 +305,7 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(
-    CORE::IO::DiscretizationWriter& iowriter) const
+    Core::IO::DiscretizationWriter& iowriter) const
 {
   // row maps for export
   Teuchos::RCP<Epetra_Vector> gap =
@@ -334,7 +334,7 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(
   }
 
   // write spring stress if defined in io-flag
-  if (CORE::UTILS::IntegralValue<bool>(GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_SPRING"))
+  if (Core::UTILS::IntegralValue<bool>(Global::Problem::Instance()->IOParams(), "OUTPUT_SPRING"))
     iowriter.WriteVector("springstress", springstress);
 }
 

@@ -28,18 +28,18 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
     const Epetra_Comm& comm, const Teuchos::ParameterList& fsidyn)
 {
   const Teuchos::ParameterList& fsipart = fsidyn.sublist("PARTITIONED SOLVER");
-  INPAR::FSI::PartitionedCouplingMethod method =
-      CORE::UTILS::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsipart, "PARTITIONED");
+  Inpar::FSI::PartitionedCouplingMethod method =
+      Core::UTILS::IntegralValue<Inpar::FSI::PartitionedCouplingMethod>(fsipart, "PARTITIONED");
   switch (method)
   {
-    case INPAR::FSI::DirichletNeumannSlideale:
-      switch (GLOBAL::Problem::Instance()->GetProblemType())
+    case Inpar::FSI::DirichletNeumannSlideale:
+      switch (Global::Problem::Instance()->GetProblemType())
       {
-        case (CORE::ProblemType::fsi):
-        case (CORE::ProblemType::fsi_redmodels):
-        case (CORE::ProblemType::fsi_lung):
-          if (CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
-              INPAR::FSI::CoupVarPart::vel)
+        case (Core::ProblemType::fsi):
+        case (Core::ProblemType::fsi_redmodels):
+        case (Core::ProblemType::fsi_lung):
+          if (Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
+              Inpar::FSI::CoupVarPart::vel)
           {
             FOUR_C_THROW(
                 "Displacement coupling is not possible in this case! You are not handling any "
@@ -53,14 +53,14 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
           break;
       }
       break;
-    case INPAR::FSI::DirichletNeumannVolCoupl:
-      switch (GLOBAL::Problem::Instance()->GetProblemType())
+    case Inpar::FSI::DirichletNeumannVolCoupl:
+      switch (Global::Problem::Instance()->GetProblemType())
       {
-        case (CORE::ProblemType::fsi):
-        case (CORE::ProblemType::fsi_redmodels):
-        case (CORE::ProblemType::fsi_lung):
-          if (CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
-              INPAR::FSI::CoupVarPart::vel)
+        case (Core::ProblemType::fsi):
+        case (Core::ProblemType::fsi_redmodels):
+        case (Core::ProblemType::fsi_lung):
+          if (Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
+              Inpar::FSI::CoupVarPart::vel)
           {
             FOUR_C_THROW(
                 "Displacement coupling is not possible in this case! You are not handling any "
@@ -74,15 +74,15 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
           break;
       }
       break;
-    case INPAR::FSI::DirichletNeumann:
-      switch (GLOBAL::Problem::Instance()->GetProblemType())
+    case Inpar::FSI::DirichletNeumann:
+      switch (Global::Problem::Instance()->GetProblemType())
       {
-        case (CORE::ProblemType::fsi):
-        case (CORE::ProblemType::fsi_redmodels):
-        case (CORE::ProblemType::fsi_lung):
-        case (CORE::ProblemType::fsi_xfem):
-          if (CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
-              INPAR::FSI::CoupVarPart::vel)
+        case (Core::ProblemType::fsi):
+        case (Core::ProblemType::fsi_redmodels):
+        case (Core::ProblemType::fsi_lung):
+        case (Core::ProblemType::fsi_xfem):
+          if (Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
+              Inpar::FSI::CoupVarPart::vel)
           {
             FOUR_C_THROW(
                 "Displacement coupling is not possible in this case! You are not handling any "
@@ -91,9 +91,9 @@ Teuchos::RCP<FSI::DirichletNeumann> FSI::DirichletNeumannFactory::CreateAlgorith
           else
             return Teuchos::rcp(new FSI::DirichletNeumannDisp(comm));
           break;
-        case (CORE::ProblemType::fbi):
-          if (CORE::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
-              INPAR::FSI::CoupVarPart::disp)
+        case (Core::ProblemType::fbi):
+          if (Core::UTILS::IntegralValue<int>(fsipart, "COUPVARIABLE") ==
+              Inpar::FSI::CoupVarPart::disp)
           {
             FOUR_C_THROW(
                 "Displacement coupling is not possible in this case! You are not handling any "

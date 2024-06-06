@@ -31,11 +31,11 @@ list, where a FOUR_C_THROW() should be provided.
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    template <CORE::FE::CellType distype>
+    template <Core::FE::CellType distype>
     class ScaTraEleCalcLoma : public ScaTraEleCalc<distype>
     {
      private:
@@ -51,14 +51,14 @@ namespace DRT
       static ScaTraEleCalcLoma<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      int evaluate_action(CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, const SCATRA::Action& action,
-          CORE::Elements::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
+      int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
+          Discret::Discretization& discretization, const ScaTra::Action& action,
+          Core::Elements::Element::LocationArray& la,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,
+          Core::LinAlg::SerialDenseVector& elevec2_epetra,
+          Core::LinAlg::SerialDenseVector& elevec3_epetra) override;
 
      private:
       /*========================================================================*/
@@ -67,7 +67,7 @@ namespace DRT
 
       //! evaluate material
       void materials(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
@@ -78,7 +78,7 @@ namespace DRT
 
       //! material Sutherland
       void mat_sutherland(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -88,7 +88,7 @@ namespace DRT
 
       //! material thermo St. Venant Kirchhoff
       void mat_thermo_st_venant_kirchhoff(
-          const Teuchos::RCP<const CORE::MAT::Material> material,  //!< pointer to current material
+          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
           const int k,                                             //!< id of current scalar
           double& densn,                                           //!< density at t_(n)
           double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
@@ -108,11 +108,11 @@ namespace DRT
 
       //! calculation of convective element matrix: add conservative contributions
       void calc_mat_conv_add_cons(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
-          const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at Gauss point
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
+          const Core::LinAlg::Matrix<nsd_, 1>& convelint,  //!< convective velocity at Gauss point
+          const Core::LinAlg::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
           const double vdiv,                               //!< velocity divergence
           const double densnp,                             //!< density at time_(n+1)
           const double visc                                //!< viscosity
@@ -121,8 +121,8 @@ namespace DRT
       //! adaption of convective term for rhs
       void recompute_conv_phi_for_rhs(double& conv_phi,   //!< convective contribution
           const int k,                                    //!< index of current scalar
-          const CORE::LINALG::Matrix<nsd_, 1>& sgvelint,  //!< subgrid-scale velocity at Gauss point
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,   //!< scalar gradient at Gauss point
+          const Core::LinAlg::Matrix<nsd_, 1>& sgvelint,  //!< subgrid-scale velocity at Gauss point
+          const Core::LinAlg::Matrix<nsd_, 1>& gradphi,   //!< scalar gradient at Gauss point
           const double densnp,                            //!< density at time_(n+1)
           const double densn,                             //!< density at time_(n)
           const double phinp,                             //!< scalar at time_(n+1)
@@ -136,27 +136,27 @@ namespace DRT
 
       //! calculate domain integral
       void calculate_domain_and_bodyforce(
-          CORE::LINALG::SerialDenseVector& scalars, const CORE::Elements::Element* ele);
+          Core::LinAlg::SerialDenseVector& scalars, const Core::Elements::Element* ele);
 
       //! extract element based or nodal values and return extracted values of phinp
-      void extract_element_and_node_values(CORE::Elements::Element* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Elements::Element::LocationArray& la) override;
+      void extract_element_and_node_values(Core::Elements::Element* ele,
+          Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Elements::Element::LocationArray& la) override;
 
       //! get density at integration point
-      double get_density(const CORE::Elements::Element* ele,
-          Teuchos::RCP<const CORE::MAT::Material> material, Teuchos::ParameterList& params,
+      double get_density(const Core::Elements::Element* ele,
+          Teuchos::RCP<const Core::Mat::Material> material, Teuchos::ParameterList& params,
           const double tempnp) override;
 
       //! calculate viscous part of subgrid-scale velocity
-      void calc_subgr_velocity_visc(CORE::LINALG::Matrix<nsd_, 1>& epsilonvel) override;
+      void calc_subgr_velocity_visc(Core::LinAlg::Matrix<nsd_, 1>& epsilonvel) override;
 
       /*========================================================================*/
       //! @name scalar degrees of freedom and related
       /*========================================================================*/
 
       //! scalar at t_(n+alpha_M)
-      std::vector<CORE::LINALG::Matrix<nen_, 1>> ephiam_;
+      std::vector<Core::LinAlg::Matrix<nen_, 1>> ephiam_;
       //!
       std::vector<double> densgradfac_;
 
@@ -199,7 +199,7 @@ namespace DRT
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

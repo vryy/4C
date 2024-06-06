@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PAR::ModPowerLaw::ModPowerLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::ModPowerLaw::ModPowerLaw(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       m_cons_(matdata->Get<double>("MCONS")),
       delta_(matdata->Get<double>("DELTA")),
@@ -30,36 +30,36 @@ MAT::PAR::ModPowerLaw::ModPowerLaw(Teuchos::RCP<CORE::MAT::PAR::Material> matdat
 }
 
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::ModPowerLaw::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::ModPowerLaw::create_material()
 {
-  return Teuchos::rcp(new MAT::ModPowerLaw(this));
+  return Teuchos::rcp(new Mat::ModPowerLaw(this));
 }
 
-MAT::ModPowerLawType MAT::ModPowerLawType::instance_;
+Mat::ModPowerLawType Mat::ModPowerLawType::instance_;
 
 
-CORE::COMM::ParObject* MAT::ModPowerLawType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::ModPowerLawType::Create(const std::vector<char>& data)
 {
-  MAT::ModPowerLaw* powLaw = new MAT::ModPowerLaw();
+  Mat::ModPowerLaw* powLaw = new Mat::ModPowerLaw();
   powLaw->Unpack(data);
   return powLaw;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ModPowerLaw::ModPowerLaw() : params_(nullptr) {}
+Mat::ModPowerLaw::ModPowerLaw() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ModPowerLaw::ModPowerLaw(MAT::PAR::ModPowerLaw* params) : params_(params) {}
+Mat::ModPowerLaw::ModPowerLaw(Mat::PAR::ModPowerLaw* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ModPowerLaw::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::ModPowerLaw::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -75,24 +75,24 @@ void MAT::ModPowerLaw::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ModPowerLaw::Unpack(const std::vector<char>& data)
+void Mat::ModPowerLaw::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::ModPowerLaw*>(mat);
+        params_ = static_cast<Mat::PAR::ModPowerLaw*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());

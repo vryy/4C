@@ -29,9 +29,9 @@ FOUR_C_NAMESPACE_OPEN
  | Class ConditionDefinition                                                                      |
  * -----------------------------------------------------------------------------------------------*/
 
-CORE::Conditions::ConditionDefinition::ConditionDefinition(std::string sectionname,
-    std::string conditionname, std::string description, CORE::Conditions::ConditionType condtype,
-    bool buildgeometry, CORE::Conditions::GeometryType gtype)
+Core::Conditions::ConditionDefinition::ConditionDefinition(std::string sectionname,
+    std::string conditionname, std::string description, Core::Conditions::ConditionType condtype,
+    bool buildgeometry, Core::Conditions::GeometryType gtype)
     : sectionname_(std::move(sectionname)),
       conditionname_(std::move(conditionname)),
       description_(std::move(description)),
@@ -44,8 +44,8 @@ CORE::Conditions::ConditionDefinition::ConditionDefinition(std::string sectionna
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Conditions::ConditionDefinition::AddComponent(
-    const Teuchos::RCP<INPUT::LineComponent>& c)
+void Core::Conditions::ConditionDefinition::AddComponent(
+    const Teuchos::RCP<Input::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -53,14 +53,14 @@ void CORE::Conditions::ConditionDefinition::AddComponent(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::Conditions::ConditionDefinition::Read(CORE::IO::DatFileReader& reader,
-    std::multimap<int, Teuchos::RCP<CORE::Conditions::Condition>>& cmap)
+void Core::Conditions::ConditionDefinition::Read(Core::IO::DatFileReader& reader,
+    std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>& cmap)
 {
   std::vector<const char*> section = reader.Section("--" + sectionname_);
 
   if (section.empty()) return;
 
-  CORE::IO::LineParser parser("While reading condition section '" + sectionname_ + "': ");
+  Core::IO::LineParser parser("While reading condition section '" + sectionname_ + "': ");
 
   // First we read a header for the current section: It needs to start with the
   // geometry type followed by the number of lines:
@@ -74,13 +74,13 @@ void CORE::Conditions::ConditionDefinition::Read(CORE::IO::DatFileReader& reader
         {
           switch (gtype_)
           {
-            case CORE::Conditions::geometry_type_point:
+            case Core::Conditions::geometry_type_point:
               return "DPOINT";
-            case CORE::Conditions::geometry_type_line:
+            case Core::Conditions::geometry_type_line:
               return "DLINE";
-            case CORE::Conditions::geometry_type_surface:
+            case Core::Conditions::geometry_type_surface:
               return "DSURF";
-            case CORE::Conditions::geometry_type_volume:
+            case Core::Conditions::geometry_type_volume:
               return "DVOL";
             default:
               FOUR_C_THROW("Geometry type unspecified");
@@ -113,8 +113,8 @@ void CORE::Conditions::ConditionDefinition::Read(CORE::IO::DatFileReader& reader
     const int dobjid = parser.Read<int>(*condline) - 1;
     parser.Consume(*condline, "-");
 
-    Teuchos::RCP<CORE::Conditions::Condition> condition =
-        Teuchos::rcp(new CORE::Conditions::Condition(dobjid, condtype_, buildgeometry_, gtype_));
+    Teuchos::RCP<Core::Conditions::Condition> condition =
+        Teuchos::rcp(new Core::Conditions::Condition(dobjid, condtype_, buildgeometry_, gtype_));
 
     for (auto& j : inputline_)
     {
@@ -122,15 +122,15 @@ void CORE::Conditions::ConditionDefinition::Read(CORE::IO::DatFileReader& reader
     }
 
     //------------------------------- put condition in map of conditions
-    cmap.insert(std::pair<int, Teuchos::RCP<CORE::Conditions::Condition>>(dobjid, condition));
+    cmap.insert(std::pair<int, Teuchos::RCP<Core::Conditions::Condition>>(dobjid, condition));
   }
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& CORE::Conditions::ConditionDefinition::Print(
-    std::ostream& stream, const DRT::Discretization* dis)
+std::ostream& Core::Conditions::ConditionDefinition::Print(
+    std::ostream& stream, const Discret::Discretization* dis)
 {
   unsigned l = sectionname_.length();
   stream << "--";
@@ -140,16 +140,16 @@ std::ostream& CORE::Conditions::ConditionDefinition::Print(
   std::string name;
   switch (gtype_)
   {
-    case CORE::Conditions::geometry_type_point:
+    case Core::Conditions::geometry_type_point:
       name = "DPOINT";
       break;
-    case CORE::Conditions::geometry_type_line:
+    case Core::Conditions::geometry_type_line:
       name = "DLINE";
       break;
-    case CORE::Conditions::geometry_type_surface:
+    case Core::Conditions::geometry_type_surface:
       name = "DSURF";
       break;
-    case CORE::Conditions::geometry_type_volume:
+    case Core::Conditions::geometry_type_volume:
       name = "DVOL";
       break;
     default:
@@ -160,7 +160,7 @@ std::ostream& CORE::Conditions::ConditionDefinition::Print(
   int count = 0;
   if (dis != nullptr)
   {
-    std::vector<CORE::Conditions::Condition*> conds;
+    std::vector<Core::Conditions::Condition*> conds;
     dis->GetCondition(conditionname_, conds);
     for (auto& cond : conds)
     {
@@ -188,7 +188,7 @@ std::ostream& CORE::Conditions::ConditionDefinition::Print(
 
   if (dis != nullptr)
   {
-    std::vector<CORE::Conditions::Condition*> conds;
+    std::vector<Core::Conditions::Condition*> conds;
     dis->GetCondition(conditionname_, conds);
 
     for (auto& cond : conds)

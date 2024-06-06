@@ -16,15 +16,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::Ale2LineType DRT::ELEMENTS::Ale2LineType::instance_;
+Discret::ELEMENTS::Ale2LineType Discret::ELEMENTS::Ale2LineType::instance_;
 
-DRT::ELEMENTS::Ale2LineType& DRT::ELEMENTS::Ale2LineType::Instance() { return instance_; }
+Discret::ELEMENTS::Ale2LineType& Discret::ELEMENTS::Ale2LineType::Instance() { return instance_; }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale2Line::Ale2Line(int id, int owner, int nnode, const int* nodeids,
-    CORE::Nodes::Node** nodes, DRT::ELEMENTS::Ale2* parent, const int lline)
-    : CORE::Elements::FaceElement(id, owner)
+Discret::ELEMENTS::Ale2Line::Ale2Line(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Discret::ELEMENTS::Ale2* parent, const int lline)
+    : Core::Elements::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -34,30 +34,30 @@ DRT::ELEMENTS::Ale2Line::Ale2Line(int id, int owner, int nnode, const int* nodei
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-DRT::ELEMENTS::Ale2Line::Ale2Line(const DRT::ELEMENTS::Ale2Line& old)
-    : CORE::Elements::FaceElement(old)
+Discret::ELEMENTS::Ale2Line::Ale2Line(const Discret::ELEMENTS::Ale2Line& old)
+    : Core::Elements::FaceElement(old)
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::Ale2Line::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::Ale2Line::Clone() const
 {
-  DRT::ELEMENTS::Ale2Line* newelement = new DRT::ELEMENTS::Ale2Line(*this);
+  Discret::ELEMENTS::Ale2Line* newelement = new Discret::ELEMENTS::Ale2Line(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-CORE::FE::CellType DRT::ELEMENTS::Ale2Line::Shape() const
+Core::FE::CellType Discret::ELEMENTS::Ale2Line::Shape() const
 {
   switch (num_node())
   {
     case 2:
-      return CORE::FE::CellType::line2;
+      return Core::FE::CellType::line2;
     case 3:
-      return CORE::FE::CellType::line3;
+      return Core::FE::CellType::line3;
     default:
       FOUR_C_THROW("unexpected number of nodes %d", num_node());
       break;
@@ -66,7 +66,7 @@ CORE::FE::CellType DRT::ELEMENTS::Ale2Line::Shape() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2Line::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::Ale2Line::Pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Ale2Line element does not support communication");
 
@@ -75,7 +75,7 @@ void DRT::ELEMENTS::Ale2Line::Pack(CORE::COMM::PackBuffer& data) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2Line::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::Ale2Line::Unpack(const std::vector<char>& data)
 {
   FOUR_C_THROW("this Ale2Line element does not support communication");
   return;
@@ -83,7 +83,7 @@ void DRT::ELEMENTS::Ale2Line::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2Line::Print(std::ostream& os) const
+void Discret::ELEMENTS::Ale2Line::Print(std::ostream& os) const
 {
   os << "Ale2Line ";
   Element::Print(os);

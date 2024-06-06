@@ -27,18 +27,18 @@ namespace Teuchos
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace DRT
+namespace Discret
 {
   class ResultTest;
   class Discretization;
-}  // namespace DRT
+}  // namespace Discret
 
 namespace POROFLUIDMULTIPHASE
 {
   class TimIntImpl;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   // forward declaration
   class ArtNet;
@@ -66,7 +66,7 @@ namespace ADAPTER
         ) = 0;
 
     /// create result test for multiphase porous fluid field
-    virtual Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() = 0;
+    virtual Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() = 0;
 
     /// read restart
     virtual void read_restart(int restart) = 0;
@@ -78,7 +78,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const = 0;
 
     /// direct access to discretization
-    virtual Teuchos::RCP<DRT::Discretization> discretization() const = 0;
+    virtual Teuchos::RCP<Discret::Discretization> discretization() const = 0;
 
     //! apply moving mesh data
     virtual void ApplyMeshMovement(
@@ -140,7 +140,7 @@ namespace ADAPTER
     virtual int get_dof_set_number_of_solid_pressure() const = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() const = 0;
 
     //! right-hand side alias the dynamic force residual
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
@@ -165,25 +165,25 @@ namespace ADAPTER
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
     virtual void assemble_fluid_struct_coupling_mat(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs) = 0;
+        Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs) = 0;
 
     // Assemble Off-Diagonal Fluid-scatra Coupling matrix
     virtual void assemble_fluid_scatra_coupling_mat(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs) = 0;
+        Teuchos::RCP<Core::LinAlg::SparseOperator> k_pfs) = 0;
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() = 0;
 
     //! direct access to block system matrix of artery poro problem
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> artery_porofluid_sysmat() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const = 0;
 
     // return arterial network time integrator
-    virtual Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt() = 0;
+    virtual Teuchos::RCP<Adapter::ArtNet> ArtNetTimInt() = 0;
 
 
   };  // class PoroFluidMultiphase
 
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   /*!
    * \brief calculate core linearizations of Butler-Volmer mass flux density w.r.t. elch dofs
@@ -110,7 +110,7 @@ namespace DRT::ELEMENTS
    */
   double CalculateButlerVolmerExchangeMassFluxDensity(double kr, double alpha_a, double alpha_c,
       double c_max, double c_ed, double c_el, int kinetic_model,
-      const CORE::Conditions::ConditionType& s2i_condition_type);
+      const Core::Conditions::ConditionType& s2i_condition_type);
 
   /*!
    * \brief calculate modified Butler-Volmer mass flux density via Newton method
@@ -138,7 +138,7 @@ namespace DRT::ELEMENTS
   //! Return, if kinetic model uses reduced prefactor in Butler-Volmer equation
   bool IsReducedButlerVolmer(int kineticmodel);
 
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 

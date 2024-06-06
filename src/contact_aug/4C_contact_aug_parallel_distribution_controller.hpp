@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace CONTACT
 {
   class ParamsInterface;
-  namespace AUG
+  namespace Aug
   {
     class DataContainer;
     class Strategy;
@@ -40,8 +40,8 @@ namespace CONTACT
     {
      public:
       /// constructor
-      ParallelDistributionController(CONTACT::AUG::Strategy& strat,
-          CONTACT::AUG::DataContainer& data, const int par_redist_interval)
+      ParallelDistributionController(CONTACT::Aug::Strategy& strat,
+          CONTACT::Aug::DataContainer& data, const int par_redist_interval)
           : strat_(strat),
             data_(data),
             interval_((par_redist_interval > 0 ? par_redist_interval
@@ -86,12 +86,12 @@ namespace CONTACT
       const int interval_;
 
       /// current action type
-      MORTAR::ActionType acttype_ = MORTAR::ActionType::eval_none;
+      Mortar::ActionType acttype_ = Mortar::ActionType::eval_none;
 
       /// pointer containing the evaluation times of each slave element
       Teuchos::RCP<Epetra_Vector> sele_eval_times_ = Teuchos::null;
     };
-  }  // namespace AUG
+  }  // namespace Aug
 }  // namespace CONTACT
 
 

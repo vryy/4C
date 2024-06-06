@@ -91,7 +91,7 @@ void PARTICLEENGINE::ParticleEngine::Setup(
 void PARTICLEENGINE::ParticleEngine::write_restart(const int step, const double time) const
 {
   // get bin discretization writer
-  std::shared_ptr<CORE::IO::DiscretizationWriter> binwriter =
+  std::shared_ptr<Core::IO::DiscretizationWriter> binwriter =
       Teuchos::get_shared_ptr(binstrategy_->BinDiscret()->Writer());
 
   binwriter->NewStep(step, time);
@@ -108,7 +108,7 @@ void PARTICLEENGINE::ParticleEngine::write_restart(const int step, const double 
 }
 
 void PARTICLEENGINE::ParticleEngine::read_restart(
-    const std::shared_ptr<CORE::IO::DiscretizationReader> reader,
+    const std::shared_ptr<Core::IO::DiscretizationReader> reader,
     std::vector<ParticleObjShrdPtr>& particlestoread) const
 {
   // read particle data
@@ -120,10 +120,10 @@ void PARTICLEENGINE::ParticleEngine::read_restart(
   while (position < particledata->size())
   {
     std::vector<char> data;
-    CORE::COMM::ParObject::ExtractfromPack(position, *particledata, data);
+    Core::Communication::ParObject::ExtractfromPack(position, *particledata, data);
 
     // this std::shared_ptr holds the memory
-    std::shared_ptr<CORE::COMM::ParObject> object(CORE::COMM::Factory(data));
+    std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::Factory(data));
     ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
     if (particleobject == nullptr) FOUR_C_THROW("received object is not a particle object!");
 
@@ -204,7 +204,7 @@ void PARTICLEENGINE::ParticleEngine::erase_particles_outside_bounding_box(
     std::vector<ParticleObjShrdPtr>& particlestocheck)
 {
   // get bounding box dimensions
-  CORE::LINALG::Matrix<3, 2> boundingbox = binstrategy_->domain_bounding_box_corner_positions();
+  Core::LinAlg::Matrix<3, 2> boundingbox = binstrategy_->domain_bounding_box_corner_positions();
 
   // set of particles located outside bounding box
   std::set<int> particlesoutsideboundingbox;
@@ -281,8 +281,8 @@ void PARTICLEENGINE::ParticleEngine::erase_particles_outside_bounding_box(
 
   // short screen output
   if (numparticlesoutside)
-    CORE::IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
-                   << " particle(s) being outside the computational domain!" << CORE::IO::endl;
+    Core::IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
+                   << " particle(s) being outside the computational domain!" << Core::IO::endl;
 }
 
 void PARTICLEENGINE::ParticleEngine::DistributeParticles(
@@ -692,7 +692,7 @@ PARTICLEENGINE::ParticleEngine::get_local_index_in_specific_container(int global
   return globalidIt->second;
 }
 
-std::shared_ptr<CORE::IO::DiscretizationWriter>
+std::shared_ptr<Core::IO::DiscretizationWriter>
 PARTICLEENGINE::ParticleEngine::get_bin_discretization_writer() const
 {
   return Teuchos::get_shared_ptr(binstrategy_->BinDiscret()->Writer());
@@ -842,7 +842,7 @@ double PARTICLEENGINE::ParticleEngine::length_of_binning_domain_in_a_spatial_dir
   return binstrategy_->length_of_binning_domain_in_a_spatial_direction(dim);
 }
 
-CORE::LINALG::Matrix<3, 2> const&
+Core::LinAlg::Matrix<3, 2> const&
 PARTICLEENGINE::ParticleEngine::domain_bounding_box_corner_positions() const
 {
   return binstrategy_->domain_bounding_box_corner_positions();
@@ -876,11 +876,11 @@ void PARTICLEENGINE::ParticleEngine::distance_between_particles(
   }
 }
 
-std::shared_ptr<CORE::IO::DiscretizationReader> PARTICLEENGINE::ParticleEngine::BinDisReader(
+std::shared_ptr<Core::IO::DiscretizationReader> PARTICLEENGINE::ParticleEngine::BinDisReader(
     int restartstep) const
 {
-  return std::make_shared<CORE::IO::DiscretizationReader>(
-      binstrategy_->BinDiscret(), GLOBAL::Problem::Instance()->InputControlFile(), restartstep);
+  return std::make_shared<Core::IO::DiscretizationReader>(
+      binstrategy_->BinDiscret(), Global::Problem::Instance()->InputControlFile(), restartstep);
 }
 
 int PARTICLEENGINE::ParticleEngine::get_number_of_particles() const
@@ -1069,7 +1069,7 @@ void PARTICLEENGINE::ParticleEngine::setup_particle_vtp_writer() const
 {
   // get flag to determine output of ghosted particles (debug feature)
   bool write_ghosted_particles =
-      CORE::UTILS::IntegralValue<int>(params_, "WRITE_GHOSTED_PARTICLES");
+      Core::UTILS::IntegralValue<int>(params_, "WRITE_GHOSTED_PARTICLES");
 
   // setup particle runtime vtp writer
   particlevtpwriter_->Setup(write_ghosted_particles);
@@ -1185,10 +1185,10 @@ void PARTICLEENGINE::ParticleEngine::determine_ghosting_dependent_maps_and_sets(
   std::map<int, std::vector<char>> rdata;
 
   // pack data for sending
-  CORE::COMM::PackBuffer data;
-  CORE::COMM::ParObject::AddtoPack(data, ghostedbins_);
+  Core::Communication::PackBuffer data;
+  Core::Communication::ParObject::AddtoPack(data, ghostedbins_);
   data.StartPacking();
-  CORE::COMM::ParObject::AddtoPack(data, ghostedbins_);
+  Core::Communication::ParObject::AddtoPack(data, ghostedbins_);
 
   // communicate ghosted bins between all processors
   for (int torank = 0; torank < comm_.NumProc(); ++torank)
@@ -1214,7 +1214,7 @@ void PARTICLEENGINE::ParticleEngine::determine_ghosting_dependent_maps_and_sets(
 
     while (position < rmsg.size())
     {
-      CORE::COMM::ParObject::ExtractfromPack(position, rmsg, receivedbins);
+      Core::Communication::ParObject::ExtractfromPack(position, rmsg, receivedbins);
 
       // iterate over received bins
       for (int receivedbin : receivedbins)
@@ -1293,7 +1293,7 @@ void PARTICLEENGINE::ParticleEngine::check_particles_at_boundaries(
   if (not validownedparticles_) FOUR_C_THROW("invalid relation of owned particles to bins!");
 
   // get bounding box dimensions
-  CORE::LINALG::Matrix<3, 2> boundingbox = binstrategy_->domain_bounding_box_corner_positions();
+  Core::LinAlg::Matrix<3, 2> boundingbox = binstrategy_->domain_bounding_box_corner_positions();
 
   // count particles that left the computational domain
   int numparticlesoutside = 0;
@@ -1369,8 +1369,8 @@ void PARTICLEENGINE::ParticleEngine::check_particles_at_boundaries(
 
   // short screen output
   if (numparticlesoutside)
-    CORE::IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
-                   << " particle(s) being outside the computational domain!" << CORE::IO::endl;
+    Core::IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
+                   << " particle(s) being outside the computational domain!" << Core::IO::endl;
 }
 
 void PARTICLEENGINE::ParticleEngine::determine_particles_to_be_distributed(
@@ -1478,8 +1478,8 @@ void PARTICLEENGINE::ParticleEngine::determine_particles_to_be_distributed(
 
   // short screen output
   if (numparticlesoutside)
-    CORE::IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
-                   << " particle(s) being outside the computational domain!" << CORE::IO::endl;
+    Core::IO::cout << "on processor " << myrank_ << " removed " << numparticlesoutside
+                   << " particle(s) being outside the computational domain!" << Core::IO::endl;
 
   // clear after all particles are prepared for distribution
   particlestodistribute.clear();
@@ -1717,7 +1717,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_particles(
 
     for (const auto& iter : particlestosend[torank])
     {
-      CORE::COMM::PackBuffer data;
+      Core::Communication::PackBuffer data;
       iter->Pack(data);
       data.StartPacking();
       iter->Pack(data);
@@ -1742,10 +1742,10 @@ void PARTICLEENGINE::ParticleEngine::communicate_particles(
     while (position < rmsg.size())
     {
       std::vector<char> data;
-      CORE::COMM::ParObject::ExtractfromPack(position, rmsg, data);
+      Core::Communication::ParObject::ExtractfromPack(position, rmsg, data);
 
       // this std::shared_ptr holds the memory
-      std::shared_ptr<CORE::COMM::ParObject> object(CORE::COMM::Factory(data));
+      std::shared_ptr<Core::Communication::ParObject> object(Core::Communication::Factory(data));
       ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
       if (particleobject == nullptr) FOUR_C_THROW("received object is not a particle object!");
 
@@ -1776,10 +1776,10 @@ void PARTICLEENGINE::ParticleEngine::communicate_direct_ghosting_map(
   // pack data for sending
   for (const auto& p : directghosting)
   {
-    CORE::COMM::PackBuffer data;
-    CORE::COMM::ParObject::AddtoPack(data, p.second);
+    Core::Communication::PackBuffer data;
+    Core::Communication::ParObject::AddtoPack(data, p.second);
     data.StartPacking();
-    CORE::COMM::ParObject::AddtoPack(data, p.second);
+    Core::Communication::ParObject::AddtoPack(data, p.second);
     std::swap(sdata[p.first], data());
   }
 
@@ -1801,7 +1801,7 @@ void PARTICLEENGINE::ParticleEngine::communicate_direct_ghosting_map(
 
     while (position < rmsg.size())
     {
-      CORE::COMM::ParObject::ExtractfromPack(position, rmsg, receiveddirectghosting);
+      Core::Communication::ParObject::ExtractfromPack(position, rmsg, receiveddirectghosting);
 
       // iterate over particle types
       for (const auto& typeIt : receiveddirectghosting)

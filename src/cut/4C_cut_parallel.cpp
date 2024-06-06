@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------------------------------*
  * basic CUT parallel constructor                                                    schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::Parallel::Parallel(const Teuchos::RCP<DRT::Discretization>& discret,
-    CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::ParentIntersection& parentintersection)
+Core::Geo::Cut::Parallel::Parallel(const Teuchos::RCP<Discret::Discretization>& discret,
+    Core::Geo::Cut::Mesh& mesh, Core::Geo::Cut::ParentIntersection& parentintersection)
     : discret_(discret),
       myrank_(discret_->Comm().MyPID()),
       numproc_(discret_->Comm().NumProc()),
@@ -39,13 +39,13 @@ CORE::GEO::CUT::Parallel::Parallel(const Teuchos::RCP<DRT::Discretization>& disc
 /*------------------------------------------------------------------------------------------------*
  * communicate node positions                                                        schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::communicate_node_positions()
+void Core::Geo::Cut::Parallel::communicate_node_positions()
 {
   // wait for all processors before the Communication starts
   discret_->Comm().Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- communicate_node_positions");
+      "Core::Geo::CUT --- 5/6 --- cut_positions_dofsets --- communicate_node_positions");
 
   //  if(myrank_==0) std::cout << "\n\t ... communicate_node_positions" << std::flush;
   //
@@ -130,7 +130,7 @@ void CORE::GEO::CUT::Parallel::communicate_node_positions()
 /*------------------------------------------------------------------------------------------------*
  * export data whether proc has finished to set node positions                       schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::export_communication_finished(bool& procDone)
+void Core::Geo::Cut::Parallel::export_communication_finished(bool& procDone)
 {
   // Initialization
   int dest = myrank_ + 1;  // destination proc (the "next" one)
@@ -147,11 +147,11 @@ void CORE::GEO::CUT::Parallel::export_communication_finished(bool& procDone)
   for (int iproc = 0; iproc < numproc_ - 1;
        iproc++)  // proc obtains information from numproc_-1 other processors
   {
-    CORE::COMM::PackBuffer dataSend;
+    Core::Communication::PackBuffer dataSend;
 
-    CORE::COMM::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
+    Core::Communication::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
     dataSend.StartPacking();
-    CORE::COMM::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
+    Core::Communication::ParObject::AddtoPack(dataSend, static_cast<int>(procDone));
 
     std::vector<char> dataRecv;
     send_data(dataSend, dest, source, dataRecv);
@@ -161,7 +161,7 @@ void CORE::GEO::CUT::Parallel::export_communication_finished(bool& procDone)
     int allProcsDone = 0;
 
     // unpack received data
-    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, allProcsDone);
+    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, allProcsDone);
 
     // if the received information is allProcsDone==false, then set the current proc also to
     // procDone=false within the next round-iteration the next proc is also set to procDone=false
@@ -180,7 +180,7 @@ void CORE::GEO::CUT::Parallel::export_communication_finished(bool& procDone)
 /*------------------------------------------------------------------------------------------------*
  * export position data to neighbor proc and receive data from previous proc         schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::export_node_position_data()
+void Core::Geo::Cut::Parallel::export_node_position_data()
 {
   // destination proc (the "next" one)
   int dest = myrank_ + 1;
@@ -225,15 +225,15 @@ void CORE::GEO::CUT::Parallel::export_node_position_data()
       //--------------------
 
 
-      CORE::COMM::PackBuffer dataSend;  // data to be sent
+      Core::Communication::PackBuffer dataSend;  // data to be sent
 
-      CORE::COMM::ParObject::AddtoPack(dataSend, curr_undecided_node_pos_);
-      CORE::COMM::ParObject::AddtoPack(dataSend, tmp_curr_undecidedNodePos_shadow);
+      Core::Communication::ParObject::AddtoPack(dataSend, curr_undecided_node_pos_);
+      Core::Communication::ParObject::AddtoPack(dataSend, tmp_curr_undecidedNodePos_shadow);
 
       dataSend.StartPacking();
 
-      CORE::COMM::ParObject::AddtoPack(dataSend, curr_undecided_node_pos_);
-      CORE::COMM::ParObject::AddtoPack(dataSend, tmp_curr_undecidedNodePos_shadow);
+      Core::Communication::ParObject::AddtoPack(dataSend, curr_undecided_node_pos_);
+      Core::Communication::ParObject::AddtoPack(dataSend, tmp_curr_undecidedNodePos_shadow);
 
 
       std::vector<char> dataRecv;
@@ -250,8 +250,9 @@ void CORE::GEO::CUT::Parallel::export_node_position_data()
       // unpack received data
       while (posinData < dataRecv.size())
       {
-        CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, curr_undecided_node_pos_);
-        CORE::COMM::ParObject::ExtractfromPack(
+        Core::Communication::ParObject::ExtractfromPack(
+            posinData, dataRecv, curr_undecided_node_pos_);
+        Core::Communication::ParObject::ExtractfromPack(
             posinData, dataRecv, tmp_curr_undecidedNodePos_shadow);
 
         //--------------------
@@ -260,7 +261,7 @@ void CORE::GEO::CUT::Parallel::export_node_position_data()
                  tmp_curr_undecidedNodePos_shadow.begin();
              it != tmp_curr_undecidedNodePos_shadow.end(); it++)
         {
-          CORE::GEO::CUT::plain_int_set tmp_set;
+          Core::Geo::Cut::plain_int_set tmp_set;
           for (std::vector<int>::const_iterator vec_it = (it->first).begin();
                vec_it != (it->first).end(); vec_it++)
           {
@@ -371,7 +372,7 @@ void CORE::GEO::CUT::Parallel::export_node_position_data()
 /*------------------------------------------------------------------------------------------------*
  * distribute received node positions on my processor                                schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::distribute_my_received_node_position_data()
+void Core::Geo::Cut::Parallel::distribute_my_received_node_position_data()
 {
   // distribute the received data for myproc
   for (std::map<int, int>::iterator it = curr_undecided_node_pos_.begin();
@@ -426,7 +427,7 @@ void CORE::GEO::CUT::Parallel::distribute_my_received_node_position_data()
 /*------------------------------------------------------------------------------------------------*
  * set received node positions for node and distribute it to facets, vcs ...         schott 05/14 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::set_position_for_node(const Node* n, const Point::PointPosition& pos)
+void Core::Geo::Cut::Parallel::set_position_for_node(const Node* n, const Point::PointPosition& pos)
 {
   Point* p = n->point();
 
@@ -457,13 +458,13 @@ void CORE::GEO::CUT::Parallel::set_position_for_node(const Node* n, const Point:
 /*------------------------------------------------------------------------------------------------*
  * communicate the node dofset number for single volumecells                         schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::communicate_node_dof_set_numbers(bool include_inner)
+void Core::Geo::Cut::Parallel::communicate_node_dof_set_numbers(bool include_inner)
 {
   // wait for all processors before the Communication starts
   discret_->Comm().Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "CORE::GEO::CUT --- 5/6 --- cut_positions_dofsets --- communicate_node_dof_set_numbers");
+      "Core::Geo::CUT --- 5/6 --- cut_positions_dofsets --- communicate_node_dof_set_numbers");
 
   //  if(myrank_==0) std::cout << "\n\t ... communicate_node_dof_set_numbers" << std::flush;
   //
@@ -502,7 +503,7 @@ void CORE::GEO::CUT::Parallel::communicate_node_dof_set_numbers(bool include_inn
 /*------------------------------------------------------------------------------------------------*
  * export dofset data to neighbor proc and receive data from previous proc           schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::export_dof_set_data(bool include_inner)
+void Core::Geo::Cut::Parallel::export_dof_set_data(bool include_inner)
 {
   //  bool include_inner = false;
 
@@ -524,18 +525,18 @@ void CORE::GEO::CUT::Parallel::export_dof_set_data(bool include_inner)
     //---------------------------------------------------------------------------------------------------------------
     // send current DofSetData to next proc and receive a new map from previous proc
     {
-      CORE::COMM::PackBuffer dataSend;  // data to be sent
+      Core::Communication::PackBuffer dataSend;  // data to be sent
 
       // packing the data
       for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator data =
                dof_set_data_.begin();
            data != dof_set_data_.end(); data++)
       {
-        CORE::COMM::ParObject::AddtoPack(dataSend, (*data)->set_index_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, (int)(*data)->inside_cell_);
+        Core::Communication::ParObject::AddtoPack(dataSend, (*data)->set_index_);
+        Core::Communication::ParObject::AddtoPack(dataSend, (int)(*data)->inside_cell_);
         pack_points(dataSend, (*data)->cut_points_coords_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, (*data)->peid_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, (*data)->node_dofsetnumber_map_);
+        Core::Communication::ParObject::AddtoPack(dataSend, (*data)->peid_);
+        Core::Communication::ParObject::AddtoPack(dataSend, (*data)->node_dofsetnumber_map_);
       }
 
       dataSend.StartPacking();
@@ -545,11 +546,11 @@ void CORE::GEO::CUT::Parallel::export_dof_set_data(bool include_inner)
                dof_set_data_.begin();
            data != dof_set_data_.end(); data++)
       {
-        CORE::COMM::ParObject::AddtoPack(dataSend, (*data)->set_index_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, (int)(*data)->inside_cell_);
+        Core::Communication::ParObject::AddtoPack(dataSend, (*data)->set_index_);
+        Core::Communication::ParObject::AddtoPack(dataSend, (int)(*data)->inside_cell_);
         pack_points(dataSend, (*data)->cut_points_coords_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, (*data)->peid_);
-        CORE::COMM::ParObject::AddtoPack(dataSend, (*data)->node_dofsetnumber_map_);
+        Core::Communication::ParObject::AddtoPack(dataSend, (*data)->peid_);
+        Core::Communication::ParObject::AddtoPack(dataSend, (*data)->node_dofsetnumber_map_);
       }
 
       std::vector<char> dataRecv;
@@ -567,19 +568,19 @@ void CORE::GEO::CUT::Parallel::export_dof_set_data(bool include_inner)
         // unpack volumecell
         int set_index = -1;                                         // set index for Volumecell
         int inside_cell = false;                                    // inside or outside cell
-        std::vector<CORE::LINALG::Matrix<3, 1>> cut_points_coords;  // coordinates of cut points
+        std::vector<Core::LinAlg::Matrix<3, 1>> cut_points_coords;  // coordinates of cut points
         int peid = -1;                             // parent element id for volume cell
         std::map<int, int> node_dofsetnumber_map;  // map <nid, current dofset number>
 
         // unpack volumecell data
-        CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, set_index);
-        CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, inside_cell);
+        Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, set_index);
+        Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, inside_cell);
         unpack_points(posinData, dataRecv, cut_points_coords);
-        CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, peid);
-        CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, node_dofsetnumber_map);
+        Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, peid);
+        Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, node_dofsetnumber_map);
 
         // create a new dofSetData object with unpacked data
-        dof_set_data_.push_back(Teuchos::rcp(new CORE::GEO::CUT::MeshIntersection::DofSetData(
+        dof_set_data_.push_back(Teuchos::rcp(new Core::Geo::Cut::MeshIntersection::DofSetData(
             set_index, (bool)inside_cell, cut_points_coords, peid, node_dofsetnumber_map)));
       }
 
@@ -625,7 +626,7 @@ void CORE::GEO::CUT::Parallel::export_dof_set_data(bool include_inner)
 
         if (haveGlobalNode)
         {
-          CORE::Nodes::Node* node = discret_->gNode(nid);
+          Core::Nodes::Node* node = discret_->gNode(nid);
 
           if (node->Owner() == myrank_)
           {
@@ -677,7 +678,7 @@ void CORE::GEO::CUT::Parallel::export_dof_set_data(bool include_inner)
         if (haveGlobalNode)  // node on this proc available as row or col node
         {
           // std::cout << "in haveGlobalNode for node " << nid << std::endl;
-          CORE::Nodes::Node* node = discret_->gNode(nid);
+          Core::Nodes::Node* node = discret_->gNode(nid);
           if (node->Owner() == myrank_)
           {
             int new_dofset_number = -1;
@@ -702,17 +703,17 @@ void CORE::GEO::CUT::Parallel::export_dof_set_data(bool include_inner)
                 std::stringstream str;
                 str << "cut_element" << my_vc->parent_element()->Id() << "_fail.pos";
                 std::ofstream file(str.str().c_str());
-                CORE::GEO::CUT::OUTPUT::GmshCompleteCutElement(file, my_vc->parent_element());
-                CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "MyVC");
-                CORE::GEO::CUT::OUTPUT::GmshVolumecellDump(file, my_vc);
-                CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "OtherPointsVC", true);
-                for (std::vector<CORE::LINALG::Matrix<3, 1>>::iterator rec_it =
+                Core::Geo::Cut::Output::GmshCompleteCutElement(file, my_vc->parent_element());
+                Core::Geo::Cut::Output::GmshNewSection(file, "MyVC");
+                Core::Geo::Cut::Output::GmshVolumecellDump(file, my_vc);
+                Core::Geo::Cut::Output::GmshNewSection(file, "OtherPointsVC", true);
+                for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator rec_it =
                          ((*vc_data)->cut_points_coords_).begin();
                      rec_it != ((*vc_data)->cut_points_coords_).end(); rec_it++)
                 {
-                  CORE::GEO::CUT::OUTPUT::GmshCoordDump(file, (*rec_it), 0);
+                  Core::Geo::Cut::Output::GmshCoordDump(file, (*rec_it), 0);
                 }
-                CORE::GEO::CUT::OUTPUT::GmshEndSection(file, true);
+                Core::Geo::Cut::Output::GmshEndSection(file, true);
                 std::cout << "Is the element cut = " << my_vc->parent_element()->IsCut() << "\n";
                 std::cout << "VC_DATA is inside: Is the element cut = " << (*vc_data)->inside_cell_
                           << "\n";
@@ -771,7 +772,7 @@ void CORE::GEO::CUT::Parallel::export_dof_set_data(bool include_inner)
 /*------------------------------------------------------------------------------------------------*
  * distribute received dofset number for nodes of volumecell on my processor         schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::distribute_dof_set_data()
+void Core::Geo::Cut::Parallel::distribute_dof_set_data()
 {
   // back to the original proc
 
@@ -788,7 +789,7 @@ void CORE::GEO::CUT::Parallel::distribute_dof_set_data()
 
     int peid = (*data)->peid_;
 
-    CORE::GEO::CUT::ElementHandle* e = parentintersection_.GetElement(peid);
+    Core::Geo::Cut::ElementHandle* e = parentintersection_.GetElement(peid);
 
     std::vector<int> nds;
 
@@ -843,7 +844,7 @@ void CORE::GEO::CUT::Parallel::distribute_dof_set_data()
 /*------------------------------------------------------------------------------------------------*
  * find the volumecell on myrank for which we received data stored in vc_data        schott 10/12 *
  *------------------------------------------------------------------------------------------------*/
-CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::find_volume_cell(
+Core::Geo::Cut::VolumeCell* Core::Geo::Cut::Parallel::find_volume_cell(
     MeshIntersection::DofSetData&
         vc_data,  ///< volumecell data which have to be identified on myrank
     double tol)
@@ -906,7 +907,7 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::find_volume_cell(
       {
         bool point_found = true;
 
-        for (std::vector<CORE::LINALG::Matrix<3, 1>>::iterator rec_it =
+        for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator rec_it =
                  (vc_data.cut_points_coords_).begin();
              rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
         {
@@ -938,7 +939,7 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::find_volume_cell(
       if (vc_found)
       {
         // brute force search for identical point coords
-        for (std::vector<CORE::LINALG::Matrix<3, 1>>::iterator rec_it =
+        for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator rec_it =
                  (vc_data.cut_points_coords_).begin();
              rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
         {
@@ -993,8 +994,8 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::find_volume_cell(
   //  {
   //    //identify by center
   //    std::cout << "==| Do center idendification |== " << std::endl;
-  //    CORE::LINALG::Matrix<3,1> vc_center(true);
-  //    for(std::vector<CORE::LINALG::Matrix<3,1> >::iterator
+  //    Core::LinAlg::Matrix<3,1> vc_center(true);
+  //    for(std::vector<Core::LinAlg::Matrix<3,1> >::iterator
   //    rec_it=(vc_data.cut_points_coords_).begin();
   //       rec_it != (vc_data.cut_points_coords_).end();
   //       rec_it++)
@@ -1019,11 +1020,11 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::find_volume_cell(
   //       std::copy(facetpoints.begin(), facetpoints.end(), std::inserter(my_cut_points,
   //       my_cut_points.begin()));
   //     }
-  //     CORE::LINALG::Matrix<3,1> my_center(true);
+  //     Core::LinAlg::Matrix<3,1> my_center(true);
   //     for(plain_point_set::iterator my_it=my_cut_points.begin(); my_it!=my_cut_points.end();
   //     my_it++)
   //     {
-  //       CORE::LINALG::Matrix<3,1> coord((*my_it)->X(),true);
+  //       Core::LinAlg::Matrix<3,1> coord((*my_it)->X(),true);
   //       my_center.Update(1.0,coord,1.0);
   //     }
   //     my_center.Scale(1.0/(my_cut_points.size()));
@@ -1048,16 +1049,16 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::find_volume_cell(
     str << "NIVC_" << myrank_ << ".pos";
     std::ofstream file(str.str());
 
-    CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "OtherPoints");
-    for (std::vector<CORE::LINALG::Matrix<3, 1>>::iterator rec_it =
+    Core::Geo::Cut::Output::GmshNewSection(file, "OtherPoints");
+    for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator rec_it =
              (vc_data.cut_points_coords_).begin();
          rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
     {
-      CORE::GEO::CUT::OUTPUT::GmshCoordDump(file, (*rec_it), 0);
+      Core::Geo::Cut::Output::GmshCoordDump(file, (*rec_it), 0);
     }
     for (plain_volumecell_set::iterator c = my_vcs.begin(); c != my_vcs.end(); c++)
     {
-      CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "MyPoints", true);
+      Core::Geo::Cut::Output::GmshNewSection(file, "MyPoints", true);
       VolumeCell* cell = *c;
       // get points for my_vc
       plain_point_set my_cut_points;
@@ -1073,24 +1074,24 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::find_volume_cell(
       for (plain_point_set::iterator my_it = my_cut_points.begin(); my_it != my_cut_points.end();
            my_it++)
       {
-        CORE::LINALG::Matrix<3, 1> coord((*my_it)->X(), true);
-        CORE::GEO::CUT::OUTPUT::GmshCoordDump(file, coord, 0);
+        Core::LinAlg::Matrix<3, 1> coord((*my_it)->X(), true);
+        Core::Geo::Cut::Output::GmshCoordDump(file, coord, 0);
       }
     }
-    //  CORE::GEO::CUT::OUTPUT::GmshEndSection(file, true);
+    //  Core::Geo::Cut::Output::GmshEndSection(file, true);
     for (plain_volumecell_set::iterator c = my_vcs.begin(); c != my_vcs.end(); c++)
     {
       VolumeCell* cell = *c;
       const plain_facet_set& facete = cell->Facets();
-      CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "VolumeCell", true);
-      CORE::GEO::CUT::OUTPUT::GmshVolumecellDump(file, cell, "lines", true);
+      Core::Geo::Cut::Output::GmshNewSection(file, "VolumeCell", true);
+      Core::Geo::Cut::Output::GmshVolumecellDump(file, cell, "lines", true);
       for (plain_facet_set::const_iterator it = facete.begin(); it != facete.end(); ++it)
       {
-        CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "Facet", true);
-        CORE::GEO::CUT::OUTPUT::GmshFacetDump(file, *it, "sides", true);
+        Core::Geo::Cut::Output::GmshNewSection(file, "Facet", true);
+        Core::Geo::Cut::Output::GmshFacetDump(file, *it, "sides", true);
       }
     }
-    CORE::GEO::CUT::OUTPUT::GmshEndSection(file, true);
+    Core::Geo::Cut::Output::GmshEndSection(file, true);
   }
 
   return my_vc;
@@ -1098,7 +1099,7 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::find_volume_cell(
 
 
 
-void CORE::GEO::CUT::Parallel::replace_nds_vectors(ElementHandle* e,
+void Core::Geo::Cut::Parallel::replace_nds_vectors(ElementHandle* e,
     const std::vector<plain_volumecell_set>& ele_vc_sets,
     std::vector<std::vector<int>>& nodaldofset_vc_sets, int set_index,
     std::map<int, int>& node_dofsetnumber_map)
@@ -1110,7 +1111,7 @@ void CORE::GEO::CUT::Parallel::replace_nds_vectors(ElementHandle* e,
   const std::vector<int> nds_old = (*cells.begin())->NodalDofSet();
 
   // get vector of nids in current element
-  const std::vector<CORE::GEO::CUT::Node*> nodes = e->Nodes();
+  const std::vector<Core::Geo::Cut::Node*> nodes = e->Nodes();
 
   // create the new dofset Vector
   std::vector<int> nds_new;
@@ -1145,17 +1146,17 @@ void CORE::GEO::CUT::Parallel::replace_nds_vectors(ElementHandle* e,
  * packing a point for parallel communication only with the basic point data                      *
  * without an underlying discretization fitting to the node's new prozessor          schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::pack_points(
-    CORE::COMM::PackBuffer& dataSend, std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords) const
+void Core::Geo::Cut::Parallel::pack_points(Core::Communication::PackBuffer& dataSend,
+    std::vector<Core::LinAlg::Matrix<3, 1>>& points_coords) const
 {
   // pack number of points for current volumecell
-  CORE::COMM::ParObject::AddtoPack(dataSend, (int)points_coords.size());
+  Core::Communication::ParObject::AddtoPack(dataSend, (int)points_coords.size());
 
-  for (std::vector<CORE::LINALG::Matrix<3, 1>>::iterator p = points_coords.begin();
+  for (std::vector<Core::LinAlg::Matrix<3, 1>>::iterator p = points_coords.begin();
        p != points_coords.end(); p++)
   {
     // pack xyz-coordinates
-    CORE::COMM::ParObject::AddtoPack(dataSend, *p);
+    Core::Communication::ParObject::AddtoPack(dataSend, *p);
   }
 
 }  // end packNodes
@@ -1166,25 +1167,25 @@ void CORE::GEO::CUT::Parallel::pack_points(
  * unpacking a point for parallel communication only with the basic point data                    *
  * without an underlying discretization fitting to the node's new prozessor          schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::unpack_points(std::vector<char>::size_type& posinData,
-    std::vector<char>& dataRecv, std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords) const
+void Core::Geo::Cut::Parallel::unpack_points(std::vector<char>::size_type& posinData,
+    std::vector<char>& dataRecv, std::vector<Core::LinAlg::Matrix<3, 1>>& points_coords) const
 {
   const int nsd = 3;  // dimension
 
   int num_points = 0;
 
   // unpack number of points for current volumecell
-  CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, num_points);
+  Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, num_points);
 
 
-  CORE::LINALG::Matrix<nsd, 1> coords(true);
+  Core::LinAlg::Matrix<nsd, 1> coords(true);
 
   for (int i = 0; i < num_points; i++)
   {
     coords.Clear();
 
     // pack xyz-coordinates for point
-    CORE::COMM::ParObject::ExtractfromPack(posinData, dataRecv, coords);
+    Core::Communication::ParObject::ExtractfromPack(posinData, dataRecv, coords);
 
     points_coords.push_back(coords);
   }
@@ -1196,8 +1197,8 @@ void CORE::GEO::CUT::Parallel::unpack_points(std::vector<char>::size_type& posin
 /*------------------------------------------------------------------------------------------------*
  * basic function sending data to dest and receiving data from source                schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::send_data(
-    CORE::COMM::PackBuffer& dataSend, int& dest, int& source, std::vector<char>& dataRecv) const
+void Core::Geo::Cut::Parallel::send_data(Core::Communication::PackBuffer& dataSend, int& dest,
+    int& source, std::vector<char>& dataRecv) const
 {
   std::vector<int> lengthSend(1, 0);
   lengthSend[0] = dataSend().size();
@@ -1209,7 +1210,7 @@ void CORE::GEO::CUT::Parallel::send_data(
 #endif
 
   // exporter for sending
-  CORE::COMM::Exporter exporter(discret_->Comm());
+  Core::Communication::Exporter exporter(discret_->Comm());
 
   // send length of the data to be received ...
   MPI_Request req_length_data;
@@ -1245,7 +1246,7 @@ void CORE::GEO::CUT::Parallel::send_data(
 /*------------------------------------------------------------------------------------------------*
  * print current stored dofSetData_                                                  schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Parallel::print_dof_set_data()
+void Core::Geo::Cut::Parallel::print_dof_set_data()
 {
   for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator i = dof_set_data_.begin();
        i != dof_set_data_.end(); i++)
@@ -1257,9 +1258,9 @@ void CORE::GEO::CUT::Parallel::print_dof_set_data()
 /*------------------------------------------------------------------------------------------------*
  * get the index of nid in the vector of elements (eid) node Ids                     schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-int CORE::GEO::CUT::Parallel::get_dof_set_vec_index(int nid, int eid)
+int Core::Geo::Cut::Parallel::get_dof_set_vec_index(int nid, int eid)
 {
-  CORE::Elements::Element* ele = discret_->gElement(eid);
+  Core::Elements::Element* ele = discret_->gElement(eid);
 
   if (ele == nullptr) FOUR_C_THROW("element %d not available on proc %d", eid, myrank_);
 

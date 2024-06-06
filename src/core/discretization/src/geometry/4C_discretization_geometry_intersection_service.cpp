@@ -23,18 +23,18 @@ FOUR_C_NAMESPACE_OPEN
  |  ICS:    checks if an element is CARTESIAN, LINEAR and    u.may 07/08|
  |          HIGHERORDER                                                 |
  *----------------------------------------------------------------------*/
-void CORE::GEO::checkGeoType(const CORE::Elements::Element* element,
-    const CORE::LINALG::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType)
+void Core::Geo::checkGeoType(const Core::Elements::Element* element,
+    const Core::LinAlg::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType)
 {
   bool cartesian = true;
   int CartesianCount = 0;
   const int dimCoord = 3;
-  const CORE::FE::CellType distype = element->Shape();
-  const int eleDim = CORE::FE::getDimension(distype);
+  const Core::FE::CellType distype = element->Shape();
+  const int eleDim = Core::FE::getDimension(distype);
 
-  if (CORE::FE::getOrder(distype) == 1)
+  if (Core::FE::getOrder(distype) == 1)
     eleGeoType = LINEAR;
-  else if (CORE::FE::getOrder(distype) == 2)
+  else if (Core::FE::getOrder(distype) == 2)
     eleGeoType = HIGHERORDER;
   else
     FOUR_C_THROW("order of element shapefuntion is not correct");
@@ -43,13 +43,13 @@ void CORE::GEO::checkGeoType(const CORE::Elements::Element* element,
   if (eleDim == 3)
   {
     const std::vector<std::vector<int>> eleNodeNumbering =
-        CORE::FE::getEleNodeNumberingSurfaces(distype);
-    std::vector<Teuchos::RCP<CORE::Elements::Element>> surfaces =
-        (const_cast<CORE::Elements::Element*>(element))->Surfaces();
+        Core::FE::getEleNodeNumberingSurfaces(distype);
+    std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces =
+        (const_cast<Core::Elements::Element*>(element))->Surfaces();
     for (int i = 0; i < element->NumSurface(); i++)
     {
       CartesianCount = 0;
-      const CORE::Elements::Element* surfaceP = surfaces[i].get();
+      const Core::Elements::Element* surfaceP = surfaces[i].get();
 
       for (int k = 0; k < dimCoord; k++)
       {
@@ -102,21 +102,21 @@ void CORE::GEO::checkGeoType(const CORE::Elements::Element* element,
  | delivers a axis-aligned bounding box for a given          u.may 12/08|
  | discretization                                                       |
  *----------------------------------------------------------------------*/
-std::map<int, CORE::LINALG::Matrix<3, 2>> CORE::GEO::getCurrentXAABBs(
-    const DRT::Discretization& dis,
-    const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
+std::map<int, Core::LinAlg::Matrix<3, 2>> Core::Geo::getCurrentXAABBs(
+    const Discret::Discretization& dis,
+    const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions)
 {
-  std::map<int, CORE::LINALG::Matrix<3, 2>> currentXAABBs;
+  std::map<int, Core::LinAlg::Matrix<3, 2>> currentXAABBs;
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int j = 0; j < dis.NumMyColElements(); ++j)
   {
-    const CORE::Elements::Element* element = dis.lColElement(j);
-    const CORE::LINALG::SerialDenseMatrix xyze_element(
-        CORE::GEO::getCurrentNodalPositions(element, currentpositions));
-    CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
-    CORE::GEO::checkGeoType(element, xyze_element, eleGeoType);
-    const CORE::LINALG::Matrix<3, 2> xaabbEle =
-        CORE::GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
+    const Core::Elements::Element* element = dis.lColElement(j);
+    const Core::LinAlg::SerialDenseMatrix xyze_element(
+        Core::Geo::getCurrentNodalPositions(element, currentpositions));
+    Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
+    Core::Geo::checkGeoType(element, xyze_element, eleGeoType);
+    const Core::LinAlg::Matrix<3, 2> xaabbEle =
+        Core::Geo::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
     currentXAABBs[element->Id()] = xaabbEle;
   }
   return currentXAABBs;
@@ -126,19 +126,19 @@ std::map<int, CORE::LINALG::Matrix<3, 2>> CORE::GEO::getCurrentXAABBs(
 /*----------------------------------------------------------------------*
  |  ICS:    checks if two 18DOPs intersect                   u.may 12/08| |
  *----------------------------------------------------------------------*/
-bool CORE::GEO::intersectionOfKDOPs(
-    const CORE::LINALG::Matrix<9, 2>& cutterDOP, const CORE::LINALG::Matrix<9, 2>& xfemDOP)
+bool Core::Geo::intersectionOfKDOPs(
+    const Core::LinAlg::Matrix<9, 2>& cutterDOP, const Core::LinAlg::Matrix<9, 2>& xfemDOP)
 {
   // check intersection of 18 kdops
   for (int i = 0; i < 9; i++)
-    if (!(((cutterDOP(i, 0) > (xfemDOP(i, 0) - CORE::GEO::TOL7)) &&
-              (cutterDOP(i, 0) < (xfemDOP(i, 1) + CORE::GEO::TOL7))) ||
-            ((cutterDOP(i, 1) > (xfemDOP(i, 0) - CORE::GEO::TOL7)) &&
-                (cutterDOP(i, 1) < (xfemDOP(i, 1) + CORE::GEO::TOL7))) ||
-            ((xfemDOP(i, 0) > (cutterDOP(i, 0) - CORE::GEO::TOL7)) &&
-                (xfemDOP(i, 0) < (cutterDOP(i, 1) + CORE::GEO::TOL7))) ||
-            ((xfemDOP(i, 1) > (cutterDOP(i, 0) - CORE::GEO::TOL7)) &&
-                (xfemDOP(i, 1) < (cutterDOP(i, 1) + CORE::GEO::TOL7)))))
+    if (!(((cutterDOP(i, 0) > (xfemDOP(i, 0) - Core::Geo::TOL7)) &&
+              (cutterDOP(i, 0) < (xfemDOP(i, 1) + Core::Geo::TOL7))) ||
+            ((cutterDOP(i, 1) > (xfemDOP(i, 0) - Core::Geo::TOL7)) &&
+                (cutterDOP(i, 1) < (xfemDOP(i, 1) + Core::Geo::TOL7))) ||
+            ((xfemDOP(i, 0) > (cutterDOP(i, 0) - Core::Geo::TOL7)) &&
+                (xfemDOP(i, 0) < (cutterDOP(i, 1) + Core::Geo::TOL7))) ||
+            ((xfemDOP(i, 1) > (cutterDOP(i, 0) - Core::Geo::TOL7)) &&
+                (xfemDOP(i, 1) < (cutterDOP(i, 1) + Core::Geo::TOL7)))))
       return false;
 
   return true;
@@ -149,8 +149,8 @@ bool CORE::GEO::intersectionOfKDOPs(
  |  checks the intersection between two bounding volumes (AABB)         |
  |                                                          wirtz 08/14 |
  *----------------------------------------------------------------------*/
-bool CORE::GEO::intersectionOfBVs(
-    const CORE::LINALG::Matrix<3, 2>& currentBV, const CORE::LINALG::Matrix<3, 2>& queryBV)
+bool Core::Geo::intersectionOfBVs(
+    const Core::LinAlg::Matrix<3, 2>& currentBV, const Core::LinAlg::Matrix<3, 2>& queryBV)
 {
   return (overlap(currentBV(0, 0), currentBV(0, 1), queryBV(0, 0), queryBV(0, 1)) and
           overlap(currentBV(1, 0), currentBV(1, 1), queryBV(1, 0), queryBV(1, 1)) and
@@ -164,10 +164,10 @@ bool CORE::GEO::intersectionOfBVs(
  |  checks the overlap of two intervals in one coordinate               |
  |                                                          wirtz 08/14 |
  *----------------------------------------------------------------------*/
-bool CORE::GEO::overlap(double smin, double smax, double omin, double omax)
+bool Core::Geo::overlap(double smin, double smax, double omin, double omax)
 {
-  return ((omax > smin - CORE::GEO::TOL7 and omin < smax + CORE::GEO::TOL7) or
-          (smax > omin - CORE::GEO::TOL7 and smin < omax + CORE::GEO::TOL7));
+  return ((omax > smin - Core::Geo::TOL7 and omin < smax + Core::Geo::TOL7) or
+          (smax > omin - Core::Geo::TOL7 and smin < omax + Core::Geo::TOL7));
 }
 
 FOUR_C_NAMESPACE_CLOSE

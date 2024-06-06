@@ -39,8 +39,8 @@ FLD::XFluidOutputService::XFluidOutputService(const Teuchos::RCP<XFEM::Discretiz
 {
   // Vector & map extractor for paraview output,
   // mapped to initial fluid dofmap
-  dofset_out_ = Teuchos::rcp(new CORE::Dofsets::IndependentDofSet());
-  velpressplitter_out_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
+  dofset_out_ = Teuchos::rcp(new Core::DOFSets::IndependentDofSet());
+  velpressplitter_out_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
   prepare_output();
 }
 
@@ -48,13 +48,13 @@ void FLD::XFluidOutputService::prepare_output()
 {
   dofset_out_->Reset();
   dofset_out_->assign_degrees_of_freedom(*discret_, 0, 0);
-  const int ndim = GLOBAL::Problem::Instance()->NDim();
+  const int ndim = Global::Problem::Instance()->NDim();
   // split based on complete fluid field (standard splitter that handles one dofset)
-  CORE::LINALG::CreateMapExtractorFromDiscretization(
+  Core::LinAlg::CreateMapExtractorFromDiscretization(
       *discret_, *dofset_out_, ndim, *velpressplitter_out_);
 
   // create vector according to the dofset_out row map holding all standard fluid unknowns
-  outvec_fluid_ = CORE::LINALG::CreateVector(*dofset_out_->dof_row_map(), true);
+  outvec_fluid_ = Core::LinAlg::CreateVector(*dofset_out_->dof_row_map(), true);
 }
 
 void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_data,
@@ -72,7 +72,7 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
   for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
   {
     // get row node via local id
-    const CORE::Nodes::Node* xfemnode = discret_->lRowNode(i);
+    const Core::Nodes::Node* xfemnode = discret_->lRowNode(i);
 
     // the initial dofset contains the original dofs for each row node
     const std::vector<int> gdofs_original(dofset_out_->Dof(xfemnode));
@@ -120,16 +120,16 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
     else if (gdofs_current.size() % gdofs_original.size() == 0)  // multiple dofsets
     {
       // if there are multiple dofsets we write output for the standard dofset
-      CORE::GEO::CUT::Node* node = state->Wizard()->GetNode(xfemnode->Id());
+      Core::Geo::Cut::Node* node = state->Wizard()->GetNode(xfemnode->Id());
 
-      const std::vector<Teuchos::RCP<CORE::GEO::CUT::NodalDofSet>>& dofcellsets =
+      const std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>& dofcellsets =
           node->NodalDofSets();
 
       int nds = 0;
       bool is_std_set = false;
 
       // find the standard dofset
-      for (std::vector<Teuchos::RCP<CORE::GEO::CUT::NodalDofSet>>::const_iterator cellsets =
+      for (std::vector<Teuchos::RCP<Core::Geo::Cut::NodalDofSet>>::const_iterator cellsets =
                dofcellsets.begin();
            cellsets != dofcellsets.end(); cellsets++)
       {
@@ -198,7 +198,7 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
   // write restart
   if (write_restart_data)
   {
-    if (discret_->Comm().MyPID() == 0) CORE::IO::cout << "---  write restart... " << CORE::IO::endl;
+    if (discret_->Comm().MyPID() == 0) Core::IO::cout << "---  write restart... " << Core::IO::endl;
 
     restart_count_++;
 
@@ -236,8 +236,8 @@ void FLD::XFluidOutputService::Output(int step, double time, bool write_restart_
   if (restart_count_ == 5)
   {
     if (discret_->Comm().MyPID() == 0)
-      CORE::IO::cout << "\t... Clear MapCache after " << restart_count_ << " written restarts."
-                     << CORE::IO::endl;
+      Core::IO::cout << "\t... Clear MapCache after " << restart_count_ << " written restarts."
+                     << Core::IO::endl;
 
     discret_->Writer()->ClearMapCache();  // clear the output's map-cache
     restart_count_ = 0;
@@ -253,20 +253,20 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& pa
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& discret,
     const Teuchos::RCP<XFEM::ConditionManager>& cond_manager, const bool include_inner)
     : XFluidOutputService(discret, cond_manager),
-      gmsh_sol_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_SOL_OUT")),
-      gmsh_ref_sol_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_TIMINT_OUT")),
-      gmsh_debug_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT")),
+      gmsh_sol_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_SOL_OUT")),
+      gmsh_ref_sol_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_TIMINT_OUT")),
+      gmsh_debug_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT")),
       gmsh_debug_out_screen_(
-          (bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT_SCREEN")),
-      gmsh_eos_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_EOS_OUT")),
-      gmsh_discret_out_((bool)CORE::UTILS::IntegralValue<int>(params_xfem, "GMSH_DISCRET_OUT")),
+          (bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_DEBUG_OUT_SCREEN")),
+      gmsh_eos_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_EOS_OUT")),
+      gmsh_discret_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_DISCRET_OUT")),
       gmsh_step_diff_(500),
-      volume_cell_gauss_point_by_(CORE::UTILS::IntegralValue<INPAR::CUT::VCellGaussPts>(
+      volume_cell_gauss_point_by_(Core::UTILS::IntegralValue<Inpar::Cut::VCellGaussPts>(
           params_xfem, "VOLUME_GAUSS_POINTS_BY")),
       include_inner_(include_inner)
 {
-  if (!(bool)CORE::UTILS::IntegralValue<int>(
-          GLOBAL::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
+  if (!(bool)Core::UTILS::IntegralValue<int>(
+          Global::Problem::Instance()->IOParams(), "OUTPUT_GMSH"))
     FOUR_C_THROW(
         "If GMSH output is globally deactivated, don't create an instance of "
         "XFluidOutputServiceGmsh!");
@@ -282,19 +282,19 @@ void FLD::XFluidOutputServiceGmsh::GmshSolutionOutput(
   if (!gmsh_sol_out_) return;
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel =
-      CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->Velnp());
+      Core::Rebalance::GetColVersionOfRowVector(discret_, state->Velnp());
 
   Teuchos::RCP<const Epetra_Vector> output_col_acc = Teuchos::null;
 
   if (state->Accnp() != Teuchos::null)
   {
-    output_col_acc = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->Accnp());
+    output_col_acc = Core::Rebalance::GetColVersionOfRowVector(discret_, state->Accnp());
   }
 
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::GetColVersionOfRowVector(discret_, state->dispnp_);
 
 
   // no counter for standard solution output : -1
@@ -313,19 +313,19 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_previous(
   if (!gmsh_ref_sol_out_) return;
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel =
-      CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->Veln());
+      Core::Rebalance::GetColVersionOfRowVector(discret_, state->Veln());
 
   Teuchos::RCP<const Epetra_Vector> output_col_acc = Teuchos::null;
 
   if (state->Accn() != Teuchos::null)
   {
-    output_col_acc = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->Accn());
+    output_col_acc = Core::Rebalance::GetColVersionOfRowVector(discret_, state->Accn());
   }
 
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::GetColVersionOfRowVector(discret_, state->dispnp_);
 
 
   const std::string prefix("ref_SOL");
@@ -345,10 +345,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_debug(
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::GetColVersionOfRowVector(discret_, state->dispnp_);
 
   Teuchos::RCP<const Epetra_Vector> output_col_vel =
-      CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->Velnp());
+      Core::Rebalance::GetColVersionOfRowVector(discret_, state->Velnp());
   const std::string prefix("SOL");
   GmshOutput(filename_base, prefix, step, count, state->Wizard(), output_col_vel, Teuchos::null,
       dispnp_col);
@@ -366,11 +366,11 @@ void FLD::XFluidOutputServiceGmsh::gmsh_residual_output_debug(
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::GetColVersionOfRowVector(discret_, state->dispnp_);
 
 
   Teuchos::RCP<const Epetra_Vector> output_col_residual =
-      CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->Residual());
+      Core::Rebalance::GetColVersionOfRowVector(discret_, state->Residual());
   const std::string prefix("RES");
   GmshOutput(filename_base, prefix, step, count, state->Wizard(), output_col_residual,
       Teuchos::null, dispnp_col);
@@ -388,10 +388,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_increment_output_debug(
   Teuchos::RCP<const Epetra_Vector> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::GetColVersionOfRowVector(discret_, state->dispnp_);
 
   Teuchos::RCP<const Epetra_Vector> output_col_incvel =
-      CORE::REBALANCE::GetColVersionOfRowVector(discret_, state->IncVel());
+      Core::Rebalance::GetColVersionOfRowVector(discret_, state->IncVel());
   const std::string prefix("INC");
   GmshOutput(filename_base, prefix, step, count, state->Wizard(), output_col_incvel, Teuchos::null,
       dispnp_col);
@@ -402,7 +402,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     const std::string& prefix,         ///< data prefix
     int step,                          ///< step number
     int count,                         ///< counter for iterations within a global time step
-    const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,  ///< cut wizard
+    const Teuchos::RCP<Core::Geo::CutWizard>& wizard,  ///< cut wizard
     Teuchos::RCP<const Epetra_Vector> vel,    ///< vector holding velocity and pressure dofs
     Teuchos::RCP<const Epetra_Vector> acc,    ///< vector holding acceleration
     Teuchos::RCP<const Epetra_Vector> dispnp  ///< vector holding acceleration
@@ -423,7 +423,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_vel << filename_base << "_" << count << "_vel";
   else
     filename_base_vel << filename_base << "_vel";
-  const std::string filename_vel = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_vel = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
       filename_base_vel.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_vel(filename_vel.c_str());
@@ -435,7 +435,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_press << filename_base << "_" << count << "_press";
   else
     filename_base_press << filename_base << "_press";
-  const std::string filename_press = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_press = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
       filename_base_press.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_press(filename_press.c_str());
@@ -447,7 +447,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_acc << filename_base << "_" << count << "_acc";
   else
     filename_base_acc << filename_base << "_acc";
-  const std::string filename_acc = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_acc = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
       filename_base_acc.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_acc(filename_acc.c_str());
@@ -459,7 +459,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_bound << filename_base << "_" << count << "_bound";
   else
     filename_base_bound << filename_base << "_bound";
-  const std::string filename_bound = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_bound = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
       filename_base_bound.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_bound(filename_bound.c_str());
@@ -473,7 +473,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_vel_ghost << filename_base << "_" << count << "_vel_ghost";
   else
     filename_base_vel_ghost << filename_base << "_vel_ghost";
-  const std::string filename_vel_ghost = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_vel_ghost = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
       filename_base_vel_ghost.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_vel_ghost(filename_vel_ghost.c_str());
@@ -485,7 +485,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_press_ghost << filename_base << "_" << count << "_press_ghost";
   else
     filename_base_press_ghost << filename_base << "_press_ghost";
-  const std::string filename_press_ghost = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_press_ghost = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
       filename_base_press_ghost.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_press_ghost(filename_press_ghost.c_str());
@@ -497,7 +497,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     filename_base_acc_ghost << filename_base << "_" << count << "_acc_ghost";
   else
     filename_base_acc_ghost << filename_base << "_acc_ghost";
-  const std::string filename_acc_ghost = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+  const std::string filename_acc_ghost = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles(
       filename_base_acc_ghost.str(), file_name, step, gmsh_step_diff_, screen_out, myrank);
   if (gmsh_debug_out_screen_) std::cout << std::endl;
   std::ofstream gmshfilecontent_acc_ghost(filename_acc_ghost.c_str());
@@ -534,12 +534,12 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   const int numrowele = (discret_)->NumMyRowElements();
   for (int i = 0; i < numrowele; ++i)
   {
-    CORE::Elements::Element* actele = (discret_)->lRowElement(i);
-    CORE::GEO::CUT::ElementHandle* e = wizard->GetElement(actele);
+    Core::Elements::Element* actele = (discret_)->lRowElement(i);
+    Core::Geo::Cut::ElementHandle* e = wizard->GetElement(actele);
 
     if (e != nullptr)
     {
-      std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
+      std::vector<Core::Geo::Cut::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
 
       e->get_volume_cells_dof_sets(cell_sets, nds_sets, include_inner_);
@@ -549,24 +549,24 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
       {
         int set_counter = 0;
 
-        for (std::vector<CORE::GEO::CUT::plain_volumecell_set>::iterator s = cell_sets.begin();
+        for (std::vector<Core::Geo::Cut::plain_volumecell_set>::iterator s = cell_sets.begin();
              s != cell_sets.end(); s++)
         {
-          CORE::GEO::CUT::plain_volumecell_set& cells = *s;
+          Core::Geo::Cut::plain_volumecell_set& cells = *s;
 
           std::vector<int>& nds = nds_sets[set_counter];
 
 
-          for (CORE::GEO::CUT::plain_volumecell_set::iterator i = cells.begin(); i != cells.end();
+          for (Core::Geo::Cut::plain_volumecell_set::iterator i = cells.begin(); i != cells.end();
                ++i)
           {
-            CORE::GEO::CUT::VolumeCell* vc = *i;
+            Core::Geo::Cut::VolumeCell* vc = *i;
 
             if (e->IsCut())
             {
               gmsh_output_volume_cell(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
                   gmshfilecontent_acc, actele, e, vc, nds, vel, acc);
-              if (vc->Position() == CORE::GEO::CUT::Point::outside)
+              if (vc->Position() == Core::Geo::Cut::Point::outside)
               {
                 if (cond_manager_->HasMeshCoupling())
                   gmsh_output_boundary_cell(*discret_, gmshfilecontent_bound, vc, wizard);
@@ -625,13 +625,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   if (myrank == 0) std::cout << " done\n" << std::flush;
 }
 
-/// Gmsh output function for elements without an CORE::GEO::CUT::ElementHandle
+/// Gmsh output function for elements without an Core::Geo::Cut::ElementHandle
 void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
-    DRT::Discretization& discret,             ///< background fluid discretization
+    Discret::Discretization& discret,         ///< background fluid discretization
     std::ofstream& vel_f,                     ///< output file stream for velocity
     std::ofstream& press_f,                   ///< output file stream for pressure
     std::ofstream& acc_f,                     ///< output file stream for acceleration
-    CORE::Elements::Element* actele,          ///< element
+    Core::Elements::Element* actele,          ///< element
     std::vector<int>& nds,                    ///< vector holding the nodal dofsets
     Teuchos::RCP<const Epetra_Vector> vel,    ///< vector holding velocity and pressure dofs
     Teuchos::RCP<const Epetra_Vector> acc,    ///< vector holding acceleration
@@ -650,7 +650,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
   // output for accvec ?
   const bool acc_output(acc != Teuchos::null);
 
-  CORE::Elements::Element::LocationArray la(1);
+  Core::Elements::Element::LocationArray la(1);
 
 
   if (nds.size() != 0)  // for element output of ghost values
@@ -665,12 +665,12 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
   }
 
   std::vector<double> m(la[0].lm_.size());
-  CORE::FE::ExtractMyValues(*vel, m, la[0].lm_);
+  Core::FE::ExtractMyValues(*vel, m, la[0].lm_);
 
   std::vector<double> m_acc(la[0].lm_.size());
   if (acc_output)
   {
-    CORE::FE::ExtractMyValues(*acc, m_acc, la[0].lm_);
+    Core::FE::ExtractMyValues(*acc, m_acc, la[0].lm_);
   }
 
   const bool ale_output(dispnp != Teuchos::null);
@@ -678,36 +678,36 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
   std::vector<double> m_disp(la[0].lm_.size());
   if (ale_output)
   {
-    CORE::FE::ExtractMyValues(*dispnp, m_disp, la[0].lm_);
+    Core::FE::ExtractMyValues(*dispnp, m_disp, la[0].lm_);
   }
 
   int numnode = 0;
 
   switch (actele->Shape())
   {
-    case CORE::FE::CellType::hex8:
-    case CORE::FE::CellType::hex20:
-    case CORE::FE::CellType::hex27:
+    case Core::FE::CellType::hex8:
+    case Core::FE::CellType::hex20:
+    case Core::FE::CellType::hex27:
       numnode = 8;
       vel_f << "VH(";
       press_f << "SH(";
       if (acc_output) acc_f << "VH(";
       break;
-    case CORE::FE::CellType::wedge6:
-    case CORE::FE::CellType::wedge15:
+    case Core::FE::CellType::wedge6:
+    case Core::FE::CellType::wedge15:
       numnode = 6;
       vel_f << "VI(";
       press_f << "SI(";
       if (acc_output) acc_f << "VI(";
       break;
-    case CORE::FE::CellType::pyramid5:
+    case Core::FE::CellType::pyramid5:
       numnode = 5;
       vel_f << "VY(";
       press_f << "SY(";
       if (acc_output) acc_f << "VY(";
       break;
-    case CORE::FE::CellType::tet4:
-    case CORE::FE::CellType::tet10:
+    case Core::FE::CellType::tet4:
+    case Core::FE::CellType::tet10:
       numnode = 4;
       vel_f << "VS(";
       press_f << "SS(";
@@ -760,13 +760,13 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
 
 /// Gmsh output function for volumecells
 void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
-    DRT::Discretization& discret,              ///< background fluid discretization
+    Discret::Discretization& discret,          ///< background fluid discretization
     std::ofstream& vel_f,                      ///< output file stream for velocity
     std::ofstream& press_f,                    ///< output file stream for pressure
     std::ofstream& acc_f,                      ///< output file stream for acceleration
-    CORE::Elements::Element* actele,           ///< element
-    CORE::GEO::CUT::ElementHandle* e,          ///< elementhandle
-    CORE::GEO::CUT::VolumeCell* vc,            ///< volumecell
+    Core::Elements::Element* actele,           ///< element
+    Core::Geo::Cut::ElementHandle* e,          ///< elementhandle
+    Core::Geo::Cut::VolumeCell* vc,            ///< volumecell
     const std::vector<int>& nds,               ///< vector holding the nodal dofsets
     Teuchos::RCP<const Epetra_Vector> velvec,  ///< vector holding velocity and pressure dofs
     Teuchos::RCP<const Epetra_Vector> accvec   ///< vector holding acceleration
@@ -787,23 +787,23 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
   bool acc_output = true;
   if (accvec == Teuchos::null) acc_output = false;
 
-  CORE::Elements::Element::LocationArray la(1);
+  Core::Elements::Element::LocationArray la(1);
 
   // get element location vector, dirichlet flags and ownerships
   actele->LocationVector(discret, nds, la, false);
 
   std::vector<double> m(la[0].lm_.size());
-  CORE::FE::ExtractMyValues(*velvec, m, la[0].lm_);
+  Core::FE::ExtractMyValues(*velvec, m, la[0].lm_);
 
   std::vector<double> m_acc(la[0].lm_.size());
   if (acc_output)
   {
-    CORE::FE::ExtractMyValues(*accvec, m_acc, la[0].lm_);
+    Core::FE::ExtractMyValues(*accvec, m_acc, la[0].lm_);
   }
 
-  CORE::LINALG::SerialDenseMatrix vel(3, actele->num_node());
-  CORE::LINALG::SerialDenseMatrix press(1, actele->num_node());
-  CORE::LINALG::SerialDenseMatrix acc(3, actele->num_node());
+  Core::LinAlg::SerialDenseMatrix vel(3, actele->num_node());
+  Core::LinAlg::SerialDenseMatrix press(1, actele->num_node());
+  Core::LinAlg::SerialDenseMatrix acc(3, actele->num_node());
 
   for (int i = 0; i < actele->num_node(); ++i)
   {
@@ -823,15 +823,15 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
 
   // facet based output for cut volumes
   // integrationcells are not available because tessellation is not used
-  if (volume_cell_gauss_point_by_ != INPAR::CUT::VCellGaussPts_Tessellation)
+  if (volume_cell_gauss_point_by_ != Inpar::Cut::VCellGaussPts_Tessellation)
   {
-    const CORE::GEO::CUT::plain_facet_set& facete = vc->Facets();
-    for (CORE::GEO::CUT::plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
+    const Core::Geo::Cut::plain_facet_set& facete = vc->Facets();
+    for (Core::Geo::Cut::plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
     {
       // split facet into tri and quad cell
-      CORE::GEO::CUT::Facet* fe = *i;
-      std::vector<std::vector<CORE::GEO::CUT::Point*>> split;
-      std::vector<CORE::GEO::CUT::Point*> corners = fe->CornerPoints();
+      Core::Geo::Cut::Facet* fe = *i;
+      std::vector<std::vector<Core::Geo::Cut::Point*>> split;
+      std::vector<Core::Geo::Cut::Point*> corners = fe->CornerPoints();
 
       if (corners.size() == 3)  // only Tri can be used directly. Quad may be concave
         split.push_back(corners);
@@ -841,10 +841,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
         split = fe->GetSplitCells();
       }
 
-      for (std::vector<std::vector<CORE::GEO::CUT::Point*>>::const_iterator j = split.begin();
+      for (std::vector<std::vector<Core::Geo::Cut::Point*>>::const_iterator j = split.begin();
            j != split.end(); j++)
       {
-        std::vector<CORE::GEO::CUT::Point*> cell = *j;
+        std::vector<Core::Geo::Cut::Point*> cell = *j;
 
         switch (cell.size())
         {
@@ -884,53 +884,53 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
 
         for (unsigned k = 0; k < cell.size(); ++k)
         {
-          CORE::LINALG::Matrix<3, 1> v(true);
-          CORE::LINALG::Matrix<1, 1> p(true);
-          CORE::LINALG::Matrix<3, 1> a(true);
+          Core::LinAlg::Matrix<3, 1> v(true);
+          Core::LinAlg::Matrix<1, 1> p(true);
+          Core::LinAlg::Matrix<3, 1> a(true);
 
-          CORE::GEO::CUT::Point* point = cell[k];
-          const CORE::LINALG::Matrix<3, 1>& rst = e->local_coordinates(point);
+          Core::Geo::Cut::Point* point = cell[k];
+          const Core::LinAlg::Matrix<3, 1>& rst = e->local_coordinates(point);
 
           switch (actele->Shape())
           {
-            case CORE::FE::CellType::hex8:
+            case Core::FE::CellType::hex8:
             {
-              const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::hex8>;
-              CORE::LINALG::Matrix<numnodes, 1> funct;
-              CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex8);
-              CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
-              CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
-              CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
+              const int numnodes = Core::FE::num_nodes<Core::FE::CellType::hex8>;
+              Core::LinAlg::Matrix<numnodes, 1> funct;
+              Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex8);
+              Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
+              Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
+              Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
               v.Multiply(1, velocity, funct, 1);
               p.Multiply(1, pressure, funct, 1);
               if (acc_output) a.Multiply(1, acceleration, funct, 1);
               break;
             }
-            case CORE::FE::CellType::hex20:
+            case Core::FE::CellType::hex20:
             {
               // TODO: check the output for hex20
-              const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::hex20>;
-              CORE::LINALG::Matrix<numnodes, 1> funct;
-              CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex20);
-              CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
-              CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
-              CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
+              const int numnodes = Core::FE::num_nodes<Core::FE::CellType::hex20>;
+              Core::LinAlg::Matrix<numnodes, 1> funct;
+              Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex20);
+              Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
+              Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
+              Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
               v.Multiply(1, velocity, funct, 1);
               p.Multiply(1, pressure, funct, 1);
               if (acc_output) a.Multiply(1, acceleration, funct, 1);
               break;
             }
-            case CORE::FE::CellType::hex27:
+            case Core::FE::CellType::hex27:
             {
               // TODO: check the output for hex27
-              const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::hex27>;
-              CORE::LINALG::Matrix<numnodes, 1> funct;
-              CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex27);
-              CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
-              CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
-              CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
+              const int numnodes = Core::FE::num_nodes<Core::FE::CellType::hex27>;
+              Core::LinAlg::Matrix<numnodes, 1> funct;
+              Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex27);
+              Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
+              Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
+              Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
               v.Multiply(1, velocity, funct, 1);
               p.Multiply(1, pressure, funct, 1);
@@ -965,22 +965,22 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
   // integrationcells based output for tessellation
   else
   {
-    const CORE::GEO::CUT::plain_integrationcell_set& intcells = vc->IntegrationCells();
-    for (CORE::GEO::CUT::plain_integrationcell_set::const_iterator i = intcells.begin();
+    const Core::Geo::Cut::plain_integrationcell_set& intcells = vc->IntegrationCells();
+    for (Core::Geo::Cut::plain_integrationcell_set::const_iterator i = intcells.begin();
          i != intcells.end(); ++i)
     {
-      CORE::GEO::CUT::IntegrationCell* ic = *i;
+      Core::Geo::Cut::IntegrationCell* ic = *i;
 
-      const std::vector<CORE::GEO::CUT::Point*>& points = ic->Points();
+      const std::vector<Core::Geo::Cut::Point*>& points = ic->Points();
 
       switch (ic->Shape())
       {
-        case CORE::FE::CellType::hex8:
+        case Core::FE::CellType::hex8:
           vel_f << "VH(";
           press_f << "SH(";
           if (acc_output) acc_f << "VH(";
           break;
-        case CORE::FE::CellType::tet4:
+        case Core::FE::CellType::tet4:
           vel_f << "VS(";
           press_f << "SS(";
           if (acc_output) acc_f << "VS(";
@@ -1011,109 +1011,109 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
 
       for (unsigned i = 0; i < points.size(); ++i)
       {
-        CORE::LINALG::Matrix<3, 1> v(true);
-        CORE::LINALG::Matrix<1, 1> p(true);
-        CORE::LINALG::Matrix<3, 1> a(true);
+        Core::LinAlg::Matrix<3, 1> v(true);
+        Core::LinAlg::Matrix<1, 1> p(true);
+        Core::LinAlg::Matrix<3, 1> a(true);
 
-        CORE::GEO::CUT::Point* point = points[i];
-        const CORE::LINALG::Matrix<3, 1>& rst = e->local_coordinates(point);
+        Core::Geo::Cut::Point* point = points[i];
+        const Core::LinAlg::Matrix<3, 1>& rst = e->local_coordinates(point);
 
         switch (actele->Shape())
         {
-          case CORE::FE::CellType::hex8:
+          case Core::FE::CellType::hex8:
           {
-            const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::hex8>;
-            CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex8);
-            CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
-            CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
-            CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
+            const int numnodes = Core::FE::num_nodes<Core::FE::CellType::hex8>;
+            Core::LinAlg::Matrix<numnodes, 1> funct;
+            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex8);
+            Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
+            Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
+            Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
             v.Multiply(1, velocity, funct, 1);
             p.Multiply(1, pressure, funct, 1);
             if (acc_output) a.Multiply(1, acceleration, funct, 1);
             break;
           }
-          case CORE::FE::CellType::hex20:
+          case Core::FE::CellType::hex20:
           {
             // TODO: check the output for hex20
-            const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::hex20>;
-            CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex20);
-            CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
-            CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
-            CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
+            const int numnodes = Core::FE::num_nodes<Core::FE::CellType::hex20>;
+            Core::LinAlg::Matrix<numnodes, 1> funct;
+            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex20);
+            Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
+            Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
+            Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
             v.Multiply(1, velocity, funct, 1);
             p.Multiply(1, pressure, funct, 1);
             if (acc_output) a.Multiply(1, acceleration, funct, 1);
             break;
           }
-          case CORE::FE::CellType::hex27:
+          case Core::FE::CellType::hex27:
           {
             // TODO: check the output for hex27
-            const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::hex27>;
-            CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::hex27);
-            CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
-            CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
-            CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
+            const int numnodes = Core::FE::num_nodes<Core::FE::CellType::hex27>;
+            Core::LinAlg::Matrix<numnodes, 1> funct;
+            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::hex27);
+            Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
+            Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
+            Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
             v.Multiply(1, velocity, funct, 1);
             p.Multiply(1, pressure, funct, 1);
             if (acc_output) a.Multiply(1, acceleration, funct, 1);
             break;
           }
-          case CORE::FE::CellType::wedge6:
+          case Core::FE::CellType::wedge6:
           {
-            const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::wedge6>;
-            CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::wedge6);
-            CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
-            CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
-            CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
+            const int numnodes = Core::FE::num_nodes<Core::FE::CellType::wedge6>;
+            Core::LinAlg::Matrix<numnodes, 1> funct;
+            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::wedge6);
+            Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
+            Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
+            Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
             v.Multiply(1, velocity, funct, 1);
             p.Multiply(1, pressure, funct, 1);
             if (acc_output) a.Multiply(1, acceleration, funct, 1);
             break;
           }
-          case CORE::FE::CellType::wedge15:
+          case Core::FE::CellType::wedge15:
           {
-            const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::wedge15>;
-            CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::wedge15);
-            CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
-            CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
-            CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
+            const int numnodes = Core::FE::num_nodes<Core::FE::CellType::wedge15>;
+            Core::LinAlg::Matrix<numnodes, 1> funct;
+            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::wedge15);
+            Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
+            Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
+            Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
             v.Multiply(1, velocity, funct, 1);
             p.Multiply(1, pressure, funct, 1);
             if (acc_output) a.Multiply(1, acceleration, funct, 1);
             break;
           }
-          case CORE::FE::CellType::tet4:
+          case Core::FE::CellType::tet4:
           {
-            const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::tet4>;
-            CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::tet4);
-            CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
-            CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
-            CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
+            const int numnodes = Core::FE::num_nodes<Core::FE::CellType::tet4>;
+            Core::LinAlg::Matrix<numnodes, 1> funct;
+            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::tet4);
+            Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
+            Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
+            Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
             v.Multiply(1, velocity, funct, 1);
             p.Multiply(1, pressure, funct, 1);
             if (acc_output) a.Multiply(1, acceleration, funct, 1);
             break;
           }
-          case CORE::FE::CellType::tet10:
+          case Core::FE::CellType::tet10:
           {
-            const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::tet10>;
-            CORE::LINALG::Matrix<numnodes, 1> funct;
-            CORE::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), CORE::FE::CellType::tet10);
-            CORE::LINALG::Matrix<3, numnodes> velocity(vel, true);
-            CORE::LINALG::Matrix<1, numnodes> pressure(press, true);
-            CORE::LINALG::Matrix<3, numnodes> acceleration(acc, true);
+            const int numnodes = Core::FE::num_nodes<Core::FE::CellType::tet10>;
+            Core::LinAlg::Matrix<numnodes, 1> funct;
+            Core::FE::shape_function_3D(funct, rst(0), rst(1), rst(2), Core::FE::CellType::tet10);
+            Core::LinAlg::Matrix<3, numnodes> velocity(vel, true);
+            Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
+            Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
             v.Multiply(1, velocity, funct, 1);
             p.Multiply(1, pressure, funct, 1);
@@ -1148,55 +1148,55 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
 
 /// Gmsh output function for boundarycells
 void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
-    DRT::Discretization& discret,                     ///< background fluid discretization
+    Discret::Discretization& discret,                 ///< background fluid discretization
     std::ofstream& bound_f,                           ///< output file stream for boundary mesh
-    CORE::GEO::CUT::VolumeCell* vc,                   ///< volumecell
-    const Teuchos::RCP<CORE::GEO::CutWizard>& wizard  ///< cut wizard
+    Core::Geo::Cut::VolumeCell* vc,                   ///< volumecell
+    const Teuchos::RCP<Core::Geo::CutWizard>& wizard  ///< cut wizard
 )
 {
   bound_f.setf(std::ios::scientific, std::ios::floatfield);
   bound_f.precision(16);
 
-  CORE::LINALG::Matrix<3, 1> normal;
-  CORE::LINALG::Matrix<2, 2> metrictensor;
+  Core::LinAlg::Matrix<3, 1> normal;
+  Core::LinAlg::Matrix<2, 2> metrictensor;
   double drs;
 
-  std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>> bcells;
+  std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>> bcells;
   vc->GetBoundaryCells(bcells);
-  for (std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::iterator i = bcells.begin();
+  for (std::map<int, std::vector<Core::Geo::Cut::BoundaryCell*>>::iterator i = bcells.begin();
        i != bcells.end(); ++i)
   {
     int sid = i->first;
-    std::vector<CORE::GEO::CUT::BoundaryCell*>& bcs = i->second;
+    std::vector<Core::Geo::Cut::BoundaryCell*>& bcs = i->second;
 
     if (!cond_manager_->IsMeshCoupling(sid)) continue;
 
-    CORE::Elements::Element* side = cond_manager_->get_side(sid);
+    Core::Elements::Element* side = cond_manager_->get_side(sid);
 
-    CORE::GEO::CUT::SideHandle* s = wizard->GetMeshCuttingSide(sid, 0);
+    Core::Geo::Cut::SideHandle* s = wizard->GetMeshCuttingSide(sid, 0);
 
     const int numnodes = side->num_node();
-    CORE::Nodes::Node** nodes = side->Nodes();
-    CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
+    Core::Nodes::Node** nodes = side->Nodes();
+    Core::LinAlg::SerialDenseMatrix side_xyze(3, numnodes);
     for (int i = 0; i < numnodes; ++i)
     {
       const double* x = nodes[i]->X().data();
       std::copy(x, x + 3, &side_xyze(0, i));
     }
 
-    for (std::vector<CORE::GEO::CUT::BoundaryCell*>::iterator i = bcs.begin(); i != bcs.end(); ++i)
+    for (std::vector<Core::Geo::Cut::BoundaryCell*>::iterator i = bcs.begin(); i != bcs.end(); ++i)
     {
-      CORE::GEO::CUT::BoundaryCell* bc = *i;
+      Core::Geo::Cut::BoundaryCell* bc = *i;
 
       // Issue with boundary cell outputs for marked background sides
       if (bc->GetFacet()->on_marked_background_side()) continue;
 
       switch (bc->Shape())
       {
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
           bound_f << "VQ(";
           break;
-        case CORE::FE::CellType::tri3:
+        case Core::FE::CellType::tri3:
           bound_f << "VT(";
           break;
         default:
@@ -1204,11 +1204,11 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
           break;
       }
 
-      const std::vector<CORE::GEO::CUT::Point*>& points = bc->Points();
-      for (std::vector<CORE::GEO::CUT::Point*>::const_iterator i = points.begin();
+      const std::vector<Core::Geo::Cut::Point*>& points = bc->Points();
+      for (std::vector<Core::Geo::Cut::Point*>::const_iterator i = points.begin();
            i != points.end(); ++i)
       {
-        CORE::GEO::CUT::Point* p = *i;
+        Core::Geo::Cut::Point* p = *i;
 
         if (i != points.begin()) bound_f << ",";
 
@@ -1218,53 +1218,53 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
 
       bound_f << "){";
 
-      for (std::vector<CORE::GEO::CUT::Point*>::const_iterator i = points.begin();
+      for (std::vector<Core::Geo::Cut::Point*>::const_iterator i = points.begin();
            i != points.end(); ++i)
       {
-        CORE::GEO::CUT::Point* p = *i;
+        Core::Geo::Cut::Point* p = *i;
 
         // the bc corner points will always lie on the respective side
-        const CORE::LINALG::Matrix<2, 1>& eta = s->local_coordinates(p);
+        const Core::LinAlg::Matrix<2, 1>& eta = s->local_coordinates(p);
 
         switch (side->Shape())
         {
-          case CORE::FE::CellType::quad4:
+          case Core::FE::CellType::quad4:
           {
-            const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::quad4>;
-            CORE::LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
-            CORE::LINALG::Matrix<2, numnodes> deriv;
-            CORE::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), CORE::FE::CellType::quad4);
-            CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad4>(
+            const int numnodes = Core::FE::num_nodes<Core::FE::CellType::quad4>;
+            Core::LinAlg::Matrix<3, numnodes> xyze(side_xyze, true);
+            Core::LinAlg::Matrix<2, numnodes> deriv;
+            Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), Core::FE::CellType::quad4);
+            Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::quad4>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
-          case CORE::FE::CellType::tri3:
+          case Core::FE::CellType::tri3:
           {
-            const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::tri3>;
-            CORE::LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
-            CORE::LINALG::Matrix<2, numnodes> deriv;
-            CORE::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), CORE::FE::CellType::tri3);
-            CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::tri3>(
+            const int numnodes = Core::FE::num_nodes<Core::FE::CellType::tri3>;
+            Core::LinAlg::Matrix<3, numnodes> xyze(side_xyze, true);
+            Core::LinAlg::Matrix<2, numnodes> deriv;
+            Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), Core::FE::CellType::tri3);
+            Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::tri3>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
-          case CORE::FE::CellType::quad8:
+          case Core::FE::CellType::quad8:
           {
-            const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::quad8>;
-            CORE::LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
-            CORE::LINALG::Matrix<2, numnodes> deriv;
-            CORE::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), CORE::FE::CellType::quad8);
-            CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad8>(
+            const int numnodes = Core::FE::num_nodes<Core::FE::CellType::quad8>;
+            Core::LinAlg::Matrix<3, numnodes> xyze(side_xyze, true);
+            Core::LinAlg::Matrix<2, numnodes> deriv;
+            Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), Core::FE::CellType::quad8);
+            Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::quad8>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
-          case CORE::FE::CellType::quad9:
+          case Core::FE::CellType::quad9:
           {
-            const int numnodes = CORE::FE::num_nodes<CORE::FE::CellType::quad9>;
-            CORE::LINALG::Matrix<3, numnodes> xyze(side_xyze, true);
-            CORE::LINALG::Matrix<2, numnodes> deriv;
-            CORE::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), CORE::FE::CellType::quad9);
-            CORE::FE::ComputeMetricTensorForBoundaryEle<CORE::FE::CellType::quad9>(
+            const int numnodes = Core::FE::num_nodes<Core::FE::CellType::quad9>;
+            Core::LinAlg::Matrix<3, numnodes> xyze(side_xyze, true);
+            Core::LinAlg::Matrix<2, numnodes> deriv;
+            Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), Core::FE::CellType::quad9);
+            Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::quad9>(
                 xyze, deriv, metrictensor, drs, &normal);
             break;
           }
@@ -1286,7 +1286,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
 }
 
 void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
-    bool print_faces, int step, std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos)
+    bool print_faces, int step, std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos)
 {
   if (!gmsh_discret_out_) return;
 
@@ -1294,13 +1294,13 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
     std::cout << "discretization output " << discret_->Name() << std::endl;
 
   // cast to DiscretizationFaces
-  Teuchos::RCP<DRT::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+  Teuchos::RCP<Discret::DiscretizationFaces> xdiscret =
+      Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(discret_, true);
   if (xdiscret == Teuchos::null)
-    FOUR_C_THROW("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
+    FOUR_C_THROW("Failed to cast Discret::Discretization to Discret::DiscretizationFaces.");
 
   // output for Element and Node IDs
-  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles("DISCRET",
+  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("DISCRET",
       discret_->Writer()->Output()->FileName(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
       discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
@@ -1323,13 +1323,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
   if (!gmsh_eos_out_ || edge_stab == Teuchos::null) return;
 
   // cast to DiscretizationXFEM
-  Teuchos::RCP<DRT::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+  Teuchos::RCP<Discret::DiscretizationFaces> xdiscret =
+      Teuchos::rcp_dynamic_cast<Discret::DiscretizationFaces>(discret_, true);
   if (xdiscret == Teuchos::null)
-    FOUR_C_THROW("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
+    FOUR_C_THROW("Failed to cast Discret::Discretization to Discret::DiscretizationFaces.");
 
   // output for Element and Node IDs
-  const std::string filename = CORE::IO::GMSH::GetNewFileNameAndDeleteOldFiles("EOS",
+  const std::string filename = Core::IO::Gmsh::GetNewFileNameAndDeleteOldFiles("EOS",
       discret_->Writer()->Output()->FileName(), step, gmsh_step_diff_, gmsh_debug_out_screen_,
       discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
@@ -1347,7 +1347,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
                       << "ghost penalty stabilized \" {\n";
       for (int i = 0; i < xdiscret->NumMyRowFaces(); ++i)
       {
-        const CORE::Elements::Element* actele = xdiscret->lRowFace(i);
+        const Core::Elements::Element* actele = xdiscret->lRowFace(i);
 
 
         std::map<int, int>::iterator it = ghost_penalty_map.find(actele->Id());
@@ -1356,7 +1356,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
           int ghost_penalty = it->second;
 
           if (ghost_penalty)
-            CORE::IO::GMSH::elementAtInitialPositionToStream(
+            Core::IO::Gmsh::elementAtInitialPositionToStream(
                 double(ghost_penalty), actele, gmshfilecontent);
         }
         else
@@ -1376,7 +1376,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
 
       for (int i = 0; i < xdiscret->NumMyRowFaces(); ++i)
       {
-        const CORE::Elements::Element* actele = xdiscret->lRowFace(i);
+        const Core::Elements::Element* actele = xdiscret->lRowFace(i);
         std::map<int, int>::iterator it = edge_based_map.find(actele->Id());
 
         if (it != edge_based_map.end())
@@ -1384,7 +1384,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputEOS(
           int edge_stab = it->second;
 
           if (edge_stab)
-            CORE::IO::GMSH::elementAtInitialPositionToStream(
+            Core::IO::Gmsh::elementAtInitialPositionToStream(
                 double(edge_stab), actele, gmshfilecontent);
         }
       }

@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
+STR::TimeInt::BaseDataGlobalState::BaseDataGlobalState()
     : isinit_(false),
       issetup_(false),
       datasdyn_(Teuchos::null),
@@ -83,8 +83,8 @@ STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::BaseDataGlobalState& STR::TIMINT::BaseDataGlobalState::operator=(
-    const STR::TIMINT::BaseDataGlobalState& source)
+STR::TimeInt::BaseDataGlobalState& STR::TimeInt::BaseDataGlobalState::operator=(
+    const STR::TimeInt::BaseDataGlobalState& source)
 {
   this->datasdyn_ = source.datasdyn_;
 
@@ -108,7 +108,7 @@ STR::TIMINT::BaseDataGlobalState& STR::TIMINT::BaseDataGlobalState::operator=(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::Init(const Teuchos::RCP<DRT::Discretization> discret,
+void STR::TimeInt::BaseDataGlobalState::Init(const Teuchos::RCP<Discret::Discretization> discret,
     const Teuchos::ParameterList& sdynparams, const Teuchos::RCP<const BaseDataSDyn> datasdyn)
 {
   // We have to call Setup() after Init()
@@ -133,16 +133,16 @@ void STR::TIMINT::BaseDataGlobalState::Init(const Teuchos::RCP<DRT::Discretizati
   // --------------------------------------
   {
     timen_ = Teuchos::rcp(
-        new TIMESTEPPING::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMEINIT")));
+        new TimeStepping::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMEINIT")));
     dt_ = Teuchos::rcp(
-        new TIMESTEPPING::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
+        new TimeStepping::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
 
     // initialize target time to initial time plus step size
     timenp_ = (*timen_)[0] + (*dt_)[0];
     stepnp_ = stepn_ + 1;
 
     // initialize restart step
-    restartstep_ = GLOBAL::Problem::Instance()->Restart();
+    restartstep_ = Global::Problem::Instance()->Restart();
     if (restartstep_ < 0) FOUR_C_THROW("The restart step is expected to be positive.");
   }
 
@@ -153,7 +153,7 @@ void STR::TIMINT::BaseDataGlobalState::Init(const Teuchos::RCP<DRT::Discretizati
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::Setup()
+void STR::TimeInt::BaseDataGlobalState::Setup()
 {
   // safety check
   check_init();
@@ -167,45 +167,45 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   // vectors
   // --------------------------------------
   // displacements D_{n}
-  dis_ = Teuchos::rcp(new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  dis_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // velocities V_{n}
-  vel_ = Teuchos::rcp(new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  vel_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // accelerations A_{n}
-  acc_ = Teuchos::rcp(new TIMESTEPPING::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  acc_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
   // displacements D_{n+1} at t_{n+1}
-  disnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  disnp_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // velocities V_{n+1} at t_{n+1}
-  velnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  velnp_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
   // accelerations A_{n+1} at t_{n+1}
-  accnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  accnp_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
-  fintn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
-  fintnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fintnp_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
-  fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
-  fextnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fextnp_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
-  freactn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
-  freactnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  freactn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  freactnp_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
-  finertialn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
-  finertialnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  finertialn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  finertialnp_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
-  fviscon_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
-  fvisconp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fviscon_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fvisconp_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
-  fstructold_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fstructold_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
   // --------------------------------------
   // sparse operators
   // --------------------------------------
-  mass_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
-  if (datasdyn_->GetDampingType() != INPAR::STR::damp_none)
+  mass_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*DofRowMapView(), 81, true, true));
+  if (datasdyn_->GetDampingType() != Inpar::STR::damp_none)
   {
-    if (datasdyn_->GetMassLinType() == INPAR::STR::ml_none)
+    if (datasdyn_->GetMassLinType() == Inpar::STR::ml_none)
     {
-      damp_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+      damp_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*DofRowMapView(), 81, true, true));
     }
     else
     {
@@ -216,8 +216,8 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
     }
   }
 
-  if (datasdyn_->GetDynamicType() == INPAR::STR::dyna_statics and
-      datasdyn_->GetMassLinType() != INPAR::STR::ml_none)
+  if (datasdyn_->GetDynamicType() == Inpar::STR::dyna_statics and
+      datasdyn_->GetMassLinType() != Inpar::STR::ml_none)
     FOUR_C_THROW(
         "Do not set parameter MASSLIN in static simulations as this leads to undesired"
         " evaluation of mass matrix on element level!");
@@ -229,7 +229,7 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::SetInitialFields()
+void STR::TimeInt::BaseDataGlobalState::SetInitialFields()
 {
   // set initial velocity field if existing
   const std::string field = "Velocity";
@@ -238,39 +238,39 @@ void STR::TIMINT::BaseDataGlobalState::SetInitialFields()
   localdofs.push_back(1);
   localdofs.push_back(2);
 
-  DRT::UTILS::evaluate_initial_field(
-      GLOBAL::Problem::Instance()->FunctionManager(), *discret_, field, velnp_, localdofs);
+  Discret::UTILS::evaluate_initial_field(
+      Global::Problem::Instance()->FunctionManager(), *discret_, field, velnp_, localdofs);
 
   // set initial porosity field if existing
   const std::string porosityfield = "Porosity";
   std::vector<int> porositylocaldofs;
-  porositylocaldofs.push_back(GLOBAL::Problem::Instance()->NDim());
+  porositylocaldofs.push_back(Global::Problem::Instance()->NDim());
 
-  DRT::UTILS::evaluate_initial_field(GLOBAL::Problem::Instance()->FunctionManager(), *discret_,
+  Discret::UTILS::evaluate_initial_field(Global::Problem::Instance()->FunctionManager(), *discret_,
       porosityfield, (*dis_)(0), porositylocaldofs);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobalVector() const
+Teuchos::RCP<::NOX::Epetra::Vector> STR::TimeInt::BaseDataGlobalState::CreateGlobalVector() const
 {
   return CreateGlobalVector(VecInitType::zero, Teuchos::null);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TIMINT::BaseDataGlobalState::setup_block_information(
-    const STR::MODELEVALUATOR::Generic& me, const INPAR::STR::ModelType& mt)
+int STR::TimeInt::BaseDataGlobalState::setup_block_information(
+    const STR::MODELEVALUATOR::Generic& me, const Inpar::STR::ModelType& mt)
 {
   check_init();
-  GLOBAL::Problem* problem = GLOBAL::Problem::Instance();
+  Global::Problem* problem = Global::Problem::Instance();
   Teuchos::RCP<const Epetra_Map> me_map_ptr = me.get_block_dof_row_map_ptr();
 
   model_maps_[mt] = me_map_ptr;
 
   switch (mt)
   {
-    case INPAR::STR::model_structure:
+    case Inpar::STR::model_structure:
     {
       // always called first, so we can use it to reset things
       gproblem_map_ptr_ = Teuchos::null;
@@ -278,26 +278,26 @@ int STR::TIMINT::BaseDataGlobalState::setup_block_information(
       max_block_num_ = 1;
       break;
     }
-    case INPAR::STR::model_contact:
+    case Inpar::STR::model_contact:
     {
-      enum INPAR::CONTACT::SystemType systype =
-          CORE::UTILS::IntegralValue<INPAR::CONTACT::SystemType>(
+      enum Inpar::CONTACT::SystemType systype =
+          Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
               problem->contact_dynamic_params(), "SYSTEM");
 
-      enum INPAR::CONTACT::SolvingStrategy soltype =
-          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+      enum Inpar::CONTACT::SolvingStrategy soltype =
+          Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
               problem->contact_dynamic_params(), "STRATEGY");
 
       // systems without additional dofs
-      if (soltype == INPAR::CONTACT::solution_nitsche ||
-          soltype == INPAR::CONTACT::solution_penalty ||
-          soltype == INPAR::CONTACT::solution_uzawa ||
-          soltype == INPAR::CONTACT::solution_multiscale)
+      if (soltype == Inpar::CONTACT::solution_nitsche ||
+          soltype == Inpar::CONTACT::solution_penalty ||
+          soltype == Inpar::CONTACT::solution_uzawa ||
+          soltype == Inpar::CONTACT::solution_multiscale)
       {
         model_block_id_[mt] = 0;
       }
       // --- saddle-point system
-      else if (systype == INPAR::CONTACT::system_saddlepoint)
+      else if (systype == Inpar::CONTACT::system_saddlepoint)
       {
         model_block_id_[mt] = max_block_num_;
         ++max_block_num_;
@@ -309,33 +309,33 @@ int STR::TIMINT::BaseDataGlobalState::setup_block_information(
       }
       break;
     }
-    case INPAR::STR::model_meshtying:
+    case Inpar::STR::model_meshtying:
     {
       const STR::MODELEVALUATOR::Meshtying& mt_me =
           dynamic_cast<const STR::MODELEVALUATOR::Meshtying&>(me);
 
-      enum INPAR::CONTACT::SystemType systype = mt_me.Strategy().SystemType();
+      enum Inpar::CONTACT::SystemType systype = mt_me.Strategy().SystemType();
 
-      enum INPAR::CONTACT::SolvingStrategy soltype =
-          CORE::UTILS::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+      enum Inpar::CONTACT::SolvingStrategy soltype =
+          Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
               mt_me.Strategy().Params(), "STRATEGY");
 
       // systems without additional dofs
-      if (soltype == INPAR::CONTACT::solution_nitsche ||
-          soltype == INPAR::CONTACT::solution_penalty ||
-          soltype == INPAR::CONTACT::solution_uzawa ||
-          soltype == INPAR::CONTACT::solution_multiscale)
+      if (soltype == Inpar::CONTACT::solution_nitsche ||
+          soltype == Inpar::CONTACT::solution_penalty ||
+          soltype == Inpar::CONTACT::solution_uzawa ||
+          soltype == Inpar::CONTACT::solution_multiscale)
       {
         model_block_id_[mt] = 0;
       }
       // --- saddle-point system
-      else if (systype == INPAR::CONTACT::system_saddlepoint)
+      else if (systype == Inpar::CONTACT::system_saddlepoint)
       {
         model_block_id_[mt] = max_block_num_;
         ++max_block_num_;
       }
       // --- condensed system
-      else if (systype == INPAR::CONTACT::system_condensed)
+      else if (systype == Inpar::CONTACT::system_condensed)
       {
         model_block_id_[mt] = 0;
       }
@@ -343,25 +343,25 @@ int STR::TIMINT::BaseDataGlobalState::setup_block_information(
         FOUR_C_THROW("I don't know what to do");
       break;
     }
-    case INPAR::STR::model_cardiovascular0d:
+    case Inpar::STR::model_cardiovascular0d:
     {
       // --- 2x2 block system
       model_block_id_[mt] = max_block_num_;
       ++max_block_num_;
       break;
     }
-    case INPAR::STR::model_lag_pen_constraint:
+    case Inpar::STR::model_lag_pen_constraint:
     {
       // ----------------------------------------------------------------------
       // check type of constraint conditions (Lagrange multiplier vs. penalty)
       // ----------------------------------------------------------------------
       bool have_lag_constraint = false;
-      std::vector<CORE::Conditions::Condition*> lagcond_volconstr3d(0);
-      std::vector<CORE::Conditions::Condition*> lagcond_areaconstr3d(0);
-      std::vector<CORE::Conditions::Condition*> lagcond_areaconstr2d(0);
-      std::vector<CORE::Conditions::Condition*> lagcond_mpconline2d(0);
-      std::vector<CORE::Conditions::Condition*> lagcond_mpconplane3d(0);
-      std::vector<CORE::Conditions::Condition*> lagcond_mpcnormcomp3d(0);
+      std::vector<Core::Conditions::Condition*> lagcond_volconstr3d(0);
+      std::vector<Core::Conditions::Condition*> lagcond_areaconstr3d(0);
+      std::vector<Core::Conditions::Condition*> lagcond_areaconstr2d(0);
+      std::vector<Core::Conditions::Condition*> lagcond_mpconline2d(0);
+      std::vector<Core::Conditions::Condition*> lagcond_mpconplane3d(0);
+      std::vector<Core::Conditions::Condition*> lagcond_mpcnormcomp3d(0);
       discret_->GetCondition("VolumeConstraint_3D", lagcond_volconstr3d);
       discret_->GetCondition("AreaConstraint_3D", lagcond_areaconstr3d);
       discret_->GetCondition("AreaConstraint_2D", lagcond_areaconstr2d);
@@ -386,23 +386,23 @@ int STR::TIMINT::BaseDataGlobalState::setup_block_information(
       }
       break;
     }
-    case INPAR::STR::model_springdashpot:
-    case INPAR::STR::model_beam_interaction_old:
-    case INPAR::STR::model_browniandyn:
-    case INPAR::STR::model_beaminteraction:
+    case Inpar::STR::model_springdashpot:
+    case Inpar::STR::model_beam_interaction_old:
+    case Inpar::STR::model_browniandyn:
+    case Inpar::STR::model_beaminteraction:
     {
       // structural block
       model_block_id_[mt] = 0;
       break;
     }
-    case INPAR::STR::model_basic_coupling:
-    case INPAR::STR::model_monolithic_coupling:
-    case INPAR::STR::model_partitioned_coupling:
+    case Inpar::STR::model_basic_coupling:
+    case Inpar::STR::model_monolithic_coupling:
+    case Inpar::STR::model_partitioned_coupling:
     {
       // do nothing
       break;
     }
-    case INPAR::STR::model_constraints:
+    case Inpar::STR::model_constraints:
     {
       // do nothing
       break;
@@ -416,24 +416,24 @@ int STR::TIMINT::BaseDataGlobalState::setup_block_information(
     }
   }
   // create a global problem map
-  gproblem_map_ptr_ = CORE::LINALG::MergeMap(gproblem_map_ptr_, me_map_ptr);
+  gproblem_map_ptr_ = Core::LinAlg::MergeMap(gproblem_map_ptr_, me_map_ptr);
 
   return gproblem_map_ptr_->MaxAllGID();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::setup_multi_map_extractor()
+void STR::TimeInt::BaseDataGlobalState::setup_multi_map_extractor()
 {
   check_init();
   /* copy the std::map into a std::vector and keep the numbering of the model-id
    * map */
   std::vector<Teuchos::RCP<const Epetra_Map>> maps_vec(MaxBlockNumber(), Teuchos::null);
   // Make sure, that the block ids and the vector entry ids coincide!
-  std::map<INPAR::STR::ModelType, int>::const_iterator ci;
+  std::map<Inpar::STR::ModelType, int>::const_iterator ci;
   for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
   {
-    enum INPAR::STR::ModelType mt = ci->first;
+    enum Inpar::STR::ModelType mt = ci->first;
     int bid = ci->second;
     maps_vec[bid] = model_maps_.at(mt);
   }
@@ -442,25 +442,25 @@ void STR::TIMINT::BaseDataGlobalState::setup_multi_map_extractor()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::setup_element_technology_map_extractors()
+void STR::TimeInt::BaseDataGlobalState::setup_element_technology_map_extractors()
 {
   check_init();
 
   // loop all active element technologies
-  const std::set<enum INPAR::STR::EleTech>& ele_techs = datasdyn_->get_element_technologies();
-  for (const enum INPAR::STR::EleTech et : ele_techs)
+  const std::set<enum Inpar::STR::EleTech>& ele_techs = datasdyn_->get_element_technologies();
+  for (const enum Inpar::STR::EleTech et : ele_techs)
   {
     // mapextractor for element technology
-    CORE::LINALG::MultiMapExtractor mapext;
+    Core::LinAlg::MultiMapExtractor mapext;
 
     switch (et)
     {
-      case (INPAR::STR::EleTech::rotvec):
+      case (Inpar::STR::EleTech::rotvec):
       {
         setup_rot_vec_map_extractor(mapext);
         break;
       }
-      case (INPAR::STR::EleTech::pressure):
+      case (Inpar::STR::EleTech::pressure):
       {
         SetupPressExtractor(mapext);
         break;
@@ -475,7 +475,7 @@ void STR::TIMINT::BaseDataGlobalState::setup_element_technology_map_extractors()
 
     // insert into map
     const auto check = mapextractors_.insert(
-        std::pair<INPAR::STR::EleTech, CORE::LINALG::MultiMapExtractor>(et, mapext));
+        std::pair<Inpar::STR::EleTech, Core::LinAlg::MultiMapExtractor>(et, mapext));
 
     if (not check.second) FOUR_C_THROW("Insert failed!");
   }
@@ -483,13 +483,13 @@ void STR::TIMINT::BaseDataGlobalState::setup_element_technology_map_extractors()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const CORE::LINALG::MultiMapExtractor&
-STR::TIMINT::BaseDataGlobalState::get_element_technology_map_extractor(
-    const enum INPAR::STR::EleTech etech) const
+const Core::LinAlg::MultiMapExtractor&
+STR::TimeInt::BaseDataGlobalState::get_element_technology_map_extractor(
+    const enum Inpar::STR::EleTech etech) const
 {
   if (mapextractors_.find(etech) == mapextractors_.end())
     FOUR_C_THROW("Could not find element technology \"%s\" in map extractors.",
-        INPAR::STR::EleTechString(etech).c_str());
+        Inpar::STR::EleTechString(etech).c_str());
 
   return mapextractors_.at(etech);
 }
@@ -497,8 +497,8 @@ STR::TIMINT::BaseDataGlobalState::get_element_technology_map_extractor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::setup_rot_vec_map_extractor(
-    CORE::LINALG::MultiMapExtractor& multimapext)
+void STR::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
+    Core::LinAlg::MultiMapExtractor& multimapext)
 {
   check_init();
 
@@ -513,10 +513,10 @@ void STR::TIMINT::BaseDataGlobalState::setup_rot_vec_map_extractor(
 
   for (int i = 0; i < discret_->NumMyRowNodes(); ++i)
   {
-    CORE::Nodes::Node* nodeptr = discret_->lRowNode(i);
+    Core::Nodes::Node* nodeptr = discret_->lRowNode(i);
 
-    const DRT::ELEMENTS::Beam3Base* beameleptr =
-        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(nodeptr->Elements()[0]);
+    const Discret::ELEMENTS::Beam3Base* beameleptr =
+        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(nodeptr->Elements()[0]);
 
     std::vector<int> nodaladditdofs;
     std::vector<int> nodalrotvecdofs;
@@ -528,7 +528,7 @@ void STR::TIMINT::BaseDataGlobalState::setup_rot_vec_map_extractor(
     }
     else
     {
-      Teuchos::RCP<DRT::Discretization> discret = discret_;
+      Teuchos::RCP<Discret::Discretization> discret = discret_;
       nodaladditdofs = beameleptr->GetAdditiveDofGIDs(*discret, *nodeptr);
       nodalrotvecdofs = beameleptr->GetRotVecDofGIDs(*discret, *nodeptr);
 
@@ -572,18 +572,18 @@ void STR::TIMINT::BaseDataGlobalState::setup_rot_vec_map_extractor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::SetupPressExtractor(
-    CORE::LINALG::MultiMapExtractor& multimapext)
+void STR::TimeInt::BaseDataGlobalState::SetupPressExtractor(
+    Core::LinAlg::MultiMapExtractor& multimapext)
 {
   check_init();
 
   // identify pressure DOFs
-  CORE::LINALG::CreateMapExtractorFromDiscretization(*discret_, 3, multimapext);
+  Core::LinAlg::CreateMapExtractorFromDiscretization(*discret_, 3, multimapext);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const CORE::LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::BlockExtractor() const
+const Core::LinAlg::MultiMapExtractor& STR::TimeInt::BaseDataGlobalState::BlockExtractor() const
 {
   // sanity check
   blockextractor_.check_for_valid_map_extractor();
@@ -592,7 +592,7 @@ const CORE::LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::BlockEx
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobalVector(
+Teuchos::RCP<::NOX::Epetra::Vector> STR::TimeInt::BaseDataGlobalState::CreateGlobalVector(
     const enum VecInitType& vecinittype,
     const Teuchos::RCP<const STR::ModelEvaluator>& modeleval_ptr) const
 {
@@ -607,7 +607,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlob
     {
       FOUR_C_ASSERT(!modeleval_ptr.is_null(), "We need access to the STR::ModelEvaluator object!");
 
-      std::map<INPAR::STR::ModelType, int>::const_iterator ci;
+      std::map<Inpar::STR::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
       {
         // get the partial solution vector of the last time step
@@ -625,7 +625,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlob
     {
       FOUR_C_ASSERT(!modeleval_ptr.is_null(), "We need access to the STR::ModelEvaluator object!");
 
-      std::map<INPAR::STR::ModelType, int>::const_iterator ci;
+      std::map<Inpar::STR::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
       {
         // get the partial solution vector of the current state
@@ -652,17 +652,17 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlob
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::LINALG::SparseOperator*
-STR::TIMINT::BaseDataGlobalState::create_structural_stiffness_matrix_block()
+Core::LinAlg::SparseOperator*
+STR::TimeInt::BaseDataGlobalState::create_structural_stiffness_matrix_block()
 {
-  stiff_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+  stiff_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*DofRowMapView(), 81, true, true));
 
   return stiff_.get();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseOperator>& STR::TIMINT::BaseDataGlobalState::CreateJacobian()
+Teuchos::RCP<Core::LinAlg::SparseOperator>& STR::TimeInt::BaseDataGlobalState::CreateJacobian()
 {
   check_init();
   jac_ = Teuchos::null;
@@ -670,13 +670,13 @@ Teuchos::RCP<CORE::LINALG::SparseOperator>& STR::TIMINT::BaseDataGlobalState::Cr
   if (max_block_num_ > 1)
   {
     jac_ =
-        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+        Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
             BlockExtractor(), BlockExtractor(), 81, true, true));
   }
   else
   {
     // pure structural case
-    jac_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+    jac_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*DofRowMapView(), 81, true, true));
   }
 
   return jac_;
@@ -684,22 +684,22 @@ Teuchos::RCP<CORE::LINALG::SparseOperator>& STR::TIMINT::BaseDataGlobalState::Cr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::CreateAuxJacobian()
+Teuchos::RCP<Core::LinAlg::SparseOperator> STR::TimeInt::BaseDataGlobalState::CreateAuxJacobian()
     const
 {
   check_init();
-  Teuchos::RCP<CORE::LINALG::SparseOperator> jac = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::SparseOperator> jac = Teuchos::null;
 
   if (max_block_num_ > 1)
   {
     jac =
-        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+        Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
             BlockExtractor(), BlockExtractor(), 81, true, true));
   }
   else
   {
     // pure structural case
-    jac = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+    jac = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*DofRowMapView(), 81, true, true));
   }
 
   return jac;
@@ -707,7 +707,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::Cre
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::dof_row_map() const
+Teuchos::RCP<const Epetra_Map> STR::TimeInt::BaseDataGlobalState::dof_row_map() const
 {
   check_init();
   const Epetra_Map* dofrowmap_ptr = discret_->dof_row_map();
@@ -718,7 +718,7 @@ Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::dof_row_map() c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::dof_row_map(unsigned nds) const
+Teuchos::RCP<const Epetra_Map> STR::TimeInt::BaseDataGlobalState::dof_row_map(unsigned nds) const
 {
   check_init();
   const Epetra_Map* dofrowmap_ptr = discret_->dof_row_map(nds);
@@ -729,7 +729,7 @@ Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::dof_row_map(uns
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map* STR::TIMINT::BaseDataGlobalState::DofRowMapView() const
+const Epetra_Map* STR::TimeInt::BaseDataGlobalState::DofRowMapView() const
 {
   check_init();
   return discret_->dof_row_map();
@@ -737,32 +737,32 @@ const Epetra_Map* STR::TIMINT::BaseDataGlobalState::DofRowMapView() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map* STR::TIMINT::BaseDataGlobalState::additive_dof_row_map_view() const
+const Epetra_Map* STR::TimeInt::BaseDataGlobalState::additive_dof_row_map_view() const
 {
   check_init();
-  return get_element_technology_map_extractor(INPAR::STR::EleTech::rotvec).Map(0).get();
+  return get_element_technology_map_extractor(Inpar::STR::EleTech::rotvec).Map(0).get();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map* STR::TIMINT::BaseDataGlobalState::RotVecDofRowMapView() const
+const Epetra_Map* STR::TimeInt::BaseDataGlobalState::RotVecDofRowMapView() const
 {
   check_init();
-  return get_element_technology_map_extractor(INPAR::STR::EleTech::rotvec).Map(1).get();
+  return get_element_technology_map_extractor(Inpar::STR::EleTech::rotvec).Map(1).get();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractDisplEntries(
+Teuchos::RCP<Epetra_Vector> STR::TimeInt::BaseDataGlobalState::ExtractDisplEntries(
     const Epetra_Vector& source) const
 {
-  return ExtractModelEntries(INPAR::STR::model_structure, source);
+  return ExtractModelEntries(Inpar::STR::model_structure, source);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractModelEntries(
-    const INPAR::STR::ModelType& mt, const Epetra_Vector& source) const
+Teuchos::RCP<Epetra_Vector> STR::TimeInt::BaseDataGlobalState::ExtractModelEntries(
+    const Inpar::STR::ModelType& mt, const Epetra_Vector& source) const
 {
   Teuchos::RCP<Epetra_Vector> model_ptr = Teuchos::null;
   // extract from the full state vector
@@ -779,7 +779,7 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractModelEntrie
   else
   {
     model_ptr = Teuchos::rcp(new Epetra_Vector(*model_maps_.at(mt)));
-    CORE::LINALG::Export(source, *model_ptr);
+    Core::LinAlg::Export(source, *model_ptr);
   }
 
 
@@ -788,17 +788,17 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractModelEntrie
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::remove_element_technologies(
+void STR::TimeInt::BaseDataGlobalState::remove_element_technologies(
     Teuchos::RCP<Epetra_Vector>& rhs_ptr) const
 {
   // loop all active element technologies
-  const std::set<enum INPAR::STR::EleTech> ele_techs = datasdyn_->get_element_technologies();
+  const std::set<enum Inpar::STR::EleTech> ele_techs = datasdyn_->get_element_technologies();
 
-  for (const INPAR::STR::EleTech et : ele_techs)
+  for (const Inpar::STR::EleTech et : ele_techs)
   {
     switch (et)
     {
-      case (INPAR::STR::EleTech::pressure):
+      case (Inpar::STR::EleTech::pressure):
       {
         rhs_ptr = get_element_technology_map_extractor(et).ExtractVector(rhs_ptr, 0);
         break;
@@ -812,15 +812,15 @@ void STR::TIMINT::BaseDataGlobalState::remove_element_technologies(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::extract_element_technologies(
-    const NOX::NLN::StatusTest::QuantityType checkquantity,
+void STR::TimeInt::BaseDataGlobalState::extract_element_technologies(
+    const NOX::Nln::StatusTest::QuantityType checkquantity,
     Teuchos::RCP<Epetra_Vector>& rhs_ptr) const
 {
   // convert the given quantity type to an element technology
-  enum INPAR::STR::EleTech eletech = STR::NLN::ConvertQuantityType2EleTech(checkquantity);
+  enum Inpar::STR::EleTech eletech = STR::Nln::ConvertQuantityType2EleTech(checkquantity);
   switch (eletech)
   {
-    case INPAR::STR::EleTech::pressure:
+    case Inpar::STR::EleTech::pressure:
     {
       rhs_ptr = get_element_technology_map_extractor(eletech).ExtractVector(rhs_ptr, 1);
       break;
@@ -835,20 +835,20 @@ void STR::TIMINT::BaseDataGlobalState::extract_element_technologies(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::apply_element_technology_to_acceleration_system(
-    CORE::LINALG::SparseOperator& mass, Epetra_Vector& rhs) const
+void STR::TimeInt::BaseDataGlobalState::apply_element_technology_to_acceleration_system(
+    Core::LinAlg::SparseOperator& mass, Epetra_Vector& rhs) const
 {
   // loop all active element technologies
-  const std::set<enum INPAR::STR::EleTech>& ele_techs = datasdyn_->get_element_technologies();
+  const std::set<enum Inpar::STR::EleTech>& ele_techs = datasdyn_->get_element_technologies();
 
-  for (const enum INPAR::STR::EleTech et : ele_techs)
+  for (const enum Inpar::STR::EleTech et : ele_techs)
   {
     switch (et)
     {
-      case INPAR::STR::EleTech::pressure:
+      case Inpar::STR::EleTech::pressure:
       {
         // get map extractor
-        const CORE::LINALG::MultiMapExtractor& mapext = get_element_technology_map_extractor(et);
+        const Core::LinAlg::MultiMapExtractor& mapext = get_element_technology_map_extractor(et);
 
         // set 1 on pressure DOFs in mass matrix
         mass.ApplyDirichlet(*mapext.Map(1));
@@ -868,40 +868,40 @@ void STR::TIMINT::BaseDataGlobalState::apply_element_technology_to_acceleration_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::extract_additive_entries(
+Teuchos::RCP<Epetra_Vector> STR::TimeInt::BaseDataGlobalState::extract_additive_entries(
     const Epetra_Vector& source) const
 {
   Teuchos::RCP<Epetra_Vector> addit_ptr =
-      get_element_technology_map_extractor(INPAR::STR::EleTech::rotvec).ExtractVector(source, 0);
+      get_element_technology_map_extractor(Inpar::STR::EleTech::rotvec).ExtractVector(source, 0);
 
   return addit_ptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::extract_rot_vec_entries(
+Teuchos::RCP<Epetra_Vector> STR::TimeInt::BaseDataGlobalState::extract_rot_vec_entries(
     const Epetra_Vector& source) const
 {
   Teuchos::RCP<Epetra_Vector> addit_ptr =
-      get_element_technology_map_extractor(INPAR::STR::EleTech::rotvec).ExtractVector(source, 1);
+      get_element_technology_map_extractor(Inpar::STR::EleTech::rotvec).ExtractVector(source, 1);
 
   return addit_ptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOperator& jac,
-    const CORE::LINALG::SparseMatrix& matrix, const INPAR::STR::ModelType& mt,
-    const MatBlockType& bt, const CORE::LINALG::DataAccess& access) const
+void STR::TimeInt::BaseDataGlobalState::AssignModelBlock(Core::LinAlg::SparseOperator& jac,
+    const Core::LinAlg::SparseMatrix& matrix, const Inpar::STR::ModelType& mt,
+    const MatBlockType& bt, const Core::LinAlg::DataAccess& access) const
 {
-  CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
-      dynamic_cast<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(
+  Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>* blockmat_ptr =
+      dynamic_cast<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>*>(
           &jac);
   if (blockmat_ptr != nullptr)
   {
     if (MaxBlockNumber() < 2)
       FOUR_C_THROW(
-          "The jacobian is a CORE::LINALG::BlockSparseMatrix but has less than"
+          "The jacobian is a Core::LinAlg::BlockSparseMatrix but has less than"
           " two blocks! Seems wrong.");
 
     const int& b_id = model_block_id_.at(mt);
@@ -942,7 +942,7 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOper
         "It seems as you are trying to access a matrix block which has "
         "not been created.");
 
-  CORE::LINALG::SparseMatrix* stiff_ptr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
+  Core::LinAlg::SparseMatrix* stiff_ptr = dynamic_cast<Core::LinAlg::SparseMatrix*>(&jac);
   if (stiff_ptr != nullptr)
   {
     stiff_ptr->Assign(access, matrix);
@@ -950,25 +950,25 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOper
   }
 
   FOUR_C_THROW(
-      "The jacobian has the wrong type! (no CORE::LINALG::SparseMatrix "
-      "and no CORE::LINALG::BlockSparseMatrix)");
+      "The jacobian has the wrong type! (no Core::LinAlg::SparseMatrix "
+      "and no Core::LinAlg::BlockSparseMatrix)");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractModelBlock(
-    CORE::LINALG::SparseOperator& jac, const INPAR::STR::ModelType& mt,
+Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::BaseDataGlobalState::ExtractModelBlock(
+    Core::LinAlg::SparseOperator& jac, const Inpar::STR::ModelType& mt,
     const MatBlockType& bt) const
 {
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> block = Teuchos::null;
-  CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
-      dynamic_cast<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> block = Teuchos::null;
+  Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>* blockmat_ptr =
+      dynamic_cast<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>*>(
           &jac);
   if (blockmat_ptr != nullptr)
   {
     if (MaxBlockNumber() < 2)
       FOUR_C_THROW(
-          "The jacobian is a CORE::LINALG::BlockSparseMatrix but has less than"
+          "The jacobian is a Core::LinAlg::BlockSparseMatrix but has less than"
           " two blocks! Seems wrong.");
     const int& b_id = model_block_id_.at(mt);
     switch (bt)
@@ -1008,7 +1008,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
         "It seems as you are trying to access a matrix block which has "
         "not been created.");
 
-  CORE::LINALG::SparseMatrix* stiff_ptr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
+  Core::LinAlg::SparseMatrix* stiff_ptr = dynamic_cast<Core::LinAlg::SparseMatrix*>(&jac);
   if (stiff_ptr != nullptr)
   {
     block = Teuchos::rcpFromRef(*stiff_ptr);
@@ -1016,41 +1016,41 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
   }
 
   FOUR_C_THROW(
-      "The jacobian has the wrong type! (no CORE::LINALG::SparseMatrix "
-      "and no CORE::LINALG::BlockSparseMatrix)");
+      "The jacobian has the wrong type! (no Core::LinAlg::SparseMatrix "
+      "and no Core::LinAlg::BlockSparseMatrix)");
   exit(EXIT_FAILURE);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>>
-STR::TIMINT::BaseDataGlobalState::extract_displ_row_of_blocks(
-    CORE::LINALG::SparseOperator& jac) const
+Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>>
+STR::TimeInt::BaseDataGlobalState::extract_displ_row_of_blocks(
+    Core::LinAlg::SparseOperator& jac) const
 {
-  return ExtractRowOfBlocks(jac, INPAR::STR::model_structure);
+  return ExtractRowOfBlocks(jac, Inpar::STR::model_structure);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>>
-STR::TIMINT::BaseDataGlobalState::ExtractRowOfBlocks(
-    CORE::LINALG::SparseOperator& jac, const INPAR::STR::ModelType& mt) const
+Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>>
+STR::TimeInt::BaseDataGlobalState::ExtractRowOfBlocks(
+    Core::LinAlg::SparseOperator& jac, const Inpar::STR::ModelType& mt) const
 {
-  Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>> rowofblocks = Teuchos::null;
+  Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> rowofblocks = Teuchos::null;
 
-  CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
-      dynamic_cast<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(
+  Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>* blockmat_ptr =
+      dynamic_cast<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>*>(
           &jac);
   if (blockmat_ptr != nullptr)
   {
     if (MaxBlockNumber() < 2)
       FOUR_C_THROW(
-          "The jacobian is a CORE::LINALG::BlockSparseMatrix but has less than"
+          "The jacobian is a Core::LinAlg::BlockSparseMatrix but has less than"
           " two blocks! Seems wrong.");
     const int& b_id = model_block_id_.at(mt);
 
     const int num_cols = blockmat_ptr->Cols();
-    rowofblocks = Teuchos::rcp(new std::vector<CORE::LINALG::SparseMatrix*>(num_cols, nullptr));
+    rowofblocks = Teuchos::rcp(new std::vector<Core::LinAlg::SparseMatrix*>(num_cols, nullptr));
 
     for (int i = 0; i < num_cols; ++i) (*rowofblocks)[i] = &(blockmat_ptr->Matrix(b_id, i));
 
@@ -1063,40 +1063,32 @@ STR::TIMINT::BaseDataGlobalState::ExtractRowOfBlocks(
         "It seems as you are trying to access a matrix block row which has "
         "not been created.");
 
-  CORE::LINALG::SparseMatrix* stiff_ptr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
+  Core::LinAlg::SparseMatrix* stiff_ptr = dynamic_cast<Core::LinAlg::SparseMatrix*>(&jac);
   if (stiff_ptr != nullptr)
   {
-    rowofblocks = Teuchos::rcp(new std::vector<CORE::LINALG::SparseMatrix*>(1, nullptr));
+    rowofblocks = Teuchos::rcp(new std::vector<Core::LinAlg::SparseMatrix*>(1, nullptr));
     (*rowofblocks)[0] = stiff_ptr;
     return rowofblocks;
   }
 
   FOUR_C_THROW(
-      "The jacobian has the wrong type! (no CORE::LINALG::SparseMatrix "
-      "and no CORE::LINALG::BlockSparseMatrix)");
+      "The jacobian has the wrong type! (no Core::LinAlg::SparseMatrix "
+      "and no Core::LinAlg::BlockSparseMatrix)");
   exit(EXIT_FAILURE);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractDisplBlock(
-    CORE::LINALG::SparseOperator& jac) const
+Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::BaseDataGlobalState::ExtractDisplBlock(
+    Core::LinAlg::SparseOperator& jac) const
 {
-  return ExtractModelBlock(jac, INPAR::STR::model_structure, MatBlockType::displ_displ);
+  return ExtractModelBlock(jac, Inpar::STR::model_structure, MatBlockType::displ_displ);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::SparseMatrix>
-STR::TIMINT::BaseDataGlobalState::get_jacobian_displ_block() const
-{
-  FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
-  return ExtractDisplBlock(*jac_);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::JacobianDisplBlock()
+Teuchos::RCP<const Core::LinAlg::SparseMatrix>
+STR::TimeInt::BaseDataGlobalState::get_jacobian_displ_block() const
 {
   FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
   return ExtractDisplBlock(*jac_);
@@ -1104,8 +1096,16 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Jacob
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::GetJacobianBlock(
-    const INPAR::STR::ModelType mt, const MatBlockType bt) const
+Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::BaseDataGlobalState::JacobianDisplBlock()
+{
+  FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
+  return ExtractDisplBlock(*jac_);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<const Core::LinAlg::SparseMatrix> STR::TimeInt::BaseDataGlobalState::GetJacobianBlock(
+    const Inpar::STR::ModelType mt, const MatBlockType bt) const
 {
   FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
 
@@ -1114,7 +1114,7 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TIMINT::BaseDataGlobalState::get_last_lin_iteration_number(const unsigned step) const
+int STR::TimeInt::BaseDataGlobalState::get_last_lin_iteration_number(const unsigned step) const
 {
   check_init_setup();
   if (step < 1) FOUR_C_THROW("The given step number must be larger than 1. (step=%d)", step);
@@ -1127,14 +1127,14 @@ int STR::TIMINT::BaseDataGlobalState::get_last_lin_iteration_number(const unsign
     switch (linsolver.first)
     {
       // has only one field solver per default
-      case INPAR::STR::model_structure:
-      case INPAR::STR::model_springdashpot:
-      case INPAR::STR::model_browniandyn:
-      case INPAR::STR::model_beaminteraction:
-      case INPAR::STR::model_basic_coupling:
-      case INPAR::STR::model_monolithic_coupling:
-      case INPAR::STR::model_partitioned_coupling:
-      case INPAR::STR::model_beam_interaction_old:
+      case Inpar::STR::model_structure:
+      case Inpar::STR::model_springdashpot:
+      case Inpar::STR::model_browniandyn:
+      case Inpar::STR::model_beaminteraction:
+      case Inpar::STR::model_basic_coupling:
+      case Inpar::STR::model_monolithic_coupling:
+      case Inpar::STR::model_partitioned_coupling:
+      case Inpar::STR::model_beam_interaction_old:
       {
         iter = linsolvers[linsolver.first]->getNumIters();
         break;
@@ -1142,7 +1142,7 @@ int STR::TIMINT::BaseDataGlobalState::get_last_lin_iteration_number(const unsign
       default:
         FOUR_C_THROW(
             "The given model type '%s' is not supported for linear iteration output right now.",
-            INPAR::STR::model_structure);
+            Inpar::STR::model_structure);
     }
   }
 
@@ -1151,7 +1151,7 @@ int STR::TIMINT::BaseDataGlobalState::get_last_lin_iteration_number(const unsign
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TIMINT::BaseDataGlobalState::get_nln_iteration_number(const unsigned step) const
+int STR::TimeInt::BaseDataGlobalState::get_nln_iteration_number(const unsigned step) const
 {
   check_init_setup();
   if (step < 1) FOUR_C_THROW("The given step number must be larger than 1. (step=%d)", step);
@@ -1169,7 +1169,7 @@ int STR::TIMINT::BaseDataGlobalState::get_nln_iteration_number(const unsigned st
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::set_nln_iteration_number(const int nln_iter)
+void STR::TimeInt::BaseDataGlobalState::set_nln_iteration_number(const int nln_iter)
 {
   check_init_setup();
 
@@ -1194,8 +1194,8 @@ void STR::TIMINT::BaseDataGlobalState::set_nln_iteration_number(const int nln_it
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::RotVecUpdater(
-    const Teuchos::RCP<const STR::TIMINT::BaseDataGlobalState>& gstate_ptr)
+NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::RotVecUpdater(
+    const Teuchos::RCP<const STR::TimeInt::BaseDataGlobalState>& gstate_ptr)
     : gstate_ptr_(gstate_ptr)
 {
   // empty
@@ -1203,15 +1203,15 @@ NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::RotVecUpdater(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
-    const NOX::NLN::Group& input_grp, const Epetra_Vector& dir, const double& step,
-    const NOX::NLN::Group& curr_grp)
+void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::runPreComputeX(
+    const NOX::Nln::Group& input_grp, const Epetra_Vector& dir, const double& step,
+    const NOX::Nln::Group& curr_grp)
 {
   const Epetra_Vector& xold =
       dynamic_cast<const ::NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
 
   // cast the const away so that the new x vector can be set after the update
-  NOX::NLN::Group& curr_grp_mutable = const_cast<NOX::NLN::Group&>(curr_grp);
+  NOX::Nln::Group& curr_grp_mutable = const_cast<NOX::Nln::Group&>(curr_grp);
 
   Teuchos::RCP<Epetra_Vector> xnew = Teuchos::rcp(new Epetra_Vector(xold.Map(), true));
 
@@ -1220,9 +1220,9 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
   Epetra_Vector x_rotvec = *gstate_ptr_->extract_rot_vec_entries(xold);
   Epetra_Vector dir_rotvec = *gstate_ptr_->extract_rot_vec_entries(dir);
 
-  CORE::LINALG::Matrix<4, 1> Qold;
-  CORE::LINALG::Matrix<4, 1> deltaQ;
-  CORE::LINALG::Matrix<4, 1> Qnew;
+  Core::LinAlg::Matrix<4, 1> Qold;
+  Core::LinAlg::Matrix<4, 1> deltaQ;
+  Core::LinAlg::Matrix<4, 1> Qnew;
 
   /* since parallel distribution is node-wise, the three entries belonging to
    * a rotation vector should be stored on the same processor: safety-check */
@@ -1234,27 +1234,27 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
   // rotation vectors always consist of three consecutive DoFs
   for (int i = 0; i < x_rotvec.Map().NumMyElements(); i = i + 3)
   {
-    // create a CORE::LINALG::Matrix from reference to three x vector entries
-    CORE::LINALG::Matrix<3, 1> theta(&x_rotvec[i], true);
-    CORE::LARGEROTATIONS::angletoquaternion(theta, Qold);
+    // create a Core::LinAlg::Matrix from reference to three x vector entries
+    Core::LinAlg::Matrix<3, 1> theta(&x_rotvec[i], true);
+    Core::LargeRotations::angletoquaternion(theta, Qold);
 
     // same for relative rotation angle deltatheta
-    CORE::LINALG::Matrix<3, 1> deltatheta(&dir_rotvec[i], true);
+    Core::LinAlg::Matrix<3, 1> deltatheta(&dir_rotvec[i], true);
     deltatheta.Scale(step);
 
-    CORE::LARGEROTATIONS::angletoquaternion(deltatheta, deltaQ);
-    CORE::LARGEROTATIONS::quaternionproduct(Qold, deltaQ, Qnew);
-    CORE::LARGEROTATIONS::quaterniontoangle(Qnew, theta);
+    Core::LargeRotations::angletoquaternion(deltatheta, deltaQ);
+    Core::LargeRotations::quaternionproduct(Qold, deltaQ, Qnew);
+    Core::LargeRotations::quaterniontoangle(Qnew, theta);
   }
 
   // first update entire x vector in an additive manner
   xnew->Update(1.0, xold, step, dir, 0.0);
 
   // now replace the rotvec entries by the correct value computed before
-  CORE::LINALG::AssembleMyVector(0.0, *xnew, 1.0, x_rotvec);
+  Core::LinAlg::AssembleMyVector(0.0, *xnew, 1.0, x_rotvec);
   curr_grp_mutable.setX(xnew);
 
-  /* tell the NOX::NLN::Group that the x vector has already been updated in
+  /* tell the NOX::Nln::Group that the x vector has already been updated in
    * this preComputeX operator call */
   curr_grp_mutable.setSkipUpdateX(true);
 }

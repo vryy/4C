@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::PAR::FourierIso::FourierIso(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::FourierIso::FourierIso(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       // be careful: capa_ := rho * C_V, e.g contains the density
       capa_(matdata->Get<double>("CAPA")),
@@ -31,18 +31,18 @@ MAT::PAR::FourierIso::FourierIso(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
 {
 }
 
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::FourierIso::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::FourierIso::create_material()
 {
-  return Teuchos::rcp(new MAT::FourierIso(this));
+  return Teuchos::rcp(new Mat::FourierIso(this));
 }
 
 
-MAT::FourierIsoType MAT::FourierIsoType::instance_;
+Mat::FourierIsoType Mat::FourierIsoType::instance_;
 
 
-CORE::COMM::ParObject* MAT::FourierIsoType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::FourierIsoType::Create(const std::vector<char>& data)
 {
-  MAT::FourierIso* fourieriso = new MAT::FourierIso();
+  Mat::FourierIso* fourieriso = new Mat::FourierIso();
   fourieriso->Unpack(data);
   return fourieriso;
 }
@@ -51,19 +51,19 @@ CORE::COMM::ParObject* MAT::FourierIsoType::Create(const std::vector<char>& data
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::FourierIso::FourierIso() : params_(nullptr) {}
+Mat::FourierIso::FourierIso() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  |  Constructor                                  (public)   bborn 04/09 |
  *----------------------------------------------------------------------*/
-MAT::FourierIso::FourierIso(MAT::PAR::FourierIso* params) : params_(params) {}
+Mat::FourierIso::FourierIso(Mat::PAR::FourierIso* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
  |  Pack                                          (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-void MAT::FourierIso::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::FourierIso::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
@@ -79,24 +79,24 @@ void MAT::FourierIso::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)  bborn 04/09 |
  *----------------------------------------------------------------------*/
-void MAT::FourierIso::Unpack(const std::vector<char>& data)
+void Mat::FourierIso::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::FourierIso*>(mat);
+        params_ = static_cast<Mat::PAR::FourierIso*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -109,8 +109,8 @@ void MAT::FourierIso::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  calculate for 1D                                         dano 09/09 |
  *----------------------------------------------------------------------*/
-void MAT::FourierIso::Evaluate(const CORE::LINALG::Matrix<1, 1>& gradtemp,
-    CORE::LINALG::Matrix<1, 1>& cmat, CORE::LINALG::Matrix<1, 1>& heatflux) const
+void Mat::FourierIso::Evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp,
+    Core::LinAlg::Matrix<1, 1>& cmat, Core::LinAlg::Matrix<1, 1>& heatflux) const
 {
   // conductivity tensor
   cmat(0, 0) = params_->conduct_;
@@ -122,8 +122,8 @@ void MAT::FourierIso::Evaluate(const CORE::LINALG::Matrix<1, 1>& gradtemp,
 /*----------------------------------------------------------------------*
  |  calculate for 2D                                         dano 09/09 |
  *----------------------------------------------------------------------*/
-void MAT::FourierIso::Evaluate(const CORE::LINALG::Matrix<2, 1>& gradtemp,
-    CORE::LINALG::Matrix<2, 2>& cmat, CORE::LINALG::Matrix<2, 1>& heatflux) const
+void Mat::FourierIso::Evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp,
+    Core::LinAlg::Matrix<2, 2>& cmat, Core::LinAlg::Matrix<2, 1>& heatflux) const
 {
   // conductivity tensor
   cmat.Clear();
@@ -136,8 +136,8 @@ void MAT::FourierIso::Evaluate(const CORE::LINALG::Matrix<2, 1>& gradtemp,
 /*----------------------------------------------------------------------*
  |  calculate for 3D                                         dano 09/09 |
  *----------------------------------------------------------------------*/
-void MAT::FourierIso::Evaluate(const CORE::LINALG::Matrix<3, 1>& gradtemp,
-    CORE::LINALG::Matrix<3, 3>& cmat, CORE::LINALG::Matrix<3, 1>& heatflux) const
+void Mat::FourierIso::Evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp,
+    Core::LinAlg::Matrix<3, 3>& cmat, Core::LinAlg::Matrix<3, 1>& heatflux) const
 {
   // conductivity tensor
   cmat.Clear();

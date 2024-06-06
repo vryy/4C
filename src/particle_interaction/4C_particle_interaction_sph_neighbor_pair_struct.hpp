@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Elements
+namespace Core::Elements
 {
   class Element;
 }
@@ -25,7 +25,7 @@ namespace CORE::Elements
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace PARTICLEINTERACTION
+namespace ParticleInteraction
 {
   //! struct to store quantities of interacting particles
   struct SPHParticlePair final
@@ -56,7 +56,7 @@ namespace PARTICLEINTERACTION
     PARTICLEENGINE::LocalIndexTuple tuple_i_;
 
     //! pointer to column wall element
-    CORE::Elements::Element* ele_;
+    Core::Elements::Element* ele_;
 
     //! absolute distance between particle and wall contact point
     double absdist_;
@@ -67,7 +67,7 @@ namespace PARTICLEINTERACTION
     //! parameter space coordinates of wall contact point
     double elecoords_[2];
   };
-}  // namespace PARTICLEINTERACTION
+}  // namespace ParticleInteraction
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

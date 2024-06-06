@@ -46,17 +46,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     //! material parameters for neo-Hooke
-    class SuperElasticSMA : public CORE::MAT::PAR::Parameter
+    class SuperElasticSMA : public Core::Mat::PAR::Parameter
     {
      public:
       //! standard constructor
-      SuperElasticSMA(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      SuperElasticSMA(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       //! @name material parameters
       //@{
@@ -108,7 +108,7 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
 
     };  // class SuperElasticSMA
@@ -116,14 +116,14 @@ namespace MAT
   }  // namespace PAR
 
 
-  class SuperElasticSMAType : public CORE::COMM::ParObjectType
+  class SuperElasticSMAType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "SuperElasticSMAType"; }
 
     static SuperElasticSMAType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static SuperElasticSMAType instance_;
@@ -139,7 +139,7 @@ namespace MAT
     SuperElasticSMA();
 
     //! construct the material object given material parameters
-    explicit SuperElasticSMA(MAT::PAR::SuperElasticSMA* params);
+    explicit SuperElasticSMA(Mat::PAR::SuperElasticSMA* params);
 
     //! @name Packing and Unpacking
 
@@ -164,7 +164,7 @@ namespace MAT
 
     \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -185,20 +185,20 @@ namespace MAT
     //! @name Access methods
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_superelast;
+      return Core::Materials::m_superelast;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (!(kinem == Inpar::STR::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new SuperElasticSMA(*this));
     }
@@ -207,7 +207,7 @@ namespace MAT
     double Density() const override { return params_->density_; }
 
     //! return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     //! check if history variables are already initialized
     bool Initialized() const { return (isinit_ and (xi_s_curr_ != Teuchos::null)); }
@@ -226,20 +226,20 @@ namespace MAT
     //! @name Evaluation methods
 
     //! initialise internal stress variables
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     //! update internal stress variables
     void Update() override;
 
     //! evaluate material law
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
     /// evaluate strain energy function
     void StrainEnergy(
-        const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) override;
+        const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) override;
 
 
     //@}
@@ -249,7 +249,7 @@ namespace MAT
     struct Material;
 
     //! my material parameters
-    MAT::PAR::SuperElasticSMA* params_;
+    Mat::PAR::SuperElasticSMA* params_;
 
     //! Drucker-Prager-type loading of last time step
     Teuchos::RCP<std::vector<double>> druckerpragerloadinglast_;
@@ -264,19 +264,19 @@ namespace MAT
 
     //! Returns the pullback of the 4th order tensor in voigt notation
     virtual void pullback4th_tensor_voigt(const double jacobian,
-        const CORE::LINALG::Matrix<3, 3>& defgr, const CORE::LINALG::Matrix<6, 6>& cmatEul,
-        CORE::LINALG::Matrix<6, 6>* cmatLag);
+        const Core::LinAlg::Matrix<3, 3>& defgr, const Core::LinAlg::Matrix<6, 6>& cmatEul,
+        Core::LinAlg::Matrix<6, 6>* cmatLag);
 
     //! Returns the 4th order identity tensor in tensor notation
     virtual double idev(int i, int j, int k, int l);
 
     //! Returns the residual of the local Newton step
-    virtual CORE::LINALG::Matrix<2, 1> compute_local_newton_residual(
-        CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data);
+    virtual Core::LinAlg::Matrix<2, 1> compute_local_newton_residual(
+        Core::LinAlg::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data);
 
     //! Returns the system matrix of the local Newton step
-    virtual CORE::LINALG::Matrix<2, 2> compute_local_newton_jacobian(
-        CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data);
+    virtual Core::LinAlg::Matrix<2, 2> compute_local_newton_jacobian(
+        Core::LinAlg::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data);
 
     //! Returns the loading in the local Newton step, without historical data.
     virtual LoadingData compute_local_newton_loading(
@@ -288,7 +288,7 @@ namespace MAT
     double strainenergy_;
   };  // class SuperElasticSMA
 
-}  // namespace MAT
+}  // namespace Mat
 
 
 /*----------------------------------------------------------------------*/

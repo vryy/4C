@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-const double DRT::ELEMENTS::SoHex8DeterminantAnalysis::bezier_points_[27][3] = {
+const double Discret::ELEMENTS::SoHex8DeterminantAnalysis::bezier_points_[27][3] = {
     {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 1.0, 0.0}, {0.0, 1.0, 0.0},  // 1 to 4
     {0.0, 0.0, 1.0}, {1.0, 0.0, 1.0}, {1.0, 1.0, 1.0}, {0.0, 1.0, 1.0},  // 5 to 8
     {0.5, 0.0, 0.0}, {1.0, 0.5, 0.0}, {0.5, 1.0, 0.0}, {0.0, 0.5, 0.0},  // 9 to 12
@@ -23,7 +23,7 @@ const double DRT::ELEMENTS::SoHex8DeterminantAnalysis::bezier_points_[27][3] = {
     {0.5, 0.5, 0.0}, {0.5, 0.0, 0.5}, {1.0, 0.5, 0.5}, {0.5, 1.0, 0.5},  // 21 to 24
     {0.0, 0.5, 0.5}, {0.5, 0.5, 1.0}, {0.5, 0.5, 0.5}                    // 25 to 27
 };
-const unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::bezier_indices_[27][3] = {
+const unsigned Discret::ELEMENTS::SoHex8DeterminantAnalysis::bezier_indices_[27][3] = {
     {0, 0, 0}, {2, 0, 0}, {2, 2, 0}, {0, 2, 0},  // 1 to 4
     {0, 0, 2}, {2, 0, 2}, {2, 2, 2}, {0, 2, 2},  // 5 to 8
     {1, 0, 0}, {2, 1, 0}, {1, 2, 0}, {0, 1, 0},  // 9 to 12
@@ -32,14 +32,14 @@ const unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::bezier_indices_[27][3] 
     {1, 1, 0}, {1, 0, 1}, {2, 1, 1}, {1, 2, 1},  // 21 to 24
     {0, 1, 1}, {1, 1, 2}, {1, 1, 1}              // 25 to 27
 };
-bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::issetup_ = false;
-CORE::LINALG::Matrix<27, 20> DRT::ELEMENTS::SoHex8DeterminantAnalysis::map_q_(true);
-CORE::LINALG::Matrix<27, 27> DRT::ELEMENTS::SoHex8DeterminantAnalysis::map_l2b_(true);
+bool Discret::ELEMENTS::SoHex8DeterminantAnalysis::issetup_ = false;
+Core::LinAlg::Matrix<27, 20> Discret::ELEMENTS::SoHex8DeterminantAnalysis::map_q_(true);
+Core::LinAlg::Matrix<27, 27> Discret::ELEMENTS::SoHex8DeterminantAnalysis::map_l2b_(true);
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ELEMENTS::SoHex8DeterminantAnalysis>
-DRT::ELEMENTS::SoHex8DeterminantAnalysis::create()
+Teuchos::RCP<Discret::ELEMENTS::SoHex8DeterminantAnalysis>
+Discret::ELEMENTS::SoHex8DeterminantAnalysis::create()
 {
   if (not issetup_)
   {
@@ -53,8 +53,8 @@ DRT::ELEMENTS::SoHex8DeterminantAnalysis::create()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_sub_map_bezier_to_lagrange(
-    const double* left, const double* right, CORE::LINALG::Matrix<27, 27>& sub_map_b2l) const
+void Discret::ELEMENTS::SoHex8DeterminantAnalysis::build_sub_map_bezier_to_lagrange(
+    const double* left, const double* right, Core::LinAlg::Matrix<27, 27>& sub_map_b2l) const
 {
   double scale[3] = {0.0, 0.0, 0.0};
   const double* shift = nullptr;
@@ -68,7 +68,7 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_sub_map_bezier_to_lagrange(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_lagrange20_to_bezier27()
+void Discret::ELEMENTS::SoHex8DeterminantAnalysis::build_map_lagrange20_to_bezier27()
 {
   map_q_.putScalar(0.0);
 
@@ -117,8 +117,8 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_lagrange20_to_bezier27(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_bezier_to_lagrange(
-    CORE::LINALG::Matrix<27, 27>& map_b2l)
+void Discret::ELEMENTS::SoHex8DeterminantAnalysis::build_map_bezier_to_lagrange(
+    Core::LinAlg::Matrix<27, 27>& map_b2l)
 {
   const double scale[3] = {1.0, 1.0, 1.0};
   const double shift[3] = {0.0, 0.0, 0.0};
@@ -127,8 +127,8 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_bezier_to_lagrange(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_bezier_to_lagrange(
-    CORE::LINALG::Matrix<27, 27>& map_b2l, const double* scale, const double* shift)
+void Discret::ELEMENTS::SoHex8DeterminantAnalysis::build_map_bezier_to_lagrange(
+    Core::LinAlg::Matrix<27, 27>& map_b2l, const double* scale, const double* shift)
 {
   // build map from bezier to lagrange
   for (unsigned i = 0; i < 27; ++i)
@@ -143,7 +143,7 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_bezier_to_lagrange(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_lagrange_to_bezier()
+void Discret::ELEMENTS::SoHex8DeterminantAnalysis::build_map_lagrange_to_bezier()
 {
   // build map from bezier to lagrange
   build_map_bezier_to_lagrange(map_l2b_);
@@ -180,11 +180,11 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::build_map_lagrange_to_bezier()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::isValid(
-    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr, unsigned* rc) const
+bool Discret::ELEMENTS::SoHex8DeterminantAnalysis::isValid(
+    const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr, unsigned* rc) const
 {
   // placed on the stack and, thus, not static
-  CORE::LINALG::Matrix<20, 1> tet4_volumes;
+  Core::LinAlg::Matrix<20, 1> tet4_volumes;
   compute20_tet4_volumes(tet4_volumes, x_curr);
 
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
@@ -199,7 +199,7 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::isValid(
   bcube.init();
 
   // place on stack and thus not static
-  CORE::LINALG::Matrix<27, 1> bcoeffs(false);
+  Core::LinAlg::Matrix<27, 1> bcoeffs(false);
   bcoeffs.Multiply(map_q_, tet4_volumes);
 
   // Check the remaining Bezier coefficients. If all are positive, return TRUE.
@@ -224,7 +224,7 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::isValid(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::get_sub_cube_borders(
+void Discret::ELEMENTS::SoHex8DeterminantAnalysis::get_sub_cube_borders(
     const double* l, const double* r, std::list<BezierCube>& subcubes) const
 {
   const std::array<double, 3> rl = {0.5 * (r[0] + l[0]), 0.5 * (r[1] + l[1]), 0.5 * (r[2] + l[2])};
@@ -315,8 +315,8 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::get_sub_cube_borders(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::recursive_subdivision(
-    const CORE::LINALG::Matrix<27, 1>& bcoeffs, const double* left, const double* right,
+bool Discret::ELEMENTS::SoHex8DeterminantAnalysis::recursive_subdivision(
+    const Core::LinAlg::Matrix<27, 1>& bcoeffs, const double* left, const double* right,
     unsigned& rcount) const
 {
   // stop the recursion
@@ -327,7 +327,7 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::recursive_subdivision(
   get_sub_cube_borders(left, right, subcubes);
 
   // don't allocate new storage in a recursive call
-  static CORE::LINALG::Matrix<27, 1> sub_bcoeffs(false);
+  static Core::LinAlg::Matrix<27, 1> sub_bcoeffs(false);
   auto it = subcubes.begin();
   while (it != subcubes.end())
   {
@@ -367,12 +367,12 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::recursive_subdivision(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::get_bezier_coeffs_of_subdomain(
-    const CORE::LINALG::Matrix<27, 1>& bcoeffs, BezierCube& subcube,
-    CORE::LINALG::Matrix<27, 1>& sub_bcoeffs) const
+void Discret::ELEMENTS::SoHex8DeterminantAnalysis::get_bezier_coeffs_of_subdomain(
+    const Core::LinAlg::Matrix<27, 1>& bcoeffs, BezierCube& subcube,
+    Core::LinAlg::Matrix<27, 1>& sub_bcoeffs) const
 {
-  static CORE::LINALG::Matrix<27, 27> sub_map_b2l(false);
-  static CORE::LINALG::Matrix<27, 1> tmp(false);
+  static Core::LinAlg::Matrix<27, 27> sub_map_b2l(false);
+  static Core::LinAlg::Matrix<27, 1> tmp(false);
 
   build_sub_map_bezier_to_lagrange(subcube.left_, subcube.right_, sub_map_b2l);
 
@@ -388,7 +388,7 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::get_bezier_coeffs_of_subdomain(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::has_invalid_entry(
+bool Discret::ELEMENTS::SoHex8DeterminantAnalysis::has_invalid_entry(
     const double* entries, const unsigned length) const
 {
   for (unsigned i = 0; i < length; ++i)
@@ -399,15 +399,15 @@ bool DRT::ELEMENTS::SoHex8DeterminantAnalysis::has_invalid_entry(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_corners(
-    CORE::LINALG::Matrix<20, 1>& tet4_volumes,
-    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
+unsigned Discret::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_corners(
+    Core::LinAlg::Matrix<20, 1>& tet4_volumes,
+    const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
     const std::function<unsigned(unsigned i)>& f_index0,
     const std::function<unsigned(unsigned i)>& f_index1,
     const std::function<unsigned(unsigned i)>& f_index2,
     const std::function<unsigned(unsigned i)>& f_index3, unsigned offset) const
 {
-  static CORE::LINALG::Matrix<NUMDIM_SOH8, 4> tet4_coords;
+  static Core::LinAlg::Matrix<NUMDIM_SOH8, 4> tet4_coords;
 
   // --------------------------------------------------------------------------
   // corner TET4s from 0 to 3
@@ -437,9 +437,9 @@ unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_corners(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_edges(
-    CORE::LINALG::Matrix<20, 1>& tet4_volumes,
-    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
+unsigned Discret::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_edges(
+    Core::LinAlg::Matrix<20, 1>& tet4_volumes,
+    const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
     const std::function<unsigned(unsigned i)>& f_index0,
     const std::function<unsigned(unsigned i)>& f_index1,
     const std::function<unsigned(unsigned i)>& f_index20,
@@ -447,9 +447,9 @@ unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_edges(
     const std::function<unsigned(unsigned i)>& f_index30,
     const std::function<unsigned(unsigned i)>& f_index31, unsigned offset) const
 {
-  static CORE::LINALG::Matrix<NUMDIM_SOH8, 4> tet4_coords;
+  static Core::LinAlg::Matrix<NUMDIM_SOH8, 4> tet4_coords;
 
-  CORE::LINALG::Matrix<NUMDIM_SOH8, 1> tmp;
+  Core::LinAlg::Matrix<NUMDIM_SOH8, 1> tmp;
   for (unsigned i = 0; i < 4; ++i)
   {
     unsigned j = f_index0(i);
@@ -476,9 +476,9 @@ unsigned DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_edges(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute20_tet4_volumes(
-    CORE::LINALG::Matrix<20, 1>& tet4_volumes,
-    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr) const
+void Discret::ELEMENTS::SoHex8DeterminantAnalysis::compute20_tet4_volumes(
+    Core::LinAlg::Matrix<20, 1>& tet4_volumes,
+    const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr) const
 {
   // --------------------------------------------------------------------------
   // corner TET4s from 0 to 3
@@ -536,22 +536,22 @@ void DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute20_tet4_volumes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_volume(
-    const CORE::LINALG::Matrix<NUMDIM_SOH8, 4>& tet4_ncoords) const
+double Discret::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_volume(
+    const Core::LinAlg::Matrix<NUMDIM_SOH8, 4>& tet4_ncoords) const
 {
-  const CORE::LINALG::Matrix<3, 1> xref(tet4_ncoords.A(), true);
-  CORE::LINALG::Matrix<3, 3> v;
+  const Core::LinAlg::Matrix<3, 1> xref(tet4_ncoords.A(), true);
+  Core::LinAlg::Matrix<3, 3> v;
 
   for (unsigned i = 0; i < 3; ++i)
   {
-    CORE::LINALG::Matrix<3, 1> vr(v.A() + i * 3, true);
-    const CORE::LINALG::Matrix<3, 1> xother(tet4_ncoords.A() + (i + 1) * 3, true);
+    Core::LinAlg::Matrix<3, 1> vr(v.A() + i * 3, true);
+    const Core::LinAlg::Matrix<3, 1> xother(tet4_ncoords.A() + (i + 1) * 3, true);
     vr.Update(1.0, xother, -1.0, xref);
   }
 
-  const CORE::LINALG::Matrix<3, 1> a(v.A(), true);
-  const CORE::LINALG::Matrix<3, 1> b(v.A() + 3, true);
-  const CORE::LINALG::Matrix<3, 1> c(v.A() + 6, true);
+  const Core::LinAlg::Matrix<3, 1> a(v.A(), true);
+  const Core::LinAlg::Matrix<3, 1> b(v.A() + 3, true);
+  const Core::LinAlg::Matrix<3, 1> c(v.A() + 6, true);
 
   // compute the triple product
   return c(0) * (a(1) * b(2) - a(2) * b(1)) + c(1) * (a(2) * b(0) - a(0) * b(2)) +
@@ -560,7 +560,7 @@ double DRT::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_volume(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoHex8DeterminantAnalysis::BezierCube::print(std::ostream& os) const
+void Discret::ELEMENTS::SoHex8DeterminantAnalysis::BezierCube::print(std::ostream& os) const
 {
   os << std::string(20, '*') << "\n";
   os << "Bezier-Cube (addr. = " << this << ")\n";

@@ -71,8 +71,9 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretization> actdis,
-    CORE::IO::DiscretizationWriter &output, Teuchos::ParameterList &params, double dta)
+Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
+    Teuchos::RCP<Discret::Discretization> actdis, Core::IO::DiscretizationWriter &output,
+    Teuchos::ParameterList &params, double dta)
     : discret_(actdis), output_(output)
 {
   //----------------------------------------------------------------------
@@ -84,7 +85,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
     // (1) Get the junction boundary conditions
     //----------------------------------------------------------------------
 
-    std::vector<CORE::Conditions::Condition *> myConditions;
+    std::vector<Core::Conditions::Condition *> myConditions;
     discret_->GetCondition("ArtJunctionCond", myConditions);
     int numofcond = myConditions.size();
 
@@ -111,7 +112,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
 
         int local_id = discret_->NodeRowMap()->LID((*nodes)[0]);
         // Get the actual node connected to the condition
-        CORE::Nodes::Node *nd = discret_->lColNode(local_id);
+        Core::Nodes::Node *nd = discret_->lColNode(local_id);
 
         // find whether the nodes is at the inlet or at the outlet of the element
         std::string terminalType =
@@ -129,7 +130,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
       // (3) Group all of the conditions that belong to the same junction
       //----------------------------------------------------------------------
 
-      CORE::Conditions::Condition *cond_i;
+      Core::Conditions::Condition *cond_i;
 
       // first, sort the condition list according to there IDs
       // In this case the bubble sort algorithm is used
@@ -153,8 +154,8 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
       }
 
       // second, group all the similar conditions in one vector
-      std::vector<std::vector<CORE::Conditions::Condition *>> SortedConds;
-      std::vector<CORE::Conditions::Condition *> grouped_cond;
+      std::vector<std::vector<Core::Conditions::Condition *>> SortedConds;
+      std::vector<Core::Conditions::Condition *> grouped_cond;
 
       std::vector<std::vector<int>> SortedIOarts;
       std::vector<int> grouped_IO;
@@ -235,7 +236,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-int ART::UTILS::ArtJunctionWrapper::Solve(Teuchos::ParameterList &params)
+int Arteries::UTILS::ArtJunctionWrapper::Solve(Teuchos::ParameterList &params)
 {
   //----------------------------------------------------------------------
   // Exit if the function accessed by a non-master processor
@@ -261,8 +262,8 @@ int ART::UTILS::ArtJunctionWrapper::Solve(Teuchos::ParameterList &params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-ART::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdis,
-    CORE::IO::DiscretizationWriter &output, std::vector<CORE::Conditions::Condition *> conds,
+Arteries::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<Discret::Discretization> actdis,
+    Core::IO::DiscretizationWriter &output, std::vector<Core::Conditions::Condition *> conds,
     std::vector<int> IOart_flag, double dta, int condid, int numcond)
     : condid_(condid), discret_(actdis), output_(output), io_art_flag_(IOart_flag)
 {
@@ -401,16 +402,16 @@ ART::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<DRT::Discretization> actdi
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-int ART::UTILS::ArtJunctionBc::solve(Teuchos::ParameterList &params)
+int Arteries::UTILS::ArtJunctionBc::solve(Teuchos::ParameterList &params)
 {
   //----------------------------------------------------------------------
   // Define the matricese and the vectors that are needed to solve the
   // nonlinear problem at the junction
   //----------------------------------------------------------------------
-  CORE::LINALG::SerialDenseMatrix Jacobian(prob_size_, prob_size_);
-  CORE::LINALG::SerialDenseVector f(prob_size_);
-  CORE::LINALG::SerialDenseVector x(prob_size_);
-  CORE::LINALG::SerialDenseVector dx(prob_size_);
+  Core::LinAlg::SerialDenseMatrix Jacobian(prob_size_, prob_size_);
+  Core::LinAlg::SerialDenseVector f(prob_size_);
+  Core::LinAlg::SerialDenseVector x(prob_size_);
+  Core::LinAlg::SerialDenseVector dx(prob_size_);
 
   //----------------------------------------------------------------------
   // Read the element information at the node of the bifurcation
@@ -456,7 +457,7 @@ int ART::UTILS::ArtJunctionBc::solve(Teuchos::ParameterList &params)
   int *pivot;
   pivot = new int[2 * nodes_.size()];
 
-  while (CORE::LINALG::Norm2(f) > 0.000001)
+  while (Core::LinAlg::Norm2(f) > 0.000001)
   {
     //--------------------------------------------------------------------
     // Fill the Jacobian matrix
@@ -539,12 +540,12 @@ int ART::UTILS::ArtJunctionBc::solve(Teuchos::ParameterList &params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::ArtJunctionBc::jacobian_eval(CORE::LINALG::SerialDenseMatrix &Jacobian,
+void Arteries::UTILS::ArtJunctionBc::jacobian_eval(Core::LinAlg::SerialDenseMatrix &Jacobian,
     std::vector<double> &A, std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
     std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext)
 {
   // empty the Jacobian
-  Jacobian = CORE::LINALG::SerialDenseMatrix(prob_size_, prob_size_);
+  Jacobian = Core::LinAlg::SerialDenseMatrix(prob_size_, prob_size_);
 
   // fill the entities that have to do with forward charachteristic speeds
   for (unsigned int i = 0; i < nodes_.size(); i++)
@@ -582,12 +583,12 @@ void ART::UTILS::ArtJunctionBc::jacobian_eval(CORE::LINALG::SerialDenseMatrix &J
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::ArtJunctionBc::residual_eval(CORE::LINALG::SerialDenseVector &f,
+void Arteries::UTILS::ArtJunctionBc::residual_eval(Core::LinAlg::SerialDenseVector &f,
     std::vector<double> &A, std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
     std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext)
 {
   // initialize the residual
-  f = CORE::LINALG::SerialDenseVector(f.length());
+  f = Core::LinAlg::SerialDenseVector(f.length());
 
   // fill the entities that have to do with forward charachteristic speeds
   for (unsigned int i = 0; i < nodes_.size(); i++)
@@ -618,8 +619,8 @@ void ART::UTILS::ArtJunctionBc::residual_eval(CORE::LINALG::SerialDenseVector &f
 /*----------------------------------------------------------------------*
  |  Update Residual (public)                                ismail 09/09|
  *----------------------------------------------------------------------*/
-void ART::UTILS::ArtJunctionBc::update_result(
-    CORE::LINALG::SerialDenseVector &xn, CORE::LINALG::SerialDenseVector &dx)
+void Arteries::UTILS::ArtJunctionBc::update_result(
+    Core::LinAlg::SerialDenseVector &xn, Core::LinAlg::SerialDenseVector &dx)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (xn.length() != dx.length())

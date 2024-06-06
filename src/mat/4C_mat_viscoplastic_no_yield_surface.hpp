@@ -19,17 +19,17 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     //! material parameters for the ViscoPlasticNoYieldSurface material
-    class ViscoPlasticNoYieldSurface : public CORE::MAT::PAR::Parameter
+    class ViscoPlasticNoYieldSurface : public Core::Mat::PAR::Parameter
     {
      public:
-      explicit ViscoPlasticNoYieldSurface(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      explicit ViscoPlasticNoYieldSurface(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       //! @name return methods of material parameters
       //! @{
@@ -98,14 +98,14 @@ namespace MAT
     };
   }  // namespace PAR
 
-  class ViscoPlasticNoYieldSurfaceType : public CORE::COMM::ParObjectType
+  class ViscoPlasticNoYieldSurfaceType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ViscoPlasticNoYieldSurfaceType"; }
 
     static ViscoPlasticNoYieldSurfaceType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ViscoPlasticNoYieldSurfaceType instance_;
@@ -138,30 +138,30 @@ namespace MAT
     ViscoPlasticNoYieldSurface();
 
     //! construct the material object given material parameters
-    explicit ViscoPlasticNoYieldSurface(MAT::PAR::ViscoPlasticNoYieldSurface* params);
+    explicit ViscoPlasticNoYieldSurface(Mat::PAR::ViscoPlasticNoYieldSurface* params);
 
     int UniqueParObjectId() const override
     {
       return ViscoPlasticNoYieldSurfaceType::Instance().UniqueParObjectId();
     }
 
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     void Unpack(const std::vector<char>& data) override;
 
    private:
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_vp_no_yield_surface;
+      return Core::Materials::m_vp_no_yield_surface;
     }
 
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (kinem != INPAR::STR::KinemType::nonlinearTotLag)
+      if (kinem != Inpar::STR::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ViscoPlasticNoYieldSurface(*this));
     }
@@ -174,8 +174,8 @@ namespace MAT
      * @param[in] p                 mean normal pressure
      * @return deviatoric trial stresses
      */
-    CORE::LINALG::Matrix<3, 3>& calculate_deviatoric_trial_stresses(
-        const CORE::LINALG::Matrix<6, 1>& Me_trial_Vstress, const double p) const;
+    Core::LinAlg::Matrix<3, 3>& calculate_deviatoric_trial_stresses(
+        const Core::LinAlg::Matrix<6, 1>& Me_trial_Vstress, const double p) const;
 
     /*!
      * @brief elastic stiffness tensor in intermediate configuration is calculated
@@ -184,9 +184,9 @@ namespace MAT
      * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @return elastic stiffness tensor in intermediate configuration
      */
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& calculate_elastic_stiffness(
-        const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
-        const CORE::LINALG::Matrix<3, 1>& eigen_values) const;
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& calculate_elastic_stiffness(
+        const Core::LinAlg::Matrix<3, 3>& eigen_vectors,
+        const Core::LinAlg::Matrix<3, 1>& eigen_values) const;
 
     /*!
      * @brief calculate linearization for local newton loop of internal evolution equations
@@ -196,8 +196,8 @@ namespace MAT
      * @param[in] terms               terms that can be precalculated and reused several times
      * @return Linearization matrix
      */
-    CORE::LINALG::Matrix<2, 2>& calculate_linearization(const double equ_tens_stress_np,
-        const double flow_resistance_np, const MAT::PreCalculatedTerms& terms);
+    Core::LinAlg::Matrix<2, 2>& calculate_linearization(const double equ_tens_stress_np,
+        const double flow_resistance_np, const Mat::PreCalculatedTerms& terms);
 
     /*!
      * @brief calculate the residual for the equations solved within the local newton loop of
@@ -210,7 +210,7 @@ namespace MAT
      * @param[in] terms                  terms that can be precalculated and reused several times
      * @return residual vector
      */
-    CORE::LINALG::Matrix<2, 1>& calculate_residual(const double equ_tens_stress_np,
+    Core::LinAlg::Matrix<2, 1>& calculate_residual(const double equ_tens_stress_np,
         const double equ_tens_trial_stress, const double flow_resistance_np,
         const double flow_resistance_n, const PreCalculatedTerms& terms);
 
@@ -220,9 +220,9 @@ namespace MAT
      * @param[in] Me        energy conjugated stress tensor
      * @return second Piola--Kirchhoff stresses
      */
-    CORE::LINALG::Matrix<3, 3>& calculate_second_piola_kirchhoff_stresses(
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 3>& Re_trial,
-        const CORE::LINALG::Matrix<3, 3>& Me) const;
+    Core::LinAlg::Matrix<3, 3>& calculate_second_piola_kirchhoff_stresses(
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 3>& Re_trial,
+        const Core::LinAlg::Matrix<3, 3>& Me) const;
 
     /*!
      * @param[in] Fe_trial        trial elastic deformation gradient \f$ F^{*}_\text{e} \f$
@@ -230,8 +230,8 @@ namespace MAT
      * @param[out] eigen_vectors  eigenvectors of \f$ F^{*}_\text{e} \f$
      */
     void calculate_trial_elastic_defgrad_eigenvalues_and_eigenvectors(
-        const CORE::LINALG::Matrix<3, 3>& Fe_trial, CORE::LINALG::Matrix<3, 1>& eigen_values,
-        CORE::LINALG::Matrix<3, 3>& eigen_vectors) const;
+        const Core::LinAlg::Matrix<3, 3>& Fe_trial, Core::LinAlg::Matrix<3, 1>& eigen_values,
+        Core::LinAlg::Matrix<3, 3>& eigen_vectors) const;
 
     /*!
      * @param[in] Fe_trial       trial elastic deformation gradient \f$ F^{*}_\text{e} \f$
@@ -239,24 +239,24 @@ namespace MAT
      * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @return trial elastic rotation tensor \f$ R^{*}_\text{e} \f$
      */
-    CORE::LINALG::Matrix<3, 3>& calculate_trial_elastic_rotation(
-        const CORE::LINALG::Matrix<3, 3>& Fe_trial, const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
-        const CORE::LINALG::Matrix<3, 1>& eigen_values) const;
+    Core::LinAlg::Matrix<3, 3>& calculate_trial_elastic_rotation(
+        const Core::LinAlg::Matrix<3, 3>& Fe_trial, const Core::LinAlg::Matrix<3, 3>& eigen_vectors,
+        const Core::LinAlg::Matrix<3, 1>& eigen_values) const;
 
     /*!
      * @param[in] eigen_vectors  eigenvectors of \f$ F^{*}_\text{e} \f$
      * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @return logarithmic elastic strains in strain-like Voigt notation
      */
-    CORE::LINALG::Matrix<6, 1>& calculate_log_elastic_strain_in_strain_like_voigt_notation(
-        const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
-        const CORE::LINALG::Matrix<3, 1>& eigen_values) const;
+    Core::LinAlg::Matrix<6, 1>& calculate_log_elastic_strain_in_strain_like_voigt_notation(
+        const Core::LinAlg::Matrix<3, 3>& eigen_vectors,
+        const Core::LinAlg::Matrix<3, 1>& eigen_values) const;
 
     /*!
      * @param[in] Me_trial_dev  deviatoric part of trial elastic stresses
      * @return trial elastic equivalent stress [sqrt(3/2 * trace(Me_trial_dev . Me_trial_dev))]
      */
-    double calculate_trial_equivalent_stress(const CORE::LINALG::Matrix<3, 3>& Me_trial_dev) const;
+    double calculate_trial_equivalent_stress(const Core::LinAlg::Matrix<3, 3>& Me_trial_dev) const;
 
     /*!
      * @brief inverse viscous deformation gradient is updated and returned
@@ -267,13 +267,13 @@ namespace MAT
      * @param[in] eta            deviatoric elastic deformation share
      * @return inverse viscous deformation gradient
      */
-    CORE::LINALG::Matrix<3, 3>& calculate_updated_inverse_viscous_defgrad(
-        const CORE::LINALG::Matrix<3, 3>& last_iFv, const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
-        const CORE::LINALG::Matrix<3, 1>& eigen_values, const double eta) const;
+    Core::LinAlg::Matrix<3, 3>& calculate_updated_inverse_viscous_defgrad(
+        const Core::LinAlg::Matrix<3, 3>& last_iFv, const Core::LinAlg::Matrix<3, 3>& eigen_vectors,
+        const Core::LinAlg::Matrix<3, 1>& eigen_values, const double eta) const;
 
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, int gp,
         int eleGID) override;
 
     /*!
@@ -282,7 +282,7 @@ namespace MAT
      * @param[in/out] x  solution vector
      * @param[in]     dt time step
      */
-    void local_newton_loop(CORE::LINALG::Matrix<2, 1>& x, double dt);
+    void local_newton_loop(Core::LinAlg::Matrix<2, 1>& x, double dt);
 
     /*!
      * @brief Calculate and return terms of the formulation that can be reused several times
@@ -297,31 +297,31 @@ namespace MAT
 
     //! @}
 
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     /*!
      * @brief computes isotropic elasticity tensor in matrix notion for 3d
      *
      * @param[out] cmat elasticity tensor in intermediate configuration
      */
-    void setup_cmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
+    void setup_cmat(Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
 
     void Update() override;
 
     bool needs_defgrd() override { return true; };
 
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     double Density() const override { return params_->Density(); }
 
     //! material parameters
-    MAT::PAR::ViscoPlasticNoYieldSurface* params_;
+    Mat::PAR::ViscoPlasticNoYieldSurface* params_;
 
     //! inverse plastic deformation gradient for each Gauss point at last converged state
-    std::vector<CORE::LINALG::Matrix<3, 3>> last_plastic_defgrd_inverse_;
+    std::vector<Core::LinAlg::Matrix<3, 3>> last_plastic_defgrd_inverse_;
 
     //! current inverse plastic deformation gradient for each Gauss point
-    std::vector<CORE::LINALG::Matrix<3, 3>> current_plastic_defgrd_inverse_;
+    std::vector<Core::LinAlg::Matrix<3, 3>> current_plastic_defgrd_inverse_;
 
     //! flow resistance 'S' for each Gauss point at last converged state
     std::vector<double> last_flowres_isotropic_;
@@ -329,7 +329,7 @@ namespace MAT
     //! current flow resistance 'S' for each Gauss point
     std::vector<double> current_flowres_isotropic_;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

@@ -2,7 +2,7 @@
 /*! \file
 \brief growth law for the volumetric growth materials. This file contains routines needed for the
 calculation of the volumetric growth parameter theta. These so called growthlaws are to be used for
-the isovolumetric split growth materials MAT::Growth. Upon request a growthlaw delivers a growth
+the isovolumetric split growth materials Mat::Growth. Upon request a growthlaw delivers a growth
 factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\partial C}\f$.
 
 \level 2
@@ -28,7 +28,7 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 FOUR_C_NAMESPACE_OPEN
 
 /* forward declarations */
-namespace MAT
+namespace Mat
 {
   class Growth;
   class So3Material;
@@ -56,7 +56,7 @@ namespace MAT
     GrowthLaw();
 
     //! explicit constructor
-    explicit GrowthLaw(CORE::MAT::PAR::Parameter* params);
+    explicit GrowthLaw(Core::Mat::PAR::Parameter* params);
 
     //! destructor
     virtual ~GrowthLaw() = default;
@@ -86,11 +86,11 @@ namespace MAT
      * \date 06/2015
      */
     virtual void Evaluate(double* theta, const double& thetaold,
-        CORE::LINALG::Matrix<6, 1>* dthetadC, MAT::Growth& matgrowth,
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<6, 1>* glstrain,
-        const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+        Core::LinAlg::Matrix<6, 1>* dthetadC, Mat::Growth& matgrowth,
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
+        const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID) = 0;
 
     /*! \brief derivative of theta wrt parameters
@@ -114,16 +114,16 @@ namespace MAT
      * \date 07/2015
      */
     virtual void EvaluatePDeriv(double* theta, const double& thetaold,
-        Teuchos::RCP<MAT::So3Material> matelastic, const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Teuchos::RCP<Mat::So3Material> matelastic, const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         const int eleGID) = 0;
 
     /// calculate growth part of deformation gradient
     virtual void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
-        CORE::LINALG::Matrix<3, 3>& F_g) = 0;
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd,
+        Core::LinAlg::Matrix<3, 3>& F_g) = 0;
 
     /// density scaling of specific growth law
     virtual double DensityScale(const double theta) = 0;
@@ -137,10 +137,10 @@ namespace MAT
     //@{
 
     //! material type
-    virtual CORE::Materials::MaterialType MaterialType() const = 0;
+    virtual Core::Materials::MaterialType MaterialType() const = 0;
 
     //! return material parameters
-    CORE::MAT::PAR::Parameter* Parameter() { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() { return params_; }
 
     //! Return whether material has a varying material density
     virtual bool VaryingDensity() const = 0;
@@ -149,7 +149,7 @@ namespace MAT
 
    private:
     //! material parameters
-    CORE::MAT::PAR::Parameter* params_;
+    Core::Mat::PAR::Parameter* params_;
   };
 
   namespace PAR
@@ -161,11 +161,11 @@ namespace MAT
         \author kehl
         \date 6/2015
    */
-    class GrowthLawDyn : public CORE::MAT::PAR::Parameter
+    class GrowthLawDyn : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      GrowthLawDyn(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      GrowthLawDyn(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -174,7 +174,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class Growth
 
@@ -201,7 +201,7 @@ namespace MAT
    public:
     //! construct empty material object
     GrowthLawDyn();
-    explicit GrowthLawDyn(CORE::MAT::PAR::Parameter* params);
+    explicit GrowthLawDyn(Core::Mat::PAR::Parameter* params);
 
 
     //! @name Evaluation methods
@@ -229,11 +229,11 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, CORE::LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    void Evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
+        Mat::Growth& matgrowth, const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
     /*! \brief derivative of theta wrt parameters
@@ -257,8 +257,8 @@ namespace MAT
      * \date 07/2015
      */
     void EvaluatePDeriv(double* theta, const double& thetaold,
-        Teuchos::RCP<MAT::So3Material> matelastic, const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Teuchos::RCP<Mat::So3Material> matelastic, const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         const int eleGID) override;
 
     //@}
@@ -279,8 +279,8 @@ namespace MAT
         double& growthfunc, const double growthtrig, const double theta) = 0;
 
     virtual void evaluate_growth_trigger(double& growthtrig,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const Core::LinAlg::Matrix<6, 1>& Cdachvec, const Core::LinAlg::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig) = 0;
 
     /*! Evaluate growth function wrt growth factor theta
@@ -297,10 +297,10 @@ namespace MAT
      *
      */
     virtual void evaluate_growth_function_deriv_theta(double& dgrowthfunctheta, double growthtrig,
-        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
-        const CORE::LINALG::Matrix<3, 3>& F_g, const CORE::LINALG::Matrix<3, 1>& direction) = 0;
+        double theta, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const Core::LinAlg::Matrix<3, 3>& F_g, const Core::LinAlg::Matrix<3, 1>& direction) = 0;
 
     /*! Evaluate growth function wrt right cauchy green tensor
      * \param Out
@@ -317,18 +317,18 @@ namespace MAT
      * cmatelastic - elastic part of the cmat
      */
     virtual void evaluate_growth_function_deriv_c(
-        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double growthtrig, double theta,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        const CORE::LINALG::Matrix<3, 1>& direction) = 0;
+        Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double growthtrig, double theta,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const Core::LinAlg::Matrix<3, 1>& direction) = 0;
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
-        CORE::LINALG::Matrix<3, 3>& F_g) override = 0;
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd,
+        Core::LinAlg::Matrix<3, 3>& F_g) override = 0;
 
     /// density scaling of specific growth law
     double DensityScale(const double theta) override;
@@ -339,9 +339,9 @@ namespace MAT
     //@}
 
     //! return the material parameters
-    MAT::PAR::GrowthLawDyn* Parameter()
+    Mat::PAR::GrowthLawDyn* Parameter()
     {
-      return dynamic_cast<MAT::PAR::GrowthLawDyn*>(MAT::GrowthLaw::Parameter());
+      return dynamic_cast<Mat::PAR::GrowthLawDyn*>(Mat::GrowthLaw::Parameter());
     }
 
     //! add parameter to parameter list
@@ -375,7 +375,7 @@ namespace MAT
    public:
     //! construct empty material object
     GrowthLawStatic();
-    explicit GrowthLawStatic(CORE::MAT::PAR::Parameter* params);
+    explicit GrowthLawStatic(Core::Mat::PAR::Parameter* params);
 
     //! @name Evaluation methods
     //@{
@@ -402,11 +402,11 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, CORE::LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    void Evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
+        Mat::Growth& matgrowth, const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID) override = 0;
 
     /*! \brief derivative of theta wrt parameters
@@ -430,16 +430,16 @@ namespace MAT
      * \date 07/2015
      */
     void EvaluatePDeriv(double* theta, const double& thetaold,
-        Teuchos::RCP<MAT::So3Material> matelastic, const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Teuchos::RCP<Mat::So3Material> matelastic, const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         const int eleGID) override;
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
-        CORE::LINALG::Matrix<3, 3>& F_g) override = 0;
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd,
+        Core::LinAlg::Matrix<3, 3>& F_g) override = 0;
 
     /// density scaling of specific growth law
     double DensityScale(const double theta) override;
@@ -450,7 +450,7 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override = 0;
+    Core::Materials::MaterialType MaterialType() const override = 0;
 
     //! Return whether material has a varying material density
     bool VaryingDensity() const override { return true; }
@@ -471,7 +471,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawAnisoStrain(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      GrowthLawAnisoStrain(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -492,10 +492,10 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// create growth law instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+      virtual Teuchos::RCP<Mat::GrowthLaw> CreateGrowthLaw();
 
     };  // class Growth
 
@@ -510,7 +510,7 @@ namespace MAT
    public:
     /// construct empty material object
     GrowthLawAnisoStrain();
-    explicit GrowthLawAnisoStrain(MAT::PAR::GrowthLawAnisoStrain* params);
+    explicit GrowthLawAnisoStrain(Mat::PAR::GrowthLawAnisoStrain* params);
 
     //! @name Evaluation methods for the ode's rhs
     //@{
@@ -528,8 +528,8 @@ namespace MAT
         double& growthfunc, const double growthtrig, const double theta) override;
 
     void evaluate_growth_trigger(double& growthtrig,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const Core::LinAlg::Matrix<6, 1>& Cdachvec, const Core::LinAlg::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig) override;
 
     /*! Evaluate growth function wrt growth factor theta
@@ -546,11 +546,11 @@ namespace MAT
      *
      */
     void evaluate_growth_function_deriv_theta(double& dgrowthfunctheta, double growthtrig,
-        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
-        const CORE::LINALG::Matrix<3, 3>& F_g,
-        const CORE::LINALG::Matrix<3, 1>& direction) override;
+        double theta, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const Core::LinAlg::Matrix<3, 3>& F_g,
+        const Core::LinAlg::Matrix<3, 1>& direction) override;
 
     /*! Evaluate growth function wrt right cauchy green tensor
      * \param Out
@@ -566,18 +566,18 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void evaluate_growth_function_deriv_c(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        const CORE::LINALG::Matrix<3, 1>& direction) override;
+    void evaluate_growth_function_deriv_c(Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+        double growthtrig, double theta, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const Core::LinAlg::Matrix<3, 1>& direction) override;
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
-        CORE::LINALG::Matrix<3, 3>& F_g) override;
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd,
+        Core::LinAlg::Matrix<3, 3>& F_g) override;
 
     /// density scaling of specific growth law
     double DensityScale(const double theta) override;
@@ -588,15 +588,15 @@ namespace MAT
     //@}
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_growth_aniso_strain;
+      return Core::Materials::m_growth_aniso_strain;
     }
 
     //! material parameters
-    MAT::PAR::GrowthLawAnisoStrain* Parameter()
+    Mat::PAR::GrowthLawAnisoStrain* Parameter()
     {
-      return dynamic_cast<MAT::PAR::GrowthLawAnisoStrain*>(MAT::GrowthLawDyn::Parameter());
+      return dynamic_cast<Mat::PAR::GrowthLawAnisoStrain*>(Mat::GrowthLawDyn::Parameter());
     }
   };
 
@@ -615,7 +615,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawAnisoStress(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      GrowthLawAnisoStress(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -636,10 +636,10 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// create growth law instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+      virtual Teuchos::RCP<Mat::GrowthLaw> CreateGrowthLaw();
 
     };  // class Growth
 
@@ -654,7 +654,7 @@ namespace MAT
    public:
     /// construct empty material object
     GrowthLawAnisoStress();
-    explicit GrowthLawAnisoStress(MAT::PAR::GrowthLawAnisoStress* params);
+    explicit GrowthLawAnisoStress(Mat::PAR::GrowthLawAnisoStress* params);
 
     //! @name Evaluation methods for the ode's rhs
     //@{
@@ -672,8 +672,8 @@ namespace MAT
         double& growthfunc, const double growthtrig, const double theta) override;
 
     void evaluate_growth_trigger(double& growthtrig,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const Core::LinAlg::Matrix<6, 1>& Cdachvec, const Core::LinAlg::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig) override;
 
     /*! Evaluate growth function wrt growth factor theta
@@ -690,11 +690,11 @@ namespace MAT
      *
      */
     void evaluate_growth_function_deriv_theta(double& dgrowthfunctheta, double growthtrig,
-        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
-        const CORE::LINALG::Matrix<3, 3>& F_g,
-        const CORE::LINALG::Matrix<3, 1>& direction) override;
+        double theta, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const Core::LinAlg::Matrix<3, 3>& F_g,
+        const Core::LinAlg::Matrix<3, 1>& direction) override;
 
     /*! Evaluate growth function wrt right cauchy green tensor
      * \param Out
@@ -710,18 +710,18 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void evaluate_growth_function_deriv_c(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        const CORE::LINALG::Matrix<3, 1>& direction) override;
+    void evaluate_growth_function_deriv_c(Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+        double growthtrig, double theta, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const Core::LinAlg::Matrix<3, 1>& direction) override;
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
-        CORE::LINALG::Matrix<3, 3>& F_g) override;
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd,
+        Core::LinAlg::Matrix<3, 3>& F_g) override;
 
     /// density scaling of specific growth law
     double DensityScale(const double theta) override;
@@ -732,15 +732,15 @@ namespace MAT
     //@}
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_growth_aniso_stress;
+      return Core::Materials::m_growth_aniso_stress;
     }
 
     //! material parameters
-    MAT::PAR::GrowthLawAnisoStress* Parameter()
+    Mat::PAR::GrowthLawAnisoStress* Parameter()
     {
-      return dynamic_cast<MAT::PAR::GrowthLawAnisoStress*>(MAT::GrowthLawDyn::Parameter());
+      return dynamic_cast<Mat::PAR::GrowthLawAnisoStress*>(Mat::GrowthLawDyn::Parameter());
     }
   };
 
@@ -758,13 +758,13 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawAnisoStrainConstTrig(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      GrowthLawAnisoStrainConstTrig(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// create growth law instance of matching type with my parameters
-      Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw() override;
+      Teuchos::RCP<Mat::GrowthLaw> CreateGrowthLaw() override;
 
     };  // class Growth
 
@@ -779,15 +779,15 @@ namespace MAT
    public:
     /// construct empty material object
     GrowthLawAnisoStrainConstTrig();
-    explicit GrowthLawAnisoStrainConstTrig(MAT::PAR::GrowthLawAnisoStrainConstTrig* params);
+    explicit GrowthLawAnisoStrainConstTrig(Mat::PAR::GrowthLawAnisoStrainConstTrig* params);
 
     //! @name Evaluation methods for the ode's rhs
     //@{
 
 
     void evaluate_growth_trigger(double& growthtrig,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const Core::LinAlg::Matrix<6, 1>& Cdachvec, const Core::LinAlg::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig) override;
 
     /*! Evaluate growth function wrt growth factor theta
@@ -804,11 +804,11 @@ namespace MAT
      *
      */
     void evaluate_growth_function_deriv_theta(double& dgrowthfunctheta, double growthtrig,
-        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
-        const CORE::LINALG::Matrix<3, 3>& F_g,
-        const CORE::LINALG::Matrix<3, 1>& direction) override;
+        double theta, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const Core::LinAlg::Matrix<3, 3>& F_g,
+        const Core::LinAlg::Matrix<3, 1>& direction) override;
 
     /*! Evaluate growth function wrt right cauchy green tensor
      * \param Out
@@ -824,24 +824,24 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void evaluate_growth_function_deriv_c(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        const CORE::LINALG::Matrix<3, 1>& direction) override;
+    void evaluate_growth_function_deriv_c(Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+        double growthtrig, double theta, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const Core::LinAlg::Matrix<3, 1>& direction) override;
 
     //@}
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_growth_aniso_strain_const_trig;
+      return Core::Materials::m_growth_aniso_strain_const_trig;
     }
 
     //! material parameters
-    MAT::PAR::GrowthLawAnisoStrainConstTrig* Parameter()
+    Mat::PAR::GrowthLawAnisoStrainConstTrig* Parameter()
     {
-      return dynamic_cast<MAT::PAR::GrowthLawAnisoStrainConstTrig*>(MAT::GrowthLawDyn::Parameter());
+      return dynamic_cast<Mat::PAR::GrowthLawAnisoStrainConstTrig*>(Mat::GrowthLawDyn::Parameter());
     }
   };
 
@@ -860,13 +860,13 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawAnisoStressConstTrig(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      GrowthLawAnisoStressConstTrig(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// create growth law instance of matching type with my parameters
-      Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw() override;
+      Teuchos::RCP<Mat::GrowthLaw> CreateGrowthLaw() override;
 
     };  // class Growth
 
@@ -881,15 +881,15 @@ namespace MAT
    public:
     /// construct empty material object
     GrowthLawAnisoStressConstTrig();
-    explicit GrowthLawAnisoStressConstTrig(MAT::PAR::GrowthLawAnisoStressConstTrig* params);
+    explicit GrowthLawAnisoStressConstTrig(Mat::PAR::GrowthLawAnisoStressConstTrig* params);
 
     //! @name Evaluation methods for the ode's rhs
     //@{
 
 
     void evaluate_growth_trigger(double& growthtrig,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const Core::LinAlg::Matrix<6, 1>& Cdachvec, const Core::LinAlg::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig) override;
 
     /*! Evaluate growth function wrt growth factor theta
@@ -906,11 +906,11 @@ namespace MAT
      *
      */
     void evaluate_growth_function_deriv_theta(double& dgrowthfunctheta, double growthtrig,
-        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
-        const CORE::LINALG::Matrix<3, 3>& F_g,
-        const CORE::LINALG::Matrix<3, 1>& direction) override;
+        double theta, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const Core::LinAlg::Matrix<3, 3>& F_g,
+        const Core::LinAlg::Matrix<3, 1>& direction) override;
 
     /*! Evaluate growth function wrt right cauchy green tensor
      * \param Out
@@ -926,24 +926,24 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void evaluate_growth_function_deriv_c(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        const CORE::LINALG::Matrix<3, 1>& direction) override;
+    void evaluate_growth_function_deriv_c(Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+        double growthtrig, double theta, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const Core::LinAlg::Matrix<3, 1>& direction) override;
 
     //@}
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_growth_aniso_stress_const_trig;
+      return Core::Materials::m_growth_aniso_stress_const_trig;
     }
 
     //! material parameters
-    MAT::PAR::GrowthLawAnisoStressConstTrig* Parameter()
+    Mat::PAR::GrowthLawAnisoStressConstTrig* Parameter()
     {
-      return dynamic_cast<MAT::PAR::GrowthLawAnisoStressConstTrig*>(MAT::GrowthLawDyn::Parameter());
+      return dynamic_cast<Mat::PAR::GrowthLawAnisoStressConstTrig*>(Mat::GrowthLawDyn::Parameter());
     }
   };
 
@@ -962,7 +962,7 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawIsoStress(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      GrowthLawIsoStress(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -983,10 +983,10 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// create growth law instance of matching type with my parameters
-      Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+      Teuchos::RCP<Mat::GrowthLaw> CreateGrowthLaw();
 
     };  // class Growth
 
@@ -1010,7 +1010,7 @@ namespace MAT
    public:
     /// construct empty material object
     GrowthLawIsoStress();
-    explicit GrowthLawIsoStress(MAT::PAR::GrowthLawIsoStress* params);
+    explicit GrowthLawIsoStress(Mat::PAR::GrowthLawIsoStress* params);
 
     //! @name Evaluation methods for the ode's rhs
     //@{
@@ -1028,8 +1028,8 @@ namespace MAT
         double& growthfunc, const double growthtrig, const double theta) override;
 
     void evaluate_growth_trigger(double& growthtrig,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const Core::LinAlg::Matrix<6, 1>& Cdachvec, const Core::LinAlg::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig) override;
 
     /*! Evaluate growth function wrt growth factor theta
@@ -1046,11 +1046,11 @@ namespace MAT
      *
      */
     void evaluate_growth_function_deriv_theta(double& dgrowthfunctheta, double growthtrig,
-        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
-        const CORE::LINALG::Matrix<3, 3>& F_g,
-        const CORE::LINALG::Matrix<3, 1>& direction) override;
+        double theta, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const Core::LinAlg::Matrix<3, 3>& F_g,
+        const Core::LinAlg::Matrix<3, 1>& direction) override;
 
     /*! Evaluate growth function wrt right cauchy green tensor
      * \param Out
@@ -1066,18 +1066,18 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void evaluate_growth_function_deriv_c(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double growthtrig, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        const CORE::LINALG::Matrix<3, 1>& direction) override;
+    void evaluate_growth_function_deriv_c(Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+        double growthtrig, double theta, const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const Core::LinAlg::Matrix<3, 1>& direction) override;
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
-        CORE::LINALG::Matrix<3, 3>& F_g) override;
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd,
+        Core::LinAlg::Matrix<3, 3>& F_g) override;
 
     /// density scaling of specific growth law
     double DensityScale(const double theta) override;
@@ -1088,15 +1088,15 @@ namespace MAT
     //@}
 
     //! material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_growth_iso_stress;
+      return Core::Materials::m_growth_iso_stress;
     }
 
     //! material parameters
-    MAT::PAR::GrowthLawIsoStress* Parameter()
+    Mat::PAR::GrowthLawIsoStress* Parameter()
     {
-      return dynamic_cast<MAT::PAR::GrowthLawIsoStress*>(MAT::GrowthLawDyn::Parameter());
+      return dynamic_cast<Mat::PAR::GrowthLawIsoStress*>(Mat::GrowthLawDyn::Parameter());
     }
   };
 
@@ -1106,11 +1106,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters
-    class GrowthLawAC : public CORE::MAT::PAR::Parameter
+    class GrowthLawAC : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      GrowthLawAC(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      GrowthLawAC(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -1126,10 +1126,10 @@ namespace MAT
 
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// create growth law instance of matching type with my parameters
-      Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+      Teuchos::RCP<Mat::GrowthLaw> CreateGrowthLaw();
 
 
     };  // class Growth
@@ -1141,7 +1141,7 @@ namespace MAT
    public:
     /// construct empty material object
     GrowthLawAC();
-    explicit GrowthLawAC(MAT::PAR::GrowthLawAC* params);
+    explicit GrowthLawAC(Mat::PAR::GrowthLawAC* params);
 
 
 
@@ -1170,19 +1170,19 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, CORE::LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    void Evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
+        Mat::Growth& matgrowth, const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
-        CORE::LINALG::Matrix<3, 3>& F_g) override;
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd,
+        Core::LinAlg::Matrix<3, 3>& F_g) override;
 
     /// density scaling of specific growth law
     double DensityScale(const double theta) override;
@@ -1193,14 +1193,14 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_growth_ac;
+      return Core::Materials::m_growth_ac;
     }
 
-    MAT::PAR::GrowthLawAC* Parameter()
+    Mat::PAR::GrowthLawAC* Parameter()
     {
-      return dynamic_cast<MAT::PAR::GrowthLawAC*>(MAT::GrowthLawStatic::Parameter());
+      return dynamic_cast<Mat::PAR::GrowthLawAC*>(Mat::GrowthLawStatic::Parameter());
     }
   };
 
@@ -1214,10 +1214,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawACRadial(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      GrowthLawACRadial(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create growth law instance of matching type with my parameters
-      Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+      Teuchos::RCP<Mat::GrowthLaw> CreateGrowthLaw();
 
     };  // class Growth
 
@@ -1228,7 +1228,7 @@ namespace MAT
    public:
     /// construct empty material object
     GrowthLawACRadial();
-    explicit GrowthLawACRadial(MAT::PAR::GrowthLawAC* params);
+    explicit GrowthLawACRadial(Mat::PAR::GrowthLawAC* params);
 
     //! @name Evaluation methods
     //@{
@@ -1255,19 +1255,19 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, CORE::LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    void Evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
+        Mat::Growth& matgrowth, const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
-        CORE::LINALG::Matrix<3, 3>& F_g) override;
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd,
+        Core::LinAlg::Matrix<3, 3>& F_g) override;
 
     /// density scaling of specific growth law
     double DensityScale(const double theta) override;
@@ -1278,14 +1278,14 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_growth_ac_radial;
+      return Core::Materials::m_growth_ac_radial;
     }
 
-    MAT::PAR::GrowthLawACRadial* Parameter()
+    Mat::PAR::GrowthLawACRadial* Parameter()
     {
-      return dynamic_cast<MAT::PAR::GrowthLawACRadial*>(MAT::GrowthLawStatic::Parameter());
+      return dynamic_cast<Mat::PAR::GrowthLawACRadial*>(Mat::GrowthLawStatic::Parameter());
     }
   };
 
@@ -1298,10 +1298,10 @@ namespace MAT
     {
      public:
       /// standard constructor
-      GrowthLawACRadialRefConc(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      GrowthLawACRadialRefConc(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create growth law instance of matching type with my parameters
-      Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+      Teuchos::RCP<Mat::GrowthLaw> CreateGrowthLaw();
 
     };  // class Growth
 
@@ -1312,7 +1312,7 @@ namespace MAT
    public:
     /// construct empty material object
     GrowthLawACRadialRefConc();
-    explicit GrowthLawACRadialRefConc(MAT::PAR::GrowthLawAC* params);
+    explicit GrowthLawACRadialRefConc(Mat::PAR::GrowthLawAC* params);
 
     //! @name Evaluation methods
     //@{
@@ -1339,19 +1339,19 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, CORE::LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    void Evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
+        Mat::Growth& matgrowth, const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
-        CORE::LINALG::Matrix<3, 3>& F_g) override;
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd,
+        Core::LinAlg::Matrix<3, 3>& F_g) override;
 
     /// density scaling of specific growth law
     double DensityScale(const double theta) override;
@@ -1362,14 +1362,14 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_growth_ac_radial_refconc;
+      return Core::Materials::m_growth_ac_radial_refconc;
     }
 
-    MAT::PAR::GrowthLawACRadialRefConc* Parameter()
+    Mat::PAR::GrowthLawACRadialRefConc* Parameter()
     {
-      return dynamic_cast<MAT::PAR::GrowthLawACRadialRefConc*>(MAT::GrowthLawStatic::Parameter());
+      return dynamic_cast<Mat::PAR::GrowthLawACRadialRefConc*>(Mat::GrowthLawStatic::Parameter());
     }
   };
 
@@ -1379,11 +1379,11 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters
-    class GrowthLawConst : public CORE::MAT::PAR::Parameter
+    class GrowthLawConst : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      GrowthLawConst(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      GrowthLawConst(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -1397,10 +1397,10 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       /// create growth law instance of matching type with my parameters
-      Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+      Teuchos::RCP<Mat::GrowthLaw> CreateGrowthLaw();
 
     };  // class Growth
 
@@ -1412,7 +1412,7 @@ namespace MAT
    public:
     /// construct empty material object
     GrowthLawConst();
-    explicit GrowthLawConst(MAT::PAR::GrowthLawConst* params);
+    explicit GrowthLawConst(Mat::PAR::GrowthLawConst* params);
 
     //! @name Evaluation methods
     //@{
@@ -1439,11 +1439,11 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, CORE::LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    void Evaluate(double* theta, const double& thetaold, Core::LinAlg::Matrix<6, 1>* dthetadC,
+        Mat::Growth& matgrowth, const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
     /*! \brief derivative of theta wrt parameters
@@ -1467,16 +1467,16 @@ namespace MAT
      * \date 07/2015
      */
     void EvaluatePDeriv(double* theta, const double& thetaold,
-        Teuchos::RCP<MAT::So3Material> matelastic, const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Teuchos::RCP<Mat::So3Material> matelastic, const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         const int eleGID) override;
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
-        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
-        CORE::LINALG::Matrix<3, 3>& F_g) override;
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<3, 1>& refdir,
+        const std::vector<Core::LinAlg::Matrix<3, 1>>& curdir,
+        const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd,
+        Core::LinAlg::Matrix<3, 3>& F_g) override;
 
     /// density scaling of specific growth law
     double DensityScale(const double theta) override;
@@ -1487,17 +1487,17 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_growth_const;
+      return Core::Materials::m_growth_const;
     }
 
-    MAT::PAR::GrowthLawConst* Parameter()
+    Mat::PAR::GrowthLawConst* Parameter()
     {
-      return dynamic_cast<MAT::PAR::GrowthLawConst*>(MAT::GrowthLawStatic::Parameter());
+      return dynamic_cast<Mat::PAR::GrowthLawConst*>(Mat::GrowthLawStatic::Parameter());
     }
   };
-}  // namespace MAT
+}  // namespace Mat
 
 
 

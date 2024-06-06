@@ -28,7 +28,7 @@ parameters or totally different strain energy function).
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration due to avoid header definition
-namespace MAT
+namespace Mat
 {
   // forward declaration
   class ScalarDepInterp;
@@ -42,11 +42,11 @@ namespace MAT
      *  \author thon
      *  \date 12/2015
      */
-    class ScalarDepInterp : public CORE::MAT::PAR::Parameter
+    class ScalarDepInterp : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      ScalarDepInterp(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      ScalarDepInterp(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// @name material parameters
       //@{
@@ -57,20 +57,20 @@ namespace MAT
       //@}
 
       // create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class ScalarDepInterp
 
   }  // namespace PAR
 
-  class ScalarDepInterpType : public CORE::COMM::ParObjectType
+  class ScalarDepInterpType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "ScalarDepInterpType"; }
 
     static ScalarDepInterpType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScalarDepInterpType instance_;
@@ -87,7 +87,7 @@ namespace MAT
   ///\f[
   ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
   ///\f]
-  /// in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELASTIC::Summand.
+  /// in which the individual \f$\Psi_i\f$ is implemented as #Mat::Elastic::Summand.
   ///
   /// Quite often the right Cauchy-Green 2-tensor \f$\boldsymbol{C}\f$
   /// is replaced by its various invariant forms as argument.
@@ -112,7 +112,7 @@ namespace MAT
     ScalarDepInterp();
 
     /// construct the material object given material parameters
-    explicit ScalarDepInterp(MAT::PAR::ScalarDepInterp* params);
+    explicit ScalarDepInterp(Mat::PAR::ScalarDepInterp* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -134,7 +134,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -151,20 +151,20 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_sc_dep_interp;
+      return Core::Materials::m_sc_dep_interp;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (!(kinem == Inpar::STR::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new ScalarDepInterp(*this));
     }
@@ -185,25 +185,25 @@ namespace MAT
     };
 
     /// provide access to material by its ID
-    //     virtual Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const {
+    //     virtual Teuchos::RCP<const Mat::Elastic::Summand> MaterialById(const int id) const {
     //     return params_->MaterialById(id); }
 
 
     /// hyperelastic stress response plus elasticity tensor
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const CORE::LINALG::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const Core::LinAlg::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
         Teuchos::ParameterList& params,      ///< Container for additional information
-        CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
-        CORE::LINALG::Matrix<6, 6>* cmat,    ///< Constitutive matrix
+        Core::LinAlg::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
+        Core::LinAlg::Matrix<6, 6>* cmat,    ///< Constitutive matrix
         int gp,                              ///< Gauss point
         int eleGID                           ///< Element GID
         ) override;
 
     /// setup
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;
@@ -212,31 +212,31 @@ namespace MAT
     bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     /// Reading material weights (lambda) from input file
-    void ReadLambda(INPUT::LineDefinition* linedef, std::string specifier, double& lambda);
+    void ReadLambda(Input::LineDefinition* linedef, std::string specifier, double& lambda);
 
     /// evaluate strain energy function
-    void StrainEnergy(const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp,
+    void StrainEnergy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,
         const int eleGID) override;
 
    private:
     /// my material parameters
-    MAT::PAR::ScalarDepInterp* params_;
+    Mat::PAR::ScalarDepInterp* params_;
 
     /// indicates if material is initialized
     bool isinit_;
 
     /// elastic material for zero lambda
-    Teuchos::RCP<MAT::So3Material> lambda_zero_mat_;
+    Teuchos::RCP<Mat::So3Material> lambda_zero_mat_;
 
     /// elastic material for unit lambda
-    Teuchos::RCP<MAT::So3Material> lambda_unit_mat_;
+    Teuchos::RCP<Mat::So3Material> lambda_unit_mat_;
 
     /// interpolation parameter (0-->IDMATZEROSC,1-->IDMATUNITSC)
     std::vector<double> lambda_;
   };
 
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

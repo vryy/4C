@@ -26,9 +26,9 @@ FOUR_C_NAMESPACE_OPEN
 THR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& ioparams,  //!< ioflags
     const Teuchos::ParameterList& tdynparams,                        //!< input parameters
     const Teuchos::ParameterList& xparams,                           //!< extra flags
-    Teuchos::RCP<DRT::Discretization> actdis,                        //!< current discretisation
-    Teuchos::RCP<CORE::LINALG::Solver> solver,                       //!< the solver
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output              //!< the output
+    Teuchos::RCP<Discret::Discretization> actdis,                    //!< current discretisation
+    Teuchos::RCP<Core::LinAlg::Solver> solver,                       //!< the solver
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output              //!< the output
     )
     : TimInt(ioparams, tdynparams, xparams, actdis, solver, output)
 {

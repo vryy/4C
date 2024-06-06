@@ -23,14 +23,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
-    const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::FSIStructureWrapper& structure,
-    ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale, bool structuresplit, int symmetric,
+    const Core::LinAlg::MultiMapExtractor& maps, Adapter::FSIStructureWrapper& structure,
+    Adapter::Fluid& fluid, Adapter::AleFsiWrapper& ale, bool structuresplit, int symmetric,
     std::vector<std::string>& blocksmoother, std::vector<double>& schuromega,
     std::vector<double>& omega, std::vector<int>& iterations, std::vector<double>& somega,
     std::vector<int>& siterations, std::vector<double>& fomega, std::vector<int>& fiterations,
     std::vector<double>& aomega, std::vector<int>& aiterations, int analyze,
-    INPAR::FSI::LinearBlockSolver strategy, std::list<int> interfaceprocs,
-    INPAR::FSI::Verbosity verbosity)
+    Inpar::FSI::LinearBlockSolver strategy, std::list<int> interfaceprocs,
+    Inpar::FSI::Verbosity verbosity)
     : OverlappingBlockMatrix(Teuchos::null, maps, structure, fluid, ale, structuresplit, symmetric,
           omega[0], iterations[0], somega[0],
           siterations[0] - 1,  // base class counts iterations starting from 0
@@ -41,18 +41,18 @@ FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
       interfaceprocs_(interfaceprocs),
       additiveschwarzeverywhere_(true)
 {
-  if (strategy_ != INPAR::FSI::HybridSchwarz)
+  if (strategy_ != Inpar::FSI::HybridSchwarz)
     FOUR_C_THROW("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
 
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
-  additiveschwarzeverywhere_ = CORE::UTILS::IntegralValue<bool>(fsimono, "HYBRIDFULL");
+  additiveschwarzeverywhere_ = Core::UTILS::IntegralValue<bool>(fsimono, "HYBRIDFULL");
 
-  INPAR::FSI::LinearBlockSolver innerstrategy =
-      CORE::UTILS::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "INNERPREC");
+  Inpar::FSI::LinearBlockSolver innerstrategy =
+      Core::UTILS::IntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "INNERPREC");
 
-  if (innerstrategy != INPAR::FSI::PreconditionedKrylov)
+  if (innerstrategy != Inpar::FSI::PreconditionedKrylov)
     FOUR_C_THROW("Type of INNERPREC parameter not recognized by this class");
 
   // create 'mulitplicative' part of hybrid preconditioner
@@ -71,7 +71,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   Teuchos::ParameterList ifpacklist;
   Teuchos::ParameterList azlist;
 
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // ---------------------------------------------------------------------------
@@ -81,17 +81,17 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   ifpacklist.set<std::string>("amesos: solver type", "Amesos_Umfpack");
 
   // check whether ILU or LU (Amesos) should be used to calculate processor-local inverse
-  INPAR::FSI::HybridASType type =
-      CORE::UTILS::IntegralValue<INPAR::FSI::HybridASType>(fsimono, "HYBRID_AS_TYPE");
+  Inpar::FSI::HybridASType type =
+      Core::UTILS::IntegralValue<Inpar::FSI::HybridASType>(fsimono, "HYBRID_AS_TYPE");
 
   switch (type)
   {
-    case INPAR::FSI::hybrid_as_type_Amesos_LU:
+    case Inpar::FSI::hybrid_as_type_Amesos_LU:
     {
       azlist.set<std::string>("Preconditioner Type", "Amesos");
       break;
     }
-    case INPAR::FSI::hybrid_as_type_ILU:
+    case Inpar::FSI::hybrid_as_type_ILU:
     {
       azlist.set<std::string>("Preconditioner Type", "ILU");
       break;
@@ -105,7 +105,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
     }
   }
 
-  ifpackprec_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::IFPACKPreconditioner(ifpacklist, azlist));
+  ifpackprec_ = Teuchos::rcp(new Core::LinearSolver::IFPACKPreconditioner(ifpacklist, azlist));
 
   // get blocks of system matrix and save them in 2-dim array
   std::vector<std::vector<Teuchos::RCP<Epetra_CrsMatrix>>> rows;
@@ -215,7 +215,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
 
   /****************************************************************************/
 
-  // CORE::LINALG::PrintMatrixInMatlabFormat("precondmat.dat",*A);
+  // Core::LinAlg::PrintMatrixInMatlabFormat("precondmat.dat",*A);
 
   // Teuchos::RCP<Ifpack_LocalFilter> localmat = Teuchos::rcp(new Ifpack_LocalFilter(A));
 
@@ -289,14 +289,14 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   //  testmat->fill_complete();
   //  testmat->OptimizeStorage();
   //
-  //  Teuchos::RCP<CORE::LINALG::SOLVER::IFPACKPreconditioner> testprec;
+  //  Teuchos::RCP<Core::LinAlg::SOLVER::IFPACKPreconditioner> testprec;
   //  testprec = Teuchos::rcp(new
-  //  CORE::LINALG::SOLVER::IFPACKPreconditioner(&outfile,ifpacklist,azlist));
+  //  Core::LinAlg::SOLVER::IFPACKPreconditioner(&outfile,ifpacklist,azlist));
   //  Teuchos::RCP<Epetra_MultiVector> xtest = Teuchos::rcp(new Epetra_MultiVector(*testmap,1));
   //  testprec->Setup(true, testmat.getRawPtr(), x.getRawPtr(), x.getRawPtr());
   //
   //
-  //  CORE::LINALG::PrintMatrixInMatlabFormat("testmat.dat",*testmat);
+  //  Core::LinAlg::PrintMatrixInMatlabFormat("testmat.dat",*testmat);
   //  std::cout<<"\nEpetraMatrix: "<<std::endl;
   //  testmat->Print(std::cout);
   //

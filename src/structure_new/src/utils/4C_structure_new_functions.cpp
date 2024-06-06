@@ -21,20 +21,20 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   /// returns St. Venant Kirchhof quick access parameters from given material id
-  const MAT::PAR::StVenantKirchhoff& GetSVKMatPars(int mat_id)
+  const Mat::PAR::StVenantKirchhoff& GetSVKMatPars(int mat_id)
   {
-    auto* params = GLOBAL::Problem::Instance()->Materials()->ParameterById(mat_id);
-    if (params->Type() != CORE::Materials::m_stvenant)
+    auto* params = Global::Problem::Instance()->Materials()->ParameterById(mat_id);
+    if (params->Type() != Core::Materials::m_stvenant)
       FOUR_C_THROW("Material %d is not a St.Venant-Kirchhoff structure material", mat_id);
-    auto* fparams = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params);
+    auto* fparams = dynamic_cast<Mat::PAR::StVenantKirchhoff*>(params);
     if (!fparams) FOUR_C_THROW("Material does not cast to St.Venant-Kirchhoff structure material");
     return *fparams;
   }
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CreateStructureFunction(
-      const std::vector<INPUT::LineDefinition>& function_line_defs)
+  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> CreateStructureFunction(
+      const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
@@ -77,7 +77,7 @@ namespace
     }
     else
     {
-      return Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime>(nullptr);
+      return Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>(nullptr);
     }
   }
 }  // namespace
@@ -85,14 +85,14 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::AddValidStructureFunctions(CORE::UTILS::FunctionManager& function_manager)
+void STR::AddValidStructureFunctions(Core::UTILS::FunctionManager& function_manager)
 {
-  std::vector<INPUT::LineDefinition> lines;
-  lines.emplace_back(INPUT::LineDefinition::Builder()
+  std::vector<Input::LineDefinition> lines;
+  lines.emplace_back(Input::LineDefinition::Builder()
                          .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
                          .AddNamedInt("MAT_STRUC")
                          .Build());
-  lines.emplace_back(INPUT::LineDefinition::Builder()
+  lines.emplace_back(Input::LineDefinition::Builder()
                          .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
                          .AddNamedInt("MAT_STRUC")
                          .Build());
@@ -104,7 +104,7 @@ void STR::AddValidStructureFunctions(CORE::UTILS::FunctionManager& function_mana
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 STR::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSIStructureFunction(
-    const MAT::PAR::StVenantKirchhoff& fparams)
+    const Mat::PAR::StVenantKirchhoff& fparams)
 {
 }
 
@@ -118,7 +118,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate(
   double y = xp[1];
 
   // initialize variables
-  CORE::LINALG::Matrix<2, 1> u_ex;
+  Core::LinAlg::Matrix<2, 1> u_ex;
 
   // evaluate variables
   u_ex(0) = -((cos(2. * M_PI * t) * cos(2. * M_PI * x)) / 6. + 1.) * (y - 1.);
@@ -156,7 +156,7 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::evaluate
     double y = xp[1];
 
     // initialize variables
-    CORE::LINALG::Matrix<2, 1> dudt_ex;
+    Core::LinAlg::Matrix<2, 1> dudt_ex;
 
     // evaluate variables
     dudt_ex(0) = (M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * t) * (y - 1.)) / 3.;
@@ -197,7 +197,7 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::evaluate
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 STR::WeaklyCompressibleEtienneFSIStructureForceFunction::
-    WeaklyCompressibleEtienneFSIStructureForceFunction(const MAT::PAR::StVenantKirchhoff& fparams)
+    WeaklyCompressibleEtienneFSIStructureForceFunction(const Mat::PAR::StVenantKirchhoff& fparams)
     : youngmodulus_(fparams.youngs_),
       poissonratio_(fparams.poissonratio_),
       strucdensity_(fparams.density_)
@@ -217,7 +217,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Evaluate(
   double r = strucdensity_;
 
   // initialize variables
-  CORE::LINALG::Matrix<2, 1> f_u_ex;
+  Core::LinAlg::Matrix<2, 1> f_u_ex;
 
   // evaluate variables
   f_u_ex(0) = (2. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * cos(2. * M_PI * x) * (y - 1.) *

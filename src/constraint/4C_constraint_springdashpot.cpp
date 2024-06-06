@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                         pfaller Apr15|
  *----------------------------------------------------------------------*/
 CONSTRAINTS::SpringDashpot::SpringDashpot(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::Conditions::Condition> cond)
+    Teuchos::RCP<Discret::Discretization> dis, Teuchos::RCP<Core::Conditions::Condition> cond)
     : actdisc_(std::move(dis)),
       spring_(std::move(cond)),
       stiff_tens_((spring_->parameters().Get<std::vector<double>>("stiff"))[0]),
@@ -84,10 +84,10 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
   if (springtype_ == cursurfnormal)
   {
     // get geometry
-    std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = spring_->Geometry();
+    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = spring_->Geometry();
     // calculate nodal area
     if (!actdisc_->Comm().MyPID())
-      CORE::IO::cout << "Computing area for spring dashpot condition...\n";
+      Core::IO::cout << "Computing area for spring dashpot condition...\n";
     get_area(geom);
     initialize_cur_surf_normal();
   }
@@ -101,7 +101,7 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
 /*----------------------------------------------------------------------*
  * Integrate a Surface Robin boundary condition (public)       mhv 08/16|
  * ---------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
+void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
     Teuchos::RCP<Epetra_Vector> fint, const Teuchos::RCP<const Epetra_Vector> disp,
     const Teuchos::RCP<const Epetra_Vector> velo, Teuchos::ParameterList p)
 {
@@ -149,9 +149,9 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
 
   switch (spring_->GType())
   {
-    case CORE::Conditions::geometry_type_surface:
+    case Core::Conditions::geometry_type_surface:
     {
-      std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom = spring_->Geometry();
+      std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = spring_->Geometry();
 
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
@@ -168,11 +168,11 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
         const int eledim = (int)lm.size();
 
         // define element matrices and vectors
-        CORE::LINALG::SerialDenseMatrix elematrix1;
-        CORE::LINALG::SerialDenseMatrix elematrix2;
-        CORE::LINALG::SerialDenseVector elevector1;
-        CORE::LINALG::SerialDenseVector elevector2;
-        CORE::LINALG::SerialDenseVector elevector3;
+        Core::LinAlg::SerialDenseMatrix elematrix1;
+        Core::LinAlg::SerialDenseMatrix elematrix2;
+        Core::LinAlg::SerialDenseVector elevector1;
+        Core::LinAlg::SerialDenseVector elevector2;
+        Core::LinAlg::SerialDenseVector elevector3;
 
         elevector1.size(eledim);
         elevector2.size(eledim);
@@ -183,7 +183,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("error while evaluating elements");
 
-        if (assvec) CORE::LINALG::Assemble(*fint, elevector1, lm, lmowner);
+        if (assvec) Core::LinAlg::Assemble(*fint, elevector1, lm, lmowner);
         if (assmat) stiff->Assemble(curr.second->Id(), lmstride, elematrix1, lm, lmowner);
 
         // save spring stress for postprocessing
@@ -200,7 +200,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
       } /* end of loop over geometry */
       break;
     }
-    case CORE::Conditions::geometry_type_point:
+    case Core::Conditions::geometry_type_point:
     {
       if (*direction == "xyz")
       {
@@ -215,7 +215,7 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
         // it to truss element
         if (node->NumElement() != 1) FOUR_C_THROW("Node may only have one element");
         auto* ele = node->Elements();
-        auto* truss_ele = dynamic_cast<DRT::ELEMENTS::Truss3*>(ele[0]);
+        auto* truss_ele = dynamic_cast<Discret::ELEMENTS::Truss3*>(ele[0]);
         if (truss_ele == nullptr)
         {
           FOUR_C_THROW(
@@ -245,21 +245,21 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
           const double dof_stiffness =
               (*numfuncstiff)[dof] != 0
                   ? (*springstiff)[dof] *
-                        GLOBAL::Problem::Instance()
-                            ->FunctionById<CORE::UTILS::FunctionOfTime>((*numfuncstiff)[dof] - 1)
+                        Global::Problem::Instance()
+                            ->FunctionById<Core::UTILS::FunctionOfTime>((*numfuncstiff)[dof] - 1)
                             .Evaluate(total_time)
                   : (*springstiff)[dof];
           const double dof_viscosity =
               (*numfuncvisco)[dof] != 0
                   ? (*dashpotvisc)[dof] *
-                        GLOBAL::Problem::Instance()
-                            ->FunctionById<CORE::UTILS::FunctionOfTime>((*numfuncvisco)[dof] - 1)
+                        Global::Problem::Instance()
+                            ->FunctionById<Core::UTILS::FunctionOfTime>((*numfuncvisco)[dof] - 1)
                             .Evaluate(total_time)
                   : (*dashpotvisc)[dof];
           const double dof_disploffset =
               (*numfuncdisploffset)[dof] != 0
-                  ? (*disploffset)[dof] * GLOBAL::Problem::Instance()
-                                              ->FunctionById<CORE::UTILS::FunctionOfTime>(
+                  ? (*disploffset)[dof] * Global::Problem::Instance()
+                                              ->FunctionById<Core::UTILS::FunctionOfTime>(
                                                   (*numfuncdisploffset)[dof] - 1)
                                               .Evaluate(total_time)
                   : (*disploffset)[dof];
@@ -276,12 +276,12 @@ void CONSTRAINTS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::Sparse
           {
             std::array<double, 3> displ = {(*disp)[0], (*disp)[1], (*disp)[2]};
             force_disp =
-                GLOBAL::Problem::Instance()
-                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>((*numfuncnonlinstiff)[dof] - 1)
+                Global::Problem::Instance()
+                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>((*numfuncnonlinstiff)[dof] - 1)
                     .Evaluate(displ.data(), total_time, 0);
 
-            force_disp_deriv = (GLOBAL::Problem::Instance()
-                                    ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
+            force_disp_deriv = (Global::Problem::Instance()
+                                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(
                                         (*numfuncnonlinstiff)[dof] - 1)
                                     .evaluate_spatial_derivative(displ.data(), total_time, 0))[dof];
           }
@@ -331,7 +331,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_force(Epetra_Vector& fint,
     if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
       int gid = node_gid;
-      CORE::Nodes::Node* node = actdisc_->gNode(gid);
+      Core::Nodes::Node* node = actdisc_->gNode(gid);
       if (!node) FOUR_C_THROW("Cannot find global node %d", gid);
 
       // get nodal values
@@ -431,7 +431,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_force(Epetra_Vector& fint,
 /*----------------------------------------------------------------------*
  |                                                         pfaller mar16|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::evaluate_force_stiff(CORE::LINALG::SparseMatrix& stiff,
+void CONSTRAINTS::SpringDashpot::evaluate_force_stiff(Core::LinAlg::SparseMatrix& stiff,
     Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
     const Teuchos::RCP<const Epetra_Vector> vel, Teuchos::ParameterList p)
 {
@@ -452,7 +452,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_force_stiff(CORE::LINALG::SparseMatrix
     // nodes owned by processor
     if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
-      CORE::Nodes::Node* node = actdisc_->gNode(node_gid);
+      Core::Nodes::Node* node = actdisc_->gNode(node_gid);
       if (!node) FOUR_C_THROW("Cannot find global node %d", node_gid);
 
       // get nodal values
@@ -538,7 +538,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_force_stiff(CORE::LINALG::SparseMatrix
 
             // stiffness
             std::map<int, double> dgap = dgap_[node_gid];
-            std::vector<CORE::GEN::Pairedvector<int, double>> dnormal = dnormals_[node_gid];
+            std::vector<Core::Gen::Pairedvector<int, double>> dnormal = dnormals_[node_gid];
 
             // check if projection exists
             if (!dnormal.empty() && !dgap.empty())
@@ -610,7 +610,7 @@ void CONSTRAINTS::SpringDashpot::ResetPrestress(Teuchos::RCP<const Epetra_Vector
       // nodes owned by processor
       if (actdisc_->NodeRowMap()->MyGID(node_gid))
       {
-        CORE::Nodes::Node* node = actdisc_->gNode(node_gid);
+        Core::Nodes::Node* node = actdisc_->gNode(node_gid);
         if (!node) FOUR_C_THROW("Cannot find global node %d", node_gid);
 
         const int numdof = actdisc_->NumDof(0, node);
@@ -645,7 +645,7 @@ void CONSTRAINTS::SpringDashpot::SetRestartOld(Teuchos::RCP<Epetra_MultiVector> 
     // nodes owned by processor
     if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
-      CORE::Nodes::Node* node = actdisc_->gNode(node_gid);
+      Core::Nodes::Node* node = actdisc_->gNode(node_gid);
       if (!node) FOUR_C_THROW("Cannot find global node %d", node_gid);
 
       [[maybe_unused]] const int numdof = actdisc_->NumDof(0, node);
@@ -758,10 +758,10 @@ void CONSTRAINTS::SpringDashpot::output_prestr_offset_old(
 void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
 {
   // create MORTAR interface
-  mortar_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar(GLOBAL::Problem::Instance()->NDim(),
-      GLOBAL::Problem::Instance()->mortar_coupling_params(),
-      GLOBAL::Problem::Instance()->contact_dynamic_params(),
-      GLOBAL::Problem::Instance()->spatial_approximation_type()));
+  mortar_ = Teuchos::rcp(new Adapter::CouplingNonLinMortar(Global::Problem::Instance()->NDim(),
+      Global::Problem::Instance()->mortar_coupling_params(),
+      Global::Problem::Instance()->contact_dynamic_params(),
+      Global::Problem::Instance()->spatial_approximation_type()));
 
   // create CONTACT elements at interface for normal and gap calculation
   mortar_->SetupSpringDashpot(actdisc_, actdisc_, spring_, coupling_, actdisc_->Comm());
@@ -769,11 +769,11 @@ void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
   // create temp vectors for gap initialization
   std::map<int, std::map<int, double>> tmpdgap_;
   std::map<int, std::vector<double>> tmpnormals_;
-  std::map<int, std::vector<CORE::GEN::Pairedvector<int, double>>> tmpdnormals_;
+  std::map<int, std::vector<Core::Gen::Pairedvector<int, double>>> tmpdnormals_;
 
   // empty displacement vector
   Teuchos::RCP<Epetra_Vector> disp;
-  disp = CORE::LINALG::CreateVector(*(actdisc_->dof_row_map()), true);
+  disp = Core::LinAlg::CreateVector(*(actdisc_->dof_row_map()), true);
 
   // initialize gap in reference configuration
   mortar_->Interface()->EvaluateDistances(disp, tmpnormals_, tmpdnormals_, gap0_, tmpdgap_);
@@ -785,11 +785,11 @@ void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
 |(private) adapted from mhv 01/14                           pfaller Apr15|
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::get_area(
-    const std::map<int, Teuchos::RCP<CORE::Elements::Element>>& geom)
+    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom)
 {
   for (const auto& ele : geom)
   {
-    CORE::Elements::Element* element = ele.second.get();
+    Core::Elements::Element* element = ele.second.get();
 
     Teuchos::ParameterList eparams;
 
@@ -797,9 +797,9 @@ void CONSTRAINTS::SpringDashpot::get_area(
     std::vector<int> lmowner;
     std::vector<int> lmstride;
     element->LocationVector(*(actdisc_), lm, lmowner, lmstride);
-    CORE::LINALG::SerialDenseMatrix dummat(0, 0);
-    CORE::LINALG::SerialDenseVector dumvec(0);
-    CORE::LINALG::SerialDenseVector elevector;
+    Core::LinAlg::SerialDenseMatrix dummat(0, 0);
+    Core::LinAlg::SerialDenseVector dumvec(0);
+    Core::LinAlg::SerialDenseVector elevector;
     const int eledim = (int)lm.size();
     elevector.size(eledim);
 
@@ -807,7 +807,7 @@ void CONSTRAINTS::SpringDashpot::get_area(
     eparams.set("area", 0.0);
     element->Evaluate(eparams, *(actdisc_), lm, dummat, dummat, dumvec, dumvec, dumvec);
 
-    CORE::FE::CellType shape = element->Shape();
+    Core::FE::CellType shape = element->Shape();
 
     double a = eparams.get("area", -1.0);
 
@@ -822,10 +822,10 @@ void CONSTRAINTS::SpringDashpot::get_area(
 
       switch (shape)
       {
-        case CORE::FE::CellType::tri3:
+        case Core::FE::CellType::tri3:
           apernode = a / element->num_node();
           break;
-        case CORE::FE::CellType::tri6:
+        case Core::FE::CellType::tri6:
         {
           // integration of shape functions over parameter element surface
           double int_N_cornernode = 0.;
@@ -843,10 +843,10 @@ void CONSTRAINTS::SpringDashpot::get_area(
             apernode = int_N_edgemidnode * a_inv_weight;
         }
         break;
-        case CORE::FE::CellType::quad4:
+        case Core::FE::CellType::quad4:
           apernode = a / element->num_node();
           break;
-        case CORE::FE::CellType::quad8:
+        case Core::FE::CellType::quad8:
         {
           // integration of shape functions over parameter element surface
           double int_N_cornernode = -1. / 3.;
@@ -864,7 +864,7 @@ void CONSTRAINTS::SpringDashpot::get_area(
             apernode = int_N_edgemidnode * a_inv_weight;
         }
         break;
-        case CORE::FE::CellType::quad9:
+        case Core::FE::CellType::quad9:
         {
           // integration of shape functions over parameter element surface
           double int_N_cornernode = 1. / 9.;
@@ -887,7 +887,7 @@ void CONSTRAINTS::SpringDashpot::get_area(
             apernode = int_N_edgemidnode * a_inv_weight;
         }
         break;
-        case CORE::FE::CellType::nurbs9:
+        case Core::FE::CellType::nurbs9:
           FOUR_C_THROW(
               "Not yet implemented for Nurbs! To do: Apply the correct weighting of the area per "
               "node!");
@@ -920,7 +920,7 @@ void CONSTRAINTS::SpringDashpot::initialize_prestr_offset()
   {
     if (actdisc_->NodeRowMap()->MyGID(node_gid))
     {
-      CORE::Nodes::Node* node = actdisc_->gNode(node_gid);
+      Core::Nodes::Node* node = actdisc_->gNode(node_gid);
       if (!node) FOUR_C_THROW("Cannot find global node %d", node_gid);
 
       int numdof = actdisc_->NumDof(0, node);

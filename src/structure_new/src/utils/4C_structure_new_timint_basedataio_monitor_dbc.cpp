@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-STR::TIMINT::ParamsMonitorDBC::ParamsMonitorDBC()
+STR::TimeInt::ParamsMonitorDBC::ParamsMonitorDBC()
     : isinit_(false),
       issetup_(false),
       output_interval_steps_(-1),
@@ -32,7 +32,7 @@ STR::TIMINT::ParamsMonitorDBC::ParamsMonitorDBC()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TIMINT::ParamsMonitorDBC::Init(
+void STR::TimeInt::ParamsMonitorDBC::Init(
     const Teuchos::ParameterList& IO_monitor_dbc_structure_paramslist)
 {
   // We have to call Setup() after Init()
@@ -52,14 +52,14 @@ void STR::TIMINT::ParamsMonitorDBC::Init(
 
   // write header in csv file
   write_header_ =
-      CORE::UTILS::IntegralValue<int>(IO_monitor_dbc_structure_paramslist, "WRITE_HEADER");
+      Core::UTILS::IntegralValue<int>(IO_monitor_dbc_structure_paramslist, "WRITE_HEADER");
 
   isinit_ = true;
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TIMINT::ParamsMonitorDBC::Setup()
+void STR::TimeInt::ParamsMonitorDBC::Setup()
 {
   FOUR_C_ASSERT(is_init(), "Init() has not been called, yet!");
 
@@ -70,7 +70,7 @@ void STR::TIMINT::ParamsMonitorDBC::Setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TIMINT::ParamsMonitorDBC::check_init_setup() const
+void STR::TimeInt::ParamsMonitorDBC::check_init_setup() const
 {
   FOUR_C_ASSERT(is_init() and is_setup(), "Call Init() and Setup() first!");
 }

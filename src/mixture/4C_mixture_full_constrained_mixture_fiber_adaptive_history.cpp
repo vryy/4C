@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void MIXTURE::DETAILS::AdaptTimestepAdaptivityInfo(
+void MIXTURE::Details::AdaptTimestepAdaptivityInfo(
     MIXTURE::TimestepAdaptivityInfo& timestep_adaptivity_info, unsigned int level,
     unsigned int num_coarsened_intervals)
 {
@@ -33,7 +33,7 @@ void MIXTURE::DETAILS::AdaptTimestepAdaptivityInfo(
   }
 }
 
-void MIXTURE::DETAILS::MarkCoarsenedTimestepAsToBeDeleted(std::vector<bool>& items_to_delete,
+void MIXTURE::Details::MarkCoarsenedTimestepAsToBeDeleted(std::vector<bool>& items_to_delete,
     const unsigned int num_items_to_delete, const unsigned int begin_index)
 {
   bool last_deleted = true;
@@ -55,7 +55,7 @@ void MIXTURE::DETAILS::MarkCoarsenedTimestepAsToBeDeleted(std::vector<bool>& ite
   }
 }
 
-void MIXTURE::TimestepAdaptivityInfo::Pack(CORE::COMM::PackBuffer& data) const
+void MIXTURE::TimestepAdaptivityInfo::Pack(Core::Communication::PackBuffer& data) const
 {
   data.AddtoPack(GetNumberOfLevels());
   for (const auto& item : list_)
@@ -69,13 +69,13 @@ void MIXTURE::TimestepAdaptivityInfo::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   std::size_t size_of_adaptivity_info;
-  CORE::COMM::ParObject::ExtractfromPack(position, data, size_of_adaptivity_info);
+  Core::Communication::ParObject::ExtractfromPack(position, data, size_of_adaptivity_info);
   list_.clear();
   list_.reserve(size_of_adaptivity_info);
   for (std::size_t i = 0; i < size_of_adaptivity_info; ++i)
   {
-    const unsigned int level = CORE::COMM::ParObject::ExtractInt(position, data);
-    const unsigned int num_intervals = CORE::COMM::ParObject::ExtractInt(position, data);
+    const unsigned int level = Core::Communication::ParObject::ExtractInt(position, data);
+    const unsigned int num_intervals = Core::Communication::ParObject::ExtractInt(position, data);
     list_.emplace_back(level, num_intervals);
   }
 }

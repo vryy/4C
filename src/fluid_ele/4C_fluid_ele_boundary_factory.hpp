@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
@@ -34,16 +34,16 @@ namespace DRT
       virtual ~FluidBoundaryFactory() = default;
 
       //! ProvideImpl
-      static FluidBoundaryInterface* ProvideImpl(CORE::FE::CellType distype, std::string problem);
+      static FluidBoundaryInterface* ProvideImpl(Core::FE::CellType distype, std::string problem);
 
      private:
       //! define FluidEleBoundaryCalc instances dependent on problemtype
-      template <CORE::FE::CellType distype>
+      template <Core::FE::CellType distype>
       static FluidBoundaryInterface* define_problem_type(std::string problem);
     };
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

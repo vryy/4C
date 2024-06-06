@@ -22,12 +22,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<DRT::Discretization> const& discret,
+void Discret::UTILS::ISendReceiveAny(Teuchos::RCP<Discret::Discretization> const& discret,
     std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosenddata,
     std::vector<std::pair<int, std::vector<int>>>& recvdata)
 {
   // build exporter
-  CORE::COMM::Exporter exporter(discret->Comm());
+  Core::Communication::Exporter exporter(discret->Comm());
   int const numproc = discret->Comm().NumProc();
   int const myrank = discret->Comm().MyPID();
 
@@ -43,10 +43,10 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<DRT::Discretization> const& discre
     std::vector<std::pair<int, std::vector<int>>>::const_iterator iter;
     for (iter = p->second.begin(); iter != p->second.end(); ++iter)
     {
-      CORE::COMM::PackBuffer data;
-      CORE::COMM::ParObject::AddtoPack(data, *iter);
+      Core::Communication::PackBuffer data;
+      Core::Communication::ParObject::AddtoPack(data, *iter);
       data.StartPacking();
-      CORE::COMM::ParObject::AddtoPack(data, *iter);
+      Core::Communication::ParObject::AddtoPack(data, *iter);
       sdata[p->first].insert(sdata[p->first].end(), data().begin(), data().end());
     }
     targetprocs[p->first] = 1;
@@ -89,7 +89,7 @@ void DRT::UTILS::ISendReceiveAny(Teuchos::RCP<DRT::Discretization> const& discre
       while (index < rdata.size())
       {
         std::pair<int, std::vector<int>> pair;
-        CORE::COMM::ParObject::ExtractfromPack(index, rdata, pair);
+        Core::Communication::ParObject::ExtractfromPack(index, rdata, pair);
         recvdata.push_back(pair);
       }
       if (index != rdata.size())

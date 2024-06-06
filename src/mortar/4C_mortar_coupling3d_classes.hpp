@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MORTAR
+namespace Mortar
 {
   // forward declarations
   // namespace UTILS
@@ -30,14 +30,14 @@ namespace MORTAR
          is based on "Puso, M.A., Laursen, T.A., Solberg, J., A segment-to-
          segment mortar contact method for quadratic elements and large
          deformations, CMAME, 197, 2008, pp. 555-566". For this type of
-         quadratic formulation, a quadratic MORTAR::Element is split into several
+         quadratic formulation, a quadratic Mortar::Element is split into several
          linear IntElements, on which the geometrical coupling is performed.
-         Note that this is a derived class from MORTAR::Element, with the
+         Note that this is a derived class from Mortar::Element, with the
          only difference that we explicitly set the node pointers here!
 
   */
 
-  class IntElement : public MORTAR::Element
+  class IntElement : public Mortar::Element
   {
    public:
     /*!
@@ -53,8 +53,8 @@ namespace MORTAR
     \param nodes (in):    pointers to nodes adjacent to this element
     \param isslave (in):  flag indicating whether element is slave or master side
     */
-    IntElement(int lid, int id, int owner, MORTAR::Element* parele, const CORE::FE::CellType& shape,
-        const int numnode, const int* nodeids, std::vector<CORE::Nodes::Node*> nodes,
+    IntElement(int lid, int id, int owner, Mortar::Element* parele, const Core::FE::CellType& shape,
+        const int numnode, const int* nodeids, std::vector<Core::Nodes::Node*> nodes,
         const bool isslave, const bool rewind);
 
 
@@ -68,13 +68,13 @@ namespace MORTAR
     \brief Get shape type of parent element
 
     */
-    virtual CORE::FE::CellType ParShape() const { return parele_->Shape(); }
+    virtual Core::FE::CellType ParShape() const { return parele_->Shape(); }
 
     /*!
     \brief Get shape type of parent element
 
     */
-    virtual MORTAR::Element* ParEle() const { return parele_; }
+    virtual Mortar::Element* ParEle() const { return parele_; }
 
     /*!
     \brief Affine map of IntElement coordinates to parent element
@@ -86,13 +86,13 @@ namespace MORTAR
     \brief Affine map of IntElement coordinate derivatives to parent element
 
     */
-    virtual bool MapToParent(const std::vector<CORE::GEN::Pairedvector<int, double>>& dxi,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& dparxi);
+    virtual bool MapToParent(const std::vector<Core::Gen::Pairedvector<int, double>>& dxi,
+        std::vector<Core::Gen::Pairedvector<int, double>>& dparxi);
 
-    CORE::Nodes::Node** Nodes() override
+    Core::Nodes::Node** Nodes() override
     {
-      if (parele_->Shape() != CORE::FE::CellType::nurbs9)
-        return CORE::Elements::Element::Nodes();
+      if (parele_->Shape() != Core::FE::CellType::nurbs9)
+        return Core::Elements::Element::Nodes();
       else
         return nodes_ptr_.data();
     }
@@ -108,7 +108,7 @@ namespace MORTAR
            inner vector for the spatial dimensions, map for the derivatives.
     */
     void NodeLinearization(
-        std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& nodelin) override;
+        std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin) override;
 
    protected:
     // don't want = operator and cctor
@@ -127,11 +127,11 @@ namespace MORTAR
     // that this Id is now used twice: once for the control point (as a part
     // of the discretization) and once for the pseudo-node, which is only
     // stored here temporarily.
-    std::vector<MORTAR::Node> nodes_;
-    std::vector<CORE::Nodes::Node*> nodes_ptr_;
+    std::vector<Mortar::Node> nodes_;
+    std::vector<Core::Nodes::Node*> nodes_ptr_;
     const bool rewind_;  // if the parameter space of the int element has been rewinded
 
-    MORTAR::Element* parele_;
+    Mortar::Element* parele_;
 
   };  // class IntElement
 
@@ -139,7 +139,7 @@ namespace MORTAR
   /*!
   \brief A class representing one Integration Cell after triangulation
          of the clip polygon of slave and master element from the Coupling
-         class. This class provides some basic funcitonality a MORTAR::Element would
+         class. This class provides some basic funcitonality a Mortar::Element would
          also provide (coords, shape functions and derivatives, Jacobian, ...).
          Note that an IntCell can EITHER live in physical space (this is the
          case when an auxiliary plane is used for 3D coupling) or in the slave
@@ -160,11 +160,11 @@ namespace MORTAR
     performed in parallel by individual processes.
 
     */
-    IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coords, double* auxn,
-        const CORE::FE::CellType& shape, std::vector<CORE::GEN::Pairedvector<int, double>>& linv1,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& linv2,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& linv3,
-        std::vector<CORE::GEN::Pairedvector<int, double>>& linauxn);
+    IntCell(int id, int nvertices, Core::LinAlg::Matrix<3, 3>& coords, double* auxn,
+        const Core::FE::CellType& shape, std::vector<Core::Gen::Pairedvector<int, double>>& linv1,
+        std::vector<Core::Gen::Pairedvector<int, double>>& linv2,
+        std::vector<Core::Gen::Pairedvector<int, double>>& linv3,
+        std::vector<Core::Gen::Pairedvector<int, double>>& linauxn);
 
     /*!
     \brief Destructor
@@ -236,7 +236,7 @@ namespace MORTAR
     \brief Return coordinates of intcell vertices
 
     */
-    const CORE::LINALG::Matrix<3, 3>& Coords() { return coords_; }
+    const Core::LinAlg::Matrix<3, 3>& Coords() { return coords_; }
 
     /*!
     \brief Return normal of auxiliary plane of this intcell
@@ -248,7 +248,7 @@ namespace MORTAR
     \brief Get shape type of element
 
     */
-    virtual CORE::FE::CellType Shape() const { return shape_; }
+    virtual Core::FE::CellType Shape() const { return shape_; }
 
     /*!
     \brief Return one of the three 'DerivVertex' maps (vectors) of this node
@@ -260,9 +260,9 @@ namespace MORTAR
     is addressed by an int-variable and checked internally.
 
     */
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& GetDerivVertex(int i)
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& GetDerivVertex(int i)
     {
-      if (shape_ == CORE::FE::CellType::line2)
+      if (shape_ == Core::FE::CellType::line2)
       {
         if (i < 0 || i > 1) FOUR_C_THROW("int_line has 2 vertex linearizations only!");
         return linvertex_[i];
@@ -278,7 +278,7 @@ namespace MORTAR
     \brief Return the 'DerivAuxn' map (vector) of this intcell
 
     */
-    virtual std::vector<CORE::GEN::Pairedvector<int, double>>& get_deriv_auxn() { return linauxn_; }
+    virtual std::vector<Core::Gen::Pairedvector<int, double>>& get_deriv_auxn() { return linauxn_; }
 
     //@}
 
@@ -307,7 +307,7 @@ namespace MORTAR
 
     */
     virtual bool evaluate_shape(
-        const double* xi, CORE::LINALG::Matrix<3, 1>& val, CORE::LINALG::Matrix<3, 2>& deriv);
+        const double* xi, Core::LinAlg::Matrix<3, 1>& val, Core::LinAlg::Matrix<3, 2>& deriv);
 
     /*!
     \brief Evaluate Jacobian determinant for parameter space integration
@@ -320,7 +320,7 @@ namespace MORTAR
            Note that this is a linearization with respect to the intcell
            vertices, which themselves have to be linearized later, of course!
     */
-    virtual void DerivJacobian(CORE::GEN::Pairedvector<int, double>& derivjac);
+    virtual void DerivJacobian(Core::Gen::Pairedvector<int, double>& derivjac);
 
     //@}
 
@@ -334,14 +334,14 @@ namespace MORTAR
     int masterId_;                       // id of master element
     int nvertices_;                      // number of vertices (always 3)
     double area_;                        // integration cell area
-    CORE::LINALG::Matrix<3, 3> coords_;  // coords of cell vertices
+    Core::LinAlg::Matrix<3, 3> coords_;  // coords of cell vertices
     double auxn_[3];                     // normal of auxiliary plane (3D)
 
     bool auxplane_;             // flag indicating coupling strategy (true = auxplane)
-    CORE::FE::CellType shape_;  // shape of this element (always tri3)
-    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>
+    Core::FE::CellType shape_;  // shape of this element (always tri3)
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>
         linvertex_;  // derivatives of the 3 vertices
-    std::vector<CORE::GEN::Pairedvector<int, double>>
+    std::vector<Core::Gen::Pairedvector<int, double>>
         linauxn_;  // derivatives of auxiliary plane normal
 
   };  // class IntCell
@@ -526,7 +526,7 @@ namespace MORTAR
 
   };  // class Vertex
 
-}  // namespace MORTAR
+}  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -25,11 +25,11 @@ namespace
    * Create a set of three different bounding volumes that is used for some unit tests.
    * The geometry is based on https://github.com/arborx/ArborX/issues/867
    */
-  std::vector<CORE::GEOMETRICSEARCH::BoundingVolume> CreateKDOPBoundingVolumes()
+  std::vector<Core::GeometricSearch::BoundingVolume> CreateKDOPBoundingVolumes()
   {
-    std::vector<CORE::GEOMETRICSEARCH::BoundingVolume> volumes(3);
+    std::vector<Core::GeometricSearch::BoundingVolume> volumes(3);
 
-    CORE::LINALG::Matrix<3, 1, double> point(true);
+    Core::LinAlg::Matrix<3, 1, double> point(true);
 
     // setting up bounding volume 1
     {

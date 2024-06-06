@@ -21,26 +21,26 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::evaluate_action(
-    CORE::Elements::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, const SCATRA::Action& action,
-    CORE::Elements::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+template <Core::FE::CellType distype, int probdim>
+int Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::evaluate_action(
+    Core::Elements::Element* ele, Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, const ScaTra::Action& action,
+    Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
   {
-    case SCATRA::Action::calc_elch_electrode_soc_and_c_rate:
+    case ScaTra::Action::calc_elch_electrode_soc_and_c_rate:
     {
       calculate_electrode_soc_and_c_rate(ele, discretization, la, elevec1_epetra);
 
       break;
     }
-    case SCATRA::Action::calc_elch_elctrode_mean_concentration:
+    case ScaTra::Action::calc_elch_elctrode_mean_concentration:
     {
       calculate_mean_electrode_concentration(ele, discretization, la, elevec1_epetra);
 
@@ -64,41 +64,41 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::evaluate_action
  | validity check with respect to input parameters, degrees of freedom, number of scalars etc. fang
  02/15 |
  *----------------------------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::check_elch_element_parameter(
-    CORE::Elements::Element* ele  //!< current element
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::check_elch_element_parameter(
+    Core::Elements::Element* ele  //!< current element
 )
 {
   // safety checks
-  if (ele->Material()->MaterialType() != CORE::Materials::m_electrode)
+  if (ele->Material()->MaterialType() != Core::Materials::m_electrode)
     FOUR_C_THROW("Invalid material type!");
 
   if (my::numscal_ != 1) FOUR_C_THROW("Invalid number of transported scalars!");
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::check_elch_element_parameter
+}  // Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::check_elch_element_parameter
 
 
 /*----------------------------------------------------------------------*
  | get conductivity                                          fang 02/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::get_conductivity(
-    const enum INPAR::ELCH::EquPot equpot,  //!< type of closing equation for electric potential
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::get_conductivity(
+    const enum Inpar::ElCh::EquPot equpot,  //!< type of closing equation for electric potential
     double& sigma_all,                      //!< conductivity of electrolyte solution
     std::vector<double>& sigma,  //!< conductivity or a single ion + overall electrolyte solution
     bool effCond)
 {
   // use precomputed conductivity
   sigma_all = diff_manager()->GetCond();
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::get_conductivity
+}  // Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::get_conductivity
 
 
 /*----------------------------------------------------------------------*
  | calculate weighted current density                        fang 07/16 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_current(
-    CORE::LINALG::Matrix<nsd_, 1>& q,        //!< flux of species k
-    const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_current(
+    Core::LinAlg::Matrix<nsd_, 1>& q,        //!< flux of species k
+    const Inpar::ScaTra::FluxType fluxtype,  //!< type fo flux
     const double fac                         //!< integration factor
 )
 {
@@ -117,8 +117,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_curr
 
   switch (fluxtype)
   {
-    case INPAR::SCATRA::flux_diffusive:
-    case INPAR::SCATRA::flux_total:
+    case Inpar::ScaTra::flux_diffusive:
+    case Inpar::ScaTra::flux_total:
     {
       // ohmic contribution to current density
       q.Update(-diff_manager()->GetCond(), var_manager()->GradPot());
@@ -131,19 +131,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_curr
       break;
     }
   }
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::calculate_current
+}  // Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::calculate_current
 
 
 /*----------------------------------------------------------------------*
  | calculate electrode state of charge and C rate            fang 01/15 |
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
-    probdim>::calculate_electrode_soc_and_c_rate(const CORE::Elements::Element* const&
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
+    probdim>::calculate_electrode_soc_and_c_rate(const Core::Elements::Element* const&
                                                      ele,  //!< the element we are dealing with
-    const DRT::Discretization& discretization,             //!< discretization
-    CORE::Elements::Element::LocationArray& la,            //!< location array
-    CORE::LINALG::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
+    const Discret::Discretization& discretization,         //!< discretization
+    Core::Elements::Element::LocationArray& la,            //!< location array
+    Core::LinAlg::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
 )
 {
   // safety check
@@ -157,9 +157,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
   if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
 
   // extract local nodal values from global state vectors
-  CORE::FE::ExtractMyValues(*phinp, my::ephinp_, la[0].lm_);
-  static std::vector<CORE::LINALG::Matrix<nen_, 1>> ephidtnp(2);
-  CORE::FE::ExtractMyValues(*phidtnp, ephidtnp, la[0].lm_);
+  Core::FE::ExtractMyValues(*phinp, my::ephinp_, la[0].lm_);
+  static std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(2);
+  Core::FE::ExtractMyValues(*phidtnp, ephidtnp, la[0].lm_);
 
   // initialize variables for integrals of concentration, its time derivative, and domain
   double intconcentration(0.);
@@ -167,8 +167,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
   double intdomain(0.);
 
   // integration points and weights
-  const CORE::FE::IntPointsAndWeights<nsd_ele_> intpoints(
-      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
+      ScaTra::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -210,7 +210,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     // extract velocities
     const Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel, "velocity field");
     if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"velocity field\"!");
-    CORE::FE::ExtractMyValues(*vel, my::evelnp_, la[ndsvel].lm_);
+    Core::FE::ExtractMyValues(*vel, my::evelnp_, la[ndsvel].lm_);
 
     // initialize additional variables for integrals related to velocity divergence
     double intdivv(0.);
@@ -229,7 +229,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
           my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 
       // compute velocity and its divergence
-      static CORE::LINALG::Matrix<nsd_, 1> v;
+      static Core::LinAlg::Matrix<nsd_, 1> v;
       v.Multiply(my::evelnp_, my::funct_);
       double divv(0.);
       my::get_divergence(divv, my::evelnp_);
@@ -255,16 +255,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     scalars(4) = intcdivv;
     scalars(5) = intvgradc;
   }
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::calculate_electrode_soc_and_c_rate
+}  // Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::calculate_electrode_soc_and_c_rate
 
 
 /*---------------------------------------------------------------------*
  | calculate weighted mass flux (no reactive flux so far)   fang 02/15 |
  *---------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_flux(
-    CORE::LINALG::Matrix<nsd_, 1>& q,        //!< flux of species k
-    const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_flux(
+    Core::LinAlg::Matrix<nsd_, 1>& q,        //!< flux of species k
+    const Inpar::ScaTra::FluxType fluxtype,  //!< type fo flux
     const int k                              //!< index of current scalar
 )
 {
@@ -278,8 +278,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_flux
   // add convective flux contribution
   switch (fluxtype)
   {
-    case INPAR::SCATRA::flux_diffusive:
-    case INPAR::SCATRA::flux_total:
+    case Inpar::ScaTra::flux_diffusive:
+    case Inpar::ScaTra::flux_total:
     {
       // diffusive flux contribution
       q.Update(-diff_manager()->GetIsotropicDiff(k), var_manager()->GradPhi(k));
@@ -292,44 +292,44 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_flux
       break;
     }
   }
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::calculate_flux
+}  // Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::calculate_flux
 
 
 /*----------------------------------------------------------------------------------------*
  | calculate error of numerical solution with respect to analytical solution   fang 10/16 |
  *----------------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
-    probdim>::cal_error_compared_to_analyt_solution(const CORE::Elements::Element*
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
+    probdim>::cal_error_compared_to_analyt_solution(const Core::Elements::Element*
                                                         ele,  //!< element
     Teuchos::ParameterList& params,                           //!< parameter list
-    CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
+    Core::LinAlg::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
 )
 {
   // call base class routine
   myelch::cal_error_compared_to_analyt_solution(ele, params, errors);
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::cal_error_compared_to_analyt_solution
+}  // Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::cal_error_compared_to_analyt_solution
 
 
 /*------------------------------------------------------------------------------*
  | set internal variables for electrodes                             fang 02/15 |
  *------------------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     probdim>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables
   var_manager()->set_internal_variables_elch_electrode(
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
-}  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::set_internal_variables_for_mat_and_rhs()
+}  // Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::set_internal_variables_for_mat_and_rhs()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
-    probdim>::calculate_mean_electrode_concentration(const CORE::Elements::Element* const& ele,
-    const DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseVector& conc)
+template <Core::FE::CellType distype, int probdim>
+void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
+    probdim>::calculate_mean_electrode_concentration(const Core::Elements::Element* const& ele,
+    const Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseVector& conc)
 {
   // for complete 1D simulation of battery:
   // Micro state must exist for electrolyte -> set value to 00
@@ -338,33 +338,33 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::line2, 1>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::line3, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::line2, 1>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::line2, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::line2, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tri3, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tri6, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::quad4, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::tri3, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::tri3, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::tri6, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::quad4, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::quad4, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::nurbs9, 2>;
+// Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::quad9, 2>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::hex8, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::hex8, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::tet10, 3>;
+// Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::hex20>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::hex27, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::tet4, 3>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::tet10, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::pyramid5, 3>;
+// Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::wedge6>;
+template class Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::pyramid5, 3>;
 // template class
-// DRT::ELEMENTS::ScaTraEleCalcElchElectrode<CORE::FE::CellType::nurbs27>;
+// Discret::ELEMENTS::ScaTraEleCalcElchElectrode<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

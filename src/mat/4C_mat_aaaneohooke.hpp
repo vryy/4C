@@ -31,20 +31,20 @@ the input line should read
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MAT
+namespace Mat
 {
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for aneurysm wall material
-    class AAAneohooke : public CORE::MAT::PAR::Parameter
+    class AAAneohooke : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      AAAneohooke(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      AAAneohooke(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
       // !brief enum for mapping between material parameter and entry in the matparams_ vector
       enum Matparamnames
@@ -61,14 +61,14 @@ namespace MAT
 
   }  // namespace PAR
 
-  class AAAneohookeType : public CORE::COMM::ParObjectType
+  class AAAneohookeType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "AAAneohookeType"; }
 
     static AAAneohookeType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static AAAneohookeType instance_;
@@ -83,12 +83,12 @@ namespace MAT
     AAAneohooke();
 
     // constructor with given material parameters
-    AAAneohooke(MAT::PAR::AAAneohooke* params);
+    AAAneohooke(Mat::PAR::AAAneohooke* params);
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::KinemType::nonlinearTotLag))
+      if (!(kinem == Inpar::STR::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
@@ -115,7 +115,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -146,29 +146,29 @@ namespace MAT
     }
 
     // material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_aaaneohooke;
+      return Core::Materials::m_aaaneohooke;
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new AAAneohooke(*this));
     }
 
     // THE material routine
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
         const int eleGID) override;
 
     /// evaluate strain energy function
-    void StrainEnergy(const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp,
+    void StrainEnergy(const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp,
         const int eleGID) override;
 
     /// Return quick accessible material parameter data
-    CORE::MAT::PAR::Parameter* Parameter() const override { return params_; }
+    Core::Mat::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;
@@ -179,9 +179,9 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::AAAneohooke* params_;
+    Mat::PAR::AAAneohooke* params_;
   };
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

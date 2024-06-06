@@ -25,9 +25,9 @@ FOUR_C_NAMESPACE_OPEN
 /* Constructor */
 STR::TimIntCentrDiff::TimIntCentrDiff(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& xparams, Teuchos::RCP<Discret::Discretization> actdis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : TimIntExpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       fextn_(Teuchos::null),
       fintn_(Teuchos::null),
@@ -48,7 +48,7 @@ STR::TimIntCentrDiff::TimIntCentrDiff(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntCentrDiff::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
+    Teuchos::RCP<Discret::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call Init() in base class
   STR::TimIntExpl::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -78,11 +78,11 @@ void STR::TimIntCentrDiff::Setup()
   ResizeMStep();
 
   // allocate force vectors
-  fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
-  fintn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
-  fviscn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
-  fcmtn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
-  frimpn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fintn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fviscn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  fcmtn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
+  frimpn_ = Core::LinAlg::CreateVector(*DofRowMapView(), true);
 
 
   return;
@@ -151,7 +151,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
   // *********** time measurement ***********
 
   // viscous forces due Rayleigh damping
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  if (damping_ == Inpar::STR::damp_rayleigh)
   {
     damp_->Multiply(false, *veln_, *fviscn_);
   }
@@ -181,7 +181,7 @@ int STR::TimIntCentrDiff::IntegrateStep()
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
   frimpn_->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 
-  if (damping_ == INPAR::STR::damp_rayleigh)
+  if (damping_ == Inpar::STR::damp_rayleigh)
   {
     frimpn_->Update(-1.0, *fviscn_, 1.0);
   }
@@ -205,13 +205,13 @@ int STR::TimIntCentrDiff::IntegrateStep()
 
     // in case of no lumping or if mass matrix is a BlockSparseMatrix, use solver
     if (lumpmass_ == false ||
-        Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mass_) == Teuchos::null)
+        Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_) == Teuchos::null)
     {
       // linear solver call
       // refactor==false: This is not necessary, because we always
       // use the same constant mass matrix, which was firstly factorised
       // in TimInt::determine_mass_damp_consist_accel
-      CORE::LINALG::SolverParams solver_params;
+      Core::LinAlg::SolverParams solver_params;
       solver_params.reset = true;
       solver_->Solve(mass_->EpetraOperator(), accn_, frimpn_, solver_params);
     }
@@ -219,9 +219,9 @@ int STR::TimIntCentrDiff::IntegrateStep()
     // direct inversion based on lumped mass matrix
     else
     {
-      Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix =
-          Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mass_);
-      Teuchos::RCP<Epetra_Vector> diagonal = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix =
+          Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_);
+      Teuchos::RCP<Epetra_Vector> diagonal = Core::LinAlg::CreateVector(*DofRowMapView(), true);
       int error = massmatrix->ExtractDiagonalCopy(*diagonal);
       if (error != 0) FOUR_C_THROW("ERROR: ExtractDiagonalCopy went wrong");
       accn_->ReciprocalMultiply(1.0, *diagonal, *frimpn_, 0.0);
@@ -289,7 +289,7 @@ void STR::TimIntCentrDiff::ReadRestartForce()
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntCentrDiff::WriteRestartForce(Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+void STR::TimIntCentrDiff::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   return;
 }

@@ -19,9 +19,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Mesh;
     class Side;
@@ -40,7 +40,7 @@ namespace CORE::GEO
        *
        *  \author hiermeier \date 08/16 */
       static Teuchos::RCP<Edge> Create(
-          CORE::FE::CellType edgetype, const std::vector<Node*>& nodes);
+          Core::FE::CellType edgetype, const std::vector<Node*>& nodes);
 
       /** \brief Create a new concrete edge object
        *
@@ -75,7 +75,7 @@ namespace CORE::GEO
 
       virtual unsigned NumNodes() const = 0;
 
-      virtual CORE::FE::CellType Shape() const = 0;
+      virtual Core::FE::CellType Shape() const = 0;
 
       /*! \brief Add the side to the list of sides cut by this edge */
       void Register(Side* side)
@@ -105,7 +105,7 @@ namespace CORE::GEO
       const plain_side_set& Sides() { return sides_; }
 
       virtual void GetTouchingPoints(const std::vector<Node*>& nodes, std::vector<Node*>& points,
-          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) = 0;
+          Inpar::Cut::CutFloattype floattype = Inpar::Cut::floattype_double) = 0;
 
       /*! \brief Get the intersection points of this edge with the given side and
        * store the cut points in cuts */
@@ -285,9 +285,9 @@ namespace CORE::GEO
     };  // class Edge
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probDim, CORE::FE::CellType edgeType,
-        unsigned dimEdge = CORE::FE::dim<edgeType>,
-        unsigned numNodesEdge = CORE::FE::num_nodes<edgeType>>
+    template <unsigned probDim, Core::FE::CellType edgeType,
+        unsigned dimEdge = Core::FE::dim<edgeType>,
+        unsigned numNodesEdge = Core::FE::num_nodes<edgeType>>
     class ConcreteEdge : public Edge
     {
      public:
@@ -304,7 +304,7 @@ namespace CORE::GEO
       unsigned ProbDim() const override { return probDim; }
 
       /// get the shape of this edge element
-      CORE::FE::CellType Shape() const override { return edgeType; }
+      Core::FE::CellType Shape() const override { return edgeType; }
 
       /*! \brief Get the coordinates of the nodes of the side */
       void Coordinates(double* xyze) override
@@ -319,11 +319,11 @@ namespace CORE::GEO
       }
 
       void GetTouchingPoints(const std::vector<Node*>& nodes, std::vector<Node*>& touch_nodes,
-          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double) override;
+          Inpar::Cut::CutFloattype floattype = Inpar::Cut::floattype_double) override;
 
       /*! \brief Handles intersection of two edges that are close to each other */
       virtual bool HandleParallelCut(Edge* other, Side* side, PointSet* cut_points,
-          INPAR::CUT::CutFloattype floattype = INPAR::CUT::floattype_double);
+          Inpar::Cut::CutFloattype floattype = Inpar::Cut::floattype_double);
 
       bool JustParallelCut(Mesh& mesh, Side& side, PointSet& cuts, int skip_id = -1) override;
 
@@ -376,12 +376,12 @@ namespace CORE::GEO
             cutfound = true;
             double z = blsv / (blsv - elsv);
 
-            CORE::LINALG::Matrix<probDim, 1> x1;
-            CORE::LINALG::Matrix<probDim, 1> x2;
+            Core::LinAlg::Matrix<probDim, 1> x1;
+            Core::LinAlg::Matrix<probDim, 1> x2;
             BeginNode()->Coordinates(x1.A());
             EndNode()->Coordinates(x2.A());
 
-            CORE::LINALG::Matrix<probDim, 1> x;
+            Core::LinAlg::Matrix<probDim, 1> x;
             x.Update(-1., x1, 1., x2, 0.);
             x.Update(1., x1, z);
             Point* p = Point::NewPoint(mesh, x.A(), 2. * z - 1., this, &side, 0.0);
@@ -390,14 +390,14 @@ namespace CORE::GEO
         }
 
         //      std::cout <<"LS cut found? --> " << (cutfound ? "TRUE" : "FALSE") << std::endl;
-        //      FOUR_C_THROW("CORE::GEO::CUT::Edge::LevelSetCut -- STOP -- hiermeier 08/16");
+        //      FOUR_C_THROW("Core::Geo::Cut::Edge::LevelSetCut -- STOP -- hiermeier 08/16");
 
         return cutfound;
       }
 
      private:
-      Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> intersection_ptr(
-          const CORE::FE::CellType& sidetype) const;
+      Teuchos::RCP<Core::Geo::Cut::IntersectionBase> intersection_ptr(
+          const Core::FE::CellType& sidetype) const;
 
     };  // class ConcreteEdge
 
@@ -413,10 +413,10 @@ namespace CORE::GEO
 
       /// create the concrete edge object
       Teuchos::RCP<Edge> CreateEdge(
-          const CORE::FE::CellType& edgetype, const std::vector<Node*>& nodes) const;
+          const Core::FE::CellType& edgetype, const std::vector<Node*>& nodes) const;
 
      private:
-      template <CORE::FE::CellType edgetype>
+      template <Core::FE::CellType edgetype>
       Edge* create_concrete_edge(const std::vector<Node*>& nodes, int probdim) const
       {
         Edge* e = nullptr;
@@ -435,8 +435,8 @@ namespace CORE::GEO
         return e;
       }
     };  // class EdgeFactory
-  }     // namespace CUT
-}  // namespace CORE::GEO
+  }     // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -17,9 +17,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace CUT
+  namespace Cut
   {
     class Point;
     class Node;
@@ -142,7 +142,7 @@ namespace CORE::GEO
       void FindIslands();
 
       /// Get next Sides
-      void NextSides(Side* cutside, Teuchos::RCP<CORE::GEO::CUT::BoundingBox>& tmpbb,
+      void NextSides(Side* cutside, Teuchos::RCP<Core::Geo::Cut::BoundingBox>& tmpbb,
           // plain_side_set allselfcutsides,
           plain_side_set& selfcutsides, plain_side_set& islandsides, bool& IsIsland);
 
@@ -232,10 +232,10 @@ namespace CORE::GEO
       int myrank_;
 
       /// The Cut Mesh
-      CORE::GEO::CUT::Mesh& mesh_;
+      Core::Geo::Cut::Mesh& mesh_;
 
       /// The Cut Meshhandle (Interface to the outer world)
-      CORE::GEO::CUT::MeshHandle& meshhandle_;
+      Core::Geo::Cut::MeshHandle& meshhandle_;
 
       std::map<plain_int_set, Teuchos::RCP<Side>> selfcut_sides_;
 
@@ -249,8 +249,8 @@ namespace CORE::GEO
       double meshsizeparam_;
     };
 
-  }  // namespace CUT
-}  // namespace CORE::GEO
+  }  // namespace Cut
+}  // namespace Core::Geo
 
 FOUR_C_NAMESPACE_CLOSE
 

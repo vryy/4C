@@ -29,7 +29,7 @@ namespace
 }  // namespace
 
 
-CORE::IO::RestartManager::RestartManager()
+Core::IO::RestartManager::RestartManager()
     : startwalltime_(walltime_in_seconds()),
       restartevrytime_(-1.0),
       restartcounter_(0),
@@ -51,7 +51,7 @@ CORE::IO::RestartManager::RestartManager()
 }
 
 /// set the time interval to enforce restart writing
-void CORE::IO::RestartManager::SetupRestartManager(
+void Core::IO::RestartManager::SetupRestartManager(
     const double restartinterval, const int restartevry)
 {
   restartevrytime_ = restartinterval;
@@ -59,7 +59,7 @@ void CORE::IO::RestartManager::SetupRestartManager(
 }
 
 /// return whether it is time for a restart after a certain walltime interval
-bool CORE::IO::RestartManager::Restart(const int step, const Epetra_Comm& comm)
+bool Core::IO::RestartManager::Restart(const int step, const Epetra_Comm& comm)
 {
   // make sure that all after the first field write restart, too
   if (step == lastacceptedstep_) return true;
@@ -93,12 +93,12 @@ bool CORE::IO::RestartManager::Restart(const int step, const Epetra_Comm& comm)
   return false;
 }
 
-void CORE::IO::RestartManager::restart_signal_handler(
+void Core::IO::RestartManager::restart_signal_handler(
     int signal_number, siginfo_t* signal_information, void* ignored)
 {
   signal_ = signal_information->si_signo;
 }
 
-volatile int CORE::IO::RestartManager::signal_;
+volatile int Core::IO::RestartManager::signal_;
 
 FOUR_C_NAMESPACE_CLOSE

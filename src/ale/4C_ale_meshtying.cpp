@@ -32,7 +32,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-ALE::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::Solver& solver,
+ALE::Meshtying::Meshtying(Teuchos::RCP<Discret::Discretization> dis, Core::LinAlg::Solver& solver,
     int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
     : discret_(dis),
       solver_(solver),
@@ -58,7 +58,7 @@ ALE::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::S
 /*-------------------------------------------------------*/
 /*  Setup mesh-tying problem                 wirtz 01/16 */
 /*-------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::Setup(
+Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshtying::Setup(
     std::vector<int> coupleddof, Teuchos::RCP<Epetra_Vector>& dispnp)
 {
   // time measurement
@@ -73,13 +73,13 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::Setup(
   DofRowMaps();
 
   // merge dofrowmap for slave and master discretization
-  gsmdofrowmap_ = CORE::LINALG::MergeMap(*gmdofrowmap_, *gsdofrowmap_, false);
+  gsmdofrowmap_ = Core::LinAlg::MergeMap(*gmdofrowmap_, *gsdofrowmap_, false);
 
   // dofrowmap for discretisation without slave and master dofrowmap
-  gndofrowmap_ = CORE::LINALG::SplitMap(*dofrowmap_, *gsmdofrowmap_);
+  gndofrowmap_ = Core::LinAlg::SplitMap(*dofrowmap_, *gsmdofrowmap_);
 
   // map for 2x2 (uncoupled dof's & master dof's)
-  mergedmap_ = CORE::LINALG::MergeMap(*gndofrowmap_, *gmdofrowmap_, false);
+  mergedmap_ = Core::LinAlg::MergeMap(*gndofrowmap_, *gmdofrowmap_, false);
 
   // std::cout << "number of n dof   " << gndofrowmap_->NumGlobalElements() << std::endl;
   // std::cout << "number of m dof   " << gmdofrowmap_->NumGlobalElements() << std::endl;
@@ -91,7 +91,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::Setup(
   alemaps.push_back(gmdofrowmap_);
   alemaps.push_back(gsdofrowmap_);
 
-  CORE::LINALG::MultiMapExtractor extractor;
+  Core::LinAlg::MultiMapExtractor extractor;
 
   extractor.Setup(*dofrowmap_, alemaps);
 
@@ -107,8 +107,8 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::Setup(
   // | ksn | ksm | kss |
   // -------------------
 
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat;
-  mat = Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat;
+  mat = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(
       extractor, extractor, 108, false, true));
   // nodes on the interface
   Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
@@ -124,10 +124,10 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::Setup(
   // | kmn' | kmm' |
   // ---------------
 
-  CORE::LINALG::MapExtractor rowmapext(*mergedmap_, gmdofrowmap_, gndofrowmap_);
-  CORE::LINALG::MapExtractor dommapext(*mergedmap_, gmdofrowmap_, gndofrowmap_);
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>> matsolve =
-      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+  Core::LinAlg::MapExtractor rowmapext(*mergedmap_, gmdofrowmap_, gndofrowmap_);
+  Core::LinAlg::MapExtractor dommapext(*mergedmap_, gmdofrowmap_, gndofrowmap_);
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> matsolve =
+      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           dommapext, rowmapext, 1, false, true));
   sysmatsolve_ = matsolve;
 
@@ -138,7 +138,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::Setup(
 /*  Use the split of the ale mesh tying for the sysmat   */
 /*                                           wirtz 01/16 */
 /*-------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::MshtSplit()
+Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshtying::MshtSplit()
 {
   // generate map for blockmatrix
   std::vector<Teuchos::RCP<const Epetra_Map>> alemaps;
@@ -146,7 +146,7 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::MshtSplit()
   alemaps.push_back(gmdofrowmap_);
   alemaps.push_back(gsdofrowmap_);
 
-  CORE::LINALG::MultiMapExtractor extractor;
+  Core::LinAlg::MultiMapExtractor extractor;
 
   extractor.Setup(*dofrowmap_, alemaps);
 
@@ -162,8 +162,8 @@ Teuchos::RCP<CORE::LINALG::SparseOperator> ALE::Meshtying::MshtSplit()
   // | ksn | ksm | kss |
   // -------------------
 
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat;
-  mat = Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat;
+  mat = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(
       extractor, extractor, 108, false, true));
   // nodes on the interface
   Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
@@ -187,7 +187,7 @@ void ALE::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
   //      (in project_master_to_slave_for_overlapping_bc()) (-> disabled)
   //      -> DC also influence slave nodes which are not part of the inflow
   //
-  //      if(msht_ != INPAR::ALE::no_meshtying)
+  //      if(msht_ != Inpar::ALE::no_meshtying)
   //        meshtying_->project_master_to_slave_for_overlapping_bc(dispnp_, dbcmaps_->CondMap());
   //
   // (c)  DC are included in the condensation process (-> actual strategy)
@@ -197,7 +197,7 @@ void ALE::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
   Teuchos::RCP<const Epetra_Map> gmdofrowmap = gmdofrowmap_;
   intersectionmaps.push_back(gmdofrowmap);
   Teuchos::RCP<Epetra_Map> intersectionmap =
-      CORE::LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+      Core::LinAlg::MultiMapExtractor::IntersectMaps(intersectionmaps);
 
   if (intersectionmap->NumGlobalElements() != 0)
   {
@@ -219,7 +219,7 @@ void ALE::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
 /*---------------------------------------------------*/
 /*  Prepare Meshtying system             wirtz 01/16 */
 /*---------------------------------------------------*/
-void ALE::Meshtying::prepare_meshtying_system(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat,
+void ALE::Meshtying::prepare_meshtying_system(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
     Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<Epetra_Vector>& dispnp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2)   Condensation block matrix");
@@ -247,14 +247,14 @@ void ALE::Meshtying::split_vector(
   /**********************************************************************/
 
   // do the vector splitting smn -> sm+n
-  CORE::LINALG::split_vector(*dofrowmap_, *vector, gsmdofrowmap_, fsm, gndofrowmap_, fn);
+  Core::LinAlg::split_vector(*dofrowmap_, *vector, gsmdofrowmap_, fsm, gndofrowmap_, fn);
 
   // we want to split fsm into 2 groups s,m
   fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
 
   // do the vector splitting sm -> s+m
-  CORE::LINALG::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
+  Core::LinAlg::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
 
   // splitvector[ii]
   // fn [0]
@@ -278,8 +278,8 @@ void ALE::Meshtying::split_vector_based_on3x3(
 
   split_vector(orgvector, splitvector);
   // build up the reduced residual
-  CORE::LINALG::Export(*(splitvector[0]), *vectorbasedon2x2);
-  CORE::LINALG::Export(*(splitvector[1]), *vectorbasedon2x2);
+  Core::LinAlg::Export(*(splitvector[0]), *vectorbasedon2x2);
+  Core::LinAlg::Export(*(splitvector[1]), *vectorbasedon2x2);
 
   return;
 }
@@ -291,7 +291,7 @@ void ALE::Meshtying::split_vector_based_on3x3(
 /*                                                       */
 /*-------------------------------------------------------*/
 void ALE::Meshtying::IsMultifield(
-    const CORE::LINALG::MultiMapExtractor& interface,  ///< interface maps for split of ale matrix
+    const Core::LinAlg::MultiMapExtractor& interface,  ///< interface maps for split of ale matrix
     bool ismultifield                                  ///< flag for multifield problems
 )
 {
@@ -305,7 +305,7 @@ void ALE::Meshtying::IsMultifield(
 /*  Use the split of the ale mesh tying for the sysmat   */
 /*                                           wirtz 01/16 */
 /*-------------------------------------------------------*/
-void ALE::Meshtying::MshtSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat)
+void ALE::Meshtying::MshtSplit(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat)
 {
   if (is_multifield_)
   {
@@ -315,7 +315,7 @@ void ALE::Meshtying::MshtSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysma
     alemaps.push_back(gmdofrowmap_);
     alemaps.push_back(gsdofrowmap_);
 
-    CORE::LINALG::MultiMapExtractor extractor;
+    Core::LinAlg::MultiMapExtractor extractor;
 
     extractor.Setup(*dofrowmap_, alemaps);
 
@@ -331,8 +331,8 @@ void ALE::Meshtying::MshtSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysma
     // | ksn | ksm | kss |
     // -------------------
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat;
-    mat = Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat;
+    mat = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(
         extractor, extractor, 108, false, true));
     // nodes on the interface
     Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
@@ -346,19 +346,19 @@ void ALE::Meshtying::MshtSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysma
 /*  Use the split of the multifield problem for the      */
 /*  sysmat                                   wirtz 01/16 */
 /*-------------------------------------------------------*/
-void ALE::Meshtying::MultifieldSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat)
+void ALE::Meshtying::MultifieldSplit(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat)
 {
   if (is_multifield_)
   {
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmatnew =
-        Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat);
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmatnew =
+        Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat);
 
     Teuchos::RCP<Epetra_Vector> ones =
         Teuchos::rcp(new Epetra_Vector(sysmatnew->Matrix(2, 2).RowMap()));
     ones->PutScalar(1.0);
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> onesdiag =
-        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ones));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag =
+        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*ones));
     onesdiag->Complete();
 
     sysmatnew->Matrix(0, 2).UnComplete();
@@ -379,13 +379,13 @@ void ALE::Meshtying::MultifieldSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>&
 
     sysmatnew->Complete();
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> mergedmatrix = sysmatnew->Merge();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> mergedmatrix = sysmatnew->Merge();
 
-    Teuchos::RCP<CORE::LINALG::MapExtractor> extractor =
-        Teuchos::rcp(new CORE::LINALG::MapExtractor(
+    Teuchos::RCP<Core::LinAlg::MapExtractor> extractor =
+        Teuchos::rcp(new Core::LinAlg::MapExtractor(
             *multifield_interface_.FullMap(), multifield_interface_.Map(1)));
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat =
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat =
         mergedmatrix->Split<ALE::UTILS::InterfaceSplitStrategy>(*extractor, *extractor);
 
     mat->Complete();
@@ -400,14 +400,14 @@ void ALE::Meshtying::MultifieldSplit(Teuchos::RCP<CORE::LINALG::SparseOperator>&
 /*-------------------------------------------------------*/
 void ALE::Meshtying::AdapterMortar(std::vector<int> coupleddof)
 {
-  adaptermeshtying_ = Teuchos::rcp(new CORE::ADAPTER::CouplingMortar(
-      GLOBAL::Problem::Instance()->NDim(), GLOBAL::Problem::Instance()->mortar_coupling_params(),
-      GLOBAL::Problem::Instance()->contact_dynamic_params(),
-      GLOBAL::Problem::Instance()->spatial_approximation_type()));
+  adaptermeshtying_ = Teuchos::rcp(new Core::Adapter::CouplingMortar(
+      Global::Problem::Instance()->NDim(), Global::Problem::Instance()->mortar_coupling_params(),
+      Global::Problem::Instance()->contact_dynamic_params(),
+      Global::Problem::Instance()->spatial_approximation_type()));
 
   // Setup of meshtying adapter
   adaptermeshtying_->Setup(discret_, discret_, Teuchos::null, coupleddof, "Mortar",
-      discret_->Comm(), GLOBAL::Problem::Instance()->FunctionManager(), true);
+      discret_->Comm(), Global::Problem::Instance()->FunctionManager(), true);
 }
 
 /*-------------------------------------------------------*/
@@ -445,7 +445,7 @@ void ALE::Meshtying::DofRowMaps()
 /*  Get function for the P matrix            wirtz 02/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-Teuchos::RCP<CORE::LINALG::SparseMatrix> ALE::Meshtying::GetMortarMatrixP()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> ALE::Meshtying::GetMortarMatrixP()
 {
   return adaptermeshtying_->GetMortarMatrixP();
 }
@@ -455,7 +455,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> ALE::Meshtying::GetMortarMatrixP()
 /*                                                       */
 /*-------------------------------------------------------*/
 void ALE::Meshtying::condensation_operation_block_matrix(
-    Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat, Teuchos::RCP<Epetra_Vector>& residual,
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat, Teuchos::RCP<Epetra_Vector>& residual,
     Teuchos::RCP<Epetra_Vector>& dispnp)
 {
   /**********************************************************************/
@@ -472,10 +472,10 @@ void ALE::Meshtying::condensation_operation_block_matrix(
 
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2.1)   - Condensation Operation");
 
-  // cast Teuchos::RCP<CORE::LINALG::SparseOperator> to a
-  // Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmatnew =
-      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat);
+  // cast Teuchos::RCP<Core::LinAlg::SparseOperator> to a
+  // Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmatnew =
+      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat);
 
   /**********************************************************************/
   /* Build the final sysmat and residual                                */
@@ -515,13 +515,13 @@ void ALE::Meshtying::condensation_operation_block_matrix(
   }
 
   // get transformation matrix
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> P = GetMortarMatrixP();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> P = GetMortarMatrixP();
 
   /*--------------------------------------------------------------------*/
   // block nm
   /*--------------------------------------------------------------------*/
   // compute modification for block nm
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> knm_mod =
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> knm_mod =
       MLMultiply(sysmatnew->Matrix(0, 2), false, *P, false, false, false, true);
 
   // Add transformation matrix to nm
@@ -535,7 +535,7 @@ void ALE::Meshtying::condensation_operation_block_matrix(
   // block mn
   /*--------------------------------------------------------------------*/
   // compute modification for block kmn
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kmn_mod =
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn_mod =
       MLMultiply(*P, true, sysmatnew->Matrix(2, 0), false, false, false, true);
 
   // Add transformation matrix to mn
@@ -546,9 +546,9 @@ void ALE::Meshtying::condensation_operation_block_matrix(
   // block mm
   /*--------------------------------------------------------------------*/
   // compute modification for block kmm
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kss_mod =
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kss_mod =
       MLMultiply(*P, true, sysmatnew->Matrix(2, 2), false, false, false, true);
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> kmm_mod =
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_mod =
       MLMultiply(*kss_mod, false, *P, false, false, false, true);
 
   // Add transformation matrix to mm
@@ -574,19 +574,19 @@ void ALE::Meshtying::condensation_operation_block_matrix(
 
   // export and add r_m subvector to residual
   Teuchos::RCP<Epetra_Vector> fm_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
-  CORE::LINALG::Export(*fm_mod, *fm_modexp);
+  Core::LinAlg::Export(*fm_mod, *fm_modexp);
   residual->Update(1.0, *fm_modexp, 1.0);
 
   if (dconmaster_ == true and firstnonliniter_ == true)
   {
     Teuchos::RCP<Epetra_Vector> fn_exp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_, true));
-    CORE::LINALG::Export(*dcnm, *fn_exp);
+    Core::LinAlg::Export(*dcnm, *fn_exp);
     residual->Update(-1.0, *fn_exp, 1.0);
   }
 
   // export r_s = zero to residual
   Teuchos::RCP<Epetra_Vector> fs_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
-  CORE::LINALG::Export(*fs_mod, *residual);
+  Core::LinAlg::Export(*fs_mod, *residual);
 
   return;
 }
@@ -621,10 +621,10 @@ void ALE::Meshtying::UpdateSlaveDOF(
   if (dconmaster_ == true and firstnonliniter_ == true) split_vector(valuesdc_, splitdcmaster);
 
   // get transformation matrix
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> P = GetMortarMatrixP();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> P = GetMortarMatrixP();
 
   // define new incremental vector
-  Teuchos::RCP<Epetra_Vector> incnew = CORE::LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> incnew = Core::LinAlg::CreateVector(*dofrowmap, true);
 
   // delta_vp^s: add P*delta_vp^m
   Teuchos::RCP<Epetra_Vector> fs_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
@@ -648,17 +648,17 @@ void ALE::Meshtying::UpdateSlaveDOF(
 
   // export interior degrees of freedom
   Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
-  CORE::LINALG::Export(*(splitinc[0]), *fnexp);
+  Core::LinAlg::Export(*(splitinc[0]), *fnexp);
   incnew->Update(1.0, *fnexp, 1.0);
 
   // export master degrees of freedom
   Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
-  CORE::LINALG::Export(*(splitinc[1]), *fmexp);
+  Core::LinAlg::Export(*(splitinc[1]), *fmexp);
   incnew->Update(1.0, *fmexp, 1.0);
 
   // export slave degrees of freedom
   Teuchos::RCP<Epetra_Vector> fs_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
-  CORE::LINALG::Export(*fs_mod, *fs_modexp);
+  Core::LinAlg::Export(*fs_mod, *fs_modexp);
   incnew->Update(1.0, *fs_modexp, 1.0);
 
   // set iteration counter for Dirichlet boundary conditions, if any
@@ -674,27 +674,27 @@ void ALE::Meshtying::UpdateSlaveDOF(
 /*  solve mesh-tying system                  wirtz 01/16 */
 /*                                                       */
 /*-------------------------------------------------------*/
-int ALE::Meshtying::SolveMeshtying(CORE::LINALG::Solver& solver,
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector>& disi,
+int ALE::Meshtying::SolveMeshtying(Core::LinAlg::Solver& solver,
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector>& disi,
     Teuchos::RCP<Epetra_Vector> residual, Teuchos::RCP<Epetra_Vector>& dispnp)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3)   Solve meshtying system");
 
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmatnew =
-      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat);
-  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmatsolve =
-      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmatsolve_);
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmatnew =
+      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat);
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmatsolve =
+      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmatsolve_);
 
   Teuchos::RCP<Epetra_Vector> res = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> dis = Teuchos::null;
 
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> mergedmatrix = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> mergedmatrix = Teuchos::null;
 
-  res = CORE::LINALG::CreateVector(*mergedmap_, true);
-  dis = CORE::LINALG::CreateVector(*mergedmap_, true);
+  res = Core::LinAlg::CreateVector(*mergedmap_, true);
+  dis = Core::LinAlg::CreateVector(*mergedmap_, true);
 
-  mergedmatrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*mergedmap_, 108, false, true));
+  mergedmatrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*mergedmap_, 108, false, true));
 
   int errorcode = 0;
 
@@ -703,10 +703,10 @@ int ALE::Meshtying::SolveMeshtying(CORE::LINALG::Solver& solver,
     split_vector_based_on3x3(residual, res);
 
     // assign blocks to the solution matrix
-    sysmatsolve->Assign(0, 0, CORE::LINALG::View, sysmatnew->Matrix(0, 0));
-    sysmatsolve->Assign(0, 1, CORE::LINALG::View, sysmatnew->Matrix(0, 1));
-    sysmatsolve->Assign(1, 0, CORE::LINALG::View, sysmatnew->Matrix(1, 0));
-    sysmatsolve->Assign(1, 1, CORE::LINALG::View, sysmatnew->Matrix(1, 1));
+    sysmatsolve->Assign(0, 0, Core::LinAlg::View, sysmatnew->Matrix(0, 0));
+    sysmatsolve->Assign(0, 1, Core::LinAlg::View, sysmatnew->Matrix(0, 1));
+    sysmatsolve->Assign(1, 0, Core::LinAlg::View, sysmatnew->Matrix(1, 0));
+    sysmatsolve->Assign(1, 1, Core::LinAlg::View, sysmatnew->Matrix(1, 1));
     sysmatsolve->Complete();
 
     mergedmatrix = sysmatsolve->Merge();
@@ -715,12 +715,12 @@ int ALE::Meshtying::SolveMeshtying(CORE::LINALG::Solver& solver,
   {
     TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
 
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     errorcode = solver_.Solve(mergedmatrix->EpetraOperator(), dis, res, solver_params);
 
-    CORE::LINALG::Export(*dis, *disi);
-    CORE::LINALG::Export(*res, *residual);
+    Core::LinAlg::Export(*dis, *disi);
+    Core::LinAlg::Export(*res, *residual);
     // compute and update slave dof's
     UpdateSlaveDOF(disi, dispnp);
   }

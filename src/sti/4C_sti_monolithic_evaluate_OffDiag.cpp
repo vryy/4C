@@ -29,15 +29,15 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STI::ScatraThermoOffDiagCoupling::ScatraThermoOffDiagCoupling(
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo,
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo_interface,
     Teuchos::RCP<const Epetra_Map> full_map_scatra, Teuchos::RCP<const Epetra_Map> full_map_thermo,
     Teuchos::RCP<const Epetra_Map> interface_map_scatra,
     Teuchos::RCP<const Epetra_Map> interface_map_thermo, bool isale,
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)
+    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_scatra,
+    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo,
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo)
     : block_map_thermo_(std::move(block_map_thermo)),
       block_map_thermo_interface_(std::move(block_map_thermo_interface)),
       full_map_scatra_(std::move(full_map_scatra)),
@@ -55,7 +55,7 @@ STI::ScatraThermoOffDiagCoupling::ScatraThermoOffDiagCoupling(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_scatra_thermo_domain(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermoblock)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatrathermoblock)
 {
   // initialize scatra-thermo matrix block
   scatrathermoblock->Zero();
@@ -64,8 +64,8 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_scatra_thermo_dom
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::calc_scatra_mono_odblock_scatrathermo, eleparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::calc_scatra_mono_odblock_scatrathermo, eleparams);
 
   // remove state vectors from scatra discretization
   sca_tra_field()->discretization()->ClearState();
@@ -74,7 +74,7 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_scatra_thermo_dom
   sca_tra_field()->add_time_integration_specific_vectors();
 
   // create strategy for assembly of scatra-thermo matrix block
-  CORE::FE::AssembleStrategy strategyscatrathermo(
+  Core::FE::AssembleStrategy strategyscatrathermo(
       0,  // row assembly based on number of dofset associated with scatra dofs on scatra
           // discretization
       2,  // column assembly based on number of dofset associated with thermo dofs on scatra
@@ -92,13 +92,13 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_scatra_thermo_dom
   // finalize scatra-thermo block
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       scatrathermoblock->Complete();
       break;
     }
 
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       scatrathermoblock->Complete(*full_map_thermo(), *full_map_scatra());
       break;
@@ -115,7 +115,7 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_scatra_thermo_dom
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_thermo_scatra_domain(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatrablock)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermoscatrablock)
 {
   // initialize thermo-scatra matrix block
   thermoscatrablock->Zero();
@@ -124,8 +124,8 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_thermo_scatra_dom
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::calc_scatra_mono_odblock_thermoscatra, eleparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::calc_scatra_mono_odblock_thermoscatra, eleparams);
 
   // remove state vectors from thermo discretization
   thermo_field()->discretization()->ClearState();
@@ -134,7 +134,7 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_thermo_scatra_dom
   thermo_field()->add_time_integration_specific_vectors();
 
   // create strategy for assembly of thermo-scatra matrix block
-  CORE::FE::AssembleStrategy strategythermoscatra(
+  Core::FE::AssembleStrategy strategythermoscatra(
       0,  // row assembly based on number of dofset associated with thermo dofs on thermo
           // discretization
       2,  // column assembly based on number of dofset associated with scatra dofs on thermo
@@ -149,13 +149,13 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_thermo_scatra_dom
   // finalize thermo-scatra matrix block
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       thermoscatrablock->Complete();
       break;
     }
 
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       thermoscatrablock->Complete(*full_map_scatra(), *full_map_thermo());
       break;
@@ -175,16 +175,16 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_thermo_scatra_dom
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STI::ScatraThermoOffDiagCouplingMatchingNodes::ScatraThermoOffDiagCouplingMatchingNodes(
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo,
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface,
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface_slave,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo_interface,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo_interface_slave,
     Teuchos::RCP<const Epetra_Map> full_map_scatra, Teuchos::RCP<const Epetra_Map> full_map_thermo,
     Teuchos::RCP<const Epetra_Map> interface_map_scatra,
     Teuchos::RCP<const Epetra_Map> interface_map_thermo, bool isale,
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)
+    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_scatra,
+    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo,
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo)
     : ScatraThermoOffDiagCoupling(std::move(block_map_thermo),
           std::move(block_map_thermo_interface), std::move(full_map_scatra),
           std::move(full_map_thermo), std::move(interface_map_scatra),
@@ -197,33 +197,33 @@ STI::ScatraThermoOffDiagCouplingMatchingNodes::ScatraThermoOffDiagCouplingMatchi
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_scatra_thermo_interface(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermoblockinterface)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatrathermoblockinterface)
 {
   // zero out matrix
   scatrathermoblockinterface->Zero();
 
   // slave and master matrix for evaluation of conditions
-  Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix(Teuchos::null);
-  Teuchos::RCP<CORE::LINALG::SparseOperator> mastermatrix(Teuchos::null);
+  Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix(Teuchos::null);
+  Teuchos::RCP<Core::LinAlg::SparseOperator> mastermatrix(Teuchos::null);
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       slavematrix = Teuchos::rcp(
-          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *block_map_thermo_interface(), meshtying_strategy_sca_tra()->BlockMapsSlave(), 81,
               false, true));
       mastermatrix = Teuchos::rcp(
-          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *block_map_thermo_interface(), meshtying_strategy_sca_tra()->BlockMapsMaster(), 81,
               false, true));
       break;
     }
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
-      slavematrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      slavematrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
           *meshtying_strategy_sca_tra()->CouplingAdapter()->SlaveDofMap(), 27, false, true));
-      mastermatrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      mastermatrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
           *meshtying_strategy_sca_tra()->CouplingAdapter()->MasterDofMap(), 27, false, true));
       break;
     }
@@ -247,12 +247,12 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_scat
   // finalize scatra-thermo matrix block
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       scatrathermoblockinterface->Complete();
       break;
     }
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       scatrathermoblockinterface->Complete(*interface_map_thermo(), *interface_map_sca_tra());
       break;
@@ -271,7 +271,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_scat
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_scatra_thermo_interface_slave_side(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix)
 {
   // zero out slavematrtix
   slavematrix->Zero();
@@ -280,12 +280,12 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_scatra_thermo_inter
   Teuchos::ParameterList condparams;
 
   // action for elements
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
-      "action", SCATRA::BoundaryAction::calc_s2icoupling_od, condparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::BoundaryAction>(
+      "action", ScaTra::BoundaryAction::calc_s2icoupling_od, condparams);
 
   // set type of differentiation to temperature
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
-      "differentiationtype", SCATRA::DifferentiationType::temp, condparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::DifferentiationType>(
+      "differentiationtype", ScaTra::DifferentiationType::temp, condparams);
 
   // remove state vectors from scalar transport discretization
   sca_tra_field()->discretization()->ClearState();
@@ -294,7 +294,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_scatra_thermo_inter
   sca_tra_field()->add_time_integration_specific_vectors();
 
   // create strategy for assembly of auxiliary system matrix
-  CORE::FE::AssembleStrategy strategyscatrathermos2i(
+  Core::FE::AssembleStrategy strategyscatrathermos2i(
       0,            // row assembly based on number of dofset associated with scatra dofs on scatra
                     // discretization
       2,            // column assembly based on number of dofset associated with thermo dofs on
@@ -304,12 +304,12 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_scatra_thermo_inter
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate scatra-scatra interface kinetics
-  std::vector<CORE::Conditions::Condition*> conditions;
+  std::vector<Core::Conditions::Condition*> conditions;
   for (const auto& kinetics_slave_cond :
       meshtying_strategy_sca_tra()->kinetics_conditions_meshtying_slave_side())
   {
     if (kinetics_slave_cond.second->parameters().Get<int>("kinetic model") !=
-        static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
+        static_cast<int>(Inpar::S2I::kinetics_nointerfaceflux))
     {
       // collect condition specific data and store to scatra boundary parameter class
       meshtying_strategy_sca_tra()->set_condition_specific_sca_tra_parameters(
@@ -323,12 +323,12 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_scatra_thermo_inter
   // finalize slave matrix
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       slavematrix->Complete();
       break;
     }
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       slavematrix->Complete(
           *interface_map_thermo(), *meshtying_strategy_sca_tra()->CouplingAdapter()->SlaveDofMap());
@@ -345,25 +345,25 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_scatra_thermo_inter
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCouplingMatchingNodes::copy_slave_to_master_scatra_thermo_interface(
-    Teuchos::RCP<const CORE::LINALG::SparseOperator> slavematrix,
-    Teuchos::RCP<CORE::LINALG::SparseOperator>& mastermatrix)
+    Teuchos::RCP<const Core::LinAlg::SparseOperator> slavematrix,
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& mastermatrix)
 {
   // zero out master matrix
   mastermatrix->Zero();
 
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       // cast master and slave matrix
       const auto blockslavematrix =
-          Teuchos::rcp_dynamic_cast<const CORE::LINALG::BlockSparseMatrixBase>(slavematrix);
+          Teuchos::rcp_dynamic_cast<const Core::LinAlg::BlockSparseMatrixBase>(slavematrix);
       auto blockmastermatrix =
-          Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(mastermatrix);
+          Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(mastermatrix);
 
       // initialize auxiliary system matrix for linearizations of master-side scatra
       // fluxes w.r.t. slave-side thermo dofs
-      CORE::LINALG::SparseMatrix mastermatrixsparse(
+      Core::LinAlg::SparseMatrix mastermatrixsparse(
           *meshtying_strategy_sca_tra()->CouplingAdapter()->MasterDofMap(), 27, false, true);
 
       // derive linearizations of master-side scatra fluxes w.r.t. slave-side thermo dofs
@@ -371,8 +371,8 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::copy_slave_to_master_scatra_
       for (int iblock = 0; iblock < meshtying_strategy_sca_tra()->BlockMapsSlave().NumMaps();
            ++iblock)
       {
-        CORE::LINALG::MatrixRowTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
-            CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_sca_tra()->CouplingAdapter()),
+        Core::LinAlg::MatrixRowTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
+            Core::Adapter::CouplingSlaveConverter(*meshtying_strategy_sca_tra()->CouplingAdapter()),
             mastermatrixsparse, true);
       }
 
@@ -381,7 +381,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::copy_slave_to_master_scatra_
           *meshtying_strategy_sca_tra()->CouplingAdapter()->MasterDofMap());
 
       // split auxiliary system matrix and assemble into scatra-thermo matrix block
-      blockmastermatrix = mastermatrixsparse.Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      blockmastermatrix = mastermatrixsparse.Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *block_map_thermo(), *sca_tra_field()->BlockMaps());
 
       // finalize master matrix
@@ -389,17 +389,17 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::copy_slave_to_master_scatra_
 
       break;
     }
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       // cast master and slave matrix
       const auto sparseslavematrix =
-          Teuchos::rcp_dynamic_cast<const CORE::LINALG::SparseMatrix>(slavematrix);
-      auto sparsemastermatrix = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mastermatrix);
+          Teuchos::rcp_dynamic_cast<const Core::LinAlg::SparseMatrix>(slavematrix);
+      auto sparsemastermatrix = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mastermatrix);
 
       // derive linearizations of master-side scatra fluxes w.r.t. slave-side thermo dofs
       // and assemble into scatra-thermo matrix block
-      CORE::LINALG::MatrixRowTransform()(*sparseslavematrix, -1.0,
-          CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_sca_tra()->CouplingAdapter()),
+      Core::LinAlg::MatrixRowTransform()(*sparseslavematrix, -1.0,
+          Core::Adapter::CouplingSlaveConverter(*meshtying_strategy_sca_tra()->CouplingAdapter()),
           *sparsemastermatrix, false);
 
       // finalize master matrix
@@ -423,26 +423,26 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::copy_slave_to_master_scatra_
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_thermo_scatra_interface(
-    Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatrablockinterface)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermoscatrablockinterface)
 {
   // zero out matrix
   thermoscatrablockinterface->Zero();
 
   // initialize slave and master matrix
-  Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix(Teuchos::null);
+  Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix(Teuchos::null);
   meshtying_strategy_thermo()->MasterMatrix()->Zero();
   auto mastermatrix = meshtying_strategy_thermo()->MasterMatrix();
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       slavematrix = Teuchos::rcp(
-          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               meshtying_strategy_sca_tra()->BlockMapsSlave(), *block_map_thermo_interface_slave(),
               81, false, true));
       break;
     }
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       meshtying_strategy_thermo()->SlaveMatrix()->Zero();
       slavematrix = meshtying_strategy_thermo()->SlaveMatrix();
@@ -465,15 +465,15 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
   Teuchos::ParameterList condparams;
 
   // action for elements
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
-      "action", SCATRA::BoundaryAction::calc_s2icoupling_od, condparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::BoundaryAction>(
+      "action", ScaTra::BoundaryAction::calc_s2icoupling_od, condparams);
 
   // set differentiation type to elch
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::DifferentiationType>(
-      "differentiationtype", SCATRA::DifferentiationType::elch, condparams);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::DifferentiationType>(
+      "differentiationtype", ScaTra::DifferentiationType::elch, condparams);
 
   // create strategy for assembly of auxiliary system matrices
-  CORE::FE::AssembleStrategy strategythermoscatras2i(
+  Core::FE::AssembleStrategy strategythermoscatras2i(
       0,              // row assembly based on number of dofset associated with thermo dofs on
                       // thermo discretization
       2,              // column assembly based on number of dofset associated with scatra dofs on
@@ -488,7 +488,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
       meshtying_strategy_thermo()->kinetics_conditions_meshtying_slave_side())
   {
     if (kinetics_slave_cond.second->parameters().Get<int>("kinetic model") !=
-        static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
+        static_cast<int>(Inpar::S2I::kinetics_nointerfaceflux))
     {
       // collect condition specific data and store to scatra boundary parameter class
       meshtying_strategy_thermo()->set_condition_specific_sca_tra_parameters(
@@ -501,7 +501,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
 
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       // finalize auxiliary system matrices
       slavematrix->Complete();
@@ -513,13 +513,13 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
       thermoscatrablockinterface->Add(*slavematrix, false, 1.0, 1.0);
 
       // initialize temporary matrix
-      CORE::LINALG::SparseMatrix ksm(
+      Core::LinAlg::SparseMatrix ksm(
           *meshtying_strategy_thermo()->CouplingAdapter()->SlaveDofMap(), 27, false, true);
 
       // transform linearizations of slave-side thermo fluxes w.r.t. master-side scatra dofs
-      CORE::LINALG::MatrixColTransform()(mastermatrix->RowMap(), mastermatrix->ColMap(),
+      Core::LinAlg::MatrixColTransform()(mastermatrix->RowMap(), mastermatrix->ColMap(),
           *mastermatrix, 1.0,
-          CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_sca_tra()->CouplingAdapter()),
+          Core::Adapter::CouplingSlaveConverter(*meshtying_strategy_sca_tra()->CouplingAdapter()),
           ksm, true, false);
 
       // finalize temporary matrix
@@ -527,7 +527,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
           *meshtying_strategy_thermo()->CouplingAdapter()->SlaveDofMap());
 
       // split temporary matrix and assemble into thermo-scatra matrix block
-      const auto blockksm = ksm.Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
+      const auto blockksm = ksm.Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
           meshtying_strategy_sca_tra()->BlockMapsMaster(), *block_map_thermo_interface_slave());
       blockksm->Complete();
       thermoscatrablockinterface->Add(*blockksm, false, 1.0, 1.0);
@@ -537,7 +537,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
 
       break;
     }
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       slavematrix->Complete(*meshtying_strategy_sca_tra()->CouplingAdapter()->SlaveDofMap(),
           *meshtying_strategy_thermo()->CouplingAdapter()->SlaveDofMap());
@@ -550,10 +550,10 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
 
       // derive linearizations of slave-side thermo fluxes w.r.t. master-side scatra dofs
       // and assemble into thermo-scatra matrix block
-      CORE::LINALG::MatrixColTransform()(mastermatrix->RowMap(), mastermatrix->ColMap(),
+      Core::LinAlg::MatrixColTransform()(mastermatrix->RowMap(), mastermatrix->ColMap(),
           *mastermatrix, 1.0,
-          CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_sca_tra()->CouplingAdapter()),
-          *Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(thermoscatrablockinterface), true,
+          Core::Adapter::CouplingSlaveConverter(*meshtying_strategy_sca_tra()->CouplingAdapter()),
+          *Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(thermoscatrablockinterface), true,
           true);
 
       // finalize matrix
@@ -576,15 +576,15 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STI::ScatraThermoOffDiagCouplingMortarStandard::ScatraThermoOffDiagCouplingMortarStandard(
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo,
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo_interface,
     Teuchos::RCP<const Epetra_Map> full_map_scatra, Teuchos::RCP<const Epetra_Map> full_map_thermo,
     Teuchos::RCP<const Epetra_Map> interface_map_scatra,
     Teuchos::RCP<const Epetra_Map> interface_map_thermo, bool isale,
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)
+    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_scatra,
+    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo,
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo)
     : ScatraThermoOffDiagCoupling(std::move(block_map_thermo),
           std::move(block_map_thermo_interface), std::move(full_map_scatra),
           std::move(full_map_thermo), std::move(interface_map_scatra),
@@ -597,29 +597,29 @@ STI::ScatraThermoOffDiagCouplingMortarStandard::ScatraThermoOffDiagCouplingMorta
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCouplingMortarStandard::
     evaluate_off_diag_block_scatra_thermo_interface(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermoblockinterface)
+        Teuchos::RCP<Core::LinAlg::SparseOperator> scatrathermoblockinterface)
 {
   // zero out matrix
   scatrathermoblockinterface->Zero();
 
   // initialize auxiliary system matrices for linearizations of slave-side and master-side
   // scatra fluxes w.r.t. slave-side thermo dofs
-  Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix(Teuchos::null);
+  Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix(Teuchos::null);
   meshtying_strategy_sca_tra()->MasterMatrix()->Zero();
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> mastermatrix_sparse =
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> mastermatrix_sparse =
       meshtying_strategy_sca_tra()->MasterMatrix();
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       slavematrix = Teuchos::rcp(
-          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *block_map_thermo_interface(), meshtying_strategy_sca_tra()->BlockMapsSlave(), 81,
               false, true));
       break;
     }
 
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       slavematrix = meshtying_strategy_sca_tra()->SlaveMatrix();
       slavematrix->Zero();
@@ -637,27 +637,27 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", INPAR::S2I::evaluate_condition_od);
+  condparams.set<int>("action", Inpar::S2I::evaluate_condition_od);
 
   // create strategy for assembly of auxiliary system matrices
-  SCATRA::MortarCellAssemblyStrategy strategyscatrathermos2i(slavematrix, INPAR::S2I::side_slave,
-      INPAR::S2I::side_slave, Teuchos::null, INPAR::S2I::side_undefined, INPAR::S2I::side_undefined,
-      mastermatrix_sparse, INPAR::S2I::side_master, INPAR::S2I::side_slave, Teuchos::null,
-      INPAR::S2I::side_undefined, INPAR::S2I::side_undefined, Teuchos::null,
-      INPAR::S2I::side_undefined, Teuchos::null, INPAR::S2I::side_undefined, 0, 1);
+  ScaTra::MortarCellAssemblyStrategy strategyscatrathermos2i(slavematrix, Inpar::S2I::side_slave,
+      Inpar::S2I::side_slave, Teuchos::null, Inpar::S2I::side_undefined, Inpar::S2I::side_undefined,
+      mastermatrix_sparse, Inpar::S2I::side_master, Inpar::S2I::side_slave, Teuchos::null,
+      Inpar::S2I::side_undefined, Inpar::S2I::side_undefined, Teuchos::null,
+      Inpar::S2I::side_undefined, Teuchos::null, Inpar::S2I::side_undefined, 0, 1);
 
   // extract scatra-scatra interface kinetics conditions
-  std::vector<CORE::Conditions::Condition*> conditions;
+  std::vector<Core::Conditions::Condition*> conditions;
   sca_tra_field()->discretization()->GetCondition("S2IKinetics", conditions);
 
   // loop over all conditions
   for (const auto& condition : conditions)
   {
     // consider conditions for slave side only
-    if (condition->parameters().Get<int>("interface side") == INPAR::S2I::side_slave)
+    if (condition->parameters().Get<int>("interface side") == Inpar::S2I::side_slave)
     {
       // add condition to parameter list
-      condparams.set<CORE::Conditions::Condition*>("condition", condition);
+      condparams.set<Core::Conditions::Condition*>("condition", condition);
 
       // collect condition specific data and store to scatra boundary parameter class
       meshtying_strategy_sca_tra()->set_condition_specific_sca_tra_parameters(*condition);
@@ -673,22 +673,22 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   mastermatrix_sparse->Complete(
       *interface_map_thermo(), *meshtying_strategy_sca_tra()->InterfaceMaps()->Map(2));
 
-  Teuchos::RCP<CORE::LINALG::SparseOperator> mastermatrix(Teuchos::null);
+  Teuchos::RCP<Core::LinAlg::SparseOperator> mastermatrix(Teuchos::null);
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       slavematrix->Complete();
       mastermatrix =
           meshtying_strategy_sca_tra()
               ->MasterMatrix()
-              ->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
+              ->Split<Core::LinAlg::DefaultBlockMatrixStrategy>(
                   *block_map_thermo_interface(), meshtying_strategy_sca_tra()->BlockMapsMaster());
       mastermatrix->Complete();
 
       break;
     }
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       slavematrix->Complete(
           *interface_map_thermo(), *meshtying_strategy_sca_tra()->InterfaceMaps()->Map(1));
@@ -714,13 +714,13 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   // finalize scatra-thermo matrix block
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       scatrathermoblockinterface->Complete();
       break;
     }
 
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       scatrathermoblockinterface->Complete(*interface_map_thermo(), *interface_map_sca_tra());
       break;
@@ -741,7 +741,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCouplingMortarStandard::
     evaluate_off_diag_block_thermo_scatra_interface(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatrablockinterface)
+        Teuchos::RCP<Core::LinAlg::SparseOperator> thermoscatrablockinterface)
 {
   // zero out matrix
   thermoscatrablockinterface->Zero();
@@ -754,18 +754,18 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
 
   // initialize auxiliary system matrix for linearizations of slave-side thermo fluxes
   // w.r.t. slave-side and master-side scatra dofs
-  Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix(Teuchos::null);
+  Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix(Teuchos::null);
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       slavematrix = Teuchos::rcp(
-          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *sca_tra_field()->BlockMaps(), *block_map_thermo_interface(), 81, false, true));
       break;
     }
 
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       slavematrix = meshtying_strategy_thermo()->SlaveMatrix();
       slavematrix->Zero();
@@ -783,27 +783,27 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action", INPAR::S2I::evaluate_condition_od);
+  condparams.set<int>("action", Inpar::S2I::evaluate_condition_od);
 
   // create strategy for assembly of auxiliary system matrix
-  SCATRA::MortarCellAssemblyStrategy strategythermoscatras2i(slavematrix, INPAR::S2I::side_slave,
-      INPAR::S2I::side_slave, slavematrix, INPAR::S2I::side_slave, INPAR::S2I::side_master,
-      Teuchos::null, INPAR::S2I::side_undefined, INPAR::S2I::side_undefined, Teuchos::null,
-      INPAR::S2I::side_undefined, INPAR::S2I::side_undefined, Teuchos::null,
-      INPAR::S2I::side_undefined, Teuchos::null, INPAR::S2I::side_undefined, 0, 1);
+  ScaTra::MortarCellAssemblyStrategy strategythermoscatras2i(slavematrix, Inpar::S2I::side_slave,
+      Inpar::S2I::side_slave, slavematrix, Inpar::S2I::side_slave, Inpar::S2I::side_master,
+      Teuchos::null, Inpar::S2I::side_undefined, Inpar::S2I::side_undefined, Teuchos::null,
+      Inpar::S2I::side_undefined, Inpar::S2I::side_undefined, Teuchos::null,
+      Inpar::S2I::side_undefined, Teuchos::null, Inpar::S2I::side_undefined, 0, 1);
 
   // extract scatra-scatra interface kinetics conditions
-  std::vector<CORE::Conditions::Condition*> conditions;
+  std::vector<Core::Conditions::Condition*> conditions;
   thermo_field()->discretization()->GetCondition("S2IKinetics", conditions);
 
   // loop over all conditions
   for (const auto& condition : conditions)
   {
     // consider conditions for slave side only
-    if (condition->parameters().Get<int>("interface side") == INPAR::S2I::side_slave)
+    if (condition->parameters().Get<int>("interface side") == Inpar::S2I::side_slave)
     {
       // add condition to parameter list
-      condparams.set<CORE::Conditions::Condition*>("condition", condition);
+      condparams.set<Core::Conditions::Condition*>("condition", condition);
 
       // collect condition specific data and store to scatra boundary parameter class
       meshtying_strategy_thermo()->set_condition_specific_sca_tra_parameters(*condition);
@@ -818,13 +818,13 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   // finalize auxiliary system matrix
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       slavematrix->Complete();
       break;
     }
 
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       slavematrix->Complete(
           *interface_map_sca_tra(), *meshtying_strategy_thermo()->InterfaceMaps()->Map(1));
@@ -848,13 +848,13 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   // finalize thermo-scatra matrix block
   switch (sca_tra_field()->MatrixType())
   {
-    case CORE::LINALG::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition:
     {
       thermoscatrablockinterface->Complete();
       break;
     }
 
-    case CORE::LINALG::MatrixType::sparse:
+    case Core::LinAlg::MatrixType::sparse:
     {
       thermoscatrablockinterface->Complete(*interface_map_sca_tra(), *interface_map_thermo());
       break;
@@ -874,23 +874,23 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> STI::BuildScatraThermoOffDiagCoupling(
-    const INPAR::S2I::CouplingType& couplingtype,
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo,
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface,
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface_slave,
+    const Inpar::S2I::CouplingType& couplingtype,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo_interface,
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo_interface_slave,
     Teuchos::RCP<const Epetra_Map> full_map_scatra, Teuchos::RCP<const Epetra_Map> full_map_thermo,
     Teuchos::RCP<const Epetra_Map> interface_map_scatra,
     Teuchos::RCP<const Epetra_Map> interface_map_thermo, bool isale,
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra,
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)
+    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_scatra,
+    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo,
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
+    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo)
 {
   Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> scatrathermooffdiagcoupling = Teuchos::null;
 
   switch (couplingtype)
   {
-    case INPAR::S2I::coupling_matching_nodes:
+    case Inpar::S2I::coupling_matching_nodes:
     {
       scatrathermooffdiagcoupling = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMatchingNodes(
           block_map_thermo, block_map_thermo_interface, block_map_thermo_interface_slave,
@@ -898,7 +898,7 @@ Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> STI::BuildScatraThermoOffDiagCoup
           meshtying_strategy_scatra, meshtying_strategy_thermo, scatra, thermo));
       break;
     }
-    case INPAR::S2I::coupling_mortar_standard:
+    case Inpar::S2I::coupling_mortar_standard:
     {
       scatrathermooffdiagcoupling = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMortarStandard(
           block_map_thermo, block_map_thermo_interface, full_map_scatra, full_map_thermo,

@@ -49,16 +49,16 @@ FOUR_C_NAMESPACE_OPEN
 // constructor
 /*----------------------------------------------------------------------*/
 FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams, const ADAPTER::FieldWrapper::Fieldtype type)
+    const Teuchos::ParameterList& timeparams, const Adapter::FieldWrapper::Fieldtype type)
     : AlgorithmXFEM(comm, timeparams, type),
-      fsidyn_(GLOBAL::Problem::Instance()->FSIDynamicParams()),
+      fsidyn_(Global::Problem::Instance()->FSIDynamicParams()),
       fsimono_(fsidyn_.sublist("MONOLITHIC SOLVER")),
-      xfluidparams_(GLOBAL::Problem::Instance()->XFluidDynamicParams()),
+      xfluidparams_(Global::Problem::Instance()->XFluidDynamicParams()),
       xfpsimono_(xfluidparams_.sublist("XFPSI MONOLITHIC")),
       solveradapttol_(true),
       solveradaptolbetter_(fsimono_.get<double>("ADAPTIVEDIST")),  // adaptive distance
       merge_fsi_blockmatrix_(false),
-      scaling_infnorm_((bool)CORE::UTILS::IntegralValue<int>(fsimono_, "INFNORMSCALING")),
+      scaling_infnorm_((bool)Core::UTILS::IntegralValue<int>(fsimono_, "INFNORMSCALING")),
       log_(Teuchos::null),
       /// tolerance and for linear solver
       tolrhs_(fsimono_.get<double>(
@@ -70,9 +70,9 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
       itermax_(fsimono_.get<int>("ITEMAX")),
       itermax_outer_(xfpsimono_.get<int>("ITEMAX_OUTER")),
       /// Convergence criterion and convergence tolerances for Newton scheme
-      normtypeinc_(CORE::UTILS::IntegralValue<INPAR::FSI::ConvNorm>(fsimono_, "NORM_INC")),
-      normtypefres_(CORE::UTILS::IntegralValue<INPAR::FSI::ConvNorm>(fsimono_, "NORM_RESF")),
-      combincfres_(CORE::UTILS::IntegralValue<INPAR::FSI::BinaryOp>(fsimono_, "NORMCOMBI_RESFINC")),
+      normtypeinc_(Core::UTILS::IntegralValue<Inpar::FSI::ConvNorm>(fsimono_, "NORM_INC")),
+      normtypefres_(Core::UTILS::IntegralValue<Inpar::FSI::ConvNorm>(fsimono_, "NORM_RESF")),
+      combincfres_(Core::UTILS::IntegralValue<Inpar::FSI::BinaryOp>(fsimono_, "NORMCOMBI_RESFINC")),
       tolinc_(fsimono_.get<double>("CONVTOL")),
       tolfres_(fsimono_.get<double>("CONVTOL")),
       /// set tolerances for nonlinear solver
@@ -91,7 +91,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
       tol_vel_res_inf_(fsimono_.get<double>("TOL_VEL_RES_INF")),
       tol_vel_inc_l2_(fsimono_.get<double>("TOL_VEL_INC_L2")),
       tol_vel_inc_inf_(fsimono_.get<double>("TOL_VEL_INC_INF")),
-      nd_newton_damping_((bool)CORE::UTILS::IntegralValue<int>(xfpsimono_, "ND_NEWTON_DAMPING")),
+      nd_newton_damping_((bool)Core::UTILS::IntegralValue<int>(xfpsimono_, "ND_NEWTON_DAMPING")),
       nd_newton_incmax_damping_(nd_newton_damping_),
       nd_levels_(3),
       nd_reduction_fac_(0.75),
@@ -121,13 +121,13 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
 
   // TODO set some of these flags via the input file
 
-  //  const Teuchos::ParameterList& xdyn       = GLOBAL::Problem::Instance()->XFEMGeneralParams();
-  //  const Teuchos::ParameterList& xfluiddyn  = GLOBAL::Problem::Instance()->XFluidDynamicParams();
+  //  const Teuchos::ParameterList& xdyn       = Global::Problem::Instance()->XFEMGeneralParams();
+  //  const Teuchos::ParameterList& xfluiddyn  = Global::Problem::Instance()->XFluidDynamicParams();
 
   //-------------------------------------------------------------------------
   // enable debugging
   //-------------------------------------------------------------------------
-  if (CORE::UTILS::IntegralValue<int>(fsidyn_, "DEBUGOUTPUT") == 1)
+  if (Core::UTILS::IntegralValue<int>(fsidyn_, "DEBUGOUTPUT") == 1)
   {
     // debug writer for structure field
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructurePoro()->discretization()));
@@ -139,16 +139,16 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   //-------------------------------------------------------------------------
 
   // write iterations-file
-  std::string fileiter = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+  std::string fileiter = Global::Problem::Instance()->OutputControlFile()->FileName();
   fileiter.append(".iteration");
   log_ = Teuchos::rcp(new std::ofstream(fileiter.c_str()));
 
   // write energy-file
-  if (CORE::UTILS::IntegralValue<int>(fsidyn_.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
+  if (Core::UTILS::IntegralValue<int>(fsidyn_.sublist("MONOLITHIC SOLVER"), "ENERGYFILE") == 1)
   {
     FOUR_C_THROW("writing energy not supported yet");
     //  TODO
-    //    std::string fileiter2 = GLOBAL::Problem::Instance()->OutputControlFile()->FileName();
+    //    std::string fileiter2 = Global::Problem::Instance()->OutputControlFile()->FileName();
     //    fileiter2.append(".fsienergy");
     //    logenergy_ = Teuchos::rcp(new std::ofstream(fileiter2.c_str()));
   }
@@ -158,7 +158,7 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   // time step size adaptivity
   //-------------------------------------------------------------------------
   const bool timeadapton =
-      CORE::UTILS::IntegralValue<bool>(fsidyn_.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
+      Core::UTILS::IntegralValue<bool>(fsidyn_.sublist("TIMEADAPTIVITY"), "TIMEADAPTON");
 
   if (timeadapton)
   {
@@ -190,9 +190,9 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   //-------------------------------------------------------------------------
   // Finish standard fluid_field()->Init()!
   // REMARK: We don't want to do this at the beginning, to be able to use std
-  // ADAPTER::Coupling for FA-Coupling
+  // Adapter::Coupling for FA-Coupling
   //-------------------------------------------------------------------------
-  const int restart = GLOBAL::Problem::Instance()->Restart();
+  const int restart = Global::Problem::Instance()->Restart();
   if (not restart)
     fluid_field()->CreateInitialState();  // otherwise called within the fluid_field-Restart when
                                           // Ale displacements are correct
@@ -201,14 +201,14 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   {
     // set initial field by given function
     // we do this here, since we have direct access to all necessary parameters
-    const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
-    INPAR::FLUID::InitialField initfield =
-        CORE::UTILS::IntegralValue<INPAR::FLUID::InitialField>(fdyn, "INITIALFIELD");
-    if (initfield != INPAR::FLUID::initfield_zero_field)
+    const Teuchos::ParameterList& fdyn = Global::Problem::Instance()->FluidDynamicParams();
+    Inpar::FLUID::InitialField initfield =
+        Core::UTILS::IntegralValue<Inpar::FLUID::InitialField>(fdyn, "INITIALFIELD");
+    if (initfield != Inpar::FLUID::initfield_zero_field)
     {
       int startfuncno = fdyn.get<int>("STARTFUNCNO");
-      if (initfield != INPAR::FLUID::initfield_field_by_function and
-          initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
+      if (initfield != Inpar::FLUID::initfield_field_by_function and
+          initfield != Inpar::FLUID::initfield_disturbed_field_from_function)
       {
         startfuncno = -1;
       }
@@ -417,8 +417,8 @@ void FSI::MonolithicXFEM::create_system_matrix()
     systemmatrix_ = Teuchos::null;
   }
 
-  systemmatrix_ = Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<
-      CORE::LINALG::DefaultBlockMatrixStrategy>(extractor(), extractor(), 0,
+  systemmatrix_ = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<
+      Core::LinAlg::DefaultBlockMatrixStrategy>(extractor(), extractor(), 0,
       false,  // explicit dirichlet, do not change the graph and do not create a new matrix when
               // applying Dirichlet values
       false   // savegraph (used when submatrices will be reset), we create new fluid sysmats anyway
@@ -441,7 +441,7 @@ void FSI::MonolithicXFEM::setup_system_matrix()
 
   /*----------------------------------------------------------------------*/
   // extract Jacobian matrices and put them into composite system
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> f = fluid_field()->SystemMatrix();
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> f = fluid_field()->SystemMatrix();
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
@@ -480,7 +480,7 @@ void FSI::MonolithicXFEM::setup_system_matrix()
   if (!StructurePoro()->isPoro())
   {
     // extract Jacobian matrices and put them into composite system
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> s = StructurePoro()->SystemMatrix();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> s = StructurePoro()->SystemMatrix();
 
     // Uncomplete structure matrix to be able to deal with slightly defective interface meshes.
     //
@@ -499,21 +499,21 @@ void FSI::MonolithicXFEM::setup_system_matrix()
     s->Scale(scaling_S);
 
     // assign the structure sysmat diagonal block
-    systemmatrix_->Assign(structp_block_, structp_block_, CORE::LINALG::View, *s);
+    systemmatrix_->Assign(structp_block_, structp_block_, Core::LinAlg::View, *s);
   }
   else  // we use a block structure for poro
   {
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ps = StructurePoro()->BlockSystemMatrix();
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ps = StructurePoro()->BlockSystemMatrix();
     ps->UnComplete();
     ps->Scale(scaling_S);
     systemmatrix_->Assign(
-        structp_block_, structp_block_, CORE::LINALG::View, ps->Matrix(0, 0));  // psps
+        structp_block_, structp_block_, Core::LinAlg::View, ps->Matrix(0, 0));  // psps
     systemmatrix_->Assign(
-        fluidp_block_, structp_block_, CORE::LINALG::View, ps->Matrix(1, 0));  // pfps
+        fluidp_block_, structp_block_, Core::LinAlg::View, ps->Matrix(1, 0));  // pfps
     systemmatrix_->Assign(
-        structp_block_, fluidp_block_, CORE::LINALG::View, ps->Matrix(0, 1));  // pspf
+        structp_block_, fluidp_block_, Core::LinAlg::View, ps->Matrix(0, 1));  // pspf
     systemmatrix_->Assign(
-        fluidp_block_, fluidp_block_, CORE::LINALG::View, ps->Matrix(1, 1));  // pfpf
+        fluidp_block_, fluidp_block_, Core::LinAlg::View, ps->Matrix(1, 1));  // pfpf
   }
 
   /*----------------------------------------------------------------------*/
@@ -524,7 +524,7 @@ void FSI::MonolithicXFEM::setup_system_matrix()
   f->Scale(scaling_F);  //<  1/(theta_f*dt) = 1/weight(t^f_np)
 
   // assign the fluid diagonal block
-  systemmatrix_->Assign(fluid_block_, fluid_block_, CORE::LINALG::View, *f);
+  systemmatrix_->Assign(fluid_block_, fluid_block_, Core::LinAlg::View, *f);
 
   // Add Coupling Sysmat
   for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
@@ -615,7 +615,7 @@ void FSI::MonolithicXFEM::apply_dbc()
   // evaluate (prepare_system_for_newton_solve()) are applied twice
 
   // apply combined Dirichlet to whole XFSI system
-  CORE::LINALG::apply_dirichlet_to_system(
+  Core::LinAlg::apply_dirichlet_to_system(
       *systemmatrix_, *iterinc_, *rhs_, *zeros_, *combined_dbc_map());
 
   return;
@@ -696,7 +696,7 @@ void FSI::MonolithicXFEM::create_combined_dof_row_map()
 void FSI::MonolithicXFEM::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps,
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps_mergedporo)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::MergeMaps(maps);
   blockrowdofmap_.Setup(*fullmap, maps);
   blockrowdofmap_mergedporo_.Setup(*fullmap, maps_mergedporo);
 }
@@ -853,10 +853,10 @@ void FSI::MonolithicXFEM::solve()
     {
       if (Comm().MyPID() == 0)
       {
-        CORE::IO::cout
+        Core::IO::cout
             << "-------------------------------------- Outer loop finished with converged "
                "newton_loop ---------------------------------------"
-            << CORE::IO::endl;
+            << Core::IO::endl;
       }
       break;
     }
@@ -864,10 +864,10 @@ void FSI::MonolithicXFEM::solve()
     {
       if (Comm().MyPID() == 0)
       {
-        CORE::IO::cout
+        Core::IO::cout
             << "---------------------------------------- Restart Newton-Raphson - DOF-sets "
                "changed -----------------------------------------"
-            << CORE::IO::endl;
+            << Core::IO::endl;
       }
     }
 
@@ -878,10 +878,10 @@ void FSI::MonolithicXFEM::solve()
   {
     if (Comm().MyPID() == 0)
     {
-      CORE::IO::cout
+      Core::IO::cout
           << "-------------------------- Maximum number of restarts reached - Fluid DOF-sets "
              "have changed too often ----------------------"
-          << CORE::IO::endl;
+          << Core::IO::endl;
     }
   }
 }
@@ -922,7 +922,7 @@ void FSI::MonolithicXFEM::output()
   // output for Lagrange multiplier field (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)
   //--------------------------------
-  const Teuchos::ParameterList& fsidyn = GLOBAL::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = Global::Problem::Instance()->FSIDynamicParams();
   const int uprestart = fsidyn.get<int>("RESTARTEVRY");
   const int upres = fsidyn.get<int>("RESULTSEVRY");
   if ((uprestart != 0 && fluid_field()->Step() % uprestart == 0) ||
@@ -1037,7 +1037,7 @@ bool FSI::MonolithicXFEM::newton()
     // actually hold large chunks of memory this ensures that the single field matrices can be
     // really deleted (memory can be freed) before we can create a new state class in fluid's
     // Evaluate NOTE: the blocksparsematrix' sparse matrices hold strong RCP's to the single-fields
-    // EpetraMatrix objects NOTE: fluid's Evaluate will create a new CORE::LINALG::SparseMatrix and
+    // EpetraMatrix objects NOTE: fluid's Evaluate will create a new Core::LinAlg::SparseMatrix and
     // coupling matrices anyway
     systemmatrix_ = Teuchos::null;
     // TODO: can we delete the solver here? this is done in solver_->Reset after solving the last
@@ -1146,7 +1146,7 @@ bool FSI::MonolithicXFEM::newton()
       //     this vector remains unchanged/non-permuted until the next restart has to be performed.
       //     In order to update this vector and to use it for further evaluate-calls permutations
       //     backward/forward of the fluid block have to be applied
-      x_sum_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+      x_sum_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
 
 
       //-------------------
@@ -1164,18 +1164,18 @@ bool FSI::MonolithicXFEM::newton()
       // permuted dofsets,
       //       directly after the linear_solve the vector is permuted backwards to the initial
       //       ordering of creation
-      iterinc_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+      iterinc_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
 
       // Global residual vector, unchanged/permuting dofsets (the same as for the iterinc_ vector)
       // note: for the assembly and during the solve the residual vector can have permuted dofsets,
       //       directly after the linear_solve the vector is permuted backwards to the initial
       //       ordering of creation
-      rhs_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+      rhs_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
 
       // Global zero vector for DBCs, unchanged/permuting dofsets (the same as for the iterinc_
       // vector) note: this vector is just used during the solve and is NOT permuted backwards as
       // iterinc or rhs
-      zeros_ = CORE::LINALG::CreateVector(*dof_row_map(), true);
+      zeros_ = Core::LinAlg::CreateVector(*dof_row_map(), true);
     }
     else
       FOUR_C_THROW("the Newton iteration index is assumed to be >= 0");
@@ -1284,9 +1284,9 @@ bool FSI::MonolithicXFEM::newton()
   {
     if (Comm().MyPID() == 0)
     {
-      CORE::IO::cout << "-------------------------------------------------------Newton Converged ! "
+      Core::IO::cout << "-------------------------------------------------------Newton Converged ! "
                         "--------------------------------------------------"
-                     << CORE::IO::endl;
+                     << Core::IO::endl;
     }
     return true;
   }
@@ -1294,15 +1294,15 @@ bool FSI::MonolithicXFEM::newton()
   {
     if (Comm().MyPID() == 0)
     {
-      CORE::IO::cout << "----------------------------------------- Newton not converged in ITEMAX "
+      Core::IO::cout << "----------------------------------------- Newton not converged in ITEMAX "
                         "iterations ! --------------------------------------"
-                     << CORE::IO::endl;
+                     << Core::IO::endl;
 
       if (iter_outer_ < itermax_outer_)  // just in case that another restart will be performed!
-        CORE::IO::cout
+        Core::IO::cout
             << "- WARNING: increase the number nonlinear Newton-iterations, the additional "
                "restart does not help but solves the same system twice!!! -"
-            << CORE::IO::endl;
+            << Core::IO::endl;
     }
     return false;
   }
@@ -1323,7 +1323,7 @@ void FSI::MonolithicXFEM::build_covergence_norms()
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidvelpres;
   fluidvelpres.push_back(fluid_field()->VelocityRowMap());
   fluidvelpres.push_back(fluid_field()->PressureRowMap());
-  CORE::LINALG::MultiMapExtractor fluidvelpresextract(
+  Core::LinAlg::MultiMapExtractor fluidvelpresextract(
       *(fluid_field()->dof_row_map()), fluidvelpres);
 
 
@@ -1503,7 +1503,7 @@ bool FSI::MonolithicXFEM::evaluate()
     StructurePoro()->update_state_incrementally(sx);
     if (have_contact_)
       StructurePoro()->meshtying_contact_bridge()->GetStrategy().set_state(
-          MORTAR::state_new_displacement, *StructurePoro()->Dispnp());
+          Mortar::state_new_displacement, *StructurePoro()->Dispnp());
   }
 
   //--------------------------------------------------------
@@ -1588,9 +1588,9 @@ bool FSI::MonolithicXFEM::evaluate()
         fluid_field()->Set_EvaluateCut(false);
 
         if (Comm().MyPID() == 0)
-          CORE::IO::cout << "==| Do not evaluate CUT for this iteration as disp_inc: "
+          Core::IO::cout << "==| Do not evaluate CUT for this iteration as disp_inc: "
                          << normstrincdisp_inf_ / std::min(nd_act_scaling_, nd_inc_scaling_)
-                         << " < " << cut_evaluate_mintol_ << " |==" << CORE::IO::endl;
+                         << " < " << cut_evaluate_mintol_ << " |==" << Core::IO::endl;
       }
       else
         fluid_field()->Set_EvaluateCut(true);
@@ -1599,7 +1599,7 @@ bool FSI::MonolithicXFEM::evaluate()
     fluid_field()->Evaluate();
 
     if (Comm().MyPID() == 0)
-      CORE::IO::cout << "fluid time : " << tf.totalElapsedTime(true) << CORE::IO::endl;
+      Core::IO::cout << "fluid time : " << tf.totalElapsedTime(true) << Core::IO::endl;
 
     // Assign the Unphysical Boundary Elements to all procs (only for contact)
     if (have_contact_)
@@ -1627,7 +1627,7 @@ bool FSI::MonolithicXFEM::evaluate()
     StructurePoro()->Evaluate(Teuchos::null, iter_ == 1);
 
     if (Comm().MyPID() == 0)
-      CORE::IO::cout << "structure time: " << ts.totalElapsedTime(true) << CORE::IO::endl;
+      Core::IO::cout << "structure time: " << ts.totalElapsedTime(true) << Core::IO::endl;
   }
 
   //--------------------------------------------------------
@@ -1672,10 +1672,10 @@ bool FSI::MonolithicXFEM::converged()
   // structural and fluid increments
   switch (normtypeinc_)
   {
-    case INPAR::FSI::convnorm_abs:
+    case Inpar::FSI::convnorm_abs:
       convinc = norminc_ < tolinc_;
       break;
-    case INPAR::FSI::convnorm_rel:
+    case Inpar::FSI::convnorm_rel:
       convinc =
           (((normstrinc_l2_ / ns_) < tol_dis_inc_l2_) and ((normstrinc_inf_) < tol_dis_inc_inf_) and
               ((normflvelinc_l2_ / nfv_) < tol_vel_inc_l2_) and
@@ -1683,7 +1683,7 @@ bool FSI::MonolithicXFEM::converged()
               ((normflpresinc_l2_ / nfp_) < tol_pre_inc_l2_) and
               ((normflpresinc_inf_) < tol_pre_inc_inf_));
       break;
-    case INPAR::FSI::convnorm_mix:
+    case Inpar::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
       break;
     default:
@@ -1695,10 +1695,10 @@ bool FSI::MonolithicXFEM::converged()
   // structural and fluid residual forces
   switch (normtypefres_)
   {
-    case INPAR::FSI::convnorm_abs:
+    case Inpar::FSI::convnorm_abs:
       convfres = normrhs_ < tolfres_;
       break;
-    case INPAR::FSI::convnorm_rel:
+    case Inpar::FSI::convnorm_rel:
       convfres =
           (((normstrrhs_l2_ / ns_) < tol_dis_res_l2_) and ((normstrrhs_inf_) < tol_dis_res_inf_) and
               ((normflvelrhs_l2_ / nfv_) < tol_vel_res_l2_) and
@@ -1706,7 +1706,7 @@ bool FSI::MonolithicXFEM::converged()
               ((normflpresrhs_l2_ / nfp_) < tol_pre_res_l2_) and
               ((normflpresrhs_inf_) < tol_pre_res_inf_));
       break;
-    case INPAR::FSI::convnorm_mix:
+    case Inpar::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
       break;
     default:
@@ -1718,7 +1718,7 @@ bool FSI::MonolithicXFEM::converged()
   // combined increment + residual check?
   bool converged = false;
 
-  if (combincfres_ == INPAR::FSI::bop_and)
+  if (combincfres_ == Inpar::FSI::bop_and)
     converged = (convinc and convfres);
   else
     FOUR_C_THROW(
@@ -1997,7 +1997,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
 
   // get solver parameter list of linear XFSI solver
   const Teuchos::ParameterList& xfsisolverparams =
-      GLOBAL::Problem::Instance()->SolverParams(linsolvernumber);
+      Global::Problem::Instance()->SolverParams(linsolvernumber);
 
   // safety check if the hard-coded solver number is the XFSI-solver
   if (xfsisolverparams.get<std::string>("NAME") != "XFSI_SOLVER")
@@ -2005,24 +2005,24 @@ void FSI::MonolithicXFEM::create_linear_solver()
 
 
   const auto solvertype =
-      Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(xfsisolverparams, "SOLVER");
+      Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(xfsisolverparams, "SOLVER");
 
   //----------------------------------------------
   // create direct solver for merged block matrix
   //----------------------------------------------
-  if (solvertype == CORE::LINEAR_SOLVER::SolverType::umfpack ||
-      solvertype == CORE::LINEAR_SOLVER::SolverType::superlu)
+  if (solvertype == Core::LinearSolver::SolverType::umfpack ||
+      solvertype == Core::LinearSolver::SolverType::superlu)
   {
     if (Comm().MyPID() == 0) std::cout << "Merged XFSI block matrix is used!\n" << std::endl;
 
     merge_fsi_blockmatrix_ = true;
 
     Teuchos::ParameterList solverparams;
-    CORE::UTILS::AddEnumClassToParameterList<CORE::LINEAR_SOLVER::SolverType>("SOLVER",
-        Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::SolverType>(xfsisolverparams, "SOLVER"),
+    Core::UTILS::AddEnumClassToParameterList<Core::LinearSolver::SolverType>("SOLVER",
+        Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(xfsisolverparams, "SOLVER"),
         solverparams);
 
-    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(solverparams, Comm()));
+    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, Comm()));
 
     return;
   }
@@ -2031,11 +2031,11 @@ void FSI::MonolithicXFEM::create_linear_solver()
   // create iterative solver for XFSI block matrix
   //----------------------------------------------
 
-  if (solvertype != CORE::LINEAR_SOLVER::SolverType::belos)
+  if (solvertype != Core::LinearSolver::SolverType::belos)
     FOUR_C_THROW("Iterative solver expected");
 
   // get parameter list of structural dynamics
-  const Teuchos::ParameterList& sdyn = GLOBAL::Problem::Instance()->structural_dynamic_params();
+  const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
   // use solver blocks for structure
   // get the solver number used for structural solver
   const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -2046,7 +2046,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
         "DYNAMIC to a valid number!");
 
   // get parameter list of fluid dynamics
-  const Teuchos::ParameterList& fdyn = GLOBAL::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fdyn = Global::Problem::Instance()->FluidDynamicParams();
   // use solver blocks for temperature (thermal field)
   // get the solver number used for thermal solver
   const int flinsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
@@ -2060,7 +2060,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
   if (HaveAle())
   {
     // get parameter list of ale dynamics
-    const Teuchos::ParameterList& adyn = GLOBAL::Problem::Instance()->AleDynamicParams();
+    const Teuchos::ParameterList& adyn = Global::Problem::Instance()->AleDynamicParams();
     alinsolvernumber = adyn.get<int>("LINEAR_SOLVER");
     // check if the ale solver has a valid solver number
     if (alinsolvernumber == (-1))
@@ -2070,17 +2070,17 @@ void FSI::MonolithicXFEM::create_linear_solver()
   }
 
 
-  const auto azprectype = Teuchos::getIntegralValue<CORE::LINEAR_SOLVER::PreconditionerType>(
-      xfsisolverparams, "AZPREC");
+  const auto azprectype =
+      Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(xfsisolverparams, "AZPREC");
 
   // plausibility check
   switch (azprectype)
   {
-    case CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2:
+    case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
       break;
-    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu:
-    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
-    case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
+    case Core::LinearSolver::PreconditionerType::multigrid_muelu:
+    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
+    case Core::LinearSolver::PreconditionerType::cheap_simple:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -2097,20 +2097,20 @@ void FSI::MonolithicXFEM::create_linear_solver()
   // prepare linear solvers and preconditioners
   switch (azprectype)
   {
-    case CORE::LINEAR_SOLVER::PreconditionerType::block_gauss_seidel_2x2:
-    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_nxn:
-    case CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple:
+    case Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2:
+    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
+    case Core::LinearSolver::PreconditionerType::cheap_simple:
     {
       // This should be the default case (well-tested and used)
-      solver_ = Teuchos::rcp(new CORE::LINALG::Solver(xfsisolverparams,
+      solver_ = Teuchos::rcp(new Core::LinAlg::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
           Comm()));
 
       // use solver blocks for structure and fluid
       const Teuchos::ParameterList& ssolverparams =
-          GLOBAL::Problem::Instance()->SolverParams(slinsolvernumber);
+          Global::Problem::Instance()->SolverParams(slinsolvernumber);
       const Teuchos::ParameterList& fsolverparams =
-          GLOBAL::Problem::Instance()->SolverParams(flinsolvernumber);
+          Global::Problem::Instance()->SolverParams(flinsolvernumber);
 
       solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams);
       StructurePoro()->discretization()->compute_null_space_if_necessary(
@@ -2129,7 +2129,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
       if (HaveAle())
       {
         const Teuchos::ParameterList& asolverparams =
-            GLOBAL::Problem::Instance()->SolverParams(alinsolvernumber);
+            Global::Problem::Instance()->SolverParams(alinsolvernumber);
         if (ale_i_block_ == 3)
         {
           solver_->put_solver_params_to_sub_params("Inverse3", asolverparams);
@@ -2146,26 +2146,26 @@ void FSI::MonolithicXFEM::create_linear_solver()
           FOUR_C_THROW("You have more than 4 Fields? --> add another Inverse 5 here!");
       }
 
-      if (azprectype == CORE::LINEAR_SOLVER::PreconditionerType::cheap_simple)
+      if (azprectype == Core::LinearSolver::PreconditionerType::cheap_simple)
       {
-        // Tell to the CORE::LINALG::SOLVER::SimplePreconditioner that we use the general
+        // Tell to the Core::LinAlg::SOLVER::SimplePreconditioner that we use the general
         // implementation
         solver_->Params().set<bool>("GENERAL", true);
       }
 
       break;
     }
-    case CORE::LINEAR_SOLVER::PreconditionerType::multigrid_muelu:
+    case Core::LinearSolver::PreconditionerType::multigrid_muelu:
     {
-      solver_ = Teuchos::rcp(new CORE::LINALG::Solver(xfsisolverparams,
+      solver_ = Teuchos::rcp(new Core::LinAlg::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
           Comm()));
 
       // use solver blocks for structure and fluid
       const Teuchos::ParameterList& ssolverparams =
-          GLOBAL::Problem::Instance()->SolverParams(slinsolvernumber);
+          Global::Problem::Instance()->SolverParams(slinsolvernumber);
       const Teuchos::ParameterList& fsolverparams =
-          GLOBAL::Problem::Instance()->SolverParams(flinsolvernumber);
+          Global::Problem::Instance()->SolverParams(flinsolvernumber);
 
       // This is not very elegant:
       // first read in solver parameters. These have to contain ML parameters such that...
@@ -2234,7 +2234,7 @@ void FSI::MonolithicXFEM::linear_solve()
   if (merge_fsi_blockmatrix_ == false)
   {
     // adapt solver tolerance
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     if (solveradapttol_ and (iter_ > 1))
     {
       solver_params.nonlin_tolerance = tolrhs_;
@@ -2269,11 +2269,11 @@ void FSI::MonolithicXFEM::linear_solve()
 
     //------------------------------------------
     // merge blockmatrix to SparseMatrix and solve
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->Merge();
 
     //------------------------------------------
     // standard solver call
-    CORE::LINALG::SolverParams solver_params;
+    Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = iter_ == 1;
     solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, solver_params);
@@ -2282,7 +2282,7 @@ void FSI::MonolithicXFEM::linear_solve()
   apply_newton_damping();
 
   // TODO: can we do this?!
-  // reset the solver (frees the pointer to the CORE::LINALG:: matrix' EpetraOperator and vectors
+  // reset the solver (frees the pointer to the Core::LinAlg:: matrix' EpetraOperator and vectors
   // also!) std::cout << "reset the solver" << std::endl;
   solver_->Reset();
 
@@ -2312,7 +2312,7 @@ void FSI::MonolithicXFEM::linear_solve()
 /*----------------------------------------------------------------------*/
 // apply infnorm scaling to linear block system            schott 10/14 |
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::scale_system(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+void FSI::MonolithicXFEM::scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   if (scaling_infnorm_)
   {
@@ -2345,7 +2345,7 @@ void FSI::MonolithicXFEM::scale_system(CORE::LINALG::BlockSparseMatrixBase& mat,
 // undo infnorm scaling from scaled solution               schott 10/14 |
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::unscale_solution(
-    CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+    Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
   if (scaling_infnorm_)
   {
@@ -2382,7 +2382,7 @@ Teuchos::RCP<Epetra_Map> FSI::MonolithicXFEM::combined_dbc_map()
   Teuchos::RCP<const Epetra_Map> scondmap = StructurePoro()->combined_dbc_map();
   const Teuchos::RCP<const Epetra_Map> fcondmap = fluid_field()->GetDBCMapExtractor()->CondMap();
 
-  Teuchos::RCP<Epetra_Map> condmap = CORE::LINALG::MergeMap(scondmap, fcondmap, false);
+  Teuchos::RCP<Epetra_Map> condmap = Core::LinAlg::MergeMap(scondmap, fcondmap, false);
 
   return condmap;
 }
@@ -2408,34 +2408,34 @@ void FSI::MonolithicXFEM::print_newton_iter()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::print_newton_iter_header()
 {
-  CORE::IO::cout << "CONVTOL: " << tolfres_ << CORE::IO::endl;
+  Core::IO::cout << "CONVTOL: " << tolfres_ << Core::IO::endl;
 
-  CORE::IO::cout
+  Core::IO::cout
       << "===================================================================================="
          "========================================="
-      << CORE::IO::endl;
+      << Core::IO::endl;
 
   // enter converged state etc
-  CORE::IO::cout << "|outerit";
-  CORE::IO::cout << "|  nit  |";
+  Core::IO::cout << "|outerit";
+  Core::IO::cout << "|  nit  |";
 
   // different style due relative or absolute error checking
   // displacement
   switch (normtypefres_)
   {
-    case INPAR::FSI::convnorm_abs:
-      CORE::IO::cout << "            "
+    case Inpar::FSI::convnorm_abs:
+      Core::IO::cout << "            "
                      << "abs-res-norm  |";
       break;
-    case INPAR::FSI::convnorm_rel:
-      CORE::IO::cout << "str-rs-l2|"
+    case Inpar::FSI::convnorm_rel:
+      Core::IO::cout << "str-rs-l2|"
                      << "flv-rs-l2|"
                      << "flp-rs-l2|";
-      CORE::IO::cout << "str-rs-li|"
+      Core::IO::cout << "str-rs-li|"
                      << "flv-rs-li|"
                      << "flp-rs-li|";
       break;
-    case INPAR::FSI::convnorm_mix:
+    case Inpar::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented");
       break;
     default:
@@ -2445,19 +2445,19 @@ void FSI::MonolithicXFEM::print_newton_iter_header()
 
   switch (normtypeinc_)
   {
-    case INPAR::FSI::convnorm_abs:
-      CORE::IO::cout << "                  "
+    case Inpar::FSI::convnorm_abs:
+      Core::IO::cout << "                  "
                      << "abs-inc-norm";
       break;
-    case INPAR::FSI::convnorm_rel:
-      CORE::IO::cout << "str-in-l2|"
+    case Inpar::FSI::convnorm_rel:
+      Core::IO::cout << "str-in-l2|"
                      << "flv-in-l2|"
                      << "flp-in-l2|";
-      CORE::IO::cout << "str-in-li|"
+      Core::IO::cout << "str-in-li|"
                      << "flv-in-li|"
                      << "flp-in-li|";
       break;
-    case INPAR::FSI::convnorm_mix:
+    case Inpar::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented");
       break;
     default:
@@ -2466,11 +2466,11 @@ void FSI::MonolithicXFEM::print_newton_iter_header()
   }
 
   // add solution time
-  CORE::IO::cout << CORE::IO::endl;
-  CORE::IO::cout
+  Core::IO::cout << Core::IO::endl;
+  Core::IO::cout
       << "===================================================================================="
          "========================================="
-      << CORE::IO::endl;
+      << Core::IO::endl;
 }
 
 /*---------------------------------------------------------------------*/
@@ -2490,22 +2490,22 @@ void FSI::MonolithicXFEM::print_newton_iter_text()
   // TODO: komplette Ueberarbeitung von Rel vs Abs notwendig!!! siehe abs vs rel z.B. in Fluid-Code
 
 
-  CORE::IO::cout << " " << iter_outer_ << "/" << itermax_outer_;
-  CORE::IO::cout << " " << iter_ << "/" << itermax_;
+  Core::IO::cout << " " << iter_outer_ << "/" << itermax_outer_;
+  Core::IO::cout << " " << iter_ << "/" << itermax_;
 
   // different style due relative or absolute error checking
   // displacement
   switch (normtypefres_)
   {
-    case INPAR::FSI::convnorm_abs:
-      CORE::IO::cout << "             " << (normrhs_) << CORE::IO::endl;
+    case Inpar::FSI::convnorm_abs:
+      Core::IO::cout << "             " << (normrhs_) << Core::IO::endl;
       break;
-    case INPAR::FSI::convnorm_rel:
-      CORE::IO::cout << "|" << (normstrrhs_l2_ / ns_) << "|" << (normflvelrhs_l2_ / nfv_) << "|"
+    case Inpar::FSI::convnorm_rel:
+      Core::IO::cout << "|" << (normstrrhs_l2_ / ns_) << "|" << (normflvelrhs_l2_ / nfv_) << "|"
                      << (normflpresrhs_l2_ / nfp_) << "|" << (normstrrhs_inf_) << "|"
                      << (normflvelrhs_inf_) << "|" << (normflpresrhs_inf_);
       break;
-    case INPAR::FSI::convnorm_mix:
+    case Inpar::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
       break;
     default:
@@ -2515,15 +2515,15 @@ void FSI::MonolithicXFEM::print_newton_iter_text()
 
   switch (normtypeinc_)
   {
-    case INPAR::FSI::convnorm_abs:
-      CORE::IO::cout << "             " << (norminc_) << CORE::IO::endl;
+    case Inpar::FSI::convnorm_abs:
+      Core::IO::cout << "             " << (norminc_) << Core::IO::endl;
       break;
-    case INPAR::FSI::convnorm_rel:
-      CORE::IO::cout << "|" << (normstrinc_l2_ / ns_) << "|" << (normflvelinc_l2_ / nfv_) << "|"
+    case Inpar::FSI::convnorm_rel:
+      Core::IO::cout << "|" << (normstrinc_l2_ / ns_) << "|" << (normflvelinc_l2_ / nfv_) << "|"
                      << (normflpresinc_l2_ / nfp_) << "|" << (normstrinc_inf_) << "|"
-                     << (normflvelinc_inf_) << "|" << (normflpresinc_inf_) << "|" << CORE::IO::endl;
+                     << (normflvelinc_inf_) << "|" << (normflpresinc_inf_) << "|" << Core::IO::endl;
       break;
-    case INPAR::FSI::convnorm_mix:
+    case Inpar::FSI::convnorm_mix:
       FOUR_C_THROW("not implemented!");
       break;
     default:
@@ -2573,8 +2573,8 @@ void FSI::MonolithicXFEM::read_restart(int step)
 
   // read Lagrange multiplier (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)
-  CORE::IO::DiscretizationReader reader = CORE::IO::DiscretizationReader(
-      StructurePoro()->discretization(), GLOBAL::Problem::Instance()->InputControlFile(), step);
+  Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
+      StructurePoro()->discretization(), Global::Problem::Instance()->InputControlFile(), step);
   for (std::map<int, Teuchos::RCP<XFEM::CouplingManager>>::iterator coupit = coup_man_.begin();
        coupit != coup_man_.end(); ++coupit)
     coupit->second->read_restart(reader);
@@ -2645,7 +2645,7 @@ void FSI::MonolithicXFEM::apply_newton_damping()
       std::vector<Teuchos::RCP<const Epetra_Map>> fluidvelpres;
       fluidvelpres.push_back(StructurePoro()->fluid_field()->VelocityRowMap());
       fluidvelpres.push_back(StructurePoro()->fluid_field()->PressureRowMap());
-      CORE::LINALG::MultiMapExtractor fluidvelpresextract(
+      Core::LinAlg::MultiMapExtractor fluidvelpresextract(
           *(StructurePoro()->fluid_field()->dof_row_map()), fluidvelpres);
       extractor().ExtractVector(iterinc_, structp_block_)->NormInf(incnorm.data());
       fluidvelpresextract.ExtractVector(extractor().ExtractVector(iterinc_, fluidp_block_), 0)
@@ -2659,7 +2659,7 @@ void FSI::MonolithicXFEM::apply_newton_damping()
       std::vector<Teuchos::RCP<const Epetra_Map>> fluidvelpres;
       fluidvelpres.push_back(fluid_field()->VelocityRowMap());
       fluidvelpres.push_back(fluid_field()->PressureRowMap());
-      CORE::LINALG::MultiMapExtractor fluidvelpresextract(
+      Core::LinAlg::MultiMapExtractor fluidvelpresextract(
           *(fluid_field()->dof_row_map()), fluidvelpres);
       fluidvelpresextract.ExtractVector(extractor().ExtractVector(iterinc_, fluid_block_), 0)
           ->NormInf(&incnorm[1]);  // fluid velocity Dofs

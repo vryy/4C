@@ -17,59 +17,61 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-DRT::ELEMENTS::SoShw6Type DRT::ELEMENTS::SoShw6Type::instance_;
+Discret::ELEMENTS::SoShw6Type Discret::ELEMENTS::SoShw6Type::instance_;
 
-DRT::ELEMENTS::SoShw6Type& DRT::ELEMENTS::SoShw6Type::Instance() { return instance_; }
+Discret::ELEMENTS::SoShw6Type& Discret::ELEMENTS::SoShw6Type::Instance() { return instance_; }
 
 
-CORE::COMM::ParObject* DRT::ELEMENTS::SoShw6Type::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Discret::ELEMENTS::SoShw6Type::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::SoShw6(-1, -1);
+  auto* object = new Discret::ELEMENTS::SoShw6(-1, -1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoShw6Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoShw6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoShw6(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele =
+        Teuchos::rcp(new Discret::ELEMENTS::SoShw6(id, owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> DRT::ELEMENTS::SoShw6Type::Create(
+Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoShw6Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<CORE::Elements::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::SoShw6(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::rcp(new Discret::ELEMENTS::SoShw6(id, owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::SoShw6Type::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Discret::ELEMENTS::SoShw6Type::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
   dimns = 6;
   nv = 3;
 }
 
-CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SoShw6Type::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoShw6Type::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
 
-void DRT::ELEMENTS::SoShw6Type::setup_element_definition(
-    std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+void Discret::ELEMENTS::SoShw6Type::setup_element_definition(
+    std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
-  std::map<std::string, INPUT::LineDefinition>& defs = definitions[get_element_type_string()];
+  std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
-  defs["WEDGE6"] = INPUT::LineDefinition::Builder()
+  defs["WEDGE6"] = Input::LineDefinition::Builder()
                        .AddIntVector("WEDGE6", 6)
                        .AddNamedInt("MAT")
                        .AddNamedString("KINEM")
@@ -86,7 +88,7 @@ void DRT::ELEMENTS::SoShw6Type::setup_element_definition(
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoShw6::SoShw6(int id, int owner) : DRT::ELEMENTS::SoWeg6(id, owner)
+Discret::ELEMENTS::SoShw6::SoShw6(int id, int owner) : Discret::ELEMENTS::SoWeg6(id, owner)
 {
   eastype_ = soshw6_easnone;
   neas_ = 0;
@@ -94,11 +96,11 @@ DRT::ELEMENTS::SoShw6::SoShw6(int id, int owner) : DRT::ELEMENTS::SoWeg6(id, own
   nodes_rearranged_ = false;
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
-      GLOBAL::Problem::Instance()->getParameterList();
+      Global::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
   {
-    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        GLOBAL::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
+    Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        Global::Problem::Instance()->structural_dynamic_params(), get_element_type_string());
   }
 
   return;
@@ -108,7 +110,8 @@ DRT::ELEMENTS::SoShw6::SoShw6(int id, int owner) : DRT::ELEMENTS::SoWeg6(id, own
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::SoShw6::SoShw6(const DRT::ELEMENTS::SoShw6& old) : DRT::ELEMENTS::SoWeg6(old)
+Discret::ELEMENTS::SoShw6::SoShw6(const Discret::ELEMENTS::SoShw6& old)
+    : Discret::ELEMENTS::SoWeg6(old)
 {
   return;
 }
@@ -117,9 +120,9 @@ DRT::ELEMENTS::SoShw6::SoShw6(const DRT::ELEMENTS::SoShw6& old) : DRT::ELEMENTS:
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* DRT::ELEMENTS::SoShw6::Clone() const
+Core::Elements::Element* Discret::ELEMENTS::SoShw6::Clone() const
 {
-  auto* newelement = new DRT::ELEMENTS::SoShw6(*this);
+  auto* newelement = new Discret::ELEMENTS::SoShw6(*this);
   return newelement;
 }
 
@@ -128,16 +131,16 @@ CORE::Elements::Element* DRT::ELEMENTS::SoShw6::Clone() const
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoShw6::Pack(CORE::COMM::PackBuffer& data) const
+void Discret::ELEMENTS::SoShw6::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class So_weg6 Element
-  DRT::ELEMENTS::SoWeg6::Pack(data);
+  Discret::ELEMENTS::SoWeg6::Pack(data);
   // eastype_
   AddtoPack(data, eastype_);
   // neas_
@@ -156,16 +159,16 @@ void DRT::ELEMENTS::SoShw6::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoShw6::Unpack(const std::vector<char>& data)
+void Discret::ELEMENTS::SoShw6::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract base class So_weg6 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::SoWeg6::Unpack(basedata);
+  Discret::ELEMENTS::SoWeg6::Unpack(basedata);
   // eastype_
   eastype_ = static_cast<EASType>(ExtractInt(position, data));
   // neas_
@@ -186,7 +189,7 @@ void DRT::ELEMENTS::SoShw6::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::SoShw6::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoShw6::Print(std::ostream& os) const
 {
   os << "So_shw6 ";
   Element::Print(os);

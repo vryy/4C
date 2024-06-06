@@ -28,7 +28,7 @@ STI::Partitioned::Partitioned(const Epetra_Comm& comm,  //! communicator
     )
     :  // instantiate base class
       Algorithm(comm, stidyn, scatradyn, solverparams_scatra, solverparams_thermo),
-      couplingtype_(Teuchos::getIntegralValue<INPAR::STI::CouplingType>(stidyn, "COUPLINGTYPE")),
+      couplingtype_(Teuchos::getIntegralValue<Inpar::STI::CouplingType>(stidyn, "COUPLINGTYPE")),
       omegamax_(stidyn.sublist("PARTITIONED").get<double>("OMEGAMAX"))
 {
   // set control parameters for outer coupling iteration loop
@@ -38,42 +38,42 @@ STI::Partitioned::Partitioned(const Epetra_Comm& comm,  //! communicator
   // initialize vectors for outer coupling iteration loop
   switch (couplingtype_)
   {
-    case INPAR::STI::CouplingType::oneway_scatratothermo:
-    case INPAR::STI::CouplingType::oneway_thermotoscatra:
+    case Inpar::STI::CouplingType::oneway_scatratothermo:
+    case Inpar::STI::CouplingType::oneway_thermotoscatra:
       // do nothing
       break;
 
-    case INPAR::STI::CouplingType::twoway_scatratothermo:
-    case INPAR::STI::CouplingType::twoway_scatratothermo_aitken:
-    case INPAR::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
-    case INPAR::STI::CouplingType::twoway_thermotoscatra:
-    case INPAR::STI::CouplingType::twoway_thermotoscatra_aitken:
+    case Inpar::STI::CouplingType::twoway_scatratothermo:
+    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken:
+    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
+    case Inpar::STI::CouplingType::twoway_thermotoscatra:
+    case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       // initialize increment vectors
       ScaTraField()->PhinpInc() =
-          CORE::LINALG::CreateVector(*ScaTraField()->discretization()->dof_row_map(), true);
+          Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(), true);
       ThermoField()->PhinpInc() =
-          CORE::LINALG::CreateVector(*ThermoField()->discretization()->dof_row_map(), true);
+          Core::LinAlg::CreateVector(*ThermoField()->discretization()->dof_row_map(), true);
 
       // initialize old increment vectors
-      if (couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo_aitken or
-          couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit)
+      if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken or
+          couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit)
         ScaTraField()->PhinpIncOld() =
-            CORE::LINALG::CreateVector(*ScaTraField()->discretization()->dof_row_map(), true);
-      else if (couplingtype_ == INPAR::STI::CouplingType::twoway_thermotoscatra_aitken)
+            Core::LinAlg::CreateVector(*ScaTraField()->discretization()->dof_row_map(), true);
+      else if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra_aitken)
         ThermoField()->PhinpIncOld() =
-            CORE::LINALG::CreateVector(*ThermoField()->discretization()->dof_row_map(), true);
+            Core::LinAlg::CreateVector(*ThermoField()->discretization()->dof_row_map(), true);
 
       // initialize relaxation parameter
-      if (couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo)
+      if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo)
         ScaTraField()->Omega().resize(1, stidyn.sublist("PARTITIONED").get<double>("OMEGA"));
-      else if (couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo_aitken)
+      else if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken)
         ScaTraField()->Omega().resize(1, 1.);
-      else if (couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit)
+      else if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit)
         ScaTraField()->Omega().resize(ScaTraField()->NumDofPerNode(), 1.);
-      else if (couplingtype_ == INPAR::STI::CouplingType::twoway_thermotoscatra)
+      else if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra)
         ThermoField()->Omega().resize(1, stidyn.sublist("PARTITIONED").get<double>("OMEGA"));
-      else if (couplingtype_ == INPAR::STI::CouplingType::twoway_thermotoscatra_aitken)
+      else if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra_aitken)
         ThermoField()->Omega().resize(1, 1.);
       else
         ThermoField()->Omega().resize(ScaTraField()->NumDofPerNode(), 1.);
@@ -164,18 +164,18 @@ void STI::Partitioned::solve()
 {
   switch (couplingtype_)
   {
-    case INPAR::STI::CouplingType::oneway_scatratothermo:
-    case INPAR::STI::CouplingType::oneway_thermotoscatra:
+    case Inpar::STI::CouplingType::oneway_scatratothermo:
+    case Inpar::STI::CouplingType::oneway_thermotoscatra:
     {
       solve_one_way();
       break;
     }
 
-    case INPAR::STI::CouplingType::twoway_scatratothermo:
-    case INPAR::STI::CouplingType::twoway_scatratothermo_aitken:
-    case INPAR::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
-    case INPAR::STI::CouplingType::twoway_thermotoscatra:
-    case INPAR::STI::CouplingType::twoway_thermotoscatra_aitken:
+    case Inpar::STI::CouplingType::twoway_scatratothermo:
+    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken:
+    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
+    case Inpar::STI::CouplingType::twoway_thermotoscatra:
+    case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       solve_two_way();
       break;
@@ -199,7 +199,7 @@ void STI::Partitioned::solve_one_way() const
 {
   switch (couplingtype_)
   {
-    case INPAR::STI::CouplingType::oneway_scatratothermo:
+    case Inpar::STI::CouplingType::oneway_scatratothermo:
     {
       // pass thermo degrees of freedom to scatra discretization
       transfer_thermo_to_scatra(ThermoField()->Phiafnp());
@@ -216,7 +216,7 @@ void STI::Partitioned::solve_one_way() const
       break;
     }
 
-    case INPAR::STI::CouplingType::oneway_thermotoscatra:
+    case Inpar::STI::CouplingType::oneway_thermotoscatra:
     {
       // pass scatra degrees of freedom to thermo discretization
       transfer_scatra_to_thermo(ScaTraField()->Phiafnp());
@@ -252,9 +252,9 @@ void STI::Partitioned::solve_two_way()
 
   switch (couplingtype_)
   {
-    case INPAR::STI::CouplingType::twoway_scatratothermo:
-    case INPAR::STI::CouplingType::twoway_scatratothermo_aitken:
-    case INPAR::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
+    case Inpar::STI::CouplingType::twoway_scatratothermo:
+    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken:
+    case Inpar::STI::CouplingType::twoway_scatratothermo_aitken_dofsplit:
     {
       // initialize relaxed scatra state vector
       const Teuchos::RCP<Epetra_Vector> scatra_relaxed =
@@ -298,7 +298,7 @@ void STI::Partitioned::solve_two_way()
         if (exit_outer_coupling()) break;
 
         // perform static relaxation
-        if (couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo)
+        if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo)
         {
           if (scatra_relaxed->Update(ScaTraField()->Omega()[0], *ScaTraField()->PhinpInc(), 1.))
             FOUR_C_THROW("Update failed!");
@@ -312,7 +312,7 @@ void STI::Partitioned::solve_two_way()
           if (scatra_inc_diff.Update(-1., *ScaTraField()->PhinpIncOld(), 1.))
             FOUR_C_THROW("Update failed!");
 
-          if (couplingtype_ == INPAR::STI::CouplingType::twoway_scatratothermo_aitken)
+          if (couplingtype_ == Inpar::STI::CouplingType::twoway_scatratothermo_aitken)
           {
             // compute L2 norm of difference between current and previous increments of scatra state
             // vector
@@ -389,8 +389,8 @@ void STI::Partitioned::solve_two_way()
       break;
     }
 
-    case INPAR::STI::CouplingType::twoway_thermotoscatra:
-    case INPAR::STI::CouplingType::twoway_thermotoscatra_aitken:
+    case Inpar::STI::CouplingType::twoway_thermotoscatra:
+    case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
     {
       // initialize relaxed thermo state vector
       const Teuchos::RCP<Epetra_Vector> thermo_relaxed =
@@ -433,7 +433,7 @@ void STI::Partitioned::solve_two_way()
         // convergence check
         if (exit_outer_coupling()) break;
 
-        if (couplingtype_ == INPAR::STI::CouplingType::twoway_thermotoscatra_aitken)
+        if (couplingtype_ == Inpar::STI::CouplingType::twoway_thermotoscatra_aitken)
         {
           // compute difference between current and previous increments of thermo state vector
           Epetra_Vector thermo_inc_diff(*ThermoField()->PhinpInc());

@@ -39,13 +39,13 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
       timer_(Teuchos::rcp(new Teuchos::Time("STI::ALG", true)))
 {
   // check input parameters for scatra and thermo fields
-  if (CORE::UTILS::IntegralValue<INPAR::SCATRA::VelocityField>(
-          *fieldparameters_, "VELOCITYFIELD") != INPAR::SCATRA::velocity_zero)
+  if (Core::UTILS::IntegralValue<Inpar::ScaTra::VelocityField>(
+          *fieldparameters_, "VELOCITYFIELD") != Inpar::ScaTra::velocity_zero)
     FOUR_C_THROW("Scatra-thermo interaction with convection not yet implemented!");
 
   // initialize scatra time integrator
   scatra_ = Teuchos::rcp(
-      new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_, *fieldparameters_, solverparams_scatra));
+      new Adapter::ScaTraBaseAlgorithm(*fieldparameters_, *fieldparameters_, solverparams_scatra));
   scatra_->Init();
   scatra_->ScaTraField()->set_number_of_dof_set_velocity(1);
   scatra_->ScaTraField()->set_number_of_dof_set_thermo(2);
@@ -55,7 +55,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   modify_field_parameters_for_thermo_field();
 
   // initialize thermo time integrator
-  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(
+  thermo_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
       *fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo"));
   thermo_->Init();
   thermo_->ScaTraField()->set_number_of_dof_set_velocity(1);
@@ -86,17 +86,17 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
     // extract meshtying strategies for scatra-scatra interface coupling from scatra and thermo time
     // integrators
     strategyscatra_ =
-        Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyS2I>(scatra_->ScaTraField()->Strategy());
+        Teuchos::rcp_dynamic_cast<ScaTra::MeshtyingStrategyS2I>(scatra_->ScaTraField()->Strategy());
     strategythermo_ =
-        Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyS2I>(thermo_->ScaTraField()->Strategy());
+        Teuchos::rcp_dynamic_cast<ScaTra::MeshtyingStrategyS2I>(thermo_->ScaTraField()->Strategy());
 
     // perform initializations depending on type of meshtying method
     switch (strategyscatra_->CouplingType())
     {
-      case INPAR::S2I::coupling_matching_nodes:
+      case Inpar::S2I::coupling_matching_nodes:
       {
         // safety check
-        if (strategythermo_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
+        if (strategythermo_->CouplingType() != Inpar::S2I::coupling_matching_nodes)
         {
           FOUR_C_THROW(
               "Must have matching nodes at scatra-scatra coupling interfaces in both the scatra "
@@ -106,29 +106,29 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
         break;
       }
 
-      case INPAR::S2I::coupling_mortar_standard:
+      case Inpar::S2I::coupling_mortar_standard:
       {
         // safety check
-        if (strategythermo_->CouplingType() != INPAR::S2I::coupling_mortar_condensed_bubnov)
+        if (strategythermo_->CouplingType() != Inpar::S2I::coupling_mortar_condensed_bubnov)
           FOUR_C_THROW("Invalid type of scatra-scatra interface coupling for thermo field!");
 
         // extract scatra-scatra interface mesh tying conditions
-        std::vector<CORE::Conditions::Condition*> conditions;
+        std::vector<Core::Conditions::Condition*> conditions;
         scatra_->ScaTraField()->discretization()->GetCondition("S2IMeshtying", conditions);
 
         // loop over all conditions
         for (auto& condition : conditions)
         {
           // consider conditions for slave side only
-          if (condition->parameters().Get<int>("interface side") == INPAR::S2I::side_slave)
+          if (condition->parameters().Get<int>("interface side") == Inpar::S2I::side_slave)
           {
             // extract ID of current condition
             const int condid = condition->parameters().Get<int>("ConditionID");
             if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
             // extract mortar discretizations associated with current condition
-            DRT::Discretization& scatradis = strategyscatra_->mortar_discretization(condid);
-            DRT::Discretization& thermodis = strategythermo_->mortar_discretization(condid);
+            Discret::Discretization& scatradis = strategyscatra_->mortar_discretization(condid);
+            Discret::Discretization& thermodis = strategythermo_->mortar_discretization(condid);
 
             // exchange dofsets between discretizations
             scatradis.AddDofSet(thermodis.GetDofSetProxy());
@@ -278,7 +278,7 @@ void STI::Algorithm::TimeLoop()
     Comm().MaxAll(&mydtnonlinsolve, &dtnonlinsolve, 1);
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
-    if (CORE::UTILS::IntegralValue<int>(*fieldparameters_, "OUTPUTNONLINSOLVERSTATS"))
+    if (Core::UTILS::IntegralValue<int>(*fieldparameters_, "OUTPUTNONLINSOLVERSTATS"))
       scatra_->ScaTraField()->output_nonlin_solver_stats(
           static_cast<int>(iter_), dtnonlinsolve, Step(), Comm());
 
@@ -302,10 +302,10 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
   {
     switch (strategythermo_->CouplingType())
     {
-      case INPAR::S2I::coupling_matching_nodes:
+      case Inpar::S2I::coupling_matching_nodes:
       {
         // pass master-side scatra degrees of freedom to thermo discretization
-        const Teuchos::RCP<Epetra_Vector> imasterphinp = CORE::LINALG::CreateVector(
+        const Teuchos::RCP<Epetra_Vector> imasterphinp = Core::LinAlg::CreateVector(
             *scatra_->ScaTraField()->discretization()->dof_row_map(), true);
         strategyscatra_->InterfaceMaps()->InsertVector(
             strategyscatra_->CouplingAdapter()->MasterToSlave(
@@ -316,29 +316,29 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
         break;
       }
 
-      case INPAR::S2I::coupling_mortar_condensed_bubnov:
+      case Inpar::S2I::coupling_mortar_condensed_bubnov:
       {
         // extract scatra-scatra interface mesh tying conditions
-        std::vector<CORE::Conditions::Condition*> conditions;
+        std::vector<Core::Conditions::Condition*> conditions;
         thermo_->ScaTraField()->discretization()->GetCondition("S2IMeshtying", conditions);
 
         // loop over all conditions
         for (auto& condition : conditions)
         {
           // consider conditions for slave side only
-          if (condition->parameters().Get<int>("interface side") == INPAR::S2I::side_slave)
+          if (condition->parameters().Get<int>("interface side") == Inpar::S2I::side_slave)
           {
             // extract ID of current condition
             const int condid = condition->parameters().Get<int>("ConditionID");
             if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
             // extract mortar discretization associated with current condition
-            DRT::Discretization& thermodis = strategythermo_->mortar_discretization(condid);
+            Discret::Discretization& thermodis = strategythermo_->mortar_discretization(condid);
 
             // pass interfacial scatra degrees of freedom to thermo discretization
             const Teuchos::RCP<Epetra_Vector> iscatra =
                 Teuchos::rcp(new Epetra_Vector(*thermodis.dof_row_map(1)));
-            CORE::LINALG::Export(*scatra, *iscatra);
+            Core::LinAlg::Export(*scatra, *iscatra);
             thermodis.set_state(1, "scatra", iscatra);
           }
         }
@@ -363,29 +363,29 @@ void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_V
 
   // transfer state vector for evaluation of scatra-scatra interface mesh tying
   if (scatra_->ScaTraField()->S2IMeshtying() and
-      strategyscatra_->CouplingType() == INPAR::S2I::coupling_mortar_standard)
+      strategyscatra_->CouplingType() == Inpar::S2I::coupling_mortar_standard)
   {
     // extract scatra-scatra interface mesh tying conditions
-    std::vector<CORE::Conditions::Condition*> conditions;
+    std::vector<Core::Conditions::Condition*> conditions;
     scatra_->ScaTraField()->discretization()->GetCondition("S2IMeshtying", conditions);
 
     // loop over all conditions
     for (auto& condition : conditions)
     {
       // consider conditions for slave side only
-      if (condition->parameters().Get<int>("interface side") == INPAR::S2I::side_slave)
+      if (condition->parameters().Get<int>("interface side") == Inpar::S2I::side_slave)
       {
         // extract ID of current condition
         const int condid = condition->parameters().Get<int>("ConditionID");
         if (condid < 0) FOUR_C_THROW("Invalid condition ID!");
 
         // extract mortar discretization associated with current condition
-        DRT::Discretization& scatradis = strategyscatra_->mortar_discretization(condid);
+        Discret::Discretization& scatradis = strategyscatra_->mortar_discretization(condid);
 
         // pass interfacial thermo degrees of freedom to scatra discretization
         const Teuchos::RCP<Epetra_Vector> ithermo =
             Teuchos::rcp(new Epetra_Vector(*scatradis.dof_row_map(1)));
-        CORE::LINALG::Export(*thermo, *ithermo);
+        Core::LinAlg::Export(*thermo, *ithermo);
         scatradis.set_state(1, "thermo", ithermo);
       }
     }

@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::GEOMETRICSEARCH
+namespace Core::GeometricSearch
 {
   void PrintGeometricSearchDetails(const Epetra_Comm& comm, const GeometricSearchInfo info)
   {
@@ -39,33 +39,33 @@ namespace CORE::GEOMETRICSEARCH
 
     if (myrank == 0)
     {
-      CORE::IO::cout(CORE::IO::verbose) << "\n   Collision search:" << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose)
-          << "   +-----+------------+------------+--------------+" << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose)
-          << "   | PID | primitives | predicates |  found pairs |" << CORE::IO::endl;
-      CORE::IO::cout(CORE::IO::verbose)
-          << "   +-----+------------+------------+--------------+" << CORE::IO::endl;
+      Core::IO::cout(Core::IO::verbose) << "\n   Collision search:" << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
+          << "   +-----+------------+------------+--------------+" << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
+          << "   | PID | primitives | predicates |  found pairs |" << Core::IO::endl;
+      Core::IO::cout(Core::IO::verbose)
+          << "   +-----+------------+------------+--------------+" << Core::IO::endl;
 
       for (int npid = 0; npid < numproc; ++npid)
       {
-        CORE::IO::cout(CORE::IO::verbose)
+        Core::IO::cout(Core::IO::verbose)
             << "   | " << std::setw(3) << npid << " | " << std::setw(10) << primitive_size[npid]
             << " | " << std::setw(10) << predicate_size[npid] << " | " << std::setw(12)
-            << coupling_pair_size[npid] << " | " << CORE::IO::endl;
-        CORE::IO::cout(CORE::IO::verbose)
-            << "   +-----+------------+------------+--------------+" << CORE::IO::endl;
+            << coupling_pair_size[npid] << " | " << Core::IO::endl;
+        Core::IO::cout(Core::IO::verbose)
+            << "   +-----+------------+------------+--------------+" << Core::IO::endl;
       }
-      CORE::IO::cout(CORE::IO::verbose) << CORE::IO::endl;
+      Core::IO::cout(Core::IO::verbose) << Core::IO::endl;
     }
   }
 
-  std::pair<std::vector<CORE::LINALG::Matrix<3, 1>>, std::vector<std::vector<int>>>
+  std::pair<std::vector<Core::LinAlg::Matrix<3, 1>>, std::vector<std::vector<int>>>
   GetKDopPolyhedronRepresentation(const BoundingVolume boundingVolume)
   {
 #ifndef FOUR_C_WITH_ARBORX
     FOUR_C_THROW(
-        "CORE::GEOMETRICSEARCH::GetKDopPolyhedronRepresentation can only be used with ArborX."
+        "Core::GeometricSearch::GetKDopPolyhedronRepresentation can only be used with ArborX."
         "To use it, enable ArborX during the configure process.");
 #else
     // This value is used for comparison of point coordinates. ArborX only uses float, so this value
@@ -143,7 +143,7 @@ namespace CORE::GEOMETRICSEARCH
     const auto& kdop = boundingVolume.bounding_volume_;
 
     // Vector with all intersection points
-    std::vector<LINALG::Matrix<3, 1>> all_points;
+    std::vector<LinAlg::Matrix<3, 1>> all_points;
 
     // Vector with all polygones connecting the intersection points
     std::vector<std::vector<int>> polygon_ids;
@@ -178,7 +178,7 @@ namespace CORE::GEOMETRICSEARCH
           const auto index_2 = my_possible_partners[local_index_2].first;
           const auto min_max_2 = my_possible_partners[local_index_2].second;
 
-          LINALG::Matrix<3, 3> coefficient_matrix;
+          LinAlg::Matrix<3, 3> coefficient_matrix;
           for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
           {
             coefficient_matrix(0, i_dir) =
@@ -191,15 +191,15 @@ namespace CORE::GEOMETRICSEARCH
                 ArborX::Details::GetKDOPDirections<kdop_directions>::directions()[index_2]
                     ._data[i_dir];
           }
-          LINALG::Matrix<3, 1> right_hand_side;
+          LinAlg::Matrix<3, 1> right_hand_side;
           right_hand_side(0) = get_kdop_value(i_direction, i_min_max);
           right_hand_side(1) = get_kdop_value(index_1, min_max_1);
           right_hand_side(2) = get_kdop_value(index_2, min_max_2);
 
           // Check if there is a solution
-          LINALG::Matrix<3, 1> intersection_point;
+          LinAlg::Matrix<3, 1> intersection_point;
           const auto found_solution =
-              LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+              LinAlg::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
                   coefficient_matrix, right_hand_side, intersection_point, 1e-12);
           if (!found_solution)
             return std::make_pair(false, intersection_point);
@@ -242,7 +242,7 @@ namespace CORE::GEOMETRICSEARCH
 
         // Starting from the found point loop over the edges of the polygon
         unsigned int offset = 0;
-        std::vector<LINALG::Matrix<3, 1>> polygon_points;
+        std::vector<LinAlg::Matrix<3, 1>> polygon_points;
         while (offset < my_possible_partners.size())
         {
           const auto i_partner = get_partner_index(i_start, offset);
@@ -315,6 +315,6 @@ namespace CORE::GEOMETRICSEARCH
     return {all_points, polygon_ids};
 #endif
   }
-}  // namespace CORE::GEOMETRICSEARCH
+}  // namespace Core::GeometricSearch
 
 FOUR_C_NAMESPACE_CLOSE

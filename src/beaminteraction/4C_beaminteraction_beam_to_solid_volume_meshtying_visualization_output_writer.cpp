@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
  */
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
     BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
-        CORE::IO::VisualizationParameters visualization_params)
+        Core::IO::VisualizationParameters visualization_params)
     : isinit_(false),
       issetup_(false),
       output_params_ptr_(Teuchos::null),
@@ -58,7 +58,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Init(
  *
  */
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::Setup(
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeOutput> visualization_output_params,
+    Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
         output_params_ptr)
 {
@@ -164,7 +164,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::write
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the
   // next step.
-  auto [output_time, output_step] = CORE::IO::GetTimeAndTimeStepIndexForOutput(
+  auto [output_time, output_step] = Core::IO::GetTimeAndTimeStepIndexForOutput(
       visualization_params_, beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN());
   write_output_beam_to_solid_volume_mesh_tying(beam_contact, output_step, output_time);
 }
@@ -181,7 +181,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
   if (output_params_ptr_->get_output_every_iteration())
   {
     auto [output_time, output_step] =
-        CORE::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
+        Core::IO::GetTimeAndTimeStepIndexForOutput(visualization_params_,
             beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN(), i_iteration);
     write_output_beam_to_solid_volume_mesh_tying(beam_contact, output_step, output_time);
   }

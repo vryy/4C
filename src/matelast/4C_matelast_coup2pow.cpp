@@ -13,15 +13,15 @@ Cauchy-Green invariant
 
 FOUR_C_NAMESPACE_OPEN
 
-MAT::ELASTIC::PAR::Coup2Pow::Coup2Pow(const Teuchos::RCP<CORE::MAT::PAR::Material>& matdata)
+Mat::Elastic::PAR::Coup2Pow::Coup2Pow(const Teuchos::RCP<Core::Mat::PAR::Material>& matdata)
     : Parameter(matdata), c_(matdata->Get<double>("C")), d_(matdata->Get<int>("D"))
 {
 }
 
-MAT::ELASTIC::Coup2Pow::Coup2Pow(MAT::ELASTIC::PAR::Coup2Pow* params) : params_(params) {}
+Mat::Elastic::Coup2Pow::Coup2Pow(Mat::Elastic::PAR::Coup2Pow* params) : params_(params) {}
 
-void MAT::ELASTIC::Coup2Pow::AddStrainEnergy(double& psi, const CORE::LINALG::Matrix<3, 1>& prinv,
-    const CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<6, 1>& glstrain,
+void Mat::Elastic::Coup2Pow::AddStrainEnergy(double& psi, const Core::LinAlg::Matrix<3, 1>& prinv,
+    const Core::LinAlg::Matrix<3, 1>& modinv, const Core::LinAlg::Matrix<6, 1>& glstrain,
     const int gp, const int eleGID)
 {
   // material Constants c and beta
@@ -33,8 +33,8 @@ void MAT::ELASTIC::Coup2Pow::AddStrainEnergy(double& psi, const CORE::LINALG::Ma
   psi += c * pow((prinv(1) - 3.), d);
 }
 
-void MAT::ELASTIC::Coup2Pow::add_derivatives_principal(CORE::LINALG::Matrix<3, 1>& dPI,
-    CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+void Mat::Elastic::Coup2Pow::add_derivatives_principal(Core::LinAlg::Matrix<3, 1>& dPI,
+    Core::LinAlg::Matrix<6, 1>& ddPII, const Core::LinAlg::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {
   const double c = params_->c_;

@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* class definitions */
-namespace ADAPTER
+namespace Adapter
 {
   class AleFpsiWrapper : public AleWrapper
   {
@@ -52,7 +52,7 @@ namespace ADAPTER
 
 
   };  // class AleFpsiWrapper
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 FOUR_C_NAMESPACE_CLOSE
 

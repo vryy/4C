@@ -41,9 +41,9 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid,
  */
 template <typename beam, typename fluid, typename mortar>
 bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::EvaluateDM(
-    CORE::LINALG::SerialDenseMatrix& local_D, CORE::LINALG::SerialDenseMatrix& local_M,
-    CORE::LINALG::SerialDenseVector& local_kappa,
-    CORE::LINALG::SerialDenseVector& local_constraint_offset)
+    Core::LinAlg::SerialDenseMatrix& local_D, Core::LinAlg::SerialDenseMatrix& local_M,
+    Core::LinAlg::SerialDenseVector& local_kappa,
+    Core::LinAlg::SerialDenseVector& local_constraint_offset)
 {
   if (!this->meshtying_is_evaluated_)
   {
@@ -62,12 +62,12 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
 
 
   // Initialize variables for shape function values.
-  CORE::LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
-  CORE::LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
-  CORE::LINALG::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
+  Core::LinAlg::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
+  Core::LinAlg::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
+  Core::LinAlg::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
 
   // Initialize variable for beam position derivative.
-  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref(true);
+  Core::LinAlg::Matrix<3, 1, double> dr_beam_ref(true);
 
   // Initialize scalar variables.Clear
   double segment_jacobian, beam_segmentation_factor;
@@ -163,11 +163,11 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
   {
     // Setup variables.
     auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::Initialize(nullptr);
-    CORE::LINALG::Matrix<3, 1, scalar_type> current_beamposition;
-    CORE::LINALG::Matrix<3, 1, scalar_type> ref_beamposition;
-    CORE::LINALG::Matrix<3, 1, scalar_type> beamdisplacement;
-    CORE::LINALG::Matrix<3, 1, double> lambda_discret;
-    CORE::LINALG::Matrix<3, 1, double> xi_mortar_node;
+    Core::LinAlg::Matrix<3, 1, scalar_type> current_beamposition;
+    Core::LinAlg::Matrix<3, 1, scalar_type> ref_beamposition;
+    Core::LinAlg::Matrix<3, 1, scalar_type> beamdisplacement;
+    Core::LinAlg::Matrix<3, 1, double> lambda_discret;
+    Core::LinAlg::Matrix<3, 1, double> xi_mortar_node;
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
@@ -182,7 +182,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
     std::vector<int> lambda_row;
     std::vector<double> lambda_pair;
     mortar_manager->LocationVector(this_rcp, lambda_row);
-    CORE::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row);
+    Core::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row);
     for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
       q_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 
@@ -198,7 +198,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
       for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
       {
         // Get the local coordinate of this node.
-        xi_mortar_node = CORE::FE::GetNodeCoordinates(i_node, mortar::discretization_);
+        xi_mortar_node = Core::FE::GetNodeCoordinates(i_node, mortar::discretization_);
 
         // Get position and displacement of the mortar node.
         GEOMETRYPAIR::EvaluatePosition<beam>(
@@ -214,9 +214,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
         // Add to output data.
         for (unsigned int dim = 0; dim < 3; dim++)
         {
-          point_coordinates.push_back(CORE::FADUTILS::CastToDouble(current_beamposition(dim)));
-          displacement.push_back(CORE::FADUTILS::CastToDouble(beamdisplacement(dim)));
-          lambda_vis.push_back(CORE::FADUTILS::CastToDouble(lambda_discret(dim)));
+          point_coordinates.push_back(Core::FADUtils::CastToDouble(current_beamposition(dim)));
+          displacement.push_back(Core::FADUtils::CastToDouble(beamdisplacement(dim)));
+          lambda_vis.push_back(Core::FADUtils::CastToDouble(lambda_discret(dim)));
         }
       }
     }
@@ -258,9 +258,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
           {
-            point_coordinates.push_back(CORE::FADUTILS::CastToDouble(current_beamposition(dim)));
-            displacement.push_back(CORE::FADUTILS::CastToDouble(beamdisplacement(dim)));
-            lambda_vis.push_back(CORE::FADUTILS::CastToDouble(lambda_discret(dim)));
+            point_coordinates.push_back(Core::FADUtils::CastToDouble(current_beamposition(dim)));
+            displacement.push_back(Core::FADUtils::CastToDouble(beamdisplacement(dim)));
+            lambda_vis.push_back(Core::FADUtils::CastToDouble(lambda_discret(dim)));
           }
         }
 
@@ -274,9 +274,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
 
 template <typename beam, typename fluid, typename mortar>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::evaluate_penalty_force(
-    CORE::LINALG::Matrix<3, 1, scalar_type>& force,
+    Core::LinAlg::Matrix<3, 1, scalar_type>& force,
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
-    CORE::LINALG::Matrix<3, 1, scalar_type> v_beam) const
+    Core::LinAlg::Matrix<3, 1, scalar_type> v_beam) const
 {
   force.PutScalar(0.);
 }

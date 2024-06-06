@@ -12,12 +12,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::Nodes
+namespace Core::Nodes
 {
   class Node;
 }
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   /*!
     \brief Helper function for the nodal nullspace of solid elements in 3D
@@ -25,8 +25,8 @@ namespace DRT::ELEMENTS
   \param node (in):    node to calculate the nullspace on
      \param x0 (in):      center of discretization
                       */
-  CORE::LINALG::SerialDenseMatrix ComputeSolid3DNullSpace(
-      const CORE::Nodes::Node& node, const double* x0);
+  Core::LinAlg::SerialDenseMatrix ComputeSolid3DNullSpace(
+      const Core::Nodes::Node& node, const double* x0);
 
   /*!
    \brief Helper function for the nodal nullspace of solid elements in 2D
@@ -34,9 +34,9 @@ namespace DRT::ELEMENTS
     \param node (in):    node to calculate the nullspace on
     \param x0 (in):      center of discretization
   */
-  CORE::LINALG::SerialDenseMatrix ComputeSolid2DNullSpace(
-      const CORE::Nodes::Node& node, const double* x0);
-}  // namespace DRT::ELEMENTS
+  Core::LinAlg::SerialDenseMatrix ComputeSolid2DNullSpace(
+      const Core::Nodes::Node& node, const double* x0);
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 

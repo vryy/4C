@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
-    const Element& element, const Point& point, INPAR::CUT::CutFloattype floattype)
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
+    const Element& element, const Point& point, Inpar::Cut::CutFloattype floattype)
 {
   const PositionFactory factory;
   return factory.CreatePosition(element, point, floattype);
@@ -29,8 +29,8 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
-Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(const Element& element,
-    const CORE::LINALG::Matrix<rdim, 1>& xyz, INPAR::CUT::CutFloattype floattype)
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(const Element& element,
+    const Core::LinAlg::Matrix<rdim, 1>& xyz, Inpar::Cut::CutFloattype floattype)
 {
   const PositionFactory factory;
   if (rdim < factory.ProbDim())
@@ -44,13 +44,13 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(const El
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim, unsigned cdim, unsigned rdim_2>
-Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
-    const CORE::LINALG::Matrix<rdim, cdim>& xyze, const CORE::LINALG::Matrix<rdim_2, 1>& xyz,
-    const CORE::FE::CellType& distype, INPAR::CUT::CutFloattype floattype)
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
+    const Core::LinAlg::Matrix<rdim, cdim>& xyze, const Core::LinAlg::Matrix<rdim_2, 1>& xyz,
+    const Core::FE::CellType& distype, Inpar::Cut::CutFloattype floattype)
 {
   const PositionFactory factory;
   const unsigned probdim = factory.ProbDim();
-  const unsigned num_nodes_ele = CORE::FE::getNumberOfElementNodes(distype);
+  const unsigned num_nodes_ele = Core::FE::getNumberOfElementNodes(distype);
 
   if (rdim < probdim or cdim != num_nodes_ele)
     FOUR_C_THROW(
@@ -60,7 +60,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
         probdim, num_nodes_ele, xyze.M(), xyze.N());
 
   const double* xyze_ptr = xyze.A();
-  CORE::LINALG::SerialDenseMatrix xyze_eptra;
+  Core::LinAlg::SerialDenseMatrix xyze_eptra;
   if (rdim > probdim)
   {
     xyze_eptra.shape(probdim, num_nodes_ele);
@@ -81,13 +81,13 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
-Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
-    const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<rdim, 1>& xyz,
-    const CORE::FE::CellType& distype, INPAR::CUT::CutFloattype floattype)
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
+    const Core::LinAlg::SerialDenseMatrix& xyze, const Core::LinAlg::Matrix<rdim, 1>& xyz,
+    const Core::FE::CellType& distype, Inpar::Cut::CutFloattype floattype)
 {
   const PositionFactory factory;
   const unsigned probdim = factory.ProbDim();
-  const unsigned num_nodes_ele = CORE::FE::getNumberOfElementNodes(distype);
+  const unsigned num_nodes_ele = Core::FE::getNumberOfElementNodes(distype);
 
   if (static_cast<unsigned>(xyze.numRows()) < probdim or
       static_cast<unsigned>(xyze.numCols()) != num_nodes_ele)
@@ -98,7 +98,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
         probdim, num_nodes_ele, xyze.numRows(), xyze.numCols());
 
   const double* xyze_ptr = xyze.values();
-  CORE::LINALG::SerialDenseMatrix xyze_eptra;
+  Core::LinAlg::SerialDenseMatrix xyze_eptra;
   if (static_cast<unsigned>(xyze.numRows()) > probdim)
   {
     xyze_eptra.shape(probdim, num_nodes_ele);
@@ -119,9 +119,9 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
-Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
-    const std::vector<Node*> nodes, const CORE::LINALG::Matrix<rdim, 1>& xyz,
-    CORE::FE::CellType distype, INPAR::CUT::CutFloattype floattype)
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
+    const std::vector<Node*> nodes, const Core::LinAlg::Matrix<rdim, 1>& xyz,
+    Core::FE::CellType distype, Inpar::Cut::CutFloattype floattype)
 {
   const PositionFactory factory;
   if (rdim < factory.ProbDim())
@@ -134,25 +134,25 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
-    INPAR::CUT::CutFloattype floattype>
-void CORE::GEO::CUT::PositionGeneric<probdim, eletype, numNodesElement, dim,
+template <unsigned probdim, Core::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
+    Inpar::Cut::CutFloattype floattype>
+void Core::Geo::Cut::PositionGeneric<probdim, eletype, numNodesElement, dim,
     floattype>::construct_bounding_box()
 {
   bbside_ = Teuchos::rcp(BoundingBox::Create());
 
   for (unsigned i = 0; i < numNodesElement; ++i)
   {
-    CORE::LINALG::Matrix<3, 1> x1(&this->xyze_(0, i), true);
+    Core::LinAlg::Matrix<3, 1> x1(&this->xyze_(0, i), true);
     bbside_->AddPoint(x1);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
-    INPAR::CUT::CutFloattype floattype>
-bool CORE::GEO::CUT::ComputePosition<probdim, eletype, numNodesElement, dim, floattype>::Compute(
+template <unsigned probdim, Core::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
+    Inpar::Cut::CutFloattype floattype>
+bool Core::Geo::Cut::ComputePosition<probdim, eletype, numNodesElement, dim, floattype>::Compute(
     const double& Tol)
 {
   /* If the given point is outside the element bounding box, no need
@@ -164,8 +164,8 @@ bool CORE::GEO::CUT::ComputePosition<probdim, eletype, numNodesElement, dim, flo
   //  }
 
   // no cln used for compute position
-  KERNEL::ComputePosition<probdim, eletype, floattype> cp(this->xsi_);
-  //  KERNEL::DebugComputePosition<probdim,eletype,floattype> cp( this->xsi_ );
+  Kernel::ComputePosition<probdim, eletype, floattype> cp(this->xsi_);
+  //  Kernel::DebugComputePosition<probdim,eletype,floattype> cp( this->xsi_ );
   this->pos_status_ =
       (cp(this->xyze_, this->px_) ? Position::position_valid : Position::position_invalid);
   this->compute_tolerance_ = cp.GetTolerance();
@@ -177,9 +177,9 @@ bool CORE::GEO::CUT::ComputePosition<probdim, eletype, numNodesElement, dim, flo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
-    INPAR::CUT::CutFloattype floattype>
-bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim,
+template <unsigned probdim, Core::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
+    Inpar::Cut::CutFloattype floattype>
+bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim,
     floattype>::is_given_point_within_element()
 {
   // If the given point is outside the side's bounding box, no need to perform
@@ -191,8 +191,8 @@ bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, 
   }
 
   // try to compute the local coordinates and the distance using the Newton scheme
-  KERNEL::ComputeDistance<probdim, eletype, (floattype == INPAR::CUT::floattype_cln)> cd(xsi_aug_);
-  //  KERNEL::DebugComputeDistance< probdim, eletype,(floattype==INPAR::CUT::floattype_cln) > cd(
+  Kernel::ComputeDistance<probdim, eletype, (floattype == Inpar::Cut::floattype_cln)> cd(xsi_aug_);
+  //  Kernel::DebugComputeDistance< probdim, eletype,(floattype==Inpar::Cut::floattype_cln) > cd(
   //  xsi_aug_ );
 
   double dist = 0.0;
@@ -205,9 +205,9 @@ bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, CORE::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
-    INPAR::CUT::CutFloattype floattype>
-bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim,
+template <unsigned probdim, Core::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
+    Inpar::Cut::CutFloattype floattype>
+bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim,
     floattype>::Compute(const double& Tol, const bool& allow_dist)
 {
   xsi_aug_ = 0.0;
@@ -223,8 +223,8 @@ bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, 
   }
 
   // try to compute the local coordinates and the distance using the Newton scheme
-  KERNEL::ComputeDistance<probdim, eletype, (floattype == INPAR::CUT::floattype_cln)> cd(xsi_aug_);
-  //  KERNEL::DebugComputeDistance< probdim, eletype,(floattype==INPAR::CUT::floattype_cln) > cd(
+  Kernel::ComputeDistance<probdim, eletype, (floattype == Inpar::Cut::floattype_cln)> cd(xsi_aug_);
+  //  Kernel::DebugComputeDistance< probdim, eletype,(floattype==Inpar::Cut::floattype_cln) > cd(
   //  xsi_aug_ );
 
   double dist = 0.0;
@@ -274,43 +274,43 @@ bool CORE::GEO::CUT::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CORE::GEO::CUT::PositionFactory::PositionFactory() : probdim_(GLOBAL::Problem::Instance()->NDim())
+Core::Geo::Cut::PositionFactory::PositionFactory() : probdim_(Global::Problem::Instance()->NDim())
 {
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePosition(
-    const Element& element, const Point& point, INPAR::CUT::CutFloattype floattype) const
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::CreatePosition(
+    const Element& element, const Point& point, Inpar::Cut::CutFloattype floattype) const
 {
-  CORE::FE::CellType distype = element.Shape();
+  Core::FE::CellType distype = element.Shape();
 
   switch (distype)
   {
-    case CORE::FE::CellType::line2:
-      return create_concrete_position<CORE::FE::CellType::line2>(element, point, floattype);
-    case CORE::FE::CellType::tri3:
-      return create_concrete_position<CORE::FE::CellType::tri3>(element, point, floattype);
-    case CORE::FE::CellType::tri6:
-      return create_concrete_position<CORE::FE::CellType::tri6>(element, point, floattype);
-    case CORE::FE::CellType::quad4:
-      return create_concrete_position<CORE::FE::CellType::quad4>(element, point, floattype);
-    case CORE::FE::CellType::quad8:
-      return create_concrete_position<CORE::FE::CellType::quad8>(element, point, floattype);
-    case CORE::FE::CellType::quad9:
-      return create_concrete_position<CORE::FE::CellType::quad9>(element, point, floattype);
-    case CORE::FE::CellType::hex8:
-      return create_concrete_position<CORE::FE::CellType::hex8>(element, point, floattype);
-    case CORE::FE::CellType::hex20:
-      return create_concrete_position<CORE::FE::CellType::hex20>(element, point, floattype);
-    case CORE::FE::CellType::tet4:
-      return create_concrete_position<CORE::FE::CellType::tet4>(element, point, floattype);
-    case CORE::FE::CellType::pyramid5:
-      return create_concrete_position<CORE::FE::CellType::pyramid5>(element, point, floattype);
-    case CORE::FE::CellType::wedge6:
-      return create_concrete_position<CORE::FE::CellType::wedge6>(element, point, floattype);
+    case Core::FE::CellType::line2:
+      return create_concrete_position<Core::FE::CellType::line2>(element, point, floattype);
+    case Core::FE::CellType::tri3:
+      return create_concrete_position<Core::FE::CellType::tri3>(element, point, floattype);
+    case Core::FE::CellType::tri6:
+      return create_concrete_position<Core::FE::CellType::tri6>(element, point, floattype);
+    case Core::FE::CellType::quad4:
+      return create_concrete_position<Core::FE::CellType::quad4>(element, point, floattype);
+    case Core::FE::CellType::quad8:
+      return create_concrete_position<Core::FE::CellType::quad8>(element, point, floattype);
+    case Core::FE::CellType::quad9:
+      return create_concrete_position<Core::FE::CellType::quad9>(element, point, floattype);
+    case Core::FE::CellType::hex8:
+      return create_concrete_position<Core::FE::CellType::hex8>(element, point, floattype);
+    case Core::FE::CellType::hex20:
+      return create_concrete_position<Core::FE::CellType::hex20>(element, point, floattype);
+    case Core::FE::CellType::tet4:
+      return create_concrete_position<Core::FE::CellType::tet4>(element, point, floattype);
+    case Core::FE::CellType::pyramid5:
+      return create_concrete_position<Core::FE::CellType::pyramid5>(element, point, floattype);
+    case Core::FE::CellType::wedge6:
+      return create_concrete_position<Core::FE::CellType::wedge6>(element, point, floattype);
     default:
-      FOUR_C_THROW("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW("Unsupported distype = %s", Core::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -319,37 +319,37 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePosition(
-    const Element& element, const double* xyz, INPAR::CUT::CutFloattype floattype) const
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::CreatePosition(
+    const Element& element, const double* xyz, Inpar::Cut::CutFloattype floattype) const
 {
-  CORE::FE::CellType distype = element.Shape();
+  Core::FE::CellType distype = element.Shape();
 
   switch (distype)
   {
-    case CORE::FE::CellType::line2:
-      return create_concrete_position<CORE::FE::CellType::line2>(element, xyz, floattype);
-    case CORE::FE::CellType::tri3:
-      return create_concrete_position<CORE::FE::CellType::tri3>(element, xyz, floattype);
-    case CORE::FE::CellType::tri6:
-      return create_concrete_position<CORE::FE::CellType::tri6>(element, xyz, floattype);
-    case CORE::FE::CellType::quad4:
-      return create_concrete_position<CORE::FE::CellType::quad4>(element, xyz, floattype);
-    case CORE::FE::CellType::quad8:
-      return create_concrete_position<CORE::FE::CellType::quad8>(element, xyz, floattype);
-    case CORE::FE::CellType::quad9:
-      return create_concrete_position<CORE::FE::CellType::quad9>(element, xyz, floattype);
-    case CORE::FE::CellType::hex8:
-      return create_concrete_position<CORE::FE::CellType::hex8>(element, xyz, floattype);
-    case CORE::FE::CellType::hex20:
-      return create_concrete_position<CORE::FE::CellType::hex20>(element, xyz, floattype);
-    case CORE::FE::CellType::tet4:
-      return create_concrete_position<CORE::FE::CellType::tet4>(element, xyz, floattype);
-    case CORE::FE::CellType::pyramid5:
-      return create_concrete_position<CORE::FE::CellType::pyramid5>(element, xyz, floattype);
-    case CORE::FE::CellType::wedge6:
-      return create_concrete_position<CORE::FE::CellType::wedge6>(element, xyz, floattype);
+    case Core::FE::CellType::line2:
+      return create_concrete_position<Core::FE::CellType::line2>(element, xyz, floattype);
+    case Core::FE::CellType::tri3:
+      return create_concrete_position<Core::FE::CellType::tri3>(element, xyz, floattype);
+    case Core::FE::CellType::tri6:
+      return create_concrete_position<Core::FE::CellType::tri6>(element, xyz, floattype);
+    case Core::FE::CellType::quad4:
+      return create_concrete_position<Core::FE::CellType::quad4>(element, xyz, floattype);
+    case Core::FE::CellType::quad8:
+      return create_concrete_position<Core::FE::CellType::quad8>(element, xyz, floattype);
+    case Core::FE::CellType::quad9:
+      return create_concrete_position<Core::FE::CellType::quad9>(element, xyz, floattype);
+    case Core::FE::CellType::hex8:
+      return create_concrete_position<Core::FE::CellType::hex8>(element, xyz, floattype);
+    case Core::FE::CellType::hex20:
+      return create_concrete_position<Core::FE::CellType::hex20>(element, xyz, floattype);
+    case Core::FE::CellType::tet4:
+      return create_concrete_position<Core::FE::CellType::tet4>(element, xyz, floattype);
+    case Core::FE::CellType::pyramid5:
+      return create_concrete_position<Core::FE::CellType::pyramid5>(element, xyz, floattype);
+    case Core::FE::CellType::wedge6:
+      return create_concrete_position<Core::FE::CellType::wedge6>(element, xyz, floattype);
     default:
-      FOUR_C_THROW("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW("Unsupported distype = %s", Core::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -358,36 +358,36 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePosition(
-    const double* xyze, const double* xyz, const CORE::FE::CellType& distype,
-    INPAR::CUT::CutFloattype floattype) const
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::CreatePosition(
+    const double* xyze, const double* xyz, const Core::FE::CellType& distype,
+    Inpar::Cut::CutFloattype floattype) const
 {
   switch (distype)
   {
-    case CORE::FE::CellType::line2:
-      return create_concrete_position<CORE::FE::CellType::line2>(xyze, xyz, floattype);
-    case CORE::FE::CellType::tri3:
-      return create_concrete_position<CORE::FE::CellType::tri3>(xyze, xyz, floattype);
-    case CORE::FE::CellType::tri6:
-      return create_concrete_position<CORE::FE::CellType::tri6>(xyze, xyz, floattype);
-    case CORE::FE::CellType::quad4:
-      return create_concrete_position<CORE::FE::CellType::quad4>(xyze, xyz, floattype);
-    case CORE::FE::CellType::quad8:
-      return create_concrete_position<CORE::FE::CellType::quad8>(xyze, xyz, floattype);
-    case CORE::FE::CellType::quad9:
-      return create_concrete_position<CORE::FE::CellType::quad9>(xyze, xyz, floattype);
-    case CORE::FE::CellType::hex8:
-      return create_concrete_position<CORE::FE::CellType::hex8>(xyze, xyz, floattype);
-    case CORE::FE::CellType::hex20:
-      return create_concrete_position<CORE::FE::CellType::hex20>(xyze, xyz, floattype);
-    case CORE::FE::CellType::tet4:
-      return create_concrete_position<CORE::FE::CellType::tet4>(xyze, xyz, floattype);
-    case CORE::FE::CellType::pyramid5:
-      return create_concrete_position<CORE::FE::CellType::pyramid5>(xyze, xyz, floattype);
-    case CORE::FE::CellType::wedge6:
-      return create_concrete_position<CORE::FE::CellType::wedge6>(xyze, xyz, floattype);
+    case Core::FE::CellType::line2:
+      return create_concrete_position<Core::FE::CellType::line2>(xyze, xyz, floattype);
+    case Core::FE::CellType::tri3:
+      return create_concrete_position<Core::FE::CellType::tri3>(xyze, xyz, floattype);
+    case Core::FE::CellType::tri6:
+      return create_concrete_position<Core::FE::CellType::tri6>(xyze, xyz, floattype);
+    case Core::FE::CellType::quad4:
+      return create_concrete_position<Core::FE::CellType::quad4>(xyze, xyz, floattype);
+    case Core::FE::CellType::quad8:
+      return create_concrete_position<Core::FE::CellType::quad8>(xyze, xyz, floattype);
+    case Core::FE::CellType::quad9:
+      return create_concrete_position<Core::FE::CellType::quad9>(xyze, xyz, floattype);
+    case Core::FE::CellType::hex8:
+      return create_concrete_position<Core::FE::CellType::hex8>(xyze, xyz, floattype);
+    case Core::FE::CellType::hex20:
+      return create_concrete_position<Core::FE::CellType::hex20>(xyze, xyz, floattype);
+    case Core::FE::CellType::tet4:
+      return create_concrete_position<Core::FE::CellType::tet4>(xyze, xyz, floattype);
+    case Core::FE::CellType::pyramid5:
+      return create_concrete_position<Core::FE::CellType::pyramid5>(xyze, xyz, floattype);
+    case Core::FE::CellType::wedge6:
+      return create_concrete_position<Core::FE::CellType::wedge6>(xyze, xyz, floattype);
     default:
-      FOUR_C_THROW("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW("Unsupported distype = %s", Core::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -396,11 +396,11 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePosition(
-    const std::vector<CORE::GEO::CUT::Node*> nodes, const double* xyz, CORE::FE::CellType distype,
-    INPAR::CUT::CutFloattype floattype) const
+Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::PositionFactory::CreatePosition(
+    const std::vector<Core::Geo::Cut::Node*> nodes, const double* xyz, Core::FE::CellType distype,
+    Inpar::Cut::CutFloattype floattype) const
 {
-  if (distype == CORE::FE::CellType::dis_none)
+  if (distype == Core::FE::CellType::dis_none)
   {
     plain_element_set elements;
     FindCommonElements(nodes, elements);
@@ -412,30 +412,30 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
 
   switch (distype)
   {
-    case CORE::FE::CellType::line2:
-      return create_concrete_position<CORE::FE::CellType::line2>(nodes, xyz, floattype);
-    case CORE::FE::CellType::tri3:
-      return create_concrete_position<CORE::FE::CellType::tri3>(nodes, xyz, floattype);
-    case CORE::FE::CellType::tri6:
-      return create_concrete_position<CORE::FE::CellType::tri6>(nodes, xyz, floattype);
-    case CORE::FE::CellType::quad4:
-      return create_concrete_position<CORE::FE::CellType::quad4>(nodes, xyz, floattype);
-    case CORE::FE::CellType::quad8:
-      return create_concrete_position<CORE::FE::CellType::quad8>(nodes, xyz, floattype);
-    case CORE::FE::CellType::quad9:
-      return create_concrete_position<CORE::FE::CellType::quad9>(nodes, xyz, floattype);
-    case CORE::FE::CellType::hex8:
-      return create_concrete_position<CORE::FE::CellType::hex8>(nodes, xyz, floattype);
-    case CORE::FE::CellType::hex20:
-      return create_concrete_position<CORE::FE::CellType::hex20>(nodes, xyz, floattype);
-    case CORE::FE::CellType::tet4:
-      return create_concrete_position<CORE::FE::CellType::tet4>(nodes, xyz, floattype);
-    case CORE::FE::CellType::pyramid5:
-      return create_concrete_position<CORE::FE::CellType::pyramid5>(nodes, xyz, floattype);
-    case CORE::FE::CellType::wedge6:
-      return create_concrete_position<CORE::FE::CellType::wedge6>(nodes, xyz, floattype);
+    case Core::FE::CellType::line2:
+      return create_concrete_position<Core::FE::CellType::line2>(nodes, xyz, floattype);
+    case Core::FE::CellType::tri3:
+      return create_concrete_position<Core::FE::CellType::tri3>(nodes, xyz, floattype);
+    case Core::FE::CellType::tri6:
+      return create_concrete_position<Core::FE::CellType::tri6>(nodes, xyz, floattype);
+    case Core::FE::CellType::quad4:
+      return create_concrete_position<Core::FE::CellType::quad4>(nodes, xyz, floattype);
+    case Core::FE::CellType::quad8:
+      return create_concrete_position<Core::FE::CellType::quad8>(nodes, xyz, floattype);
+    case Core::FE::CellType::quad9:
+      return create_concrete_position<Core::FE::CellType::quad9>(nodes, xyz, floattype);
+    case Core::FE::CellType::hex8:
+      return create_concrete_position<Core::FE::CellType::hex8>(nodes, xyz, floattype);
+    case Core::FE::CellType::hex20:
+      return create_concrete_position<Core::FE::CellType::hex20>(nodes, xyz, floattype);
+    case Core::FE::CellType::tet4:
+      return create_concrete_position<Core::FE::CellType::tet4>(nodes, xyz, floattype);
+    case Core::FE::CellType::pyramid5:
+      return create_concrete_position<Core::FE::CellType::pyramid5>(nodes, xyz, floattype);
+    case Core::FE::CellType::wedge6:
+      return create_concrete_position<Core::FE::CellType::wedge6>(nodes, xyz, floattype);
     default:
-      FOUR_C_THROW("Unsupported distype = %s", CORE::FE::CellTypeToString(distype).c_str());
+      FOUR_C_THROW("Unsupported distype = %s", Core::FE::CellTypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
 
@@ -444,10 +444,10 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::PositionFactory::CreatePo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-INPAR::CUT::CutFloattype CORE::GEO::CUT::PositionFactory::use_pos_floattype(
-    INPAR::CUT::CutFloattype floattype)
+Inpar::Cut::CutFloattype Core::Geo::Cut::PositionFactory::use_pos_floattype(
+    Inpar::Cut::CutFloattype floattype)
 {
-  if (general_pos_floattype_ != INPAR::CUT::floattype_none)
+  if (general_pos_floattype_ != Inpar::Cut::floattype_none)
     return general_pos_floattype_;
   else
     return floattype;
@@ -455,286 +455,286 @@ INPAR::CUT::CutFloattype CORE::GEO::CUT::PositionFactory::use_pos_floattype(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-INPAR::CUT::CutFloattype CORE::GEO::CUT::PositionFactory::use_dist_floattype(
-    INPAR::CUT::CutFloattype floattype)
+Inpar::Cut::CutFloattype Core::Geo::Cut::PositionFactory::use_dist_floattype(
+    Inpar::Cut::CutFloattype floattype)
 {
-  if (general_dist_floattype_ != INPAR::CUT::floattype_none)
+  if (general_dist_floattype_ != Inpar::Cut::floattype_none)
     return general_dist_floattype_;
   else
     return floattype;
 }
 
-INPAR::CUT::CutFloattype CORE::GEO::CUT::PositionFactory::general_pos_floattype_ =
-    INPAR::CUT::floattype_none;
-INPAR::CUT::CutFloattype CORE::GEO::CUT::PositionFactory::general_dist_floattype_ =
-    INPAR::CUT::floattype_none;
+Inpar::Cut::CutFloattype Core::Geo::Cut::PositionFactory::general_pos_floattype_ =
+    Inpar::Cut::floattype_none;
+Inpar::Cut::CutFloattype Core::Geo::Cut::PositionFactory::general_dist_floattype_ =
+    Inpar::Cut::floattype_none;
 
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2>(
-    const Element& element, const CORE::LINALG::Matrix<2, 1>& xyz,
-    INPAR::CUT::CutFloattype floattype);
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3>(
-    const Element& element, const CORE::LINALG::Matrix<3, 1>& xyz,
-    INPAR::CUT::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<2>(
+    const Element& element, const Core::LinAlg::Matrix<2, 1>& xyz,
+    Inpar::Cut::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3>(
+    const Element& element, const Core::LinAlg::Matrix<3, 1>& xyz,
+    Inpar::Cut::CutFloattype floattype);
 
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 3, 3>(
-    const CORE::LINALG::Matrix<3, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const CORE::FE::CellType& distype, INPAR::CUT::CutFloattype floattype);
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 6, 3>(
-    const CORE::LINALG::Matrix<3, 6>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const CORE::FE::CellType& distype, INPAR::CUT::CutFloattype floattype);
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 4, 3>(
-    const CORE::LINALG::Matrix<3, 4>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const CORE::FE::CellType& distype, INPAR::CUT::CutFloattype floattype);
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 8, 3>(
-    const CORE::LINALG::Matrix<3, 8>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const CORE::FE::CellType& distype, INPAR::CUT::CutFloattype floattype);
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 9, 3>(
-    const CORE::LINALG::Matrix<3, 9>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const CORE::FE::CellType& distype, INPAR::CUT::CutFloattype floattype);
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 2, 3>(
-    const CORE::LINALG::Matrix<3, 2>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const CORE::FE::CellType& distype, INPAR::CUT::CutFloattype floattype);
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2, 2, 2>(
-    const CORE::LINALG::Matrix<2, 2>& xyze, const CORE::LINALG::Matrix<2, 1>& xyz,
-    const CORE::FE::CellType& distype, INPAR::CUT::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3, 3, 3>(
+    const Core::LinAlg::Matrix<3, 3>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
+    const Core::FE::CellType& distype, Inpar::Cut::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3, 6, 3>(
+    const Core::LinAlg::Matrix<3, 6>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
+    const Core::FE::CellType& distype, Inpar::Cut::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3, 4, 3>(
+    const Core::LinAlg::Matrix<3, 4>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
+    const Core::FE::CellType& distype, Inpar::Cut::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3, 8, 3>(
+    const Core::LinAlg::Matrix<3, 8>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
+    const Core::FE::CellType& distype, Inpar::Cut::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3, 9, 3>(
+    const Core::LinAlg::Matrix<3, 9>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
+    const Core::FE::CellType& distype, Inpar::Cut::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3, 2, 3>(
+    const Core::LinAlg::Matrix<3, 2>& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
+    const Core::FE::CellType& distype, Inpar::Cut::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<2, 2, 2>(
+    const Core::LinAlg::Matrix<2, 2>& xyze, const Core::LinAlg::Matrix<2, 1>& xyz,
+    const Core::FE::CellType& distype, Inpar::Cut::CutFloattype floattype);
 
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3>(
-    const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
-    const CORE::FE::CellType& distype, INPAR::CUT::CutFloattype floattype);
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2>(
-    const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<2, 1>& xyz,
-    const CORE::FE::CellType& distype, INPAR::CUT::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3>(
+    const Core::LinAlg::SerialDenseMatrix& xyze, const Core::LinAlg::Matrix<3, 1>& xyz,
+    const Core::FE::CellType& distype, Inpar::Cut::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<2>(
+    const Core::LinAlg::SerialDenseMatrix& xyze, const Core::LinAlg::Matrix<2, 1>& xyz,
+    const Core::FE::CellType& distype, Inpar::Cut::CutFloattype floattype);
 
 
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3>(
-    const std::vector<Node*> nodes, const CORE::LINALG::Matrix<3, 1>& xyz,
-    CORE::FE::CellType distype, INPAR::CUT::CutFloattype floattype);
-template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2>(
-    const std::vector<Node*> nodes, const CORE::LINALG::Matrix<2, 1>& xyz,
-    CORE::FE::CellType distype, INPAR::CUT::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<3>(
+    const std::vector<Node*> nodes, const Core::LinAlg::Matrix<3, 1>& xyz,
+    Core::FE::CellType distype, Inpar::Cut::CutFloattype floattype);
+template Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create<2>(
+    const std::vector<Node*> nodes, const Core::LinAlg::Matrix<2, 1>& xyz,
+    Core::FE::CellType distype, Inpar::Cut::CutFloattype floattype);
 
 /* --- ComputeEmbeddedPosition --- */
 // embedded element types
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::tri3>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::tri6>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad4>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad8>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad9>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<2, CORE::FE::CellType::line2>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::line2>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<3, Core::FE::CellType::tri3>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<3, Core::FE::CellType::tri6>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<3, Core::FE::CellType::quad4>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<3, Core::FE::CellType::quad8>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<3, Core::FE::CellType::quad9>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<2, Core::FE::CellType::line2>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<3, Core::FE::CellType::line2>;
 
 // non-embedded element types for the embedded case (only necessary due to compiler problems)
 // template class
-// CORE::GEO::CUT::ComputeEmbeddedPosition<3,CORE::FE::CellType::hex16>; template
-// class CORE::GEO::CUT::ComputeEmbeddedPosition<3,CORE::FE::CellType::hex18>;
+// Core::Geo::Cut::ComputeEmbeddedPosition<3,Core::FE::CellType::hex16>; template
+// class Core::Geo::Cut::ComputeEmbeddedPosition<3,Core::FE::CellType::hex18>;
 // template class
-// CORE::GEO::CUT::ComputeEmbeddedPosition<3,CORE::FE::CellType::hex27>; template
-// class CORE::GEO::CUT::ComputeEmbeddedPosition<3,CORE::FE::CellType::tet10>;
+// Core::Geo::Cut::ComputeEmbeddedPosition<3,Core::FE::CellType::hex27>; template
+// class Core::Geo::Cut::ComputeEmbeddedPosition<3,Core::FE::CellType::tet10>;
 // template class
-// CORE::GEO::CUT::ComputeEmbeddedPosition<3,CORE::FE::CellType::wedge15>;
+// Core::Geo::Cut::ComputeEmbeddedPosition<3,Core::FE::CellType::wedge15>;
 
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::tri3,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri3>, CORE::FE::dim<CORE::FE::CellType::tri3>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::tri6,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri6>, CORE::FE::dim<CORE::FE::CellType::tri6>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad4,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad4>, CORE::FE::dim<CORE::FE::CellType::quad4>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad8,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad8>, CORE::FE::dim<CORE::FE::CellType::quad8>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::quad9,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad9>, CORE::FE::dim<CORE::FE::CellType::quad9>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<2, CORE::FE::CellType::line2,
-    CORE::FE::num_nodes<CORE::FE::CellType::line2>, CORE::FE::dim<CORE::FE::CellType::line2>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, CORE::FE::CellType::line2,
-    CORE::FE::num_nodes<CORE::FE::CellType::line2>, CORE::FE::dim<CORE::FE::CellType::line2>,
-    INPAR::CUT::floattype_cln>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<3, Core::FE::CellType::tri3,
+    Core::FE::num_nodes<Core::FE::CellType::tri3>, Core::FE::dim<Core::FE::CellType::tri3>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<3, Core::FE::CellType::tri6,
+    Core::FE::num_nodes<Core::FE::CellType::tri6>, Core::FE::dim<Core::FE::CellType::tri6>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<3, Core::FE::CellType::quad4,
+    Core::FE::num_nodes<Core::FE::CellType::quad4>, Core::FE::dim<Core::FE::CellType::quad4>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<3, Core::FE::CellType::quad8,
+    Core::FE::num_nodes<Core::FE::CellType::quad8>, Core::FE::dim<Core::FE::CellType::quad8>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<3, Core::FE::CellType::quad9,
+    Core::FE::num_nodes<Core::FE::CellType::quad9>, Core::FE::dim<Core::FE::CellType::quad9>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<2, Core::FE::CellType::line2,
+    Core::FE::num_nodes<Core::FE::CellType::line2>, Core::FE::dim<Core::FE::CellType::line2>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputeEmbeddedPosition<3, Core::FE::CellType::line2,
+    Core::FE::num_nodes<Core::FE::CellType::line2>, Core::FE::dim<Core::FE::CellType::line2>,
+    Inpar::Cut::floattype_cln>;
 /* --- ComputePosition --- */
 // non-embedded cases (only)
-template class CORE::GEO::CUT::ComputePosition<1, CORE::FE::CellType::line2>;
+template class Core::Geo::Cut::ComputePosition<1, Core::FE::CellType::line2>;
 
-template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::tri3>;
-template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::tri6>;
-template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad4>;
-template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad8>;
-template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad9>;
+template class Core::Geo::Cut::ComputePosition<2, Core::FE::CellType::tri3>;
+template class Core::Geo::Cut::ComputePosition<2, Core::FE::CellType::tri6>;
+template class Core::Geo::Cut::ComputePosition<2, Core::FE::CellType::quad4>;
+template class Core::Geo::Cut::ComputePosition<2, Core::FE::CellType::quad8>;
+template class Core::Geo::Cut::ComputePosition<2, Core::FE::CellType::quad9>;
 
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::tet4>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::tet10>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex8>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex16>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex18>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex20>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex27>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::pyramid5>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::wedge6>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::wedge15>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::tet4>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::tet10>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::hex8>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::hex16>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::hex18>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::hex20>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::hex27>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::pyramid5>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::wedge6>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::wedge15>;
 
-template class CORE::GEO::CUT::ComputePosition<1, CORE::FE::CellType::line2,
-    CORE::FE::num_nodes<CORE::FE::CellType::line2>, CORE::FE::dim<CORE::FE::CellType::line2>,
-    INPAR::CUT::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<1, Core::FE::CellType::line2,
+    Core::FE::num_nodes<Core::FE::CellType::line2>, Core::FE::dim<Core::FE::CellType::line2>,
+    Inpar::Cut::floattype_cln>;
 
-template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::tri3,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri3>, CORE::FE::dim<CORE::FE::CellType::tri3>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::tri6,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri6>, CORE::FE::dim<CORE::FE::CellType::tri6>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad4,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad4>, CORE::FE::dim<CORE::FE::CellType::quad4>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad8,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad8>, CORE::FE::dim<CORE::FE::CellType::quad8>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<2, CORE::FE::CellType::quad9,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad9>, CORE::FE::dim<CORE::FE::CellType::quad9>,
-    INPAR::CUT::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<2, Core::FE::CellType::tri3,
+    Core::FE::num_nodes<Core::FE::CellType::tri3>, Core::FE::dim<Core::FE::CellType::tri3>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<2, Core::FE::CellType::tri6,
+    Core::FE::num_nodes<Core::FE::CellType::tri6>, Core::FE::dim<Core::FE::CellType::tri6>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<2, Core::FE::CellType::quad4,
+    Core::FE::num_nodes<Core::FE::CellType::quad4>, Core::FE::dim<Core::FE::CellType::quad4>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<2, Core::FE::CellType::quad8,
+    Core::FE::num_nodes<Core::FE::CellType::quad8>, Core::FE::dim<Core::FE::CellType::quad8>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<2, Core::FE::CellType::quad9,
+    Core::FE::num_nodes<Core::FE::CellType::quad9>, Core::FE::dim<Core::FE::CellType::quad9>,
+    Inpar::Cut::floattype_cln>;
 
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::tet4,
-    CORE::FE::num_nodes<CORE::FE::CellType::tet4>, CORE::FE::dim<CORE::FE::CellType::tet4>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::tet10,
-    CORE::FE::num_nodes<CORE::FE::CellType::tet10>, CORE::FE::dim<CORE::FE::CellType::tet10>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex8,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex8>, CORE::FE::dim<CORE::FE::CellType::hex8>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex16,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex16>, CORE::FE::dim<CORE::FE::CellType::hex16>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex18,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex18>, CORE::FE::dim<CORE::FE::CellType::hex18>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex20,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex20>, CORE::FE::dim<CORE::FE::CellType::hex20>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::hex27,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex27>, CORE::FE::dim<CORE::FE::CellType::hex27>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::pyramid5,
-    CORE::FE::num_nodes<CORE::FE::CellType::pyramid5>, CORE::FE::dim<CORE::FE::CellType::pyramid5>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::wedge6,
-    CORE::FE::num_nodes<CORE::FE::CellType::wedge6>, CORE::FE::dim<CORE::FE::CellType::wedge6>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::ComputePosition<3, CORE::FE::CellType::wedge15,
-    CORE::FE::num_nodes<CORE::FE::CellType::wedge15>, CORE::FE::dim<CORE::FE::CellType::wedge15>,
-    INPAR::CUT::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::tet4,
+    Core::FE::num_nodes<Core::FE::CellType::tet4>, Core::FE::dim<Core::FE::CellType::tet4>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::tet10,
+    Core::FE::num_nodes<Core::FE::CellType::tet10>, Core::FE::dim<Core::FE::CellType::tet10>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::hex8,
+    Core::FE::num_nodes<Core::FE::CellType::hex8>, Core::FE::dim<Core::FE::CellType::hex8>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::hex16,
+    Core::FE::num_nodes<Core::FE::CellType::hex16>, Core::FE::dim<Core::FE::CellType::hex16>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::hex18,
+    Core::FE::num_nodes<Core::FE::CellType::hex18>, Core::FE::dim<Core::FE::CellType::hex18>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::hex20,
+    Core::FE::num_nodes<Core::FE::CellType::hex20>, Core::FE::dim<Core::FE::CellType::hex20>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::hex27,
+    Core::FE::num_nodes<Core::FE::CellType::hex27>, Core::FE::dim<Core::FE::CellType::hex27>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::pyramid5,
+    Core::FE::num_nodes<Core::FE::CellType::pyramid5>, Core::FE::dim<Core::FE::CellType::pyramid5>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::wedge6,
+    Core::FE::num_nodes<Core::FE::CellType::wedge6>, Core::FE::dim<Core::FE::CellType::wedge6>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::ComputePosition<3, Core::FE::CellType::wedge15,
+    Core::FE::num_nodes<Core::FE::CellType::wedge15>, Core::FE::dim<Core::FE::CellType::wedge15>,
+    Inpar::Cut::floattype_cln>;
 
 /* --- PositionGeneric --- */
 // embedded cases
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tri3>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tri6>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad4>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad8>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad9>;
-template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::line2>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::line2>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::tri3>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::tri6>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::quad4>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::quad8>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::quad9>;
+template class Core::Geo::Cut::PositionGeneric<2, Core::FE::CellType::line2>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::line2>;
 
 // non-embedded cases
-template class CORE::GEO::CUT::PositionGeneric<1, CORE::FE::CellType::line2>;
+template class Core::Geo::Cut::PositionGeneric<1, Core::FE::CellType::line2>;
 
-template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::tri3>;
-template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::tri6>;
-template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad4>;
-template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad8>;
-template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad9>;
+template class Core::Geo::Cut::PositionGeneric<2, Core::FE::CellType::tri3>;
+template class Core::Geo::Cut::PositionGeneric<2, Core::FE::CellType::tri6>;
+template class Core::Geo::Cut::PositionGeneric<2, Core::FE::CellType::quad4>;
+template class Core::Geo::Cut::PositionGeneric<2, Core::FE::CellType::quad8>;
+template class Core::Geo::Cut::PositionGeneric<2, Core::FE::CellType::quad9>;
 
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tet4>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tet10>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex8>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex16>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex18>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex20>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex27>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::pyramid5>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge6>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge15>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::tet4>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::tet10>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::hex8>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::hex16>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::hex18>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::hex20>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::hex27>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::pyramid5>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::wedge6>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::wedge15>;
 
 // unused / impossible cases (only necessary due to compiler problems)
-// template class CORE::GEO::CUT::PositionGeneric<2,CORE::FE::CellType::hex8>;
-// template class CORE::GEO::CUT::PositionGeneric<2,CORE::FE::CellType::tet4>;
-// template class CORE::GEO::CUT::PositionGeneric<2,CORE::FE::CellType::pyramid5>;
-// template class CORE::GEO::CUT::PositionGeneric<2,CORE::FE::CellType::wedge6>;
+// template class Core::Geo::Cut::PositionGeneric<2,Core::FE::CellType::hex8>;
+// template class Core::Geo::Cut::PositionGeneric<2,Core::FE::CellType::tet4>;
+// template class Core::Geo::Cut::PositionGeneric<2,Core::FE::CellType::pyramid5>;
+// template class Core::Geo::Cut::PositionGeneric<2,Core::FE::CellType::wedge6>;
 
 // embedded cases
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tri3,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri3>, CORE::FE::dim<CORE::FE::CellType::tri3>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tri6,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri6>, CORE::FE::dim<CORE::FE::CellType::tri6>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad4,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad4>, CORE::FE::dim<CORE::FE::CellType::quad4>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad8,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad8>, CORE::FE::dim<CORE::FE::CellType::quad8>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::quad9,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad9>, CORE::FE::dim<CORE::FE::CellType::quad9>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::line2,
-    CORE::FE::num_nodes<CORE::FE::CellType::line2>, CORE::FE::dim<CORE::FE::CellType::line2>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::line2,
-    CORE::FE::num_nodes<CORE::FE::CellType::line2>, CORE::FE::dim<CORE::FE::CellType::line2>,
-    INPAR::CUT::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::tri3,
+    Core::FE::num_nodes<Core::FE::CellType::tri3>, Core::FE::dim<Core::FE::CellType::tri3>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::tri6,
+    Core::FE::num_nodes<Core::FE::CellType::tri6>, Core::FE::dim<Core::FE::CellType::tri6>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::quad4,
+    Core::FE::num_nodes<Core::FE::CellType::quad4>, Core::FE::dim<Core::FE::CellType::quad4>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::quad8,
+    Core::FE::num_nodes<Core::FE::CellType::quad8>, Core::FE::dim<Core::FE::CellType::quad8>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::quad9,
+    Core::FE::num_nodes<Core::FE::CellType::quad9>, Core::FE::dim<Core::FE::CellType::quad9>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<2, Core::FE::CellType::line2,
+    Core::FE::num_nodes<Core::FE::CellType::line2>, Core::FE::dim<Core::FE::CellType::line2>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::line2,
+    Core::FE::num_nodes<Core::FE::CellType::line2>, Core::FE::dim<Core::FE::CellType::line2>,
+    Inpar::Cut::floattype_cln>;
 
 // non-embedded cases
-template class CORE::GEO::CUT::PositionGeneric<1, CORE::FE::CellType::line2,
-    CORE::FE::num_nodes<CORE::FE::CellType::line2>, CORE::FE::dim<CORE::FE::CellType::line2>,
-    INPAR::CUT::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<1, Core::FE::CellType::line2,
+    Core::FE::num_nodes<Core::FE::CellType::line2>, Core::FE::dim<Core::FE::CellType::line2>,
+    Inpar::Cut::floattype_cln>;
 
-template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::tri3,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri3>, CORE::FE::dim<CORE::FE::CellType::tri3>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::tri6,
-    CORE::FE::num_nodes<CORE::FE::CellType::tri6>, CORE::FE::dim<CORE::FE::CellType::tri6>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad4,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad4>, CORE::FE::dim<CORE::FE::CellType::quad4>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad8,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad8>, CORE::FE::dim<CORE::FE::CellType::quad8>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<2, CORE::FE::CellType::quad9,
-    CORE::FE::num_nodes<CORE::FE::CellType::quad9>, CORE::FE::dim<CORE::FE::CellType::quad9>,
-    INPAR::CUT::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<2, Core::FE::CellType::tri3,
+    Core::FE::num_nodes<Core::FE::CellType::tri3>, Core::FE::dim<Core::FE::CellType::tri3>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<2, Core::FE::CellType::tri6,
+    Core::FE::num_nodes<Core::FE::CellType::tri6>, Core::FE::dim<Core::FE::CellType::tri6>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<2, Core::FE::CellType::quad4,
+    Core::FE::num_nodes<Core::FE::CellType::quad4>, Core::FE::dim<Core::FE::CellType::quad4>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<2, Core::FE::CellType::quad8,
+    Core::FE::num_nodes<Core::FE::CellType::quad8>, Core::FE::dim<Core::FE::CellType::quad8>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<2, Core::FE::CellType::quad9,
+    Core::FE::num_nodes<Core::FE::CellType::quad9>, Core::FE::dim<Core::FE::CellType::quad9>,
+    Inpar::Cut::floattype_cln>;
 
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tet4,
-    CORE::FE::num_nodes<CORE::FE::CellType::tet4>, CORE::FE::dim<CORE::FE::CellType::tet4>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::tet10,
-    CORE::FE::num_nodes<CORE::FE::CellType::tet10>, CORE::FE::dim<CORE::FE::CellType::tet10>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex8,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex8>, CORE::FE::dim<CORE::FE::CellType::hex8>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex16,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex16>, CORE::FE::dim<CORE::FE::CellType::hex16>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex18,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex18>, CORE::FE::dim<CORE::FE::CellType::hex18>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex20,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex20>, CORE::FE::dim<CORE::FE::CellType::hex20>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::hex27,
-    CORE::FE::num_nodes<CORE::FE::CellType::hex27>, CORE::FE::dim<CORE::FE::CellType::hex27>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::pyramid5,
-    CORE::FE::num_nodes<CORE::FE::CellType::pyramid5>, CORE::FE::dim<CORE::FE::CellType::pyramid5>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge6,
-    CORE::FE::num_nodes<CORE::FE::CellType::wedge6>, CORE::FE::dim<CORE::FE::CellType::wedge6>,
-    INPAR::CUT::floattype_cln>;
-template class CORE::GEO::CUT::PositionGeneric<3, CORE::FE::CellType::wedge15,
-    CORE::FE::num_nodes<CORE::FE::CellType::wedge15>, CORE::FE::dim<CORE::FE::CellType::wedge15>,
-    INPAR::CUT::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::tet4,
+    Core::FE::num_nodes<Core::FE::CellType::tet4>, Core::FE::dim<Core::FE::CellType::tet4>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::tet10,
+    Core::FE::num_nodes<Core::FE::CellType::tet10>, Core::FE::dim<Core::FE::CellType::tet10>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::hex8,
+    Core::FE::num_nodes<Core::FE::CellType::hex8>, Core::FE::dim<Core::FE::CellType::hex8>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::hex16,
+    Core::FE::num_nodes<Core::FE::CellType::hex16>, Core::FE::dim<Core::FE::CellType::hex16>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::hex18,
+    Core::FE::num_nodes<Core::FE::CellType::hex18>, Core::FE::dim<Core::FE::CellType::hex18>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::hex20,
+    Core::FE::num_nodes<Core::FE::CellType::hex20>, Core::FE::dim<Core::FE::CellType::hex20>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::hex27,
+    Core::FE::num_nodes<Core::FE::CellType::hex27>, Core::FE::dim<Core::FE::CellType::hex27>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::pyramid5,
+    Core::FE::num_nodes<Core::FE::CellType::pyramid5>, Core::FE::dim<Core::FE::CellType::pyramid5>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::wedge6,
+    Core::FE::num_nodes<Core::FE::CellType::wedge6>, Core::FE::dim<Core::FE::CellType::wedge6>,
+    Inpar::Cut::floattype_cln>;
+template class Core::Geo::Cut::PositionGeneric<3, Core::FE::CellType::wedge15,
+    Core::FE::num_nodes<Core::FE::CellType::wedge15>, Core::FE::dim<Core::FE::CellType::wedge15>,
+    Inpar::Cut::floattype_cln>;
 
 FOUR_C_NAMESPACE_CLOSE

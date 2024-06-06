@@ -16,15 +16,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>*
-DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance(CORE::UTILS::SingletonAction action)
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>*
+Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance(Core::UTILS::SingletonAction action)
 {
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
+  static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>>(
-            new DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>());
+        return std::unique_ptr<Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>>(
+            new Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>());
       });
 
   return singleton_owner.Instance(action);
@@ -32,27 +32,27 @@ DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::Instance(CORE::UTILS::Singleton
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <CORE::FE::CellType distype>
-DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::FluidEleBoundaryCalcStd()
-    : DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
+template <Core::FE::CellType distype>
+Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>::FluidEleBoundaryCalcStd()
+    : Discret::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 {
   // pointer to class FluidImplParameter
-  my::fldpara_ = DRT::ELEMENTS::FluidEleParameterStd::Instance();
+  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::Instance();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::quad4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::quad8>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::quad9>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::tri3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::tri6>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::line2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::line3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<CORE::FE::CellType::nurbs9>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcStd<Core::FE::CellType::quad4>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcStd<Core::FE::CellType::quad8>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcStd<Core::FE::CellType::quad9>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcStd<Core::FE::CellType::tri3>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcStd<Core::FE::CellType::tri6>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcStd<Core::FE::CellType::line2>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcStd<Core::FE::CellType::line3>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcStd<Core::FE::CellType::nurbs2>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcStd<Core::FE::CellType::nurbs3>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcStd<Core::FE::CellType::nurbs4>;
+template class Discret::ELEMENTS::FluidEleBoundaryCalcStd<Core::FE::CellType::nurbs9>;
 
 FOUR_C_NAMESPACE_CLOSE

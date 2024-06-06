@@ -22,36 +22,36 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  inline CORE::FE::GaussRule1D Get1DLagrangeBasisLobattoGaussRule(const unsigned int degree)
+  inline Core::FE::GaussRule1D Get1DLagrangeBasisLobattoGaussRule(const unsigned int degree)
   {
     switch (degree)
     {
       case 1:
-        return CORE::FE::GaussRule1D::line_lobatto2point;
+        return Core::FE::GaussRule1D::line_lobatto2point;
       case 2:
-        return CORE::FE::GaussRule1D::line_lobatto3point;
+        return Core::FE::GaussRule1D::line_lobatto3point;
       case 3:
-        return CORE::FE::GaussRule1D::line_lobatto4point;
+        return Core::FE::GaussRule1D::line_lobatto4point;
       case 4:
-        return CORE::FE::GaussRule1D::line_lobatto5point;
+        return Core::FE::GaussRule1D::line_lobatto5point;
       case 5:
-        return CORE::FE::GaussRule1D::line_lobatto6point;
+        return Core::FE::GaussRule1D::line_lobatto6point;
       case 6:
-        return CORE::FE::GaussRule1D::line_lobatto7point;
+        return Core::FE::GaussRule1D::line_lobatto7point;
       case 7:
-        return CORE::FE::GaussRule1D::line_lobatto8point;
+        return Core::FE::GaussRule1D::line_lobatto8point;
       case 8:
-        return CORE::FE::GaussRule1D::line_lobatto9point;
+        return Core::FE::GaussRule1D::line_lobatto9point;
       case 9:
-        return CORE::FE::GaussRule1D::line_lobatto10point;
+        return Core::FE::GaussRule1D::line_lobatto10point;
       default:
         FOUR_C_THROW("The Lobatto Gauss rule is not implemented for degree %d", degree);
-        return CORE::FE::GaussRule1D::undefined;
+        return Core::FE::GaussRule1D::undefined;
     }
   }
 }  // namespace
 
-namespace CORE::FE
+namespace Core::FE
 {
   /*!
    \brief generates complete Lagrange basis in 1D for [-1,1]^d elements
@@ -61,11 +61,11 @@ namespace CORE::FE
     std::vector<LagrangePolynomial> poly1d;
     if (degree == 0)
     {
-      poly1d.push_back(CORE::FE::LagrangePolynomial(std::vector<double>(), 0.));
+      poly1d.push_back(Core::FE::LagrangePolynomial(std::vector<double>(), 0.));
       return poly1d;
     }
 
-    CORE::FE::IntegrationPoints1D gaussLobattoPoints(Get1DLagrangeBasisLobattoGaussRule(degree));
+    Core::FE::IntegrationPoints1D gaussLobattoPoints(Get1DLagrangeBasisLobattoGaussRule(degree));
     std::vector<double> points(degree);
     for (unsigned int i = 0; i <= degree; ++i)
     {
@@ -75,7 +75,7 @@ namespace CORE::FE
           points[c] = gaussLobattoPoints.qxg[j][0];
           ++c;
         }
-      poly1d.push_back(CORE::FE::LagrangePolynomial(points, gaussLobattoPoints.qxg[i][0]));
+      poly1d.push_back(Core::FE::LagrangePolynomial(points, gaussLobattoPoints.qxg[i][0]));
     }
     return poly1d;
   }
@@ -135,7 +135,7 @@ namespace CORE::FE
    */
   template <int nsd_, class POLY>
   void PolynomialSpaceTensor<nsd_, POLY>::Evaluate(
-      const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
+      const Core::LinAlg::Matrix<nsd_, 1> &point, Core::LinAlg::SerialDenseVector &values) const
   {
     const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
@@ -175,15 +175,15 @@ namespace CORE::FE
    */
   template <int nsd_, class POLY>
   void PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv1(
-      const CORE::LINALG::Matrix<nsd_, 1> &point,
-      CORE::LINALG::SerialDenseMatrix &derivatives) const
+      const Core::LinAlg::Matrix<nsd_, 1> &point,
+      Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
     double evaluation[nsd_][20], gradient[nsd_][20];
-    CORE::LINALG::Matrix<2, 1, double> eval;
+    Core::LinAlg::Matrix<2, 1, double> eval;
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
@@ -231,15 +231,15 @@ namespace CORE::FE
    */
   template <int nsd_, class POLY>
   void PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv2(
-      const CORE::LINALG::Matrix<nsd_, 1> &point,
-      CORE::LINALG::SerialDenseMatrix &derivatives) const
+      const Core::LinAlg::Matrix<nsd_, 1> &point,
+      Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
     double evaluation[nsd_][20], gradient[nsd_][20], hessian[nsd_][20];
-    CORE::LINALG::Matrix<3, 1, double> eval;
+    Core::LinAlg::Matrix<3, 1, double> eval;
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
@@ -295,7 +295,7 @@ namespace CORE::FE
    */
   template <int nsd_, class POLY>
   void PolynomialSpaceTensor<nsd_, POLY>::FillUnitNodePoints(
-      CORE::LINALG::SerialDenseMatrix &matrix) const
+      Core::LinAlg::SerialDenseMatrix &matrix) const
   {
     matrix.shape(nsd_, Size());
 
@@ -340,7 +340,7 @@ namespace CORE::FE
    */
   template <int nsd_, class POLY>
   void PolynomialSpaceComplete<nsd_, POLY>::Evaluate(
-      const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
+      const Core::LinAlg::Matrix<nsd_, 1> &point, Core::LinAlg::SerialDenseVector &values) const
   {
     const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
@@ -382,15 +382,15 @@ namespace CORE::FE
    */
   template <int nsd_, class POLY>
   void PolynomialSpaceComplete<nsd_, POLY>::Evaluate_deriv1(
-      const CORE::LINALG::Matrix<nsd_, 1> &point,
-      CORE::LINALG::SerialDenseMatrix &derivatives) const
+      const Core::LinAlg::Matrix<nsd_, 1> &point,
+      Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
     double evaluation[nsd_][20], gradient[nsd_][20];
-    CORE::LINALG::Matrix<2, 1, double> eval;
+    Core::LinAlg::Matrix<2, 1, double> eval;
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
@@ -442,15 +442,15 @@ namespace CORE::FE
    */
   template <int nsd_, class POLY>
   void PolynomialSpaceComplete<nsd_, POLY>::Evaluate_deriv2(
-      const CORE::LINALG::Matrix<nsd_, 1> &point,
-      CORE::LINALG::SerialDenseMatrix &derivatives) const
+      const Core::LinAlg::Matrix<nsd_, 1> &point,
+      Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
     double evaluation[nsd_][20], gradient[nsd_][20], hessian[nsd_][20];
-    CORE::LINALG::Matrix<3, 1, double> eval;
+    Core::LinAlg::Matrix<3, 1, double> eval;
     for (unsigned int i = 0; i < size; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
@@ -503,7 +503,7 @@ namespace CORE::FE
    */
   template <int nsd_, class POLY>
   void PolynomialSpaceComplete<nsd_, POLY>::FillUnitNodePoints(
-      CORE::LINALG::SerialDenseMatrix &matrix) const
+      Core::LinAlg::SerialDenseMatrix &matrix) const
   {
     matrix.shape(nsd_, Size());
 
@@ -544,7 +544,7 @@ namespace CORE::FE
 
   template <int nsd_>
   void LagrangeBasisTet<nsd_>::Evaluate(
-      const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
+      const Core::LinAlg::Matrix<nsd_, 1> &point, Core::LinAlg::SerialDenseVector &values) const
   {
     legendre_.Evaluate(point, values);
     vandermonde_factor_.setVectors(Teuchos::rcpFromRef(values), Teuchos::rcpFromRef(values));
@@ -554,8 +554,8 @@ namespace CORE::FE
 
 
   template <int nsd_>
-  void LagrangeBasisTet<nsd_>::Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
-      CORE::LINALG::SerialDenseMatrix &derivatives) const
+  void LagrangeBasisTet<nsd_>::Evaluate_deriv1(const Core::LinAlg::Matrix<nsd_, 1> &point,
+      Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     legendre_.Evaluate_deriv1(point, derivatives);
     for (unsigned int d = 0; d < nsd_; ++d)
@@ -571,8 +571,8 @@ namespace CORE::FE
 
 
   template <int nsd_>
-  void LagrangeBasisTet<nsd_>::Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
-      CORE::LINALG::SerialDenseMatrix &derivatives) const
+  void LagrangeBasisTet<nsd_>::Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point,
+      Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     legendre_.Evaluate_deriv2(point, derivatives);
     for (unsigned int d = 0; d < (nsd_ * (nsd_ + 1)) / 2; ++d)
@@ -658,7 +658,7 @@ namespace CORE::FE
 
 
   template <int nsd_>
-  void CORE::FE::LagrangeBasisTet<nsd_>::fill_fekete_points(const unsigned int)
+  void Core::FE::LagrangeBasisTet<nsd_>::fill_fekete_points(const unsigned int)
   {
     FOUR_C_THROW("Not implemented for dim = %d", nsd_);
   }
@@ -666,14 +666,14 @@ namespace CORE::FE
 
 
   template <int nsd_>
-  void CORE::FE::LagrangeBasisTet<nsd_>::compute_vandermonde_matrices(const unsigned int degree)
+  void Core::FE::LagrangeBasisTet<nsd_>::compute_vandermonde_matrices(const unsigned int degree)
   {
     vandermonde_.shape(Size(), Size());
 
-    CORE::LINALG::SerialDenseVector values(Size());
-    CORE::LINALG::SerialDenseMatrix deriv1(nsd_, Size());
-    CORE::LINALG::SerialDenseMatrix deriv2(nsd_ * (nsd_ + 1) / 2, Size());
-    CORE::LINALG::Matrix<nsd_, 1> point;
+    Core::LinAlg::SerialDenseVector values(Size());
+    Core::LinAlg::SerialDenseMatrix deriv1(nsd_, Size());
+    Core::LinAlg::SerialDenseMatrix deriv2(nsd_ * (nsd_ + 1) / 2, Size());
+    Core::LinAlg::Matrix<nsd_, 1> point;
     for (unsigned int i = 0; i < Size(); ++i)
     {
       for (unsigned int d = 0; d < nsd_; ++d) point(d, 0) = fekete_points_(d, i);
@@ -707,8 +707,8 @@ namespace CORE::FE
 
 
   template <int nsd_>
-  void CORE::FE::LagrangeBasisTet<nsd_>::FillUnitNodePoints(
-      CORE::LINALG::SerialDenseMatrix &matrix) const
+  void Core::FE::LagrangeBasisTet<nsd_>::FillUnitNodePoints(
+      Core::LinAlg::SerialDenseMatrix &matrix) const
   {
     matrix.shape(fekete_points_.numRows(), fekete_points_.numCols());
     for (int i = 0; i < fekete_points_.numCols(); ++i)
@@ -716,23 +716,23 @@ namespace CORE::FE
   }
 
   template <int nsd_>
-  CORE::FE::PolynomialSpaceCache<nsd_> &CORE::FE::PolynomialSpaceCache<nsd_>::Instance()
+  Core::FE::PolynomialSpaceCache<nsd_> &Core::FE::PolynomialSpaceCache<nsd_>::Instance()
   {
-    static CORE::UTILS::SingletonOwner<CORE::FE::PolynomialSpaceCache<nsd_>> owner(
+    static Core::UTILS::SingletonOwner<Core::FE::PolynomialSpaceCache<nsd_>> owner(
         []() {
-          return std::unique_ptr<CORE::FE::PolynomialSpaceCache<nsd_>>(
+          return std::unique_ptr<Core::FE::PolynomialSpaceCache<nsd_>>(
               new PolynomialSpaceCache<nsd_>);
         });
 
-    return *owner.Instance(CORE::UTILS::SingletonAction::create);
+    return *owner.Instance(Core::UTILS::SingletonAction::create);
   }
 
   template <int nsd_>
-  Teuchos::RCP<CORE::FE::PolynomialSpace<nsd_>> CORE::FE::PolynomialSpaceCache<nsd_>::Create(
+  Teuchos::RCP<Core::FE::PolynomialSpace<nsd_>> Core::FE::PolynomialSpaceCache<nsd_>::Create(
       PolynomialSpaceParams params)
   {
     typename std::map<PolynomialSpaceParams,
-        Teuchos::RCP<CORE::FE::PolynomialSpace<nsd_>>>::iterator i = ps_cache_.find(params);
+        Teuchos::RCP<Core::FE::PolynomialSpace<nsd_>>>::iterator i = ps_cache_.find(params);
     if (i != ps_cache_.end())
     {
       return i->second;
@@ -764,6 +764,6 @@ namespace CORE::FE
   template class PolynomialSpaceCache<1>;
   template class PolynomialSpaceCache<2>;
   template class PolynomialSpaceCache<3>;
-}  // namespace CORE::FE
+}  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE

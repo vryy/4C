@@ -44,13 +44,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
+using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
 
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                   hemmler 09/16 |
  *----------------------------------------------------------------------*/
-MAT::PAR::SuperElasticSMA::SuperElasticSMA(Teuchos::RCP<CORE::MAT::PAR::Material> matdata)
+Mat::PAR::SuperElasticSMA::SuperElasticSMA(Teuchos::RCP<Core::Mat::PAR::Material> matdata)
     : Parameter(matdata),
       density_(matdata->Get<double>("DENS")),
       youngs_(matdata->Get<double>("YOUNG")),
@@ -77,7 +77,7 @@ MAT::PAR::SuperElasticSMA::SuperElasticSMA(Teuchos::RCP<CORE::MAT::PAR::Material
 /*----------------------------------------------------------------------*
  | struct with all material parameters                    hemmler 09/16 |
  *----------------------------------------------------------------------*/
-struct MAT::SuperElasticSMA::Material
+struct Mat::SuperElasticSMA::Material
 {
   // elastic material data
   double youngs;
@@ -109,7 +109,7 @@ struct MAT::SuperElasticSMA::Material
   double temperature;
 };
 
-struct MAT::SuperElasticSMA::LoadingData
+struct Mat::SuperElasticSMA::LoadingData
 {
   double drucker_prager;
   double drucker_prager_last;
@@ -127,21 +127,21 @@ struct MAT::SuperElasticSMA::LoadingData
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()    hemmler 09/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CORE::MAT::Material> MAT::PAR::SuperElasticSMA::create_material()
+Teuchos::RCP<Core::Mat::Material> Mat::PAR::SuperElasticSMA::create_material()
 {
-  return Teuchos::rcp(new MAT::SuperElasticSMA(this));
+  return Teuchos::rcp(new Mat::SuperElasticSMA(this));
 }
 
 
-MAT::SuperElasticSMAType MAT::SuperElasticSMAType::instance_;
+Mat::SuperElasticSMAType Mat::SuperElasticSMAType::instance_;
 
 
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()    hemmler 09/16 |
  *----------------------------------------------------------------------*/
-CORE::COMM::ParObject* MAT::SuperElasticSMAType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mat::SuperElasticSMAType::Create(const std::vector<char>& data)
 {
-  MAT::SuperElasticSMA* superelast = new MAT::SuperElasticSMA();
+  Mat::SuperElasticSMA* superelast = new Mat::SuperElasticSMA();
   superelast->Unpack(data);
   return superelast;
 }
@@ -150,21 +150,21 @@ CORE::COMM::ParObject* MAT::SuperElasticSMAType::Create(const std::vector<char>&
 /*----------------------------------------------------------------------*
  | constructor (public)                                   hemmler 09/16 |
  *----------------------------------------------------------------------*/
-MAT::SuperElasticSMA::SuperElasticSMA() : params_(nullptr) {}
+Mat::SuperElasticSMA::SuperElasticSMA() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
  | copy-constructor (public)                              hemmler 09/16 |
  *----------------------------------------------------------------------*/
-MAT::SuperElasticSMA::SuperElasticSMA(MAT::PAR::SuperElasticSMA* params) : params_(params) {}
+Mat::SuperElasticSMA::SuperElasticSMA(Mat::PAR::SuperElasticSMA* params) : params_(params) {}
 
 
 /*----------------------------------------------------------------------*
  | pack (public)                                          hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::Pack(CORE::COMM::PackBuffer& data) const
+void Mat::SuperElasticSMA::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
 
@@ -206,26 +206,26 @@ void MAT::SuperElasticSMA::Pack(CORE::COMM::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack (public)                                        hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::Unpack(const std::vector<char>& data)
+void Mat::SuperElasticSMA::Unpack(const std::vector<char>& data)
 {
   isinit_ = true;
   strainenergy_ = 0.0;
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
   params_ = nullptr;
-  if (GLOBAL::Problem::Instance()->Materials() != Teuchos::null)
-    if (GLOBAL::Problem::Instance()->Materials()->Num() != 0)
+  if (Global::Problem::Instance()->Materials() != Teuchos::null)
+    if (Global::Problem::Instance()->Materials()->Num() != 0)
     {
-      const int probinst = GLOBAL::Problem::Instance()->Materials()->GetReadFromProblem();
-      CORE::MAT::PAR::Parameter* mat =
-          GLOBAL::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      const int probinst = Global::Problem::Instance()->Materials()->GetReadFromProblem();
+      Core::Mat::PAR::Parameter* mat =
+          Global::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::SuperElasticSMA*>(mat);
+        params_ = static_cast<Mat::PAR::SuperElasticSMA*>(mat);
       else
         FOUR_C_THROW("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -273,7 +273,7 @@ void MAT::SuperElasticSMA::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialize / allocate internal variables (public)     hemmler 09/16 |
  *---------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::Setup(int numgp, INPUT::LineDefinition* linedef)
+void Mat::SuperElasticSMA::Setup(int numgp, Input::LineDefinition* linedef)
 {
   druckerpragerloadingcurr_ = Teuchos::rcp(new std::vector<double>);
   druckerpragerloadinglast_ = Teuchos::rcp(new std::vector<double>);
@@ -303,7 +303,7 @@ void MAT::SuperElasticSMA::Setup(int numgp, INPUT::LineDefinition* linedef)
 /*----------------------------------------------------------------------*
  | update internal variables                              hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::Update()
+void Mat::SuperElasticSMA::Update()
 {
   druckerpragerloadinglast_ = druckerpragerloadingcurr_;
   xi_s_last_ = xi_s_curr_;
@@ -328,9 +328,9 @@ void MAT::SuperElasticSMA::Update()
 /*----------------------------------------------------------------------*
  | calculate stress and constitutive tensor               hemmler 09/16 |
  *----------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+void Mat::SuperElasticSMA::Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+    const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
     const int eleGID)
 {
   /*
@@ -387,7 +387,7 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     FOUR_C_THROW("No sma-model given. Use 1 for the exponential model and 2 for the linear model.");
   }
 
-  CORE::LINALG::Matrix<3, 3> deformation_gradient_invert(*defgrd);
+  Core::LinAlg::Matrix<3, 3> deformation_gradient_invert(*defgrd);
   deformation_gradient_invert.Invert();
 
   /*
@@ -406,19 +406,19 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
    **********************************************************
    */
   // b = F * F^T
-  CORE::LINALG::Matrix<3, 3> cauchy_green_tensor(true);
+  Core::LinAlg::Matrix<3, 3> cauchy_green_tensor(true);
   cauchy_green_tensor.MultiplyNT(*defgrd, *defgrd);
 
   // To compute the spectral decomposition, the Cauchy-Green tensor
   // must be converted to Epetra format
-  CORE::LINALG::SerialDenseMatrix cauchy_green_eigenvectors(3, 3);
-  CORE::LINALG::SerialDenseVector cauchy_green_eigenvalues(3);
+  Core::LinAlg::SerialDenseMatrix cauchy_green_eigenvectors(3, 3);
+  Core::LinAlg::SerialDenseVector cauchy_green_eigenvalues(3);
 
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++) cauchy_green_eigenvectors(i, j) = cauchy_green_tensor(i, j);
 
   // Solve the eigen-problem
-  CORE::LINALG::SymmetricEigenProblem(cauchy_green_eigenvectors, cauchy_green_eigenvalues);
+  Core::LinAlg::SymmetricEigenProblem(cauchy_green_eigenvectors, cauchy_green_eigenvalues);
 
   /*
    **********************************************************
@@ -428,13 +428,13 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
    */
 
   double logarithmic_strain_volumetric;
-  CORE::LINALG::Matrix<3, 3> logarithmic_strain_deviatoric_tensor(true);
-  CORE::LINALG::Matrix<3, 3> material_scaled_load_deviatoric_tensor(true);
+  Core::LinAlg::Matrix<3, 3> logarithmic_strain_deviatoric_tensor(true);
+  Core::LinAlg::Matrix<3, 3> material_scaled_load_deviatoric_tensor(true);
   double logarithmic_strain_deviatoric_norm = 0.0;
-  std::vector<CORE::LINALG::Matrix<3, 1>> spatial_principal_directions(true);
+  std::vector<Core::LinAlg::Matrix<3, 1>> spatial_principal_directions(true);
   spatial_principal_directions.resize(3);
-  std::vector<CORE::LINALG::Matrix<3, 3>> spatial_principal_matrices(true);
-  std::vector<CORE::LINALG::Matrix<3, 3>> material_principal_matrices(true);
+  std::vector<Core::LinAlg::Matrix<3, 3>> spatial_principal_matrices(true);
+  std::vector<Core::LinAlg::Matrix<3, 3>> material_principal_matrices(true);
   spatial_principal_matrices.resize(3);
   material_principal_matrices.resize(3);
 
@@ -445,7 +445,7 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       spatial_principal_directions.at(i)(j) = cauchy_green_eigenvectors(j, i);
     }
 
-    CORE::LINALG::Matrix<3, 1> material_principal_direction(true);
+    Core::LinAlg::Matrix<3, 1> material_principal_direction(true);
     material_principal_direction.MultiplyNN(
         deformation_gradient_invert, spatial_principal_directions.at(i));
     material_principal_direction.Scale(cauchy_green_eigenvalues(i));
@@ -482,7 +482,7 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   }
   logarithmic_strain_deviatoric_norm = std::sqrt(logarithmic_strain_deviatoric_norm);
 
-  CORE::LINALG::Matrix<3, 3> scaled_load_deviatoric_tensor(logarithmic_strain_deviatoric_tensor);
+  Core::LinAlg::Matrix<3, 3> scaled_load_deviatoric_tensor(logarithmic_strain_deviatoric_tensor);
 
   if (logarithmic_strain_deviatoric_norm != 0.0)
   {
@@ -587,7 +587,7 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   {
     // Return back and update martensitic fraction
 
-    CORE::LINALG::Matrix<2, 1> lambda_S(true);
+    Core::LinAlg::Matrix<2, 1> lambda_S(true);
 
 
     // Parameter for the damped Newton
@@ -608,14 +608,14 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     {
       iter = 0;
 
-      CORE::LINALG::Matrix<2, 1> res_vec(true);
-      CORE::LINALG::Matrix<2, 1> R_k(true);
-      CORE::LINALG::Matrix<2, 1> R_p(true);
-      CORE::LINALG::Matrix<2, 2> d_R_d_lambda(true);
-      CORE::LINALG::Matrix<2, 2> d_R_d_lambda_inv(true);
+      Core::LinAlg::Matrix<2, 1> res_vec(true);
+      Core::LinAlg::Matrix<2, 1> R_k(true);
+      Core::LinAlg::Matrix<2, 1> R_p(true);
+      Core::LinAlg::Matrix<2, 2> d_R_d_lambda(true);
+      Core::LinAlg::Matrix<2, 2> d_R_d_lambda_inv(true);
       lambda_S(0) = lambda_AS;
       lambda_S(1) = lambda_SA;
-      CORE::LINALG::Matrix<2, 1> lambda_S_p(lambda_S);
+      Core::LinAlg::Matrix<2, 1> lambda_S_p(lambda_S);
 
 
 
@@ -730,15 +730,15 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       (logarithmic_strain_volumetric - 3.0 * matdata.alpha * matdata.epsilon_L * xi_S);
   double kirchhoff_stress_deviatoric_norm =
       2.0 * matdata.shear * (logarithmic_strain_deviatoric_norm - matdata.epsilon_L * xi_S);
-  CORE::LINALG::Matrix<3, 3> kirchhoff_stress_deviatoric(scaled_load_deviatoric_tensor);
+  Core::LinAlg::Matrix<3, 3> kirchhoff_stress_deviatoric(scaled_load_deviatoric_tensor);
   kirchhoff_stress_deviatoric.Scale(kirchhoff_stress_deviatoric_norm);
 
-  CORE::LINALG::Matrix<3, 3> kirchhoff_stress(kirchhoff_stress_deviatoric);
+  Core::LinAlg::Matrix<3, 3> kirchhoff_stress(kirchhoff_stress_deviatoric);
   for (int i = 0; i < 3; i++) kirchhoff_stress(i, i) += kirchhoff_stress_volumetric;
 
   // Convert Kirchhoff stress tensor in the second Piola-Kirchhoff tensor
-  CORE::LINALG::Matrix<3, 3> PK2(true);
-  CORE::LINALG::Matrix<3, 3> tmp(true);
+  Core::LinAlg::Matrix<3, 3> PK2(true);
+  Core::LinAlg::Matrix<3, 3> tmp(true);
 
   tmp.MultiplyNN(deformation_gradient_invert, kirchhoff_stress);
   PK2.MultiplyNT(tmp, deformation_gradient_invert);
@@ -862,15 +862,15 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   if (xi_S > 0.0)
   {
-    CORE::LINALG::Matrix<3, 3> eye(true);
+    Core::LinAlg::Matrix<3, 3> eye(true);
     for (int i = 0; i < 3; i++) eye(i, i) = 1.0;
-    CORE::LINALG::Matrix<6, 6> cmat_eul(true);
-    CORE::LINALG::Matrix<6, 6> cmat_eul_tmp(true);
-    CORE::LINALG::Matrix<6, 6> cmat_eul_1(true);
-    CORE::LINALG::Matrix<6, 6> cmat_eul_2(true);
-    CORE::LINALG::Matrix<6, 6> cmat_eul_3(true);
-    CORE::LINALG::Matrix<6, 6> cmat_eul_4(true);
-    CORE::LINALG::Matrix<6, 6> cmat_eul_4_tmp(true);
+    Core::LinAlg::Matrix<6, 6> cmat_eul(true);
+    Core::LinAlg::Matrix<6, 6> cmat_eul_tmp(true);
+    Core::LinAlg::Matrix<6, 6> cmat_eul_1(true);
+    Core::LinAlg::Matrix<6, 6> cmat_eul_2(true);
+    Core::LinAlg::Matrix<6, 6> cmat_eul_3(true);
+    Core::LinAlg::Matrix<6, 6> cmat_eul_4(true);
+    Core::LinAlg::Matrix<6, 6> cmat_eul_4_tmp(true);
 
     // Build up (1 (x) 1) and scale with K*
     for (int i = 0; i < 3; i++)
@@ -908,12 +908,12 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   else
   {
     // matrices for temporary stuff
-    CORE::LINALG::Matrix<3, 3> tmp1;
-    CORE::LINALG::Matrix<3, 3> tmp2;
+    Core::LinAlg::Matrix<3, 3> tmp1;
+    Core::LinAlg::Matrix<3, 3> tmp2;
 
     // 3x3 2nd-order identity matrix
-    CORE::LINALG::Matrix<3, 3> id2(true);
-    CORE::LINALG::Matrix<3, 3> Idev;
+    Core::LinAlg::Matrix<3, 3> id2(true);
+    Core::LinAlg::Matrix<3, 3> Idev;
     for (int i = 0; i < 3; i++)
     {
       id2(i, i) = 1.0;
@@ -927,14 +927,14 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     }
 
     // linear elasticity tensor in principal directions
-    CORE::LINALG::Matrix<3, 3> D_ep_principal(Idev);
+    Core::LinAlg::Matrix<3, 3> D_ep_principal(Idev);
     D_ep_principal.Scale(2.0 * matdata.shear);
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++) D_ep_principal(i, j) += matdata.bulk;
 
-    CORE::LINALG::Matrix<3, 1> dev_KH(true);
-    CORE::LINALG::SerialDenseVector lambda_trial_square(3);
-    std::vector<CORE::LINALG::Matrix<3, 1>> material_principal_directions;
+    Core::LinAlg::Matrix<3, 1> dev_KH(true);
+    Core::LinAlg::SerialDenseVector lambda_trial_square(3);
+    std::vector<Core::LinAlg::Matrix<3, 1>> material_principal_directions;
     material_principal_directions.resize(3);
 
     double pressure = 0.0;
@@ -1020,16 +1020,16 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)           hemmler 09/16 |
  *---------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::VisNames(std::map<std::string, int>& names)
+void Mat::SuperElasticSMA::VisNames(std::map<std::string, int>& names)
 {
   names["martensiticfraction"] = 1;  // scalar
   names["druckerprager"] = 1;        // scalar
 }  // VisNames()
 
-CORE::LINALG::Matrix<2, 1> MAT::SuperElasticSMA::compute_local_newton_residual(
-    CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data)
+Core::LinAlg::Matrix<2, 1> Mat::SuperElasticSMA::compute_local_newton_residual(
+    Core::LinAlg::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data)
 {
-  CORE::LINALG::Matrix<2, 1> R;
+  Core::LinAlg::Matrix<2, 1> R;
   if (mat_data.model == 1)
   {
     // Exponential model
@@ -1053,10 +1053,10 @@ CORE::LINALG::Matrix<2, 1> MAT::SuperElasticSMA::compute_local_newton_residual(
   return R;
 }
 
-CORE::LINALG::Matrix<2, 2> MAT::SuperElasticSMA::compute_local_newton_jacobian(
-    CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data)
+Core::LinAlg::Matrix<2, 2> Mat::SuperElasticSMA::compute_local_newton_jacobian(
+    Core::LinAlg::Matrix<2, 1> lambda_s, double xi_s, LoadingData loading, Material mat_data)
 {
-  CORE::LINALG::Matrix<2, 2> d_R_d_lambda;
+  Core::LinAlg::Matrix<2, 2> d_R_d_lambda;
   if (mat_data.model == 1)
   {
     // exponential model
@@ -1105,7 +1105,7 @@ CORE::LINALG::Matrix<2, 2> MAT::SuperElasticSMA::compute_local_newton_jacobian(
   return d_R_d_lambda;
 }
 
-MAT::SuperElasticSMA::LoadingData MAT::SuperElasticSMA::compute_local_newton_loading(
+Mat::SuperElasticSMA::LoadingData Mat::SuperElasticSMA::compute_local_newton_loading(
     double xi_S, double log_strain_vol, double log_strain_dev_norm, Material mat_data)
 {
   LoadingData loading;
@@ -1130,7 +1130,7 @@ MAT::SuperElasticSMA::LoadingData MAT::SuperElasticSMA::compute_local_newton_loa
 /*---------------------------------------------------------------------*
  | return visualization data (public)                    hemmler 09/16 |
  *---------------------------------------------------------------------*/
-bool MAT::SuperElasticSMA::VisData(
+bool Mat::SuperElasticSMA::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (name == "martensiticfraction")
@@ -1156,8 +1156,8 @@ bool MAT::SuperElasticSMA::VisData(
 /*----------------------------------------------------------------------*
  |  calculate strain energy                                hemmler 11/16|
  *----------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::StrainEnergy(
-    const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+void Mat::SuperElasticSMA::StrainEnergy(
+    const Core::LinAlg::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   psi = strainenergy_;
   return;
@@ -1167,7 +1167,7 @@ void MAT::SuperElasticSMA::StrainEnergy(
 /*---------------------------------------------------------------------*
  | return Kronecker delta (public)                    hemmler 09/16 |
  *---------------------------------------------------------------------*/
-int MAT::SuperElasticSMA::kron(int i, int j)
+int Mat::SuperElasticSMA::kron(int i, int j)
 {
   if (i == j) return 1;
   return 0;
@@ -1176,7 +1176,7 @@ int MAT::SuperElasticSMA::kron(int i, int j)
 /*---------------------------------------------------------------------*
  | return fourth order deviatoric identity tensor (public) hemmler 09/16 |
  *---------------------------------------------------------------------*/
-double MAT::SuperElasticSMA::idev(int i, int j, int k, int l)
+double Mat::SuperElasticSMA::idev(int i, int j, int k, int l)
 {
   return kron(i, j) * (kron(i, k) * kron(k, l) - 1.0 / 3.0 * kron(k, l)) +
          0.5 * (1 - kron(i, j)) * kron(i, k) * kron(j, l);
@@ -1187,9 +1187,9 @@ double MAT::SuperElasticSMA::idev(int i, int j, int k, int l)
 /*---------------------------------------------------------------------*
  | Pullback of material tangent                          hemmler 09/16 |
  *---------------------------------------------------------------------*/
-void MAT::SuperElasticSMA::pullback4th_tensor_voigt(const double jacobian,
-    const CORE::LINALG::Matrix<3, 3>& defgrdinv, const CORE::LINALG::Matrix<6, 6>& cmatEul,
-    CORE::LINALG::Matrix<6, 6>* cmatLag)
+void Mat::SuperElasticSMA::pullback4th_tensor_voigt(const double jacobian,
+    const Core::LinAlg::Matrix<3, 3>& defgrdinv, const Core::LinAlg::Matrix<6, 6>& cmatEul,
+    Core::LinAlg::Matrix<6, 6>* cmatLag)
 {
   int i;
   int j;

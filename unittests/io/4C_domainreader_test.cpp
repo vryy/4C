@@ -17,7 +17,7 @@ namespace
 {
   using namespace FourC;
 
-  class DatFileReaderStub : public CORE::IO::DatFileReader
+  class DatFileReaderStub : public Core::IO::DatFileReader
   {
    public:
     DatFileReaderStub() = default;
@@ -29,17 +29,17 @@ namespace
    public:
     DomainReaderTest()
     {
-      testdis_ = Teuchos::rcp(new DRT::Discretization("dummy", testreader_.Comm(), 3));
+      testdis_ = Teuchos::rcp(new Discret::Discretization("dummy", testreader_.Comm(), 3));
     }
 
    protected:
-    Teuchos::RCP<DRT::Discretization> testdis_;
+    Teuchos::RCP<Discret::Discretization> testdis_;
     DatFileReaderStub testreader_;
   };
 
   TEST_F(DomainReaderTest, TestMyDis0)
   {
-    CORE::IO::DomainReader dr(testdis_, testreader_, "unittestsection");
+    Core::IO::DomainReader dr(testdis_, testreader_, "unittestsection");
     EXPECT_EQ(testdis_, dr.MyDis());
   }
 

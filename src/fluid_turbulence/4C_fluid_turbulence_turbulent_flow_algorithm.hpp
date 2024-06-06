@@ -41,7 +41,7 @@ namespace FLD
     void read_restart(const int restart);
 
     /// do result check
-    Teuchos::RCP<CORE::UTILS::ResultTest> DoResultCheck()
+    Teuchos::RCP<Core::UTILS::ResultTest> DoResultCheck()
     {
       return fluidalgo_->fluid_field()->CreateFieldTest();
     };
@@ -51,15 +51,15 @@ namespace FLD
     void transfer_inflow_velocity();
 
     /// discretization of the compete domain
-    Teuchos::RCP<DRT::Discretization> fluiddis_;
+    Teuchos::RCP<Discret::Discretization> fluiddis_;
     /// discretization of the separate part
-    Teuchos::RCP<DRT::Discretization> inflowdis_;
+    Teuchos::RCP<Discret::Discretization> inflowdis_;
     /// object for a redistributed evaluation of of the separated part
     Teuchos::RCP<FluidDiscretExtractor> inflowgenerator_;
     /// instance of fluid algorithm
-    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo_;
+    Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluidalgo_;
     /// instance of fluid inflow algorithm
-    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> inflowfluidalgo_;
+    Teuchos::RCP<Adapter::FluidBaseAlgorithm> inflowfluidalgo_;
     /// number of time steps
     int step_;
     /// number of development steps

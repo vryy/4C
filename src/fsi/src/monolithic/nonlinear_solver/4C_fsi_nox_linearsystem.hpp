@@ -31,7 +31,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class Solver;
 }
@@ -58,7 +58,7 @@ namespace NOX::FSI
             iJac,                                  ///< NOX interface to Jacobian
         const Teuchos::RCP<Epetra_Operator>& J,    ///< the Jacobian or stiffness matrix
         const ::NOX::Epetra::Vector& cloneVector,  ///< initial guess of the solution process
-        Teuchos::RCP<CORE::LINALG::Solver>
+        Teuchos::RCP<Core::LinAlg::Solver>
             structure_solver,  ///< (used-defined) linear algebraic solver
         const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject =
             Teuchos::null);  ///< scaling of the linear system
@@ -157,7 +157,7 @@ namespace NOX::FSI
     int callcount_;
 
     /// linear algebraic solver
-    Teuchos::RCP<CORE::LINALG::Solver> solver_;
+    Teuchos::RCP<Core::LinAlg::Solver> solver_;
 
     Teuchos::Time timer_;
   };

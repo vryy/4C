@@ -25,13 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5::init_element()
+void Discret::ELEMENTS::NStet5::init_element()
 {
-  CORE::LINALG::Matrix<4, 3> xrefe;
-  CORE::LINALG::Matrix<4, 3 + 1> J;
+  Core::LinAlg::Matrix<4, 3> xrefe;
+  Core::LinAlg::Matrix<4, 3 + 1> J;
   {
     // compute element volume and center node coordinate
-    CORE::Nodes::Node** nodes = Nodes();  // outer nodes only
+    Core::Nodes::Node** nodes = Nodes();  // outer nodes only
     for (double& i : midX_) i = 0.0;
     for (int i = 0; i < 4; ++i)
     {
@@ -65,14 +65,14 @@ void DRT::ELEMENTS::NStet5::init_element()
   **             [    dX       dY       dZ    ]
   */
   const double gploc = 0.25;
-  CORE::LINALG::Matrix<4, 1> funct;
+  Core::LinAlg::Matrix<4, 1> funct;
   shape_function(funct, gploc, gploc, gploc, gploc);
-  CORE::LINALG::Matrix<4, 4> deriv(true);
+  Core::LinAlg::Matrix<4, 4> deriv(true);
   shape_function_derivatives(deriv);
-  CORE::LINALG::Matrix<3, 4> tmp;
-  CORE::LINALG::Matrix<4, 3> Iaug;  // initialize to zero
-  CORE::LINALG::Matrix<4, 3> partials;
-  CORE::LINALG::FixedSizeSerialDenseSolver<4, 4, 3> solver;
+  Core::LinAlg::Matrix<3, 4> tmp;
+  Core::LinAlg::Matrix<4, 3> Iaug;  // initialize to zero
+  Core::LinAlg::Matrix<4, 3> partials;
+  Core::LinAlg::FixedSizeSerialDenseSolver<4, 4, 3> solver;
   // loop i subelements
   for (int i = 0; i < 4; ++i)
   {
@@ -125,27 +125,27 @@ void DRT::ELEMENTS::NStet5::init_element()
 
 
   return;
-}  // DRT::ELEMENTS::NStet5::InitElement
+}  // Discret::ELEMENTS::NStet5::InitElement
 
 
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              gee 03/12|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec1_epetra,
-    CORE::LINALG::SerialDenseVector& elevec2_epetra,
-    CORE::LINALG::SerialDenseVector& elevec3_epetra)
+int Discret::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+    Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec1_epetra,
+    Core::LinAlg::SerialDenseVector& elevec2_epetra,
+    Core::LinAlg::SerialDenseVector& elevec3_epetra)
 {
-  CORE::LINALG::Matrix<15, 15> elemat1(elemat1_epetra.values(), true);
-  CORE::LINALG::Matrix<15, 15> elemat2(elemat2_epetra.values(), true);
-  CORE::LINALG::Matrix<15, 1> elevec1(elevec1_epetra.values(), true);
+  Core::LinAlg::Matrix<15, 15> elemat1(elemat1_epetra.values(), true);
+  Core::LinAlg::Matrix<15, 15> elemat2(elemat2_epetra.values(), true);
+  Core::LinAlg::Matrix<15, 1> elevec1(elevec1_epetra.values(), true);
 
   // start with "none"
-  DRT::ELEMENTS::NStet5::ActionType act = NStet5::none;
+  Discret::ELEMENTS::NStet5::ActionType act = NStet5::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -196,9 +196,9 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
       nstet5nlnstiffmass(lm, mydisp, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
-          INPAR::STR::stress_none, INPAR::STR::strain_none);
+          Inpar::STR::stress_none, Inpar::STR::strain_none);
       if (act == calc_struct_nlnstifflmass) nstet5lumpmass(&elemat2);
     }
     break;
@@ -211,11 +211,11 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
-      CORE::LINALG::Matrix<15, 15>* elemat1ptr = nullptr;
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::LinAlg::Matrix<15, 15>* elemat1ptr = nullptr;
       if (elemat1.IsInitialized()) elemat1ptr = &elemat1;
       nstet5nlnstiffmass(lm, mydisp, elemat1ptr, nullptr, &elevec1, nullptr, nullptr,
-          INPAR::STR::stress_none, INPAR::STR::strain_none);
+          Inpar::STR::stress_none, Inpar::STR::strain_none);
     }
     break;
 
@@ -227,12 +227,12 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
-      // CORE::LINALG::Matrix<15,15> myemat(true);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      // Core::LinAlg::Matrix<15,15> myemat(true);
       // nstet5nlnstiffmass(lm,mydisp,&myemat,nullptr,&elevec1,
-      //                  nullptr,nullptr,INPAR::STR::stress_none,INPAR::STR::strain_none);
+      //                  nullptr,nullptr,Inpar::STR::stress_none,Inpar::STR::strain_none);
       nstet5nlnstiffmass(lm, mydisp, nullptr, nullptr, &elevec1, nullptr, nullptr,
-          INPAR::STR::stress_none, INPAR::STR::strain_none);
+          Inpar::STR::stress_none, Inpar::STR::strain_none);
     }
     break;
 
@@ -247,18 +247,18 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
           params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
       if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get strain 'data'");
-      auto iostress = CORE::UTILS::GetAsEnum<INPAR::STR::StressType>(
-          params, "iostress", INPAR::STR::stress_none);
-      auto iostrain = CORE::UTILS::GetAsEnum<INPAR::STR::StrainType>(
-          params, "iostrain", INPAR::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
+          params, "iostress", Inpar::STR::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
+          params, "iostrain", Inpar::STR::strain_none);
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
-      CORE::FE::ExtractMyValues(*disp, mydisp, lm);
-      CORE::LINALG::Matrix<1, 6> stress(true);
-      CORE::LINALG::Matrix<1, 6> strain(true);
-      CORE::LINALG::Matrix<1, 6> elestress(true);
-      CORE::LINALG::Matrix<1, 6> elestrain(true);
+      Core::FE::ExtractMyValues(*disp, mydisp, lm);
+      Core::LinAlg::Matrix<1, 6> stress(true);
+      Core::LinAlg::Matrix<1, 6> strain(true);
+      Core::LinAlg::Matrix<1, 6> elestress(true);
+      Core::LinAlg::Matrix<1, 6> elestrain(true);
       nstet5nlnstiffmass(
           lm, mydisp, nullptr, nullptr, nullptr, &elestress, &elestrain, iostress, iostrain);
 
@@ -294,14 +294,14 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
 
       //----------------------------------------------- add final stress to storage
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         AddtoPack(data, stress);
         data.StartPacking();
         AddtoPack(data, stress);
         std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
       }
       {
-        CORE::COMM::PackBuffer data;
+        Core::Communication::PackBuffer data;
         AddtoPack(data, strain);
         data.StartPacking();
         AddtoPack(data, strain);
@@ -323,10 +323,10 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_update_istep:
     {
-      Teuchos::RCP<CORE::MAT::Material> mat = Material();
-      if (mat->MaterialType() == CORE::Materials::m_struct_multiscale)
+      Teuchos::RCP<Core::Mat::Material> mat = Material();
+      if (mat->MaterialType() == Core::Materials::m_struct_multiscale)
       {
-        auto* micro = dynamic_cast<MAT::MicroMaterial*>(mat.get());
+        auto* micro = dynamic_cast<Mat::MicroMaterial*>(mat.get());
         micro->Update();
       }
     }
@@ -376,15 +376,15 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                                        // current displacements
-    CORE::LINALG::Matrix<15, 15>* stiffmatrix,                        // element stiffness matrix
-    CORE::LINALG::Matrix<15, 15>* massmatrix,                         // element mass matrix
-    CORE::LINALG::Matrix<15, 1>* force,                               // stress output options
-    CORE::LINALG::Matrix<1, 6>* elestress,                            // stress output
-    CORE::LINALG::Matrix<1, 6>* elestrain,                            // strain output
-    const INPAR::STR::StressType iostress,                            // type of stress
-    const INPAR::STR::StrainType iostrain)                            // type of strain
+void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,                                            // current displacements
+    Core::LinAlg::Matrix<15, 15>* stiffmatrix,  // element stiffness matrix
+    Core::LinAlg::Matrix<15, 15>* massmatrix,   // element mass matrix
+    Core::LinAlg::Matrix<15, 1>* force,         // stress output options
+    Core::LinAlg::Matrix<1, 6>* elestress,      // stress output
+    Core::LinAlg::Matrix<1, 6>* elestrain,      // strain output
+    const Inpar::STR::StressType iostress,      // type of stress
+    const Inpar::STR::StrainType iostrain)      // type of strain
 {
   if (elestrain) (*elestrain) = 0.0;
   if (elestress) (*elestress) = 0.0;
@@ -393,15 +393,15 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
   for (int sub = 0; sub < 4; ++sub)  // loop subelements
   {
     // subelement deformation gradient previously computed in pre_evaluate
-    CORE::LINALG::Matrix<3, 3>& F = sub_f(sub);
+    Core::LinAlg::Matrix<3, 3>& F = sub_f(sub);
 
     //--------------------------- Right Cauchy-Green tensor C = = F^T * F
-    CORE::LINALG::Matrix<3, 3> cauchygreen;
+    Core::LinAlg::Matrix<3, 3> cauchygreen;
     cauchygreen.MultiplyTN(F, F);
 
     // --Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    CORE::LINALG::Matrix<6, 1> glstrain;
+    Core::LinAlg::Matrix<6, 1> glstrain;
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -431,8 +431,8 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
     */
 
     // 6x15 n_stresses * number degrees of freedom per element
-    CORE::LINALG::Matrix<6, 12> bop;
-    const CORE::LINALG::Matrix<4, 3>& nxyz = sub_nxyz(sub);
+    Core::LinAlg::Matrix<6, 12> bop;
+    const Core::LinAlg::Matrix<4, 3>& nxyz = sub_nxyz(sub);
     for (int i = 0; i < 4; i++)
     {
       bop(0, 3 * i + 0) = F(0, 0) * nxyz(i, 0);
@@ -457,16 +457,16 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
     }
 
     //------------------------------------------------- call material law
-    CORE::LINALG::Matrix<6, 6> cmat(true);
-    CORE::LINALG::Matrix<6, 1> stress(true);
+    Core::LinAlg::Matrix<6, 6> cmat(true);
+    Core::LinAlg::Matrix<6, 1> stress(true);
     double density = -999.99;
 #ifndef PUSO_NSTET5
     {
       select_material(stress, cmat, density, glstrain, F, 0);
 
       // define stuff we need to do the split
-      CORE::LINALG::Matrix<6, 6> cmatdev;
-      CORE::LINALG::Matrix<6, 1> stressdev;
+      Core::LinAlg::Matrix<6, 6> cmatdev;
+      Core::LinAlg::Matrix<6, 1> stressdev;
 
       // do just the deviatoric components
       NStet5Type::dev_stress_tangent(stressdev, cmatdev, cmat, stress, cauchygreen);
@@ -487,12 +487,12 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
 
     //---------------------------------------------- output of stress and strain
     {
-      CORE::LINALG::Matrix<6, 1> glstrainbar(false);
-      if (iostrain != INPAR::STR::strain_none)
+      Core::LinAlg::Matrix<6, 1> glstrainbar(false);
+      if (iostrain != Inpar::STR::strain_none)
       {
         // do deviatoric F, C, E
         const double J = F.Determinant();
-        CORE::LINALG::Matrix<3, 3> Cbar(cauchygreen);
+        Core::LinAlg::Matrix<3, 3> Cbar(cauchygreen);
         Cbar.Scale(pow(J, -2. / 3.));
         glstrainbar(0) = 0.5 * (Cbar(0, 0) - 1.0);
         glstrainbar(1) = 0.5 * (Cbar(1, 1) - 1.0);
@@ -504,7 +504,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
       //-----------------------------------------------------------------strain
       switch (iostrain)
       {
-        case INPAR::STR::strain_gl:
+        case Inpar::STR::strain_gl:
         {
           if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
           for (int i = 0; i < 3; ++i)
@@ -513,10 +513,10 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
             (*elestrain)(0, i) += (sub_v(sub) / vol() * ALPHA_NSTET5 * 0.5 * glstrainbar(i));
         }
         break;
-        case INPAR::STR::strain_ea:
+        case Inpar::STR::strain_ea:
         {
           if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
-          CORE::LINALG::Matrix<3, 3> gl;
+          Core::LinAlg::Matrix<3, 3> gl;
           gl(0, 0) = glstrainbar(0);  // divide off-diagonals by 2
           gl(0, 1) = 0.5 * glstrainbar(3);
           gl(0, 2) = 0.5 * glstrainbar(5);
@@ -527,16 +527,16 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
           gl(2, 1) = gl(1, 2);
           gl(2, 2) = glstrainbar(2);
 
-          CORE::LINALG::Matrix<3, 3> Fbar(true);
+          Core::LinAlg::Matrix<3, 3> Fbar(true);
           Fbar.SetCopy(F.A());
 #ifndef PUSO_NSTET5
           Fbar.Scale(pow(F.Determinant(), -1. / 3.));
 #endif
-          CORE::LINALG::Matrix<3, 3> invdefgrd;
+          Core::LinAlg::Matrix<3, 3> invdefgrd;
           invdefgrd.Invert(Fbar);
 
-          CORE::LINALG::Matrix<3, 3> temp;
-          CORE::LINALG::Matrix<3, 3> euler_almansi;
+          Core::LinAlg::Matrix<3, 3> temp;
+          Core::LinAlg::Matrix<3, 3> euler_almansi;
           temp.Multiply(gl, invdefgrd);
           euler_almansi.MultiplyTN(invdefgrd, temp);
 
@@ -549,7 +549,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
           (*elestrain)(0, 5) += (sub_v(sub) / vol() * ALPHA_NSTET5 * euler_almansi(0, 2));
         }
         break;
-        case INPAR::STR::strain_none:
+        case Inpar::STR::strain_none:
           break;
         default:
           FOUR_C_THROW("requested strain option not available");
@@ -557,7 +557,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
       //-----------------------------------------------------------------stress
       switch (iostress)
       {
-        case INPAR::STR::stress_2pk:
+        case Inpar::STR::stress_2pk:
         {
           if (elestress == nullptr) FOUR_C_THROW("no stress data available");
 
@@ -566,11 +566,11 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
                 (sub_v(sub) / vol() * stress(i));  // ALPHA_NSTET already in stress
         }
         break;
-        case INPAR::STR::stress_cauchy:
+        case Inpar::STR::stress_cauchy:
         {
           if (elestress == nullptr) FOUR_C_THROW("no stress data available");
 
-          CORE::LINALG::Matrix<3, 3> pkstress;
+          Core::LinAlg::Matrix<3, 3> pkstress;
           pkstress(0, 0) = stress(0);  // ALPHA_NSTET already in stress
           pkstress(0, 1) = stress(3);
           pkstress(0, 2) = stress(5);
@@ -581,10 +581,10 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
           pkstress(2, 1) = pkstress(1, 2);
           pkstress(2, 2) = stress(2);
 
-          CORE::LINALG::Matrix<3, 3> temp;
-          CORE::LINALG::Matrix<3, 3> cauchystress;
+          Core::LinAlg::Matrix<3, 3> temp;
+          Core::LinAlg::Matrix<3, 3> cauchystress;
 
-          CORE::LINALG::Matrix<3, 3> Fbar(true);
+          Core::LinAlg::Matrix<3, 3> Fbar(true);
           Fbar.SetCopy(F.A());
 #ifndef PUSO_NSTET5
           Fbar.Scale(pow(F.Determinant(), -1. / 3.));
@@ -600,7 +600,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
           (*elestress)(0, 5) += (sub_v(sub) / vol() * cauchystress(0, 2));
         }
         break;
-        case INPAR::STR::stress_none:
+        case Inpar::STR::stress_none:
           break;
         default:
           FOUR_C_THROW("requested stress type not available");
@@ -611,7 +611,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
     // update internal force vector
     if (force)
     {
-      CORE::LINALG::Matrix<12, 1> subforce(true);
+      Core::LinAlg::Matrix<12, 1> subforce(true);
       // integrate internal force vector f = f + (B^T . sigma) * V
       subforce.MultiplyTN(sub_v(sub), bop, stress, 0.0);
 
@@ -627,10 +627,10 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
     if (stiffmatrix)
     {
       const double V = sub_v(sub);
-      CORE::LINALG::Matrix<12, 12> substiffmatrix(true);
+      Core::LinAlg::Matrix<12, 12> substiffmatrix(true);
       // integrate elastic stiffness matrix
       // keu = keu + (B^T . C . B) * V
-      CORE::LINALG::Matrix<6, 12> cb;
+      Core::LinAlg::Matrix<6, 12> cb;
       cb.Multiply(cmat, bop);
       substiffmatrix.MultiplyTN(V, bop, cb, 0.0);
 
@@ -679,7 +679,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
 
     if (massmatrix)
     {
-      CORE::LINALG::Matrix<12, 12> submassmatrix;
+      Core::LinAlg::Matrix<12, 12> submassmatrix;
       submassmatrix = 0.0;
 
       // for mass matrix use a 4 gauss points integration:
@@ -707,7 +707,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
       xsi[3][3] = alpha;
       for (auto& gp : xsi)
       {
-        CORE::LINALG::Matrix<4, 1> funct;
+        Core::LinAlg::Matrix<4, 1> funct;
         shape_function(funct, gp[0], gp[1], gp[2], gp[3]);
         const double f = density * V * weight;
         for (int i = 0; i < 4; ++i)
@@ -748,13 +748,13 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
 
 
   return;
-}  // DRT::ELEMENTS::NStet5::nstet5nlnstiffmass
+}  // Discret::ELEMENTS::NStet5::nstet5nlnstiffmass
 
 
 /*----------------------------------------------------------------------*
  |  lump mass matrix                                           gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5::nstet5lumpmass(CORE::LINALG::Matrix<15, 15>* emass)
+void Discret::ELEMENTS::NStet5::nstet5lumpmass(Core::LinAlg::Matrix<15, 15>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -777,37 +777,37 @@ void DRT::ELEMENTS::NStet5::nstet5lumpmass(CORE::LINALG::Matrix<15, 15>* emass)
 /*----------------------------------------------------------------------*
  | material laws for NStet5 (protected)                        gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5::select_material(CORE::LINALG::Matrix<6, 1>& stress,
-    CORE::LINALG::Matrix<6, 6>& cmat, double& density, CORE::LINALG::Matrix<6, 1>& glstrain,
-    CORE::LINALG::Matrix<3, 3>& defgrd, int gp)
+void Discret::ELEMENTS::NStet5::select_material(Core::LinAlg::Matrix<6, 1>& stress,
+    Core::LinAlg::Matrix<6, 6>& cmat, double& density, Core::LinAlg::Matrix<6, 1>& glstrain,
+    Core::LinAlg::Matrix<3, 3>& defgrd, int gp)
 {
-  CORE::LINALG::SerialDenseVector stress_e(Teuchos::View, stress.A(), stress.numRows());
-  CORE::LINALG::SerialDenseMatrix cmat_e(
+  Core::LinAlg::SerialDenseVector stress_e(Teuchos::View, stress.A(), stress.numRows());
+  Core::LinAlg::SerialDenseMatrix cmat_e(
       Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
-  const CORE::LINALG::SerialDenseVector glstrain_e(Teuchos::View, glstrain.A(), glstrain.numRows());
+  const Core::LinAlg::SerialDenseVector glstrain_e(Teuchos::View, glstrain.A(), glstrain.numRows());
 
-  Teuchos::RCP<CORE::MAT::Material> mat = Material();
+  Teuchos::RCP<Core::Mat::Material> mat = Material();
   switch (mat->MaterialType())
   {
-    case CORE::Materials::m_stvenant: /*------------------ st.venant-kirchhoff-material */
+    case Core::Materials::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
-      auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(mat.get());
+      auto* stvk = dynamic_cast<Mat::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(&glstrain_e, &cmat_e, &stress_e);
       density = stvk->Density();
     }
     break;
-    case CORE::Materials::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
+    case Core::Materials::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
                                        Raghavan, Vorp */
     {
-      auto* aaa = dynamic_cast<MAT::AAAneohooke*>(mat.get());
+      auto* aaa = dynamic_cast<Mat::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
       aaa->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       density = aaa->Density();
     }
     break;
-    case CORE::Materials::m_elasthyper: /*----------- general hyperelastic matrial */
+    case Core::Materials::m_elasthyper: /*----------- general hyperelastic matrial */
     {
-      auto* hyper = dynamic_cast<MAT::ElastHyper*>(mat.get());
+      auto* hyper = dynamic_cast<Mat::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
       hyper->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       density = hyper->Density();
@@ -821,20 +821,20 @@ void DRT::ELEMENTS::NStet5::select_material(CORE::LINALG::Matrix<6, 1>& stress,
 
   /*--------------------------------------------------------------------*/
   return;
-}  // DRT::ELEMENTS::NStet5::select_material
+}  // Discret::ELEMENTS::NStet5::select_material
 
 
 
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     gee 03/12|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NStet5::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::NStet5::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
-  FOUR_C_THROW("DRT::ELEMENTS::NStet5::evaluate_neumann not implemented");
+  FOUR_C_THROW("Discret::ELEMENTS::NStet5::evaluate_neumann not implemented");
   return -1;
-}  // DRT::ELEMENTS::NStet5::evaluate_neumann
+}  // Discret::ELEMENTS::NStet5::evaluate_neumann
 
 FOUR_C_NAMESPACE_CLOSE

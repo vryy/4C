@@ -19,17 +19,17 @@ managers
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class BlockSparseMatrixBase;
   class MultiMapExtractor;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
   class DiscretizationReader;
-}  // namespace CORE::IO
+}  // namespace Core::IO
 
 namespace XFEM
 {
@@ -56,23 +56,23 @@ namespace XFEM
     // blockmatrix in ... scaling between xfluid evaluated coupling matrixes and coupled
     // systemmatrix
     virtual void AddCouplingMatrix(
-        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling) = 0;
+        Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling) = 0;
 
     //! Add the coupling rhs
     // in ... idx[0] first discretization index , idx[1] second discretization index, ... in the
     // blockmatrix in ... scaling between xfluid evaluated coupling matrixes and coupled
     // systemmatrix
     virtual void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs,
-        const CORE::LINALG::MultiMapExtractor& me, double scaling) = 0;
+        const Core::LinAlg::MultiMapExtractor& me, double scaling) = 0;
 
     //! Update (Perform after Each Timestep)
     virtual void Update(double scaling) = 0;
 
     //! Write Output (For restart or write results on the interface)
-    virtual void Output(CORE::IO::DiscretizationWriter& writer) = 0;
+    virtual void Output(Core::IO::DiscretizationWriter& writer) = 0;
 
     //! Read Restart (For quantities stored on the interface)
-    virtual void read_restart(CORE::IO::DiscretizationReader& reader) = 0;
+    virtual void read_restart(Core::IO::DiscretizationReader& reader) = 0;
   };
 }  // namespace XFEM
 

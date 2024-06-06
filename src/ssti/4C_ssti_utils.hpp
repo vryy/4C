@@ -21,34 +21,34 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace ADAPTER
+namespace Adapter
 {
   class Coupling;
   class SSIStructureWrapper;
-}  // namespace ADAPTER
+}  // namespace Adapter
 
-namespace INPAR
+namespace Inpar
 {
-  namespace SCATRA
+  namespace ScaTra
   {
     enum class MatrixType;
   }
-}  // namespace INPAR
+}  // namespace Inpar
 
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class BlockSparseMatrixBase;
   enum class MatrixType;
   class MultiMapExtractor;
   class SparseMatrix;
   class SparseOperator;
-}  // namespace CORE::LINALG
+}  // namespace Core::LinAlg
 
-namespace SCATRA
+namespace ScaTra
 {
   class MeshtyingStrategyS2I;
   class ScaTraTimIntImpl;
-}  // namespace SCATRA
+}  // namespace ScaTra
 
 namespace SSTI
 {
@@ -63,15 +63,15 @@ namespace SSTI
 
     //! get maps of subproblems
     //@{
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapScatra() const
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> BlockMapScatra() const
     {
       return block_map_scatra_;
     }
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapStructure() const
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> BlockMapStructure() const
     {
       return block_map_structure_;
     }
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo() const
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo() const
     {
       return block_map_thermo_;
     }
@@ -81,37 +81,37 @@ namespace SSTI
      * @brief global map extractor
      * @note only access with GetProblemPosition method
      */
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> MapsSubProblems() const
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> MapsSubProblems() const
     {
       return maps_subproblems_;
     }
 
     //! return map with dofs on both sides of interface
     Teuchos::RCP<Epetra_Map> MapInterface(
-        Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy) const;
+        Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategy) const;
 
     //! return block map with dofs on both sides of interface
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> MapsInterfaceBlocks(
-        Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy,
-        CORE::LINALG::MatrixType scatramatrixtype, unsigned nummaps) const;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> MapsInterfaceBlocks(
+        Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategy,
+        Core::LinAlg::MatrixType scatramatrixtype, unsigned nummaps) const;
 
     //! return block map with dofs on slave side of interface
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> maps_interface_blocks_slave(
-        Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy,
-        CORE::LINALG::MatrixType scatramatrixtype, unsigned nummaps) const;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> maps_interface_blocks_slave(
+        Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategy,
+        Core::LinAlg::MatrixType scatramatrixtype, unsigned nummaps) const;
 
    private:
     //! map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_scatra_;
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_scatra_;
 
     //! map extractor associated with all degrees of freedom inside structural field
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_structure_;
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure_;
 
     //! map extractor associated with all degrees of freedom inside thermo field
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_;
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_thermo_;
 
     //! global map extractor (0: scalar transport, 1: structure, 2: thermo)
-    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> maps_subproblems_;
+    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> maps_subproblems_;
   };
 
   /*---------------------------------------------------------------------------------*
@@ -123,14 +123,14 @@ namespace SSTI
     SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm);
 
     //! map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_system_matrix() const
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_system_matrix() const
     {
       return block_map_system_matrix_;
     };
 
    private:
     //! map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_system_matrix_;
+    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_system_matrix_;
   };
 
   /*---------------------------------------------------------------------------------*
@@ -140,8 +140,8 @@ namespace SSTI
   {
    public:
     SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono,
-        const CORE::LINALG::MatrixType matrixtype_global,
-        const CORE::LINALG::MatrixType matrixtype_scatra, bool interfacemeshtying);
+        const Core::LinAlg::MatrixType matrixtype_global,
+        const Core::LinAlg::MatrixType matrixtype_scatra, bool interfacemeshtying);
 
     //! method that clears all ssi matrices
     void ClearMatrices();
@@ -152,73 +152,73 @@ namespace SSTI
     //! call uncomplete on all coupling matrices
     void un_complete_coupling_matrices();
 
-    Teuchos::RCP<CORE::LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; };
+    Teuchos::RCP<Core::LinAlg::SparseOperator> SystemMatrix() { return systemmatrix_; };
 
     //! return sub blocks of system matrix
     //@{
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sca_tra_structure_domain()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_structure_domain()
     {
       return scatrastructuredomain_;
     };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sca_tra_structure_interface()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_structure_interface()
     {
       return scatrastructureinterface_;
     };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraThermoDomain() { return scatrathermodomain_; };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> sca_tra_thermo_interface()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTraThermoDomain() { return scatrathermodomain_; };
+    Teuchos::RCP<Core::LinAlg::SparseOperator> sca_tra_thermo_interface()
     {
       return scatrathermointerface_;
     };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> structure_sca_tra_domain()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> structure_sca_tra_domain()
     {
       return structurescatradomain_;
     };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> structure_thermo_domain()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> structure_thermo_domain()
     {
       return structurethermodomain_;
     };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> ThermoScaTraDomain() { return thermoscatradomain_; };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> thermo_sca_tra_interface()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> ThermoScaTraDomain() { return thermoscatradomain_; };
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermo_sca_tra_interface()
     {
       return thermoscatrainterface_;
     };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> thermo_structure_domain()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermo_structure_domain()
     {
       return thermostructuredomain_;
     };
-    Teuchos::RCP<CORE::LINALG::SparseOperator> thermo_structure_interface()
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermo_structure_interface()
     {
       return thermostructureinterface_;
     };
     //@}
 
    private:
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> setup_block_matrix(
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> row_map,
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> col_map);
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> setup_block_matrix(
+        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> row_map,
+        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> col_map);
 
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> setup_sparse_matrix(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> setup_sparse_matrix(
         const Teuchos::RCP<const Epetra_Map> row_map);
 
     //! scalar transport matrix type
-    const CORE::LINALG::MatrixType matrixtype_scatra_;
+    const Core::LinAlg::MatrixType matrixtype_scatra_;
 
     //! maps for monolithic treatment of scalar transport-structure-thermo-interaction
     Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono_;
 
-    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix_;
     //! subblocks of system matrix
     //@{
-    Teuchos::RCP<CORE::LINALG::SparseOperator> scatrastructuredomain_;
-    Teuchos::RCP<CORE::LINALG::SparseOperator> scatrastructureinterface_;
-    Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermodomain_;
-    Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermointerface_;
-    Teuchos::RCP<CORE::LINALG::SparseOperator> structurescatradomain_;
-    Teuchos::RCP<CORE::LINALG::SparseOperator> structurethermodomain_;
-    Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatradomain_;
-    Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatrainterface_;
-    Teuchos::RCP<CORE::LINALG::SparseOperator> thermostructuredomain_;
-    Teuchos::RCP<CORE::LINALG::SparseOperator> thermostructureinterface_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatrastructuredomain_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatrastructureinterface_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatrathermodomain_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> scatrathermointerface_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> structurescatradomain_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> structurethermodomain_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermoscatradomain_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermoscatrainterface_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermostructuredomain_;
+    Teuchos::RCP<Core::LinAlg::SparseOperator> thermostructureinterface_;
     //@}
 
     //! bool indicating if we have at least one ssi interface meshtying condition
@@ -256,9 +256,9 @@ namespace SSTI
 
    protected:
     //! provide cloned element with element specific data (material etc.)
-    void set_element_data(Teuchos::RCP<CORE::Elements::Element>
+    void set_element_data(Teuchos::RCP<Core::Elements::Element>
                               newele,     //! current cloned element on target discretization
-        CORE::Elements::Element* oldele,  //! current element on source discretization
+        Core::Elements::Element* oldele,  //! current element on source discretization
         const int matid,                  //! material of cloned element
         const bool isnurbs                //! nurbs flag
         ) override;

@@ -19,15 +19,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace Inpar
 {
-  namespace NLNSOL
+  namespace NlnSol
   {
     /// set the nonlinear solver parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }  // namespace NLNSOL
-}  // namespace INPAR
+  }  // namespace NlnSol
+}  // namespace Inpar
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
  */
 template <typename scalar_type, typename line, typename surface>
 GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GeometryPairLineToSurface(
-    const CORE::Elements::Element* element1, const CORE::Elements::Element* element2,
+    const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& line_to_surface_evaluation_data)
     : GeometryPair(element1, element2),
       line_to_surface_evaluation_data_(line_to_surface_evaluation_data),
@@ -50,9 +50,9 @@ GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GeometryPai
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ProjectPointToOther(
-    const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+    const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
     const ElementData<surface, scalar_type>& element_data_surface,
-    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+    Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
     const bool min_one_iteration) const
 {
   ProjectPointToSurface(point, element_data_surface, xi, projection_result,
@@ -68,7 +68,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::inters
     const ElementData<line, scalar_type>& element_data_line,
     const ElementData<surface, scalar_type>& element_data_surface,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-    const scalar_type& eta_start, const CORE::LINALG::Matrix<3, 1, scalar_type>& xi_start) const
+    const scalar_type& eta_start, const Core::LinAlg::Matrix<3, 1, scalar_type>& xi_start) const
 {
   unsigned int n_faces;
   std::vector<unsigned int> face_fixed_parameters;
@@ -81,7 +81,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::inters
 
   // Create variables.
   scalar_type eta;
-  CORE::LINALG::Matrix<3, 1, scalar_type> xi;
+  Core::LinAlg::Matrix<3, 1, scalar_type> xi;
   ProjectionResult intersection_found;
 
   // Try to intersect the beam with each face.
@@ -113,7 +113,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
                                                    element_data_line,
     const ElementData<surface, scalar_type>& element_data_surface,
     const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
-    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+    Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
     const bool min_one_iteration) const
 {
   // Check the input parameters.
@@ -134,21 +134,21 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
 
   // Initialize data structures.
   // Point on line.
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_line;
-  CORE::LINALG::Matrix<3, 1, scalar_type> dr_line;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_line;
+  Core::LinAlg::Matrix<3, 1, scalar_type> dr_line;
 
   // Point on surface.
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
-  CORE::LINALG::Matrix<3, 3, scalar_type> dr_surface;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_surface;
+  Core::LinAlg::Matrix<3, 3, scalar_type> dr_surface;
 
   // Residuum.
-  CORE::LINALG::Matrix<4, 1, scalar_type> residuum;
-  CORE::LINALG::Matrix<4, 1, scalar_type> delta_xi;
+  Core::LinAlg::Matrix<4, 1, scalar_type> residuum;
+  Core::LinAlg::Matrix<4, 1, scalar_type> delta_xi;
   // Initialize the increment with a value that will not pass the first convergence check.
-  delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
+  delta_xi.PutScalar(10 * Constants::projection_xi_eta_tol);
 
   // Jacobian / inverse.
-  CORE::LINALG::Matrix<4, 4, scalar_type> J_J_inv;
+  Core::LinAlg::Matrix<4, 4, scalar_type> J_J_inv;
 
   // Reset the projection result flag.
   projection_result = ProjectionResult::projection_not_found;
@@ -156,7 +156,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
   {
     // Local Newton iteration.
     unsigned int counter = 0;
-    while (counter < CONSTANTS::local_newton_iter_max)
+    while (counter < Constants::local_newton_iter_max)
     {
       // Evaluate the position and its derivative on the line.
       EvaluatePosition<line>(eta, element_data_line, r_line);
@@ -191,8 +191,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
         // if the min_one_iteration flag is set we run at least one iteration, so the dependency on
         // FAD variables is calculated correctly.
       }
-      else if (CORE::FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
-               CORE::FADUTILS::VectorNorm(delta_xi) < CONSTANTS::projection_xi_eta_tol)
+      else if (Core::FADUtils::VectorNorm(residuum) < Constants::local_newton_res_tol &&
+               Core::FADUtils::VectorNorm(delta_xi) < Constants::projection_xi_eta_tol)
       {
         // System is solved, now check if the parameter coordinates are valid.
         if (ValidParameter1D(eta) &&
@@ -204,7 +204,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (CORE::FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
+      if (Core::FADUtils::VectorNorm(residuum) > Constants::local_newton_res_max) break;
 
       // Fill up the jacobian.
       for (unsigned int i = 0; i < 3; i++)
@@ -217,8 +217,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       }
 
       // Solve the linearized system.
-      if (CORE::LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
-              J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
+      if (Core::LinAlg::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+              J_J_inv, residuum, delta_xi, Constants::local_newton_det_tol))
       {
         // Set the new parameter coordinates.
         eta -= delta_xi(3);
@@ -246,7 +246,7 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
   else
   {
     double surface_size = get_surface_size(element_data_surface);
-    double line_tube_size_radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1()))
+    double line_tube_size_radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(Element1()))
                                        ->get_circular_cross_section_radius_for_interactions();
     return std::max(surface_size, 3.0 * line_tube_size_radius);
   }
@@ -260,10 +260,10 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::get_
     const ElementData<surface, scalar_type>& element_data_surface) const
 {
   // Get the position of the first 3 nodes of the surface.
-  CORE::LINALG::Matrix<2, 1, double> xi_corner_node;
-  CORE::LINALG::Matrix<3, 1, CORE::LINALG::Matrix<3, 1, double>> corner_nodes;
-  CORE::LINALG::SerialDenseMatrix nodal_coordinates =
-      CORE::FE::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+  Core::LinAlg::Matrix<2, 1, double> xi_corner_node;
+  Core::LinAlg::Matrix<3, 1, Core::LinAlg::Matrix<3, 1, double>> corner_nodes;
+  Core::LinAlg::SerialDenseMatrix nodal_coordinates =
+      Core::FE::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
   const auto element_data_surface_double =
       ElementDataToDouble<surface>::ToDouble(element_data_surface);
   for (unsigned int i_node = 0; i_node < 3; i_node++)
@@ -276,7 +276,7 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::get_
   // Calculate the maximum distance between the three points.
   double max_distance = 0.0;
   double distance = 0.0;
-  CORE::LINALG::Matrix<3, 1, double> diff;
+  Core::LinAlg::Matrix<3, 1, double> diff;
   for (unsigned int i_node = 0; i_node < 3; i_node++)
   {
     for (unsigned int j_node = 0; j_node < 3; j_node++)
@@ -285,7 +285,7 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::get_
 
       diff = corner_nodes(j_node);
       diff -= corner_nodes(i_node);
-      distance = CORE::FADUTILS::VectorNorm(diff);
+      distance = Core::FADUtils::VectorNorm(diff);
       if (distance > max_distance) max_distance = distance;
     }
   }
@@ -374,7 +374,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
 
   // Initialize variables for the projections.
   ProjectionResult projection_result = ProjectionResult::none;
-  CORE::LINALG::Matrix<3, 1, scalar_type> point_in_space;
+  Core::LinAlg::Matrix<3, 1, scalar_type> point_in_space;
 
   // If segments are found, convert them to FAD segments.
   segments.clear();
@@ -432,20 +432,20 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
  *
  */
 template <typename scalar_type, typename surface>
-void GEOMETRYPAIR::ProjectPointToSurface(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+void GEOMETRYPAIR::ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
     const ElementData<surface, scalar_type>& element_data_surface,
-    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+    Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
     const double normal_influence_direction, const bool min_one_iteration)
 {
   // Vectors in 3D.
-  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
-  CORE::LINALG::Matrix<3, 1, scalar_type> delta_xi;
+  Core::LinAlg::Matrix<3, 1, scalar_type> r_surface;
+  Core::LinAlg::Matrix<3, 1, scalar_type> delta_xi;
   // Initialize the increment with a value that will not pass the first convergence check.
-  delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
-  CORE::LINALG::Matrix<3, 1, scalar_type> residuum;
+  delta_xi.PutScalar(10 * Constants::projection_xi_eta_tol);
+  Core::LinAlg::Matrix<3, 1, scalar_type> residuum;
 
   // Jacobian / inverse.
-  CORE::LINALG::Matrix<3, 3, scalar_type> J_J_inv;
+  Core::LinAlg::Matrix<3, 3, scalar_type> J_J_inv;
 
   // Reset the projection result flag.
   projection_result = ProjectionResult::projection_not_found;
@@ -453,7 +453,7 @@ void GEOMETRYPAIR::ProjectPointToSurface(const CORE::LINALG::Matrix<3, 1, scalar
   // Local Newton iteration.
   {
     unsigned int counter = 0;
-    while (counter < CONSTANTS::local_newton_iter_max)
+    while (counter < Constants::local_newton_iter_max)
     {
       // Evaluate the position and its derivative on the surface.
       EvaluateSurfacePositionAndDerivative(element_data_surface, xi, r_surface, J_J_inv);
@@ -467,8 +467,8 @@ void GEOMETRYPAIR::ProjectPointToSurface(const CORE::LINALG::Matrix<3, 1, scalar
         // if the min_one_iteration flag is set we run at least one iteration, so the dependency on
         // FAD variables is calculated correctly.
       }
-      else if (CORE::FADUTILS::VectorNorm(residuum) < CONSTANTS::local_newton_res_tol &&
-               CORE::FADUTILS::VectorNorm(delta_xi) < CONSTANTS::projection_xi_eta_tol)
+      else if (Core::FADUtils::VectorNorm(residuum) < Constants::local_newton_res_tol &&
+               Core::FADUtils::VectorNorm(delta_xi) < Constants::projection_xi_eta_tol)
       {
         if (ValidParameterSurface<scalar_type, surface>(xi, normal_influence_direction))
           projection_result = ProjectionResult::projection_found_valid;
@@ -478,11 +478,11 @@ void GEOMETRYPAIR::ProjectPointToSurface(const CORE::LINALG::Matrix<3, 1, scalar
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (CORE::FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
+      if (Core::FADUtils::VectorNorm(residuum) > Constants::local_newton_res_max) break;
 
       // Solve the linearized system.
-      if (CORE::LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
-              J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
+      if (Core::LinAlg::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+              J_J_inv, residuum, delta_xi, Constants::local_newton_det_tol))
       {
         // Set the new parameter coordinates.
         xi -= delta_xi;

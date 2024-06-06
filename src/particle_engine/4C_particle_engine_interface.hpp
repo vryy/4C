@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-namespace CORE::IO
+namespace Core::IO
 {
   class DiscretizationWriter;
 }
@@ -152,7 +152,7 @@ namespace PARTICLEENGINE
      *
      * \return bin discretization writer
      */
-    virtual std::shared_ptr<CORE::IO::DiscretizationWriter> get_bin_discretization_writer()
+    virtual std::shared_ptr<Core::IO::DiscretizationWriter> get_bin_discretization_writer()
         const = 0;
 
     /*!
@@ -235,7 +235,7 @@ namespace PARTICLEENGINE
      *
      * \return bounding box dimensions
      */
-    virtual CORE::LINALG::Matrix<3, 2> const& domain_bounding_box_corner_positions() const = 0;
+    virtual Core::LinAlg::Matrix<3, 2> const& domain_bounding_box_corner_positions() const = 0;
 
     //! @}
 

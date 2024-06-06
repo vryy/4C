@@ -16,21 +16,21 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
   struct StressIO
   {
-    INPAR::STR::StressType type;
+    Inpar::STR::StressType type;
     std::vector<char>& mutable_data;
   };
 
   struct StrainIO
   {
-    INPAR::STR::StrainType type;
+    Inpar::STR::StrainType type;
     std::vector<char>& mutable_data;
   };
 
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

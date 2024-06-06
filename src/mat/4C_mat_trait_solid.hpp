@@ -12,9 +12,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MAT
+namespace Mat
 {
-  namespace TRAIT
+  namespace Trait
   {
     /*!
      * This interface should define all core functionality for solid materials. Currently this is
@@ -25,8 +25,8 @@ namespace MAT
      public:
       virtual ~Solid() = default;
     };
-  }  // namespace TRAIT
-}  // namespace MAT
+  }  // namespace Trait
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

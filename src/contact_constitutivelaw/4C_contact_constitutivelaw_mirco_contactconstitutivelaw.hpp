@@ -96,9 +96,9 @@ namespace CONTACT
       //! @name Access methods
 
       /// contact constitutive law type
-      INPAR::CONTACT::ConstitutiveLawType get_constitutive_law_type() const override
+      Inpar::CONTACT::ConstitutiveLawType get_constitutive_law_type() const override
       {
-        return INPAR::CONTACT::ConstitutiveLawType::colaw_mirco;
+        return Inpar::CONTACT::ConstitutiveLawType::colaw_mirco;
       }
 
       /// Return quick accessible contact constitutive law parameter data

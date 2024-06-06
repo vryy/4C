@@ -22,28 +22,28 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-namespace DRT
+namespace Discret
 {
   namespace ELEMENTS
   {
-    class StructuralLineType : public CORE::Elements::ElementType
+    class StructuralLineType : public Core::Elements::ElementType
     {
      public:
       std::string Name() const override { return "StructuralLineType"; }
 
       static StructuralLineType& Instance();
 
-      Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) override;
+      Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) override;
 
       void nodal_block_information(
-          CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
+          Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
+      Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+          Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
-        CORE::LINALG::SerialDenseMatrix nullspace;
+        Core::LinAlg::SerialDenseMatrix nullspace;
         FOUR_C_THROW("method ComputeNullSpace not implemented!");
         return nullspace;
       }
@@ -57,7 +57,7 @@ namespace DRT
            Note that this element should not be used in 2D cases!
 
     */
-    class StructuralLine : public CORE::Elements::FaceElement
+    class StructuralLine : public Core::Elements::FaceElement
     {
      public:
       //! @name Constructors and destructors and related methods
@@ -73,8 +73,8 @@ namespace DRT
       \param parent: The parent shell element of this line
       \param lline: the local line number of this line w.r.t. the parent element
       */
-      StructuralLine(int id, int owner, int nnode, const int* nodeids, CORE::Nodes::Node** nodes,
-          CORE::Elements::Element* parent, const int lline);
+      StructuralLine(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
+          Core::Elements::Element* parent, const int lline);
 
       /*!
       \brief Copy Constructor
@@ -91,7 +91,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -110,7 +110,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -127,22 +127,22 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      CORE::FE::CellType Shape() const override;
+      Core::FE::CellType Shape() const override;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many degrees of freedom its nodes must have.
       As this may vary along a simulation, the element can redecide the
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      inline int NumDofPerNode(const CORE::Nodes::Node& node) const override { return 3; }
+      inline int NumDofPerNode(const Core::Nodes::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
-             (implements pure virtual CORE::Elements::Element)
+             (implements pure virtual Core::Elements::Element)
 
       The element decides how many element degrees of freedom it has.
       It can redecide along the way of a simulation.
@@ -158,7 +158,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override
+      Core::Elements::ElementType& ElementType() const override
       {
         return StructuralLineType::Instance();
       }
@@ -181,10 +181,10 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int evaluate_neumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          CORE::Conditions::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
+      int evaluate_neumann(Teuchos::ParameterList& params, Discret::Discretization& discretization,
+          Core::Conditions::Condition& condition, std::vector<int>& lm,
+          Core::LinAlg::SerialDenseVector& elevec1,
+          Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 
@@ -193,18 +193,18 @@ namespace DRT
       StructuralLine& operator=(const StructuralLine& old);
 
       //! gaussian integration to be used
-      CORE::FE::GaussRule1D gaussrule_;
+      Core::FE::GaussRule1D gaussrule_;
 
       //! line integration
-      void line_integration(double& dL, const CORE::LINALG::SerialDenseMatrix& x,
-          const CORE::LINALG::SerialDenseMatrix& deriv);
+      void line_integration(double& dL, const Core::LinAlg::SerialDenseMatrix& x,
+          const Core::LinAlg::SerialDenseMatrix& deriv);
 
       /*!
       \brief Create matrix with material configuration
 
       \param x  (out)  : nodal coords in material frame
       */
-      inline void material_configuration(CORE::LINALG::SerialDenseMatrix& x) const
+      inline void material_configuration(Core::LinAlg::SerialDenseMatrix& x) const
       {
         const int numnode = num_node();
         for (int i = 0; i < numnode; ++i)
@@ -220,7 +220,7 @@ namespace DRT
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE
 

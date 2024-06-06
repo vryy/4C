@@ -19,36 +19,36 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void MAT::ElastHyperEvaluate(const CORE::LINALG::Matrix<3, 3>& defgrd,
-    const CORE::LINALG::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
-    CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp, int eleGID,
-    const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
+void Mat::ElastHyperEvaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
+    const Core::LinAlg::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,
+    Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp, int eleGID,
+    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties, bool checkpolyconvexity)
 {
-  static CORE::LINALG::Matrix<6, 1> id2(false);
+  static Core::LinAlg::Matrix<6, 1> id2(false);
   id2.Clear();
-  static CORE::LINALG::Matrix<6, 1> C_strain(false);
+  static Core::LinAlg::Matrix<6, 1> C_strain(false);
   C_strain.Clear();
-  static CORE::LINALG::Matrix<6, 1> iC_strain(false);
+  static Core::LinAlg::Matrix<6, 1> iC_strain(false);
   iC_strain.Clear();
-  static CORE::LINALG::Matrix<3, 1> prinv(false);
+  static Core::LinAlg::Matrix<3, 1> prinv(false);
   prinv.Clear();
-  static CORE::LINALG::Matrix<3, 1> dPI(false);
+  static Core::LinAlg::Matrix<3, 1> dPI(false);
   dPI.Clear();
-  static CORE::LINALG::Matrix<6, 1> ddPII(false);
+  static Core::LinAlg::Matrix<6, 1> ddPII(false);
   ddPII.Clear();
 
   // Evaluate identity tensor
-  CORE::LINALG::VOIGT::IdentityMatrix(id2);
+  Core::LinAlg::Voigt::IdentityMatrix(id2);
 
   // Evalutate Right Cauchy-Green strain tensor in strain-like Voigt notation
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
 
   // Invert Right Cauchy Green Strain tensor
-  CORE::LINALG::VOIGT::Strains::InverseTensor(C_strain, iC_strain);
+  Core::LinAlg::Voigt::Strains::InverseTensor(C_strain, iC_strain);
 
   // Evaluate principle invariants
-  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, C_strain);
+  Core::LinAlg::Voigt::Strains::InvariantsPrincipal(prinv, C_strain);
 
   // Evaluate derivatives of potsum w.r.t the principal invariants
   ElastHyperEvaluateInvariantDerivatives(prinv, dPI, ddPII, potsum, properties, gp, eleGID);
@@ -80,8 +80,8 @@ void MAT::ElastHyperEvaluate(const CORE::LINALG::Matrix<3, 3>& defgrd,
         stress, cmat, C_strain, iC_strain, prinv, gp, eleGID, params, potsum);
 }
 
-void MAT::EvaluateRightCauchyGreenStrainLikeVoigt(
-    const CORE::LINALG::Matrix<6, 1>& E_strain, CORE::LINALG::Matrix<6, 1>& C_strain)
+void Mat::EvaluateRightCauchyGreenStrainLikeVoigt(
+    const Core::LinAlg::Matrix<6, 1>& E_strain, Core::LinAlg::Matrix<6, 1>& C_strain)
 {
   // C = 2*E+I
   C_strain.Update(2.0, E_strain, 0.0);
@@ -90,9 +90,9 @@ void MAT::EvaluateRightCauchyGreenStrainLikeVoigt(
   for (unsigned i = 0; i < 3; ++i) C_strain(i) += 1.0;
 }
 
-void MAT::ElastHyperEvaluateInvariantDerivatives(const CORE::LINALG::Matrix<3, 1>& prinv,
-    CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII,
-    const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
+void Mat::ElastHyperEvaluateInvariantDerivatives(const Core::LinAlg::Matrix<3, 1>& prinv,
+    Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII,
+    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties, const int gp, int eleGID)
 {
   // derivatives of principla materials
@@ -108,15 +108,15 @@ void MAT::ElastHyperEvaluateInvariantDerivatives(const CORE::LINALG::Matrix<3, 1
   // derivatives of decoupled (volumetric or isochoric) materials
   if (properties.isomod)
   {
-    static CORE::LINALG::Matrix<3, 1> modinv(true);
+    static Core::LinAlg::Matrix<3, 1> modinv(true);
     modinv.Clear();
-    static CORE::LINALG::Matrix<3, 1> dPmodI(true);
+    static Core::LinAlg::Matrix<3, 1> dPmodI(true);
     dPmodI.Clear();
-    static CORE::LINALG::Matrix<6, 1> ddPmodII(true);
+    static Core::LinAlg::Matrix<6, 1> ddPmodII(true);
     ddPmodII.Clear();
 
     // Evaluate modified invariants
-    MAT::invariants_modified(modinv, prinv);
+    Mat::invariants_modified(modinv, prinv);
 
     for (auto& p : potsum)
     {
@@ -124,13 +124,13 @@ void MAT::ElastHyperEvaluateInvariantDerivatives(const CORE::LINALG::Matrix<3, 1
     }
 
     // convert decoupled derivatives to principal derivatives
-    MAT::convert_mod_to_princ(prinv, dPmodI, ddPmodII, dPI, ddPII);
+    Mat::convert_mod_to_princ(prinv, dPmodI, ddPmodII, dPI, ddPII);
   }
 }
 
-void MAT::convert_mod_to_princ(const CORE::LINALG::Matrix<3, 1>& prinv,
-    const CORE::LINALG::Matrix<3, 1>& dPmodI, const CORE::LINALG::Matrix<6, 1>& ddPmodII,
-    CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII)
+void Mat::convert_mod_to_princ(const Core::LinAlg::Matrix<3, 1>& prinv,
+    const Core::LinAlg::Matrix<3, 1>& dPmodI, const Core::LinAlg::Matrix<6, 1>& ddPmodII,
+    Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII)
 {
   // Conversions to dPI
   dPI(0) += std::pow(prinv(2), -1. / 3.) * dPmodI(0);
@@ -162,30 +162,30 @@ void MAT::convert_mod_to_princ(const CORE::LINALG::Matrix<3, 1>& prinv,
   ddPII(5) += std::pow(prinv(2), -1.) * ddPmodII(5);
 }
 
-void MAT::ElastHyperAddIsotropicStressCmat(CORE::LINALG::Matrix<6, 1>& S_stress,
-    CORE::LINALG::Matrix<6, 6>& cmat, const CORE::LINALG::Matrix<6, 1>& C_strain,
-    const CORE::LINALG::Matrix<6, 1>& iC_strain, const CORE::LINALG::Matrix<3, 1>& prinv,
-    const CORE::LINALG::Matrix<3, 1>& dPI, const CORE::LINALG::Matrix<6, 1>& ddPII)
+void Mat::ElastHyperAddIsotropicStressCmat(Core::LinAlg::Matrix<6, 1>& S_stress,
+    Core::LinAlg::Matrix<6, 6>& cmat, const Core::LinAlg::Matrix<6, 1>& C_strain,
+    const Core::LinAlg::Matrix<6, 1>& iC_strain, const Core::LinAlg::Matrix<3, 1>& prinv,
+    const Core::LinAlg::Matrix<3, 1>& dPI, const Core::LinAlg::Matrix<6, 1>& ddPII)
 {
   // 2nd Piola Kirchhoff stress factors (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
-  static CORE::LINALG::Matrix<3, 1> gamma(true);
+  static Core::LinAlg::Matrix<3, 1> gamma(true);
   // constitutive tensor factors (according to Holzapfel-Nonlinear Solid Mechanics p. 261)
-  static CORE::LINALG::Matrix<8, 1> delta(true);
+  static Core::LinAlg::Matrix<8, 1> delta(true);
   // 2nd order identity tensor
-  static CORE::LINALG::Matrix<6, 1> id2(false);
+  static Core::LinAlg::Matrix<6, 1> id2(false);
   // Right Cauchy-Green tensor in stress-like Voigt notation
-  static CORE::LINALG::Matrix<6, 1> C_stress(false);
+  static Core::LinAlg::Matrix<6, 1> C_stress(false);
   // Inverse Right Cauchy-Green tensor in stress-like Voigt notation
-  static CORE::LINALG::Matrix<6, 1> iC_stress(false);
+  static Core::LinAlg::Matrix<6, 1> iC_stress(false);
   // 4th order identity tensor (rows and colums are stress-like)
-  static CORE::LINALG::Matrix<6, 6> id4sharp(false);
-  CORE::LINALG::VOIGT::FourthOrderIdentityMatrix<CORE::LINALG::VOIGT::NotationType::stress,
-      CORE::LINALG::VOIGT::NotationType::stress>(id4sharp);
+  static Core::LinAlg::Matrix<6, 6> id4sharp(false);
+  Core::LinAlg::Voigt::FourthOrderIdentityMatrix<Core::LinAlg::Voigt::NotationType::stress,
+      Core::LinAlg::Voigt::NotationType::stress>(id4sharp);
 
   // initialize matrices
-  CORE::LINALG::VOIGT::IdentityMatrix(id2);
-  CORE::LINALG::VOIGT::Strains::ToStressLike(C_strain, C_stress);
-  CORE::LINALG::VOIGT::Strains::ToStressLike(iC_strain, iC_stress);
+  Core::LinAlg::Voigt::IdentityMatrix(id2);
+  Core::LinAlg::Voigt::Strains::ToStressLike(C_strain, C_stress);
+  Core::LinAlg::Voigt::Strains::ToStressLike(iC_strain, iC_stress);
 
   // compose coefficients
   CalculateGammaDelta(gamma, delta, prinv, dPI, ddPII);
@@ -217,24 +217,24 @@ void MAT::ElastHyperAddIsotropicStressCmat(CORE::LINALG::Matrix<6, 1>& S_stress,
   cmat.Update(delta(7), id4sharp, 1.0);
 }
 
-void MAT::ElastHyperAddResponseStretches(CORE::LINALG::Matrix<6, 6>& cmat,
-    CORE::LINALG::Matrix<6, 1>& S_stress, const CORE::LINALG::Matrix<6, 1>& C_strain,
-    const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
+void Mat::ElastHyperAddResponseStretches(Core::LinAlg::Matrix<6, 6>& cmat,
+    Core::LinAlg::Matrix<6, 1>& S_stress, const Core::LinAlg::Matrix<6, 1>& C_strain,
+    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties, const int gp, int eleGID)
 {
   // get principal stretches and directions
-  CORE::LINALG::Matrix<3, 1> prstr;
-  CORE::LINALG::Matrix<3, 3> prdir;
+  Core::LinAlg::Matrix<3, 1> prstr;
+  Core::LinAlg::Matrix<3, 3> prdir;
   StretchesPrincipal(prstr, prdir, C_strain);
   // modified stretches
-  CORE::LINALG::Matrix<3, 1> modstr;
+  Core::LinAlg::Matrix<3, 1> modstr;
   StretchesModified(modstr, prstr);
   // determinant of deformation gradient
   const double detdefgrad = prstr(0) * prstr(1) * prstr(2);
 
   // get coefficients
-  CORE::LINALG::Matrix<3, 1> gamma_(true);
-  CORE::LINALG::Matrix<6, 1> delta_(true);
+  Core::LinAlg::Matrix<3, 1> gamma_(true);
+  Core::LinAlg::Matrix<6, 1> delta_(true);
   if (properties.coeffStretchesPrinc)
   {
     // loop map of associated potential summands
@@ -248,9 +248,9 @@ void MAT::ElastHyperAddResponseStretches(CORE::LINALG::Matrix<6, 6>& cmat,
     // reciprocal of cubic root of determinant of deformation gradient (convenience)
     const double detdefgrad13 = std::pow(detdefgrad, -1.0 / 3.0);
     // retrieve coefficients with respect to modified principal stretches
-    static CORE::LINALG::Matrix<3, 1> modgamma(true);
+    static Core::LinAlg::Matrix<3, 1> modgamma(true);
     modgamma.Clear();
-    static CORE::LINALG::Matrix<6, 1> moddelta(true);
+    static Core::LinAlg::Matrix<6, 1> moddelta(true);
     moddelta.Clear();
     {
       // loop map of associated potential summands
@@ -262,7 +262,7 @@ void MAT::ElastHyperAddResponseStretches(CORE::LINALG::Matrix<6, 6>& cmat,
     // convert modified coefficients to oridinary counterparts
     //
     // derivatives of modified pr. stretches WRT pr. stretches
-    static CORE::LINALG::Matrix<3, 3> modbypr(false);
+    static Core::LinAlg::Matrix<3, 3> modbypr(false);
     for (int al = 0; al < 3; ++al)
     {
       for (int be = 0; be < 3; ++be)
@@ -277,7 +277,7 @@ void MAT::ElastHyperAddResponseStretches(CORE::LINALG::Matrix<6, 6>& cmat,
     // determine unmodified coefficients delta and add them
     //
     // rewrite mod.coeff. as 2-tensor
-    static CORE::LINALG::Matrix<3, 3> moddeltat(false);
+    static Core::LinAlg::Matrix<3, 3> moddeltat(false);
     moddeltat(0, 0) = moddelta(0);
     moddeltat(1, 1) = moddelta(1);
     moddeltat(2, 2) = moddelta(2);
@@ -285,9 +285,9 @@ void MAT::ElastHyperAddResponseStretches(CORE::LINALG::Matrix<6, 6>& cmat,
     moddeltat(1, 2) = moddeltat(2, 1) = moddelta(4);
     moddeltat(2, 0) = moddeltat(0, 2) = moddelta(5);
     // Psi_{,barlam barlam} barlam_{,lam} barlam_{,lam}
-    static CORE::LINALG::Matrix<3, 3> aux(false);
+    static Core::LinAlg::Matrix<3, 3> aux(false);
     aux.MultiplyTN(modbypr, moddeltat);
-    static CORE::LINALG::Matrix<3, 3> deltat(false);
+    static Core::LinAlg::Matrix<3, 3> deltat(false);
     deltat.MultiplyNN(aux, modbypr);
     // Psi_{,barlam} barlam_{,lam lam}
     for (int be = 0; be < 3; ++be)
@@ -317,7 +317,7 @@ void MAT::ElastHyperAddResponseStretches(CORE::LINALG::Matrix<6, 6>& cmat,
   }
 
   // principal 2nd Piola--Kirchhoff stress tensor, cf [1] Eq (6.47)
-  static CORE::LINALG::Matrix<3, 1> prsts(true);
+  static Core::LinAlg::Matrix<3, 1> prsts(true);
   prsts.Clear();
   for (int al = 0; al < 3; ++al)
   {
@@ -332,12 +332,12 @@ void MAT::ElastHyperAddResponseStretches(CORE::LINALG::Matrix<6, 6>& cmat,
     S_stress(5) += prsts(al) * prdir(2, al) * prdir(0, al);  // S^31
   }
 
-  using map = CORE::LINALG::VOIGT::IndexMappings;
+  using map = Core::LinAlg::Voigt::IndexMappings;
 
   // integration factor prfact_{al be}
-  static CORE::LINALG::Matrix<6, 1> prfact1(true);
+  static Core::LinAlg::Matrix<6, 1> prfact1(true);
   prfact1.Clear();
-  static CORE::LINALG::Matrix<6, 1> prfact2(true);
+  static Core::LinAlg::Matrix<6, 1> prfact2(true);
   prfact2.Clear();
   for (int albe = 0; albe < 6; ++albe)
   {
@@ -386,10 +386,10 @@ void MAT::ElastHyperAddResponseStretches(CORE::LINALG::Matrix<6, 6>& cmat,
   }
 }
 
-void MAT::ElastHyperAddAnisotropicPrinc(CORE::LINALG::Matrix<6, 1>& S_stress,
-    CORE::LINALG::Matrix<6, 6>& cmat, const CORE::LINALG::Matrix<6, 1>& C_strain,
+void Mat::ElastHyperAddAnisotropicPrinc(Core::LinAlg::Matrix<6, 1>& S_stress,
+    Core::LinAlg::Matrix<6, 6>& cmat, const Core::LinAlg::Matrix<6, 1>& C_strain,
     Teuchos::ParameterList& params, const int gp, int eleGID,
-    const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum)
+    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum)
 {
   // Loop over all summands and add aniso stress
   // ToDo: This should be solved in analogy to the solution in elast_remodelfiber.cpp
@@ -398,14 +398,14 @@ void MAT::ElastHyperAddAnisotropicPrinc(CORE::LINALG::Matrix<6, 1>& S_stress,
     p->add_stress_aniso_principal(C_strain, cmat, S_stress, params, gp, eleGID);
 }
 
-void MAT::ElastHyperAddAnisotropicMod(CORE::LINALG::Matrix<6, 1>& S_stress,
-    CORE::LINALG::Matrix<6, 6>& cmat, const CORE::LINALG::Matrix<6, 1>& C_strain,
-    const CORE::LINALG::Matrix<6, 1>& iC_strain, const CORE::LINALG::Matrix<3, 1>& prinv,
+void Mat::ElastHyperAddAnisotropicMod(Core::LinAlg::Matrix<6, 1>& S_stress,
+    Core::LinAlg::Matrix<6, 6>& cmat, const Core::LinAlg::Matrix<6, 1>& C_strain,
+    const Core::LinAlg::Matrix<6, 1>& iC_strain, const Core::LinAlg::Matrix<3, 1>& prinv,
     const int gp, int eleGID, Teuchos::ParameterList& params,
-    const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum)
+    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum)
 {
-  static CORE::LINALG::Matrix<6, 1> iC_stress(false);
-  CORE::LINALG::VOIGT::Strains::ToStressLike(iC_strain, iC_stress);
+  static Core::LinAlg::Matrix<6, 1> iC_stress(false);
+  Core::LinAlg::Voigt::Strains::ToStressLike(iC_strain, iC_stress);
   // Loop over all summands and add aniso stress
   // ToDo: This should be solved in analogy to the solution in elast_remodelfiber.cpp
   // ToDo: i.e. by evaluating the derivatives of the potsum w.r.t. the anisotropic invariants
@@ -413,9 +413,9 @@ void MAT::ElastHyperAddAnisotropicMod(CORE::LINALG::Matrix<6, 1>& S_stress,
     p->add_stress_aniso_modified(C_strain, iC_stress, cmat, S_stress, prinv(2), gp, eleGID, params);
 }
 
-void MAT::CalculateGammaDelta(CORE::LINALG::Matrix<3, 1>& gamma, CORE::LINALG::Matrix<8, 1>& delta,
-    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& dPI,
-    const CORE::LINALG::Matrix<6, 1>& ddPII)
+void Mat::CalculateGammaDelta(Core::LinAlg::Matrix<3, 1>& gamma, Core::LinAlg::Matrix<8, 1>& delta,
+    const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& dPI,
+    const Core::LinAlg::Matrix<6, 1>& ddPII)
 {
   // according to Holzapfel-Nonlinear Solid Mechanics p. 216
   gamma(0) = 2. * (dPI(0) + prinv(0) * dPI(1));
@@ -433,8 +433,8 @@ void MAT::CalculateGammaDelta(CORE::LINALG::Matrix<3, 1>& gamma, CORE::LINALG::M
   delta(7) = -4. * dPI(1);
 }
 
-void MAT::ElastHyperProperties(
-    const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum, SummandProperties& properties)
+void Mat::ElastHyperProperties(
+    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum, SummandProperties& properties)
 {
   for (auto& p : potsum)
   {
@@ -446,9 +446,9 @@ void MAT::ElastHyperProperties(
   }
 }
 
-void MAT::ElastHyperCheckPolyconvexity(const CORE::LINALG::Matrix<3, 3>& defgrd,
-    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& dPI,
-    const CORE::LINALG::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, const int gp,
+void Mat::ElastHyperCheckPolyconvexity(const Core::LinAlg::Matrix<3, 3>& defgrd,
+    const Core::LinAlg::Matrix<3, 1>& prinv, const Core::LinAlg::Matrix<3, 1>& dPI,
+    const Core::LinAlg::Matrix<6, 1>& ddPII, Teuchos::ParameterList& params, const int gp,
     const int eleGID, const SummandProperties& properties)
 {
   // This polyconvexity-test is just implemented for isotropic hyperelastic-materials
@@ -468,39 +468,39 @@ void MAT::ElastHyperCheckPolyconvexity(const CORE::LINALG::Matrix<3, 3>& defgrd,
 
   // defgrd = F (i)
   // dfgrd = F in Voigt - Notation
-  static CORE::LINALG::Matrix<9, 1> dfgrd(true);
-  CORE::LINALG::VOIGT::Matrix3x3to9x1(defgrd, dfgrd);
+  static Core::LinAlg::Matrix<9, 1> dfgrd(true);
+  Core::LinAlg::Voigt::Matrix3x3to9x1(defgrd, dfgrd);
 
   // Cof(F) = J*F^(-T)
-  static CORE::LINALG::Matrix<3, 3> CoFacF(true);  // Cof(F) in Matrix-Notation
-  static CORE::LINALG::Matrix<9, 1> CofF(true);    // Cof(F) in Voigt-Notation
+  static Core::LinAlg::Matrix<3, 3> CoFacF(true);  // Cof(F) in Matrix-Notation
+  static Core::LinAlg::Matrix<9, 1> CofF(true);    // Cof(F) in Voigt-Notation
   CoFacF.Invert(defgrd);
   CoFacF.Scale(J);
   // sort in Voigt-Notation and invert!
-  CORE::LINALG::VOIGT::Matrix3x3to9x1(CoFacF, CofF);
+  Core::LinAlg::Voigt::Matrix3x3to9x1(CoFacF, CofF);
 
   // id4 (9x9)
-  static CORE::LINALG::Matrix<9, 9> ID4(true);
+  static Core::LinAlg::Matrix<9, 9> ID4(true);
   for (int i = 0; i < 9; i++)
     for (int j = 0; j < 9; j++)
       if (i == j) ID4(i, j) = 1.0;
 
   // Frechet Derivative according to Ebbing, PhD-thesis page 79, Eq: (5.31)
-  static CORE::LINALG::Matrix<19, 19> FreD(true);
+  static Core::LinAlg::Matrix<19, 19> FreD(true);
   FreD.Clear();
 
   // single matrices of Frechet Derivative:
 
   // d^2P/dFdF
   // = 4 d^2\Psi/dI_1dI_1 F \otimes F + 2 \d\Psi/dI_1 *II
-  static CORE::LINALG::Matrix<9, 9> FreDFF(true);
+  static Core::LinAlg::Matrix<9, 9> FreDFF(true);
   FreDFF.Clear();
   FreDFF.MultiplyNT(4 * ddPII(0), dfgrd, dfgrd, 1.0);
   FreDFF.Update(2 * dPI(0), ID4, 1.0);
 
   // d^2P/d(cofF)d(cofF)
   // = = 4 d^2\Psi/dI_2dI_2 cof(F) \otimes cof(F) + 2 \d\Psi/dI_2 *II
-  static CORE::LINALG::Matrix<9, 9> FreDcFcF(true);
+  static Core::LinAlg::Matrix<9, 9> FreDcFcF(true);
   FreDcFcF.Clear();
   FreDcFcF.MultiplyNT(4 * ddPII(1), CofF, CofF, 1.0);
   FreDcFcF.Update(2 * dPI(1), ID4, 1.0);
@@ -512,19 +512,19 @@ void MAT::ElastHyperCheckPolyconvexity(const CORE::LINALG::Matrix<3, 3>& defgrd,
 
   // d^2P/d(cofF)dF
   // = 4*d\Psi/dI_1dI_2 F /otimes CofF
-  static CORE::LINALG::Matrix<9, 9> FreDcFF(true);
+  static Core::LinAlg::Matrix<9, 9> FreDcFF(true);
   FreDcFF.Clear();
   FreDcFF.MultiplyNT(4 * ddPII(5), dfgrd, CofF, 1.0);
 
   // d^2P/d(detF)d(cofF)
   // = 4*J*d^2 \Psi /dI_2 dI_3 \mat{CofF}
-  static CORE::LINALG::Matrix<9, 1> FreDcFJ(true);
+  static Core::LinAlg::Matrix<9, 1> FreDcFJ(true);
   FreDcFF.Clear();
   FreDcFJ.Update(4 * J * ddPII(3), CofF, 1.0);
 
   // d^2P/d(detF) dF = d^2P/dF d(detF)
   // = 4*J*d^2 \Psi /dI_1 dI_3 \mat{F}
-  static CORE::LINALG::Matrix<9, 1> FreDFJ(true);
+  static Core::LinAlg::Matrix<9, 1> FreDFJ(true);
   FreDcFF.Clear();
   FreDFJ.Update(4 * J * ddPII(4), dfgrd, 1.0);
 
@@ -553,9 +553,9 @@ void MAT::ElastHyperCheckPolyconvexity(const CORE::LINALG::Matrix<3, 3>& defgrd,
   FreD(18, 18) = FreDJJ;
 
   // EigenValues of Frechet Derivative
-  static CORE::LINALG::Matrix<19, 19> EWFreD(true);  // EW on diagonal
-  static CORE::LINALG::Matrix<19, 19> EVFreD(true);
-  CORE::LINALG::SYEV(FreD, EWFreD, EVFreD);
+  static Core::LinAlg::Matrix<19, 19> EWFreD(true);  // EW on diagonal
+  static Core::LinAlg::Matrix<19, 19> EVFreD(true);
+  Core::LinAlg::SYEV(FreD, EWFreD, EVFreD);
 
   // Just positive EigenValues --> System is polyconvex
   for (int i = 0; i < 19; i++)

@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -35,7 +35,7 @@ namespace DRT
     and (near)-incompressibility.
 
     */
-    template <class so3_ele, CORE::FE::CellType distype>
+    template <class so3_ele, Core::FE::CellType distype>
     class So3PoroP1Scatra : public So3PoroP1<so3_ele, distype>
     {
       typedef So3PoroP1<so3_ele, distype> my;
@@ -71,7 +71,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      CORE::Elements::Element* Clone() const override;
+      Core::Elements::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -87,7 +87,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(CORE::COMM::PackBuffer& data) const override;
+      void Pack(Core::Communication::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -104,22 +104,22 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      CORE::Elements::ElementType& ElementType() const override;
+      Core::Elements::ElementType& ElementType() const override;
 
       //! @name Input and Creation
       /*!
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          INPUT::LineDefinition* linedef) override;
+          Input::LineDefinition* linedef) override;
 
       /// @name params
-      /// return SCATRA::ImplType
-      const INPAR::SCATRA::ImplType& ImplType() const { return impltype_; };
+      /// return ScaTra::ImplType
+      const Inpar::ScaTra::ImplType& ImplType() const { return impltype_; };
 
      private:
       //! scalar transport implementation type (physics)
-      INPAR::SCATRA::ImplType impltype_;
+      Inpar::ScaTra::ImplType impltype_;
       //@}
 
      protected:
@@ -130,7 +130,7 @@ namespace DRT
 
 
   }  // namespace ELEMENTS
-}  // namespace DRT
+}  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

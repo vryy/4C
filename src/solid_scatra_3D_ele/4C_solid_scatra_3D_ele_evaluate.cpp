@@ -15,11 +15,11 @@ Evaluate(...), evaluate_neumann(...), etc.
 
 FOUR_C_NAMESPACE_OPEN
 
-int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Elements::Element::LocationArray& la,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
+int Discret::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Elements::Element::LocationArray& la,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
   if (!material_post_setup_)
   {
@@ -31,18 +31,18 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
   // get ptr to interface to time integration
   set_params_interface_ptr(params);
 
-  const CORE::Elements::ActionType action = std::invoke(
+  const Core::Elements::ActionType action = std::invoke(
       [&]()
       {
         if (IsParamsInterface())
           return params_interface().GetActionType();
         else
-          return CORE::Elements::String2ActionType(params.get<std::string>("action", "none"));
+          return Core::Elements::String2ActionType(params.get<std::string>("action", "none"));
       });
 
   switch (action)
   {
-    case CORE::Elements::ActionType::calc_struct_stiffscalar:
+    case Core::Elements::ActionType::calc_struct_stiffscalar:
       // Evaluate off-diagonal block for SSI
       std::visit(
           [&](auto& interface)
@@ -52,7 +52,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
           },
           solid_scatra_calc_variant_);
       return 0;
-    case CORE::Elements::struct_calc_nlnstiff:
+    case Core::Elements::struct_calc_nlnstiff:
     {
       std::visit(
           [&](auto& interface)
@@ -63,7 +63,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
           solid_scatra_calc_variant_);
       return 0;
     }
-    case CORE::Elements::struct_calc_nlnstiffmass:
+    case Core::Elements::struct_calc_nlnstiffmass:
     {
       std::visit(
           [&](auto& interface)
@@ -75,7 +75,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case CORE::Elements::struct_calc_internalforce:
+    case Core::Elements::struct_calc_internalforce:
     {
       std::visit(
           [&](auto& interface)
@@ -87,7 +87,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case CORE::Elements::struct_calc_update_istep:
+    case Core::Elements::struct_calc_update_istep:
     {
       std::visit([&](auto& interface)
           { interface->Update(*this, SolidMaterial(), discretization, la, params); },
@@ -95,14 +95,14 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case CORE::Elements::struct_calc_recover:
+    case Core::Elements::struct_calc_recover:
     {
       std::visit([&](auto& interface) { interface->Recover(*this, discretization, la, params); },
           solid_scatra_calc_variant_);
 
       return 0;
     }
-    case CORE::Elements::struct_calc_stress:
+    case Core::Elements::struct_calc_stress:
     {
       std::visit(
           [&](auto& interface)
@@ -116,7 +116,7 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case CORE::Elements::struct_calc_predict:
+    case Core::Elements::struct_calc_predict:
       // do nothing for now
       return 0;
     default:
@@ -127,10 +127,10 @@ int DRT::ELEMENTS::SolidScatra::Evaluate(Teuchos::ParameterList& params,
   return 0;
 }
 
-int DRT::ELEMENTS::SolidScatra::evaluate_neumann(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, CORE::Conditions::Condition& condition,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseMatrix* elemat1)
+int Discret::ELEMENTS::SolidScatra::evaluate_neumann(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, Core::Conditions::Condition& condition,
+    std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
+    Core::LinAlg::SerialDenseMatrix* elemat1)
 {
   set_params_interface_ptr(params);
 
@@ -143,17 +143,17 @@ int DRT::ELEMENTS::SolidScatra::evaluate_neumann(Teuchos::ParameterList& params,
           return params.get("total time", -1.0);
       });
 
-  DRT::ELEMENTS::EvaluateNeumannByElement(*this, discretization, condition, lm, elevec1, time);
+  Discret::ELEMENTS::EvaluateNeumannByElement(*this, discretization, condition, lm, elevec1, time);
   return 0;
 }
 
-double DRT::ELEMENTS::SolidScatra::GetCauchyNDirAtXi(const std::vector<double>& disp,
-    const std::optional<std::vector<double>>& scalars, const CORE::LINALG::Matrix<3, 1>& xi,
-    const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
-    DRT::ELEMENTS::SolidScatraCauchyNDirLinearizations<3>& linearizations)
+double Discret::ELEMENTS::SolidScatra::GetCauchyNDirAtXi(const std::vector<double>& disp,
+    const std::optional<std::vector<double>>& scalars, const Core::LinAlg::Matrix<3, 1>& xi,
+    const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir,
+    Discret::ELEMENTS::SolidScatraCauchyNDirLinearizations<3>& linearizations)
 {
-  return DRT::ELEMENTS::GetCauchyNDirAtXi(solid_scatra_calc_variant_, *this, SolidMaterial(), disp,
-      scalars, xi, n, dir, linearizations);
+  return Discret::ELEMENTS::GetCauchyNDirAtXi(solid_scatra_calc_variant_, *this, SolidMaterial(),
+      disp, scalars, xi, n, dir, linearizations);
 }
 
 FOUR_C_NAMESPACE_CLOSE

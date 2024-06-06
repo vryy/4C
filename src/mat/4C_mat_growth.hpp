@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------*/
 /* forward declarations */
 
-namespace MAT
+namespace Mat
 {
   class GrowthLaw;
 
@@ -34,11 +34,11 @@ namespace MAT
      *  \author kehl
      *  \date 6/2015
      */
-    class Growth : public CORE::MAT::PAR::Parameter
+    class Growth : public Core::Mat::PAR::Parameter
     {
      public:
       /// standard constructor
-      Growth(Teuchos::RCP<CORE::MAT::PAR::Material> matdata);
+      Growth(Teuchos::RCP<Core::Mat::PAR::Material> matdata);
 
 
       /// @name material parameters
@@ -52,11 +52,11 @@ namespace MAT
       /// stop growth after endtime
       const double endtime_;
       /// growth law
-      Teuchos::RCP<MAT::GrowthLaw> growthlaw_;
+      Teuchos::RCP<Mat::GrowthLaw> growthlaw_;
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<CORE::MAT::Material> create_material() override;
+      Teuchos::RCP<Core::Mat::Material> create_material() override;
 
     };  // class Growth
 
@@ -85,7 +85,7 @@ namespace MAT
     Growth();
 
     /// construct the material object given material parameters
-    explicit Growth(MAT::PAR::Growth* params);
+    explicit Growth(Mat::PAR::Growth* params);
 
     //! @name Packing and Unpacking
     //@{
@@ -93,22 +93,22 @@ namespace MAT
     /*!
       \brief Return unique ParObject id
 
-      \sa CORE::COMM::ParObject
+      \sa Core::Communication::ParObject
     */
     int UniqueParObjectId() const override = 0;
 
     /*!
       \brief Pack this class so it can be communicated
 
-      \sa CORE::COMM::ParObject
+      \sa Core::Communication::ParObject
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
 
-      \sa CORE::COMM::ParObject
+      \sa Core::Communication::ParObject
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
@@ -117,23 +117,23 @@ namespace MAT
     //@}
 
     /// material type
-    CORE::Materials::MaterialType MaterialType() const override
+    Core::Materials::MaterialType MaterialType() const override
     {
-      return CORE::Materials::m_growth_volumetric;
+      return Core::Materials::m_growth_volumetric;
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::STR::KinemType kinem) override
     {
-      if (kinem != INPAR::STR::KinemType::nonlinearTotLag)
+      if (kinem != Inpar::STR::KinemType::nonlinearTotLag)
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override = 0;
+    Teuchos::RCP<Core::Mat::Material> Clone() const override = 0;
 
     /// Setup
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Update
     void Update() override;
@@ -171,9 +171,9 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
         const int eleGID) override = 0;
 
     /*! \brief Evaluate mass change
@@ -196,9 +196,9 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void EvaluateNonLinMass(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* linmass_disp, CORE::LINALG::Matrix<6, 1>* linmass_vel,
+    void EvaluateNonLinMass(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* linmass_disp, Core::LinAlg::Matrix<6, 1>* linmass_vel,
         const int gp, const int eleGID) override = 0;
 
     /*! \brief Evaluate elastic material stresses and cmat
@@ -220,9 +220,9 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void EvaluateElastic(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, CORE::LINALG::Matrix<6, 1>* stress,
-        CORE::LINALG::Matrix<6, 6>* cmat, Teuchos::ParameterList& params, int gp, int eleGID);
+    void EvaluateElastic(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Core::LinAlg::Matrix<6, 1>* stress,
+        Core::LinAlg::Matrix<6, 6>* cmat, Teuchos::ParameterList& params, int gp, int eleGID);
     //@}
 
 
@@ -243,10 +243,10 @@ namespace MAT
     bool VaryingDensity() const override;
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Growth* Parameter() const override { return params_; }
+    Mat::PAR::Growth* Parameter() const override { return params_; }
 
     /// access to the elastic material
-    Teuchos::RCP<MAT::So3Material> Matelastic() const { return matelastic_; }
+    Teuchos::RCP<Mat::So3Material> Matelastic() const { return matelastic_; }
 
     // read access to thetaold_
     Teuchos::RCP<const std::vector<double>> ThetaOld() const { return thetaold_; }
@@ -271,10 +271,10 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::Growth* params_;
+    Mat::PAR::Growth* params_;
 
     /// elastic material
-    Teuchos::RCP<MAT::So3Material> matelastic_;
+    Teuchos::RCP<Mat::So3Material> matelastic_;
 
     /// growth stretch at the time step before
     Teuchos::RCP<std::vector<double>> thetaold_;
@@ -287,19 +287,19 @@ namespace MAT
   /*! \class GrowthVolumetricType
        \brief ParObjectType instance
 
-       \sa CORE::COMM::ParObjectType
+       \sa Core::Communication::ParObjectType
 
     \author kehl
     \date 6/2015
   */
-  class GrowthVolumetricType : public CORE::COMM::ParObjectType
+  class GrowthVolumetricType : public Core::Communication::ParObjectType
   {
    public:
     std::string Name() const override { return "GrowthVolumetricType"; }
 
     static GrowthVolumetricType& Instance() { return instance_; };
 
-    CORE::COMM::ParObject* Create(const std::vector<char>& data) override;
+    Core::Communication::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static GrowthVolumetricType instance_;
@@ -326,7 +326,7 @@ namespace MAT
     GrowthVolumetric();
 
     /// construct the material object given material parameters
-    explicit GrowthVolumetric(MAT::PAR::Growth* params);
+    explicit GrowthVolumetric(Mat::PAR::Growth* params);
 
     //! @name Packing and Unpacking
     //@{
@@ -334,7 +334,7 @@ namespace MAT
     /*!
       \brief Return unique ParObject id
 
-      \sa CORE::COMM::ParObject
+      \sa Core::Communication::ParObject
     */
     int UniqueParObjectId() const override
     {
@@ -344,15 +344,15 @@ namespace MAT
     /*!
       \brief Pack this class so it can be communicated
 
-      \sa CORE::COMM::ParObject
+      \sa Core::Communication::ParObject
       \param data (in/out): char vector to store class information
     */
-    void Pack(CORE::COMM::PackBuffer& data) const override;
+    void Pack(Core::Communication::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
 
-      \sa CORE::COMM::ParObject
+      \sa Core::Communication::ParObject
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
@@ -361,13 +361,13 @@ namespace MAT
     //@}
 
     /// return copy of this material object
-    Teuchos::RCP<CORE::MAT::Material> Clone() const override
+    Teuchos::RCP<Core::Mat::Material> Clone() const override
     {
       return Teuchos::rcp(new GrowthVolumetric(*this));
     }
 
     /// Setup
-    void Setup(int numgp, INPUT::LineDefinition* linedef) override;
+    void Setup(int numgp, Input::LineDefinition* linedef) override;
 
     /// Update
     void Update() override;
@@ -401,19 +401,19 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    void Evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat, const int gp,
         const int eleGID) override;
 
     /// calculate stresses and elastic material tangent (both in Voigt notation)
-    void GetSAndCmatdach(const double theta, const CORE::LINALG::Matrix<3, 3>* defgrd,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmatdach,
+    void GetSAndCmatdach(const double theta, const Core::LinAlg::Matrix<3, 3>* defgrd,
+        Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmatdach,
         Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// Function which reads in the given fiber value due to the FIBER1 nomenclature
-    void ReadFiber(INPUT::LineDefinition* linedef, std::string specifier,
-        CORE::LINALG::Matrix<3, 1>& fiber_vector);
+    void ReadFiber(Input::LineDefinition* linedef, std::string specifier,
+        Core::LinAlg::Matrix<3, 1>& fiber_vector);
 
     /*! \brief Evaluate mass change
      *
@@ -435,9 +435,9 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void EvaluateNonLinMass(const CORE::LINALG::Matrix<3, 3>* defgrd,
-        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* linmass_disp, CORE::LINALG::Matrix<6, 1>* linmass_vel,
+    void EvaluateNonLinMass(const Core::LinAlg::Matrix<3, 3>* defgrd,
+        const Core::LinAlg::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        Core::LinAlg::Matrix<6, 1>* linmass_disp, Core::LinAlg::Matrix<6, 1>* linmass_vel,
         const int gp, const int eleGID) override;
 
     /*! \brief evaluate the volumetric growth factor
@@ -465,8 +465,8 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void EvaluateGrowth(double* theta, CORE::LINALG::Matrix<6, 1>* dthetadC,
-        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<6, 1>* glstrain,
+    void EvaluateGrowth(double* theta, Core::LinAlg::Matrix<6, 1>* dthetadC,
+        const Core::LinAlg::Matrix<3, 3>* defgrd, const Core::LinAlg::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, int gp, int eleGID);
 
     //@}
@@ -475,7 +475,7 @@ namespace MAT
     //@{
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Growth* Parameter() const override { return params_volumetric_; }
+    Mat::PAR::Growth* Parameter() const override { return params_volumetric_; }
 
     //@}
 
@@ -490,27 +490,27 @@ namespace MAT
 
    private:
     /// my material parameters
-    MAT::PAR::Growth* params_volumetric_;
+    Mat::PAR::Growth* params_volumetric_;
 
     /// a reference direction (i.e., a fiber direction or a surface normal etc...), for anisotropic
     /// growth laws
-    CORE::LINALG::Matrix<3, 1> refdir_;
+    Core::LinAlg::Matrix<3, 1> refdir_;
 
     /// some current direction, used for anisotropic scalar-dependent growth in current radial
     /// direction...
-    std::vector<CORE::LINALG::Matrix<3, 1>> curdir_;
+    std::vector<Core::LinAlg::Matrix<3, 1>> curdir_;
 
     /// normal direction, used for anisotropic scalar-dependent growth in current radial
     /// direction...
-    std::vector<CORE::LINALG::Matrix<3, 1>> curdir_for_update_;
+    std::vector<Core::LinAlg::Matrix<3, 1>> curdir_for_update_;
 
     /// history of growth matrix, needed for anisotropic scalar-dependent growth in current radial
     /// direction...
-    std::vector<CORE::LINALG::Matrix<3, 3>> f_g_hist_;
+    std::vector<Core::LinAlg::Matrix<3, 3>> f_g_hist_;
 
   };  // class GrowthVolumetric
 
-}  // namespace MAT
+}  // namespace Mat
 
 FOUR_C_NAMESPACE_CLOSE
 

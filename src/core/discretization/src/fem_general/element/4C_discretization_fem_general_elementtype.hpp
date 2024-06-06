@@ -25,12 +25,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
 }
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 }
@@ -48,9 +48,9 @@ namespace DRT
   \date 06/10
  */
 
-namespace CORE::Elements
+namespace Core::Elements
 {
-  class ElementType : public CORE::COMM::ParObjectType
+  class ElementType : public Core::Communication::ParObjectType
   {
    protected:
     // only derived classes might create an instance
@@ -59,7 +59,7 @@ namespace CORE::Elements
    public:
     /// setup the dat file input line definitions for this type of element
     virtual void setup_element_definition(
-        std::map<std::string, std::map<std::string, INPUT::LineDefinition>>& definitions)
+        std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
     {
     }
 
@@ -71,15 +71,15 @@ namespace CORE::Elements
     }
 
     /// create an empty element
-    virtual Teuchos::RCP<CORE::Elements::Element> Create(const int id, const int owner) = 0;
+    virtual Teuchos::RCP<Core::Elements::Element> Create(const int id, const int owner) = 0;
 
     /// initialize the element type
-    virtual int Initialize(DRT::Discretization& dis);
+    virtual int Initialize(Discret::Discretization& dis);
 
     /// preevaluation
-    virtual inline void pre_evaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    virtual inline void pre_evaluate(Discret::Discretization& dis, Teuchos::ParameterList& p,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3)
     {
@@ -99,14 +99,14 @@ namespace CORE::Elements
     @param[out] np Number of degrees of freedom for local constraints (e.g. fluid pressure)
     */
     virtual void nodal_block_information(
-        CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) = 0;
+        Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) = 0;
 
     /// do the null space computation
-    virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) = 0;
+    virtual Core::LinAlg::SerialDenseMatrix ComputeNullSpace(
+        Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp) = 0;
   };
 
-}  // namespace CORE::Elements
+}  // namespace Core::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

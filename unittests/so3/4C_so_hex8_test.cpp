@@ -27,8 +27,8 @@ namespace
     void SetUp() override
     {
       // create a discretization, that creates node to element pointers and keeps the nodes alive
-      testdis_ =
-          Teuchos::rcp(new DRT::Discretization("dummy", Teuchos::rcp(new Epetra_SerialComm), 3));
+      testdis_ = Teuchos::rcp(
+          new Discret::Discretization("dummy", Teuchos::rcp(new Epetra_SerialComm), 3));
 
       // create 8 nodes
       const std::array<int, 8> nodeids = {0, 1, 2, 3, 4, 5, 6, 7};
@@ -36,15 +36,15 @@ namespace
           {1.20, 0.99, 0.5}, {-0.11, 1.20, 0.66}, {-0.10, -0.2, 1.9}, {1.00, 0.00, 1.90},
           {1.20, 0.99, 1.50}, {-0.11, -0.20, 1.66}};
       for (int lid = 0; lid < 8; ++lid)
-        testdis_->AddNode(Teuchos::rcp(new CORE::Nodes::Node(lid, coords[lid], 0)));
+        testdis_->AddNode(Teuchos::rcp(new Core::Nodes::Node(lid, coords[lid], 0)));
 
       // create 1 element
-      testele_ = Teuchos::rcp(new DRT::ELEMENTS::SoHex8(0, 0));
+      testele_ = Teuchos::rcp(new Discret::ELEMENTS::SoHex8(0, 0));
       testele_->SetNodeIds(8, nodeids.data());
       testdis_->add_element(testele_);
       testdis_->fill_complete(false, false, false);
 
-      copytestele_ = Teuchos::rcp(new DRT::ELEMENTS::SoHex8(*testele_));
+      copytestele_ = Teuchos::rcp(new Discret::ELEMENTS::SoHex8(*testele_));
     }
 
     // Delete pointers.
@@ -54,17 +54,17 @@ namespace
       testele_ = Teuchos::null;
       testdis_ = Teuchos::null;
 
-      // We need to make sure the GLOBAL::Problem instance created in setUp is deleted again. If
+      // We need to make sure the Global::Problem instance created in setUp is deleted again. If
       // this is not done, some troubles arise where unit tests influence each other on some
       // configurations. We suspect that missing singleton destruction might be the reason for that.
-      GLOBAL::Problem::Done();
+      Global::Problem::Done();
     }
     //! dummy discretization for holding element and node pointers
-    Teuchos::RCP<DRT::Discretization> testdis_;
+    Teuchos::RCP<Discret::Discretization> testdis_;
     //! the hex8 element to be tested
-    Teuchos::RCP<DRT::ELEMENTS::SoHex8> testele_;
+    Teuchos::RCP<Discret::ELEMENTS::SoHex8> testele_;
     //! a copy of the hex8 element to test the copy constructor
-    Teuchos::RCP<DRT::ELEMENTS::SoHex8> copytestele_;
+    Teuchos::RCP<Discret::ELEMENTS::SoHex8> copytestele_;
   };
 
   /**
@@ -82,7 +82,7 @@ namespace
   TEST_F(SoHex8Test, TestNumDofPerNode)
   {
     std::vector<double> pd = {1, 2, 3};
-    CORE::Nodes::Node node_dummy(0, pd, false);
+    Core::Nodes::Node node_dummy(0, pd, false);
     EXPECT_EQ(testele_->NumDofPerNode(node_dummy), 3);
     EXPECT_EQ(copytestele_->NumDofPerNode(node_dummy), 3);
   }

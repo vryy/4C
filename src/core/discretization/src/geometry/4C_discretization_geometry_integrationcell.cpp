@@ -19,31 +19,31 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-CORE::LINALG::Matrix<3, 1> CORE::GEO::IntCell::compute_physical_center_position(
-    const CORE::FE::CellType& distype, const CORE::LINALG::SerialDenseMatrix& xyze) const
+Core::LinAlg::Matrix<3, 1> Core::Geo::IntCell::compute_physical_center_position(
+    const Core::FE::CellType& distype, const Core::LinAlg::SerialDenseMatrix& xyze) const
 {
   // center in local coordinates
-  const CORE::LINALG::Matrix<3, 1> localcenterpos(CORE::FE::getLocalCenterPosition<3>(distype));
+  const Core::LinAlg::Matrix<3, 1> localcenterpos(Core::FE::getLocalCenterPosition<3>(distype));
   // center in physical coordinates
-  static CORE::LINALG::Matrix<3, 1> pyhsicalcenterpos;
-  CORE::GEO::elementToCurrentCoordinates(distype, xyze, localcenterpos, pyhsicalcenterpos);
+  static Core::LinAlg::Matrix<3, 1> pyhsicalcenterpos;
+  Core::Geo::elementToCurrentCoordinates(distype, xyze, localcenterpos, pyhsicalcenterpos);
   return pyhsicalcenterpos;
 }
 
 
 ////////////// Integration cell ////////////////////////////////////////
 
-CORE::GEO::IntCell::IntCell(const CORE::FE::CellType& distype)
+Core::Geo::IntCell::IntCell(const Core::FE::CellType& distype)
     : distype_(distype), indomainplus_(false)
 {
 }
 
-CORE::GEO::IntCell::IntCell(const IntCell& old)
+Core::Geo::IntCell::IntCell(const IntCell& old)
     : distype_(old.distype_), indomainplus_(old.indomainplus_)
 {
 }
 
-CORE::GEO::IntCell& CORE::GEO::IntCell::operator=(const IntCell& intcell)
+Core::Geo::IntCell& Core::Geo::IntCell::operator=(const IntCell& intcell)
 {
   distype_ = intcell.distype_;
   return *this;
@@ -52,10 +52,10 @@ CORE::GEO::IntCell& CORE::GEO::IntCell::operator=(const IntCell& intcell)
 
 ////////////// Boundary integration cell ////////////////////////////////
 
-CORE::GEO::BoundaryIntCell::BoundaryIntCell(const CORE::FE::CellType& distype,
-    const int surface_ele_gid, const CORE::LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
-    const CORE::LINALG::SerialDenseMatrix& eleBoundaryCoordinates,
-    const CORE::LINALG::SerialDenseMatrix& physDomainCoordinates)
+Core::Geo::BoundaryIntCell::BoundaryIntCell(const Core::FE::CellType& distype,
+    const int surface_ele_gid, const Core::LinAlg::SerialDenseMatrix& xfemEleDomainCoordinates,
+    const Core::LinAlg::SerialDenseMatrix& eleBoundaryCoordinates,
+    const Core::LinAlg::SerialDenseMatrix& physDomainCoordinates)
     : IntCell(distype),
       surface_ele_gid_(surface_ele_gid),
       nodalpos_xi_domain_(xfemEleDomainCoordinates),
@@ -66,10 +66,10 @@ CORE::GEO::BoundaryIntCell::BoundaryIntCell(const CORE::FE::CellType& distype,
   indomainplus_ = true;
 }
 
-CORE::GEO::BoundaryIntCell::BoundaryIntCell(const CORE::FE::CellType& distype,
-    const int surface_ele_gid, const CORE::LINALG::SerialDenseMatrix& xfemEleDomainCoordinates,
-    const CORE::LINALG::SerialDenseMatrix& eleBoundaryCoordinates,
-    const CORE::LINALG::SerialDenseMatrix& physDomainCoordinates, const bool indomainplus)
+Core::Geo::BoundaryIntCell::BoundaryIntCell(const Core::FE::CellType& distype,
+    const int surface_ele_gid, const Core::LinAlg::SerialDenseMatrix& xfemEleDomainCoordinates,
+    const Core::LinAlg::SerialDenseMatrix& eleBoundaryCoordinates,
+    const Core::LinAlg::SerialDenseMatrix& physDomainCoordinates, const bool indomainplus)
     : IntCell(distype),
       surface_ele_gid_(surface_ele_gid),
       nodalpos_xi_domain_(xfemEleDomainCoordinates),
@@ -80,7 +80,7 @@ CORE::GEO::BoundaryIntCell::BoundaryIntCell(const CORE::FE::CellType& distype,
   indomainplus_ = indomainplus;
 }
 
-CORE::GEO::BoundaryIntCell::BoundaryIntCell(const BoundaryIntCell& old)
+Core::Geo::BoundaryIntCell::BoundaryIntCell(const BoundaryIntCell& old)
     : IntCell(old),
       surface_ele_gid_(old.surface_ele_gid_),
       nodalpos_xi_domain_(old.nodalpos_xi_domain_),
@@ -90,10 +90,10 @@ CORE::GEO::BoundaryIntCell::BoundaryIntCell(const BoundaryIntCell& old)
   indomainplus_ = old.indomainplus_;
 }
 
-CORE::GEO::BoundaryIntCell& CORE::GEO::BoundaryIntCell::operator=(
-    const CORE::GEO::BoundaryIntCell& boundaryintcell)
+Core::Geo::BoundaryIntCell& Core::Geo::BoundaryIntCell::operator=(
+    const Core::Geo::BoundaryIntCell& boundaryintcell)
 {
-  this->CORE::GEO::IntCell::operator=(boundaryintcell);
+  this->Core::Geo::IntCell::operator=(boundaryintcell);
   surface_ele_gid_ = boundaryintcell.surface_ele_gid_;
   nodalpos_xi_domain_ = boundaryintcell.nodalpos_xi_domain_;
   nodalpos_xi_boundary_ = boundaryintcell.nodalpos_xi_boundary_;
@@ -102,7 +102,7 @@ CORE::GEO::BoundaryIntCell& CORE::GEO::BoundaryIntCell::operator=(
   return *this;
 }
 
-CORE::GEO::BoundaryIntCell::BoundaryIntCell(CORE::FE::CellType distype, const int& surface_ele_gid)
+Core::Geo::BoundaryIntCell::BoundaryIntCell(Core::FE::CellType distype, const int& surface_ele_gid)
     : IntCell(distype), surface_ele_gid_(surface_ele_gid), phys_center_(true)
 {
   /* intentionally left blank */

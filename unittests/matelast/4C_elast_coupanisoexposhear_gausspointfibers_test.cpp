@@ -21,10 +21,10 @@ namespace
 {
   using namespace FourC;
 
-  void SetupSingleStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber1,
-      const CORE::LINALG::Matrix<3, 1>& fiber2, CORE::LINALG::Matrix<3, 3>& structuralTensor)
+  void SetupSingleStructuralTensor(const Core::LinAlg::Matrix<3, 1>& fiber1,
+      const Core::LinAlg::Matrix<3, 1>& fiber2, Core::LinAlg::Matrix<3, 3>& structuralTensor)
   {
-    CORE::LINALG::Matrix<3, 3> fiber1fiber2T(false);
+    Core::LinAlg::Matrix<3, 3> fiber1fiber2T(false);
 
     fiber1fiber2T.MultiplyNT(fiber1, fiber2);
 
@@ -38,7 +38,7 @@ namespace
    public:
     CoupAnisoExpoShearGaussPointFibersTest()
         : anisotropy_(),
-          gpFibers_(2, std::vector<CORE::LINALG::Matrix<3, 1>>(3)),
+          gpFibers_(2, std::vector<Core::LinAlg::Matrix<3, 1>>(3)),
           gpTensors_(2),
           gpTensors_stress_(2),
           gpScalarProducts_(2)
@@ -77,7 +77,7 @@ namespace
             gpFibers_[gp][GetFiberIds()[0]], gpFibers_[gp][GetFiberIds()[1]], gpTensors_[gp]);
 
         // Setup structural tensors in stress like Voigt notation
-        CORE::LINALG::VOIGT::Stresses::MatrixToVector(gpTensors_[gp], gpTensors_stress_[gp]);
+        Core::LinAlg::Voigt::Stresses::MatrixToVector(gpTensors_[gp], gpTensors_stress_[gp]);
 
         // setup scalar product
         gpScalarProducts_[gp] =
@@ -90,7 +90,7 @@ namespace
     void setup_anisotropy_extension(std::array<int, 2> fiber_ids)
     {
       anisotropyExtension_ =
-          std::make_unique<MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension>(3, fiber_ids);
+          std::make_unique<Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension>(3, fiber_ids);
 
       anisotropy_.register_anisotropy_extension(*anisotropyExtension_);
 
@@ -104,12 +104,12 @@ namespace
 
     [[nodiscard]] std::array<int, 2> GetFiberIds() const { return std::get<0>(GetParam()); }
 
-    MAT::Anisotropy anisotropy_;
-    std::unique_ptr<MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension> anisotropyExtension_;
+    Mat::Anisotropy anisotropy_;
+    std::unique_ptr<Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension> anisotropyExtension_;
 
-    std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>> gpFibers_;
-    std::vector<CORE::LINALG::Matrix<3, 3>> gpTensors_;
-    std::vector<CORE::LINALG::Matrix<6, 1>> gpTensors_stress_;
+    std::vector<std::vector<Core::LinAlg::Matrix<3, 1>>> gpFibers_;
+    std::vector<Core::LinAlg::Matrix<3, 3>> gpTensors_;
+    std::vector<Core::LinAlg::Matrix<6, 1>> gpTensors_stress_;
     std::vector<double> gpScalarProducts_;
   };
 

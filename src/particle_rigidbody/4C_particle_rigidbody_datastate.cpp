@@ -15,17 +15,17 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-void PARTICLERIGIDBODY::RigidBodyDataState::Init()
+void ParticleRigidBody::RigidBodyDataState::Init()
 {
   // nothing to do
 }
 
-void PARTICLERIGIDBODY::RigidBodyDataState::Setup()
+void ParticleRigidBody::RigidBodyDataState::Setup()
 {
   // nothing to do
 }
 
-void PARTICLERIGIDBODY::RigidBodyDataState::allocate_stored_states(const int numrigidbodies)
+void ParticleRigidBody::RigidBodyDataState::allocate_stored_states(const int numrigidbodies)
 {
   mass_.resize(numrigidbodies, 0.0);
   inertia_.resize(numrigidbodies, std::vector<double>(6, 0.0));

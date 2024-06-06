@@ -22,12 +22,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declarations
-namespace CORE::LINALG
+namespace Core::LinAlg
 {
   class SparseOperator;
 }
 
-namespace ADAPTER
+namespace Adapter
 {
   class AdapterScatraWrapper : public ScatraInterface
   {
@@ -37,14 +37,14 @@ namespace ADAPTER
 
     /// compute contribution of mechanical state to eq. system
     virtual void evaluate_additional_solution_depending_models(
-        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,  //!< system matrix
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
         Teuchos::RCP<Epetra_Vector> rhs                           //!< rhs vector
     );
 
 
    protected:
     //! return discretization
-    Teuchos::RCP<DRT::Discretization> discretization() const override
+    Teuchos::RCP<Discret::Discretization> discretization() const override
     {
       return scatra_timint_->discretization();
     };
@@ -65,7 +65,7 @@ namespace ADAPTER
     };
 
     //! return meshtying strategy (includes standard case without meshtying)
-    const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const override
+    const Teuchos::RCP<ScaTra::MeshtyingStrategyBase>& Strategy() const override
     {
       return scatra_timint_->Strategy();
     };
@@ -77,7 +77,7 @@ namespace ADAPTER
     Teuchos::RCP<ScatraInterface> scatra_timint_;  ///< underlying structural time integration
 
   };  // class AdapterScatraWrapper
-}  // namespace ADAPTER
+}  // namespace Adapter
 
 
 FOUR_C_NAMESPACE_CLOSE

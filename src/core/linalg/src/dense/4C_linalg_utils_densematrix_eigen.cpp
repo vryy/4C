@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of eigenvalue methods for namespace CORE::LINALG
+\brief A collection of eigenvalue methods for namespace Core::LinAlg
 
 \level 0
 */
@@ -18,10 +18,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SymmetricEigenValues(
-    CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L, const bool postproc)
+void Core::LinAlg::SymmetricEigenValues(
+    Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L, const bool postproc)
 {
-  CORE::LINALG::SymmetricEigen(A, L, 'N', postproc);
+  Core::LinAlg::SymmetricEigen(A, L, 'N', postproc);
 }
 
 /*----------------------------------------------------------------------*
@@ -29,18 +29,18 @@ void CORE::LINALG::SymmetricEigenValues(
  |  matrix A (eigenvectors are stored in A, i.e. original matrix        |
  |  is destroyed!!!)                                            lw 04/08|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SymmetricEigenProblem(
-    CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L, const bool postproc)
+void Core::LinAlg::SymmetricEigenProblem(
+    Core::LinAlg::SerialDenseMatrix& A, Core::LinAlg::SerialDenseVector& L, const bool postproc)
 {
-  CORE::LINALG::SymmetricEigen(A, L, 'V', postproc);
+  Core::LinAlg::SymmetricEigen(A, L, 'V', postproc);
 }
 
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues and, optionally,                            |
  |  eigenvectors of a real symmetric matrix A                  maf 06/07|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SymmetricEigen(CORE::LINALG::SerialDenseMatrix& A,
-    CORE::LINALG::SerialDenseVector& L, const bool eval_eigenvectors, const bool postproc)
+void Core::LinAlg::SymmetricEigen(Core::LinAlg::SerialDenseMatrix& A,
+    Core::LinAlg::SerialDenseVector& L, const bool eval_eigenvectors, const bool postproc)
 {
   if (A.numRows() != A.numCols()) FOUR_C_THROW("Matrix is not square");
   if (A.numRows() != L.length()) FOUR_C_THROW("Dimension of eigenvalues does not match");
@@ -93,11 +93,11 @@ void CORE::LINALG::SymmetricEigen(CORE::LINALG::SerialDenseMatrix& A,
  |  Ax =  lambda Bx via QZ-algorithm (B is singular) and returns the
  |  maximum eigenvalue                              shahmiri  05/13
  *----------------------------------------------------------------------*/
-double CORE::LINALG::GeneralizedEigen(
-    CORE::LINALG::SerialDenseMatrix::Base& A, CORE::LINALG::SerialDenseMatrix::Base& B)
+double Core::LinAlg::GeneralizedEigen(
+    Core::LinAlg::SerialDenseMatrix::Base& A, Core::LinAlg::SerialDenseMatrix::Base& B)
 {
-  CORE::LINALG::SerialDenseMatrix::Base tmpA(A);
-  CORE::LINALG::SerialDenseMatrix::Base tmpB(B);
+  Core::LinAlg::SerialDenseMatrix::Base tmpA(A);
+  Core::LinAlg::SerialDenseMatrix::Base tmpB(B);
 
   //--------------------------------------------------------------------
   // STEP 1:
@@ -142,32 +142,32 @@ double CORE::LINALG::GeneralizedEigen(
   // v is a vector with v(1:i-1) = 0 and v(i+1:m) is stored on exit in B(i+1:m,i)
 
   // Q is initialized as an unit matrix
-  CORE::LINALG::SerialDenseMatrix::Base Q_new;
+  Core::LinAlg::SerialDenseMatrix::Base Q_new;
   Q_new.shape(N, N);
   for (int i = 0; i < N; ++i) Q_new(i, i) = 1.0;
 
   for (int i = 0; i < N; ++i)
   {
-    CORE::LINALG::SerialDenseVector::Base v;
+    Core::LinAlg::SerialDenseVector::Base v;
     v.size(N);
     v(i) = 1.;
     for (int j = i + 1; j < N; ++j) v(j) = tmpB(j, i);
 
-    CORE::LINALG::SerialDenseMatrix::Base H;
+    Core::LinAlg::SerialDenseMatrix::Base H;
     H.shape(N, N);
 
-    CORE::LINALG::multiplyNT(0., H, tau[i], v, v);
+    Core::LinAlg::multiplyNT(0., H, tau[i], v, v);
     H.scale(-1.);
     for (int k = 0; k < N; ++k) H(k, k) = 1. + H(k, k);
 
-    CORE::LINALG::SerialDenseMatrix::Base Q_help;
+    Core::LinAlg::SerialDenseMatrix::Base Q_help;
     Q_help.shape(N, N);
-    CORE::LINALG::multiply(Q_help, Q_new, H);
+    Core::LinAlg::multiply(Q_help, Q_new, H);
     Q_new = Q_help;
   }
 
   // permutation matrix
-  CORE::LINALG::SerialDenseMatrix::Base P;
+  Core::LinAlg::SerialDenseMatrix::Base P;
   P.shape(N, N);
   for (int i = 0; i < N; ++i)
   {
@@ -184,14 +184,14 @@ double CORE::LINALG::GeneralizedEigen(
   }
 
   // the new A:= Q**T A P
-  CORE::LINALG::SerialDenseMatrix::Base A_tmp;
+  Core::LinAlg::SerialDenseMatrix::Base A_tmp;
   A_tmp.shape(N, N);
   // A_tt.Multiply('T','N',1.,Q_qr_tt,A,0.);
-  CORE::LINALG::multiplyTN(A_tmp, Q_new, tmpA);
+  Core::LinAlg::multiplyTN(A_tmp, Q_new, tmpA);
 
-  CORE::LINALG::SerialDenseMatrix::Base A_new;
+  Core::LinAlg::SerialDenseMatrix::Base A_new;
   A_new.shape(N, N);
-  CORE::LINALG::multiply(A_new, A_tmp, P);
+  Core::LinAlg::multiply(A_new, A_tmp, P);
 
   a = A_new.values();
 
@@ -224,8 +224,8 @@ double CORE::LINALG::GeneralizedEigen(
   }
   std::vector<double> work(lwork);
 
-  CORE::LINALG::SerialDenseMatrix::Base A1;
-  CORE::LINALG::SerialDenseMatrix::Base A2;
+  Core::LinAlg::SerialDenseMatrix::Base A1;
+  Core::LinAlg::SerialDenseMatrix::Base A2;
   A1.shape(N, N);
   A2.shape(N, N);
   double* Q = A1.values();
@@ -246,9 +246,9 @@ double CORE::LINALG::GeneralizedEigen(
   // QZ-transformation
   //--------------------------------------------------------
   // vectors which contain the eigenvalues of the problem
-  CORE::LINALG::SerialDenseVector::Base L1;
-  CORE::LINALG::SerialDenseVector::Base L2;
-  CORE::LINALG::SerialDenseVector::Base L3;
+  Core::LinAlg::SerialDenseVector::Base L1;
+  Core::LinAlg::SerialDenseVector::Base L2;
+  Core::LinAlg::SerialDenseVector::Base L3;
   L1.size(N);
   L2.size(N);
   L3.size(N);

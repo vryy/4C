@@ -10,10 +10,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT
+namespace Discret
 {
-  Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(const DRT::Discretization& dis, const int numdf,
-      const int dimns, const Teuchos::RCP<Epetra_Map> dofmap)
+  Teuchos::RCP<Epetra_MultiVector> ComputeNullSpace(const Discret::Discretization& dis,
+      const int numdf, const int dimns, const Teuchos::RCP<Epetra_Map> dofmap)
   {
     if (dimns > 10) FOUR_C_THROW("Nullspace size only up to 10 supported!");
 
@@ -40,7 +40,7 @@ namespace DRT
       // assembly process of the nodalNullspace into the actual nullspace
       for (int node = 0; node < dis.NumMyRowNodes(); ++node)
       {
-        CORE::Nodes::Node* actnode = dis.lRowNode(node);
+        Core::Nodes::Node* actnode = dis.lRowNode(node);
         std::vector<int> dofs = dis.Dof(0, actnode);
         const int localLength = dofs.size();
 
@@ -83,7 +83,7 @@ namespace DRT
           }
         }
 
-        CORE::LINALG::SerialDenseMatrix nodalNullspace =
+        Core::LinAlg::SerialDenseMatrix nodalNullspace =
             actnode->Elements()[0]->ElementType().ComputeNullSpace(
                 *actnode, x0.data(), localLength, dimns);
 
@@ -105,6 +105,6 @@ namespace DRT
 
     return nullspace;
   }
-}  // namespace DRT
+}  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

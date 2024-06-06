@@ -24,34 +24,34 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-MORTAR::ElementType MORTAR::ElementType::instance_;
+Mortar::ElementType Mortar::ElementType::instance_;
 
-MORTAR::ElementType& MORTAR::ElementType::Instance() { return instance_; }
+Mortar::ElementType& Mortar::ElementType::Instance() { return instance_; }
 
-CORE::COMM::ParObject* MORTAR::ElementType::Create(const std::vector<char>& data)
+Core::Communication::ParObject* Mortar::ElementType::Create(const std::vector<char>& data)
 {
-  MORTAR::Element* ele = new MORTAR::Element(0, 0, CORE::FE::CellType::dis_none, 0, nullptr, false);
+  Mortar::Element* ele = new Mortar::Element(0, 0, Core::FE::CellType::dis_none, 0, nullptr, false);
   ele->Unpack(data);
   return ele;
 }
 
 
-Teuchos::RCP<CORE::Elements::Element> MORTAR::ElementType::Create(const int id, const int owner)
+Teuchos::RCP<Core::Elements::Element> Mortar::ElementType::Create(const int id, const int owner)
 {
-  // return Teuchos::rcp( new MORTAR::Element( id, owner ) );
+  // return Teuchos::rcp( new Mortar::Element( id, owner ) );
   return Teuchos::null;
 }
 
 
-void MORTAR::ElementType::nodal_block_information(
-    CORE::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+void Mortar::ElementType::nodal_block_information(
+    Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
-CORE::LINALG::SerialDenseMatrix MORTAR::ElementType::ComputeNullSpace(
-    CORE::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
+Core::LinAlg::SerialDenseMatrix Mortar::ElementType::ComputeNullSpace(
+    Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  CORE::LINALG::SerialDenseMatrix nullspace;
+  Core::LinAlg::SerialDenseMatrix nullspace;
   FOUR_C_THROW("method ComputeNullSpace not implemented!");
   return nullspace;
 }
@@ -60,7 +60,7 @@ CORE::LINALG::SerialDenseMatrix MORTAR::ElementType::ComputeNullSpace(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 12/10|
  *----------------------------------------------------------------------*/
-MORTAR::MortarEleDataContainer::MortarEleDataContainer()
+Mortar::MortarEleDataContainer::MortarEleDataContainer()
 {
   // initialize area
   Area() = 0.0;
@@ -75,10 +75,10 @@ MORTAR::MortarEleDataContainer::MortarEleDataContainer()
  |  Pack data                                                  (public) |
  |                                                            popp 12/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarEleDataContainer::Pack(CORE::COMM::PackBuffer& data) const
+void Mortar::MortarEleDataContainer::Pack(Core::Communication::PackBuffer& data) const
 {
   // add area_
-  CORE::COMM::ParObject::AddtoPack(data, area_);
+  Core::Communication::ParObject::AddtoPack(data, area_);
 
   return;
 }
@@ -87,11 +87,11 @@ void MORTAR::MortarEleDataContainer::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 02/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarEleDataContainer::Unpack(
+void Mortar::MortarEleDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   // area_
-  CORE::COMM::ParObject::ExtractfromPack(position, data, area_);
+  Core::Communication::ParObject::ExtractfromPack(position, data, area_);
 
   dualshapecoeff_ = Teuchos::null;
   derivdualshapecoeff_ = Teuchos::null;
@@ -102,9 +102,9 @@ void MORTAR::MortarEleDataContainer::Unpack(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-MORTAR::Element::Element(int id, int owner, const CORE::FE::CellType& shape, const int numnode,
+Mortar::Element::Element(int id, int owner, const Core::FE::CellType& shape, const int numnode,
     const int* nodeids, const bool isslave, bool isnurbs)
-    : CORE::Elements::FaceElement(id, owner),
+    : Core::Elements::FaceElement(id, owner),
       shape_(shape),
       isslave_(isslave),
       attached_(false),
@@ -119,9 +119,9 @@ MORTAR::Element::Element(int id, int owner, const CORE::FE::CellType& shape, con
 /*----------------------------------------------------------------------*
  |  ctor (protected)                                   kronbichler 03/15|
  *----------------------------------------------------------------------*/
-MORTAR::Element::Element(int id, int owner)
-    : CORE::Elements::FaceElement(id, owner),
-      shape_(CORE::FE::CellType::dis_none),
+Mortar::Element::Element(int id, int owner)
+    : Core::Elements::FaceElement(id, owner),
+      shape_(Core::FE::CellType::dis_none),
       isslave_(false),
       attached_(false),
       nurbs_(false),
@@ -133,11 +133,11 @@ MORTAR::Element::Element(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 10/07|
  *----------------------------------------------------------------------*/
-MORTAR::Element::Element(const MORTAR::Element& old)
-    : CORE::Elements::FaceElement(old), shape_(old.shape_), isslave_(old.isslave_)
+Mortar::Element::Element(const Mortar::Element& old)
+    : Core::Elements::FaceElement(old), shape_(old.shape_), isslave_(old.isslave_)
 {
   // not yet used and thus not necessarily consistent
-  FOUR_C_THROW("MORTAR::Element copy-ctor not yet implemented");
+  FOUR_C_THROW("Mortar::Element copy-ctor not yet implemented");
 
   return;
 }
@@ -145,9 +145,9 @@ MORTAR::Element::Element(const MORTAR::Element& old)
 /*----------------------------------------------------------------------*
  |  clone-ctor (public)                                      mwgee 10/07|
  *----------------------------------------------------------------------*/
-CORE::Elements::Element* MORTAR::Element::Clone() const
+Core::Elements::Element* Mortar::Element::Clone() const
 {
-  MORTAR::Element* newele = new MORTAR::Element(*this);
+  Mortar::Element* newele = new Mortar::Element(*this);
   return newele;
 }
 
@@ -155,7 +155,7 @@ CORE::Elements::Element* MORTAR::Element::Clone() const
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const MORTAR::Element& element)
+std::ostream& operator<<(std::ostream& os, const Mortar::Element& element)
 {
   element.Print(os);
   return os;
@@ -165,10 +165,10 @@ std::ostream& operator<<(std::ostream& os, const MORTAR::Element& element)
 /*----------------------------------------------------------------------*
  |  print element (public)                                   mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::Print(std::ostream& os) const
+void Mortar::Element::Print(std::ostream& os) const
 {
   os << "Mortar Element ";
-  CORE::Elements::Element::Print(os);
+  Core::Elements::Element::Print(os);
   if (isslave_)
     os << " Slave  ";
   else
@@ -181,16 +181,16 @@ void MORTAR::Element::Print(std::ostream& os) const
  |  Pack data                                                  (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::Pack(CORE::COMM::PackBuffer& data) const
+void Mortar::Element::Pack(Core::Communication::PackBuffer& data) const
 {
-  CORE::COMM::PackBuffer::SizeMarker sm(data);
+  Core::Communication::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data, type);
-  // add base class CORE::Elements::FaceElement
-  CORE::Elements::FaceElement::Pack(data);
+  // add base class Core::Elements::FaceElement
+  Core::Elements::FaceElement::Pack(data);
   // add shape_
   AddtoPack(data, shape_);
   // add isslave_
@@ -207,10 +207,11 @@ void MORTAR::Element::Pack(CORE::COMM::PackBuffer& data) const
     AddtoPack(data, zero_sized_);
     // knots
     int nr = mortarknots_.size();
-    CORE::COMM::ParObject::AddtoPack(data, nr);
+    Core::Communication::ParObject::AddtoPack(data, nr);
     if (nr != 0)
     {
-      for (int i = 0; i < nr; i++) CORE::COMM::ParObject::AddtoPack(data, (mortarknots_[i]));
+      for (int i = 0; i < nr; i++)
+        Core::Communication::ParObject::AddtoPack(data, (mortarknots_[i]));
     }
   }
 
@@ -234,18 +235,18 @@ void MORTAR::Element::Pack(CORE::COMM::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           mwgee 10/07|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::Unpack(const std::vector<char>& data)
+void Mortar::Element::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
-  CORE::COMM::ExtractAndAssertId(position, data, UniqueParObjectId());
+  Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
-  // extract base class CORE::Elements::FaceElement
+  // extract base class Core::Elements::FaceElement
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  CORE::Elements::FaceElement::Unpack(basedata);
+  Core::Elements::FaceElement::Unpack(basedata);
   // shape_
-  shape_ = static_cast<CORE::FE::CellType>(ExtractInt(position, data));
+  shape_ = static_cast<Core::FE::CellType>(ExtractInt(position, data));
   // isslave_
   isslave_ = ExtractInt(position, data);
   // nurbs_
@@ -260,13 +261,13 @@ void MORTAR::Element::Unpack(const std::vector<char>& data)
     zero_sized_ = ExtractInt(position, data);
     // knots
     int nr;
-    CORE::COMM::ParObject::ExtractfromPack(position, data, nr);
+    Core::Communication::ParObject::ExtractfromPack(position, data, nr);
 
     if (nr != 0)
     {
       mortarknots_.resize(nr);
       for (int i = 0; i < nr; i++)
-        CORE::COMM::ParObject::ExtractfromPack(position, data, mortarknots_[i]);
+        Core::Communication::ParObject::ExtractfromPack(position, data, mortarknots_[i]);
     }
   }
 
@@ -274,7 +275,7 @@ void MORTAR::Element::Unpack(const std::vector<char>& data)
   bool hasdata = ExtractInt(position, data);
   if (hasdata)
   {
-    modata_ = Teuchos::rcp(new MORTAR::MortarEleDataContainer());
+    modata_ = Teuchos::rcp(new Mortar::MortarEleDataContainer());
     modata_->Unpack(position, data);
   }
   else
@@ -301,9 +302,9 @@ void MORTAR::Element::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  number of dofs per node (public)                         mwgee 10/07|
  *----------------------------------------------------------------------*/
-int MORTAR::Element::NumDofPerNode(const CORE::Nodes::Node& node) const
+int Mortar::Element::NumDofPerNode(const Core::Nodes::Node& node) const
 {
-  const MORTAR::Node* mnode = dynamic_cast<const MORTAR::Node*>(&node);
+  const Mortar::Node* mnode = dynamic_cast<const Mortar::Node*>(&node);
   if (!mnode) FOUR_C_THROW("Node is not a Node");
   return mnode->NumDof();
 }
@@ -311,26 +312,27 @@ int MORTAR::Element::NumDofPerNode(const CORE::Nodes::Node& node) const
 /*----------------------------------------------------------------------*
  |  evaluate element (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-int MORTAR::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-    CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-    CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
+int Mortar::Element::Evaluate(Teuchos::ParameterList& params,
+    Discret::Discretization& discretization, std::vector<int>& lm,
+    Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
+    Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
+    Core::LinAlg::SerialDenseVector& elevec3)
 {
-  FOUR_C_THROW("MORTAR::Element::Evaluate not implemented!");
+  FOUR_C_THROW("Mortar::Element::Evaluate not implemented!");
   return -1;
 }
 
 /*----------------------------------------------------------------------*
  |  Get local coordinates for local node id                   popp 12/07|
  *----------------------------------------------------------------------*/
-bool MORTAR::Element::local_coordinates_of_node(int lid, double* xi) const
+bool Mortar::Element::local_coordinates_of_node(int lid, double* xi) const
 {
   // 2D linear case (2noded line element)
   // 2D quadratic case (3noded line element)
   switch (Shape())
   {
-    case CORE::FE::CellType::line2:
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line2:
+    case Core::FE::CellType::line3:
     {
       switch (lid)
       {
@@ -355,8 +357,8 @@ bool MORTAR::Element::local_coordinates_of_node(int lid, double* xi) const
 
     // 3D linear case (2noded triangular element)
     // 3D quadratic case (3noded triangular element)
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::tri6:
     {
       switch (lid)
       {
@@ -406,9 +408,9 @@ bool MORTAR::Element::local_coordinates_of_node(int lid, double* xi) const
     // 3D bilinear case (4noded quadrilateral element)
     // 3D serendipity case (8noded quadrilateral element)
     // 3D biquadratic case (9noded quadrilateral element)
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
     {
       switch (lid)
       {
@@ -475,7 +477,7 @@ bool MORTAR::Element::local_coordinates_of_node(int lid, double* xi) const
 
     //==================================================
     //                     NURBS
-    case CORE::FE::CellType::nurbs2:
+    case Core::FE::CellType::nurbs2:
     {
       if (lid == 0)
         xi[0] = -1.0;
@@ -490,7 +492,7 @@ bool MORTAR::Element::local_coordinates_of_node(int lid, double* xi) const
 
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
       if (lid == 0)
         xi[0] = -1.0;
@@ -507,7 +509,7 @@ bool MORTAR::Element::local_coordinates_of_node(int lid, double* xi) const
 
       break;
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
       switch (lid)
       {
@@ -582,7 +584,7 @@ bool MORTAR::Element::local_coordinates_of_node(int lid, double* xi) const
 /*----------------------------------------------------------------------*
  |  Get local numbering for global node id                    popp 12/07|
  *----------------------------------------------------------------------*/
-int MORTAR::Element::GetLocalNodeId(int nid) const
+int Mortar::Element::GetLocalNodeId(int nid) const
 {
   int lid = -1;
 
@@ -602,7 +604,7 @@ int MORTAR::Element::GetLocalNodeId(int nid) const
 /*----------------------------------------------------------------------*
  |  Build element normal at node                              popp 12/07|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::BuildNormalAtNode(int nid, int& i, CORE::LINALG::SerialDenseMatrix& elens)
+void Mortar::Element::BuildNormalAtNode(int nid, int& i, Core::LinAlg::SerialDenseMatrix& elens)
 {
   // find this node in my list of nodes and get local numbering
   int lid = GetLocalNodeId(nid);
@@ -620,8 +622,8 @@ void MORTAR::Element::BuildNormalAtNode(int nid, int& i, CORE::LINALG::SerialDen
 /*----------------------------------------------------------------------*
  |  Compute element normal at loc. coord. xi                  popp 09/08|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::ComputeNormalAtXi(
-    const double* xi, int& i, CORE::LINALG::SerialDenseMatrix& elens)
+void Mortar::Element::ComputeNormalAtXi(
+    const double* xi, int& i, Core::LinAlg::SerialDenseMatrix& elens)
 {
   // empty local basis vectors
   double gxi[3];
@@ -648,7 +650,7 @@ void MORTAR::Element::ComputeNormalAtXi(
 /*----------------------------------------------------------------------*
  |  Compute element normal at loc. coord. xi                  popp 11/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Element::compute_unit_normal_at_xi(const double* xi, double* n)
+double Mortar::Element::compute_unit_normal_at_xi(const double* xi, double* n)
 {
   // check input
   if (!xi) FOUR_C_THROW("compute_unit_normal_at_xi called with xi=nullptr");
@@ -678,15 +680,15 @@ double MORTAR::Element::compute_unit_normal_at_xi(const double* xi, double* n)
 /*----------------------------------------------------------------------*
  |  Compute nodal averaged normal at xi                      farah 06/16|
  *----------------------------------------------------------------------*/
-double MORTAR::Element::compute_averaged_unit_normal_at_xi(const double* xi, double* n)
+double Mortar::Element::compute_averaged_unit_normal_at_xi(const double* xi, double* n)
 {
   // check input
   if (!xi) FOUR_C_THROW("compute_unit_normal_at_xi called with xi=nullptr");
   if (!n) FOUR_C_THROW("compute_unit_normal_at_xi called with n=nullptr");
 
   int nnodes = NumPoint();
-  CORE::LINALG::SerialDenseVector val(nnodes);
-  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  Core::LinAlg::SerialDenseVector val(nnodes);
+  Core::LinAlg::SerialDenseMatrix deriv(nnodes, 2, true);
 
   // get shape function values and derivatives at xi
   evaluate_shape(xi, val, deriv, nnodes, false);
@@ -715,16 +717,16 @@ double MORTAR::Element::compute_averaged_unit_normal_at_xi(const double* xi, dou
 /*----------------------------------------------------------------------*
  |  Compute unit normal derivative at loc. coord. xi          popp 03/09|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::DerivUnitNormalAtXi(
-    const double* xi, std::vector<CORE::GEN::Pairedvector<int, double>>& derivn)
+void Mortar::Element::DerivUnitNormalAtXi(
+    const double* xi, std::vector<Core::Gen::Pairedvector<int, double>>& derivn)
 {
   // initialize variables
   const int nnodes = num_node();
-  CORE::Nodes::Node** mynodes = Nodes();
+  Core::Nodes::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("DerivUnitNormalAtXi: Null pointer!");
 
-  CORE::LINALG::SerialDenseVector val(nnodes);
-  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  Core::LinAlg::SerialDenseVector val(nnodes);
+  Core::LinAlg::SerialDenseMatrix deriv(nnodes, 2, true);
 
   double gxi[3];
   double geta[3];
@@ -747,20 +749,20 @@ void MORTAR::Element::DerivUnitNormalAtXi(
   for (int i = 0; i < 3; ++i) n[i] /= length;
 
   // check if this mortar ele is an IntEle
-  std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>> nodelin(0);
+  std::vector<std::vector<Core::Gen::Pairedvector<int, double>>> nodelin(0);
   NodeLinearization(nodelin);
 
   int nderiv = nnodes * 3;
   // to be safe if it is a IntEle for a nurbs9
-  if (Shape() == CORE::FE::CellType::quad4) nderiv = 9 * 3;
+  if (Shape() == Core::FE::CellType::quad4) nderiv = 9 * 3;
 
   // resize derivn
   derivn.resize(3, nderiv);
 
   // non-unit normal derivative
-  std::vector<CORE::GEN::Pairedvector<int, double>> derivnnu(
+  std::vector<Core::Gen::Pairedvector<int, double>> derivnnu(
       3, nderiv);  // assume that each node has 3 dofs...
-  typedef CORE::GEN::Pairedvector<int, double>::const_iterator CI;
+  typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
 
   // now the derivative
   for (int n = 0; n < nnodes; ++n)
@@ -770,7 +772,7 @@ void MORTAR::Element::DerivUnitNormalAtXi(
     int ndof = mymrtrnode->NumDof();
 
     // derivative weighting matrix for current node
-    CORE::LINALG::Matrix<3, 3> F;
+    Core::LinAlg::Matrix<3, 3> F;
     F(0, 0) = 0.0;
     F(1, 1) = 0.0;
     F(2, 2) = 0.0;
@@ -828,10 +830,10 @@ void MORTAR::Element::DerivUnitNormalAtXi(
 /*----------------------------------------------------------------------*
  |  Get nodal coordinates of the element                      popp 01/08|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::GetNodalCoords(CORE::LINALG::SerialDenseMatrix& coord)
+void Mortar::Element::GetNodalCoords(Core::LinAlg::SerialDenseMatrix& coord)
 {
   const int nnodes = NumPoint();
-  CORE::Nodes::Node** mynodes = Points();
+  Core::Nodes::Node** mynodes = Points();
   if (!mynodes) FOUR_C_THROW("GetNodalCoords: Null pointer!");
   if (coord.numRows() != 3 || coord.numCols() != nnodes)
     FOUR_C_THROW("GetNodalCoords: Dimensions!");
@@ -851,10 +853,10 @@ void MORTAR::Element::GetNodalCoords(CORE::LINALG::SerialDenseMatrix& coord)
 /*----------------------------------------------------------------------*
  |  Get old nodal coordinates of the element               gitterle 08/10|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::GetNodalCoordsOld(CORE::LINALG::SerialDenseMatrix& coord, bool isinit)
+void Mortar::Element::GetNodalCoordsOld(Core::LinAlg::SerialDenseMatrix& coord, bool isinit)
 {
   const int nnodes = NumPoint();
-  CORE::Nodes::Node** mynodes = Points();
+  Core::Nodes::Node** mynodes = Points();
   if (!mynodes) FOUR_C_THROW("GetNodalCoordsOld: Null pointer!");
   if (coord.numRows() != 3 || coord.numCols() != nnodes)
     FOUR_C_THROW("GetNodalCoordsOld: Dimensions!");
@@ -875,10 +877,10 @@ void MORTAR::Element::GetNodalCoordsOld(CORE::LINALG::SerialDenseMatrix& coord, 
 /*----------------------------------------------------------------------*
  |  Get lagrange multipliers of the element                gitterle 08/10|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::GetNodalLagMult(CORE::LINALG::SerialDenseMatrix& lagmult, bool isinit)
+void Mortar::Element::GetNodalLagMult(Core::LinAlg::SerialDenseMatrix& lagmult, bool isinit)
 {
   int nnodes = num_node();
-  CORE::Nodes::Node** mynodes = Nodes();
+  Core::Nodes::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("GetNodalLagMult: Null pointer!");
   if (lagmult.numRows() != 3 || lagmult.numCols() != nnodes)
     FOUR_C_THROW("GetNodalLagMult: Dimensions!");
@@ -899,7 +901,7 @@ void MORTAR::Element::GetNodalLagMult(CORE::LINALG::SerialDenseMatrix& lagmult, 
 /*----------------------------------------------------------------------*
  |  Evaluate element metrics (local basis vectors)            popp 08/08|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::Metrics(const double* xi, double* gxi, double* geta)
+void Mortar::Element::Metrics(const double* xi, double* gxi, double* geta)
 {
   std::fill(gxi, gxi + 3, 0.0);
   std::fill(geta, geta + 3, 0.0);
@@ -907,25 +909,25 @@ void MORTAR::Element::Metrics(const double* xi, double* gxi, double* geta)
   int nnodes = NumPoint();
 
   int dim = 0;
-  CORE::FE::CellType dt = Shape();
+  Core::FE::CellType dt = Shape();
   switch (dt)
   {
-    case CORE::FE::CellType::line2:
-    case CORE::FE::CellType::line3:
-    case CORE::FE::CellType::nurbs2:
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::line2:
+    case Core::FE::CellType::line3:
+    case Core::FE::CellType::nurbs2:
+    case Core::FE::CellType::nurbs3:
     {
       dim = 2;
       break;
     }
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::tri6:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
-    case CORE::FE::CellType::nurbs4:
-    case CORE::FE::CellType::nurbs8:
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::tri6:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
+    case Core::FE::CellType::nurbs4:
+    case Core::FE::CellType::nurbs8:
+    case Core::FE::CellType::nurbs9:
     {
       dim = 3;
       break;
@@ -935,14 +937,14 @@ void MORTAR::Element::Metrics(const double* xi, double* gxi, double* geta)
       exit(EXIT_FAILURE);
   }
 
-  CORE::LINALG::SerialDenseVector val(nnodes);
-  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  Core::LinAlg::SerialDenseVector val(nnodes);
+  Core::LinAlg::SerialDenseMatrix deriv(nnodes, 2, true);
 
   // get shape function values and derivatives at xi
   evaluate_shape(xi, val, deriv, nnodes, false);
 
   // get coordinates of element nodes
-  CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
+  Core::LinAlg::SerialDenseMatrix coord(3, nnodes);
   GetNodalCoords(coord);
 
   // build basis vectors gxi and geta
@@ -973,18 +975,18 @@ void MORTAR::Element::Metrics(const double* xi, double* gxi, double* geta)
 /*----------------------------------------------------------------------*
  |  Evaluate Jacobian determinant                             popp 12/07|
  *----------------------------------------------------------------------*/
-double MORTAR::Element::Jacobian(const double* xi)
+double Mortar::Element::Jacobian(const double* xi)
 {
   double jac = 0.0;
   double gxi[3];
   double geta[3];
-  CORE::FE::CellType dt = Shape();
+  Core::FE::CellType dt = Shape();
 
   // 2D linear case (2noded line element)
-  if (dt == CORE::FE::CellType::line2) jac = MoData().Area() * 0.5;
+  if (dt == Core::FE::CellType::line2) jac = MoData().Area() * 0.5;
 
   // 3D linear case (3noded triangular element)
-  else if (dt == CORE::FE::CellType::tri3)
+  else if (dt == Core::FE::CellType::tri3)
     jac = MoData().Area() * 2.0;
 
   // 2D quadratic case (3noded line element)
@@ -992,11 +994,11 @@ double MORTAR::Element::Jacobian(const double* xi)
   // 3D quadratic case (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt == CORE::FE::CellType::line3 || dt == CORE::FE::CellType::quad4 ||
-           dt == CORE::FE::CellType::tri6 || dt == CORE::FE::CellType::quad8 ||
-           dt == CORE::FE::CellType::quad9 || dt == CORE::FE::CellType::nurbs2 ||
-           dt == CORE::FE::CellType::nurbs3 || dt == CORE::FE::CellType::nurbs4 ||
-           dt == CORE::FE::CellType::nurbs8 || dt == CORE::FE::CellType::nurbs9)
+  else if (dt == Core::FE::CellType::line3 || dt == Core::FE::CellType::quad4 ||
+           dt == Core::FE::CellType::tri6 || dt == Core::FE::CellType::quad8 ||
+           dt == Core::FE::CellType::quad9 || dt == Core::FE::CellType::nurbs2 ||
+           dt == Core::FE::CellType::nurbs3 || dt == Core::FE::CellType::nurbs4 ||
+           dt == Core::FE::CellType::nurbs8 || dt == Core::FE::CellType::nurbs9)
   {
     // metrics routine gives local basis vectors
     Metrics(xi, gxi, geta);
@@ -1019,13 +1021,13 @@ double MORTAR::Element::Jacobian(const double* xi)
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det.              popp 05/08|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::DerivJacobian(
-    const double* xi, CORE::GEN::Pairedvector<int, double>& derivjac)
+void Mortar::Element::DerivJacobian(
+    const double* xi, Core::Gen::Pairedvector<int, double>& derivjac)
 {
   // get element nodes
   int nnodes = num_node();
 
-  CORE::Nodes::Node** mynodes = nullptr;  // Nodes();
+  Core::Nodes::Node** mynodes = nullptr;  // Nodes();
   mynodes = Nodes();
 
   if (!mynodes) FOUR_C_THROW("DerivJacobian: Null pointer!");
@@ -1036,8 +1038,8 @@ void MORTAR::Element::DerivJacobian(
   double geta[3];
 
   // evaluate shape functions
-  CORE::LINALG::SerialDenseVector val(nnodes);
-  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  Core::LinAlg::SerialDenseVector val(nnodes);
+  Core::LinAlg::SerialDenseMatrix deriv(nnodes, 2, true);
   evaluate_shape(xi, val, deriv, nnodes, false);
 
   // metrics routine gives local basis vectors
@@ -1049,19 +1051,19 @@ void MORTAR::Element::DerivJacobian(
   cross[1] = gxi[2] * geta[0] - gxi[0] * geta[2];
   cross[2] = gxi[0] * geta[1] - gxi[1] * geta[0];
 
-  CORE::FE::CellType dt = Shape();
+  Core::FE::CellType dt = Shape();
 
   // 2D linear case (2noded line element)
   switch (dt)
   {
     // 3D linear case (3noded triangular element)
-    case CORE::FE::CellType::tri3:
+    case Core::FE::CellType::tri3:
     {
       jacinv = 1.0 / (MoData().Area() * 2.0);
       break;
     }
     // default 2-D case
-    case CORE::FE::CellType::line2:
+    case Core::FE::CellType::line2:
     {
       jacinv = 2.0 / MoData().Area();
       break;
@@ -1072,16 +1074,16 @@ void MORTAR::Element::DerivJacobian(
     // 3D serendipity case (8noded quadrilateral element)
     // 3D biquadratic case (9noded quadrilateral element)
     /* no break (upper case) */
-    case CORE::FE::CellType::line3:
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::tri6:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
-    case CORE::FE::CellType::nurbs2:
-    case CORE::FE::CellType::nurbs3:
-    case CORE::FE::CellType::nurbs4:
-    case CORE::FE::CellType::nurbs8:
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::line3:
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::tri6:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
+    case Core::FE::CellType::nurbs2:
+    case Core::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs4:
+    case Core::FE::CellType::nurbs8:
+    case Core::FE::CellType::nurbs9:
     {
       jacinv = 1.0 / sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
       break;
@@ -1102,7 +1104,7 @@ void MORTAR::Element::DerivJacobian(
   // *********************************************************************
   for (int i = 0; i < nnodes; ++i)
   {
-    MORTAR::Node* mymrtrnode = dynamic_cast<MORTAR::Node*>(mynodes[i]);
+    Mortar::Node* mymrtrnode = dynamic_cast<Mortar::Node*>(mynodes[i]);
     if (!mymrtrnode) FOUR_C_THROW("DerivJacobian: Null pointer!");
 
     derivjac[mymrtrnode->Dofs()[0]] +=
@@ -1129,16 +1131,16 @@ void MORTAR::Element::DerivJacobian(
 /*----------------------------------------------------------------------*
  |  Compute length / area of the element                      popp 12/07|
  *----------------------------------------------------------------------*/
-double MORTAR::Element::ComputeArea()
+double Mortar::Element::ComputeArea()
 {
   double area = 0.0;
-  CORE::FE::CellType dt = Shape();
+  Core::FE::CellType dt = Shape();
 
   // 2D linear case (2noded line element)
-  if (dt == CORE::FE::CellType::line2)
+  if (dt == Core::FE::CellType::line2)
   {
     // no integration necessary (constant Jacobian)
-    CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
+    Core::LinAlg::SerialDenseMatrix coord(3, NumPoint());
     GetNodalCoords(coord);
 
     // build vector between the two nodes
@@ -1151,10 +1153,10 @@ double MORTAR::Element::ComputeArea()
   }
 
   // 3D linear case (3noded triangular element)
-  else if (dt == CORE::FE::CellType::tri3)
+  else if (dt == Core::FE::CellType::tri3)
   {
     // no integration necessary (constant Jacobian)
-    CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
+    Core::LinAlg::SerialDenseMatrix coord(3, NumPoint());
     GetNodalCoords(coord);
 
     // build vectors between the three nodes
@@ -1179,14 +1181,14 @@ double MORTAR::Element::ComputeArea()
   // 3D quadratic case   (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt == CORE::FE::CellType::line3 || dt == CORE::FE::CellType::quad4 ||
-           dt == CORE::FE::CellType::tri6 || dt == CORE::FE::CellType::quad8 ||
-           dt == CORE::FE::CellType::quad9 || dt == CORE::FE::CellType::nurbs2 ||
-           dt == CORE::FE::CellType::nurbs3 || dt == CORE::FE::CellType::nurbs4 ||
-           dt == CORE::FE::CellType::nurbs8 || dt == CORE::FE::CellType::nurbs9)
+  else if (dt == Core::FE::CellType::line3 || dt == Core::FE::CellType::quad4 ||
+           dt == Core::FE::CellType::tri6 || dt == Core::FE::CellType::quad8 ||
+           dt == Core::FE::CellType::quad9 || dt == Core::FE::CellType::nurbs2 ||
+           dt == Core::FE::CellType::nurbs3 || dt == Core::FE::CellType::nurbs4 ||
+           dt == Core::FE::CellType::nurbs8 || dt == Core::FE::CellType::nurbs9)
   {
     // Gauss quadrature with correct num_gp and Dim
-    MORTAR::ElementIntegrator integrator(dt);
+    Mortar::ElementIntegrator integrator(dt);
     double detg = 0.0;
 
     // loop over all Gauss points, build Jacobian and compute area
@@ -1200,7 +1202,7 @@ double MORTAR::Element::ComputeArea()
 
   // other cases not implemented yet
   else
-    FOUR_C_THROW("Area computation not implemented for this type of MORTAR::Element");
+    FOUR_C_THROW("Area computation not implemented for this type of Mortar::Element");
 
   return area;
 }
@@ -1209,16 +1211,16 @@ double MORTAR::Element::ComputeArea()
 /*----------------------------------------------------------------------*
  |  Compute length / area of the element                     seitz 09/17|
  *----------------------------------------------------------------------*/
-double MORTAR::Element::compute_area_deriv(CORE::GEN::Pairedvector<int, double>& area_deriv)
+double Mortar::Element::compute_area_deriv(Core::Gen::Pairedvector<int, double>& area_deriv)
 {
   double area = 0.0;
-  CORE::FE::CellType dt = Shape();
+  Core::FE::CellType dt = Shape();
 
   // 2D linear case (2noded line element)
-  if (dt == CORE::FE::CellType::line2)
+  if (dt == Core::FE::CellType::line2)
   {
     // no integration necessary (constant Jacobian)
-    CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
+    Core::LinAlg::SerialDenseMatrix coord(3, NumPoint());
     GetNodalCoords(coord);
 
     // build vector between the two nodes
@@ -1231,10 +1233,10 @@ double MORTAR::Element::compute_area_deriv(CORE::GEN::Pairedvector<int, double>&
   }
 
   // 3D linear case (3noded triangular element)
-  else if (dt == CORE::FE::CellType::tri3)
+  else if (dt == Core::FE::CellType::tri3)
   {
     // no integration necessary (constant Jacobian)
-    CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
+    Core::LinAlg::SerialDenseMatrix coord(3, NumPoint());
     GetNodalCoords(coord);
 
     // build vectors between the three nodes
@@ -1259,14 +1261,14 @@ double MORTAR::Element::compute_area_deriv(CORE::GEN::Pairedvector<int, double>&
   // 3D quadratic case   (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt == CORE::FE::CellType::line3 || dt == CORE::FE::CellType::quad4 ||
-           dt == CORE::FE::CellType::tri6 || dt == CORE::FE::CellType::quad8 ||
-           dt == CORE::FE::CellType::quad9 || dt == CORE::FE::CellType::nurbs2 ||
-           dt == CORE::FE::CellType::nurbs3 || dt == CORE::FE::CellType::nurbs4 ||
-           dt == CORE::FE::CellType::nurbs8 || dt == CORE::FE::CellType::nurbs9)
+  else if (dt == Core::FE::CellType::line3 || dt == Core::FE::CellType::quad4 ||
+           dt == Core::FE::CellType::tri6 || dt == Core::FE::CellType::quad8 ||
+           dt == Core::FE::CellType::quad9 || dt == Core::FE::CellType::nurbs2 ||
+           dt == Core::FE::CellType::nurbs3 || dt == Core::FE::CellType::nurbs4 ||
+           dt == Core::FE::CellType::nurbs8 || dt == Core::FE::CellType::nurbs9)
   {
     // Gauss quadrature with correct num_gp and Dim
-    MORTAR::ElementIntegrator integrator(dt);
+    Mortar::ElementIntegrator integrator(dt);
     double detg = 0.0;
 
     // loop over all Gauss points, build Jacobian and compute area
@@ -1276,9 +1278,9 @@ double MORTAR::Element::compute_area_deriv(CORE::GEN::Pairedvector<int, double>&
       detg = Jacobian(gpc);
       area += integrator.Weight(j) * detg;
 
-      CORE::GEN::Pairedvector<int, double> derivjac(num_node() * Dim());
+      Core::Gen::Pairedvector<int, double> derivjac(num_node() * Dim());
       DerivJacobian(gpc, derivjac);
-      for (CORE::GEN::Pairedvector<int, double>::const_iterator p = derivjac.begin();
+      for (Core::Gen::Pairedvector<int, double>::const_iterator p = derivjac.begin();
            p != derivjac.end(); ++p)
         area_deriv[p->first] += integrator.Weight(j) * p->second;
     }
@@ -1286,7 +1288,7 @@ double MORTAR::Element::compute_area_deriv(CORE::GEN::Pairedvector<int, double>&
 
   // other cases not implemented yet
   else
-    FOUR_C_THROW("Area computation not implemented for this type of MORTAR::Element");
+    FOUR_C_THROW("Area computation not implemented for this type of Mortar::Element");
 
   return area;
 }
@@ -1295,7 +1297,7 @@ double MORTAR::Element::compute_area_deriv(CORE::GEN::Pairedvector<int, double>&
 /*----------------------------------------------------------------------*
  |  Get global coords for given local coords                  popp 01/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Element::LocalToGlobal(const double* xi, double* globcoord, int inttype)
+bool Mortar::Element::LocalToGlobal(const double* xi, double* globcoord, int inttype)
 {
   // check input
   if (!xi) FOUR_C_THROW("LocalToGlobal called with xi=nullptr");
@@ -1304,11 +1306,11 @@ bool MORTAR::Element::LocalToGlobal(const double* xi, double* globcoord, int int
   // collect fundamental data
   const int nnodes = num_node();
 
-  CORE::Nodes::Node** mynodes = Nodes();
+  Core::Nodes::Node** mynodes = Nodes();
   if (!mynodes) FOUR_C_THROW("LocalToGlobal: Null pointer!");
-  CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
-  CORE::LINALG::SerialDenseVector val(nnodes);
-  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  Core::LinAlg::SerialDenseMatrix coord(3, nnodes);
+  Core::LinAlg::SerialDenseVector val(nnodes);
+  Core::LinAlg::SerialDenseMatrix deriv(nnodes, 2, true);
 
   // Evaluate shape, get nodal coords  and interpolate global coords
   evaluate_shape(xi, val, deriv, nnodes, false);
@@ -1348,21 +1350,21 @@ bool MORTAR::Element::LocalToGlobal(const double* xi, double* globcoord, int int
 }
 
 /*----------------------------------------------------------------------*
- |  Compute minimal edge size of MORTAR::Element                popp 11/08|
+ |  Compute minimal edge size of Mortar::Element                popp 11/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Element::MinEdgeSize()
+double Mortar::Element::MinEdgeSize()
 {
   double minedgesize = 1.0e12;
-  CORE::FE::CellType shape = Shape();
+  Core::FE::CellType shape = Shape();
 
   // get coordinates of element nodes
-  CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
+  Core::LinAlg::SerialDenseMatrix coord(3, NumPoint());
   GetNodalCoords(coord);
 
   switch (shape)
   {
-    case CORE::FE::CellType::line2:
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line2:
+    case Core::FE::CellType::line3:
     {
       // there is only one edge
       // (we approximate the quadratic case as linear)
@@ -1372,8 +1374,8 @@ double MORTAR::Element::MinEdgeSize()
 
       break;
     }
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::tri6:
     {
       // there are three edges
       // (we approximate the quadratic case as linear)
@@ -1393,9 +1395,9 @@ double MORTAR::Element::MinEdgeSize()
 
       break;
     }
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
     {
       // there are four edges
       // (we approximate the quadratic case as linear)
@@ -1415,14 +1417,14 @@ double MORTAR::Element::MinEdgeSize()
 
       break;
     }
-    case CORE::FE::CellType::nurbs3:
+    case Core::FE::CellType::nurbs3:
     {
       double sxi0[2] = {-1.0, 0.0};
       double sxi1[2] = {1.0, 0.0};
       const int nrow = num_node();
-      CORE::LINALG::SerialDenseVector sval0(nrow);
-      CORE::LINALG::SerialDenseVector sval1(nrow);
-      CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
+      Core::LinAlg::SerialDenseVector sval0(nrow);
+      Core::LinAlg::SerialDenseVector sval1(nrow);
+      Core::LinAlg::SerialDenseMatrix sderiv(nrow, 1);
       evaluate_shape(sxi0, sval0, sderiv, nrow);
       evaluate_shape(sxi1, sval1, sderiv, nrow);
 
@@ -1444,12 +1446,12 @@ double MORTAR::Element::MinEdgeSize()
 
       break;
     }
-    case CORE::FE::CellType::nurbs9:
+    case Core::FE::CellType::nurbs9:
     {
       const int nrow = num_node();
 
       // get real point data
-      CORE::LINALG::SerialDenseMatrix coordnurbs(3, nrow, true);
+      Core::LinAlg::SerialDenseMatrix coordnurbs(3, nrow, true);
 
       // parameter space coordinates
       double sxi0[2] = {-1.0, -1.0};
@@ -1458,11 +1460,11 @@ double MORTAR::Element::MinEdgeSize()
       double sxi3[2] = {-1.0, 1.0};
 
       // evaluate shape functions at these coordinates
-      CORE::LINALG::SerialDenseVector sval0(nrow);
-      CORE::LINALG::SerialDenseVector sval1(nrow);
-      CORE::LINALG::SerialDenseVector sval2(nrow);
-      CORE::LINALG::SerialDenseVector sval3(nrow);
-      CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2);
+      Core::LinAlg::SerialDenseVector sval0(nrow);
+      Core::LinAlg::SerialDenseVector sval1(nrow);
+      Core::LinAlg::SerialDenseVector sval2(nrow);
+      Core::LinAlg::SerialDenseVector sval3(nrow);
+      Core::LinAlg::SerialDenseMatrix sderiv(nrow, 2);
       evaluate_shape(sxi0, sval0, sderiv, nrow);
       evaluate_shape(sxi1, sval1, sderiv, nrow);
       evaluate_shape(sxi2, sval2, sderiv, nrow);
@@ -1506,8 +1508,8 @@ double MORTAR::Element::MinEdgeSize()
     }
     default:
     {
-      FOUR_C_THROW("%s is not implemented for discretization type '%s' of MORTAR::Element.",
-          __PRETTY_FUNCTION__, CORE::FE::CellTypeToString(shape).c_str());
+      FOUR_C_THROW("%s is not implemented for discretization type '%s' of Mortar::Element.",
+          __PRETTY_FUNCTION__, Core::FE::CellTypeToString(shape).c_str());
       break;
     }
   }
@@ -1517,21 +1519,21 @@ double MORTAR::Element::MinEdgeSize()
 }
 
 /*----------------------------------------------------------------------*
- |  Compute maximal edge size of MORTAR::Element                popp 11/08|
+ |  Compute maximal edge size of Mortar::Element                popp 11/08|
  *----------------------------------------------------------------------*/
-double MORTAR::Element::MaxEdgeSize()
+double Mortar::Element::MaxEdgeSize()
 {
   double maxedgesize = 0.0;
-  CORE::FE::CellType shape = Shape();
+  Core::FE::CellType shape = Shape();
 
   // get coordinates of element nodes
-  CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
+  Core::LinAlg::SerialDenseMatrix coord(3, NumPoint());
   GetNodalCoords(coord);
 
   switch (shape)
   {
-    case CORE::FE::CellType::line2:
-    case CORE::FE::CellType::line3:
+    case Core::FE::CellType::line2:
+    case Core::FE::CellType::line3:
     {
       // there is only one edge
       std::array<double, 3> diff = {0.0, 0.0, 0.0};
@@ -1540,8 +1542,8 @@ double MORTAR::Element::MaxEdgeSize()
 
       break;
     }
-    case CORE::FE::CellType::tri3:
-    case CORE::FE::CellType::tri6:
+    case Core::FE::CellType::tri3:
+    case Core::FE::CellType::tri6:
     {
       // there are three edges
       for (int edge = 0; edge < 3; ++edge)
@@ -1560,9 +1562,9 @@ double MORTAR::Element::MaxEdgeSize()
 
       break;
     }
-    case CORE::FE::CellType::quad4:
-    case CORE::FE::CellType::quad8:
-    case CORE::FE::CellType::quad9:
+    case Core::FE::CellType::quad4:
+    case Core::FE::CellType::quad8:
+    case Core::FE::CellType::quad9:
     {
       // there are four edges
       for (int edge = 0; edge < 4; ++edge)
@@ -1583,8 +1585,8 @@ double MORTAR::Element::MaxEdgeSize()
     }
     default:
     {
-      FOUR_C_THROW("%s is not implemented for discretization type '%s' of MORTAR::Element.",
-          __PRETTY_FUNCTION__, CORE::FE::CellTypeToString(shape).c_str());
+      FOUR_C_THROW("%s is not implemented for discretization type '%s' of Mortar::Element.",
+          __PRETTY_FUNCTION__, Core::FE::CellTypeToString(shape).c_str());
       break;
     }
   }
@@ -1596,10 +1598,10 @@ double MORTAR::Element::MaxEdgeSize()
 /*----------------------------------------------------------------------*
  |  Initialize data container                                 popp 12/10|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::initialize_data_container()
+void Mortar::Element::initialize_data_container()
 {
   // only initialize if not yet done
-  if (modata_ == Teuchos::null) modata_ = Teuchos::rcp(new MORTAR::MortarEleDataContainer());
+  if (modata_ == Teuchos::null) modata_ = Teuchos::rcp(new Mortar::MortarEleDataContainer());
 
   if (parent_element() != nullptr)
   {
@@ -1613,7 +1615,7 @@ void MORTAR::Element::initialize_data_container()
 /*----------------------------------------------------------------------*
  |  Reset data container                                      popp 12/10|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::ResetDataContainer()
+void Mortar::Element::ResetDataContainer()
 {
   // reset to Teuchos::null
   modata_ = Teuchos::null;
@@ -1622,12 +1624,12 @@ void MORTAR::Element::ResetDataContainer()
 }
 
 /*----------------------------------------------------------------------*
- |  Add one MORTAR::Element to potential contact partners       popp 01/08|
+ |  Add one Mortar::Element to potential contact partners       popp 01/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Element::AddSearchElements(const int& gid)
+bool Mortar::Element::AddSearchElements(const int& gid)
 {
   // check calling element type
-  if (!IsSlave()) FOUR_C_THROW("AddSearchElements called for infeasible MORTAR::Element!");
+  if (!IsSlave()) FOUR_C_THROW("AddSearchElements called for infeasible Mortar::Element!");
 
   // add new gid to vector of search candidates
   MoData().SearchElements().push_back(gid);
@@ -1638,10 +1640,10 @@ bool MORTAR::Element::AddSearchElements(const int& gid)
 /*----------------------------------------------------------------------*
  |  reset found search elements                              farah 10/13|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::delete_search_elements()
+void Mortar::Element::delete_search_elements()
 {
   // check calling element type
-  if (!IsSlave()) FOUR_C_THROW("delete_search_elements called for infeasible MORTAR::Element!");
+  if (!IsSlave()) FOUR_C_THROW("delete_search_elements called for infeasible Mortar::Element!");
 
   // add new gid to vector of search candidates
   MoData().SearchElements().clear();
@@ -1652,16 +1654,16 @@ void MORTAR::Element::delete_search_elements()
 /*----------------------------------------------------------------------*
  |  Derivatives of nodal spatial coords                      seitz 03/15|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::NodeLinearization(
-    std::vector<std::vector<CORE::GEN::Pairedvector<int, double>>>& nodelin)
+void Mortar::Element::NodeLinearization(
+    std::vector<std::vector<Core::Gen::Pairedvector<int, double>>>& nodelin)
 {
   // resize the linearizations
-  nodelin.resize(num_node(), std::vector<CORE::GEN::Pairedvector<int, double>>(3, 1));
+  nodelin.resize(num_node(), std::vector<Core::Gen::Pairedvector<int, double>>(3, 1));
 
   // loop over all intEle nodes
   for (int in = 0; in < num_node(); ++in)
   {
-    MORTAR::Node* mrtrnode = dynamic_cast<MORTAR::Node*>(Nodes()[in]);
+    Mortar::Node* mrtrnode = dynamic_cast<Mortar::Node*>(Nodes()[in]);
     for (int dim = 0; dim < Dim(); ++dim) nodelin[in][dim][mrtrnode->Dofs()[dim]] += 1.;
   }
 }
@@ -1669,21 +1671,21 @@ void MORTAR::Element::NodeLinearization(
 /*----------------------------------------------------------------------*
  |                                                           seitz 11/16|
  *----------------------------------------------------------------------*/
-void MORTAR::Element::estimate_nitsche_trace_max_eigenvalue_combined()
+void Mortar::Element::estimate_nitsche_trace_max_eigenvalue_combined()
 {
   if (Dim() != 3)
     FOUR_C_THROW(
         "Contact using Nitsche's method is only supported for 3D problems."
         "We do not intend to support 2D problems.");
 
-  Teuchos::RCP<CORE::Elements::Element> surf_ele = parent_element()->Surfaces()[FaceParentNumber()];
-  DRT::ELEMENTS::StructuralSurface* surf =
-      dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(surf_ele.get());
+  Teuchos::RCP<Core::Elements::Element> surf_ele = parent_element()->Surfaces()[FaceParentNumber()];
+  Discret::ELEMENTS::StructuralSurface* surf =
+      dynamic_cast<Discret::ELEMENTS::StructuralSurface*>(surf_ele.get());
 
   traceHE_ = 1. / surf->estimate_nitsche_trace_max_eigenvalue_combined(MoData().ParentDisp());
 
   if (parent_element()->NumMaterial() > 1)
-    if (parent_element()->Material(1)->MaterialType() == CORE::Materials::m_th_fourier_iso)
+    if (parent_element()->Material(1)->MaterialType() == Core::Materials::m_th_fourier_iso)
       traceHCond_ = 1. / surf->estimate_nitsche_trace_max_eigenvalue_tsi(MoData().ParentDisp());
 }
 
@@ -1691,26 +1693,26 @@ void MORTAR::Element::estimate_nitsche_trace_max_eigenvalue_combined()
 /*----------------------------------------------------------------------*
  |                                                           seitz 10/16|
  *----------------------------------------------------------------------*/
-MORTAR::ElementNitscheContainer& MORTAR::Element::GetNitscheContainer()
+Mortar::ElementNitscheContainer& Mortar::Element::GetNitscheContainer()
 {
   if (!parent_element()) FOUR_C_THROW("parent element pointer not set");
   if (nitsche_container_ == Teuchos::null) switch (parent_element()->Shape())
     {
-      case CORE::FE::CellType::hex8:
+      case Core::FE::CellType::hex8:
         nitsche_container_ =
-            Teuchos::rcp(new MORTAR::ElementNitscheData<CORE::FE::CellType::hex8>());
+            Teuchos::rcp(new Mortar::ElementNitscheData<Core::FE::CellType::hex8>());
         break;
-      case CORE::FE::CellType::tet4:
+      case Core::FE::CellType::tet4:
         nitsche_container_ =
-            Teuchos::rcp(new MORTAR::ElementNitscheData<CORE::FE::CellType::tet4>());
+            Teuchos::rcp(new Mortar::ElementNitscheData<Core::FE::CellType::tet4>());
         break;
-      case CORE::FE::CellType::hex27:
+      case Core::FE::CellType::hex27:
         nitsche_container_ =
-            Teuchos::rcp(new MORTAR::ElementNitscheData<CORE::FE::CellType::hex27>());
+            Teuchos::rcp(new Mortar::ElementNitscheData<Core::FE::CellType::hex27>());
         break;
-      case CORE::FE::CellType::nurbs27:
+      case Core::FE::CellType::nurbs27:
         nitsche_container_ =
-            Teuchos::rcp(new MORTAR::ElementNitscheData<CORE::FE::CellType::nurbs27>());
+            Teuchos::rcp(new Mortar::ElementNitscheData<Core::FE::CellType::nurbs27>());
         break;
       default:
         FOUR_C_THROW("Nitsche data container not ready. Just add it here...");

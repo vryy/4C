@@ -26,11 +26,11 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SCATRA::TimIntCardiacMonodomain::TimIntCardiacMonodomain(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+ScaTra::TimIntCardiacMonodomain::TimIntCardiacMonodomain(Teuchos::RCP<Discret::Discretization> dis,
+    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<CORE::IO::DiscretizationWriter> output)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
       // Initialization of electrophysiology variables
       activation_time_np_(Teuchos::null),
@@ -47,7 +47,7 @@ SCATRA::TimIntCardiacMonodomain::TimIntCardiacMonodomain(Teuchos::RCP<DRT::Discr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomain::Setup()
+void ScaTra::TimIntCardiacMonodomain::Setup()
 {
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -56,7 +56,7 @@ void SCATRA::TimIntCardiacMonodomain::Setup()
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // Activation time at time n+1
-  activation_time_np_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  activation_time_np_ = Core::LinAlg::CreateVector(*dofrowmap, true);
   activation_threshold_ = ep_params_->get<double>("ACTTHRES");
   // Assumes that maximum nb_max_mat_int_state_vars_ internal state variables will be written
   nb_max_mat_int_state_vars_ = ep_params_->get<int>(
@@ -66,7 +66,7 @@ void SCATRA::TimIntCardiacMonodomain::Setup()
     material_internal_state_np_ = Teuchos::rcp(
         new Epetra_MultiVector(*(discret_->ElementRowMap()), nb_max_mat_int_state_vars_, true));
     material_internal_state_np_component_ =
-        CORE::LINALG::CreateVector(*(discret_->ElementRowMap()), true);
+        Core::LinAlg::CreateVector(*(discret_->ElementRowMap()), true);
   }
   // Assumes that maximum nb_max_mat_ionic_currents_ ionic_currents variables will be written
   nb_max_mat_ionic_currents_ = ep_params_->get<int>(
@@ -76,16 +76,16 @@ void SCATRA::TimIntCardiacMonodomain::Setup()
     material_ionic_currents_np_ = Teuchos::rcp(
         new Epetra_MultiVector(*(discret_->ElementRowMap()), nb_max_mat_ionic_currents_, true));
     material_ionic_currents_np_component_ =
-        CORE::LINALG::CreateVector(*(discret_->ElementRowMap()), true);
+        Core::LinAlg::CreateVector(*(discret_->ElementRowMap()), true);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomain::output_state()
+void ScaTra::TimIntCardiacMonodomain::output_state()
 {
   // Call function from base class
-  SCATRA::ScaTraTimIntImpl::output_state();
+  ScaTra::ScaTraTimIntImpl::output_state();
 
   // electrophysiology
 
@@ -104,8 +104,8 @@ void SCATRA::TimIntCardiacMonodomain::output_state()
   if (material_internal_state_np_ != Teuchos::null and nb_max_mat_int_state_vars_)
   {
     Teuchos::ParameterList params;
-    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-        "action", SCATRA::Action::get_material_internal_state, params);
+    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+        "action", ScaTra::Action::get_material_internal_state, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state",
         material_internal_state_np_);  // Probably do it once at the beginning
     discret_->Evaluate(params);
@@ -119,7 +119,7 @@ void SCATRA::TimIntCardiacMonodomain::output_state()
       material_internal_state_np_component_ =
           Teuchos::rcp((*material_internal_state_np_)(k), false);
       output_->WriteVector("mat_int_state_" + temp.str(), material_internal_state_np_component_,
-          CORE::IO::elementvector);
+          Core::IO::elementvector);
     }
   }
 
@@ -127,8 +127,8 @@ void SCATRA::TimIntCardiacMonodomain::output_state()
   if (material_ionic_currents_np_ != Teuchos::null and nb_max_mat_ionic_currents_)
   {
     Teuchos::ParameterList params;
-    CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-        "action", SCATRA::Action::get_material_ionic_currents, params);
+    Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+        "action", ScaTra::Action::get_material_ionic_currents, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>("material_ionic_currents",
         material_ionic_currents_np_);  // Probably do it once at the beginning
     discret_->Evaluate(params);
@@ -142,20 +142,20 @@ void SCATRA::TimIntCardiacMonodomain::output_state()
       material_ionic_currents_np_component_ =
           Teuchos::rcp((*material_ionic_currents_np_)(k), false);
       output_->WriteVector("mat_ionic_currents_" + temp.str(),
-          material_ionic_currents_np_component_, CORE::IO::elementvector);
+          material_ionic_currents_np_component_, Core::IO::elementvector);
     }
   }
 }  // TimIntCardiacMonodomain::output_state
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomain::element_material_time_update()
+void ScaTra::TimIntCardiacMonodomain::element_material_time_update()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
-  CORE::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-      "action", SCATRA::Action::time_update_material, p);
+  Core::UTILS::AddEnumClassToParameterList<ScaTra::Action>(
+      "action", ScaTra::Action::time_update_material, p);
   // further required parameter
   p.set<double>("time-step length", dta_);
 
@@ -170,14 +170,14 @@ void SCATRA::TimIntCardiacMonodomain::element_material_time_update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomain::set_element_specific_sca_tra_parameters(
+void ScaTra::TimIntCardiacMonodomain::set_element_specific_sca_tra_parameters(
     Teuchos::ParameterList& eleparams) const
 {
   // safety check
-  if (CORE::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"))
+  if (Core::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"))
   {
-    if (INPAR::SCATRA::timeint_gen_alpha ==
-        CORE::UTILS::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params_, "TIMEINTEGR"))
+    if (Inpar::ScaTra::timeint_gen_alpha ==
+        Core::UTILS::IntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(*params_, "TIMEINTEGR"))
     {
       if (params_->get<double>("ALPHA_M") < 1.0 or params_->get<double>("ALPHA_F") < 1.0)
         FOUR_C_THROW(
@@ -186,7 +186,7 @@ void SCATRA::TimIntCardiacMonodomain::set_element_specific_sca_tra_parameters(
     }
   }
 
-  eleparams.set<bool>("semiimplicit", CORE::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"));
+  eleparams.set<bool>("semiimplicit", Core::UTILS::IntegralValue<int>(*params_, "SEMIIMPLICIT"));
 }
 
 FOUR_C_NAMESPACE_CLOSE

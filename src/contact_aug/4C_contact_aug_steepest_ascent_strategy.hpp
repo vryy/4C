@@ -19,11 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  namespace AUG
+  namespace Aug
   {
     class LagrangeMultiplierFunction;
     class PenaltyUpdate;
-    namespace STEEPESTASCENT
+    namespace SteepestAscent
     {
       // forward declarations
       class Interface;
@@ -32,11 +32,11 @@ namespace CONTACT
       /** \brief Condensed variant of the modified Newton approach.
        *
        * \author hiermeier \date 03/17 */
-      class Strategy : public CONTACT::AUG::STEEPESTASCENT_SP::Strategy
+      class Strategy : public CONTACT::Aug::SteepestAscentSaddlePoint::Strategy
       {
         /** The combo_strategy is a wrapper class for a set of augmented Lagrangian
          *  strategies and needs access to all methods. */
-        friend class CONTACT::AUG::ComboStrategy;
+        friend class CONTACT::Aug::ComboStrategy;
 
        public:
         /// constructor
@@ -45,14 +45,14 @@ namespace CONTACT
             const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
             const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
 
-        INPAR::CONTACT::SolvingStrategy Type() const override
+        Inpar::CONTACT::SolvingStrategy Type() const override
         {
-          return INPAR::CONTACT::solution_steepest_ascent;
+          return Inpar::CONTACT::solution_steepest_ascent;
         }
 
        protected:
         // un-do changes from the base class
-        void eval_str_contact_rhs() override { AUG::Strategy::eval_str_contact_rhs(); }
+        void eval_str_contact_rhs() override { Aug::Strategy::eval_str_contact_rhs(); }
 
         /// derived
         Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr_for_norm_check(
@@ -62,18 +62,18 @@ namespace CONTACT
         void add_contributions_to_constr_rhs(Epetra_Vector& augConstrRhs) const override;
 
         /// derived
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
             const enum CONTACT::MatBlockType& bt,
             const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
         /// derived
-        void add_contributions_to_matrix_block_displ_displ(CORE::LINALG::SparseMatrix& kdd,
+        void add_contributions_to_matrix_block_displ_displ(Core::LinAlg::SparseMatrix& kdd,
             const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
         /// derived
         void run_post_apply_jacobian_inverse(const CONTACT::ParamsInterface& cparams,
             const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
-            const NOX::NLN::Group& grp) override;
+            const NOX::Nln::Group& grp) override;
 
         /// derived
         void remove_condensed_contributions_from_rhs(Epetra_Vector& str_rhs) const override;
@@ -92,8 +92,8 @@ namespace CONTACT
             const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold, Epetra_Vector& dir);
       };  //  class Strategy
 
-    }  // namespace STEEPESTASCENT
-  }    // namespace AUG
+    }  // namespace SteepestAscent
+  }    // namespace Aug
 }  // namespace CONTACT
 
 

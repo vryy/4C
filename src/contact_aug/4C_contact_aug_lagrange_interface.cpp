@@ -15,19 +15,19 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::LAGRANGE::Interface::Interface(
-    const Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer>& idata_ptr)
-    : CONTACT::AUG::Interface(idata_ptr)
+CONTACT::Aug::Lagrange::Interface::Interface(
+    const Teuchos::RCP<CONTACT::Aug::InterfaceDataContainer>& idata_ptr)
+    : CONTACT::Aug::Interface(idata_ptr)
 {
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::AUG::LAGRANGE::Interface::Interface(
-    const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr, const int id,
+CONTACT::Aug::Lagrange::Interface::Interface(
+    const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
     const bool selfcontact)
-    : CONTACT::AUG::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
+    : CONTACT::Aug::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact)
 {
 }
 FOUR_C_NAMESPACE_CLOSE

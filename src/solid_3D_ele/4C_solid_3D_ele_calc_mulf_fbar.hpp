@@ -22,25 +22,25 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace DRT::ELEMENTS
+namespace Discret::ELEMENTS
 {
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct MulfFBarPreparationData
   {
-    CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>> N_XYZ{};
+    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>> N_XYZ{};
 
     SpatialMaterialMapping<celltype> spatial_material_mapping{};
   };
 
-  namespace DETAILS
+  namespace Details
   {
-    template <CORE::FE::CellType celltype>
+    template <Core::FE::CellType celltype>
     SpatialMaterialMapping<celltype> EvaluateMulfSpatialMaterialMappingCentroid(
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions_centeroid,
         const ElementNodes<celltype>& nodal_coordinates,
         const MulfHistoryData<celltype>& mulf_data_centeroid)
     {
-      CORE::LINALG::Matrix<3, 3> delta_F = EvaluateMulfDeformationGradientUpdate(
+      Core::LinAlg::Matrix<3, 3> delta_F = EvaluateMulfDeformationGradientUpdate(
           shape_functions_centeroid, nodal_coordinates.displacements_, mulf_data_centeroid);
 
       SpatialMaterialMapping<celltype> spatial_material_mapping_centeroid{};
@@ -57,13 +57,13 @@ namespace DRT::ELEMENTS
       return spatial_material_mapping_centeroid;
     }
 
-    template <CORE::FE::CellType celltype>
+    template <Core::FE::CellType celltype>
     SpatialMaterialMapping<celltype> GetSpatialMaterialMappingBar(
         SpatialMaterialMapping<celltype> spatial_material_mapping, const double fbar_factor)
     {
       spatial_material_mapping.deformation_gradient_.Scale(fbar_factor);
       spatial_material_mapping.determinant_deformation_gradient_ *=
-          CORE::FE::dim<celltype> * fbar_factor;
+          Core::FE::dim<celltype> * fbar_factor;
       spatial_material_mapping.inverse_deformation_gradient_.Scale(1.0 / fbar_factor);
 
       return spatial_material_mapping;
@@ -72,26 +72,26 @@ namespace DRT::ELEMENTS
     /*!
      * @brief Do a MULF update step on the mulf data
      */
-    template <CORE::FE::CellType celltype>
+    template <Core::FE::CellType celltype>
     void UpdateMulfHistory(const ElementNodes<celltype>& element_nodes,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         MulfHistoryData<celltype>& mulf_data)
     {
-      CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> delta_defgrd =
+      Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> delta_defgrd =
           EvaluateMulfDeformationGradientUpdate(
               shape_functions, element_nodes.displacements_, mulf_data);
 
-      CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> inv_delta_defgrd(true);
+      Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> inv_delta_defgrd(true);
       inv_delta_defgrd.Invert(delta_defgrd);
 
-      CORE::LINALG::Matrix<3, 3> old_defgrd = mulf_data.deformation_gradient;
+      Core::LinAlg::Matrix<3, 3> old_defgrd = mulf_data.deformation_gradient;
       mulf_data.deformation_gradient.Multiply(delta_defgrd, old_defgrd);
 
-      CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> invJ_new;
+      Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> invJ_new;
       invJ_new.MultiplyTN(inv_delta_defgrd, mulf_data.inverse_jacobian);
       mulf_data.inverse_jacobian = std::move(invJ_new);
     }
-  }  // namespace DETAILS
+  }  // namespace Details
 
 
 
@@ -100,7 +100,7 @@ namespace DRT::ELEMENTS
    *
    * @tparam celltype
    */
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   struct MulfFBarFormulation
   {
     static constexpr bool has_gauss_point_history = true;
@@ -113,7 +113,7 @@ namespace DRT::ELEMENTS
     using GlobalHistory = MulfHistoryData<celltype>;
     using PreparationData = MulfFBarPreparationData<celltype>;
 
-    static MulfFBarPreparationData<celltype> Prepare(const CORE::Elements::Element& ele,
+    static MulfFBarPreparationData<celltype> Prepare(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& nodal_coordinates, GlobalHistory& global_history)
     {
       if (!global_history.is_setup)
@@ -126,7 +126,7 @@ namespace DRT::ELEMENTS
       }
 
       // set coordinates in parameter space at centroid as zero -> xi = [0; 0; 0]
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
           EvaluateParameterCoordinateCentroid<celltype>();
 
       // shape functions and derivatives evaluated at element centroid
@@ -136,17 +136,17 @@ namespace DRT::ELEMENTS
       JacobianMapping<celltype> jacobian_mapping =
           EvaluateJacobianMappingCentroid(nodal_coordinates);
 
-      CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::num_nodes<celltype>> N_XYZ_0;
+      Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::num_nodes<celltype>> N_XYZ_0;
       N_XYZ_0.Multiply(jacobian_mapping.inverse_jacobian_, shape_functions_centeroid.derivatives_);
 
-      return {N_XYZ_0, DETAILS::EvaluateMulfSpatialMaterialMappingCentroid(
+      return {N_XYZ_0, Details::EvaluateMulfSpatialMaterialMappingCentroid(
                            shape_functions_centeroid, nodal_coordinates, global_history)};
     }
 
     template <typename Evaluator>
-    static auto Evaluate(const CORE::Elements::Element& ele,
+    static auto Evaluate(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
         const MulfFBarPreparationData<celltype>& mapping_center,
@@ -184,12 +184,12 @@ namespace DRT::ELEMENTS
           });
 
       const SpatialMaterialMapping<celltype> spatial_material_mapping_bar =
-          DETAILS::GetSpatialMaterialMappingBar(spatial_material_mapping, fbar_factor);
+          Details::GetSpatialMaterialMappingBar(spatial_material_mapping, fbar_factor);
 
-      const CORE::LINALG::Matrix<CORE::FE::dim<celltype>, CORE::FE::dim<celltype>> cauchygreen_bar =
+      const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> cauchygreen_bar =
           EvaluateCauchyGreen<celltype>(spatial_material_mapping_bar);
 
-      const CORE::LINALG::Matrix<DETAILS::num_str<celltype>, 1> gl_strain_bar =
+      const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> gl_strain_bar =
           EvaluateGreenLagrangeStrain(cauchygreen_bar);
 
       return evaluator(
@@ -197,8 +197,8 @@ namespace DRT::ELEMENTS
     }
 
 
-    static CORE::LINALG::Matrix<DETAILS::num_str<celltype>,
-        CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>
+    static Core::LinAlg::Matrix<Details::num_str<celltype>,
+        Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
     GetLinearBOperator(const FBarLinearizationContainer<celltype>& linearization)
     {
       return linearization.Bop;
@@ -208,10 +208,10 @@ namespace DRT::ELEMENTS
         const Stress<celltype>& stress, const double integration_factor,
         const MulfFBarPreparationData<celltype>& mapping_center,
         MulfHistoryData<celltype>& mulf_data_centeroid, MulfHistoryData<celltype>& mulf_data_gp,
-        CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>, 1>&
+        Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>, 1>&
             force_vector)
     {
-      DRT::ELEMENTS::add_internal_force_vector(
+      Discret::ELEMENTS::add_internal_force_vector(
           linearization.Bop, stress, integration_factor / linearization.fbar_factor, force_vector);
     }
 
@@ -219,12 +219,12 @@ namespace DRT::ELEMENTS
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
         const double integration_factor, const MulfFBarPreparationData<celltype>& mapping_center,
         MulfHistoryData<celltype>& mulf_data_centeroid, MulfHistoryData<celltype>& mulf_data_gp,
-        CORE::LINALG::Matrix<CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>,
-            CORE::FE::num_nodes<celltype> * CORE::FE::dim<celltype>>& stiffness_matrix)
+        Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>,
+            Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>& stiffness_matrix)
     {
-      DRT::ELEMENTS::AddElasticStiffnessMatrix(linearization.Bop, stress,
+      Discret::ELEMENTS::AddElasticStiffnessMatrix(linearization.Bop, stress,
           integration_factor * linearization.fbar_factor, stiffness_matrix);
-      DRT::ELEMENTS::AddGeometricStiffnessMatrix(jacobian_mapping.N_XYZ_, stress,
+      Discret::ELEMENTS::AddGeometricStiffnessMatrix(jacobian_mapping.N_XYZ_, stress,
           integration_factor / linearization.fbar_factor, stiffness_matrix);
 
       // additional stiffness matrix needed for fbar method
@@ -232,57 +232,60 @@ namespace DRT::ELEMENTS
           integration_factor, linearization.cauchygreen, stress, stiffness_matrix);
     }
 
-    static void Pack(const MulfHistoryData<celltype>& history_data, CORE::COMM::PackBuffer& data)
+    static void Pack(
+        const MulfHistoryData<celltype>& history_data, Core::Communication::PackBuffer& data)
     {
-      CORE::COMM::ParObject::AddtoPack(data, history_data.inverse_jacobian);
-      CORE::COMM::ParObject::AddtoPack(data, history_data.deformation_gradient);
-      CORE::COMM::ParObject::AddtoPack(data, history_data.is_setup);
+      Core::Communication::ParObject::AddtoPack(data, history_data.inverse_jacobian);
+      Core::Communication::ParObject::AddtoPack(data, history_data.deformation_gradient);
+      Core::Communication::ParObject::AddtoPack(data, history_data.is_setup);
     }
 
     static void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data,
         MulfHistoryData<celltype>& history_data)
     {
-      CORE::COMM::ParObject::ExtractfromPack(position, data, history_data.inverse_jacobian);
-      CORE::COMM::ParObject::ExtractfromPack(position, data, history_data.deformation_gradient);
+      Core::Communication::ParObject::ExtractfromPack(
+          position, data, history_data.inverse_jacobian);
+      Core::Communication::ParObject::ExtractfromPack(
+          position, data, history_data.deformation_gradient);
       int is_setup_int;
-      CORE::COMM::ParObject::ExtractfromPack(position, data, is_setup_int);
+      Core::Communication::ParObject::ExtractfromPack(position, data, is_setup_int);
       history_data.is_setup = static_cast<bool>(is_setup_int);
     }
 
-    static inline void UpdatePrestress(const CORE::Elements::Element& ele,
+    static inline void UpdatePrestress(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
         const MulfFBarPreparationData<celltype>& mapping_center,
         MulfHistoryData<celltype>& mulf_data_centeroid)
     {
-      CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
+      Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
           EvaluateParameterCoordinateCentroid<celltype>();
 
       ShapeFunctionsAndDerivatives<celltype> shape_functions_centeroid =
           EvaluateShapeFunctionsAndDerivs<celltype>(xi_centroid, element_nodes);
 
-      DETAILS::UpdateMulfHistory(element_nodes, shape_functions_centeroid, mulf_data_centeroid);
+      Details::UpdateMulfHistory(element_nodes, shape_functions_centeroid, mulf_data_centeroid);
     }
 
-    static inline void UpdatePrestress(const CORE::Elements::Element& ele,
+    static inline void UpdatePrestress(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
-        const CORE::LINALG::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
             deformation_gradient,
         const MulfFBarPreparationData<celltype>& mapping_center,
         MulfHistoryData<celltype>& mulf_data_centeroid, MulfHistoryData<celltype>& mulf_data_gp)
     {
-      DETAILS::UpdateMulfHistory(element_nodes, shape_functions, mulf_data_gp);
+      Details::UpdateMulfHistory(element_nodes, shape_functions, mulf_data_gp);
     }
   };
 
-  template <CORE::FE::CellType celltype>
+  template <Core::FE::CellType celltype>
   using MulfFBarSolidIntegrator = SolidEleCalc<celltype, MulfFBarFormulation<celltype>>;
 
 
 
-}  // namespace DRT::ELEMENTS
+}  // namespace Discret::ELEMENTS
 
 FOUR_C_NAMESPACE_CLOSE
 

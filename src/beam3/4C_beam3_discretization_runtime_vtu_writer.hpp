@@ -28,15 +28,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */
-namespace CORE::GEO
+namespace Core::Geo
 {
-  namespace MESHFREE
+  namespace MeshFree
   {
     class BoundingBox;
   }
-}  // namespace CORE::GEO
+}  // namespace Core::Geo
 
-namespace DRT
+namespace Discret
 {
   class Discretization;
 
@@ -44,7 +44,7 @@ namespace DRT
   {
     class Beam3Base;
   }
-}  // namespace DRT
+}  // namespace Discret
 
 /*-----------------------------------------------------------------------------------------------*/
 /* namespace */
@@ -70,7 +70,7 @@ class BeamDiscretizationRuntimeOutputWriter
  public:
   /// Constructor
   BeamDiscretizationRuntimeOutputWriter(
-      CORE::IO::VisualizationParameters parameters, const Epetra_Comm& comm);
+      Core::IO::VisualizationParameters parameters, const Epetra_Comm& comm);
 
   /// Destructor
   virtual ~BeamDiscretizationRuntimeOutputWriter() = default;
@@ -78,9 +78,9 @@ class BeamDiscretizationRuntimeOutputWriter
    *
    *  \author grill
    *  \date 03/17 */
-  void Initialize(Teuchos::RCP<DRT::Discretization> discretization,
+  void Initialize(Teuchos::RCP<Discret::Discretization> discretization,
       bool use_absolute_positions_for_point_coordinates, const unsigned int n_subsegments,
-      Teuchos::RCP<const CORE::GEO::MESHFREE::BoundingBox> const& periodic_boundingbox);
+      Teuchos::RCP<const Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox);
 
   /** \brief append triad field determined from given displacement state to output data
    *
@@ -242,7 +242,7 @@ class BeamDiscretizationRuntimeOutputWriter
    * @param gauss_point_values (in) Values at Gauss points
    * @param coefficients (out) Polynomial coefficients of the interpolated the Gauss point values.
    */
-  void calc_interpolation_polynomial_coefficients(const CORE::FE::GaussRule1D& gauss_rule,
+  void calc_interpolation_polynomial_coefficients(const Core::FE::GaussRule1D& gauss_rule,
       const std::vector<double>& gauss_point_values,
       std::vector<double>& polynomial_coefficients) const;
 
@@ -274,20 +274,20 @@ class BeamDiscretizationRuntimeOutputWriter
 
  private:
   //! discretization containing beam elements of which geometry and result data shall be visualized
-  Teuchos::RCP<const DRT::Discretization> discretization_;
+  Teuchos::RCP<const Discret::Discretization> discretization_;
 
   //! all local row indices of beam elements in the given discretization
   std::vector<unsigned int> local_row_indices_beam_elements_;
 
   //! periodic bounding box object
-  Teuchos::RCP<const CORE::GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
+  Teuchos::RCP<const Core::Geo::MeshFree::BoundingBox> periodic_boundingbox_;
 
   //! number of points for each element ( in case of periodic boundary conditions
   //! not equal to 1)
   std::vector<int> num_cells_per_element_;
 
   //! the actual vtu writer object that additionally stores the geometry and result data
-  Teuchos::RCP<CORE::IO::VisualizationManager> visualization_manager_;
+  Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager_;
 
   //! flag indicating whether to use absolute positions for point coordinates
   // false: use reference position

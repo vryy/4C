@@ -47,8 +47,9 @@ namespace FLD
    public:
     //! ctor
     XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& embedded_fluid,  ///< embedded fluid
-        const Teuchos::RCP<DRT::Discretization>& xfluiddis,  ///< background fluid discretization
-        const Teuchos::RCP<CORE::LINALG::Solver>& solver,    ///< fluid solver
+        const Teuchos::RCP<Discret::Discretization>&
+            xfluiddis,                                       ///< background fluid discretization
+        const Teuchos::RCP<Core::LinAlg::Solver>& solver,    ///< fluid solver
         const Teuchos::RCP<Teuchos::ParameterList>& params,  ///< xfluid params
         bool ale_xfluid = false,  ///< background (XFEM) fluid in ALE-formulation
         bool ale_fluid = false    ///< embedded fluid in ALE-formulation
@@ -56,10 +57,11 @@ namespace FLD
 
     //! ctor for multiple mesh coupling
     XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& embedded_fluid,  ///< embedded fluid
-        const Teuchos::RCP<DRT::Discretization>& xfluiddis,  ///< background fluid discretization
-        const Teuchos::RCP<DRT::Discretization>&
+        const Teuchos::RCP<Discret::Discretization>&
+            xfluiddis,  ///< background fluid discretization
+        const Teuchos::RCP<Discret::Discretization>&
             soliddis,  ///< structure discretization to couple with
-        const Teuchos::RCP<CORE::LINALG::Solver>& solver,    ///< fluid solver
+        const Teuchos::RCP<Core::LinAlg::Solver>& solver,    ///< fluid solver
         const Teuchos::RCP<Teuchos::ParameterList>& params,  ///< xfluid params
         bool ale_xfluid = false,  ///< background (XFEM) fluid in ALE-formulation
         bool ale_fluid = false    ///< embedded fluid in ALE-formulation
@@ -79,7 +81,7 @@ namespace FLD
 
     /// set initial flow field for fluid domains
     void SetInitialFlowField(
-        const INPAR::FLUID::InitialField initfield, const int startfuncno) override;
+        const Inpar::FLUID::InitialField initfield, const int startfuncno) override;
 
     /// set fluid-fluid interface fixed for current time step
     void SetInterfaceFixed();
@@ -113,7 +115,7 @@ namespace FLD
      * \param (in) condelements map of conditioned elements
      */
     void prepare_shape_derivatives(
-        const Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> fsiextractor,
+        const Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> fsiextractor,
         const Teuchos::RCP<std::set<int>> condelements);
 
     /*!
@@ -123,7 +125,7 @@ namespace FLD
      * \param (in) condmap map of fsi interface dof
      * \return coupled fluid-fluid block system matrix
      */
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix(
         Teuchos::RCP<Epetra_Map> innermap, Teuchos::RCP<Epetra_Map> condmap);
 
     Teuchos::RCP<const Epetra_Vector> RHS() override { return xff_state_->xffluidresidual_; }
@@ -143,7 +145,7 @@ namespace FLD
     }
 
     /// get merged vel-pres-splitter
-    Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter() override
+    Teuchos::RCP<Core::LinAlg::MapExtractor> VelPresSplitter() override
     {
       return xff_state_->xffluidvelpressplitter_;
     }
@@ -153,22 +155,22 @@ namespace FLD
     // get merged velocity dof-map
     Teuchos::RCP<const Epetra_Map> VelocityRowMap() override;
 
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> extended_shape_derivatives()
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> extended_shape_derivatives()
     {
       return extended_shapederivatives_;
     }
 
     /// get the combined fluid-fluid system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> SystemMatrix() override
     {
-      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(xff_state_->xffluidsysmat_);
+      return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(xff_state_->xffluidsysmat_);
     }
 
     /// get the combined fluid-fluid system matrix in block form (embedded and background fluid
     /// blocks)
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
-      return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
+      return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
           xff_state_->xffluidsysmat_);
     }
 
@@ -179,7 +181,7 @@ namespace FLD
     }
 
     //! get combined background and embedded fluid dirichlet map extractor
-    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
+    Teuchos::RCP<const Core::LinAlg::MapExtractor> GetDBCMapExtractor() override
     {
       return xff_state_->xffluiddbcmaps_;
     }
@@ -194,7 +196,7 @@ namespace FLD
     void interpolate_embedded_state_vectors();
 
     /// create a result test
-    Teuchos::RCP<CORE::UTILS::ResultTest> CreateFieldTest() override;
+    Teuchos::RCP<Core::UTILS::ResultTest> CreateFieldTest() override;
 
     /// write output for both fluid discretizations
     void Output() override;
@@ -256,7 +258,7 @@ namespace FLD
 
     /// shape derivatives matrix (linearization with respect to mesh motion),
     /// including background fluid dof (set to zero)
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> extended_shapederivatives_;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> extended_shapederivatives_;
 
     /// flag, that indicates active shape derivatives
     bool active_shapederivatives_;
@@ -269,9 +271,9 @@ namespace FLD
 
     //! @name Fluid-fluid specific parameters
     //@{
-    enum INPAR::XFEM::MonolithicXffsiApproach
+    enum Inpar::XFEM::MonolithicXffsiApproach
         monolithic_approach_;  ///< type of monolithic XFFSI-approach
-    enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach_;  ///< XFF time integration approach
+    enum Inpar::XFEM::XFluidFluidTimeInt xfem_timeintapproach_;  ///< XFF time integration approach
     //@}
 
     //! name of fluid-fluid condition for access from condition manager
